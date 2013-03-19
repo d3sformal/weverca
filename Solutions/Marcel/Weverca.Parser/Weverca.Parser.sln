@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Parser", "..\..\..\VSProjects\Realisation\Weverca.Parser\Weverca.Parser.csproj", "{CADF9418-C0F6-4E56-B39E-33522603D0BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj", "{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Parser.Tester", "..\..\..\VSProjects\Marcel\Weverca.Parser.Tester\Weverca.Parser.Tester.csproj", "{5A766979-C92A-443D-A976-0DFAAC987EEB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CADF9418-C0F6-4E56-B39E-33522603D0BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CADF9418-C0F6-4E56-B39E-33522603D0BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CADF9418-C0F6-4E56-B39E-33522603D0BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CADF9418-C0F6-4E56-B39E-33522603D0BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A766979-C92A-443D-A976-0DFAAC987EEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A766979-C92A-443D-A976-0DFAAC987EEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A766979-C92A-443D-A976-0DFAAC987EEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A766979-C92A-443D-A976-0DFAAC987EEB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

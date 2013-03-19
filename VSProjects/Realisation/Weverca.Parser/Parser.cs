@@ -1,0 +1,155 @@
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using PHP.Core.AST;
+using PHP.Core.Reflection;
+using PHP.Core;
+using PHP.Core.Parsers;
+
+namespace Weverca.Parsers
+{
+   public class CompilationUnit : CompilationUnitBase, IReductionsSink
+    {
+        public sealed class PureAssembly : PhpAssembly
+        {
+            public PureModule/*!*/ Module { get { return module; } internal /* friend PAB */ set { module = value; } }
+            private PureModule/*!*/ module;
+
+            #region Construction
+
+
+            /// <summary>
+            /// Used by the builder.
+            /// </summary>
+            internal PureAssembly(ApplicationContext/*!*/ applicationContext)
+                : base(applicationContext)
+            {
+                // to be written-up
+            }
+
+            #endregion
+
+            public override PhpModule GetModule(PhpSourceFile name)
+            {
+                return module;
+            }
+
+        }
+
+
+        public sealed class PureModule : PhpModule
+        {
+            #region Construction
+
+            /// <summary>
+            /// Called by the loader. The module can be loaded to <see cref="PureAssembly"/> or 
+            /// <see cref="PhpLibraryAssembly"/>.
+            /// </summary>
+            internal PureModule(DAssembly/*!*/ assembly)
+                : base(assembly)
+            {
+            }
+
+
+            #endregion
+
+            protected override CompilationUnitBase CreateCompilationUnit()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Reflect(bool full, Dictionary<string, DTypeDesc> types, Dictionary<string, DRoutineDesc> functions, DualDictionary<string, DConstantDesc> constants)
+            {
+                throw new NotImplementedException();
+            }
+
+        }
+        public override bool IsPure { get { return is_pure; } }
+        private bool is_pure=true;
+        public override bool IsTransient { get { return false; } }
+        public CompilationUnit(){
+        
+            PureAssembly a = new PureAssembly(ApplicationContext.Default);
+            this.module = a.Module = new PureModule(a);
+        }
+        public override  DType GetVisibleType(QualifiedName qualifiedName, ref string fullName, Scope currentScope,
+            bool mustResolve) {
+                throw new NotImplementedException();
+        }
+        public override  DRoutine GetVisibleFunction(QualifiedName qualifiedName, ref string fullName, Scope currentScope)
+        {
+            throw new NotImplementedException();
+        }
+        public override  DConstant GetVisibleConstant(QualifiedName qualifiedName, ref string fullName, Scope currentScope) {
+            throw new NotImplementedException();
+        }
+
+        public override  IEnumerable<PhpType> GetDeclaredTypes()
+        {
+            throw new NotImplementedException();
+        }
+        public override  IEnumerable<PhpFunction> GetDeclaredFunctions()
+        {
+            throw new NotImplementedException();
+        }
+        public override  IEnumerable<GlobalConstant> GetDeclaredConstants()
+        {
+            throw new NotImplementedException();
+        }
+
+
+        Dictionary<QualifiedName, Declaration> functions;
+        Dictionary<QualifiedName, Declaration> types;
+        Dictionary<QualifiedName, Declaration> constants;
+        public void InclusionReduced(Parser/*!*/ parser, IncludingEx/*!*/ node)
+        {
+            // make all inclusions dynamic:
+        }
+
+        public void FunctionDeclarationReduced(Parser/*!*/ parser, FunctionDecl/*!*/ node)
+        {
+            if (functions == null) functions = new Dictionary<QualifiedName, Declaration>();
+            AddDeclaration(parser.ErrorSink, node.Function, functions);
+        }
+
+        public void TypeDeclarationReduced(Parser/*!*/ parser, TypeDecl/*!*/ node)
+        {
+            if (types == null) types = new Dictionary<QualifiedName, Declaration>();
+            AddDeclaration(parser.ErrorSink, node.Type, types);
+        }
+
+        public void GlobalConstantDeclarationReduced(Parser/*!*/ parser, GlobalConstantDecl/*!*/ node)
+        {
+            if (constants == null) constants = new Dictionary<QualifiedName, Declaration>();
+            AddDeclaration(parser.ErrorSink, (GlobalConstant)node.Constant, constants);
+        }
+
+        private void AddDeclaration(ErrorSink/*!*/ errors, IDeclaree/*!*/ member, Dictionary<QualifiedName, Declaration>/*!*/ table)
+        {
+            Declaration existing;
+            Declaration current = member.Declaration;
+
+            if (table.TryGetValue(member.QualifiedName, out existing))
+            {
+                // partial declarations are not allowed in transient code => nothing to check;
+                if (CheckDeclaration(errors, member, existing))
+                    AddVersionToGroup(current, existing);
+            }
+            else
+            {
+                // add a new declaration to the table:
+                table.Add(member.QualifiedName, current);
+            }
+        }
+    }
+   
+    public class ErrorSinkImpl : ErrorSink
+    {
+        protected override bool Add(int id, string message, ErrorSeverity severity, int group, string fullPath, ErrorPosition pos) {
+            Console.WriteLine(message);
+            return true;
+        }
+    }
+}
