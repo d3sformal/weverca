@@ -569,53 +569,9 @@
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>cd "$(SolutionDir).."
-Tools\UpdateFileVersionFromChangeset.cmd "$(ProjectDir)AssemblyInfo.cs"</PreBuildEvent>
-    <PostBuildEvent>REM ECHO Uninstalling previous version from GAC ...
-
-REM "$(SolutionDir)..\Tools\gacutil" /u $(TargetName) 1&gt;nul
-
-
-REM ECHO Generating publisher policy assembly ...
-
-REM "$(SolutionDir)..\Tools\PolicyFileGen" "$(TargetPath)" "/out:$(TargetDir)policy.$(TargetName).config" 1&gt;nul
-
-REM "$(SolutionDir)..\Tools\al" "/link:$(TargetDir)policy.$(TargetName).config" "/out:$(TargetDir)policy.3.0.$(TargetFileName)" "/keyfile:(ProjectDir)$(ProjectName).snk" /platform:anycpu 1&gt;nul
-
-
-
-ECHO Copying output to the Deployment folder ...
-
-
-if $(ConfigurationName) == Release (
-
-xcopy /q /y "$(TargetDir)*$(TargetName).*" "$(SolutionDir)..\Deployment\Bin" 1&gt;nul
-
-"$(SolutionDir)..\Tools\gacutil" -f -i "$(TargetPath)" 1&gt;nul
-
-REM "$(SolutionDir)..\Tools\gacutil" -f -i "$(TargetDir)policy.3.0.$(TargetFileName)" 1&gt;nul
-
-
-REM "$(SolutionDir)..\Deployment\Bin\PhpVerify" "$(TargetFileName)"
-
-)
-
-
-if $(ConfigurationName) == Debug (
-
-xcopy /q /y "$(TargetDir)*$(TargetName).*" "$(SolutionDir)..\Deployment\Debug" 1&gt;nul
-
-"$(SolutionDir)..\Tools\gacutil" -f -i "$(TargetPath)" 1&gt;nul
-
-REM "$(SolutionDir)..\Tools\gacutil" -f -i "$(TargetDir)policy.3.0.$(TargetFileName)" 1&gt;nul
-
-)
-
-
-if $(ConfigurationName) == DebugNoGac (
-
-xcopy /q /y "$(TargetDir)*$(TargetName).*" "$(SolutionDir)..\Deployment\Debug" 1&gt;nul
-
-)</PostBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>
