@@ -12,8 +12,7 @@ namespace Weverca.Parser.Tester
     {
         static void Main(string[] args)
         {
-            string fileName = "./file.php";
-            ErrorSink errors = new ErrorSinkImpl();
+            string fileName = "./file.php";          
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
             String code = @"<?php
             l1:
@@ -39,15 +38,13 @@ namespace Weverca.Parser.Tester
             $p=new array();
             
             ?>";
-            CompilationUnit compilationUnit = new CompilationUnit();
-            var sourceUnit = new PHP.Core.Reflection.VirtualSourceFileUnit(compilationUnit, code, source_file, Encoding.Default);
-            sourceUnit.Parse(errors, compilationUnit, Position.Initial, LanguageFeatures.Php5);
-
-            foreach (Statement statement in sourceUnit.Ast.Statements)
+            var parser = new SyntaxParser(source_file, code);
+            parser.Parse();
+            foreach (Statement statement in parser.Ast.Statements)
             {
                 Console.WriteLine(statement);
             }
-
+           
         }
     }
 }

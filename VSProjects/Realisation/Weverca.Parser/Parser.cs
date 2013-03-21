@@ -100,9 +100,10 @@ namespace Weverca.Parsers
         }
 
 
-        Dictionary<QualifiedName, Declaration> functions;
-        Dictionary<QualifiedName, Declaration> types;
-        Dictionary<QualifiedName, Declaration> constants;
+        public Dictionary<QualifiedName, Declaration> Functions;
+        public Dictionary<QualifiedName, Declaration> Types;
+        public Dictionary<QualifiedName, Declaration> Constants;
+
         public void InclusionReduced(Parser/*!*/ parser, IncludingEx/*!*/ node)
         {
             // make all inclusions dynamic:
@@ -110,20 +111,20 @@ namespace Weverca.Parsers
 
         public void FunctionDeclarationReduced(Parser/*!*/ parser, FunctionDecl/*!*/ node)
         {
-            if (functions == null) functions = new Dictionary<QualifiedName, Declaration>();
-            AddDeclaration(parser.ErrorSink, node.Function, functions);
+            if (Functions == null) Functions = new Dictionary<QualifiedName, Declaration>();
+            AddDeclaration(parser.ErrorSink, node.Function, Functions);
         }
 
         public void TypeDeclarationReduced(Parser/*!*/ parser, TypeDecl/*!*/ node)
         {
-            if (types == null) types = new Dictionary<QualifiedName, Declaration>();
-            AddDeclaration(parser.ErrorSink, node.Type, types);
+            if (Types == null) Types = new Dictionary<QualifiedName, Declaration>();
+            AddDeclaration(parser.ErrorSink, node.Type, Types);
         }
 
         public void GlobalConstantDeclarationReduced(Parser/*!*/ parser, GlobalConstantDecl/*!*/ node)
         {
-            if (constants == null) constants = new Dictionary<QualifiedName, Declaration>();
-            AddDeclaration(parser.ErrorSink, (GlobalConstant)node.Constant, constants);
+            if (Constants == null) Constants = new Dictionary<QualifiedName, Declaration>();
+            AddDeclaration(parser.ErrorSink, (GlobalConstant)node.Constant, Constants);
         }
 
         private void AddDeclaration(ErrorSink/*!*/ errors, IDeclaree/*!*/ member, Dictionary<QualifiedName, Declaration>/*!*/ table)
@@ -150,6 +151,38 @@ namespace Weverca.Parsers
         protected override bool Add(int id, string message, ErrorSeverity severity, int group, string fullPath, ErrorPosition pos) {
             Console.WriteLine(message);
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Wraps phalanger syntax parser in one class and provides attributes neccessary for our project. If someone needs more data from praser fell free to add metods or getters and setters.
+    /// </summary>
+    public class SyntaxParser
+    {
+        private PhpSourceFile source_file;
+        private string code;
+        private CompilationUnit compilationUnit;
+        private SourceUnit sourceUnit;
+        private ErrorSink errors;
+
+        public GlobalCode Ast { get { return sourceUnit.Ast; } }
+        public Dictionary<QualifiedName, Declaration> Functions { get { return compilationUnit.Functions; } }
+        public Dictionary<QualifiedName, Declaration> Types { get { return compilationUnit.Types; } }
+        public Dictionary<QualifiedName, Declaration> Constants { get { return compilationUnit.Constants; } }
+
+
+        public SyntaxParser(PhpSourceFile source_file, string code)
+        {
+            // TODO: Complete member initialization
+            this.source_file = source_file;
+            this.code = code;
+            this.errors = new ErrorSinkImpl();
+            this.compilationUnit = new CompilationUnit();
+            this.sourceUnit = new PHP.Core.Reflection.VirtualSourceFileUnit(compilationUnit, code, source_file, Encoding.Default);
+        }
+
+        public void Parse(){
+            sourceUnit.Parse(errors, compilationUnit, Position.Initial, LanguageFeatures.Php5);
         }
     }
 }
