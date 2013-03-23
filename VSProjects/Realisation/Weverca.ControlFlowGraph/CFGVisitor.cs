@@ -34,16 +34,21 @@ namespace Weverca.ControlFlowGraph
         public CFGVisitor(ControlFlowGraph graph)
         {
             this.graph = graph;
+            currentBasicBlock = new BasicBlock();
+            graph.start = currentBasicBlock;
         }
 
         public override void VisitElement(LangElement element)
         {
-            throw new NotImplementedException();
+            currentBasicBlock.AddElement(element);
         }
 
         public override void VisitGlobalCode(GlobalCode x)
         {
-            throw new NotImplementedException();
+            foreach(Statement statement in x.Statements)
+            {
+                statement.VisitMe(this);
+            }
         }
 
         public override void VisitLabelStmt(LabelStmt x)
@@ -78,10 +83,32 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitWhileStmt(WhileStmt x)
         {
-            throw new NotImplementedException();
+            
+            if (x.LoopType == WhileStmt.Type.While)
+            {
+                BasicBlock aboveLoop = currentBasicBlock;
+                BasicBlock startLoop = new BasicBlock();
+                BasicBlockEdge edge = new BasicBlockEdge(currentBasicBlock, startLoop, x.CondExpr);
+                currentBasicBlock = startLoop;
+                x.Body.VisitMe(this);
+                BasicBlock endLoop = currentBasicBlock;
+                BasicBlock underLoop = new BasicBlock();
+
+                edge = new BasicBlockEdge(endLoop, underLoop, x.CondExpr);//znegovat
+
+                edge = new BasicBlockEdge(aboveLoop, underLoop, x.CondExpr);//znegovat
+
+                edge = new BasicBlockEdge(endLoop, startLoop, x.CondExpr);
+
+                currentBasicBlock = underLoop;
+
+            }
+            else if (x.LoopType == WhileStmt.Type.Do) 
+            { 
+            
+            }
         }
 
-        #region Forwarding to VisitStatementList or VisitExpressionList
 
         public override void VisitSwitchItem(SwitchItem x)
         {
@@ -90,7 +117,22 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitBlockStmt(BlockStmt x)
         {
-            throw new NotImplementedException();
+            VisitStatementList(x.Statements);
+
+        }
+
+        #region Forwarding to VisitStatementList or VisitExpressionList
+
+        private void VisitStatementList(List<Statement> list)
+        {
+            foreach (var stmt in list)
+                stmt.VisitMe(this);
+        }
+
+        private void VisitExpressionList(List<Expression> list)
+        {
+            foreach (var e in list)
+                e.VisitMe(this);
         }
 
         #endregion
@@ -134,17 +176,7 @@ namespace Weverca.ControlFlowGraph
 
         #endregion
 
-        private void VisitStatementList(List<Statement> list)
-        {
-            foreach (var stmt in list)
-                stmt.VisitMe(this);
-        }
-
-        private void VisitExpressionList(List<Expression> list)
-        {
-            foreach (var e in list)
-                e.VisitMe(this);
-        }
+        
 
         private void VisitConditionalStatements(List<ConditionalStmt> list)
         {

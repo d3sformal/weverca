@@ -5,6 +5,7 @@ using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 using Weverca.Parsers;
+using Weverca.ControlFlowGraph;
 
 namespace Weverca.Parser.Tester
 {
@@ -15,28 +16,17 @@ namespace Weverca.Parser.Tester
             string fileName = "./file.php";          
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
             String code = @"<?php
-            l1:
-         
-            include 'a.php';
-           
-            class A{}
-            function a(){
-                return $p;
-            }
-            function a($v){
-                return $p;
-            }
             $a=4;
-            if($a==4)
-                echo $a;
-            echo $b;
-            f($a);
-            if(f($a))   
-                goto l1;
-                
-            echo true;
-            $p=new array();
-            
+            $b=$a+6;
+            $c=$a+$b; 
+            $d=9*9*$c;
+            while(true){
+                $a=$a+5559+55555+5555+5;
+                while(false){
+                $i++;
+                }
+                $c=$a;
+            }
             ?>";
             var parser = new SyntaxParser(source_file, code);
             parser.Parse();
@@ -44,7 +34,14 @@ namespace Weverca.Parser.Tester
             {
                 Console.WriteLine(statement);
             }
-           
+            Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\graph.txt"))
+            {
+                file.WriteLine(cfg.getTextRepresentation());
+            
+
+            }
+            
         }
     }
 }
