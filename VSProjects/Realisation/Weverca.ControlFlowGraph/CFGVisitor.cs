@@ -71,8 +71,69 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitSwitchStmt(SwitchStmt x)
         {
-                       
+            BasicBlock above=currentBasicBlock;
+
+            BasicBlock last = null ;
+            BasicBlockEdge defaultEdge=null;
+            bool containsDefault=false;
+            Expression defaultExpresion = null;
+            foreach (var switchItem in x.SwitchItems) {
+               
+                currentBasicBlock = new BasicBlock();
+               
+                Expression right = null;
+                if (switchItem.GetType() == typeof(CaseItem))
+                {
+                    right = ((CaseItem)switchItem).CaseVal;
+                    BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, new BinaryEx(Operations.Equal, x.SwitchValue, right));
+                    if (defaultExpresion == null)
+                    {
+                        defaultExpresion = new BinaryEx(Operations.NotEqual, x.SwitchValue, right);
+                    }
+                    else {
+                        defaultExpresion = new BinaryEx(Operations.Add,defaultExpresion,new BinaryEx(Operations.NotEqual, x.SwitchValue, right));
+                    }
+                }
+                else 
+                {
+                    defaultEdge=BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, null);
+                    if (containsDefault == false)
+                    {
+                        containsDefault = true;
+                    }
+                    else {
+                        throw new Exception("more than one default in switch");
+                    }
+                }
+                switchItem.VisitMe(this);
+                if (last != null)
+                {
+                    BasicBlockEdge.MakeNewAndConnect(last, currentBasicBlock, new BoolLiteral(Position.Invalid,true));
+                }
+                last = currentBasicBlock;
+                
+            }
+            currentBasicBlock = new BasicBlock();
+            BasicBlockEdge.MakeNewAndConnect(last, currentBasicBlock, new BoolLiteral(Position.Invalid, true));
+            if (containsDefault == false)
+            {
+                BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, defaultExpresion);
+            }
+            else {
+                defaultEdge.Condition = defaultExpresion;
+            }
         }
+
+        public override void VisitCaseItem(CaseItem x)
+        {
+            VisitStatementList(x.Statements);
+        }
+
+        public override void VisitDefaultItem(DefaultItem x)
+        {
+            VisitStatementList(x.Statements);
+        }
+
 
         public override void VisitJumpStmt(JumpStmt x)
         {
@@ -111,10 +172,7 @@ namespace Weverca.ControlFlowGraph
         }
 
 
-        public override void VisitSwitchItem(SwitchItem x)
-        {
-            throw new NotImplementedException();
-        }
+       
 
         public override void VisitBlockStmt(BlockStmt x)
         {
