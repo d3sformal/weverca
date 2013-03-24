@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
+
 using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
@@ -9,6 +11,7 @@ using PHP.Core.Parsers;
 
 namespace Weverca.ControlFlowGraph
 {
+
     public class ControlFlowGraph
     {
         public BasicBlock start;
@@ -57,7 +60,30 @@ namespace Weverca.ControlFlowGraph
                 foreach (var edge in node.OutgoingEdges)
                 {
                     int index=nodes.IndexOf(edge.To);
-                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" \"]" + Environment.NewLine;
+                    string label = "" ;
+                    if (!edge.Condition.Position.IsValid)
+                    {
+                        if (edge.Condition.GetType() == typeof(BoolLiteral))
+                        {
+                            label = edge.Condition.Value.ToString();
+                        }
+                        if (edge.Condition.GetType() == typeof(UnaryEx))
+                        {
+                            UnaryEx expression = (UnaryEx)edge.Condition;
+                            label = globalCode.SourceUnit.GetSourceCode(expression.Expr.Position);
+                            //dirty trick how to acces internal field
+                            var a = expression.GetType().GetField("operation",BindingFlags.NonPublic | BindingFlags.Instance);
+                            if ((Operations)a.GetValue(expression) == Operations.LogicNegation)
+                            {
+                                label = "not " + label; 
+                            }
+                        }
+                    }
+                    else
+                    {
+                        label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
+                    }
+                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                 }
                 i++;
             }

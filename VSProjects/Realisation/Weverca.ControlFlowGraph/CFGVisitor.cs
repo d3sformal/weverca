@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using PHP.Core.AST;
+using PHP.Core.Parsers;
+using PHP.Core.Reflection;
 
 namespace Weverca.ControlFlowGraph
 {
@@ -85,16 +88,23 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock aboveLoop = currentBasicBlock;
             BasicBlock startLoop = new BasicBlock();
-            BasicBlockEdge edge = new BasicBlockEdge(currentBasicBlock, startLoop, x.CondExpr);//true
+            BasicBlockEdge edge;
+            if (x.LoopType == WhileStmt.Type.While)
+            {
+                edge = new BasicBlockEdge(aboveLoop, startLoop, x.CondExpr);
+            }
+            else
+            {
+                edge = new BasicBlockEdge(aboveLoop, startLoop, new BoolLiteral(Position.Invalid, true));
+            }
             currentBasicBlock = startLoop;
             x.Body.VisitMe(this);
             BasicBlock endLoop = currentBasicBlock;
             BasicBlock underLoop = new BasicBlock();
-            edge = new BasicBlockEdge(endLoop, underLoop, x.CondExpr);//znegovat
+            edge = new BasicBlockEdge(endLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
             if (x.LoopType == WhileStmt.Type.While)
             {
-                edge = new BasicBlockEdge(aboveLoop, underLoop, x.CondExpr);//znegovat
-
+                edge = new BasicBlockEdge(aboveLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
             }
             edge = new BasicBlockEdge(endLoop, startLoop, x.CondExpr);
 
