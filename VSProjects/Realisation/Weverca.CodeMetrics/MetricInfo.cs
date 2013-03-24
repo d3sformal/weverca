@@ -29,6 +29,7 @@ namespace Weverca.CodeMetrics
         #endregion
 
         #region MetricInfo constructors
+
         /// <summary>
         /// Creates metric info for given sources.
         /// </summary>
@@ -45,6 +46,10 @@ namespace Weverca.CodeMetrics
             indicatorBatch = ProcessingServices.ProcessIndicators(resolveOccurances, parser);
         }
 
+        /// <summary>
+        /// Creates metric info from given indicators
+        /// </summary>
+        /// <param name="indicatorBatch"></param>
         private MetricInfo(IndicatorProcessor.ResultBatch indicatorBatch)
         {
             this.indicatorBatch = indicatorBatch;
@@ -77,9 +82,29 @@ namespace Weverca.CodeMetrics
         /// </summary>
         /// <param name="indicators"></param>
         /// <returns></returns>
-        public bool HasIndicators(ConstructIndicator indicator)
+        public bool HasIndicator(ConstructIndicator indicator)
         {
             return indicatorBatch.GetResult(indicator).Property;          
+        }
+
+        /// <summary>
+        /// Returns value of given rating.
+        /// </summary>
+        /// <param name="rating"></param>
+        /// <returns></returns>
+        public double GetRating(Rating rating)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Returns quantity of given quantitative metric.
+        /// </summary>
+        /// <param name="quantitative"></param>
+        /// <returns></returns>
+        public int GetQuantity(Quantitative quantitative)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
