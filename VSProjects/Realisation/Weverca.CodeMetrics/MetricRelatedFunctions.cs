@@ -56,6 +56,7 @@ namespace Weverca.CodeMetrics
         {
             functions.Add(ConstructIndicator.Session, Session);
             functions.Add(ConstructIndicator.Autoload, Autoload_Register);
+            functions.Add(ConstructIndicator.Eval, Eval);
             //TODO add other metric related functions
         }
 

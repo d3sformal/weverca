@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 using PHP.Core.AST;
 
@@ -110,9 +111,13 @@ namespace Weverca.CodeMetrics.Processing
         private static IEnumerable<Type> getTypesWithAttribute(Type attributeType)
         {
             var currentAssembly = typeof(ProcessingServices).Assembly;
-            var types = currentAssembly.GetCustomAttributes(attributeType, true);
-
-            return (Type[])types;
+            foreach (Type type in currentAssembly.GetTypes())
+            {
+                if (type.GetCustomAttributes(typeof(MetricAttribute), true).Length > 0)
+                {
+                    yield return type;
+                }
+            }
         }
 
         /// <summary>
@@ -127,14 +132,26 @@ namespace Weverca.CodeMetrics.Processing
                 if (attr.AttributeType==typeof(MetricAttribute))
                 {
                     var constructorArgument = attr.ConstructorArguments[0];
-                    if (constructorArgument.ArgumentType != typeof(IEnumerable<Category>))
+                    if (constructorArgument.ArgumentType != typeof(Category[]))
                         continue;
 
-                    //Metric attribute doesnt allow multiples                    
-                    return constructorArgument.Value as IEnumerable<Category>;
+                    return getMetricAttributeArgument(constructorArgument);
                 }
             }
-            return new Category[0];
+            return null;
+        }
+
+        private static IEnumerable<Category> getMetricAttributeArgument(CustomAttributeTypedArgument constructorArgument)
+        {
+            var typedArgs = constructorArgument.Value as IReadOnlyCollection<CustomAttributeTypedArgument>;
+            var categories = new List<Category>();
+            foreach (var arg in typedArgs)
+            {
+                categories.Add((Category)arg.Value);
+            }
+
+            //Metric attribute doesnt allow multiples so we return first one
+            return categories;
         }
         #endregion
 
