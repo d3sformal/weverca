@@ -57,7 +57,7 @@ namespace Weverca.ControlFlowGraph
                 foreach (var edge in node.OutgoingEdges)
                 {
                     int index=nodes.IndexOf(edge.To);
-                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s]" + Environment.NewLine;
+                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"ss\"]" + Environment.NewLine;
                 }
                 i++;
             }

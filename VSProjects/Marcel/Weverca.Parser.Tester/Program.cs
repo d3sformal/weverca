@@ -18,7 +18,7 @@ namespace Weverca.Parser.Tester
             String code = @"<?php
             $a=4;
             $b=$a+6;
-            $c=$a+$b; 
+            $c=$a+$bssssss; 
             $d=9*9*$c;
             while(true){
                 $a=$a+5559+55555+5555+5;
@@ -35,13 +35,24 @@ namespace Weverca.Parser.Tester
                 Console.WriteLine(statement);
             }
             Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\graph.txt"))
+            Console.WriteLine(cfg.getTextRepresentation());
+            
+            /*using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\maki\Desktop\Weverca\graph.txt"))
             {
                 file.WriteLine(cfg.getTextRepresentation());
-            
+
 
             }
-            
+            System.Diagnostics.Process proc = new System.Diagnostics.Process();
+            proc.StartInfo.FileName = @"C:\Users\maki\Desktop\Weverca\generategraph.bat";
+            proc.StartInfo.RedirectStandardError = true;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.UseShellExecute = false;
+
+            proc.Start();
+                  
+            proc.WaitForExit();
+            */
         }
     }
 }
