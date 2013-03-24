@@ -19,13 +19,15 @@ namespace Weverca.Parser.Tester
             $a=4;
             switch($a){
                 case 2:$a++;
-                case 3:do{
+                case 3:$p=4;do{
                 $l++;
                 }while(true);
-                default: $b++;
+                $p=4;
+
+               // default: $b++;
                 case 4: $a++;
             }
-            $x=4;
+            
             ?>";
             var parser = new SyntaxParser(source_file, code);
             parser.Parse();
@@ -36,7 +38,7 @@ namespace Weverca.Parser.Tester
             }
             Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
             Console.WriteLine(cfg.getTextRepresentation());
-            
+
             /*using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\maki\Desktop\Weverca\graph.txt"))
             {
                 file.WriteLine(cfg.getTextRepresentation());
