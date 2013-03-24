@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Parser.Tester", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.ControlFlowGraph", "..\..\..\VSProjects\Realisation\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj", "{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.CodeMetrics", "..\..\..\VSProjects\Realisation\Weverca.CodeMetrics\Weverca.CodeMetrics.csproj", "{880143F7-BD66-4ABD-96E7-86FDA5CF8161}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.CodeMetrics.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.CodeMetrics.UnitTest\Weverca.CodeMetrics.UnitTest.csproj", "{B942C23F-5666-4FDD-9813-7B8936C6EA93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +35,14 @@ Global
 		{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}.Release|Any CPU.Build.0 = Release|Any CPU
+		{880143F7-BD66-4ABD-96E7-86FDA5CF8161}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{880143F7-BD66-4ABD-96E7-86FDA5CF8161}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{880143F7-BD66-4ABD-96E7-86FDA5CF8161}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{880143F7-BD66-4ABD-96E7-86FDA5CF8161}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
