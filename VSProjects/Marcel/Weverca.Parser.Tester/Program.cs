@@ -17,15 +17,11 @@ namespace Weverca.Parser.Tester
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
             String code = @"<?php
             $a=4;
-            $b=$a+6;
-            $c=$a+$bssssss; 
-            $d=9*9*$c;
-            while($i>5){
-                $a=$a+5559+55555+5555+5;
-               do{
-                $i++;
-                }while(f($x));
-                $c=$a;
+            switch($a){
+                case 2:$a++;
+                case 3:$a++;
+                case 4: $a++;
+                default: $a++;
             }
             ?>";
             var parser = new SyntaxParser(source_file, code);

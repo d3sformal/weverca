@@ -71,7 +71,7 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitSwitchStmt(SwitchStmt x)
         {
-            throw new NotImplementedException();
+                       
         }
 
         public override void VisitJumpStmt(JumpStmt x)
