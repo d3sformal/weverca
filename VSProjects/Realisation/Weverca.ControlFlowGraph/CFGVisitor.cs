@@ -88,25 +88,24 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock aboveLoop = currentBasicBlock;
             BasicBlock startLoop = new BasicBlock();
-            BasicBlockEdge edge;
             if (x.LoopType == WhileStmt.Type.While)
             {
-                edge = new BasicBlockEdge(aboveLoop, startLoop, x.CondExpr);
+                BasicBlockEdge.MakeNewAndConnect(aboveLoop, startLoop, x.CondExpr);
             }
             else
             {
-                edge = new BasicBlockEdge(aboveLoop, startLoop, new BoolLiteral(Position.Invalid, true));
+                BasicBlockEdge.MakeNewAndConnect(aboveLoop, startLoop, new BoolLiteral(Position.Invalid, true));
             }
             currentBasicBlock = startLoop;
             x.Body.VisitMe(this);
             BasicBlock endLoop = currentBasicBlock;
             BasicBlock underLoop = new BasicBlock();
-            edge = new BasicBlockEdge(endLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
+            BasicBlockEdge.MakeNewAndConnect(endLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
             if (x.LoopType == WhileStmt.Type.While)
             {
-                edge = new BasicBlockEdge(aboveLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
+                BasicBlockEdge.MakeNewAndConnect(aboveLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
             }
-            edge = new BasicBlockEdge(endLoop, startLoop, x.CondExpr);
+            BasicBlockEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
 
             currentBasicBlock = underLoop;
         }

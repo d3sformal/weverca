@@ -130,9 +130,13 @@ namespace Weverca.ControlFlowGraph
             this.From = From;
             this.To = To;
             this.Condition = Condition;
+        }
+        public static BasicBlockEdge MakeNewAndConnect(BasicBlock From, BasicBlock To, Expression Condition)
+        {
             From.AddOutgoingEdge(this);
             To.AddIncommingEdge(this);
-        } 
+            return new BasicBlockEdge(From,To,Condition);
+        }
     }
 
 }
