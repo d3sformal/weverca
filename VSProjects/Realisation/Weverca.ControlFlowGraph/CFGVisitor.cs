@@ -83,30 +83,22 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitWhileStmt(WhileStmt x)
         {
-            
+            BasicBlock aboveLoop = currentBasicBlock;
+            BasicBlock startLoop = new BasicBlock();
+            BasicBlockEdge edge = new BasicBlockEdge(currentBasicBlock, startLoop, x.CondExpr);//true
+            currentBasicBlock = startLoop;
+            x.Body.VisitMe(this);
+            BasicBlock endLoop = currentBasicBlock;
+            BasicBlock underLoop = new BasicBlock();
+            edge = new BasicBlockEdge(endLoop, underLoop, x.CondExpr);//znegovat
             if (x.LoopType == WhileStmt.Type.While)
             {
-                BasicBlock aboveLoop = currentBasicBlock;
-                BasicBlock startLoop = new BasicBlock();
-                BasicBlockEdge edge = new BasicBlockEdge(currentBasicBlock, startLoop, x.CondExpr);
-                currentBasicBlock = startLoop;
-                x.Body.VisitMe(this);
-                BasicBlock endLoop = currentBasicBlock;
-                BasicBlock underLoop = new BasicBlock();
-
-                edge = new BasicBlockEdge(endLoop, underLoop, x.CondExpr);//znegovat
-
                 edge = new BasicBlockEdge(aboveLoop, underLoop, x.CondExpr);//znegovat
 
-                edge = new BasicBlockEdge(endLoop, startLoop, x.CondExpr);
-
-                currentBasicBlock = underLoop;
-
             }
-            else if (x.LoopType == WhileStmt.Type.Do) 
-            { 
-            
-            }
+            edge = new BasicBlockEdge(endLoop, startLoop, x.CondExpr);
+
+            currentBasicBlock = underLoop;
         }
 
 

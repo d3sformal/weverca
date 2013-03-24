@@ -22,14 +22,15 @@ namespace Weverca.Parser.Tester
             $d=9*9*$c;
             while(true){
                 $a=$a+5559+55555+5555+5;
-                while(false){
+               do{
                 $i++;
-                }
+                }while(false);
                 $c=$a;
             }
             ?>";
             var parser = new SyntaxParser(source_file, code);
             parser.Parse();
+          
             foreach (Statement statement in parser.Ast.Statements)
             {
                 Console.WriteLine(statement);
@@ -37,7 +38,7 @@ namespace Weverca.Parser.Tester
             Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
             Console.WriteLine(cfg.getTextRepresentation());
             
-            /*using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\maki\Desktop\Weverca\graph.txt"))
+           /* using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\maki\Desktop\Weverca\graph.txt"))
             {
                 file.WriteLine(cfg.getTextRepresentation());
 
@@ -51,8 +52,8 @@ namespace Weverca.Parser.Tester
 
             proc.Start();
                   
-            proc.WaitForExit();
-            */
+            proc.WaitForExit();*/
+            
         }
     }
 }
