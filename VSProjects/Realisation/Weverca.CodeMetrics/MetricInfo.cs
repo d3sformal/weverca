@@ -59,6 +59,12 @@ namespace Weverca.CodeMetrics
 
         #region MetricInfo API
 
+        /// <summary>
+        /// Create MetricInfo which is merged from given parsers
+        /// </summary>
+        /// <param name="resolveOccurances">Determine that info will contains occurances of nodes related to metric</param>
+        /// <param name="parsers">Parsers to be merged by metric info</param>
+        /// <returns>Metric info according to parsers</returns>
         public static MetricInfo FromParsers(bool resolveOccurances, params SyntaxParser[] parsers)
         {
             if (parsers.Length < 1)
