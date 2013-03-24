@@ -169,7 +169,7 @@ namespace Weverca.Parsers
         public Dictionary<QualifiedName, Declaration> Functions { get { return compilationUnit.Functions; } }
         public Dictionary<QualifiedName, Declaration> Types { get { return compilationUnit.Types; } }
         public Dictionary<QualifiedName, Declaration> Constants { get { return compilationUnit.Constants; } }
-
+        public bool IsParsed { protected set; get; }
 
         public SyntaxParser(PhpSourceFile source_file, string code)
         {
@@ -179,10 +179,12 @@ namespace Weverca.Parsers
             this.errors = new ErrorSinkImpl();
             this.compilationUnit = new CompilationUnit();
             this.sourceUnit = new PHP.Core.Reflection.VirtualSourceFileUnit(compilationUnit, code, source_file, Encoding.Default);
+            this.IsParsed=false;
         }
 
         public void Parse(){
             sourceUnit.Parse(errors, compilationUnit, Position.Initial, LanguageFeatures.Php5);
+            this.IsParsed=true;
         }
     }
 }
