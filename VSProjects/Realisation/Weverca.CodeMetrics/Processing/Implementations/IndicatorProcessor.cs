@@ -82,11 +82,11 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         #region TreeVisitor overrides
         public override void VisitFunctionCall(FunctionCall x)
         {
-            //TODO find out how to get call name
-            if (searchedCalls.Contains(x.ToString()))
+            throw new NotImplementedException("There is no method for getting FunctionCall name - In Progress, this will work in future");
+        /*    if (searchedCalls.Contains(x.Name))
             {
                 foundCalls.Add(x);
-            }
+            }*/
         }
 
         /// <summary>
