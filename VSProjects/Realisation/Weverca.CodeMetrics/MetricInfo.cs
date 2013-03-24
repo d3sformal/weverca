@@ -9,6 +9,7 @@ using PHP.Core.AST;
 
 using Weverca.Parsers;
 using Weverca.CodeMetrics.Processing;
+using Weverca.CodeMetrics.Processing.Implementations;
 
 
 namespace Weverca.CodeMetrics
@@ -102,7 +103,7 @@ namespace Weverca.CodeMetrics
         /// </summary>
         /// <param name="quantitative"></param>
         /// <returns></returns>
-        public int GetQuantity(Quantitative quantitative)
+        public int GetQuantity(Quantity quantitative)
         {
             throw new NotImplementedException();
         }

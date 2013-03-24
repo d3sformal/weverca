@@ -41,8 +41,10 @@
   <ItemGroup>
     <Compile Include="MetricCategories.cs" />
     <Compile Include="MetricInfo.cs" />
+    <Compile Include="MetricRelatedFunctions.cs" />
     <Compile Include="Processing\Implementations\FunctionPresenceProcessor.cs" />
-    <Compile Include="Processing\IndicatorProcessor.cs" />
+    <Compile Include="Processing\Implementations\IndicatorProcessor.cs" />
+    <Compile Include="Processing\MetricAttribute.cs" />
     <Compile Include="Processing\MetricProcessor.cs" />
     <Compile Include="Processing\MetricResultBatch.cs" />
     <Compile Include="Processing\ProcessingServices.cs" />

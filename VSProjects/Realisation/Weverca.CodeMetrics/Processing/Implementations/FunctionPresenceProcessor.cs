@@ -4,13 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Weverca.Parsers;
+
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
-    class FunctionPresenceProcessor:IndicatorProcessor
+    [Metric(ConstructIndicator.Eval,ConstructIndicator.Session)]
+    sealed class FunctionPresenceProcessor : IndicatorProcessor
     {
-        protected override Result process(bool resolveOccurances, ConstructIndicator catogory, Parsers.SyntaxParser parser)
+        protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
         {
-            throw new NotImplementedException();
+            var functions=MetricRelatedFunctions.Get(category);
+
+            var calls = findCalls(parser,functions);
+            return new Result(calls.Count() > 0, calls);            
         }
     }
 }

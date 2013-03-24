@@ -21,9 +21,9 @@ namespace Weverca.CodeMetrics.Processing
             /// <summary>
             /// Is null if and only if resolveOccurances wasnt enabled
             /// </summary>
-            public readonly ICollection<AstNode> Occurances;
+            public readonly IEnumerable<AstNode> Occurances;
 
-            public Result(PropertyType property, ICollection<AstNode> occurances)
+            public Result(PropertyType property, IEnumerable<AstNode> occurances)
             {
                 this.Property = property;
                 this.Occurances = occurances;
@@ -93,14 +93,14 @@ namespace Weverca.CodeMetrics.Processing
         /// <param name="o1"></param>
         /// <param name="o2"></param>
         /// <returns></returns>
-        protected abstract ICollection<AstNode> merge(ICollection<AstNode> o1, ICollection<AstNode> o2);
+        protected abstract IEnumerable<AstNode> merge(IEnumerable<AstNode> o1, IEnumerable<AstNode> o2);
         /// <summary>
         /// Process given parser according to metric semantic.
         /// </summary>
         /// <param name="resolveOccurances"></param>
         /// <param name="parser"></param>
         /// <returns></returns>
-        protected abstract Result process(bool resolveOccurances, MetricCategory catogory,SyntaxParser parser);
+        protected abstract Result process(bool resolveOccurances, MetricCategory category,SyntaxParser parser);
 
         public Result Process(bool resolveOccurances,MetricCategory category, SyntaxParser parser)
         {
@@ -115,7 +115,7 @@ namespace Weverca.CodeMetrics.Processing
         /// <returns></returns>
         public Result Merge(Result r1, Result r2)
         {
-            ICollection<AstNode> occurances = null;
+            IEnumerable<AstNode> occurances = null;
             if (r1.HasResolvedOccurances && r2.HasResolvedOccurances)
             {
                 occurances = merge(r1.Occurances, r2.Occurances);

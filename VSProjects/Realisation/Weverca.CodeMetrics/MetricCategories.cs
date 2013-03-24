@@ -21,7 +21,7 @@ namespace Weverca.CodeMetrics
         /// There is lot of magic functions in php. 
         /// <seealso cref="http://www.php.net/manual/en/language.oop5.magic.php"/>
         /// </summary>
-        MagicFunction,
+        MagicMethod,
         /// <summary>
         /// Indicator of class construct presence.
         /// </summary>
@@ -88,7 +88,7 @@ namespace Weverca.CodeMetrics
     /// <summary>
     /// Enumeration of metrics that has quantitative value (uint range)
     /// </summary>
-    public enum Quantitative
+    public enum Quantity
     {
         /// <summary>
         /// Maximal depth of inheritance (via extends) detected.
