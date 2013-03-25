@@ -66,8 +66,64 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitIfStmt(IfStmt x)
         {
-            throw new NotImplementedException();
+            //Merge destination for if and else branch
+            BasicBlock bottomBox = new BasicBlock();
+
+            foreach (var condition in x.Conditions)
+            {
+                if (condition.Condition != null)
+                {
+                    //IF or ELSEIF branch
+                    currentBasicBlock = constructIfBranch(bottomBox, condition);
+                }
+                else
+                {
+                    //ELSE branch
+                    condition.Statement.VisitMe(this);
+                }
+            }
+
+            //Connect else branch to bottomBox
+            //Must be here becouse in the construc phase we dont know whether the else block would split in the future
+            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, bottomBox, new BoolLiteral(Position.Invalid, true));
+            currentBasicBlock = bottomBox;
         }
+
+
+        /// <summary>
+        /// Constructs if branch basic block.
+        /// </summary>
+        /// <param name="bottomBox">Merge destination for if and else branch.</param>
+        /// <param name="condition">The condition of the if branch.</param>
+        /// <returns>Empty basic block for the else branch</returns>
+        private BasicBlock constructIfBranch(BasicBlock bottomBox, ConditionalStmt condition)
+        {
+            BasicBlock thenBranchBlock = new BasicBlock();
+            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
+
+            BasicBlock elseBranchBlock = new BasicBlock();
+            UnaryEx negativeCondition = new UnaryEx(Operations.LogicNegation, condition.Condition);
+            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock, negativeCondition);
+
+            condition.Condition.VisitMe(this);
+            currentBasicBlock = thenBranchBlock;
+            condition.Statement.VisitMe(this);
+            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, bottomBox, new BoolLiteral(Position.Invalid, true));
+
+            return elseBranchBlock;
+        }
+
+
+        public override void VisitForeachStmt(ForeachStmt x)
+        {
+            base.VisitForeachStmt(x);
+        }
+
+        public override void VisitForStmt(ForStmt x)
+        {
+            base.VisitForStmt(x);
+        }
+
 
         public override void VisitSwitchStmt(SwitchStmt x)
         {
@@ -136,11 +192,6 @@ namespace Weverca.ControlFlowGraph
 
 
         public override void VisitJumpStmt(JumpStmt x)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void VisitForStmt(ForStmt x)
         {
             throw new NotImplementedException();
         }

@@ -13,6 +13,13 @@ namespace Weverca.Parser.Tester
     {
         static void Main(string[] args)
         {
+            //Pavel - Pokud na vstup zadate nejake argumenty, tak je pochopí jako soubory, pusti na nich test a skonci
+            if (args.Length > 0)
+            {
+                testFromFiles(args);
+                return;
+            }
+
             string fileName = "./file.php";          
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
             String code = @"<?php
@@ -55,6 +62,40 @@ namespace Weverca.Parser.Tester
                   
             proc.WaitForExit();*/
             
+        }
+
+
+        private static void testFromFiles(string[] files)
+        {
+            foreach (string fileName in files)
+            {
+                if (File.Exists(fileName))
+                {
+                    StreamReader reader = new StreamReader(fileName);
+                    string code = reader.ReadToEnd();
+
+                    constructAndShowCFG(fileName, code);
+
+                    reader.Close();
+                }
+            }
+        }
+
+        private static void constructAndShowCFG(string fileName, string code)
+        {
+            Console.WriteLine(fileName);
+            Console.WriteLine("-----------------------------------------------------------");
+
+            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
+
+            var parser = new SyntaxParser(source_file, code);
+            parser.Parse();
+
+            Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            Console.WriteLine(cfg.getTextRepresentation());
+
+            Console.WriteLine("-----------------------------------------------------------");
+            Console.WriteLine();
         }
     }
 }
