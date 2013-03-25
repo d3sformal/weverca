@@ -9,93 +9,144 @@ using Weverca.ControlFlowGraph;
 
 namespace Weverca.Parser.Tester
 {
+    /******* Poznamka pro veverky:
+     * Testovaci program (Weverca.Parser.Tester) je nastaven tak, ze pokud ho spustite bez parametru,
+     * tak vezme soubory typu *.php z adresare PHP_sources v trunku, vyrobi pro ne CFG a ulozi je do souboru. 
+     * Pokud budete chtít testovat vlastni sadu souboru, tak mu muzete nastavit libovolny pocet vlastnich 
+     * souboru a adresaru pomoci parametru.
+     * 
+     * Vygenerovane soubory budou pojmenovany jako NAZEV_SOUBORU.cfg pro textovy vypis controll flow grafu
+     * a NAZEV_SOUBORU.png pro obrazek. Soubory budou vytvoreny ve stejne slozce, jako je zpracovavany soubor.
+     * 
+     * Ve zdrojaku je zadratovana relativni cesta do trunk adresare, tak pokud se bude neco menit, tak se to
+     * musi opravit i tady.
+     * 
+     * Jinak preji prijemne pouzivani programu =)
+     * Pavel
+     */
+
     class Program
     {
-        static void Main(string[] args)
+        /// <summary>
+        /// Relative path to the trunk folder in SVN
+        /// MUST BE CHANGED IN CASE OF CHANDES IN SVN DIRECTORY STRUCTURE
+        /// </summary>
+        public static readonly string TRUNK_PATH = @"..\..\..\..\..\";
+
+        /// <summary>
+        /// Path to the graphviz tool
+        /// </summary>
+        public static readonly string GRAPHVIZ_PATH = TRUNK_PATH + @"Tools\dot_graphviz\dot.exe";
+
+        /// <summary>
+        /// Directory with PHP sources
+        /// </summary>
+        public static readonly string PHP_SOURCES_DIR = TRUNK_PATH + @"PHP_sources\";
+
+        //Used file extensions
+        public static readonly string PHP_FILE_EXTENSION = ".php";
+        public static readonly string GRAPH_FILE_EXTENSION = ".cfg";
+        public static readonly string IMAGE_FILE_EXTENSION = ".png";
+
+        /// <summary>
+        /// Using the phalanger parser generates ControlFlowGraph for a given file.
+        /// </summary>
+        /// <param name="fileName">Name of the file with php source.</param>
+        /// <returns></returns>
+        static Weverca.ControlFlowGraph.ControlFlowGraph GenerateCFG(string fileName)
         {
-            //Pavel - Pokud na vstup zadate nejake argumenty, tak je pochopí jako soubory, pusti na nich test a skonci
-            if (args.Length > 0)
+            string code;
+            using (StreamReader reader = new StreamReader(fileName))
             {
-                testFromFiles(args);
-                return;
+                code = reader.ReadToEnd();
             }
 
-            string fileName = "./file.php";          
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            String code = @"<?php
-            $a=4;
-            switch($a){
-                case 2:$a++;
-                case 3:$p=4;do{
-                $l++;
-                }while(true);
-                $p=4;
-
-               // default: $b++;
-                case 4: $a++;
-            }
-            
-            ?>";
             var parser = new SyntaxParser(source_file, code);
             parser.Parse();
-          
-            foreach (Statement statement in parser.Ast.Statements)
-            {
-                Console.WriteLine(statement);
-            }
-            Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
-            Console.WriteLine(cfg.getTextRepresentation());
 
-            /*using (System.IO.StreamWriter file = new System.IO.StreamWriter(@"C:\Users\maki\Desktop\Weverca\graph.txt"))
-            {
-                file.WriteLine(cfg.getTextRepresentation());
-
-
-            }
-            System.Diagnostics.Process proc = new System.Diagnostics.Process();
-            proc.StartInfo.FileName = @"C:\Users\maki\Desktop\Weverca\generategraph.bat";
-            proc.StartInfo.RedirectStandardError = true;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.StartInfo.UseShellExecute = false;
-
-            proc.Start();
-                  
-            proc.WaitForExit();*/
-            
+            return new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
         }
 
-
-        private static void testFromFiles(string[] files)
+        /// <summary>
+        /// Generates CFG and image and stores them into the folder with input file.
+        /// Names of generated files is:
+        ///     Text CFG representation - fileName.GRAPH_FILE_EXTENSION
+        ///     Image CFG representation - fileName.IMAGE_FILE_EXTENSION
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        static void ProcessFile(string fileName)
         {
-            foreach (string fileName in files)
+            System.Diagnostics.Debug.Assert(File.Exists(fileName));
+
+            Console.WriteLine("Processing file: {0}", fileName);
+            Weverca.ControlFlowGraph.ControlFlowGraph cfg = GenerateCFG(fileName);
+
+            //Saves CFG representation into the file
+            string cfgFileName = fileName + GRAPH_FILE_EXTENSION;
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(cfgFileName))
             {
-                if (File.Exists(fileName))
+                file.WriteLine(cfg.getTextRepresentation());
+            }
+
+            //Runs the graphviz component
+            System.Diagnostics.Process imageMaker = new System.Diagnostics.Process();
+            imageMaker.StartInfo.FileName = GRAPHVIZ_PATH;
+            imageMaker.StartInfo.Arguments = "-Tpng " + cfgFileName;
+            imageMaker.StartInfo.UseShellExecute = false;
+            imageMaker.StartInfo.RedirectStandardOutput = true;
+            imageMaker.StartInfo.RedirectStandardError = true;
+            imageMaker.Start();
+
+            //And writes the generated image into file
+            string imageFileName = fileName + IMAGE_FILE_EXTENSION;
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(imageFileName))
+            {
+                imageMaker.StandardOutput.BaseStream.CopyTo(file.BaseStream);
+            }
+        }
+
+        /// <summary>
+        /// For each PHP sources in the given directory calls ProcessFile method.
+        /// </summary>
+        /// <param name="directoryName">Name of the directory.</param>
+        static void ProcessDirectory(string directoryName)
+        {
+            System.Diagnostics.Debug.Assert(Directory.Exists(directoryName));
+
+            foreach (string fileName in Directory.EnumerateFiles(directoryName))
+            {
+                string fileExtension = Path.GetExtension(fileName);
+
+                if (fileExtension == PHP_FILE_EXTENSION)
                 {
-                    StreamReader reader = new StreamReader(fileName);
-                    string code = reader.ReadToEnd();
-
-                    constructAndShowCFG(fileName, code);
-
-                    reader.Close();
+                    ProcessFile(fileName);
                 }
             }
         }
 
-        private static void constructAndShowCFG(string fileName, string code)
+        static void Main(string[] args)
         {
-            Console.WriteLine(fileName);
-            Console.WriteLine("-----------------------------------------------------------");
-
-            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-
-            var parser = new SyntaxParser(source_file, code);
-            parser.Parse();
-
-            Weverca.ControlFlowGraph.ControlFlowGraph cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
-            Console.WriteLine(cfg.getTextRepresentation());
-
-            Console.WriteLine("-----------------------------------------------------------");
-            Console.WriteLine();
+            //If there is some args process all of them
+            if (args.Length > 0)
+            {
+                foreach (string path in args)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        ProcessDirectory(path);
+                    }
+                    else if (File.Exists(path))
+                    {
+                        ProcessFile(path);
+                    }
+                }
+            }
+            //Or just process folder with test PHP sources
+            else
+            {
+                ProcessDirectory(PHP_SOURCES_DIR);
+            }
         }
     }
 }
