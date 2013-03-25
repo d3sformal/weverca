@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 using PHP.Core.AST;
 using PHP.Core.Parsers;
@@ -105,7 +106,6 @@ namespace Weverca.ControlFlowGraph
             UnaryEx negativeCondition = new UnaryEx(Operations.LogicNegation, condition.Condition);
             BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock, negativeCondition);
 
-            condition.Condition.VisitMe(this);
             currentBasicBlock = thenBranchBlock;
             condition.Statement.VisitMe(this);
             BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, bottomBox, new BoolLiteral(Position.Invalid, true));
@@ -121,7 +121,68 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitForStmt(ForStmt x)
         {
-            base.VisitForStmt(x);
+            BasicBlock forTest = new BasicBlock();
+            BasicBlock forBody = new BasicBlock();
+            BasicBlock forEnd = new BasicBlock();
+
+            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, forTest, new BoolLiteral(Position.Invalid, true));
+            BasicBlockEdge.MakeNewAndConnect(forBody, forTest, new BoolLiteral(Position.Invalid, true));
+
+            Expression forCondition = constructSimpleCondition(x.CondExList);
+            UnaryEx negativeForCondition = new UnaryEx(Operations.LogicNegation, forCondition);
+            BasicBlockEdge.MakeNewAndConnect(forTest, forBody, forCondition);
+            BasicBlockEdge.MakeNewAndConnect(forTest, forEnd, negativeForCondition);
+
+
+            VisitExpressionList(x.InitExList);
+
+            currentBasicBlock = forBody;
+            x.Body.VisitMe(this);
+            VisitExpressionList(x.ActionExList);
+
+            currentBasicBlock = forEnd;
+        }
+
+        /// <summary>
+        /// Constructs the simple condition from the given list.
+        /// </summary>
+        /// <param name="conditionList">The condition list.</param>
+        /// <returns></returns>
+        private Expression constructSimpleCondition(List<Expression> conditionList)
+        {
+            Expression groupCondition;
+            if (conditionList.Count > 0)
+            {
+                groupCondition = conditionList[0];
+                for (int index = 1; index < conditionList.Count; index++)
+                {
+                    Position newPosition = mergePositions(groupCondition.Position, conditionList[index].Position);
+                    groupCondition = new BinaryEx(newPosition, Operations.And, groupCondition, conditionList[index]);
+                }
+            }
+            else
+            {
+                groupCondition = new BoolLiteral(Position.Invalid, true);
+            }
+
+            return groupCondition;
+        }
+
+        /// <summary>
+        /// Merges the positions.
+        /// </summary>
+        /// <param name="first">The first.</param>
+        /// <param name="last">The last.</param>
+        /// <returns></returns>
+        private Position mergePositions(Position first, Position last)
+        {
+            return new Position(
+                first.FirstLine,
+                first.FirstColumn,
+                first.FirstOffset,
+                last.LastLine,
+                last.LastColumn,
+                last.LastOffset);
         }
 
 
