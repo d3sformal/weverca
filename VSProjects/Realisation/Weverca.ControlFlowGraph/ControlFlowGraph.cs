@@ -118,6 +118,7 @@ namespace Weverca.ControlFlowGraph
             }
 
             result += "\n}" + Environment.NewLine;
+          
             return result;
         }
 

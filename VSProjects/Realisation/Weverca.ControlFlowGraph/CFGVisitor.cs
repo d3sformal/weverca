@@ -125,20 +125,25 @@ namespace Weverca.ControlFlowGraph
             BasicBlock forBody = new BasicBlock();
             BasicBlock forEnd = new BasicBlock();
 
+            //Adds initial connection from previos to the test block
             BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, forTest, new BoolLiteral(Position.Invalid, true));
-            BasicBlockEdge.MakeNewAndConnect(forBody, forTest, new BoolLiteral(Position.Invalid, true));
 
+            //Adds connection into the loop body
             Expression forCondition = constructSimpleCondition(x.CondExList);
-            UnaryEx negativeForCondition = new UnaryEx(Operations.LogicNegation, forCondition);
             BasicBlockEdge.MakeNewAndConnect(forTest, forBody, forCondition);
+
+            //Adds connection behind the cycle
+            UnaryEx negativeForCondition = new UnaryEx(Operations.LogicNegation, forCondition);
             BasicBlockEdge.MakeNewAndConnect(forTest, forEnd, negativeForCondition);
 
-
+            //Loop body
             VisitExpressionList(x.InitExList);
-
             currentBasicBlock = forBody;
             x.Body.VisitMe(this);
             VisitExpressionList(x.ActionExList);
+
+            //Adds loop connection to test block
+            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, forTest, new BoolLiteral(Position.Invalid, true));
 
             currentBasicBlock = forEnd;
         }
