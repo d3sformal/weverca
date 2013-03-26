@@ -69,7 +69,7 @@ namespace Weverca.CodeMetrics
             quantityBatch = ProcessingServices.ProcessQuantities(resolveOccurances, parser);
 
             HasResolvedOccurances = resolveOccurances;
-            includeParser(parser);
+            includeParsers(parser);
         }
 
         /// <summary>
@@ -90,6 +90,7 @@ namespace Weverca.CodeMetrics
             this.ratingBatch = ratingBatch;
             this.quantityBatch = quantityBatch;
             this.HasResolvedOccurances = hasResolvedOccurances;
+            includeParsers(includedParsers.ToArray());
         }
         #endregion
 
@@ -244,13 +245,16 @@ namespace Weverca.CodeMetrics
         }
 
         /// <summary>
-        /// Add file parsed by parser into includedFiles
+        /// Add files parsed by parsers into includedFiles
         /// </summary>
         /// <param name="parser"></param>
-        private void includeParser(SyntaxParser parser)
+        private void includeParsers(params SyntaxParser[] parsers)
         {
-            var sourceFile = parser.Ast.SourceUnit.SourceFile;
-            includedFiles[sourceFile] = parser;
+            foreach (var parser in parsers)
+            {
+                var sourceFile = parser.Ast.SourceUnit.SourceFile;
+                includedFiles[sourceFile] = parser;
+            }
         }
 
         /// <summary>

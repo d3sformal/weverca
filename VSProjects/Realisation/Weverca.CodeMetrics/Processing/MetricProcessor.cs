@@ -90,7 +90,8 @@ namespace Weverca.CodeMetrics.Processing
         }
 
         /// <summary>
-        /// Merge properties according to metric semantic
+        /// Merge properties according to metric semantic.
+        /// NOTE: Is guaranteed that merge on disjoint sets of files will be proceeded only.
         /// </summary>
         /// <param name="r1"></param>
         /// <param name="r2"></param>
@@ -99,6 +100,7 @@ namespace Weverca.CodeMetrics.Processing
         /// <summary>
         /// Merge occurances according to metric semantic
         /// NOTE: Never is callled with null parameter.
+        /// NOTE: Is guaranteed that merge on disjoint sets of files will be proceeded only.
         /// </summary>
         /// <param name="o1"></param>
         /// <param name="o2"></param>
