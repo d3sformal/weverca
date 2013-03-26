@@ -14,14 +14,21 @@ namespace Weverca.CodeMetrics.Processing
 {
     static class ProcessingServices
     {
+        #region Private members
         static ProcessingService<ConstructIndicator, bool> indicatorProcessors;
+        static ProcessingService<Rating, double> ratingProcessors;
+        static ProcessingService<Quantity, int> quantityProcessors;
+        #endregion
 
         static ProcessingServices()
         {
             //Collect all implemented MetricProcessors
             indicatorProcessors = new ProcessingService<ConstructIndicator, bool>();
-         }
+            ratingProcessors = new ProcessingService<Rating, double>();
+            quantityProcessors = new ProcessingService<Quantity, int>();
+        }
 
+        #region Indicator services
         internal static IndicatorProcessor.ResultBatch MergeIndicators(IndicatorProcessor.ResultBatch b1, IndicatorProcessor.ResultBatch b2)
         {
             return indicatorProcessors.MergeResults(b1, b2);
@@ -32,19 +39,48 @@ namespace Weverca.CodeMetrics.Processing
             return indicatorProcessors.Process(resolveOccurances, parser);
         }
 
-     
+        #endregion
+
+        #region Rating services
+        internal static RatingProcessor.ResultBatch MergeRatings(RatingProcessor.ResultBatch b1, RatingProcessor.ResultBatch b2)
+        {
+            return ratingProcessors.MergeResults(b1, b2);
+        }
+
+        internal static RatingProcessor.ResultBatch ProcessRatings(bool resolveOccurances, SyntaxParser parser)
+        {
+            return ratingProcessors.Process(resolveOccurances, parser);
+        }
+        #endregion
+
+        #region Quantity services
+        internal static QuantityProcessor.ResultBatch MergeQuantities(QuantityProcessor.ResultBatch b1, QuantityProcessor.ResultBatch b2)
+        {
+            return quantityProcessors.MergeResults(b1, b2);
+        }
+
+        internal static QuantityProcessor.ResultBatch ProcessQuantities(bool resolveOccurances, SyntaxParser parser)
+        {
+            return quantityProcessors.Process(resolveOccurances, parser);
+        }
+        #endregion
     }
 
+    /// <summary>
+    /// Service collecting MetricProcessors with matching Category,Property signature.
+    /// </summary>
+    /// <typeparam name="Category">Type of metric which processors will be collected</typeparam>
+    /// <typeparam name="Property">Type of property, which metric works with</typeparam>
     class ProcessingService<Category, Property>
     {
         Dictionary<Category, MetricProcessor<Category, Property>> processors = new Dictionary<Category, MetricProcessor<Category, Property>>();
 
         public ProcessingService()
         {
-            var types=getTypesWithAttribute(typeof(MetricAttribute));
+            var types = getTypesWithAttribute(typeof(MetricAttribute));
             foreach (var type in types)
             {
-                var categories = getMetricCategories(type);                
+                var categories = getMetricCategories(type);
                 if (categories == null)
                     continue;
 
@@ -54,7 +90,7 @@ namespace Weverca.CodeMetrics.Processing
 
                 foreach (var category in categories)
                 {
-                    setProcessor(category,processor);
+                    setProcessor(category, processor);
                 }
             }
         }
@@ -101,7 +137,7 @@ namespace Weverca.CodeMetrics.Processing
             return batch;
         }
         #endregion
-        
+
         #region Metric processors collecting utils
         /// <summary>
         /// Collect types from current assembly with given attribute
@@ -126,10 +162,10 @@ namespace Weverca.CodeMetrics.Processing
         /// <param name="type"></param>
         /// <returns></returns>
         private static IEnumerable<Category> getMetricCategories(Type type)
-        {            
+        {
             foreach (var attr in type.CustomAttributes)
-            {                
-                if (attr.AttributeType==typeof(MetricAttribute))
+            {
+                if (attr.AttributeType == typeof(MetricAttribute))
                 {
                     var constructorArgument = attr.ConstructorArguments[0];
                     if (constructorArgument.ArgumentType != typeof(Category[]))

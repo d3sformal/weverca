@@ -42,12 +42,16 @@
     <Compile Include="MetricCategories.cs" />
     <Compile Include="MetricInfo.cs" />
     <Compile Include="MetricRelatedFunctions.cs" />
+    <Compile Include="Processing\ASTVisitors.cs" />
     <Compile Include="Processing\Implementations\FunctionPresenceProcessor.cs" />
-    <Compile Include="Processing\Implementations\IndicatorProcessor.cs" />
+    <Compile Include="Processing\Implementations\MaxInheritanceDepthProcessor.cs" />
+    <Compile Include="Processing\IndicatorProcessor.cs" />
     <Compile Include="Processing\MetricAttribute.cs" />
     <Compile Include="Processing\MetricProcessor.cs" />
     <Compile Include="Processing\MetricResultBatch.cs" />
     <Compile Include="Processing\ProcessingServices.cs" />
+    <Compile Include="Processing\QuantityProcessor.cs" />
+    <Compile Include="Processing\RatingProcessor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

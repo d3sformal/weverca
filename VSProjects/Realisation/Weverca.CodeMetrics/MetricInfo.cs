@@ -26,6 +26,14 @@ namespace Weverca.CodeMetrics
         /// Here is stored info about indicators
         /// </summary>
         readonly IndicatorProcessor.ResultBatch indicatorBatch;
+        /// <summary>
+        /// Here is stored info about ratings
+        /// </summary>
+        readonly RatingProcessor.ResultBatch ratingBatch;
+        /// <summary>
+        /// Here is stored info about quantities
+        /// </summary>
+        readonly QuantityProcessor.ResultBatch quantityBatch;
 
         #endregion
 
@@ -51,9 +59,17 @@ namespace Weverca.CodeMetrics
         /// Creates metric info from given indicators
         /// </summary>
         /// <param name="indicatorBatch"></param>
-        private MetricInfo(IndicatorProcessor.ResultBatch indicatorBatch)
+        /// <param name="ratingBatch"></param>
+        /// <param name="quantityBatch"></param>
+        private MetricInfo(
+            IndicatorProcessor.ResultBatch indicatorBatch,
+            RatingProcessor.ResultBatch ratingBatch,
+            QuantityProcessor.ResultBatch quantityBatch
+            )
         {
             this.indicatorBatch = indicatorBatch;
+            this.ratingBatch = ratingBatch;
+            this.quantityBatch = quantityBatch;
         }
         #endregion
 
@@ -91,7 +107,7 @@ namespace Weverca.CodeMetrics
         /// <returns></returns>
         public bool HasIndicator(ConstructIndicator indicator)
         {
-            return indicatorBatch.GetResult(indicator).Property;          
+            return indicatorBatch.GetResult(indicator).Property;
         }
 
         /// <summary>
@@ -101,17 +117,17 @@ namespace Weverca.CodeMetrics
         /// <returns></returns>
         public double GetRating(Rating rating)
         {
-            throw new NotImplementedException();
+            return ratingBatch.GetResult(rating).Property;
         }
 
         /// <summary>
         /// Returns quantity of given quantitative metric.
         /// </summary>
-        /// <param name="quantitative"></param>
+        /// <param name="quantity"></param>
         /// <returns></returns>
-        public int GetQuantity(Quantity quantitative)
+        public int GetQuantity(Quantity quantity)
         {
-            throw new NotImplementedException();
+            return quantityBatch.GetResult(quantity).Property;
         }
 
         /// <summary>
@@ -121,10 +137,12 @@ namespace Weverca.CodeMetrics
         /// <returns></returns>
         public MetricInfo Merge(MetricInfo other)
         {
+            //TODO check for disjunctive/inclusive sets of files
             var resultIndicators = ProcessingServices.MergeIndicators(this.indicatorBatch, other.indicatorBatch);
-            //TODO other metric batches
+            var resultRatings = ProcessingServices.MergeRatings(this.ratingBatch, other.ratingBatch);
+            var resultQuantities = ProcessingServices.MergeQuantities(this.quantityBatch, other.quantityBatch);
 
-            return new MetricInfo(resultIndicators);
+            return new MetricInfo(resultIndicators, resultRatings, resultQuantities);
         }
         #endregion
 

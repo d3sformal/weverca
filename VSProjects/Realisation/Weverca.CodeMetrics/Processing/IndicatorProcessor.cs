@@ -8,7 +8,7 @@ using PHP.Core.AST;
 
 using Weverca.Parsers;
 
-namespace Weverca.CodeMetrics.Processing.Implementations
+namespace Weverca.CodeMetrics.Processing
 {
 
     abstract class IndicatorProcessor : MetricProcessor<ConstructIndicator, bool>
@@ -68,48 +68,4 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
     }
 
-    #region Tree Visitors
-    class CallVisitor : TreeVisitor
-    {
-        HashSet<string> searchedCalls;
-        List<AstNode> foundCalls = new List<AstNode>();
-
-        public CallVisitor(IEnumerable<string> functions)
-        {
-            searchedCalls = new HashSet<string>(functions);
-        }
-
-        #region TreeVisitor overrides
-        public override void VisitFunctionCall(FunctionCall x)
-        {
-            throw new NotImplementedException("There is no method for getting FunctionCall name - In Progress, this will work in future");
-        /*    if (searchedCalls.Contains(x.Name))
-            {
-                foundCalls.Add(x);
-            }*/
-        }
-
-        /// <summary>
-        /// Phalanger resolves eval as special expression
-        /// </summary>
-        /// <param name="x"></param>
-        public override void VisitEvalEx(EvalEx x)
-        {
-            if (searchedCalls.Contains("eval"))
-            {
-                foundCalls.Add(x);
-            }
-        }
-        #endregion
-        /// <summary>
-        /// Returns calls which were founded during visiting tree
-        /// </summary>
-        /// <returns></returns>
-        internal IEnumerable<AstNode> GetCalls()
-        {
-            //Copy result because its immutable
-            return foundCalls.ToArray();
-        }
-    }
-    #endregion
 }
