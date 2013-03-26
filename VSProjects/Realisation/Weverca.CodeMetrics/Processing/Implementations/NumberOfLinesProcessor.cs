@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
+    [Metric(Quantity.NumberOfLines)]
     class NumberOfLinesProcessor:QuantityProcessor
     {
         protected override Result process(bool resolveOccurances, Quantity category, Parsers.SyntaxParser parser)
         {
-            var phpDocPosition = parser.Ast.PHPDoc.Position;
+            var lastStatementPosition = parser.Ast.Statements.Last().Position;
 
-            int lastLine = phpDocPosition.LastLine;
-            int firstLine = phpDocPosition.FirstLine;
-
-            return new Result(lastLine - firstLine);
+            return new Result(lastStatementPosition.LastLine);
         }
     }
 }

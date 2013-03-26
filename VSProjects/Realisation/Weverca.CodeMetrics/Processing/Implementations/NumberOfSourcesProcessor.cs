@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
+    [Metric(Quantity.NumberOfSources)]
     class NumberOfSourcesProcessor:QuantityProcessor
     {
         protected override Result process(bool resolveOccurances, Quantity category, Parsers.SyntaxParser parser)
