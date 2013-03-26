@@ -20,7 +20,9 @@ namespace Weverca.CodeMetrics
     /// </summary>
     public class MetricInfo
     {
-        #region Private members
+        public readonly bool HasResolvedOccurances;
+
+        #region ResultBatches collected from MetricProcessors
 
         /// <summary>
         /// Here is stored info about indicators
@@ -35,6 +37,13 @@ namespace Weverca.CodeMetrics
         /// </summary>
         readonly QuantityProcessor.ResultBatch quantityBatch;
 
+        #endregion
+
+        #region Included sources 
+        /// <summary>
+        /// Contains syntax parsers according to included source files
+        /// </summary>
+        Dictionary<PhpSourceFile, SyntaxParser> includedFiles = new Dictionary<PhpSourceFile, SyntaxParser>();
         #endregion
 
         #region MetricInfo constructors
@@ -55,6 +64,9 @@ namespace Weverca.CodeMetrics
             indicatorBatch = ProcessingServices.ProcessIndicators(resolveOccurances, parser);
             ratingBatch = ProcessingServices.ProcessRatings(resolveOccurances, parser);
             quantityBatch = ProcessingServices.ProcessQuantities(resolveOccurances, parser);
+
+            HasResolvedOccurances = resolveOccurances;
+            includeParser(parser);            
         }
 
         /// <summary>
@@ -66,12 +78,15 @@ namespace Weverca.CodeMetrics
         private MetricInfo(
             IndicatorProcessor.ResultBatch indicatorBatch,
             RatingProcessor.ResultBatch ratingBatch,
-            QuantityProcessor.ResultBatch quantityBatch
+            QuantityProcessor.ResultBatch quantityBatch,
+            IEnumerable<SyntaxParser> includedParsers,
+            bool hasResolvedOccurances
             )
         {
             this.indicatorBatch = indicatorBatch;
             this.ratingBatch = ratingBatch;
             this.quantityBatch = quantityBatch;
+            this.HasResolvedOccurances = hasResolvedOccurances;
         }
         #endregion
 
@@ -132,19 +147,41 @@ namespace Weverca.CodeMetrics
             return quantityBatch.GetResult(quantity).Property;
         }
 
+
+        /// <summary>
+        /// Determine that given file is included in metric info
+        /// </summary>
+        /// <param name="file">File to be checked.</param>
+        /// <returns>True if file is included, false otherwise</returns>
+        public bool IsFileIncluded(PhpSourceFile file)
+        {
+            return includedFiles.ContainsKey(file);
+        }
+
         /// <summary>
         /// Create new metric info by merging this info with given other info.
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
         public MetricInfo Merge(MetricInfo other)
-        {
-            //TODO check for disjunctive/inclusive sets of files
+        {          
+            var commonFiles=includedFiles.Keys.Intersect(other.includedFiles.Keys);
+            if (commonFiles.Count() > 0)
+            {
+                var notIncludedParsers=new List<SyntaxParser>();
+                var notInlcudedFiles=other.includedFiles.Keys.Except(commonFiles);
+                foreach(var file in notInlcudedFiles){
+                    notIncludedParsers.Add(other.includedFiles[file]);
+                }
+                other = FromParsers(other.HasResolvedOccurances,notIncludedParsers.ToArray());
+            }
+
             var resultIndicators = ProcessingServices.MergeIndicators(this.indicatorBatch, other.indicatorBatch);
             var resultRatings = ProcessingServices.MergeRatings(this.ratingBatch, other.ratingBatch);
             var resultQuantities = ProcessingServices.MergeQuantities(this.quantityBatch, other.quantityBatch);
+            var includedParsers=includedFiles.Values.Union(other.includedFiles.Values);
 
-            return new MetricInfo(resultIndicators, resultRatings, resultQuantities);
+            return new MetricInfo(resultIndicators, resultRatings, resultQuantities,includedParsers,HasResolvedOccurances && other.HasResolvedOccurances);
         }
         #endregion
 
@@ -160,6 +197,12 @@ namespace Weverca.CodeMetrics
         {
             var metricInfo = new MetricInfo(resolveOccurances, parser);
             return metric.Merge(metricInfo);
+        }
+
+        private void includeParser(SyntaxParser parser)
+        {
+            var sourceFile = parser.Ast.SourceUnit.SourceFile;
+            includedFiles[sourceFile]=parser;
         }
         #endregion
     }
