@@ -53,6 +53,8 @@ namespace Weverca.CodeMetrics
             }
 
             indicatorBatch = ProcessingServices.ProcessIndicators(resolveOccurances, parser);
+            ratingBatch = ProcessingServices.ProcessRatings(resolveOccurances, parser);
+            quantityBatch = ProcessingServices.ProcessQuantities(resolveOccurances, parser);
         }
 
         /// <summary>
