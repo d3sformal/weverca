@@ -77,9 +77,13 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// <returns>Depth of inheritance of given typeName</returns>
         private int getInheritanceDepth(QualifiedName typeName, SyntaxParser parser)
         {
-            var type = parser.Types[typeName];
+            Declaration type;
+            if (!parser.Types.TryGetValue(typeName,out type))
+            {
+                //TODO: there is possible an error in parsed source
+                return 1;
+            }            
             var node = type.GetNode() as TypeDecl;
-
 
             var maxInheritanceDepth = getInheritanceDepth(node.BaseClassName, parser);
             foreach (var implemented in node.ImplementsList)
