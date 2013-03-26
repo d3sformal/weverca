@@ -30,6 +30,16 @@ namespace Weverca.CodeMetrics.Processing
             }
 
             /// <summary>
+            /// Creates result for given property.
+            /// </summary>
+            /// <param name="property"></param>
+            public Result(PropertyType property)
+            {
+                this.Property = property;
+                this.Occurances = null; 
+            }
+
+            /// <summary>
             /// Determine that result has enabled occurance resolving
             /// </summary>
             public bool HasResolvedOccurances { get { return Occurances != null; } }

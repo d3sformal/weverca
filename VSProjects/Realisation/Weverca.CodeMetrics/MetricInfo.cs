@@ -20,6 +20,9 @@ namespace Weverca.CodeMetrics
     /// </summary>
     public class MetricInfo
     {
+        /// <summary>
+        /// Determine that occurances has been resolved
+        /// </summary>
         public readonly bool HasResolvedOccurances;
 
         #region ResultBatches collected from MetricProcessors
@@ -39,7 +42,7 @@ namespace Weverca.CodeMetrics
 
         #endregion
 
-        #region Included sources 
+        #region Included sources
         /// <summary>
         /// Contains syntax parsers according to included source files
         /// </summary>
@@ -66,7 +69,7 @@ namespace Weverca.CodeMetrics
             quantityBatch = ProcessingServices.ProcessQuantities(resolveOccurances, parser);
 
             HasResolvedOccurances = resolveOccurances;
-            includeParser(parser);            
+            includeParser(parser);
         }
 
         /// <summary>
@@ -116,7 +119,7 @@ namespace Weverca.CodeMetrics
             return buffer;
         }
 
-
+        #region Indicator metrics API
         /// <summary>
         /// Determine that metric info has specified indicator set on true
         /// </summary>
@@ -128,6 +131,20 @@ namespace Weverca.CodeMetrics
         }
 
         /// <summary>
+        /// Get occurances for given metric.
+        /// NOTE: Occurance resolving has to be enabled when creating metric info for GetOccurances usage.
+        /// </summary>
+        /// <param name="indicator">Metrich whic occurances will be returned</param>
+        /// <returns>Resolved occurances.</returns>
+        public IEnumerable<AstNode> GetOccurances(ConstructIndicator indicator)
+        {
+            throwOnUnresolvedOccurances();
+            return indicatorBatch.GetResult(indicator).Occurances;
+        }
+        #endregion
+
+        #region Rating metrics API
+        /// <summary>
         /// Returns value of given rating.
         /// </summary>
         /// <param name="rating"></param>
@@ -138,6 +155,20 @@ namespace Weverca.CodeMetrics
         }
 
         /// <summary>
+        /// Get occurances for given metric.
+        /// NOTE: Occurance resolving has to be enabled when creating metric info for GetOccurances usage.
+        /// </summary>
+        /// <param name="rating">Metrich whic occurances will be returned</param>
+        /// <returns>Resolved occurances.</returns>
+        public IEnumerable<AstNode> GetOccurances(Rating rating)
+        {
+            throwOnUnresolvedOccurances();
+            return ratingBatch.GetResult(rating).Occurances;
+        }
+        #endregion
+
+        #region Quantity metrics API
+        /// <summary>
         /// Returns quantity of given quantitative metric.
         /// </summary>
         /// <param name="quantity"></param>
@@ -147,6 +178,18 @@ namespace Weverca.CodeMetrics
             return quantityBatch.GetResult(quantity).Property;
         }
 
+        /// <summary>
+        /// Get occurances for given metric.
+        /// NOTE: Occurance resolving has to be enabled when creating metric info for GetOccurances usage.
+        /// </summary>
+        /// <param name="quantity">Metrich whic occurances will be returned</param>
+        /// <returns>Resolved occurances.</returns>
+        public IEnumerable<AstNode> GetOccurances(Quantity quantity)
+        {
+            throwOnUnresolvedOccurances();
+            return quantityBatch.GetResult(quantity).Occurances;
+        }
+        #endregion
 
         /// <summary>
         /// Determine that given file is included in metric info
@@ -164,24 +207,25 @@ namespace Weverca.CodeMetrics
         /// <param name="other"></param>
         /// <returns></returns>
         public MetricInfo Merge(MetricInfo other)
-        {          
-            var commonFiles=includedFiles.Keys.Intersect(other.includedFiles.Keys);
+        {
+            var commonFiles = includedFiles.Keys.Intersect(other.includedFiles.Keys);
             if (commonFiles.Count() > 0)
             {
-                var notIncludedParsers=new List<SyntaxParser>();
-                var notInlcudedFiles=other.includedFiles.Keys.Except(commonFiles);
-                foreach(var file in notInlcudedFiles){
+                var notIncludedParsers = new List<SyntaxParser>();
+                var notInlcudedFiles = other.includedFiles.Keys.Except(commonFiles);
+                foreach (var file in notInlcudedFiles)
+                {
                     notIncludedParsers.Add(other.includedFiles[file]);
                 }
-                other = FromParsers(other.HasResolvedOccurances,notIncludedParsers.ToArray());
+                other = FromParsers(other.HasResolvedOccurances, notIncludedParsers.ToArray());
             }
 
             var resultIndicators = ProcessingServices.MergeIndicators(this.indicatorBatch, other.indicatorBatch);
             var resultRatings = ProcessingServices.MergeRatings(this.ratingBatch, other.ratingBatch);
             var resultQuantities = ProcessingServices.MergeQuantities(this.quantityBatch, other.quantityBatch);
-            var includedParsers=includedFiles.Values.Union(other.includedFiles.Values);
+            var includedParsers = includedFiles.Values.Union(other.includedFiles.Values);
 
-            return new MetricInfo(resultIndicators, resultRatings, resultQuantities,includedParsers,HasResolvedOccurances && other.HasResolvedOccurances);
+            return new MetricInfo(resultIndicators, resultRatings, resultQuantities, includedParsers, HasResolvedOccurances && other.HasResolvedOccurances);
         }
         #endregion
 
@@ -199,10 +243,25 @@ namespace Weverca.CodeMetrics
             return metric.Merge(metricInfo);
         }
 
+        /// <summary>
+        /// Add file parsed by parser into includedFiles
+        /// </summary>
+        /// <param name="parser"></param>
         private void includeParser(SyntaxParser parser)
         {
             var sourceFile = parser.Ast.SourceUnit.SourceFile;
-            includedFiles[sourceFile]=parser;
+            includedFiles[sourceFile] = parser;
+        }
+
+        /// <summary>
+        /// Throws exception if occurances hasn't been resolved.
+        /// </summary>
+        private void throwOnUnresolvedOccurances()
+        {
+            if (!HasResolvedOccurances)
+            {
+                throw new NotSupportedException("Cannot get occurances, when they hasn't been resolved");
+            }
         }
         #endregion
     }
