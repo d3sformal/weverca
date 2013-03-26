@@ -30,6 +30,10 @@ namespace Weverca.ControlFlowGraph
 
             List<BasicBlock> nodes = new List<BasicBlock>();
             Queue<BasicBlock> queue = new Queue<BasicBlock>();
+                    
+            /*
+            Prechod grafu do hlbky a poznameniae vsetkych hran do nodesô 
+            */
             queue.Enqueue(start);
             while(queue.Count>0) 
             {
@@ -42,19 +46,30 @@ namespace Weverca.ControlFlowGraph
                             queue.Enqueue(edge.To);
                         }
                     }
+                    if (node.EsleEdge!=null && !nodes.Contains(node.EsleEdge))
+                    {
+                        queue.Enqueue(node.EsleEdge);
+                    }
                 }
             }
+
+            /*
+            Generovanie textu pre vsetky uzly
+             */ 
             int i=0;
             foreach (var node in nodes) {
                 string label = "";
                 foreach (var statement in node.Statements) {
                     label +=globalCode.SourceUnit.GetSourceCode(statement.Position) + Environment.NewLine;
                 }
+                label=label.Replace("\"", "\\\"");
                 result += "node" + i + "[label=\"" + label + "\"]" + Environment.NewLine;
                 i++;
             }
-
-             i = 0;
+            /*
+            
+            */
+            i = 0;
             foreach (var node in nodes)
             {
                 foreach (var edge in node.OutgoingEdges)
@@ -67,7 +82,7 @@ namespace Weverca.ControlFlowGraph
                         {
                             label = edge.Condition.Value.ToString();
                         }
-                        if (edge.Condition.GetType() == typeof(UnaryEx))
+                        /*if (edge.Condition.GetType() == typeof(UnaryEx))
                         {
                             UnaryEx expression = (UnaryEx)edge.Condition;
                             label = globalCode.SourceUnit.GetSourceCode(expression.Expr.Position);
@@ -77,7 +92,7 @@ namespace Weverca.ControlFlowGraph
                             {
                                 label = "not " + label; 
                             }
-                        }
+                        }*/
                         if (edge.Condition.GetType() == typeof(BinaryEx))
                         {
                             BinaryEx bin=(BinaryEx) edge.Condition;
@@ -88,7 +103,7 @@ namespace Weverca.ControlFlowGraph
                                 Expression r = (Expression)bin.GetType().GetField("rightExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
                                 if (l.Position.IsValid==false)
                                 {
-                                    label += "default";
+                                    label += "else";
                                 }
                                 else
                                 {
@@ -100,23 +115,28 @@ namespace Weverca.ControlFlowGraph
                             }
                             else
                             {
-                                label += "default";
+                                label += "else";
                                 //label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
                             }
-                            
-                            
                         }
-
                     }
                     else
                     {
                         label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
                     }
+                    label = label.Replace("\"", "\\\"");
                     result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                 }
-                i++;
-            }
 
+                if (node.EsleEdge != null) {
+                    int index=nodes.IndexOf(node.EsleEdge);
+                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" else  \"]" + Environment.NewLine;
+                }    
+                
+                i++;
+                    
+            }
+            
             result += "\n}" + Environment.NewLine;
           
             return result;
@@ -128,11 +148,12 @@ namespace Weverca.ControlFlowGraph
         public List<LangElement> Statements;
         public List<BasicBlockEdge> OutgoingEdges;
         public List<BasicBlockEdge> IncommingEdges;
-
+        public BasicBlock EsleEdge;
         public BasicBlock() {
             Statements = new List<LangElement>();
             OutgoingEdges = new List<BasicBlockEdge>();
             IncommingEdges = new List<BasicBlockEdge>();
+            EsleEdge = null;
         }
 
 

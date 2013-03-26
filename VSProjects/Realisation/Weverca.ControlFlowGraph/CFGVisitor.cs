@@ -103,8 +103,7 @@ namespace Weverca.ControlFlowGraph
             BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
 
             BasicBlock elseBranchBlock = new BasicBlock();
-            UnaryEx negativeCondition = new UnaryEx(Operations.LogicNegation, condition.Condition);
-            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock, negativeCondition);
+            currentBasicBlock.EsleEdge= elseBranchBlock;
 
             currentBasicBlock = thenBranchBlock;
             condition.Statement.VisitMe(this);
@@ -133,8 +132,8 @@ namespace Weverca.ControlFlowGraph
             BasicBlockEdge.MakeNewAndConnect(forTest, forBody, forCondition);
 
             //Adds connection behind the cycle
-            UnaryEx negativeForCondition = new UnaryEx(Operations.LogicNegation, forCondition);
-            BasicBlockEdge.MakeNewAndConnect(forTest, forEnd, negativeForCondition);
+            
+           forTest.EsleEdge=forEnd;
 
             //Loop body
             VisitExpressionList(x.InitExList);
@@ -195,9 +194,7 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock above=currentBasicBlock;
             BasicBlock last;
-            BasicBlockEdge defaultEdge=null;
             bool containsDefault=false;
-            Expression defaultExpresion = null;
             currentBasicBlock = new BasicBlock();
             foreach (var switchItem in x.SwitchItems) {
 
@@ -206,17 +203,10 @@ namespace Weverca.ControlFlowGraph
                 {
                     right = ((CaseItem)switchItem).CaseVal;
                     BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, new BinaryEx(Operations.Equal, x.SwitchValue, right));
-                    if (defaultExpresion == null)
-                    {
-                        defaultExpresion = new BinaryEx(Operations.NotEqual, x.SwitchValue, right);
-                    }
-                    else {
-                        defaultExpresion = new BinaryEx(Operations.Add,defaultExpresion,new BinaryEx(Operations.NotEqual, x.SwitchValue, right));
-                    }
                 }
                 else 
                 {
-                    defaultEdge=BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, null);
+                    above.EsleEdge=currentBasicBlock;
                     if (containsDefault == false)
                     {
                         containsDefault = true;
@@ -239,10 +229,7 @@ namespace Weverca.ControlFlowGraph
             
             if (containsDefault == false)
             {
-                BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, defaultExpresion);
-            }
-            else {
-                defaultEdge.Condition = defaultExpresion;
+                above.EsleEdge=currentBasicBlock;
             }
         }
 
@@ -278,10 +265,10 @@ namespace Weverca.ControlFlowGraph
             x.Body.VisitMe(this);
             BasicBlock endLoop = currentBasicBlock;
             BasicBlock underLoop = new BasicBlock();
-            BasicBlockEdge.MakeNewAndConnect(endLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
+            endLoop.EsleEdge=underLoop;
             if (x.LoopType == WhileStmt.Type.While)
             {
-                BasicBlockEdge.MakeNewAndConnect(aboveLoop, underLoop, new UnaryEx(Operations.LogicNegation, x.CondExpr));
+                aboveLoop.EsleEdge=underLoop;
             }
             BasicBlockEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
 

@@ -38,7 +38,7 @@ namespace Weverca.CodeMetrics.Processing
         #region TreeVisitor overrides
         public override void VisitFunctionCall(FunctionCall x)
         {
-            throw new NotImplementedException("There is no method for getting FunctionCall name - In Progress, this will work in future");
+             throw new NotImplementedException("There is no method for getting FunctionCall name - In Progress, this will work in future");
             /*    if (searchedCalls.Contains(x.Name))
                 {
                     foundCalls.Add(x);
