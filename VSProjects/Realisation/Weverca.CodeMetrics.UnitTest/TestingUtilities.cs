@@ -20,6 +20,10 @@ namespace Weverca.CodeMetrics.UnitTest
     static class TestingUtilities
     {
         /// <summary>
+        /// Keeps UID for test files. Is incremented whenever new file is generated.
+        /// </summary>
+        private static int testFileUID = 0;
+        /// <summary>
         /// Source of hello world php source
         /// </summary>
         internal static readonly string HelloWorldSource = @"echo 'Hello world';";
@@ -29,15 +33,25 @@ namespace Weverca.CodeMetrics.UnitTest
         /// <param name="predicate"></param>
         /// <param name="sourceCode"></param>
         /// <param name="testDescription"></param>
-        internal static void RunTest(MetricPredicate predicate, string sourceCode, string testDescription)
+        internal static void RunTest(MetricPredicate predicate, SourceTest test)
         {
-            string fileName = "./file.php";
-            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            var parser = new SyntaxParser(source_file,"<?php "+ sourceCode+" ?>");            
-            var metricInfo = MetricInfo.FromParsers(true, parser);
-
-            Assert.IsTrue(predicate(metricInfo), testDescription);
+            var metricInfo = GetInfo(test);
+            Assert.IsTrue(predicate(metricInfo), test.Description);
         }
+
+        /// <summary>
+        /// Test given source tests against predicate. On fail throws assertion error with failed test description
+        /// </summary>
+        /// <param name="predicate"></param>
+        /// <param name="tests"></param>
+        internal static void RunTests(MetricPredicate predicate, params SourceTest[] tests)
+        {
+            foreach (var test in tests)
+            {
+                RunTest(predicate, test);
+            }
+        }
+
 
         /// <summary>
         /// Test given source tests against predicate. On fail throws assertion error with failed test description
@@ -46,10 +60,21 @@ namespace Weverca.CodeMetrics.UnitTest
         /// <param name="tests"></param>
         internal static void RunTests(MetricPredicate predicate, IEnumerable<SourceTest> tests)
         {
-            foreach (var test in tests)
-            {
-                RunTest(predicate, test.SourceCode, test.Description);
-            }
+            RunTests(predicate, tests.ToArray());
+        }
+
+        /// <summary>
+        /// Returns metric info created from given test
+        /// </summary>
+        /// <param name="test">Test which source will be used for metric info generating.</param>
+        /// <returns>Generated metric info.</returns>
+        internal static MetricInfo GetInfo(SourceTest test)
+        {
+            var uid = getTestFileUID();
+            string fileName = string.Format("./test{0}.php",uid);            
+            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
+            var parser = new SyntaxParser(source_file, "<?php " + test.SourceCode + " ?>");
+            return MetricInfo.FromParsers(true, parser);
         }
 
         /// <summary>
@@ -83,7 +108,14 @@ namespace Weverca.CodeMetrics.UnitTest
             return (info) => !predicate(info);
         }
 
-    
+        /// <summary>
+        /// Get UID for test file.
+        /// </summary>
+        /// <returns>UID for test file</returns>
+        private static int getTestFileUID()
+        {
+            return ++testFileUID;
+        }
     }
 
     /// <summary>
