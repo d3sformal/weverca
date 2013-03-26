@@ -8,7 +8,7 @@ namespace Weverca.CodeMetrics.UnitTest
     [TestClass]
     public class QuantityCodeMetricTests
     {
-        
+
         #region Max depth inheritance tests
         readonly IEnumerable<SourceTest> InheritanceDepth2 = new SourceTest[]{
             new SourceTest("Simple class inheritance",@"
@@ -18,13 +18,34 @@ namespace Weverca.CodeMetrics.UnitTest
                 }
             "),
 
+            new SourceTest("Interface class inheritance",@"
+                interface I{
+                }
+                interface I2{
+                }
+
+                class A implements I,I2{
+                }    
+            "),
+
+             new SourceTest("Mixed interface and class inheritance",@"
+                interface I{
+                }
+                interface I2{
+                }
+                class A{
+                }
+                class B extends A implements I,I2{
+                }    
+            ")
+
         };
 
         readonly IEnumerable<SourceTest> InheritanceDepth0 = new SourceTest[]{
             new SourceTest("No type inheritance",TestingUtilities.HelloWorldSource)
         };
         #endregion
-            
+
 
         [TestMethod]
         public void InheritanceDepth()

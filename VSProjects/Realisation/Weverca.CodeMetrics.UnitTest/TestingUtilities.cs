@@ -48,7 +48,7 @@ namespace Weverca.CodeMetrics.UnitTest
         {
             foreach (var test in tests)
             {
-                RunTest(predicate, test.SourceCode, test.SourceCode);
+                RunTest(predicate, test.SourceCode, test.Description);
             }
         }
 
