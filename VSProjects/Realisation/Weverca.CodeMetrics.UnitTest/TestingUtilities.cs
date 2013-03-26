@@ -63,6 +63,17 @@ namespace Weverca.CodeMetrics.UnitTest
         }
 
         /// <summary>
+        /// Get predicate for testing quantity metric value
+        /// </summary>
+        /// <param name="quantity"></param>
+        /// <param name="p"></param>
+        /// <returns></returns>
+        internal static MetricPredicate GetQuantityPredicate(Quantity quantity, int value)
+        {
+            return (info) => info.GetQuantity(quantity) == value;
+        }
+
+        /// <summary>
         /// Get negation to given predicate
         /// </summary>
         /// <param name="predicate"></param>
@@ -71,6 +82,8 @@ namespace Weverca.CodeMetrics.UnitTest
         {
             return (info) => !predicate(info);
         }
+
+    
     }
 
     /// <summary>
