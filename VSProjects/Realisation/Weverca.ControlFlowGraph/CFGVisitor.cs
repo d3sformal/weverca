@@ -86,7 +86,7 @@ namespace Weverca.ControlFlowGraph
 
             //Connect else branch to bottomBox
             //Must be here becouse in the construc phase we dont know whether the else block would split in the future
-            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, bottomBox, new BoolLiteral(Position.Invalid, true));
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, bottomBox);
             currentBasicBlock = bottomBox;
         }
 
@@ -100,14 +100,14 @@ namespace Weverca.ControlFlowGraph
         private BasicBlock constructIfBranch(BasicBlock bottomBox, ConditionalStmt condition)
         {
             BasicBlock thenBranchBlock = new BasicBlock();
-            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
+            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
 
             BasicBlock elseBranchBlock = new BasicBlock();
-            currentBasicBlock.EsleEdge= elseBranchBlock;
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock);
 
             currentBasicBlock = thenBranchBlock;
             condition.Statement.VisitMe(this);
-            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, bottomBox, new BoolLiteral(Position.Invalid, true));
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, bottomBox);
 
             return elseBranchBlock;
         }
@@ -125,15 +125,14 @@ namespace Weverca.ControlFlowGraph
             BasicBlock forEnd = new BasicBlock();
 
             //Adds initial connection from previos to the test block
-            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, forTest, new BoolLiteral(Position.Invalid, true));
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, forTest);
 
             //Adds connection into the loop body
             Expression forCondition = constructSimpleCondition(x.CondExList);
-            BasicBlockEdge.MakeNewAndConnect(forTest, forBody, forCondition);
+            ConditionalEdge.MakeNewAndConnect(forTest, forBody, forCondition);
 
             //Adds connection behind the cycle
-            
-           forTest.EsleEdge=forEnd;
+            DirectEdge.MakeNewAndConnect(forTest, forEnd);
 
             //Loop body
             VisitExpressionList(x.InitExList);
@@ -142,7 +141,7 @@ namespace Weverca.ControlFlowGraph
             VisitExpressionList(x.ActionExList);
 
             //Adds loop connection to test block
-            BasicBlockEdge.MakeNewAndConnect(currentBasicBlock, forTest, new BoolLiteral(Position.Invalid, true));
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, forTest);
 
             currentBasicBlock = forEnd;
         }
@@ -202,11 +201,12 @@ namespace Weverca.ControlFlowGraph
                 if (switchItem.GetType() == typeof(CaseItem))
                 {
                     right = ((CaseItem)switchItem).CaseVal;
-                    BasicBlockEdge.MakeNewAndConnect(above, currentBasicBlock, new BinaryEx(Operations.Equal, x.SwitchValue, right));
+                    ConditionalEdge.MakeNewAndConnect(above, currentBasicBlock, new BinaryEx(Operations.Equal, x.SwitchValue, right));
                 }
                 else 
                 {
-                    above.EsleEdge=currentBasicBlock;
+                    DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
+
                     if (containsDefault == false)
                     {
                         containsDefault = true;
@@ -220,7 +220,7 @@ namespace Weverca.ControlFlowGraph
                 switchItem.VisitMe(this);
                 last = currentBasicBlock;
                 currentBasicBlock = new BasicBlock();
-                BasicBlockEdge.MakeNewAndConnect(last, currentBasicBlock, new BoolLiteral(Position.Invalid, true));
+                DirectEdge.MakeNewAndConnect(last, currentBasicBlock);
                 
                 
                 
@@ -229,7 +229,7 @@ namespace Weverca.ControlFlowGraph
             
             if (containsDefault == false)
             {
-                above.EsleEdge=currentBasicBlock;
+                DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
             }
         }
 
@@ -255,22 +255,24 @@ namespace Weverca.ControlFlowGraph
             BasicBlock startLoop = new BasicBlock();
             if (x.LoopType == WhileStmt.Type.While)
             {
-                BasicBlockEdge.MakeNewAndConnect(aboveLoop, startLoop, x.CondExpr);
+                ConditionalEdge.MakeNewAndConnect(aboveLoop, startLoop, x.CondExpr);
             }
             else
             {
-                BasicBlockEdge.MakeNewAndConnect(aboveLoop, startLoop, new BoolLiteral(Position.Invalid, true));
+                DirectEdge.MakeNewAndConnect(aboveLoop, startLoop);
             }
             currentBasicBlock = startLoop;
             x.Body.VisitMe(this);
             BasicBlock endLoop = currentBasicBlock;
             BasicBlock underLoop = new BasicBlock();
-            endLoop.EsleEdge=underLoop;
+
+            DirectEdge.MakeNewAndConnect(endLoop, underLoop);
+
             if (x.LoopType == WhileStmt.Type.While)
             {
-                aboveLoop.EsleEdge=underLoop;
+                DirectEdge.MakeNewAndConnect(aboveLoop, underLoop);
             }
-            BasicBlockEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
+            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
 
             currentBasicBlock = underLoop;
         }

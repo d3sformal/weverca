@@ -46,9 +46,9 @@ namespace Weverca.ControlFlowGraph
                             queue.Enqueue(edge.To);
                         }
                     }
-                    if (node.EsleEdge!=null && !nodes.Contains(node.EsleEdge))
+                    if (node.DefaultBranch != null && !nodes.Contains(node.DefaultBranch.To))
                     {
-                        queue.Enqueue(node.EsleEdge);
+                        queue.Enqueue(node.DefaultBranch.To);
                     }
                 }
             }
@@ -128,8 +128,9 @@ namespace Weverca.ControlFlowGraph
                     result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                 }
 
-                if (node.EsleEdge != null) {
-                    int index=nodes.IndexOf(node.EsleEdge);
+                if (node.DefaultBranch != null)
+                {
+                    int index = nodes.IndexOf(node.DefaultBranch.To);
                     result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" else  \"]" + Environment.NewLine;
                 }    
                 
@@ -146,14 +147,17 @@ namespace Weverca.ControlFlowGraph
 
     public class BasicBlock {
         public List<LangElement> Statements;
-        public List<BasicBlockEdge> OutgoingEdges;
-        public List<BasicBlockEdge> IncommingEdges;
-        public BasicBlock EsleEdge;
+
+        public List<ConditionalEdge> OutgoingEdges;
+        public List<IBasicBlockEdge> IncommingEdges;
+
+        public DirectEdge DefaultBranch;
+
         public BasicBlock() {
             Statements = new List<LangElement>();
-            OutgoingEdges = new List<BasicBlockEdge>();
-            IncommingEdges = new List<BasicBlockEdge>();
-            EsleEdge = null;
+            OutgoingEdges = new List<ConditionalEdge>();
+            IncommingEdges = new List<IBasicBlockEdge>();
+            DefaultBranch = null;
         }
 
 
@@ -162,33 +166,67 @@ namespace Weverca.ControlFlowGraph
             Statements.Add(element);
         }
 
-        public void AddIncommingEdge(BasicBlockEdge edge) {
+        public void AddIncommingEdge(IBasicBlockEdge edge) {
             IncommingEdges.Add(edge);
         }
 
-        public void AddOutgoingEdge(BasicBlockEdge edge)
+        public void AddOutgoingEdge(ConditionalEdge edge)
         {
             OutgoingEdges.Add(edge);
         }
+
+        public void SetDefaultBranch(DirectEdge edge)
+        {
+            DefaultBranch = edge;
+        }
     }
 
-    public class BasicBlockEdge {
+
+    public interface IBasicBlockEdge
+    {
+        BasicBlock From { set; get; }
+        BasicBlock To { set; get; }
+    }
+
+    public class ConditionalEdge : IBasicBlockEdge
+    {
         public BasicBlock From { set; get; }
         public BasicBlock To { set; get; }
         public Expression Condition { set; get; }
-        public BasicBlockEdge(BasicBlock From, BasicBlock To, Expression Condition)
+
+        public ConditionalEdge(BasicBlock From, BasicBlock To, Expression Condition)
         {
             this.From = From;
             this.To = To;
             this.Condition = Condition;
         }
-        public static BasicBlockEdge MakeNewAndConnect(BasicBlock From, BasicBlock To, Expression Condition)
+        public static ConditionalEdge MakeNewAndConnect(BasicBlock From, BasicBlock To, Expression Condition)
         {
-            var edge=new BasicBlockEdge(From,To,Condition);
+            var edge = new ConditionalEdge(From, To, Condition);
             From.AddOutgoingEdge(edge);
             To.AddIncommingEdge(edge);
             return edge;
         }
     }
+
+    public class DirectEdge : IBasicBlockEdge
+    {
+        public BasicBlock From { set; get; }
+        public BasicBlock To { set; get; }
+
+        public DirectEdge(BasicBlock From, BasicBlock To)
+        {
+            this.From = From;
+            this.To = To;
+        }
+        public static DirectEdge MakeNewAndConnect(BasicBlock From, BasicBlock To)
+        {
+            var edge = new DirectEdge(From, To);
+            From.SetDefaultBranch(edge);
+            To.AddIncommingEdge(edge);
+            return edge;
+        }
+    }
+
 
 }
