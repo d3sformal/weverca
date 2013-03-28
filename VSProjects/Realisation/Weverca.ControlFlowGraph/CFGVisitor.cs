@@ -12,17 +12,13 @@ namespace Weverca.ControlFlowGraph
 {
     class LoopData
     {
-        public BasicBlock LoopStart { get; private set; }
-        public BasicBlock LoopEnd { get; set; }
+        public BasicBlock ContinueTarget { get; private set; }
+        public BasicBlock BreakTarget { get; private set; }
 
-        public LoopData(BasicBlock loopStart)
+        public LoopData(BasicBlock ContinueTarget, BasicBlock BreakTarget)
         {
-            LoopStart = loopStart;
-        }
-        public LoopData(BasicBlock loopStart, BasicBlock loopEnd)
-        {
-            LoopStart = loopStart;
-            LoopEnd = loopEnd;
+            this.ContinueTarget = ContinueTarget;
+            this.BreakTarget = BreakTarget;
         }
     }
 
@@ -30,7 +26,9 @@ namespace Weverca.ControlFlowGraph
     {
         ControlFlowGraph graph;
         BasicBlock currentBasicBlock;
-
+        /// <summary>
+        /// Stack of loops, for purposes of breaking cycles and switch
+        /// </summary>
         LinkedList<LoopData> loopData = new LinkedList<LoopData>();
         private Dictionary<string, BasicBlock> labels = new Dictionary<string, BasicBlock>();
 
@@ -123,21 +121,32 @@ namespace Weverca.ControlFlowGraph
             BasicBlock forTest = new BasicBlock();
             BasicBlock forBody = new BasicBlock();
             BasicBlock forEnd = new BasicBlock();
-
+            BasicBlock forIncrement = new BasicBlock();
             //Adds initial connection from previos to the test block
             DirectEdge.MakeNewAndConnect(currentBasicBlock, forTest);
 
-            //Adds connection into the loop body
-            Expression forCondition = constructSimpleCondition(x.CondExList);
-            ConditionalEdge.MakeNewAndConnect(forTest, forBody, forCondition);
-
+            if (x.CondExList.Count > 0)
+            {
+                //Adds connection into the loop body
+                Expression forCondition = constructSimpleCondition(x.CondExList);
+                ConditionalEdge.MakeNewAndConnect(forTest, forBody, forCondition);
+            }
+            else { 
+                //if there is no condition
+                ConditionalEdge.MakeNewAndConnect(forTest, forBody, new BoolLiteral(Position.Invalid,true));
+            }
             //Adds connection behind the cycle
             DirectEdge.MakeNewAndConnect(forTest, forEnd);
-
+            
             //Loop body
             VisitExpressionList(x.InitExList);
             currentBasicBlock = forBody;
+            loopData.AddLast(new LoopData(forIncrement, forEnd));
             x.Body.VisitMe(this);
+            loopData.RemoveLast();
+            BasicBlock forBodyEnd = currentBasicBlock;
+            currentBasicBlock = forIncrement;
+            DirectEdge.MakeNewAndConnect(forBodyEnd, currentBasicBlock);
             VisitExpressionList(x.ActionExList);
 
             //Adds loop connection to test block
@@ -195,6 +204,9 @@ namespace Weverca.ControlFlowGraph
             BasicBlock last;
             bool containsDefault=false;
             currentBasicBlock = new BasicBlock();
+            //in case of swich statement, continue and break means the same so we make the egde allways to the block under the switch
+            BasicBlock underLoop = new BasicBlock();
+            loopData.AddLast(new LoopData(underLoop, underLoop));
             foreach (var switchItem in x.SwitchItems) {
 
                 Expression right = null;
@@ -221,12 +233,11 @@ namespace Weverca.ControlFlowGraph
                 last = currentBasicBlock;
                 currentBasicBlock = new BasicBlock();
                 DirectEdge.MakeNewAndConnect(last, currentBasicBlock);
-                
-                
-                
-                
+   
             }
-            
+            loopData.RemoveLast();
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
+            currentBasicBlock = underLoop;
             if (containsDefault == false)
             {
                 DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
@@ -246,7 +257,50 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitJumpStmt(JumpStmt x)
         {
-            throw new NotImplementedException();
+                    
+            switch (x.Type) { 
+                case JumpStmt.Types.Break:
+                case JumpStmt.Types.Continue:
+                    if (x.Expression == null)//break without saying how many loops to break
+                    {
+                        BasicBlock target;
+                        if (x.Type == JumpStmt.Types.Break)
+                        {
+                            target = loopData.Last().BreakTarget;
+                        }
+                        else
+                        {
+                            target = loopData.Last().ContinueTarget;
+                        }
+                        DirectEdge.MakeNewAndConnect(currentBasicBlock, target);
+                    }
+                    else
+                    {
+                        int breakValue=1;
+                        for (int i = loopData.Count - 1; i >= 0; --i)
+                        {
+                            BasicBlock target;
+                            if (x.Type == JumpStmt.Types.Break)
+                            {
+                                target = loopData.ElementAt(i).BreakTarget;
+                            }
+                            else 
+                            {
+                                target = loopData.ElementAt(i).ContinueTarget;
+                            }
+                            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, target, new BinaryEx(Operations.Equal, new IntLiteral(Position.Invalid, breakValue), x.Expression));
+                            ++breakValue;
+                        }
+                    }
+                break;
+                case JumpStmt.Types.Return: 
+                    //will be solved by pavel
+                    throw new NotImplementedException();
+            }
+            
+
+            currentBasicBlock = new BasicBlock();
+
         }
 
         public override void VisitWhileStmt(WhileStmt x)
@@ -262,9 +316,13 @@ namespace Weverca.ControlFlowGraph
                 DirectEdge.MakeNewAndConnect(aboveLoop, startLoop);
             }
             currentBasicBlock = startLoop;
-            x.Body.VisitMe(this);
-            BasicBlock endLoop = currentBasicBlock;
             BasicBlock underLoop = new BasicBlock();
+            loopData.AddLast(new LoopData(startLoop, underLoop));
+            x.Body.VisitMe(this);
+            loopData.RemoveLast();
+            
+            BasicBlock endLoop = currentBasicBlock;
+          
 
             DirectEdge.MakeNewAndConnect(endLoop, underLoop);
 

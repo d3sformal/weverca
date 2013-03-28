@@ -67,7 +67,7 @@ namespace Weverca.ControlFlowGraph
                 i++;
             }
             /*
-            
+            vykreslovanie hran
             */
             i = 0;
             foreach (var node in nodes)
@@ -82,17 +82,6 @@ namespace Weverca.ControlFlowGraph
                         {
                             label = edge.Condition.Value.ToString();
                         }
-                        /*if (edge.Condition.GetType() == typeof(UnaryEx))
-                        {
-                            UnaryEx expression = (UnaryEx)edge.Condition;
-                            label = globalCode.SourceUnit.GetSourceCode(expression.Expr.Position);
-                            //dirty trick how to acces internal field
-                            var a = expression.GetType().GetField("operation",BindingFlags.NonPublic | BindingFlags.Instance);
-                            if ((Operations)a.GetValue(expression) == Operations.LogicNegation)
-                            {
-                                label = "not " + label; 
-                            }
-                        }*/
                         if (edge.Condition.GetType() == typeof(BinaryEx))
                         {
                             BinaryEx bin=(BinaryEx) edge.Condition;
@@ -101,9 +90,18 @@ namespace Weverca.ControlFlowGraph
                             if((Operations)a.GetValue(bin)==Operations.Equal){
                                 Expression l = (Expression)bin.GetType().GetField("leftExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
                                 Expression r = (Expression)bin.GetType().GetField("rightExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
-                                if (l.Position.IsValid==false)
+                                if (l.Position.IsValid == false)
                                 {
-                                    label += "else";
+                                    if (l.GetType() == typeof(IntLiteral))
+                                    {
+                                        label += ""+((IntLiteral)l).Value;
+                                        label += "=";
+                                        label += globalCode.SourceUnit.GetSourceCode(r.Position);
+                                    }
+                                    else
+                                    {
+                                        label += "else";
+                                    }
                                 }
                                 else
                                 {
