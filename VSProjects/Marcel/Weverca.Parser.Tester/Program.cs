@@ -65,7 +65,14 @@ namespace Weverca.Parser.Tester
             var parser = new SyntaxParser(source_file, code);
             parser.Parse();
 
-            return new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            if (parser.Ast != null)
+            {
+                return new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -81,6 +88,11 @@ namespace Weverca.Parser.Tester
 
             Console.WriteLine("Processing file: {0}", fileName);
             Weverca.ControlFlowGraph.ControlFlowGraph cfg = GenerateCFG(fileName);
+
+            if (cfg == null)
+            {
+                return;
+            }
 
             //Saves CFG representation into the file
             string cfgFileName = fileName + GRAPH_FILE_EXTENSION;

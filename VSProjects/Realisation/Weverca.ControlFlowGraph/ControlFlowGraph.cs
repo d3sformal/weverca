@@ -40,7 +40,8 @@ namespace Weverca.ControlFlowGraph
                 BasicBlock node = queue.Dequeue();
                 if (!nodes.Contains(node)) {
                     nodes.Add(node);
-                    foreach(var edge in node.OutgoingEdges){
+                    foreach (var edge in node.OutgoingEdges)
+                    {
                         if (!nodes.Contains(edge.To))
                         {
                             queue.Enqueue(edge.To);
@@ -49,6 +50,15 @@ namespace Weverca.ControlFlowGraph
                     if (node.DefaultBranch != null && !nodes.Contains(node.DefaultBranch.To))
                     {
                         queue.Enqueue(node.DefaultBranch.To);
+                    }
+
+                    //PAVEL - protoze GOTO muze vytvorit nedostupne vetve, tak projdeme i vstupni hrany
+                    foreach (var edge in node.IncommingEdges)
+                    {
+                        if (!nodes.Contains(edge.From))
+                        {
+                            queue.Enqueue(edge.From);
+                        }
                     }
                 }
             }

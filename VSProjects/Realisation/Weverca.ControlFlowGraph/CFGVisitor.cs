@@ -4,9 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
+using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 using PHP.Core.Reflection;
+
+/* Požadavky na phalanger:
+ * 
+ * 30.3.2013 - Pavel
+ *  Nemožnost přístupu k názvu labelu pro implementaci návěstí
+ *  Soubor JumpStmt.cs řádek 324 vlastnost name
+ *  Změna modifikátoru internal na public
+ * 
+ * 
+ * */
 
 namespace Weverca.ControlFlowGraph
 {
@@ -22,6 +33,83 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
+    /// <summary>
+    /// Saves reference to the target basic block of the known label 
+    /// or queue of the waiting goto blocks to the unknown one.
+    /// </summary>
+    class LabelData
+    {
+        readonly LinkedList<BasicBlock> GotoQueue = new LinkedList<BasicBlock>();
+        BasicBlock labelBlock = null;
+
+        /// <summary>
+        /// Saves target block of this label and process all blocks in GOTO queue.
+        /// </summary>
+        /// <param name="labelBlock">The label block.</param>
+        public void AsociateLabel(BasicBlock labelBlock)
+        {
+            this.labelBlock = labelBlock;
+
+            foreach (BasicBlock gotoBlock in GotoQueue)
+            {
+                _asociateGoto(gotoBlock);
+            }
+
+            GotoQueue.Clear();
+        }
+
+        /// <summary>
+        /// Connects goto basic block with the basic block of the label 
+        /// or inserts it to the queue if there is no associated block of the label.
+        /// </summary>
+        /// <param name="gotoBlock">The goto block.</param>
+        public void AsociateGoto(BasicBlock gotoBlock)
+        {
+            if (labelBlock != null)
+            {
+                _asociateGoto(gotoBlock);
+            }
+            else
+            {
+                GotoQueue.AddLast(gotoBlock);
+            }
+        }
+
+        /// <summary>
+        /// Connects goto basic block with the basic block of the label.
+        /// </summary>
+        /// <param name="gotoBlock">The goto block.</param>
+        void _asociateGoto(BasicBlock gotoBlock)
+        {
+            System.Diagnostics.Debug.Assert(labelBlock != null);
+
+            DirectEdge.MakeNewAndConnect(gotoBlock, labelBlock);
+        }
+    }
+
+    /// <summary>
+    /// improves the basic functionality of Dictionary&lt;string, LabelData&gt; by GetOrCreate method.
+    /// </summary>
+    class LabelDataDictionary : Dictionary<string, LabelData>
+    {
+        /// <summary>
+        /// Gets or creates label data in the label collection.
+        /// </summary>
+        /// <param name="key">´The name of the label.</param>
+        /// <returns></returns>
+        public LabelData GetOrCreateLabelData(VariableName key)
+        {
+            LabelData data;
+            if (!TryGetValue(key.Value, out data))
+            {
+                data = new LabelData();
+                Add(key.Value, data);
+            }
+
+            return data;
+        }
+    }
+
     class CFGVisitor : TreeVisitor
     {
         ControlFlowGraph graph;
@@ -30,7 +118,8 @@ namespace Weverca.ControlFlowGraph
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
         LinkedList<LoopData> loopData = new LinkedList<LoopData>();
-        private Dictionary<string, BasicBlock> labels = new Dictionary<string, BasicBlock>();
+
+        private readonly LabelDataDictionary labelDictionary = new LabelDataDictionary();
 
 
         public CFGVisitor(ControlFlowGraph graph)
@@ -55,12 +144,28 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitLabelStmt(LabelStmt x)
         {
-            throw new NotImplementedException();
+            BasicBlock labelBlock = new BasicBlock();
+
+            labelDictionary.GetOrCreateLabelData(x.Name)
+                .AsociateLabel(labelBlock);
+
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, labelBlock);
+            currentBasicBlock = labelBlock;
+
+            //Next line could be used for label visualization
+            labelBlock.AddElement(x);
         }
 
         public override void VisitGotoStmt(GotoStmt x)
         {
-            throw new NotImplementedException();
+            labelDictionary.GetOrCreateLabelData(x.LabelName)
+                .AsociateGoto(currentBasicBlock);
+
+            //Next line could be used for label visualization
+            currentBasicBlock.AddElement(x);
+
+            //THIS COULD BE AN UNREACHABLE BLOCK
+            currentBasicBlock = new BasicBlock();
         }
 
         public override void VisitIfStmt(IfStmt x)
@@ -113,7 +218,7 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitForeachStmt(ForeachStmt x)
         {
-            base.VisitForeachStmt(x);
+            //base.VisitForeachStmt(x);
         }
 
         public override void VisitForStmt(ForStmt x)
