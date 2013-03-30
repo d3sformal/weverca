@@ -119,7 +119,9 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         LinkedList<LoopData> loopData = new LinkedList<LoopData>();
 
-        private readonly LabelDataDictionary labelDictionary = new LabelDataDictionary();
+        private ClassDeclaration actualClass = null;
+        private LabelDataDictionary labelDictionary = new LabelDataDictionary();
+        LinkedList<BasicBlock> functionSinkStack = new LinkedList<BasicBlock>();
 
 
         public CFGVisitor(ControlFlowGraph graph)
@@ -193,6 +195,83 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = bottomBox;
         }
 
+        public override void VisitNamespaceDecl(NamespaceDecl x)
+        {
+            if (x.Statements != null)
+            {
+                foreach (Statement s in x.Statements)
+                {
+                    s.VisitMe(this);
+                }
+            }
+        }
+
+        public override void VisitTypeDecl(TypeDecl x)
+        {
+            System.Diagnostics.Debug.Assert(actualClass == null);
+
+            actualClass = graph.AddClassDeclaration(x);
+            
+            foreach (TypeMemberDecl t in x.Members)
+            {
+                t.VisitMe(this);
+            }
+
+            actualClass = null;
+        }
+
+        public override void VisitMethodDecl(MethodDecl x)
+        {
+            System.Diagnostics.Debug.Assert(actualClass != null);
+
+            BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
+            actualClass.AddFunctionDeclaration(x, functionBasicBlock);
+        }
+
+        public override void VisitFunctionDecl(FunctionDecl x)
+        {
+            BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
+            graph.AddFunctionDeclaration(x, functionBasicBlock);
+        }
+
+
+        /// <summary>
+        /// Makes the control flow graph for the function or method declaration.
+        /// </summary>
+        /// <typeparam name="T">Type of function declaration container</typeparam>
+        /// <param name="functionDeclaration">The function declaration.</param>
+        /// <param name="functionBody">The function body.</param>
+        /// <returns>The first basic block of the function's CFG.</returns>
+        BasicBlock MakeFunctionCFG<T>(T functionDeclaration, List<Statement> functionBody) where T : LangElement
+        {
+            currentBasicBlock.AddElement(functionDeclaration);
+
+            //Store actual basic block
+            BasicBlock current = currentBasicBlock;
+            BasicBlock functionBasicBlock = new BasicBlock();
+            currentBasicBlock = functionBasicBlock;
+
+            //Store actual Label data - function has its own label namespace 
+            LabelDataDictionary oldLabelData = labelDictionary;
+            labelDictionary = new LabelDataDictionary();
+
+            //Add function sink to the stack for resolving returns
+            BasicBlock functionSink = new BasicBlock();
+            functionSinkStack.AddFirst(functionSink);
+
+            currentBasicBlock.AddElement(functionDeclaration);
+            VisitStatementList(functionBody);
+
+            //Connects return destination
+            functionSinkStack.RemoveFirst();
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSink);
+
+            //Loads previous labels
+            labelDictionary = oldLabelData;
+            currentBasicBlock = current;
+
+            return functionBasicBlock;
+        }
 
         /// <summary>
         /// Constructs if branch basic block.
@@ -362,8 +441,9 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitJumpStmt(JumpStmt x)
         {
-                    
-            switch (x.Type) { 
+
+            switch (x.Type)
+            {
                 case JumpStmt.Types.Break:
                 case JumpStmt.Types.Continue:
                     if (x.Expression == null)//break without saying how many loops to break
@@ -381,7 +461,7 @@ namespace Weverca.ControlFlowGraph
                     }
                     else
                     {
-                        int breakValue=1;
+                        int breakValue = 1;
                         for (int i = loopData.Count - 1; i >= 0; --i)
                         {
                             BasicBlock target;
@@ -389,7 +469,7 @@ namespace Weverca.ControlFlowGraph
                             {
                                 target = loopData.ElementAt(i).BreakTarget;
                             }
-                            else 
+                            else
                             {
                                 target = loopData.ElementAt(i).ContinueTarget;
                             }
@@ -397,10 +477,18 @@ namespace Weverca.ControlFlowGraph
                             ++breakValue;
                         }
                     }
-                break;
-                case JumpStmt.Types.Return: 
-                    //will be solved by pavel
-                    throw new NotImplementedException();
+                    break;
+
+                case JumpStmt.Types.Return:
+
+                    System.Diagnostics.Debug.Assert(functionSinkStack.Count > 0);
+
+                    currentBasicBlock.AddElement(x.Expression);
+                    DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.First.Value);
+
+                    currentBasicBlock = new BasicBlock();
+                    
+                    break;
             }
             
 
@@ -505,10 +593,5 @@ namespace Weverca.ControlFlowGraph
         #endregion
 
         
-
-        private void VisitConditionalStatements(List<ConditionalStmt> list)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

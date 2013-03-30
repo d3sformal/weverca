@@ -12,11 +12,31 @@ using PHP.Core.Parsers;
 namespace Weverca.ControlFlowGraph
 {
 
+    public class ClassDeclaration
+    {
+        TypeDecl classData;
+        public readonly Dictionary<MethodDecl, BasicBlock> DeclaredMethods = new Dictionary<MethodDecl, BasicBlock>();
+
+        public ClassDeclaration(TypeDecl classData)
+        {
+            this.classData = classData;
+        }
+
+        public void AddFunctionDeclaration(MethodDecl x, BasicBlock functionBasicBlock)
+        {
+            DeclaredMethods.Add(x, functionBasicBlock);
+        }
+    }
+
     public class ControlFlowGraph
     {
         public BasicBlock start;
         private GlobalCode globalCode;
         private CFGVisitor visitor;
+
+        private readonly Dictionary<FunctionDecl, BasicBlock> declaredFunctions = new Dictionary<FunctionDecl, BasicBlock>();
+        private readonly List<ClassDeclaration> declaredClasses = new List<ClassDeclaration>();
+
         public ControlFlowGraph(GlobalCode globalCode)
         {
             this.globalCode = globalCode;
@@ -30,7 +50,21 @@ namespace Weverca.ControlFlowGraph
 
             List<BasicBlock> nodes = new List<BasicBlock>();
             Queue<BasicBlock> queue = new Queue<BasicBlock>();
-                    
+
+            /* Nejprve pridam vsechny deklarovane funkce */
+            foreach (var func in declaredFunctions)
+            {
+                queue.Enqueue(func.Value);
+            }
+            /* a tridy */
+            foreach (var cl in declaredClasses)
+            {
+                foreach (var method in cl.DeclaredMethods)
+                {
+                    queue.Enqueue(method.Value);
+                }
+            }
+
             /*
             Prechod grafu do hlbky a poznameniae vsetkych hran do nodesô 
             */
@@ -138,8 +172,14 @@ namespace Weverca.ControlFlowGraph
 
                 if (node.DefaultBranch != null)
                 {
+                    string elseString = string.Empty;
+                    if (node.OutgoingEdges.Count > 0)
+                    {
+                        elseString = "else";
+                    }
+
                     int index = nodes.IndexOf(node.DefaultBranch.To);
-                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" else  \"]" + Environment.NewLine;
+                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" " + elseString + "  \"]" + Environment.NewLine;
                 }    
                 
                 i++;
@@ -151,6 +191,18 @@ namespace Weverca.ControlFlowGraph
             return result;
         }
 
+
+        public ClassDeclaration AddClassDeclaration(TypeDecl x)
+        {
+            ClassDeclaration declaration = new ClassDeclaration(x);
+            declaredClasses.Add(declaration);
+            return declaration;
+        }
+
+        public void AddFunctionDeclaration(FunctionDecl x, BasicBlock functionBasicBlock)
+        {
+            declaredFunctions.Add(x, functionBasicBlock);
+        }
     }
 
     public class BasicBlock {
