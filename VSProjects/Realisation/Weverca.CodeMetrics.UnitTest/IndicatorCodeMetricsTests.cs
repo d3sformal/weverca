@@ -61,6 +61,44 @@ namespace Weverca.CodeMetrics.UnitTest
         };
         #endregion
 
+        #region SuperGlobal variable indicator tests
+        readonly IEnumerable<SourceTest> SuperGlobalVarPositiveTests = new SourceTest[]{
+            new SourceTest("Super global outside function/method",@"
+                $_POST['test']='hello';
+            "),
+            new SourceTest("Super global inside global function",@"
+                function test($param){
+                    $_GET['test']='world';
+                }
+            "),
+            new SourceTest("Super global inside method",@"
+                class testClass{
+                    function testMethod($param){
+                        $_SESSION['test']='!';
+                    }
+                }
+            "),
+            new SourceTest("Super global as rvalue",@"
+                class testClass{
+                    function testMethod($param){
+                        $test=$GLOBALS['test'];
+                    }
+                }
+            ")
+        };
+
+        readonly IEnumerable<SourceTest> SuperGlobalVarNegativeTests = new SourceTest[]{
+            new SourceTest("No session is present",TestingUtilities.HelloWorldSource),
+            new SourceTest("No super global variable",@"
+                $notSuperGlobal=3;
+                function test($param){
+                    global $notSuperGlobal;
+                    $notSuperGlobal=$notSuperGlobal+1;
+                }
+            "),
+        };
+        #endregion
+
         [TestMethod]
         public void Eval()
         {
@@ -79,6 +117,16 @@ namespace Weverca.CodeMetrics.UnitTest
 
             TestingUtilities.RunTests(hasSession, SessionPositiveTests);
             TestingUtilities.RunTests(doesntHaveSession, SessionNegativeTests);
+        }
+
+        [TestMethod]
+        public void SuperGlobalVar()
+        {
+            var hasSuperGlobalVar= TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.SuperGlobalVariable);
+            var doesntHaveSuperGlobalVar = TestingUtilities.GetNegation(hasSuperGlobalVar);
+
+            TestingUtilities.RunTests(hasSuperGlobalVar, SuperGlobalVarPositiveTests);
+            TestingUtilities.RunTests(doesntHaveSuperGlobalVar, SuperGlobalVarNegativeTests);
         }
     }
 }
