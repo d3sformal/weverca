@@ -47,6 +47,7 @@
     <Compile Include="Processing\Implementations\MaxInheritanceDepthProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfLinesProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfSourcesProcessor.cs" />
+    <Compile Include="Processing\Implementations\SuperGlobalVarProcessor.cs" />
     <Compile Include="Processing\IndicatorProcessor.cs" />
     <Compile Include="Processing\MetricAttribute.cs" />
     <Compile Include="Processing\MetricProcessor.cs" />
