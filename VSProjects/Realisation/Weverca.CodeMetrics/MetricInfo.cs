@@ -64,6 +64,8 @@ namespace Weverca.CodeMetrics
                 parser.Parse();
             }
 
+           // TODO check for parser errors
+
             indicatorBatch = ProcessingServices.ProcessIndicators(resolveOccurances, parser);
             ratingBatch = ProcessingServices.ProcessRatings(resolveOccurances, parser);
             quantityBatch = ProcessingServices.ProcessQuantities(resolveOccurances, parser);
