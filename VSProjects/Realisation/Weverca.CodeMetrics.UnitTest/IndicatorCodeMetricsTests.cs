@@ -9,13 +9,13 @@ namespace Weverca.CodeMetrics.UnitTest
     public class IndicatorCodeMetricTests
     {
 
-        #region Eval metric tests
+        #region Eval indicator tests
         readonly IEnumerable<SourceTest> EvalPositiveTests = new SourceTest[]{
             new SourceTest("Test on eval detection outside function/method.", @"
                 eval('$x=3');
             "),
 
-            new SourceTest("Test on eval detection inside function declaration", @"
+            new SourceTest("Test on eval detection inside global function", @"
                 function test($param){
                     eval($param);
                 }
@@ -36,6 +36,31 @@ namespace Weverca.CodeMetrics.UnitTest
 
         #endregion
 
+
+        #region Session indicator tests
+        readonly IEnumerable<SourceTest> SessionPositiveTests = new SourceTest[]{
+            new SourceTest("Session function call outside function/method",@"
+                session_start();
+            "),
+            new SourceTest("Session function call inside global function",@"
+                function test($param){
+                    session_write_close();
+                }
+            "),
+            new SourceTest("Session function call inside method",@"
+                class testClass{
+                    function testMethod($param){
+                        session_unset();
+                    }
+                }
+            ")
+        };
+
+        readonly IEnumerable<SourceTest> SessionNegativeTests = new SourceTest[]{
+            new SourceTest("No session is present",TestingUtilities.HelloWorldSource)
+        };
+        #endregion
+
         [TestMethod]
         public void Eval()
         {
@@ -44,6 +69,16 @@ namespace Weverca.CodeMetrics.UnitTest
 
             TestingUtilities.RunTests(hasEval, EvalPositiveTests);
             TestingUtilities.RunTests(doesntHaveEval, EvalNegativeTests);
+        }
+
+        [TestMethod]
+        public void Session()
+        {
+            var hasSession = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Session);
+            var doesntHaveSession = TestingUtilities.GetNegation(hasSession);
+
+            TestingUtilities.RunTests(hasSession, SessionPositiveTests);
+            TestingUtilities.RunTests(doesntHaveSession, SessionNegativeTests);
         }
     }
 }
