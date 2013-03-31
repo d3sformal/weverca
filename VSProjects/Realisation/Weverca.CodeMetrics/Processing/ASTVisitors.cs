@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 namespace Weverca.CodeMetrics.Processing
@@ -36,15 +37,15 @@ namespace Weverca.CodeMetrics.Processing
         }
 
         #region TreeVisitor overrides
-        public override void VisitFunctionCall(FunctionCall x)
+        public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-             throw new NotImplementedException("There is no method for getting FunctionCall name - In Progress, this will work in future");
-            /*    if (searchedCalls.Contains(x.Name))
-                {
-                    foundCalls.Add(x);
-                }*/
+            if (isSearched(x.QualifiedName))
+            {
+                foundCalls.Add(x);
+            }
+            base.VisitDirectFcnCall(x);
         }
-
+        
         /// <summary>
         /// Phalanger resolves eval as special expression
         /// </summary>
@@ -56,6 +57,17 @@ namespace Weverca.CodeMetrics.Processing
                 foundCalls.Add(x);
             }
         }
-        #endregion 
+        #endregion
+
+        
+        #region Private utilities for function matching
+
+        private bool isSearched(QualifiedName qualifiedName)
+        {
+            var name = qualifiedName.Name.Value;
+            return searchedCalls.Contains(name);
+        }
+
+        #endregion
     }
 }
