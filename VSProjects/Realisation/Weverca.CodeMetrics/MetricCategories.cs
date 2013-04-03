@@ -64,6 +64,11 @@ namespace Weverca.CodeMetrics
         /// Indicator of duck typing usage.
         /// </summary>
         DuckTyping,
+        /// <summary>
+        /// Indicator of passing variable by reference at call side.
+        /// EXAMPLE: my_function(&parameter)
+        /// </summary>
+        PassingByReferenceAtCallSide,
     }
 
     /// <summary>
