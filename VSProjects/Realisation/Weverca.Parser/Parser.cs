@@ -149,7 +149,7 @@ namespace Weverca.Parsers
     public class ErrorSinkImpl : ErrorSink
     {
         protected override bool Add(int id, string message, ErrorSeverity severity, int group, string fullPath, ErrorPosition pos) {
-            Console.WriteLine(message);
+            Console.WriteLine("Line: " + pos.FirstLine + ":\n" + message+" in "+fullPath);
             return true;
         }
     }
