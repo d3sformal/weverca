@@ -483,7 +483,7 @@ namespace Weverca.ControlFlowGraph
 
                     System.Diagnostics.Debug.Assert(functionSinkStack.Count > 0);
 
-                    currentBasicBlock.AddElement(x.Expression);
+                    currentBasicBlock.AddElement(x);
                     DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.First.Value);
 
                     currentBasicBlock = new BasicBlock();

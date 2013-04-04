@@ -39,6 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BasicBlock.cs" />
+    <Compile Include="BasicBlockEdge.cs" />
     <Compile Include="CFGVisitor.cs" />
     <Compile Include="ControlFlowGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
