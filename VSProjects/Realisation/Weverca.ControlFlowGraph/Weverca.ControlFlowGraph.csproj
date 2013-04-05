@@ -39,11 +39,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis\AnalysisCallStack.cs" />
+    <Compile Include="Analysis\BlockDispatch.cs" />
+    <Compile Include="Analysis\CallAnalysisContext.cs" />
+    <Compile Include="Analysis\CallDispatch.cs" />
+    <Compile Include="Analysis\FlowInputSet.cs" />
+    <Compile Include="Analysis\IncludeDispatch.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="BasicBlockEdge.cs" />
     <Compile Include="CFGVisitor.cs" />
     <Compile Include="ControlFlowGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Analysis\ForwardAnalysis.cs" />
+    <Compile Include="Analysis\FlowOutputSet.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
