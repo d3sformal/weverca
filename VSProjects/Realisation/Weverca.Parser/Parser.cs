@@ -107,6 +107,10 @@ namespace Weverca.Parsers
         public void InclusionReduced(Parser/*!*/ parser, IncludingEx/*!*/ node)
         {
             // make all inclusions dynamic:
+            if (node.IsConditional == false) { 
+                
+            }
+
         }
 
         public void FunctionDeclarationReduced(Parser/*!*/ parser, FunctionDecl/*!*/ node)

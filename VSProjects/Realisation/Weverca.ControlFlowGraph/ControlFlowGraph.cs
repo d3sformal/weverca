@@ -91,7 +91,7 @@ namespace Weverca.ControlFlowGraph
             }
 
             /*
-            Prechod grafu do hlbky a poznameniae vsetkych hran do nodesô 
+            Prechod grafu do hlbky a poznameniae vsetkych hran do nodes 
             */
             queue.Enqueue(start);
             while(queue.Count>0) 

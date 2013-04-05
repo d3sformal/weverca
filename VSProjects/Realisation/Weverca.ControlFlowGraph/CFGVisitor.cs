@@ -114,10 +114,14 @@ namespace Weverca.ControlFlowGraph
     {
         ControlFlowGraph graph;
         BasicBlock currentBasicBlock;
+        
         /// <summary>
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
         LinkedList<LoopData> loopData = new LinkedList<LoopData>();
+
+        LinkedList<List<BasicBlock>> throwBlocks = new LinkedList<List<BasicBlock>>();
+       
 
         private ClassDeclaration actualClass = null;
         private LabelDataDictionary labelDictionary = new LabelDataDictionary();
@@ -592,6 +596,40 @@ namespace Weverca.ControlFlowGraph
 
         #endregion
 
-        
+        #region handling Exceptions
+        //not finished yet
+        public override void VisitTryStmt(TryStmt x)
+        {
+            BasicBlock followingBlock = new BasicBlock();
+            throwBlocks.AddLast(new List<BasicBlock>());
+            VisitStatementList(x.Statements);
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
+         
+            
+            foreach(var catchItem in x.Catches){
+
+                BasicBlock catchBlock = new BasicBlock(); 
+                foreach (var throwBlock in throwBlocks.Last())
+                {
+                    DirectEdge.MakeNewAndConnect(throwBlock, catchBlock);
+                }
+                
+                currentBasicBlock=catchBlock;
+                VisitStatementList(catchItem.Statements);
+                DirectEdge.MakeNewAndConnect(currentBasicBlock,followingBlock);
+            }
+            throwBlocks.RemoveLast();
+            currentBasicBlock=followingBlock;
+            
+        }
+        //not finished yet
+        public override void VisitThrowStmt(ThrowStmt x)
+        {
+            currentBasicBlock.AddElement(x);
+            throwBlocks.Last().Add(currentBasicBlock);
+            currentBasicBlock=new BasicBlock();
+        }
+
+        #endregion
     }
 }
