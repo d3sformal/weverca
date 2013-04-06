@@ -32,8 +32,10 @@ namespace Weverca.ControlFlowGraph.UnitTest
         /// <param name="info"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        static internal bool TestValues(StringVarInfo info, params string[] values)
+        static internal bool TestValues(string varName,IEnumerable<StringVarInfo> infos, params string[] values)
         {
+            var info = getVarInfo(varName, infos);
+
             if (info.PossibleValues.Count != values.Length)
             {
                 return false;
@@ -48,6 +50,19 @@ namespace Weverca.ControlFlowGraph.UnitTest
             }
 
             return true;
+        }
+
+        static internal StringVarInfo getVarInfo(string varName, IEnumerable<StringVarInfo> infos)
+        {
+            foreach (var info in infos)
+            {
+                if (info.Name == varName)
+                {
+                    return info;
+                }
+            }
+            Debug.Assert(false, "Variable of name: '" + varName + "' hasn't been found");
+            return null;
         }
 
         static internal StringVarInfo[] GetEndPointInfo(string code)

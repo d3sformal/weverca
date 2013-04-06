@@ -103,8 +103,10 @@ namespace Weverca.ControlFlowGraph.Analysis
             }
             else if (hasChanged)
             {
-                //we are not at end of basic block - shift to next statement
+                //we are not at end of basic block - shift to next statement    
+                var output = CurrentOutputSet;
                 _currentWorkItem.NextStatement();
+                CurrentProgramPoint.InSet = output;
             }
 
             if (itemComplete)
@@ -247,6 +249,15 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <returns></returns>
         private FlowOutputSet<FlowInfo> getBlockOutput(BasicBlock block)
         {
+            if (block.Statements.Count == 0)
+            {
+                //empty block doesn't change flow
+                var output = _services.CreateEmptySet();
+                output.FillFrom(getBlockInput(block));
+                return output;
+            }
+
+            //get output of last statement
             var lastStmt = block.Statements.Last();
             return getProgramPoint(lastStmt).OutSet;
         }
@@ -258,7 +269,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 addWork(dependency);
             }
 
-            if (block.DefaultBranch != null)
+            if (block.DefaultBranch != null && block.DefaultBranch.To.Statements.Count()>0)
             {
                 addWorkDefault(block);
             }

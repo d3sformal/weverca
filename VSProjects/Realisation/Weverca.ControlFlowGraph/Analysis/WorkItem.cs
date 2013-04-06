@@ -21,8 +21,13 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         private WorkItem(BasicBlock block, AssumptionCondition condition)
         {
+            if (block.Statements.Count == 0)
+            {
+                throw new NotSupportedException("Cannot add empty block as workItem");
+            }
+
             AssumptionCondition = condition;
-            Block = block;
+            Block = block;            
         }
 
 
@@ -35,7 +40,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         internal static WorkItem FromDefaultBranch(BasicBlock block)
         {
             var conditions = from edge in block.OutgoingEdges select edge.Condition;
-            var condition = new AssumptionCondition(ConditionForm.None, conditions.ToArray());
+            var condition = new AssumptionCondition(ConditionForm.SomeNot, conditions.ToArray());
 
             return new WorkItem(block.DefaultBranch.To, condition);
         }

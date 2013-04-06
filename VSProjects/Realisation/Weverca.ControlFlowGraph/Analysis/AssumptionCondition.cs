@@ -8,7 +8,7 @@ using PHP.Core.AST;
 namespace Weverca.ControlFlowGraph.Analysis
 {
 
-    public enum ConditionForm { Some, All, None }
+    public enum ConditionForm { Some, All, None,SomeNot }
     public class AssumptionCondition
     {
         public readonly ConditionForm Form;
