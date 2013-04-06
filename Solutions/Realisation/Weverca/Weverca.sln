@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.CodeMetrics", "..\.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.CodeMetrics.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.CodeMetrics.UnitTest\Weverca.CodeMetrics.UnitTest.csproj", "{B942C23F-5666-4FDD-9813-7B8936C6EA93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.ControlFlowGraph.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.ControlFlowGraph.UnitTest\Weverca.ControlFlowGraph.UnitTest.csproj", "{33FB3567-FB67-40C3-977A-44C8B7F0B351}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B942C23F-5666-4FDD-9813-7B8936C6EA93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
