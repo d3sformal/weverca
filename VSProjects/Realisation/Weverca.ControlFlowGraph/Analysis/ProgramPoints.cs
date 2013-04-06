@@ -20,6 +20,8 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             throw new NotImplementedException();
         }
+
+        public FlowInputSet<FlowInfo> InSet { get; set; }
     }
 
 }

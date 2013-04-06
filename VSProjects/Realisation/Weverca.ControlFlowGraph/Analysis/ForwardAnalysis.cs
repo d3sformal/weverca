@@ -11,6 +11,7 @@ namespace Weverca.ControlFlowGraph.Analysis
     {
         #region Private members
         AnalysisCallStack<FlowInfo> _callStack;
+        AnalysisServices<FlowInfo> _services;
         #endregion
 
         /// <summary>
@@ -27,6 +28,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         public ForwardAnalysis(ControlFlowGraph entryMethodGraph){
+            _services = new AnalysisServices<FlowInfo>(BlockMerge, NewEmptySet);
             EntryMethodGraph=entryMethodGraph;
         }
 
@@ -62,7 +64,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="inSets">Input sets from all dispatched blocks.</param>
         /// <param name="outSet">Output after merging.</param>
-        protected abstract void BlockMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets,FlowOutputSet<FlowInfo> outSet);
+        protected abstract void BlockMerge(FlowInputSet<FlowInfo> inSet1,FlowInputSet<FlowInfo> inSet2,FlowOutputSet<FlowInfo> outSet);
         /// <summary>
         /// All dispatched includes are merged via this call.        
         /// </summary>
@@ -91,7 +93,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         private void analyse()
         {
-            var entryContext = new AnalysisCallContext<FlowInfo>(EntryMethodGraph);
+            var entryContext = new AnalysisCallContext<FlowInfo>(EntryMethodGraph,_services);
 
             _callStack = new AnalysisCallStack<FlowInfo>();            
             _callStack.Push(entryContext);

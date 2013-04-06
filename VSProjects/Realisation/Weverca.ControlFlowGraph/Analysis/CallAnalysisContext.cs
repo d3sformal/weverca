@@ -57,8 +57,11 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         Dictionary<LangElement, ProgramPoint<FlowInfo>> _statementPoints = new Dictionary<LangElement, ProgramPoint<FlowInfo>>();
 
-        internal AnalysisCallContext(ControlFlowGraph methodGraph)
-        {            
+        AnalysisServices<FlowInfo> _services;
+
+        internal AnalysisCallContext(ControlFlowGraph methodGraph,AnalysisServices<FlowInfo> services)
+        {
+            _services = services;
             throw new NotImplementedException();
         }
 
@@ -142,8 +145,56 @@ namespace Weverca.ControlFlowGraph.Analysis
                 return;
             }
 
-            var toProcess = _worklist.Dequeue();
-            _currentWorkItem = new WorkItem(toProcess);
+            startWork(_worklist.Dequeue());            
+        }
+
+        private void startWork(ConditionalEdge work)
+        {
+            _currentWorkItem = new WorkItem(work);
+            var point=getProgramPoint(_currentWorkItem.BlockStart);
+
+            var inSet=getBlockInput(_currentWorkItem.BasicBlock);
+            point.InSet = inSet;
+        }
+
+        /// <summary>
+        /// Get input from all block points which this block depends on.
+        /// </summary>
+        /// <param name="block"></param>
+        /// <returns></returns>
+        private FlowInputSet<FlowInfo> getBlockInput(BasicBlock block)
+        {
+            FlowInputSet<FlowInfo> result = null;
+            foreach (var dependencyEdge in block.IncommingEdges)
+            {
+                var dependency = dependencyEdge.From;
+                var depOutput=getBlockOutput(dependency);
+
+                if(result==null){
+                    result=depOutput;
+                }else{
+                    var outSet= _services.CreateEmptySet();
+                    _services.Merge(result, depOutput, outSet);
+                    result = outSet;                    
+                }
+            }
+
+            if (result == null)
+            {
+                result = _services.CreateEmptySet();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Get output from last statement in block
+        /// </summary>
+        /// <param name="block"></param>
+        /// <returns></returns>
+        private FlowOutputSet<FlowInfo> getBlockOutput(BasicBlock block)
+        {
+            var lastStmt=block.Statements.Last();
+            return getProgramPoint(lastStmt).OutSet;
         }
 
         private void updateDependencies(BasicBlock block)
@@ -157,7 +208,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         private void addWork(ConditionalEdge blockEdge)
         {
-            if (_worklist.Contains(blockEdge))
+            if (_worklist.Contains(blockEdge) || blockEdge.To.Statements.Count==0)
             {
                 return;
             }

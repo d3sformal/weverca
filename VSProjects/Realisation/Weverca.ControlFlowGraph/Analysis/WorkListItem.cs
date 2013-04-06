@@ -23,5 +23,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             throw new NotImplementedException();
         }
+
+        public LangElement BlockStart { get; set; }
     }
 }
