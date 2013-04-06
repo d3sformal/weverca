@@ -118,10 +118,14 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
-        LinkedList<LoopData> loopData = new LinkedList<LoopData>();
-
-        LinkedList<List<BasicBlock>> throwBlocks = new LinkedList<List<BasicBlock>>();
-       
+        Stack<LoopData> loopData = new Stack<LoopData>();
+        /// <summary>
+        /// Stack of block which ends by throw
+        /// </summary>
+        Stack<List<BasicBlock>> throwBlocks = new Stack<List<BasicBlock>>();
+        
+        
+        int numberOfNestedTrys = 0;
 
         private ClassDeclaration actualClass = null;
         private LabelDataDictionary labelDictionary = new LabelDataDictionary();
@@ -133,6 +137,8 @@ namespace Weverca.ControlFlowGraph
             this.graph = graph;
             currentBasicBlock = new BasicBlock();
             graph.start = currentBasicBlock;
+            functionSinkStack.AddFirst(new BasicBlock());
+            throwBlocks.Push(new List<BasicBlock>());
         }
 
         public override void VisitElement(LangElement element)
@@ -146,7 +152,12 @@ namespace Weverca.ControlFlowGraph
             {
                 statement.VisitMe(this);
             }
-        }
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.First());
+            foreach (var block in throwBlocks.ElementAt(0)) {
+                block.Statements.RemoveLast();
+                DirectEdge.MakeNewAndConnect(block, functionSinkStack.First());
+            }
+       }
 
         public override void VisitLabelStmt(LabelStmt x)
         {
@@ -329,9 +340,9 @@ namespace Weverca.ControlFlowGraph
             //Loop body
             VisitExpressionList(x.InitExList);
             currentBasicBlock = forBody;
-            loopData.AddLast(new LoopData(forIncrement, forEnd));
+            loopData.Push(new LoopData(forIncrement, forEnd));
             x.Body.VisitMe(this);
-            loopData.RemoveLast();
+            loopData.Pop();
             BasicBlock forBodyEnd = currentBasicBlock;
             currentBasicBlock = forIncrement;
             DirectEdge.MakeNewAndConnect(forBodyEnd, currentBasicBlock);
@@ -394,7 +405,7 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = new BasicBlock();
             //in case of swich statement, continue and break means the same so we make the egde allways to the block under the switch
             BasicBlock underLoop = new BasicBlock();
-            loopData.AddLast(new LoopData(underLoop, underLoop));
+            loopData.Push(new LoopData(underLoop, underLoop));
             foreach (var switchItem in x.SwitchItems) {
 
                 Expression right = null;
@@ -423,7 +434,7 @@ namespace Weverca.ControlFlowGraph
                 DirectEdge.MakeNewAndConnect(last, currentBasicBlock);
    
             }
-            loopData.RemoveLast();
+            loopData.Pop();
             DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
             currentBasicBlock = underLoop;
             if (containsDefault == false)
@@ -514,9 +525,9 @@ namespace Weverca.ControlFlowGraph
             }
             currentBasicBlock = startLoop;
             BasicBlock underLoop = new BasicBlock();
-            loopData.AddLast(new LoopData(startLoop, underLoop));
+            loopData.Push(new LoopData(startLoop, underLoop));
             x.Body.VisitMe(this);
-            loopData.RemoveLast();
+            loopData.Pop();
             
             BasicBlock endLoop = currentBasicBlock;
           
@@ -597,36 +608,52 @@ namespace Weverca.ControlFlowGraph
         #endregion
 
         #region handling Exceptions
-        //not finished yet
+
+
         public override void VisitTryStmt(TryStmt x)
         {
             BasicBlock followingBlock = new BasicBlock();
-            throwBlocks.AddLast(new List<BasicBlock>());
+         
+            numberOfNestedTrys++;
+            throwBlocks.Push(new List<BasicBlock>());
             VisitStatementList(x.Statements);
             DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
-         
+            
             
             foreach(var catchItem in x.Catches){
 
-                BasicBlock catchBlock = new BasicBlock(); 
-                foreach (var throwBlock in throwBlocks.Last())
+                BasicBlock catchBlock = new BasicBlock();
+
+                foreach (var throwBlock in throwBlocks.Peek())
                 {
-                    DirectEdge.MakeNewAndConnect(throwBlock, catchBlock);
+                    ThrowStmt throwStatement = (ThrowStmt)throwBlock.Statements.Last();
+                    //throwBlock.Statements.RemoveLast();
+                    List<ActualParam> parameters = new List<ActualParam>();
+                    parameters.Add(new ActualParam(Position.Invalid, throwStatement.Expression, false));
+                    parameters.Add(new ActualParam(Position.Invalid, new StringLiteral(Position.Invalid, catchItem.ClassName.QualifiedName.ToString()), false));
+                    ConditionalEdge.MakeNewAndConnect(throwBlock, catchBlock, new DirectFcnCall(Position.Invalid, new QualifiedName(new Name("is_subclass_of")), null, Position.Invalid, parameters, new List<TypeRef>()));
                 }
+               
                 
                 currentBasicBlock=catchBlock;
                 VisitStatementList(catchItem.Statements);
                 DirectEdge.MakeNewAndConnect(currentBasicBlock,followingBlock);
             }
-            throwBlocks.RemoveLast();
+            
+            
+            numberOfNestedTrys--;
+            throwBlocks.Pop();
             currentBasicBlock=followingBlock;
             
         }
-        //not finished yet
+
         public override void VisitThrowStmt(ThrowStmt x)
         {
             currentBasicBlock.AddElement(x);
-            throwBlocks.Last().Add(currentBasicBlock);
+            foreach(var item in throwBlocks)
+            {
+                item.Add(currentBasicBlock);
+            }
             currentBasicBlock=new BasicBlock();
         }
 

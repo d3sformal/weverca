@@ -145,6 +145,7 @@ namespace Weverca.ControlFlowGraph
                 {
                     int index=nodes.IndexOf(edge.To);
                     string label = "" ;
+                    //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode
                     if (!edge.Condition.Position.IsValid)
                     {
                         if (edge.Condition.GetType() == typeof(BoolLiteral))
@@ -185,6 +186,24 @@ namespace Weverca.ControlFlowGraph
                                 label += "else";
                                 //label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
                             }
+                        }
+                        if (edge.Condition.GetType() == typeof(DirectFcnCall))
+                        { 
+                            DirectFcnCall functionCall=(DirectFcnCall)edge.Condition;
+
+                            label += functionCall.QualifiedName+"(";
+                            foreach(var parameter in functionCall.CallSignature.Parameters){
+                                if (parameter.Expression.GetType()==typeof(StringLiteral))
+                                {
+                                    StringLiteral literal = (StringLiteral)parameter.Expression;
+                                    label += "\""+literal.Value+"\""+",";
+                                }
+                                else
+                                {
+                                label += globalCode.SourceUnit.GetSourceCode(parameter.Expression.Position)+",";
+                                }
+                            }
+                            label += ")";
                         }
                     }
                     else
