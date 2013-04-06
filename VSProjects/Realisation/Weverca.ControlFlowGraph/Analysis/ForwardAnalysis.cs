@@ -33,7 +33,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         public ForwardAnalysis(ControlFlowGraph entryMethodGraph){
-            _services = new AnalysisServices<FlowInfo>(BlockMerge, NewEmptySet);
+            _services = new AnalysisServices<FlowInfo>(BlockMerge, NewEmptySet,ConfirmAssumption);
             EntryMethodGraph=entryMethodGraph;
         }
 
@@ -83,6 +83,14 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="outSet">Output after merging.</param>
         protected abstract void CallMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet);
 
+        /// <summary>
+        /// Determine that given assumptionCondition is valid according to inSet. Out set will be used for assumpted flow.
+        /// </summary>
+        /// <param name="inSet"></param>
+        /// <param name="assumptionCondition"></param>
+        /// <param name="outSet"></param>
+        /// <returns></returns>
+        protected abstract bool ConfirmAssumption(FlowInputSet<FlowInfo> inSet,AssumptionCondition condition,FlowOutputSet<FlowInfo> outSet);
         /// <summary>
         /// Creates set without any stored information.
         /// </summary>

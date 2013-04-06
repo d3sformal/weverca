@@ -19,8 +19,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
 
         private FlowOutputSet(FlowOutputSet<FlowInfo> output)
-        {
-            //TODO copy all info elements
+        {            
             collectedInfo = new Dictionary<object,FlowInfo>(output.collectedInfo);
         }
 
@@ -33,10 +32,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             collectedInfo[key] = info;
         }
 
-        public bool TryGetInfo(object key,out FlowInfo info)
-        {
-            return collectedInfo.TryGetValue(key, out info);            
-        }
+        
   
         /// <summary>
         /// Set flow dispatch to given calls
@@ -50,6 +46,16 @@ namespace Weverca.ControlFlowGraph.Analysis
         internal FlowOutputSet<FlowInfo> Copy()
         {
             return new FlowOutputSet<FlowInfo>(this);
+        }
+
+        public void FillFrom(FlowInputSet<FlowInfo> inSet)
+        {
+            foreach (var key in inSet.CollectedKeys)
+            {
+                FlowInfo info;
+                System.Diagnostics.Debug.Assert(inSet.TryGetInfo(key, out info));
+                SetInfo(key, info);
+            }
         }
     }
 }

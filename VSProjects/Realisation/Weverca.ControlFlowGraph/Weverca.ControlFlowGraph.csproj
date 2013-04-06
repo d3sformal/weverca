@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analysis\AnalysisCallStack.cs" />
+    <Compile Include="Analysis\AssumptionCondition.cs" />
     <Compile Include="Analysis\BlockDispatch.cs" />
     <Compile Include="Analysis\CallAnalysisContext.cs" />
     <Compile Include="Analysis\CallDispatch.cs" />
@@ -47,7 +48,7 @@
     <Compile Include="Analysis\AnalysisServices.cs" />
     <Compile Include="Analysis\IncludeDispatch.cs" />
     <Compile Include="Analysis\ProgramPoint.cs" />
-    <Compile Include="Analysis\WorkListItem.cs" />
+    <Compile Include="Analysis\WorkItem.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="BasicBlockEdge.cs" />
     <Compile Include="CFGVisitor.cs" />

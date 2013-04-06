@@ -49,5 +49,15 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
             return true;
         }
+
+        static internal StringVarInfo[] GetEndPointInfo(string code)
+        {
+            var cfg = CFGTestUtils.CreateCFG(code);
+            var analysis = new StringAnalysis(cfg);
+            analysis.Analyse();
+            var list=new List<StringVarInfo>(analysis.RootEndPoint.OutSet.CollectedInfo);
+            return list.ToArray();
+        }
+        
     }
 }

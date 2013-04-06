@@ -40,7 +40,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 var str=resolveString(assignValue.Value);
                 info.PossibleValues.Add(str);
 
-                outSet.SetInfo(info, info);
+                outSet.SetInfo(info.Name, info);
             }
         }
 
@@ -62,7 +62,21 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
         protected override void BlockMerge(FlowInputSet<StringVarInfo> inSet1, FlowInputSet<StringVarInfo> inSet2, FlowOutputSet<StringVarInfo> outSet)
         {
-            throw new NotImplementedException();
+            foreach (var info in inSet1.CollectedInfo)
+            {
+                StringVarInfo toMerge;
+                if (inSet2.TryGetInfo(info.Name, out toMerge))
+                {
+                    var newInfo=new StringVarInfo(info.Name);
+                    newInfo.PossibleValues.UnionWith(info.PossibleValues);
+                    newInfo.PossibleValues.UnionWith(toMerge.PossibleValues);
+                    outSet.SetInfo(newInfo.Name, newInfo);
+                }
+                else
+                {
+                    outSet.SetInfo(info.Name,info);
+                }
+            }
         }
 
         protected override void IncludeMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
@@ -73,6 +87,13 @@ namespace Weverca.ControlFlowGraph.UnitTest
         protected override void CallMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
         {
             throw new NotImplementedException();
+        }
+
+        protected override bool ConfirmAssumption(FlowInputSet<StringVarInfo> inSet, AssumptionCondition condition, FlowOutputSet<StringVarInfo> outSet)
+        {
+            //TODO resolve conditions
+            outSet.FillFrom(inSet);
+            return true;
         }
     }
 }

@@ -12,8 +12,14 @@ namespace Weverca.ControlFlowGraph.Analysis
     public class FlowInputSet<FlowInfo>
     {
         public IEnumerable<FlowInfo> CollectedInfo { get { return collectedInfo.Values; } }
+        public IEnumerable<object> CollectedKeys { get { return collectedInfo.Keys; } }
 
         protected Dictionary<object,FlowInfo> collectedInfo=new Dictionary<object,FlowInfo>();
+
+        public bool TryGetInfo(object key, out FlowInfo info)
+        {
+            return collectedInfo.TryGetValue(key, out info);
+        }
 
         public override bool Equals(object obj)
         {
