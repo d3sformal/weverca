@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using System.IO;
+
+using PHP.Core; 
+
+using Weverca.Parsers;
+
+namespace Weverca.ControlFlowGraph.UnitTest
+{
+    static class CFGTestUtils
+    {
+        static internal ControlFlowGraph CreateCFG(string code)
+        {
+            var fileName="./cfg_test.php";
+            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
+            code = "<?php \n" + code + "?>";
+            var parser=new SyntaxParser(sourceFile,code);
+            parser.Parse();
+            var cfg = new ControlFlowGraph(parser.Ast);
+
+            return cfg;
+        }
+
+        /// <summary>
+        /// Test that possible values of given info contains all given values.
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        static internal bool TestValues(StringVarInfo info, params string[] values)
+        {
+            if (info.PossibleValues.Count != values.Length)
+            {
+                return false;
+            }
+
+            foreach (var val in values)
+            {
+                if (!info.PossibleValues.Contains(val))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+}

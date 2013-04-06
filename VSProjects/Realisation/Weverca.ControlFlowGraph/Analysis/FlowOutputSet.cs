@@ -17,6 +17,27 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         public IEnumerable<CallDispatch> CallDispatches { get; private set; }
 
+
+        private FlowOutputSet(FlowOutputSet<FlowInfo> output)
+        {
+            //TODO copy all info elements
+            collectedInfo = new Dictionary<object,FlowInfo>(output.collectedInfo);
+        }
+
+        public FlowOutputSet()
+        {
+        }
+
+        public void SetInfo(object key, FlowInfo info)
+        {
+            collectedInfo[key] = info;
+        }
+
+        public bool TryGetInfo(object key,out FlowInfo info)
+        {
+            return collectedInfo.TryGetValue(key, out info);            
+        }
+  
         /// <summary>
         /// Set flow dispatch to given calls
         /// </summary>
@@ -24,11 +45,11 @@ namespace Weverca.ControlFlowGraph.Analysis
         public void Dispatch(params CallDispatch[] calls)
         {
             throw new NotImplementedException();
-        }
+        }        
 
-        internal FlowOutputSet<FlowInfo> copy()
+        internal FlowOutputSet<FlowInfo> Copy()
         {
-            throw new NotImplementedException();
+            return new FlowOutputSet<FlowInfo>(this);
         }
     }
 }

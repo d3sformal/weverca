@@ -46,7 +46,7 @@
     <Compile Include="Analysis\FlowInputSet.cs" />
     <Compile Include="Analysis\AnalysisServices.cs" />
     <Compile Include="Analysis\IncludeDispatch.cs" />
-    <Compile Include="Analysis\ProgramPoints.cs" />
+    <Compile Include="Analysis\ProgramPoint.cs" />
     <Compile Include="Analysis\WorkListItem.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="BasicBlockEdge.cs" />

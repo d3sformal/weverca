@@ -25,12 +25,12 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Set which belongs to program point beffore current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
-        internal FlowInputSet<FlowInfo> CurrentInputSet { get; private set; }
+        internal FlowInputSet<FlowInfo> CurrentInputSet { get { return CurrentProgramPoint.InSet; } }
         /// <summary>
         /// Set which belongs to program point after current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
-        internal FlowOutputSet<FlowInfo> CurrentOutputSet { get; private set; }
+        internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return CurrentProgramPoint.OutSet; } }
 
         /// <summary>
         /// Current statement to analyze according to worklist algorithm.
@@ -41,6 +41,11 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Program point for CurrentStatement
         /// </summary>
         private ProgramPoint<FlowInfo> CurrentProgramPoint { get { return getProgramPoint(CurrentStatement); } }
+
+        /// <summary>
+        /// Ending program point of call.
+        /// </summary>
+        public ProgramPoint<FlowInfo> EndProgramPoint { get { return getEndProgramPoint(); } }
 
         #endregion
 
@@ -58,11 +63,16 @@ namespace Weverca.ControlFlowGraph.Analysis
         Dictionary<LangElement, ProgramPoint<FlowInfo>> _statementPoints = new Dictionary<LangElement, ProgramPoint<FlowInfo>>();
 
         AnalysisServices<FlowInfo> _services;
+        ControlFlowGraph _entryMethodCFG;
 
-        internal AnalysisCallContext(ControlFlowGraph methodGraph,AnalysisServices<FlowInfo> services)
+        internal AnalysisCallContext(ControlFlowGraph entryMethodCFG,AnalysisServices<FlowInfo> services)
         {
             _services = services;
-            throw new NotImplementedException();
+            _entryMethodCFG = entryMethodCFG;
+            var entryEdge = new ConditionalEdge(null, _entryMethodCFG.start, null);
+            startWork(entryEdge);
+
+            initProgramPoints();
         }
 
         #region Worklist algorithm input API
@@ -79,7 +89,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             if (hasChanged && itemComplete)
             {
                 //notify other basic blocks and add them into work list
-                updateDependencies(_currentWorkItem.BasicBlock);
+                updateDependencies(_currentWorkItem.Block);
             }
             else if (hasChanged)
             {
@@ -126,8 +136,10 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             ProgramPoint<FlowInfo> result;
             if (!_statementPoints.TryGetValue(statement, out result))
-            {
+            {                
                 result = new ProgramPoint<FlowInfo>();
+                result.UpdateOutSet(_services.CreateEmptySet());
+                result.CommitUpdate();
                 _statementPoints.Add(statement, result);
             }
 
@@ -151,9 +163,10 @@ namespace Weverca.ControlFlowGraph.Analysis
         private void startWork(ConditionalEdge work)
         {
             _currentWorkItem = new WorkItem(work);
+
             var point=getProgramPoint(_currentWorkItem.BlockStart);
 
-            var inSet=getBlockInput(_currentWorkItem.BasicBlock);
+            var inSet=getBlockInput(_currentWorkItem.Block);
             point.InSet = inSet;
         }
 
@@ -216,6 +229,23 @@ namespace Weverca.ControlFlowGraph.Analysis
             _worklist.Enqueue(blockEdge);
         }
 
+
+        private ProgramPoint<FlowInfo> getEndProgramPoint()
+        {
+            //TODO get correct end points
+            var endPoints = _statementPoints.Values.Last();
+            return endPoints;
+        }
+
+
+
+        private void initProgramPoints()
+        {
+            //TODO throw new NotImplementedException();
+        }
+
         #endregion
+
+        
     }
 }

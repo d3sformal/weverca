@@ -11,24 +11,29 @@ namespace Weverca.ControlFlowGraph.Analysis
     /// <typeparam name="FlowInfo"></typeparam>
     class AnalysisCallStack<FlowInfo>
     {
-        internal AnalysisCallContext<FlowInfo> Peek { get; private set; }
+        Stack<AnalysisCallContext<FlowInfo>> _callStack = new Stack<AnalysisCallContext<FlowInfo>>();
 
-        internal bool IsEmpty { get; private set; }
+        internal AnalysisCallContext<FlowInfo> Peek { get { return _callStack.Peek(); } }
 
-        internal void Push(AnalysisCallContext<FlowInfo> entryContext)
+        internal bool IsEmpty { get { return _callStack.Count == 0; } }
+
+        internal void Push(AnalysisCallContext<FlowInfo> context)
         {
-            throw new NotImplementedException();
+            _callStack.Push(context);
         }
 
         internal void Pop()
         {
-            throw new NotImplementedException();
+            _callStack.Pop();
         }
 
 
-        internal void AddDispathes(IEnumerable<CallDispatch> enumerable)
+        internal void AddDispathes(IEnumerable<CallDispatch> dispatches)
         {
-            throw new NotImplementedException();
+            if (dispatches!= null && dispatches.Count() > 0)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

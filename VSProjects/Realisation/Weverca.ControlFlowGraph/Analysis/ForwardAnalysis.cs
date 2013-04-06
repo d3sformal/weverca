@@ -18,6 +18,11 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Determine that analysis has been already runned.
         /// </summary>
         public bool IsAnalysed{get;private set;}
+
+        /// <summary>
+        /// Root output from analysis
+        /// </summary>
+        public ProgramPoint<FlowInfo> RootEndPoint { get; private set; }
         /// <summary>
         /// Control flow graph of method which is entry point of analysis.
         /// </summary>
@@ -113,6 +118,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
                 flowThroughNextStmt(currentContext);
             }
+            RootEndPoint=entryContext.EndProgramPoint;
         }
 
         /// <summary>
@@ -127,7 +133,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             var statement = context.CurrentStatement;
             
 
-            var outSet = outSetOld.copy();
+            var outSet = outSetOld.Copy();
             FlowThrough(inSet, statement, outSet);
 
 
