@@ -6,7 +6,7 @@ using System.Text;
 namespace Weverca.ControlFlowGraph.Analysis
 {
     /// <summary>
-    /// Handle call stack for forward flow analysis
+    /// Handle call stack for forward flow analysis.    
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
     class AnalysisCallStack<FlowInfo>

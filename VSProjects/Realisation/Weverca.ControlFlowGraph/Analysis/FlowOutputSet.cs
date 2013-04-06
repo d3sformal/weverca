@@ -25,5 +25,10 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             throw new NotImplementedException();
         }
+
+        internal FlowOutputSet<FlowInfo> copy()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

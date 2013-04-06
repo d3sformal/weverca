@@ -99,7 +99,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             while (!_callStack.IsEmpty)
             {
                 var currentContext = _callStack.Peek;
-                if (currentContext.IsEmpty)
+                if (currentContext.IsComplete)
                 {
                     //pop out empty context
                     //TODO collect result of analysis 
@@ -121,13 +121,18 @@ namespace Weverca.ControlFlowGraph.Analysis
         private void flowThroughNextStmt(AnalysisCallContext<FlowInfo> context)
         {
             var inSet = context.CurrentInputSet;
-            var statement = context.DequeueNextStatement();
-            var outSet = NewEmptySet();
+            var outSetOld = context.CurrentOutputSet;
+            var statement = context.CurrentStatement;
+            
 
+            var outSet = outSetOld.copy();
             FlowThrough(inSet, statement, outSet);
-                        
-            _callStack.AddDispathes(outSet.CallDispatches);        
-            //TODO block merge, dispatch
+
+
+            context.UpdateOutputSet(outSet);
+            context.SkipToNextStatement();            
+
+            _callStack.AddDispathes(outSet.CallDispatches);                    
         }
 
         #endregion
