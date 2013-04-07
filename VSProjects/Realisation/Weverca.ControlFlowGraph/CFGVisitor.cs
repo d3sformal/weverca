@@ -123,9 +123,9 @@ namespace Weverca.ControlFlowGraph
         /// Stack of block which ends by throw
         /// </summary>
         Stack<List<BasicBlock>> throwBlocks = new Stack<List<BasicBlock>>();
-        
-        
         int numberOfNestedTrys = 0;
+        
+       
 
         private ClassDeclaration actualClass = null;
         private LabelDataDictionary labelDictionary = new LabelDataDictionary();
@@ -274,6 +274,13 @@ namespace Weverca.ControlFlowGraph
             BasicBlock functionSink = new BasicBlock();
             functionSinkStack.AddFirst(functionSink);
 
+            //store throws blocks
+            var currentThrowBlocks = throwBlocks;
+            throwBlocks = new Stack<List<BasicBlock>>();
+            int currentNumberOfNestedTrys = numberOfNestedTrys;
+            numberOfNestedTrys = 0;
+            
+            
             currentBasicBlock.AddElement(functionDeclaration);
             VisitStatementList(functionBody);
 
@@ -285,6 +292,9 @@ namespace Weverca.ControlFlowGraph
             labelDictionary = oldLabelData;
             currentBasicBlock = current;
 
+            //loads throw blocks
+            throwBlocks = currentThrowBlocks;
+            numberOfNestedTrys = currentNumberOfNestedTrys;
             return functionBasicBlock;
         }
 

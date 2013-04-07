@@ -1,6 +1,6 @@
 <?
 
-
+function test($a){
 	$a=4;
 
 	try{
@@ -21,5 +21,14 @@
 		echo "exception catched";
 		echo "a";
 	}
+}
 
+try{
+	throw new Exception2("");
+		
+}
+catch(Exception $e){
+	echo "exception catched";
+	echo "a";
+}
 ?>
