@@ -18,15 +18,26 @@ namespace Weverca.ControlFlowGraph.Analysis
         public IEnumerable<CallDispatch> CallDispatches { get; private set; }
 
 
-        private FlowOutputSet(FlowOutputSet<FlowInfo> output)
-        {            
-            collectedInfo = new Dictionary<object,FlowInfo>(output.collectedInfo);
-        }
-
+    
         public FlowOutputSet()
         {
         }
 
+        /// <summary>
+        /// Private copy constructor.
+        /// </summary>
+        /// <param name="output">Copied set</param>
+        private FlowOutputSet(FlowOutputSet<FlowInfo> output)
+        {
+            collectedInfo = new Dictionary<object, FlowInfo>(output.collectedInfo);
+        }
+
+
+        /// <summary>
+        /// Set info for given key.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="info"></param>
         public void SetInfo(object key, FlowInfo info)
         {
             collectedInfo[key] = info;

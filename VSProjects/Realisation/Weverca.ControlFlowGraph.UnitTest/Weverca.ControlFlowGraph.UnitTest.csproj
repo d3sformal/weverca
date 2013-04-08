@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringAnalysis.cs" />
+    <Compile Include="StringAnalysis2.cs" />
     <Compile Include="StringInfo.cs" />
     <Compile Include="ForwardAnalysisTest.cs" />
     <Compile Include="CFGTestUtils.cs" />

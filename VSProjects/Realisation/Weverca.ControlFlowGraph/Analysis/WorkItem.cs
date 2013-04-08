@@ -7,15 +7,39 @@ using PHP.Core.AST;
 
 namespace Weverca.ControlFlowGraph.Analysis
 {
+    /// <summary>
+    /// Work item for worklist alogrithm.
+    /// </summary>
     class WorkItem
     {
+        /// <summary>
+        /// Block which statements are proceeded during this work item.
+        /// </summary>
         internal readonly BasicBlock Block;
+        /// <summary>
+        /// Currently proceeded statement.
+        /// </summary>
         internal LangElement CurrentStatement { get { return Block.Statements[_position]; } }
+        /// <summary>
+        /// Start statement of block.
+        /// </summary>
         internal LangElement BlockStart { get { return Block.Statements[0]; } }
+        /// <summary>
+        /// Determine that last block's statement has been reached.
+        /// </summary>
         internal bool AtBlockEnd { get { return _position >= Block.Statements.Count - 1; } }
+        /// <summary>
+        /// Assumption condition for work item. Null, if there isn't condition.
+        /// </summary>
         internal readonly AssumptionCondition AssumptionCondition;
+        /// <summary>
+        /// Determine that work item needs assumption confirmation.
+        /// </summary>
         internal bool NeedAssumptionConfirmation { get { return AssumptionCondition != null; } }
 
+        /// <summary>
+        /// Current position in block.
+        /// </summary>
         private int _position;
 
 
@@ -45,6 +69,11 @@ namespace Weverca.ControlFlowGraph.Analysis
             return new WorkItem(block.DefaultBranch.To, condition);
         }
 
+        /// <summary>
+        /// Creates workitem from edge.
+        /// </summary>
+        /// <param name="edge"></param>
+        /// <returns></returns>
         internal static WorkItem FromEdge(ConditionalEdge edge)
         {
             AssumptionCondition condition = null;
@@ -56,6 +85,9 @@ namespace Weverca.ControlFlowGraph.Analysis
             return new WorkItem(edge.To, condition);
         }
 
+        /// <summary>
+        /// Skip to next statement in workitem.
+        /// </summary>
         internal void NextStatement()
         {
             if (AtBlockEnd)

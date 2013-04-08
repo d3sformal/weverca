@@ -13,18 +13,13 @@ namespace Weverca.ControlFlowGraph.UnitTest
     /// <summary>
     /// Test implementation of simple string analysis
     /// </summary>
-    class StringAnalysis : ForwardAnalysis<StringVarInfo>
+    class StringAnalysis : ForwardAnalysisAbstract<StringVarInfo>
     {
         public StringAnalysis(ControlFlowGraph cfg)
             : base(cfg)
         {
         }
 
-
-        protected override FlowOutputSet<StringVarInfo> NewEmptySet()
-        {
-            return new FlowOutputSet<StringVarInfo>();
-        }
 
         protected override void FlowThrough(FlowInputSet<StringVarInfo> inSet, LangElement statement, FlowOutputSet<StringVarInfo> outSet)
         {
@@ -47,21 +42,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             }
         }
 
-        private string resolveVarName(object lvalue)
-        {
-            var dirUse = (DirectVarUse)lvalue;
-            return dirUse.VarName.Value;
-        }
 
-        private string resolveString(object expression)
-        {
-            return expression.ToString();
-        }
-
-        protected override IEnumerable<BlockDispatch> BlockDispatch(FlowInputSet<StringVarInfo> inSet, IEnumerable<ConditionalEdge> nextBlocks)
-        {
-            throw new NotImplementedException();
-        }
 
         protected override void BlockMerge(FlowInputSet<StringVarInfo> inSet1, FlowInputSet<StringVarInfo> inSet2, FlowOutputSet<StringVarInfo> outSet)
         {
@@ -83,15 +64,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             }
         }
 
-        protected override void IncludeMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
-        {
-            throw new NotImplementedException();
-        }
 
-        protected override void CallMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
-        {
-            throw new NotImplementedException();
-        }
 
         protected override bool ConfirmAssumption(FlowInputSet<StringVarInfo> inSet, AssumptionCondition condition, FlowOutputSet<StringVarInfo> outSet)
         {
@@ -111,7 +84,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 {
                     return true;
                 }
-                
+
                 result = combine(result, partResult, condition.Form);
 
             }
@@ -119,13 +92,38 @@ namespace Weverca.ControlFlowGraph.UnitTest
             return result;
         }
 
+        protected override void IncludeMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CallMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
+        {
+            throw new NotImplementedException();
+        }
+
+        #region AST utils
+        private string resolveVarName(object lvalue)
+        {
+            var dirUse = (DirectVarUse)lvalue;
+            return dirUse.VarName.Value;
+        }
+
+        private string resolveString(object expression)
+        {
+            return expression.ToString();
+        }
+        #endregion
+
+        #region Condition resolving
+
         private bool initialFor(ConditionForm form)
         {
             switch (form)
-            {             
-                case ConditionForm.SomeNot:   
+            {
+                case ConditionForm.SomeNot:
                 case ConditionForm.Some:
-                    return false; 
+                    return false;
                 case ConditionForm.All:
                 case ConditionForm.None:
                     return true;
@@ -133,8 +131,6 @@ namespace Weverca.ControlFlowGraph.UnitTest
                     throw new NotSupportedException("Unsupported condition form");
             }
         }
-
-       
 
         private bool combine(bool partResult, bool addedPart, ConditionForm form)
         {
@@ -153,7 +149,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             }
         }
 
-        private bool canProve(FlowInputSet<StringVarInfo> inSet, Expression condition, ConditionForm form,out bool result)
+        private bool canProve(FlowInputSet<StringVarInfo> inSet, Expression condition, ConditionForm form, out bool result)
         {
             //default result is true - if we can't disprove assumption we has to accept it
             var binEx = condition as BinaryEx;
@@ -167,25 +163,27 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 {
                     var varName = varUsg.VarName.Value;
                     var value = dirVal.Value.ToString();
-                    
-                    return proveCanBeEqual(inSet, varName, value,out result);
+
+                    return proveCanBeEqual(inSet, varName, value, out result);
                 }
             }
 
-            result=initialFor(form);
-            return false;   
+            result = initialFor(form);
+            return false;
         }
 
 
-        private bool proveCanBeEqual(FlowInputSet<StringVarInfo> inSet, string varName, string comparedVal,out bool result)
+        private bool proveCanBeEqual(FlowInputSet<StringVarInfo> inSet, string varName, string comparedVal, out bool result)
         {
             result = false;
             StringVarInfo info;
             if (!inSet.TryGetInfo(varName, out info))
                 return false;
 
-            result= info.PossibleValues.Contains(comparedVal);
+            result = info.PossibleValues.Contains(comparedVal);
             return true;
         }
+
+        #endregion
     }
 }

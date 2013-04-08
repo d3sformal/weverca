@@ -65,7 +65,7 @@ switch($str){
 
             foreach (var variable in vars)
             {
-                var test = CFGTestUtils.TestValues(variable.Name,vars, variable.Name);
+                var test = CFGTestUtils.TestValues(variable.Name.Value,vars, variable.Name.Value);
                 Assert.IsTrue(test, "Single value variable");
             }
         }

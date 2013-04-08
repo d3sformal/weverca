@@ -7,8 +7,30 @@ using PHP.Core.AST;
 
 namespace Weverca.ControlFlowGraph.Analysis
 {
+    /// <summary>
+    /// Form of conjunction condition parts.
+    /// </summary>
+    public enum ConditionForm
+    {
+        /// <summary>
+        /// Any true part is enough.
+        /// </summary>
+        Some,
+        /// <summary>
+        /// All parts has to be true.
+        /// </summary>
+        All,
+        /// <summary>
+        /// None part can be true.
+        /// </summary>
+        None,
+        /// <summary>
+        /// Some part has to be false.
+        /// </summary>
+        SomeNot
+    }
 
-    public enum ConditionForm { Some, All, None,SomeNot }
+
     public class AssumptionCondition
     {
         public readonly ConditionForm Form;

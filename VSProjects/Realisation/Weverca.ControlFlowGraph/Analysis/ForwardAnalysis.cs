@@ -5,166 +5,156 @@ using System.Text;
 
 using PHP.Core.AST;
 
+using Weverca.ControlFlowGraph.Analysis.Expressions;
+
 namespace Weverca.ControlFlowGraph.Analysis
 {
-    public abstract class ForwardAnalysis<FlowInfo>
+    /// <summary>
+    /// Extending layer for forward analysis, that provides methods for expression analysing.
+    /// </summary>
+    /// <typeparam name="FlowInfo"></typeparam>
+    public abstract class ForwardAnalysis<FlowInfo> : ForwardAnalysisAbstract<FlowInfo>
     {
-        #region Private members
-        AnalysisCallStack<FlowInfo> _callStack;
-        AnalysisServices<FlowInfo> _services;
-        #endregion
+        ExpressionWalker<FlowInfo> _services;
 
-        /// <summary>
-        /// Determine that analysis has been already runned.
-        /// </summary>
-        public bool IsAnalysed{get;private set;}
 
-        /// <summary>
-        /// Root output from analysis
-        /// </summary>
-        public ProgramPoint<FlowInfo> RootEndPoint { get; private set; }
-        /// <summary>
-        /// Control flow graph of method which is entry point of analysis.
-        /// </summary>
-        public ControlFlowGraph EntryMethodGraph{get; private set;}
-
-        /// <summary>
-        /// Create forward analysis object for given entry method graph.
-        /// </summary>
-        /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        public ForwardAnalysis(ControlFlowGraph entryMethodGraph){
-            _services = new AnalysisServices<FlowInfo>(BlockMerge, NewEmptySet,ConfirmAssumption);
-            EntryMethodGraph=entryMethodGraph;
-        }
-
-        /// <summary>
-        /// Run analysis on EntryMethodGraph
-        /// </summary>
-        public void Analyse(){
-            checkAlreadyAnalysed();
-            analyse();
-            IsAnalysed = true;
-        }
-
-        #region Abstract API for analysis handling
-
-        /// <summary>
-        /// Analyze given statement. 
-        /// </summary>
-        /// <param name="inSet">Information available before given statement.</param>
-        /// <param name="statement">Statement which can add new information.</param>
-        /// <param name="outSet">Output information which is known after statement analysis.</param>
-        protected abstract void FlowThrough(FlowInputSet<FlowInfo> inSet, LangElement statement, FlowOutputSet<FlowInfo> outSet);
-
-        /// <summary>
-        /// Create block dispatching from nextBlocks.
-        /// </summary>
-        /// <param name="inSet">Available information for dispatch.</param>
-        /// <param name="nextBlocks">Possible blocks to dispatch.</param>
-        /// <returns>All blocks that will be analyzed and merged.</returns>
-        protected abstract IEnumerable<BlockDispatch> BlockDispatch(FlowInputSet<FlowInfo> inSet, IEnumerable<ConditionalEdge> nextBlocks);
-
-        /// <summary>
-        /// All dispatched blocks are merged via this call.        
-        /// </summary>
-        /// <param name="inSets">Input sets from all dispatched blocks.</param>
-        /// <param name="outSet">Output after merging.</param>
-        protected abstract void BlockMerge(FlowInputSet<FlowInfo> inSet1,FlowInputSet<FlowInfo> inSet2,FlowOutputSet<FlowInfo> outSet);
-        /// <summary>
-        /// All dispatched includes are merged via this call.        
-        /// </summary>
-        /// <param name="inSets">Input sets from all dispatched includes.</param>
-        /// <param name="outSet">Output after merging.</param>
-        protected abstract void IncludeMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet);
-        /// <summary>
-        /// All dispatched calls are merged via this call.        
-        /// </summary>
-        /// <param name="inSets">Input sets from all dispatched includes.</param>
-        /// <param name="outSet">Output after merging.</param>
-        protected abstract void CallMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet);
-
-        /// <summary>
-        /// Determine that given assumptionCondition is valid according to inSet. Out set will be used for assumpted flow.
-        /// </summary>
-        /// <param name="inSet"></param>
-        /// <param name="assumptionCondition"></param>
-        /// <param name="outSet"></param>
-        /// <returns></returns>
-        protected abstract bool ConfirmAssumption(FlowInputSet<FlowInfo> inSet,AssumptionCondition condition,FlowOutputSet<FlowInfo> outSet);
-        /// <summary>
-        /// Creates set without any stored information.
-        /// </summary>
-        /// <returns>New empty set.</returns>
-        protected abstract FlowOutputSet<FlowInfo> NewEmptySet();
-
-        #endregion
-
-        #region Analysis routines
-
-        /// <summary>
-        /// Run analyzis starting at EntryMethodGraph
-        /// </summary>
-        private void analyse()
+        public ForwardAnalysis(ControlFlowGraph entryMethod, ExpressionEvaluator<FlowInfo> evaluator)
+            : base(entryMethod)
         {
-            var entryContext = new AnalysisCallContext<FlowInfo>(EntryMethodGraph,_services);
+            _services = new ExpressionWalker<FlowInfo>(evaluator);
+        }
 
-            _callStack = new AnalysisCallStack<FlowInfo>();            
-            _callStack.Push(entryContext);
+        protected override void FlowThrough(FlowInputSet<FlowInfo> inSet, LangElement statement, FlowOutputSet<FlowInfo> outSet)
+        {
+            //TODO push pop function calls handling
+            outSet.FillFrom(inSet);
+            var expression = convertExpression(statement);
+            flowThrough(inSet, expression, outSet);
+        }
 
-            while (!_callStack.IsEmpty)
+
+        protected override bool ConfirmAssumption(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowOutputSet<FlowInfo> outSet)
+        {
+            outSet.FillFrom(inSet);
+            if (condition.Parts.Count() == 0)
             {
-                var currentContext = _callStack.Peek;
-                if (currentContext.IsComplete)
-                {
-                    //pop out empty context
-                    //TODO collect result of analysis 
-                    //TODO collect return value
-                    //TODO call merge
-                    _callStack.Pop();
-                    continue;
-                }
-
-                flowThroughNextStmt(currentContext);
+                return true;
             }
-            RootEndPoint=entryContext.EndProgramPoint;
-        }
 
-        /// <summary>
-        /// Flow through next statement in given context.
-        /// NOTE: Can add dispatching into callStack
-        /// </summary>
-        /// <param name="context"></param>
-        private void flowThroughNextStmt(AnalysisCallContext<FlowInfo> context)
-        {
-            var inSet = context.CurrentInputSet;
-            var outSetOld = context.CurrentOutputSet;
-            var statement = context.CurrentStatement;
+            var partResults = new List<FlowInfo>();
+
+            foreach (var part in condition.Parts)
+            {
+                var expression = convertExpression(part);
+                var partResult = flowThrough(inSet, expression, outSet);
+
+                partResults.Add(partResult);
+            }
             
 
-            var outSet = outSetOld.Copy();
-            FlowThrough(inSet, statement, outSet);
+            var result = initialFor(condition.Form);
+            foreach (var res in partResults)
+            {
+                switch (condition.Form)
+                {
+                    case ConditionForm.SomeNot:
+                        if (!canProveTrue(inSet, res))
+                        {
+                            result = true;
+                        }
+                        break;
 
+                    case ConditionForm.All:
+                        if (canProveFalse(inSet, res))
+                            return false;
+                        break;
+                        
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
 
-            context.UpdateOutputSet(outSet);
-            context.SkipToNextStatement();            
-
-            _callStack.AddDispathes(outSet.CallDispatches);                    
+            if (result)
+            {
+                Assume(inSet, condition, outSet);
+            }
+            return result;
         }
-
-        #endregion
-
-        #region Private utilities
 
         /// <summary>
-        /// Throws exception when analyze has been already proceeded
+        /// prove that given conditionResult is always false
         /// </summary>
-        private void checkAlreadyAnalysed()
+        /// <param name="inSet"></param>
+        /// <param name="conditionResult"></param>
+        /// <returns></returns>
+        protected abstract bool canProveFalse(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
+
+        /// <summary>
+        /// prove that given conditionResult is always true
+        /// </summary>
+        /// <param name="inSet"></param>
+        /// <param name="conditionResult"></param>
+        /// <returns></returns>
+        protected abstract bool canProveTrue(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
+
+        protected virtual void Assume(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowInputSet<FlowInfo> outSet)
         {
-            if (IsAnalysed)
+            //by default we won't assume anything
+        }
+
+        protected override void BlockMerge(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void IncludeMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void CallMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        #region Private utils
+        private static PostfixExpression convertExpression(LangElement statement)
+        {
+            var converter = new ExpressionConverter();
+            statement.VisitMe(converter);
+            var expression = converter.GetExpression();
+            expression.Add(statement);
+            return expression;
+        }
+
+        private FlowInfo flowThrough(FlowInputSet<FlowInfo> inSet, PostfixExpression expression, FlowOutputSet<FlowInfo> outSet)
+        {
+            _services.Clear();
+            for (int i = 0; i < expression.Length; ++i)
             {
-                throw new NotSupportedException("Analyze has already been proceeded");
+                var element = expression.GetElement(i);
+                _services.Eval(inSet, element, outSet);
+            }
+            return _services.Pop();
+        }
+
+        private bool initialFor(ConditionForm form)
+        {
+            switch (form)
+            {
+                case ConditionForm.SomeNot:
+                case ConditionForm.Some:
+                    return false;
+                case ConditionForm.All:
+                case ConditionForm.None:
+                    return true;
+                default:
+                    throw new NotSupportedException("Unsupported condition form");
             }
         }
+
         #endregion
+
     }
 }

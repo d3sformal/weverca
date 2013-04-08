@@ -32,7 +32,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         /// <param name="info"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        static internal bool TestValues(string varName,IEnumerable<StringVarInfo> infos, params string[] values)
+        static internal bool TestValues(string varName,IEnumerable<ValueInfo> infos, params string[] values)
         {
             var info = getVarInfo(varName, infos);
 
@@ -52,11 +52,11 @@ namespace Weverca.ControlFlowGraph.UnitTest
             return true;
         }
 
-        static internal StringVarInfo getVarInfo(string varName, IEnumerable<StringVarInfo> infos)
+        static internal ValueInfo getVarInfo(string varName, IEnumerable<ValueInfo> infos)
         {
             foreach (var info in infos)
             {
-                if (info.Name == varName)
+                if (info.Name.Value == varName)
                 {
                     return info;
                 }
@@ -65,12 +65,12 @@ namespace Weverca.ControlFlowGraph.UnitTest
             return null;
         }
 
-        static internal StringVarInfo[] GetEndPointInfo(string code)
+        static internal ValueInfo[] GetEndPointInfo(string code)
         {
             var cfg = CFGTestUtils.CreateCFG(code);
-            var analysis = new StringAnalysis(cfg);
+            var analysis = new StringAnalysis2(cfg);
             analysis.Analyse();
-            var list=new List<StringVarInfo>(analysis.RootEndPoint.OutSet.CollectedInfo);
+            var list=new List<ValueInfo>(analysis.RootEndPoint.OutSet.CollectedInfo);
             return list.ToArray();
         }
         
