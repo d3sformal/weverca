@@ -12,10 +12,10 @@ using Weverca.ControlFlowGraph.Analysis.Expressions;
 
 namespace Weverca.ControlFlowGraph.UnitTest
 {
-    class StringAnalysis2:ForwardAnalysis<ValueInfo>
+    class StringAnalysis2 : ForwardAnalysis<ValueInfo>
     {
         public StringAnalysis2(ControlFlowGraph entryMethod)
-            : base(entryMethod,new SimpleEvaluator())
+            : base(entryMethod, new SimpleEvaluator())
         {
         }
 
@@ -37,9 +37,8 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 ValueInfo toMerge;
                 if (inSet2.TryGetInfo(info.Name, out toMerge))
                 {
-                    var newInfo = new ValueInfo(info.Name);
-                    newInfo.PossibleValues.UnionWith(info.PossibleValues);
-                    newInfo.PossibleValues.UnionWith(toMerge.PossibleValues);
+                    var newInfo = new ValueInfo(info);
+                    newInfo.MergeWith(toMerge);
                     outSet.SetInfo(newInfo.Name, newInfo);
                 }
                 else
@@ -48,22 +47,53 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 }
             }
         }
+
+        protected override void Assume(FlowInputSet<ValueInfo> inSet, AssumptionCondition condition, FlowOutputSet<ValueInfo> outSet)
+        {
+            if (condition.Parts.Count() == 1)
+            {
+                var part = condition.Parts.First() as BinaryEx;
+                if (part != null)
+                {
+                    switch (part.PublicOperation)
+                    {
+                        case Operations.Equal:
+                            tryAssumeEqual(part, outSet);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private void tryAssumeEqual(BinaryEx eq, FlowOutputSet<ValueInfo> outSet)
+        {
+            var varUse = eq.LeftExpr as DirectVarUse;
+            var assigned = eq.RightExpr as StringLiteral;
+
+            if (varUse != null && assigned != null)
+            {
+                var assumedValue = new ValueInfo(varUse.VarName);
+                assumedValue.PossibleValues.Add(assigned.Value);
+                assumedValue.BoundCondition = eq;
+                outSet.SetInfo(assumedValue.Name, assumedValue);
+            }
+        }
     }
 
-    class SimpleEvaluator:ExpressionEvaluator<ValueInfo>
+    class SimpleEvaluator : ExpressionEvaluator<ValueInfo>
     {
 
         public override ValueInfo Assign(ValueInfo p1, ValueInfo p2)
         {
             p1.PossibleValues = p2.PossibleValues;
-            OutSet.SetInfo(p1.Name, p1);
+            OutSet.SetInfo(p1.Name, p1);            
             return p1;
         }
 
         public override ValueInfo Declare(DirectVarUse x)
         {
-            var declared=new ValueInfo(x.VarName);
-            OutSet.SetInfo(x.VarName,declared );
+            var declared = new ValueInfo(x.VarName);
+            OutSet.SetInfo(x.VarName, declared);
             return declared;
         }
 
@@ -89,7 +119,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
                         boolRes.PossibleValues.Add(true);
                     }
 
-                    
+
                     return boolRes;
                 default:
                     throw new NotImplementedException();
@@ -115,12 +145,14 @@ namespace Weverca.ControlFlowGraph.UnitTest
         /// Name of value if is present
         /// </summary>
         public readonly VariableName Name;
+        public bool IsUnbounded { get; private set; }
+        public BinaryEx BoundCondition;
 
         public HashSet<object> PossibleValues = new HashSet<object>();
 
         public ValueInfo()
         {
-           
+
         }
 
         public ValueInfo(VariableName name)
@@ -144,6 +176,38 @@ namespace Weverca.ControlFlowGraph.UnitTest
             }
             return b.ToString();
         }
-        
+
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as ValueInfo;
+            if (o == null)
+                return false;
+
+            var sameAttribs = IsUnbounded == o.IsUnbounded && BoundCondition == o.BoundCondition;
+            var sameCounts = PossibleValues.Count == o.PossibleValues.Count;
+            var sameValues = PossibleValues.Union(o.PossibleValues).Count() == PossibleValues.Count;
+
+            return Name == o.Name && sameCounts && sameValues && sameAttribs;
+        }
+
+        public void SetUnbounded()
+        {
+            IsUnbounded = true;
+            PossibleValues.Clear();
+        }
+
+        public void MergeWith(ValueInfo other)
+        {
+            IsUnbounded |= other.IsUnbounded;
+            if (IsUnbounded)
+                PossibleValues.Clear();
+            else
+                PossibleValues.UnionWith(other.PossibleValues);
+        }
     }
 }

@@ -25,59 +25,47 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Set which belongs to program point beffore current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
-        internal FlowInputSet<FlowInfo> CurrentInputSet { get { return CurrentProgramPoint.InSet; } }
+        internal FlowInputSet<FlowInfo> CurrentInputSet { get { return _currentWorkItem.InSet; } }
         /// <summary>
         /// Set which belongs to program point after current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
-        internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return CurrentProgramPoint.OutSet; } }
+        internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return _currentWorkItem.OutSet; } }
 
         /// <summary>
         /// Current statement to analyze according to worklist algorithm.
         /// </summary>
-        internal LangElement CurrentStatement { get { return _currentWorkItem.CurrentStatement; } }
+        internal LangElement CurrentStatement { get { return _currentWorkItem.Statement; } }
 
-        /// <summary>
-        /// Program point for CurrentStatement
-        /// </summary>
-        private ProgramPoint<FlowInfo> CurrentProgramPoint { get { return getProgramPoint(CurrentStatement); } }
-
-        /// <summary>
-        /// Ending program point of call.
-        /// </summary>
-        public ProgramPoint<FlowInfo> EndProgramPoint { get { return getEndProgramPoint(); } }
+        public ProgramPointGraph<FlowInfo> ProgramPointGraph { get { return _ppGraph; } }
 
         #endregion
 
         /// <summary>
+        /// Program point graph for entry method CFG
+        /// </summary>
+        ProgramPointGraph<FlowInfo> _ppGraph;
+        /// <summary>
         /// Currently proceeded workitem
         /// </summary>
-        WorkItem _currentWorkItem;
+        ProgramPoint<FlowInfo> _currentWorkItem;
         /// <summary>
         /// Items that has to be processed.
         /// </summary>
-        Queue<WorkItem> _worklist = new Queue<WorkItem>();
-        /// <summary>
-        /// Here are stored proccessed blocks which leads to method end.
-        /// </summary>
-        HashSet<BasicBlock> _endBlocks = new HashSet<BasicBlock>();
-        /// <summary>
-        /// Program points for each statement.
-        /// </summary>
-        Dictionary<LangElement, ProgramPoint<FlowInfo>> _statementPoints = new Dictionary<LangElement, ProgramPoint<FlowInfo>>();
-
+        Queue<ProgramPoint<FlowInfo>> _worklist = new Queue<ProgramPoint<FlowInfo>>();
+ 
+      
         AnalysisServices<FlowInfo> _services;
         ControlFlowGraph _entryMethodCFG;
 
-        internal AnalysisCallContext(ControlFlowGraph entryMethodCFG, AnalysisServices<FlowInfo> services)
+        internal AnalysisCallContext(ControlFlowGraph entryMethodCFG,FlowInputSet<FlowInfo> entryInSet, AnalysisServices<FlowInfo> services)
         {
             _services = services;
             _entryMethodCFG = entryMethodCFG;
-            var entryEdge = new ConditionalEdge(null, _entryMethodCFG.start, null);
-
-            startWork(WorkItem.FromEdge(entryEdge));
             
-            initProgramPoints();
+           _ppGraph=initProgramPoints(entryInSet);
+           enqueueDependencies(_ppGraph.Root);
+           dequeuNextItem();
         }
 
         #region Worklist algorithm input API
@@ -92,33 +80,17 @@ namespace Weverca.ControlFlowGraph.Analysis
                 throw new NotSupportedException("Cannot skip to next statement, when analysis is complete");
             }
 
-            var itemComplete = _currentWorkItem.AtBlockEnd;
-            var hasUpdate = CurrentProgramPoint.HasUpdate;
-            var hasChanged = hasUpdate && CurrentProgramPoint.CommitUpdate();
+       
+            var hasUpdate = _currentWorkItem.HasUpdate;
+            var hasChanged = hasUpdate && _currentWorkItem.CommitUpdate();
 
-            if (hasChanged && itemComplete)
+            if (hasChanged)
             {
                 //notify other basic blocks and add them into work list
-                updateDependencies(_currentWorkItem.Block);
+                enqueueDependencies(_currentWorkItem);            
             }
-            else if (hasChanged)
-            {
-                //we are not at end of basic block - shift to next statement    
-                var output = CurrentOutputSet;
-                _currentWorkItem.NextStatement();
-                CurrentProgramPoint.InSet = output;
-            }
-
-            if (itemComplete)
-            {
-                //item is removed from worklist
-                if (_currentWorkItem.Block.OutgoingEdges.Count == 0)
-                {
-                    //ending block
-                    _endBlocks.Add(_currentWorkItem.Block);
-                }
-                dequeueCurrentItem();
-            }
+                              
+            dequeuNextItem();            
         }
 
         /// <summary>
@@ -127,44 +99,21 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="outSet">Output set for current statement.</param>
         internal void UpdateOutputSet(FlowOutputSet<FlowInfo> outSet)
         {
-            var currentPoint = getProgramPoint(CurrentStatement);
-
-            var oldOutSet = currentPoint.OutSet;
+            var oldOutSet = _currentWorkItem.OutSet;
             if (oldOutSet == outSet)
             {
                 //nothing to update
                 return;
             }
 
-            currentPoint.UpdateOutSet(outSet);
+            _currentWorkItem.UpdateOutSet(outSet);
         }
 
         #endregion
 
         #region Private utils
-
-
-        /// <summary>
-        /// Get program point for given statement.         
-        /// </summary>
-        /// <param name="statement"></param>
-        /// <returns></returns>
-        private ProgramPoint<FlowInfo> getProgramPoint(LangElement statement)
-        {
-            ProgramPoint<FlowInfo> result;
-            if (!_statementPoints.TryGetValue(statement, out result))
-            {
-                result = new ProgramPoint<FlowInfo>();
-                result.UpdateOutSet(_services.CreateEmptySet());
-                result.CommitUpdate();
-                _statementPoints.Add(statement, result);
-            }
-
-            return result;
-        }
-
-
-        private void dequeueCurrentItem()
+        
+        private void dequeuNextItem()
         {
             var started = false;
             do
@@ -186,164 +135,105 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private bool startWork(WorkItem item)
+        private bool startWork(ProgramPoint<FlowInfo> work)
         {
-            _currentWorkItem = item;
-
-            var point = getProgramPoint(_currentWorkItem.BlockStart);
-
-            var inSet = getBlockInput(_currentWorkItem.Block);
-
-            if (_currentWorkItem.NeedAssumptionConfirmation)
+            var inputSet = computeInput(work);
+            work.InSet = inputSet;
+            if (work.IsCondition)
             {
+                //Conditional program point cannot be set as current work item
+
                 var assumptedOutSet = _services.CreateEmptySet();
-                if (!_services.ConfirmAssumption(inSet, _currentWorkItem.AssumptionCondition, assumptedOutSet))
+                if (!_services.ConfirmAssumption(work.InSet, work.Condition, assumptedOutSet))
                 {
                     //assumption cannot be confirmed. => Flow is not reachable under assumption condition.
                     return false;
                 }
-                //else we use info from assumption
-                inSet = assumptedOutSet;
+                work.UpdateOutSet(assumptedOutSet);
+                if (work.CommitUpdate())
+                {
+                    enqueueDependencies(work);
+                }
+                
+                return false;
             }
 
-            point.InSet = inSet;
+            if (work.IsEmpty)
+            {
+                //Empty program point cannot be set as current work item
+                work.UpdateOutSet(inputSet);//empty block doesn't change flow
+                if (work.CommitUpdate())
+                {
+                    enqueueDependencies(work);
+                }
+                return false;
+            }
+
+            _currentWorkItem = work;
             return true;
         }
 
-        /// <summary>
-        /// Get input from all block points which this block depends on.
-        /// </summary>
-        /// <param name="block"></param>
-        /// <returns></returns>
-        private FlowInputSet<FlowInfo> getBlockInput(BasicBlock block)
+        private FlowOutputSet<FlowInfo> computeInput(ProgramPoint<FlowInfo> point)
         {
-            FlowInputSet<FlowInfo> result = null;
-            foreach (var dependencyEdge in block.IncommingEdges)
+            if (!point.Parents.Any())
             {
-                var dependency = dependencyEdge.From;
-                var depOutput = getBlockOutput(dependency);
+                //there is no preceding program point.
+                return point.InSet as FlowOutputSet<FlowInfo>;
+            }
 
+            FlowOutputSet<FlowInfo> result=null;
+
+            foreach (var parent in point.Parents)
+            {
                 if (result == null)
                 {
-                    result = depOutput;
+                    result = parent.OutSet;
                 }
                 else
                 {
-                    var outSet = _services.CreateEmptySet();
-                    _services.Merge(result, depOutput, outSet);
-                    result = outSet;
+                    var mergeOutput=_services.CreateEmptySet();
+                    _services.Merge(result, parent.OutSet, mergeOutput);
+                    result = mergeOutput;
                 }
-            }
-
-            if (result == null)
-            {
-                result = _services.CreateEmptySet();
             }
             return result;
         }
 
-        /// <summary>
-        /// Get output from last statement in block
-        /// </summary>
-        /// <param name="block"></param>
-        /// <returns></returns>
-        private FlowOutputSet<FlowInfo> getBlockOutput(BasicBlock block)
+        private void enqueueDependencies(ProgramPoint<FlowInfo> point)
         {
-            if (block.Statements.Count == 0)
+            foreach (var child in point.Children)
             {
-                //empty block doesn't change flow
-                var output = _services.CreateEmptySet();
-                output.FillFrom(getBlockInput(block));
-                return output;
-            }
-
-            //get output of last statement
-            var lastStmt = block.Statements.Last();
-            return getProgramPoint(lastStmt).OutSet;
-        }
-
-        private void updateDependencies(BasicBlock block)
-        {
-            foreach (var dependency in block.OutgoingEdges)
-            {
-                addWork(dependency);
-            }
-
-            if (block.DefaultBranch != null && block.DefaultBranch.To.Statements.Count()>0)
-            {
-                addWorkDefault(block);
+                addWork(child);
             }
         }
-
+        
         /// <summary>
         /// Add edge's block to worklist, if isn't present yet
         /// </summary>
         /// <param name="edge"></param>
-        private void addWork(ConditionalEdge edge)
+        private void addWork(ProgramPoint<FlowInfo> work)
         {
-            var work = WorkItem.FromEdge(edge);
-
-            if (edge.To.Statements.Count == 0 || _worklist.Contains(work))
+            if (_worklist.Contains(work))
             {
                 return;
             }
-
-            _worklist.Enqueue(work);
-        }
-
-        /// <summary>
-        /// Add default branch of block to worklist, if isn't present yet
-        /// </summary>
-        /// <param name="block"></param>
-        private void addWorkDefault(BasicBlock block)
-        {
-            var work = WorkItem.FromDefaultBranch(block);
-
-            if (block.DefaultBranch.To.Statements.Count == 0 || _worklist.Contains(work))
-            {
-                return;
-            }
-
             _worklist.Enqueue(work);
         }
 
 
-        private ProgramPoint<FlowInfo> getEndProgramPoint()
+        private ProgramPointGraph<FlowInfo> initProgramPoints(FlowInputSet<FlowInfo> startInfo)
         {
-            FlowOutputSet<FlowInfo> mergedOut = null;
-            foreach (var endBlock in _endBlocks)
+            var ppGraph= new ProgramPointGraph<FlowInfo>(_entryMethodCFG);
+
+            ppGraph.Root.InSet = startInfo;
+
+            foreach (var point in ppGraph.Points)
             {
-                var depOutput = getBlockOutput(endBlock);
-
-                if (mergedOut == null)
-                {
-                    mergedOut = depOutput;
-                }
-                else
-                {
-                    var outSet = _services.CreateEmptySet();
-                    _services.Merge(mergedOut, depOutput, outSet);
-                    mergedOut = outSet;
-                }
+                point.InSet = _services.CreateEmptySet();
+                point.UpdateOutSet(_services.CreateEmptySet());
+                point.CommitUpdate();
             }
-
-            if (mergedOut == null)
-            {
-                mergedOut = _services.CreateEmptySet();
-            }
-            var result = new ProgramPoint<FlowInfo>();
-            result.UpdateOutSet(mergedOut);
-            result.CommitUpdate();
-
-            //TODO endpoint should be created properly
-            return result;
-        }
-
-
-
-        private void initProgramPoints()
-        {
-            //TODO throw new NotImplementedException();
+            return ppGraph;
         }
 
         #endregion

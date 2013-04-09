@@ -70,7 +70,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             var cfg = CFGTestUtils.CreateCFG(code);
             var analysis = new StringAnalysis2(cfg);
             analysis.Analyse();
-            var list=new List<ValueInfo>(analysis.RootEndPoint.OutSet.CollectedInfo);
+            var list=new List<ValueInfo>(analysis.ProgramPointGraph.End.OutSet.CollectedInfo);
             return list.ToArray();
         }
         

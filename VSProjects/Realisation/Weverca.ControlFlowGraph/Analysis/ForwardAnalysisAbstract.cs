@@ -35,7 +35,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Root output from analysis
         /// </summary>
-        public ProgramPoint<FlowInfo> RootEndPoint { get; private set; }
+        public ProgramPointGraph<FlowInfo> ProgramPointGraph { get; private set; }
         /// <summary>
         /// Control flow graph of method which is entry point of analysis.
         /// </summary>
@@ -118,7 +118,10 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         private void analyse()
         {
-            var entryContext = new AnalysisCallContext<FlowInfo>(EntryMethodGraph,_services);
+            //TODO input data handling
+            var input = NewEmptySet();
+            var entryContext = new AnalysisCallContext<FlowInfo>(EntryMethodGraph, input, _services);
+            ProgramPointGraph = entryContext.ProgramPointGraph;
 
             _callStack = new AnalysisCallStack<FlowInfo>();            
             _callStack.Push(entryContext);
@@ -137,8 +140,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 }
 
                 flowThroughNextStmt(currentContext);
-            }
-            RootEndPoint=entryContext.EndProgramPoint;
+            }            
         }
 
         /// <summary>

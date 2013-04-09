@@ -40,7 +40,7 @@ switch($unknown){
 
 ";
 
-        readonly static string AssumptionTest_CODE = SwitchBlock_CODE + @"
+        readonly static string AssumptionPrunning_CODE = SwitchBlock_CODE + @"
 $str2='before';
 switch($str){
     case '1':
@@ -55,6 +55,17 @@ switch($str){
     default:
         $str2='default';
         break;
+}
+";
+
+        readonly static string AssumptionToValue_CODE = @"
+$str='before';
+switch($str2){
+    case '1':    
+    case '2':
+    case '3':
+        $str=$str2;
+        break;   
 }
 ";
 
@@ -88,11 +99,19 @@ switch($str){
         }
 
         [TestMethod]
-        public void AssumptionUsageAnalysis()
+        public void AssumptionPrunningAnalysis()
         {
-            var vars = CFGTestUtils.GetEndPointInfo(AssumptionTest_CODE);
+            var vars = CFGTestUtils.GetEndPointInfo(AssumptionPrunning_CODE);
             var test = CFGTestUtils.TestValues("str2",vars, "1", "2", "default");
-            Assert.IsTrue(test, "Merged value variable from switch blocks with assumption usage");
+            Assert.IsTrue(test, "Merged value variable from switch blocks with assumption prunning");
+        }
+
+        [TestMethod]
+        public void AssumptionToValueAnalysis()
+        {
+            var vars = CFGTestUtils.GetEndPointInfo(AssumptionToValue_CODE);
+            var test = CFGTestUtils.TestValues("str", vars, "before","1", "2", "3");
+            Assert.IsTrue(test, "Value based on assumption condition resolving");
         }
     }
 }

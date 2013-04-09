@@ -41,5 +41,28 @@ namespace Weverca.ControlFlowGraph.Analysis
             Parts = parts;
             Form = form;
         }
+
+        public override int GetHashCode()
+        {
+            var sum = (int)Form;
+            foreach (var part in Parts)
+            {
+                sum += part.GetHashCode();
+            }
+            return sum;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as AssumptionCondition;
+            if (o == null)
+                return false;
+
+            var sameCount = Parts.Count() == o.Parts.Count();
+            var sameEls = !Parts.Except(o.Parts).Any();
+            var sameForms = Form == o.Form;
+
+            return sameForms && sameCount && sameEls;
+        }
     }
 }

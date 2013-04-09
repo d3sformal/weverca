@@ -97,7 +97,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <returns></returns>
         protected abstract bool canProveTrue(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
 
-        protected virtual void Assume(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowInputSet<FlowInfo> outSet)
+        protected virtual void Assume(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowOutputSet<FlowInfo> outSet)
         {
             //by default we won't assume anything
         }
