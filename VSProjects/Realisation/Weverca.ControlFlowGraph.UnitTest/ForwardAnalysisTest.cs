@@ -98,7 +98,6 @@ switch($str){
 }
 
 $str();
-
 ";
 
         [TestMethod]

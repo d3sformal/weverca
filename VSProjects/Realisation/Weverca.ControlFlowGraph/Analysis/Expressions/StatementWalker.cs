@@ -125,20 +125,33 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             push(info);
         }
 
+        public override void VisitDirectFcnCall(DirectFcnCall x)
+        {
+
+            var parameters = getParameters(x.CallSignature);
+            _resolver.CallDispatch(x.QualifiedName, parameters.ToArray());     
+        }
+
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
             var fcnName = pop();
+           var parameters = getParameters(x.CallSignature);
+            _resolver.CallDispatch(fcnName, parameters.ToArray());                  
+        }
 
-            var parCount=x.CallSignature.Parameters.Count;
+        private List<FlowInfo> getParameters(CallSignature signature)
+        {
 
-            List<FlowInfo> parameters = new List<FlowInfo>();            
+            var parCount = signature.Parameters.Count;
+
+            List<FlowInfo> parameters = new List<FlowInfo>();
             for (int i = 0; i < parCount; ++i)
             {
                 //TODO maybe no all parameters has to be present
                 parameters.Add(pop());
             }
             parameters.Reverse();
-            _resolver.CallDispatch(fcnName, parameters.ToArray());                  
+            return parameters;
         }
 
         public override void VisitFunctionDecl(FunctionDecl x)

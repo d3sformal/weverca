@@ -21,7 +21,8 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             Element = element;
         }
 
-        public virtual void Declare(FunctionDecl x){
+        public virtual void Declare(FunctionDecl x)
+        {
             OutSet.SetDeclaration(x);
         }
 
@@ -35,6 +36,15 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
         public abstract FlowInputSet<FlowInfo> PrepareCallInput(FunctionDecl function, FlowInfo[] args);
 
         public abstract BasicBlock GetEntryPoint(FunctionDecl function);
+
+        public virtual void CallDispatch(QualifiedName name, FlowInfo[] args)
+        {
+            var dispatch = CreateDispatch(name, args);
+            if (dispatch != null)
+            {
+                OutSet.Dispatch(new CallDispatch<FlowInfo>[] { dispatch });
+            }
+        }
 
         public virtual void CallDispatch(FlowInfo functionName, FlowInfo[] args)
         {
@@ -50,18 +60,28 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             {
                 //TODO resolve namespaces
                 var qualifiedName = new QualifiedName(new Name(name));
-                FunctionDecl decl;
-                if (!InSet.TryGetFunction(qualifiedName, out  decl))
+                var dispatch = CreateDispatch(qualifiedName, args);
+                if (dispatch == null)
                     continue;
-
-                var callInSet = PrepareCallInput(decl, args);
-                var functionCFG = GetEntryPoint(decl);
-
-                var dispatch = new CallDispatch<FlowInfo>(functionCFG, callInSet);
                 dispatches.Add(dispatch);
             }
 
             OutSet.Dispatch(dispatches);
         }
+
+  
+        public CallDispatch<FlowInfo> CreateDispatch(QualifiedName name,FlowInfo[] args)
+        {
+            FunctionDecl decl;
+            if (!InSet.TryGetFunction(name, out  decl))
+                //TODO what to do, if declaration isn't found ?
+                return null;
+
+            var callInSet = PrepareCallInput(decl, args);
+            var functionCFG = GetEntryPoint(decl);
+
+            return new CallDispatch<FlowInfo>(functionCFG, callInSet);
+        }
+
     }
 }
