@@ -159,6 +159,11 @@ namespace Weverca.ControlFlowGraph
             }
        }
 
+        public override void VisitGlobalStmt(GlobalStmt x)
+        {
+            currentBasicBlock.AddElement(x);
+        }
+
         public override void VisitLabelStmt(LabelStmt x)
         {
             BasicBlock labelBlock = new BasicBlock();
