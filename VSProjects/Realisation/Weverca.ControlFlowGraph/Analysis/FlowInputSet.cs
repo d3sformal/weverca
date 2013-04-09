@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
+using PHP.Core.AST;
+
 namespace Weverca.ControlFlowGraph.Analysis
 {
     /// <summary>
@@ -20,10 +23,14 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         public IEnumerable<object> CollectedKeys { get { return collectedInfo.Keys; } }
 
+        public IEnumerable<FunctionDecl> CollectedFunctions {get{return functions.Values;}}
+
         /// <summary>
         /// Info storage.
         /// </summary>
         protected Dictionary<object,FlowInfo> collectedInfo=new Dictionary<object,FlowInfo>();
+
+        protected Dictionary<QualifiedName,FunctionDecl> functions=new Dictionary<QualifiedName,FunctionDecl>();
 
         /// <summary>
         /// Try to get info according to given key. 
@@ -36,6 +43,10 @@ namespace Weverca.ControlFlowGraph.Analysis
             return collectedInfo.TryGetValue(key, out info);
         }
 
+        public bool TryGetFunction(QualifiedName name, out FunctionDecl function)
+        {
+            return functions.TryGetValue(name, out function);
+        }
 
 
         public override bool Equals(object obj)

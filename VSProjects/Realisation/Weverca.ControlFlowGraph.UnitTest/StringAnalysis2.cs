@@ -15,7 +15,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
     class StringAnalysis2 : ForwardAnalysis<ValueInfo>
     {
         public StringAnalysis2(ControlFlowGraph entryMethod)
-            : base(entryMethod, new SimpleEvaluator())
+            : base(entryMethod, new SimpleEvaluator(),new SimpleResolver(entryMethod))
         {
         }
 
@@ -77,6 +77,55 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 assumedValue.BoundCondition = eq;
                 outSet.SetInfo(assumedValue.Name, assumedValue);
             }
+        }
+
+        protected override void ReturnedFromCall(FlowInputSet<ValueInfo> callerInSet, FlowInputSet<ValueInfo> callOutput, FlowOutputSet<ValueInfo> outSet)
+        {
+            //TODO resolve local/global
+            outSet.FillFrom(callerInSet);
+            foreach (var valueInfo in callOutput.CollectedInfo)
+            {
+                outSet.SetInfo(valueInfo.Name, valueInfo);
+            }        
+        }
+
+        protected override ValueInfo extractReturnValue(FlowInputSet<ValueInfo> callOutput)
+        {
+            return null;
+        }
+    }
+
+    class SimpleResolver : DeclarationResolver<ValueInfo>
+    {
+        ControlFlowGraph _entryCFG;
+        public SimpleResolver(ControlFlowGraph entryCFG)
+        {
+            _entryCFG = entryCFG;
+        }
+
+        public override string[] GetFunctionNames(ValueInfo functionName)
+        {
+            var result = new List<string>();
+
+            foreach (var name in functionName.PossibleValues)
+            {
+                result.Add(name.ToString());
+            }
+
+            return result.ToArray();
+        }
+
+        public override FlowInputSet<ValueInfo> PrepareCallInput(FunctionDecl function, ValueInfo[] args)
+        {
+            if (args.Length > 0)
+                throw new NotImplementedException();
+
+            return this.InSet;
+        }
+
+        public override BasicBlock GetEntryPoint(FunctionDecl function)
+        {
+            return _entryCFG.GetBasicBlock(function);
         }
     }
 
@@ -164,6 +213,8 @@ namespace Weverca.ControlFlowGraph.UnitTest
         {
             Name = info.Name;
             PossibleValues.UnionWith(info.PossibleValues);
+            BoundCondition = info.BoundCondition;
+            IsUnbounded = info.IsUnbounded;
         }
 
         public override string ToString()
@@ -203,6 +254,12 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
         public void MergeWith(ValueInfo other)
         {
+      /*      if (BoundCondition != other.BoundCondition)
+            {
+                //TODO more precise resolve condition merging
+                IsUnbounded = true;
+            }*/
+
             IsUnbounded |= other.IsUnbounded;
             if (IsUnbounded)
                 PossibleValues.Clear();

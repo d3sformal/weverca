@@ -247,6 +247,11 @@ namespace Weverca.ControlFlowGraph
         {
             declaredFunctions.Add(x, functionBasicBlock);
         }
+
+        public BasicBlock GetBasicBlock(FunctionDecl function)
+        {
+            return declaredFunctions[function];
+        }
     }
 
 }

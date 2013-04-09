@@ -14,13 +14,13 @@ namespace Weverca.ControlFlowGraph.Analysis
         Dictionary<object, ProgramPoint<FlowInfo>> _points = new Dictionary<object, ProgramPoint<FlowInfo>>();
 
         internal IEnumerable<ProgramPoint<FlowInfo>> Points { get { return _points.Values; } }
-        public readonly ProgramPoint<FlowInfo> Root;
+        public readonly ProgramPoint<FlowInfo> Start;
         public readonly ProgramPoint<FlowInfo> End;
 
-        internal ProgramPointGraph(ControlFlowGraph method)
+        internal ProgramPointGraph(BasicBlock entryPoint)
         {
-            Root = empty(method.start);
-            addChildren(Root, method.start);
+            Start = empty(entryPoint);
+            addChildren(Start, entryPoint);
 
             var endPoints = new List<ProgramPoint<FlowInfo>>();
             foreach (var point in _points.Values)
@@ -38,7 +38,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 return;
             }
 
-            End = empty(Root);
+            End = empty(Start);
             foreach (var endPoint in endPoints)
             {
                 endPoint.AddChild(End);

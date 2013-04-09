@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using PHP.Core.AST; 
+using PHP.Core.AST;
 
 namespace Weverca.ControlFlowGraph.Analysis
 {
@@ -15,11 +15,12 @@ namespace Weverca.ControlFlowGraph.Analysis
     {
         public FlowInputSet<FlowInfo> InSet { get; internal set; }
         public FlowOutputSet<FlowInfo> OutSet { get; private set; }
+        public FlowOutputSet<FlowInfo> OutSetUpdate { get { return _outSetUpdate; } }
 
-        public IEnumerable<ProgramPoint<FlowInfo>> Children { get{return _children;}}
-        public IEnumerable<ProgramPoint<FlowInfo>> Parents { get{return _parents;} }
+        public IEnumerable<ProgramPoint<FlowInfo>> Children { get { return _children; } }
+        public IEnumerable<ProgramPoint<FlowInfo>> Parents { get { return _parents; } }
 
-        
+
 
         private List<ProgramPoint<FlowInfo>> _children = new List<ProgramPoint<FlowInfo>>();
         private List<ProgramPoint<FlowInfo>> _parents = new List<ProgramPoint<FlowInfo>>();
@@ -53,11 +54,11 @@ namespace Weverca.ControlFlowGraph.Analysis
             }
         }
 
-        internal ProgramPoint(AssumptionCondition condition,BasicBlock outerBlock)
+        internal ProgramPoint(AssumptionCondition condition, BasicBlock outerBlock)
         {
             _condition = condition;
             IsCondition = true;
-            OuterBlock=outerBlock;
+            OuterBlock = outerBlock;
         }
 
         internal ProgramPoint(LangElement statement, BasicBlock outerBlock)
@@ -96,7 +97,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <returns>True if any changes has been changed, false otherwise.</returns>
         internal bool CommitUpdate()
-        {            
+        {
             if (!HasUpdate || _outSetUpdate.Equals(OutSet))
             {
                 HasUpdate = false;
@@ -105,6 +106,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
             HasUpdate = false;
             OutSet = _outSetUpdate;
+            _outSetUpdate = null;
             return true;
         }
 
@@ -121,7 +123,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             {
                 b.Append("parent(").Append(parent.InSet).Append("->").Append(parent.OutSet).AppendLine(")");
             }
-                        
+
             foreach (var child in Children)
             {
                 b.Append("child(").Append(child.InSet).Append("->").Append(child.OutSet).AppendLine(")");

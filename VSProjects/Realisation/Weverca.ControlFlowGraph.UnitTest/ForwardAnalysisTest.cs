@@ -69,6 +69,38 @@ switch($str2){
 }
 ";
 
+        readonly static string DynamicCall_CODE = @"
+$globVar='init';
+
+function m1(){
+    global $globVar;
+    $globVar='m1 call';
+}
+
+function m2(){
+    global $globVar;
+    $globVar='m2 call';
+}
+
+function m3(){
+    global $globVar;
+    $globVar='m3 call';
+}
+
+switch($str){
+    case 'm1':
+    case 'm2':
+        $str=$str;
+        break;
+    default:
+        $str='m3';
+        break;
+}
+
+$str();
+
+";
+
         [TestMethod]
         public void SingleBlockAnalysis()
         {
@@ -112,6 +144,14 @@ switch($str2){
             var vars = CFGTestUtils.GetEndPointInfo(AssumptionToValue_CODE);
             var test = CFGTestUtils.TestValues("str", vars, "before","1", "2", "3");
             Assert.IsTrue(test, "Value based on assumption condition resolving");
+        }
+
+        [TestMethod]
+        public void DynamicCallAnalysis()
+        {
+            var vars = CFGTestUtils.GetEndPointInfo(DynamicCall_CODE);
+            var test = CFGTestUtils.TestValues("globVar", vars, "m1 call","m2 call","m3 call");
+            Assert.IsTrue(test, "Global value based on dynamic call");
         }
     }
 }

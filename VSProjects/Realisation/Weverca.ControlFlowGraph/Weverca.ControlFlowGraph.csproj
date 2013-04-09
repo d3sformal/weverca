@@ -43,7 +43,10 @@
     <Compile Include="Analysis\AssumptionCondition.cs" />
     <Compile Include="Analysis\CallAnalysisContext.cs" />
     <Compile Include="Analysis\CallDispatch.cs" />
+    <Compile Include="Analysis\CallDispatchLevel.cs" />
+    <Compile Include="Analysis\Expressions\DeclarationResolver.cs" />
     <Compile Include="Analysis\Expressions\ExpressionEvaluator.cs" />
+    <Compile Include="Analysis\Expressions\StatementWalker.cs" />
     <Compile Include="Analysis\FlowInputSet.cs" />
     <Compile Include="Analysis\AnalysisServices.cs" />
     <Compile Include="Analysis\ForwardAnalysis.cs" />

@@ -97,7 +97,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             throw new NotImplementedException();
         }
 
-        protected override void CallMerge(IEnumerable<FlowInputSet<StringVarInfo>> inSets, FlowOutputSet<StringVarInfo> outSet)
+        protected override void CallMerge(FlowInputSet<StringVarInfo> inSet1, FlowInputSet<StringVarInfo> inSet2, FlowOutputSet<StringVarInfo> outSet)
         {
             throw new NotImplementedException();
         }
@@ -185,5 +185,10 @@ namespace Weverca.ControlFlowGraph.UnitTest
         }
 
         #endregion
+
+        protected override void ReturnedFromCall(FlowInputSet<StringVarInfo> callerInSet, FlowInputSet<StringVarInfo> callOutput, FlowOutputSet<StringVarInfo> outSet)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

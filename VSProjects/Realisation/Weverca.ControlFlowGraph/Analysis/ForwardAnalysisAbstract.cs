@@ -30,7 +30,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Determine that analysis has been already runned.
         /// </summary>
-        public bool IsAnalysed{get;private set;}
+        public bool IsAnalysed { get; private set; }
 
         /// <summary>
         /// Root output from analysis
@@ -39,21 +39,23 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Control flow graph of method which is entry point of analysis.
         /// </summary>
-        public ControlFlowGraph EntryMethodGraph{get; private set;}
+        public ControlFlowGraph EntryMethodGraph { get; private set; }
 
         /// <summary>
         /// Create forward analysis object for given entry method graph.
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        public ForwardAnalysisAbstract(ControlFlowGraph entryMethodGraph){
-            _services = new AnalysisServices<FlowInfo>(BlockMerge, NewEmptySet,ConfirmAssumption);
-            EntryMethodGraph=entryMethodGraph;
+        public ForwardAnalysisAbstract(ControlFlowGraph entryMethodGraph)
+        {
+            _services = new AnalysisServices<FlowInfo>(BlockMerge, NewEmptySet, ConfirmAssumption);
+            EntryMethodGraph = entryMethodGraph;
         }
 
         /// <summary>
         /// Run analysis on EntryMethodGraph
         /// </summary>
-        public void Analyse(){
+        public void Analyse()
+        {
             checkAlreadyAnalysed();
             analyse();
             IsAnalysed = true;
@@ -61,13 +63,15 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         #region Available API for analysis handling
 
+        public FlowInputSet<FlowInfo> LastCallOutput { get; private set; }
+
         /// <summary>
         /// Analyze given statement. 
         /// </summary>
         /// <param name="inSet">Information available before given statement.</param>
         /// <param name="statement">Statement which can add new information.</param>
         /// <param name="outSet">Output information which is known after statement analysis.</param>
-        protected abstract void FlowThrough(FlowInputSet<FlowInfo> inSet, LangElement statement, FlowOutputSet<FlowInfo> outSet);       
+        protected abstract void FlowThrough(FlowInputSet<FlowInfo> inSet, LangElement statement, FlowOutputSet<FlowInfo> outSet);
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
         /// </summary>
@@ -85,7 +89,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="inSet1">Input set to be merged into output</param>
         /// <param name="inSet2">Input set to be merged into output</param>
         /// <param name="outSet">Result of merging</param>
-        protected abstract void BlockMerge(FlowInputSet<FlowInfo> inSet1,FlowInputSet<FlowInfo> inSet2,FlowOutputSet<FlowInfo> outSet);
+        protected abstract void BlockMerge(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet);
         /// <summary>
         /// All dispatched includes are merged via this call.        
         /// </summary>
@@ -97,9 +101,17 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="inSets">Input sets from all dispatched includes.</param>
         /// <param name="outSet">Output after merging.</param>
-        protected abstract void CallMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet);
+        protected abstract void CallMerge(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet);
 
-     
+        /// <summary>
+        /// When call dispatch is poped from stack, all dispatches are merged into one. Then ReturnFromCall 
+        /// </summary>
+        /// <param name="callerInSet"></param>
+        /// <param name="callOutput"></param>
+        /// <param name="outSet"></param>
+        /// <returns></returns>
+        protected abstract void ReturnedFromCall(FlowInputSet<FlowInfo> callerInSet, FlowInputSet<FlowInfo> callOutput, FlowOutputSet<FlowInfo> outSet);
+
         /// <summary>
         /// Creates set without any stored information.
         /// </summary>
@@ -120,11 +132,15 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             //TODO input data handling
             var input = NewEmptySet();
-            var entryContext = new AnalysisCallContext<FlowInfo>(EntryMethodGraph, input, _services);
-            ProgramPointGraph = entryContext.ProgramPointGraph;
 
-            _callStack = new AnalysisCallStack<FlowInfo>();            
-            _callStack.Push(entryContext);
+            _callStack = new AnalysisCallStack<FlowInfo>();
+
+            var entryDispatch = new CallDispatch<FlowInfo>(EntryMethodGraph.start, input);
+            var entryLevel = new CallDispatchLevel<FlowInfo>(entryDispatch, _services);
+
+            ProgramPointGraph = entryLevel.CurrentContext.ProgramPointGraph;
+
+            _callStack.Push(entryLevel);
 
             while (!_callStack.IsEmpty)
             {
@@ -133,14 +149,43 @@ namespace Weverca.ControlFlowGraph.Analysis
                 {
                     //pop out empty context
                     //TODO collect result of analysis 
-                    //TODO collect return value
-                    //TODO call merge
-                    _callStack.Pop();
+
+                    if (!_callStack.CurrentLevel.ShiftToNext())
+                    {
+                        var callResult = _callStack.CurrentLevel.GetResult();
+                        _callStack.Pop();
+                        handleCompletedCallDispatch(callResult);
+                    }
                     continue;
                 }
 
                 flowThroughNextStmt(currentContext);
-            }            
+            }
+        }
+
+        private void handleCompletedCallDispatch(AnalysisCallContext<FlowInfo>[] contexts)
+        {
+            var mergedCallContext = contexts[0].ProgramPointGraph.End.OutSet;
+            if (contexts.Length > 1)
+            {
+                for (int i = 1; i < contexts.Length; ++i)
+                {
+                    var contextResult = contexts[i].ProgramPointGraph.End.OutSet;
+                    var callMergeOutSet = NewEmptySet();
+                    CallMerge(mergedCallContext, contextResult, callMergeOutSet);
+                    mergedCallContext = callMergeOutSet;
+                }
+            }
+
+            LastCallOutput = mergedCallContext;
+
+            if (!_callStack.IsEmpty)
+            {
+                var currentInSet = _callStack.Peek.CurrentInputSet;
+                var currentOutSet = _callStack.Peek.CurrentOutputSetUpdate;
+                ReturnedFromCall(currentInSet, LastCallOutput, currentOutSet);
+                _callStack.Peek.UpdateOutputSet(currentOutSet);
+            }
         }
 
         /// <summary>
@@ -151,18 +196,30 @@ namespace Weverca.ControlFlowGraph.Analysis
         private void flowThroughNextStmt(AnalysisCallContext<FlowInfo> context)
         {
             var inSet = context.CurrentInputSet;
-            var outSetOld = context.CurrentOutputSet;
+            var outSet = context.CurrentOutputSetUpdate;
             var statement = context.CurrentStatement;
+
+            if (outSet.CallDispatches != null)
+            {
+                //Copying without dispatches
+                outSet = outSet.Copy();
+            }
             
-
-            var outSet = outSetOld.Copy();
             FlowThrough(inSet, statement, outSet);
-
-
             context.UpdateOutputSet(outSet);
-            context.SkipToNextStatement();            
 
-            _callStack.AddDispatchLevel(outSet.CallDispatches);                    
+            //Call output is available only once
+            LastCallOutput = null;
+
+            if (outSet.CallDispatches != null && outSet.CallDispatches.Any())
+            {
+                var level = new CallDispatchLevel<FlowInfo>(outSet.CallDispatches, _services);
+                _callStack.Push(level);
+                return;
+            }
+
+            //we will skip to next statement only if there is no dispatch
+            context.SkipToNextStatement();          
         }
 
         #endregion

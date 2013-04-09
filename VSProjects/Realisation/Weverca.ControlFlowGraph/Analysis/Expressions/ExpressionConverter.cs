@@ -27,6 +27,13 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             addItem(element);
         }
 
+        public override void VisitFunctionDecl(FunctionDecl x)
+        {
+            //no recursive traversing
+            addItem(x);
+        }
+
+
      /*   public override void VisitAssignEx(AssignEx x)
         {
             base.VisitAssignEx(x);

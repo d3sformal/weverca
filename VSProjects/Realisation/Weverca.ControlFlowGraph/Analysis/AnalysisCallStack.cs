@@ -14,7 +14,9 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Peek context of call stack
         /// </summary>
-        internal AnalysisCallContext<FlowInfo> Peek { get { return _callStack.Peek(); } }
+        internal AnalysisCallContext<FlowInfo> Peek { get { return CurrentLevel.CurrentContext; } }
+
+        internal CallDispatchLevel<FlowInfo> CurrentLevel { get { return _callStack.Peek(); } }
 
         /// <summary>
         /// Determine that call stack is empty
@@ -24,13 +26,14 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Stack of call contexts
         /// </summary>
-        Stack<AnalysisCallContext<FlowInfo>> _callStack = new Stack<AnalysisCallContext<FlowInfo>>();
+        //Stack<AnalysisCallContext<FlowInfo>> _callStack = new Stack<AnalysisCallContext<FlowInfo>>();
+        Stack<CallDispatchLevel<FlowInfo>> _callStack = new Stack<CallDispatchLevel<FlowInfo>>();
 
         /// <summary>
         /// Pushes context at top of call stack
         /// </summary>
         /// <param name="context"></param>
-        internal void Push(AnalysisCallContext<FlowInfo> context)
+        internal void Push(CallDispatchLevel<FlowInfo> context)
         {
             _callStack.Push(context);
         }
@@ -40,19 +43,8 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         internal void Pop()
         {
+            
             _callStack.Pop();
-        }
-
-        /// <summary>
-        /// Add dispatches at one dispatch level  (result of all calls will be merged)
-        /// </summary>
-        /// <param name="dispatches"></param>
-        internal void AddDispatchLevel(IEnumerable<CallDispatch> dispatches)
-        {
-            if (dispatches!= null && dispatches.Count() > 0)
-            {
-                throw new NotImplementedException();
-            }
-        }
+        }      
     }
 }

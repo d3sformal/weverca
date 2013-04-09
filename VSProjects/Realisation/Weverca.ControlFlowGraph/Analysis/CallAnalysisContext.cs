@@ -25,17 +25,25 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Set which belongs to program point beffore current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
-        internal FlowInputSet<FlowInfo> CurrentInputSet { get { return _currentWorkItem.InSet; } }
+        internal FlowInputSet<FlowInfo> CurrentInputSet { get { return _currentProgramPoint.InSet; } }
         /// <summary>
         /// Set which belongs to program point after current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
-        internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return _currentWorkItem.OutSet; } }
+        internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return _currentProgramPoint.OutSet; } }
+
+        internal FlowOutputSet<FlowInfo> CurrentOutputSetUpdate { get {  
+            var result=_currentProgramPoint.OutSetUpdate; 
+            if(result==null)
+                result = _services.CreateEmptySet();
+
+            return result;
+        } }
 
         /// <summary>
         /// Current statement to analyze according to worklist algorithm.
         /// </summary>
-        internal LangElement CurrentStatement { get { return _currentWorkItem.Statement; } }
+        internal LangElement CurrentStatement { get { return _currentProgramPoint.Statement; } }
 
         public ProgramPointGraph<FlowInfo> ProgramPointGraph { get { return _ppGraph; } }
 
@@ -48,7 +56,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Currently proceeded workitem
         /// </summary>
-        ProgramPoint<FlowInfo> _currentWorkItem;
+        ProgramPoint<FlowInfo> _currentProgramPoint;
         /// <summary>
         /// Items that has to be processed.
         /// </summary>
@@ -56,15 +64,18 @@ namespace Weverca.ControlFlowGraph.Analysis
  
       
         AnalysisServices<FlowInfo> _services;
-        ControlFlowGraph _entryMethodCFG;
+        BasicBlock _entryPoint;
+        FlowInputSet<FlowInfo> _entryInSet;
 
-        internal AnalysisCallContext(ControlFlowGraph entryMethodCFG,FlowInputSet<FlowInfo> entryInSet, AnalysisServices<FlowInfo> services)
+        internal AnalysisCallContext(BasicBlock entryPoint,FlowInputSet<FlowInfo> entryInSet, AnalysisServices<FlowInfo> services)
         {
             _services = services;
-            _entryMethodCFG = entryMethodCFG;
+            _entryPoint = entryPoint;
+            _entryInSet = entryInSet;
             
            _ppGraph=initProgramPoints(entryInSet);
-           enqueueDependencies(_ppGraph.Root);
+                      
+           enqueueDependencies(_ppGraph.Start);
            dequeuNextItem();
         }
 
@@ -81,13 +92,13 @@ namespace Weverca.ControlFlowGraph.Analysis
             }
 
        
-            var hasUpdate = _currentWorkItem.HasUpdate;
-            var hasChanged = hasUpdate && _currentWorkItem.CommitUpdate();
+            var hasUpdate = _currentProgramPoint.HasUpdate;
+            var hasChanged = hasUpdate && _currentProgramPoint.CommitUpdate();
 
             if (hasChanged)
             {
                 //notify other basic blocks and add them into work list
-                enqueueDependencies(_currentWorkItem);            
+                enqueueDependencies(_currentProgramPoint);            
             }
                               
             dequeuNextItem();            
@@ -98,15 +109,8 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="outSet">Output set for current statement.</param>
         internal void UpdateOutputSet(FlowOutputSet<FlowInfo> outSet)
-        {
-            var oldOutSet = _currentWorkItem.OutSet;
-            if (oldOutSet == outSet)
-            {
-                //nothing to update
-                return;
-            }
-
-            _currentWorkItem.UpdateOutSet(outSet);
+        {          
+            _currentProgramPoint.UpdateOutSet(outSet);
         }
 
         #endregion
@@ -122,7 +126,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 {
                     //work is done
                     IsComplete = true;
-                    _currentWorkItem = null;
+                    _currentProgramPoint = null;
                     return;
                 }
 
@@ -169,7 +173,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 return false;
             }
 
-            _currentWorkItem = work;
+            _currentProgramPoint = work;
             return true;
         }
 
@@ -223,9 +227,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         private ProgramPointGraph<FlowInfo> initProgramPoints(FlowInputSet<FlowInfo> startInfo)
         {
-            var ppGraph= new ProgramPointGraph<FlowInfo>(_entryMethodCFG);
-
-            ppGraph.Root.InSet = startInfo;
+            var ppGraph= new ProgramPointGraph<FlowInfo>(_entryPoint);
 
             foreach (var point in ppGraph.Points)
             {
@@ -233,6 +235,11 @@ namespace Weverca.ControlFlowGraph.Analysis
                 point.UpdateOutSet(_services.CreateEmptySet());
                 point.CommitUpdate();
             }
+
+            var startInfoCopy = (startInfo as FlowOutputSet<FlowInfo>).Copy();
+            ppGraph.Start.InSet = startInfo;
+            ppGraph.Start.UpdateOutSet(startInfoCopy);
+            ppGraph.Start.CommitUpdate();
             return ppGraph;
         }
 

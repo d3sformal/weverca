@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
+using PHP.Core.AST;
+
 namespace Weverca.ControlFlowGraph.Analysis
 {
     /// <summary>
@@ -15,7 +18,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <summary>
         /// Call dispatches added into output set
         /// </summary>
-        public IEnumerable<CallDispatch> CallDispatches { get; private set; }
+        public IEnumerable<CallDispatch<FlowInfo>> CallDispatches { get; private set; }
 
 
     
@@ -30,6 +33,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         private FlowOutputSet(FlowOutputSet<FlowInfo> output)
         {
             collectedInfo = new Dictionary<object, FlowInfo>(output.collectedInfo);
+            functions = new Dictionary<QualifiedName, FunctionDecl>(output.functions);
         }
 
 
@@ -49,9 +53,12 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Set flow dispatch to given calls
         /// </summary>
         /// <param name="calls">Calls to dispatch</param>
-        public void Dispatch(params CallDispatch[] calls)
+        public void Dispatch(IEnumerable<CallDispatch<FlowInfo>> calls)
         {
-            throw new NotImplementedException();
+            if (calls.Count() == 0)
+                //nothing to dispatch
+                return;
+            CallDispatches = calls;
         }        
 
         internal FlowOutputSet<FlowInfo> Copy()
@@ -67,6 +74,16 @@ namespace Weverca.ControlFlowGraph.Analysis
                 System.Diagnostics.Debug.Assert(inSet.TryGetInfo(key, out info));
                 SetInfo(key, info);
             }
+
+            foreach (var fn in inSet.CollectedFunctions)
+            {
+                SetDeclaration(fn);
+            }
+        }
+
+        public void SetDeclaration(FunctionDecl x)
+        {
+            functions[x.Function.QualifiedName] = x;
         }
     }
 }
