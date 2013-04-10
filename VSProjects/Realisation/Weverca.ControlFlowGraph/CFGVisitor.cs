@@ -327,7 +327,28 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitForeachStmt(ForeachStmt x)
         {
-            //base.VisitForeachStmt(x);
+            BasicBlock foreachHead = new BasicBlock();
+            BasicBlock foreachBody = new BasicBlock();
+            BasicBlock foreachSink = new BasicBlock();
+
+            //Input edge to the foreach statement
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, foreachHead);
+            foreachHead.AddElement(x);
+
+            //Conditional edge to the foreach body
+            ConditionalEdge.MakeNewAndConnect(foreachHead, foreachBody, x.KeyVariable.Variable);
+
+            //Visits foreach body
+            loopData.Push(new LoopData(foreachHead, foreachSink));
+            currentBasicBlock = foreachBody;
+            x.Body.VisitMe(this);
+
+            //Connect end of foreach with foreach head
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, foreachHead);
+
+            //Output edge to the sink
+            DirectEdge.MakeNewAndConnect(foreachHead, foreachSink);
+            currentBasicBlock = foreachSink;
         }
 
         public override void VisitForStmt(ForStmt x)
