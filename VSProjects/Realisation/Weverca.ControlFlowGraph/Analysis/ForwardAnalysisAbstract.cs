@@ -71,7 +71,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="inSet">Information available before given statement.</param>
         /// <param name="statement">Statement which can add new information.</param>
         /// <param name="outSet">Output information which is known after statement analysis.</param>
-        protected abstract void FlowThrough(FlowInputSet<FlowInfo> inSet, LangElement statement, FlowOutputSet<FlowInfo> outSet);
+        protected abstract void FlowThrough(FlowControler<FlowInfo> flow, LangElement statement);
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
         /// </summary>
@@ -80,7 +80,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="condition">Assumption condition.</param>
         /// <param name="outSet">Output set after assumption.</param>
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        protected abstract bool ConfirmAssumption(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowOutputSet<FlowInfo> outSet);
+        protected abstract bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition condition);
 
         /// <summary>
         /// Represents method which merges inSets into outSet
@@ -198,22 +198,17 @@ namespace Weverca.ControlFlowGraph.Analysis
             var inSet = context.CurrentInputSet;
             var outSet = context.CurrentOutputSetUpdate;
             var statement = context.CurrentStatement;
-
-            if (outSet.CallDispatches != null)
-            {
-                //Copying without dispatches
-                outSet = outSet.Copy();
-            }
             
-            FlowThrough(inSet, statement, outSet);
-            context.UpdateOutputSet(outSet);
+            var flow = new FlowControler<FlowInfo>(inSet,outSet);
+            FlowThrough(flow, statement);
+            context.UpdateOutputSet(flow.OutSet);
 
             //Call output is available only once
             LastCallOutput = null;
 
-            if (outSet.CallDispatches != null && outSet.CallDispatches.Any())
+            if (flow.HasCallDispatch)
             {
-                var level = new CallDispatchLevel<FlowInfo>(outSet.CallDispatches, _services);
+                var level = new CallDispatchLevel<FlowInfo>(flow.CallDispatches, _services);
                 _callStack.Push(level);
                 return;
             }

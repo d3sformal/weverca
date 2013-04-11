@@ -32,13 +32,17 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return _currentProgramPoint.OutSet; } }
 
-        internal FlowOutputSet<FlowInfo> CurrentOutputSetUpdate { get {  
-            var result=_currentProgramPoint.OutSetUpdate; 
-            if(result==null)
-                result = _services.CreateEmptySet();
+        internal FlowOutputSet<FlowInfo> CurrentOutputSetUpdate
+        {
+            get
+            {
+                var result = _currentProgramPoint.OutSetUpdate;
+                if (result == null)
+                    result = _services.CreateEmptySet();
 
-            return result;
-        } }
+                return result;
+            }
+        }
 
         /// <summary>
         /// Current statement to analyze according to worklist algorithm.
@@ -61,22 +65,22 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// Items that has to be processed.
         /// </summary>
         Queue<ProgramPoint<FlowInfo>> _worklist = new Queue<ProgramPoint<FlowInfo>>();
- 
-      
+
+
         AnalysisServices<FlowInfo> _services;
         BasicBlock _entryPoint;
         FlowInputSet<FlowInfo> _entryInSet;
 
-        internal AnalysisCallContext(BasicBlock entryPoint,FlowInputSet<FlowInfo> entryInSet, AnalysisServices<FlowInfo> services)
+        internal AnalysisCallContext(BasicBlock entryPoint, FlowInputSet<FlowInfo> entryInSet, AnalysisServices<FlowInfo> services)
         {
             _services = services;
             _entryPoint = entryPoint;
             _entryInSet = entryInSet;
-            
-           _ppGraph=initProgramPoints(entryInSet);
-                      
-           enqueueDependencies(_ppGraph.Start);
-           dequeuNextItem();
+
+            _ppGraph = initProgramPoints(entryInSet);
+
+            enqueueDependencies(_ppGraph.Start);
+            dequeuNextItem();
         }
 
         #region Worklist algorithm input API
@@ -91,17 +95,17 @@ namespace Weverca.ControlFlowGraph.Analysis
                 throw new NotSupportedException("Cannot skip to next statement, when analysis is complete");
             }
 
-       
+
             var hasUpdate = _currentProgramPoint.HasUpdate;
             var hasChanged = hasUpdate && _currentProgramPoint.CommitUpdate();
 
             if (hasChanged)
             {
                 //notify other basic blocks and add them into work list
-                enqueueDependencies(_currentProgramPoint);            
+                enqueueDependencies(_currentProgramPoint);
             }
-                              
-            dequeuNextItem();            
+
+            dequeuNextItem();
         }
 
         /// <summary>
@@ -109,14 +113,14 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         /// <param name="outSet">Output set for current statement.</param>
         internal void UpdateOutputSet(FlowOutputSet<FlowInfo> outSet)
-        {          
+        {
             _currentProgramPoint.UpdateOutSet(outSet);
         }
 
         #endregion
 
         #region Private utils
-        
+
         private void dequeuNextItem()
         {
             var started = false;
@@ -148,17 +152,27 @@ namespace Weverca.ControlFlowGraph.Analysis
                 //Conditional program point cannot be set as current work item
 
                 var assumptedOutSet = _services.CreateEmptySet();
-                if (!_services.ConfirmAssumption(work.InSet, work.Condition, assumptedOutSet))
+                var flow = new FlowControler<FlowInfo>(work.InSet, assumptedOutSet);
+              
+
+                var confirmed = _services.ConfirmAssumption(flow, work.Condition);
+                if (flow.HasCallDispatch)
+                {
+                    throw new NotImplementedException("Cannot dispatch call in assumption");
+                }
+
+                if (!confirmed)
                 {
                     //assumption cannot be confirmed. => Flow is not reachable under assumption condition.
                     return false;
                 }
+
                 work.UpdateOutSet(assumptedOutSet);
                 if (work.CommitUpdate())
                 {
                     enqueueDependencies(work);
                 }
-                
+
                 return false;
             }
 
@@ -185,7 +199,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 return point.InSet as FlowOutputSet<FlowInfo>;
             }
 
-            FlowOutputSet<FlowInfo> result=null;
+            FlowOutputSet<FlowInfo> result = null;
 
             foreach (var parent in point.Parents)
             {
@@ -195,7 +209,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 }
                 else
                 {
-                    var mergeOutput=_services.CreateEmptySet();
+                    var mergeOutput = _services.CreateEmptySet();
                     _services.Merge(result, parent.OutSet, mergeOutput);
                     result = mergeOutput;
                 }
@@ -210,7 +224,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 addWork(child);
             }
         }
-        
+
         /// <summary>
         /// Add edge's block to worklist, if isn't present yet
         /// </summary>
@@ -227,7 +241,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         private ProgramPointGraph<FlowInfo> initProgramPoints(FlowInputSet<FlowInfo> startInfo)
         {
-            var ppGraph= new ProgramPointGraph<FlowInfo>(_entryPoint);
+            var ppGraph = new ProgramPointGraph<FlowInfo>(_entryPoint);
 
             foreach (var point in ppGraph.Points)
             {

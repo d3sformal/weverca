@@ -15,12 +15,6 @@ namespace Weverca.ControlFlowGraph.Analysis
     /// <typeparam name="FlowInfo">Type of object which hold information collected during statement analysis.</typeparam>
     public class FlowOutputSet<FlowInfo> : FlowInputSet<FlowInfo>
     {
-        /// <summary>
-        /// Call dispatches added into output set
-        /// </summary>
-        public IEnumerable<CallDispatch<FlowInfo>> CallDispatches { get; private set; }
-
-
     
         public FlowOutputSet()
         {
@@ -46,20 +40,6 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             collectedInfo[key] = info;
         }
-
-        
-  
-        /// <summary>
-        /// Set flow dispatch to given calls
-        /// </summary>
-        /// <param name="calls">Calls to dispatch</param>
-        public void Dispatch(IEnumerable<CallDispatch<FlowInfo>> calls)
-        {
-            if (calls.Count() == 0)
-                //nothing to dispatch
-                return;
-            CallDispatches = calls;
-        }        
 
         internal FlowOutputSet<FlowInfo> Copy()
         {

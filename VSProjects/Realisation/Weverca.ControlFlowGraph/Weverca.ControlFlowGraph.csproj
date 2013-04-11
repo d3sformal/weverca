@@ -47,6 +47,7 @@
     <Compile Include="Analysis\Expressions\DeclarationResolver.cs" />
     <Compile Include="Analysis\Expressions\ExpressionEvaluator.cs" />
     <Compile Include="Analysis\Expressions\StatementWalker.cs" />
+    <Compile Include="Analysis\FlowControler.cs" />
     <Compile Include="Analysis\FlowInputSet.cs" />
     <Compile Include="Analysis\AnalysisServices.cs" />
     <Compile Include="Analysis\ForwardAnalysis.cs" />

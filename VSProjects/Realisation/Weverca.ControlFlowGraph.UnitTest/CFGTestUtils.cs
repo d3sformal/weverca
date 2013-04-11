@@ -68,7 +68,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         static internal ValueInfo[] GetEndPointInfo(string code)
         {
             var cfg = CFGTestUtils.CreateCFG(code);
-            var analysis = new StringAnalysis2(cfg);
+            var analysis = new StringAnalysis(cfg);
             analysis.Analyse();
             var list=new List<ValueInfo>(analysis.ProgramPointGraph.End.OutSet.CollectedInfo);
             return list.ToArray();

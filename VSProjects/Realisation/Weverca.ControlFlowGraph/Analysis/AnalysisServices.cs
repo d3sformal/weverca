@@ -23,7 +23,7 @@ namespace Weverca.ControlFlowGraph.Analysis
     /// <param name="condition">Assumption condition.</param>
     /// <param name="outSet">Output set after assumption.</param>
     /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-    delegate bool ConfirmAssumptionDelegate<FlowInfo>(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowOutputSet<FlowInfo> outSet);
+    delegate bool ConfirmAssumptionDelegate<FlowInfo>(FlowControler<FlowInfo> flow, AssumptionCondition condition);
     /// <summary>
     /// Represents method which creates empty flow info set.
     /// </summary>

@@ -10,20 +10,18 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
 {
     public abstract class DeclarationResolver<FlowInfo>
     {
-        public FlowInputSet<FlowInfo> InSet { get; private set; }
-        public FlowOutputSet<FlowInfo> OutSet { get; private set; }
+        public FlowControler<FlowInfo> Flow { get; private set; }
         public LangElement Element { get; private set; }
 
-        internal void SetContext(FlowInputSet<FlowInfo> inSet, LangElement element, FlowOutputSet<FlowInfo> outSet)
+        internal void SetContext(FlowControler<FlowInfo> flow, LangElement element)
         {
-            InSet = inSet;
-            OutSet = outSet;
+            Flow = flow;
             Element = element;
         }
 
         public virtual void Declare(FunctionDecl x)
         {
-            OutSet.SetDeclaration(x);
+            Flow.OutSet.SetDeclaration(x);
         }
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             var dispatch = CreateDispatch(name, args);
             if (dispatch != null)
             {
-                OutSet.Dispatch(new CallDispatch<FlowInfo>[] { dispatch });
+                Flow.AddDispatch(new CallDispatch<FlowInfo>[] { dispatch });
             }
         }
 
@@ -66,14 +64,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
                 dispatches.Add(dispatch);
             }
 
-            OutSet.Dispatch(dispatches);
+            Flow.AddDispatch(dispatches);
         }
 
-  
-        public CallDispatch<FlowInfo> CreateDispatch(QualifiedName name,FlowInfo[] args)
+
+        public CallDispatch<FlowInfo> CreateDispatch(QualifiedName name, FlowInfo[] args)
         {
             FunctionDecl decl;
-            if (!InSet.TryGetFunction(name, out  decl))
+            if (!Flow.InSet.TryGetFunction(name, out  decl))
                 //TODO what to do, if declaration isn't found ?
                 return null;
 

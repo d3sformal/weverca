@@ -28,7 +28,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             _resolver = resolver;
         }
 
-        protected override void FlowThrough(FlowInputSet<FlowInfo> inSet, LangElement statement, FlowOutputSet<FlowInfo> outSet)
+        protected override void FlowThrough(FlowControler<FlowInfo> flow, LangElement statement)
         {
 
 
@@ -36,16 +36,16 @@ namespace Weverca.ControlFlowGraph.Analysis
             if (walker.AtStart)
             {
                 //at start fill out set from inSet
-                outSet.FillFrom(inSet);
+                flow.FillOutputFromInSet();
             }
-            flowThrough(inSet, walker, outSet);
+            flowThrough(flow, walker);
             tryPop();
         }
 
 
-        protected override bool ConfirmAssumption(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowOutputSet<FlowInfo> outSet)
+        protected override bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition condition)
         {
-            outSet.FillFrom(inSet);
+            flow.FillOutputFromInSet();
             if (!condition.Parts.Any())
             {
                 return true;
@@ -56,7 +56,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             foreach (var part in condition.Parts)
             {
                 var walker = tryPush(part);
-                flowThrough(inSet, walker, outSet);
+                flowThrough(flow, walker);
                 tryPop();
 
                 if (!walker.IsComplete)
@@ -69,14 +69,14 @@ namespace Weverca.ControlFlowGraph.Analysis
 
 
             bool result;
-            var canProve = proveAssumptionCondition(inSet, partResults, condition.Form, out result);
+            var canProve = proveAssumptionCondition(flow.InSet, partResults, condition.Form, out result);
 
             if (!canProve)
                 result = true;
 
             if (result)
             {
-                Assume(inSet, condition, outSet);
+                Assume(flow, condition);
             }
             return result;
         }
@@ -131,7 +131,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         protected abstract FlowInfo extractReturnValue(FlowInputSet<FlowInfo> callOutput);
 
-        protected virtual void Assume(FlowInputSet<FlowInfo> inSet, AssumptionCondition condition, FlowOutputSet<FlowInfo> outSet)
+        protected virtual void Assume(FlowControler<FlowInfo> inSet, AssumptionCondition condition)
         {
             //by default we won't assume anything
         }
@@ -182,7 +182,7 @@ namespace Weverca.ControlFlowGraph.Analysis
             }
         }
 
-        private void flowThrough(FlowInputSet<FlowInfo> inSet, StatementWalker<FlowInfo> walker, FlowOutputSet<FlowInfo> outSet)
+        private void flowThrough(FlowControler<FlowInfo> flow, StatementWalker<FlowInfo> walker)
         {
             if (walker.AwaitingCallReturn)
             {
@@ -192,7 +192,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
             while (walker.CanEvalNext)
             {
-                walker.EvalNext(inSet, outSet);
+                walker.EvalNext(flow);
             }
         }
 

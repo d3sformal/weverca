@@ -10,9 +10,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
     public abstract class ExpressionEvaluator<FlowInfo>
     {
 
-        public FlowInputSet<FlowInfo> InSet { get; private set; }
-
-        public FlowOutputSet<FlowInfo> OutSet { get; private set; }
+        public FlowControler<FlowInfo> Flow{ get; private set; }
 
         public LangElement Element { get; internal set; }
 
@@ -25,16 +23,15 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
         public virtual FlowInfo ResolveVar(DirectVarUse x)
         {
             FlowInfo result;
-            InSet.TryGetInfo(x.VarName, out result);
+            Flow.InSet.TryGetInfo(x.VarName, out result);
             return result;
         }
 
 
 
-        internal void SetContext(FlowInputSet<FlowInfo> inSet, LangElement element, FlowOutputSet<FlowInfo> outSet)
+        internal void SetContext(FlowControler<FlowInfo> flow, LangElement element)
         {
-            InSet = inSet;
-            OutSet = outSet;
+            Flow = flow;
             Element = element;
         }
     }

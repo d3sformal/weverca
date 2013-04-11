@@ -30,7 +30,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             _evaluator = evaluator;
             _resolver = resolver;
         }
-        
+
         internal void InsertCallReturn(FlowInfo returnValue)
         {
             if (!AwaitingCallReturn)
@@ -40,15 +40,15 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
             AwaitingCallReturn = false;
         }
 
-        internal void EvalNext(FlowInputSet<FlowInfo> inSet, FlowOutputSet<FlowInfo> outSet)
+        internal void EvalNext(FlowControler<FlowInfo> flow)
         {
-            while ( _position< _expression.Length)
+            while (_position < _expression.Length)
             {
                 var element = _expression.GetElement(_position);
                 ++_position;
 
-                eval(inSet, element, outSet);
-                if (outSet.CallDispatches != null)
+                eval(flow, element);
+                if (flow.HasCallDispatch)
                 {
                     AwaitingCallReturn = true;
                     //suspend evaluation
@@ -69,10 +69,10 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
 
 
 
-        private void eval(FlowInputSet<FlowInfo> inSet, LangElement element, FlowOutputSet<FlowInfo> outSet)
+        private void eval(FlowControler<FlowInfo> flow, LangElement element)
         {
-            _evaluator.SetContext(inSet, element, outSet);
-            _resolver.SetContext(inSet, element, outSet);
+            _evaluator.SetContext(flow, element);
+            _resolver.SetContext(flow, element);
 
             element.VisitMe(this);
         }
@@ -129,14 +129,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Expressions
         {
 
             var parameters = getParameters(x.CallSignature);
-            _resolver.CallDispatch(x.QualifiedName, parameters.ToArray());     
+            _resolver.CallDispatch(x.QualifiedName, parameters.ToArray());
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
             var fcnName = pop();
-           var parameters = getParameters(x.CallSignature);
-            _resolver.CallDispatch(fcnName, parameters.ToArray());                  
+            var parameters = getParameters(x.CallSignature);
+            _resolver.CallDispatch(fcnName, parameters.ToArray());
         }
 
         private List<FlowInfo> getParameters(CallSignature signature)
