@@ -30,10 +30,20 @@ namespace Weverca.ControlFlowGraph.Analysis
         SomeNot
     }
 
-
+    /// <summary>
+    /// Represents assumption condition in program flow.
+    /// NOTE: Overrides GetHashCode and Equals methods so they can be used in hash containers.
+    /// WARNING: All empty conditions with same form returns true for Equals, with same hashocode.
+    /// </summary>
     public class AssumptionCondition
     {
+        /// <summary>
+        /// Form of condition parts joining.
+        /// </summary>
         public readonly ConditionForm Form;
+        /// <summary>
+        /// Condition parts that are joined according to Form.
+        /// </summary>
         public readonly IEnumerable<Expression> Parts;
 
         public AssumptionCondition(ConditionForm form, params Expression[] parts)

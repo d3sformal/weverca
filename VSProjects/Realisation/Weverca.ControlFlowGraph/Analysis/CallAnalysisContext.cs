@@ -32,6 +32,9 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// </summary>
         internal FlowOutputSet<FlowInfo> CurrentOutputSet { get { return _currentProgramPoint.OutSet; } }
 
+        /// <summary>
+        /// Non-confirmed update of OutputSet
+        /// </summary>
         internal FlowOutputSet<FlowInfo> CurrentOutputSetUpdate
         {
             get

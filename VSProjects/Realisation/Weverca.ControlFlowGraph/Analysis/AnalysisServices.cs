@@ -19,9 +19,8 @@ namespace Weverca.ControlFlowGraph.Analysis
     /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
-    /// <param name="inSet">Input set which is available before assumption</param>
+    /// <param name="flow">Controler that determine program flow.</param>
     /// <param name="condition">Assumption condition.</param>
-    /// <param name="outSet">Output set after assumption.</param>
     /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
     delegate bool ConfirmAssumptionDelegate<FlowInfo>(FlowControler<FlowInfo> flow, AssumptionCondition condition);
     /// <summary>
@@ -32,12 +31,11 @@ namespace Weverca.ControlFlowGraph.Analysis
     delegate FlowOutputSet<FlowInfo> EmptySetDelegate<FlowInfo>();
 
     /// <summary>
-    /// Handler for analysis services.
+    /// Group of services that are provided by analysis object.
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
     class AnalysisServices<FlowInfo>
     {
-
         internal readonly MergeDelegate<FlowInfo> Merge;
         internal readonly EmptySetDelegate<FlowInfo> CreateEmptySet;
         internal readonly ConfirmAssumptionDelegate<FlowInfo> ConfirmAssumption;

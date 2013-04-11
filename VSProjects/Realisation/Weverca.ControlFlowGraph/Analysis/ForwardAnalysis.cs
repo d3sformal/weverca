@@ -89,7 +89,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                 switch (form)
                 {
                     case ConditionForm.SomeNot:
-                        if (!canProveTrue(inSet, res))
+                        if (!CanProveTrue(inSet, res))
                         {
                             result = true;
                             return true;
@@ -97,7 +97,7 @@ namespace Weverca.ControlFlowGraph.Analysis
                         break;
 
                     case ConditionForm.All:
-                        if (canProveFalse(inSet, res))
+                        if (CanProveFalse(inSet, res))
                         {
                             result = false;
                             return true;
@@ -118,7 +118,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="inSet"></param>
         /// <param name="conditionResult"></param>
         /// <returns></returns>
-        protected abstract bool canProveFalse(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
+        protected abstract bool CanProveFalse(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
 
         /// <summary>
         /// prove that given conditionResult is always true
@@ -126,10 +126,10 @@ namespace Weverca.ControlFlowGraph.Analysis
         /// <param name="inSet"></param>
         /// <param name="conditionResult"></param>
         /// <returns></returns>
-        protected abstract bool canProveTrue(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
+        protected abstract bool CanProveTrue(FlowInputSet<FlowInfo> inSet, FlowInfo conditionResult);
 
 
-        protected abstract FlowInfo extractReturnValue(FlowInputSet<FlowInfo> callOutput);
+        protected abstract FlowInfo ExtractReturnValue(FlowInputSet<FlowInfo> callOutput);
 
         protected virtual void Assume(FlowControler<FlowInfo> inSet, AssumptionCondition condition)
         {
@@ -186,7 +186,7 @@ namespace Weverca.ControlFlowGraph.Analysis
         {
             if (walker.AwaitingCallReturn)
             {
-                var returnValue = extractReturnValue(LastCallOutput);
+                var returnValue = ExtractReturnValue(LastCallOutput);
                 walker.InsertCallReturn(returnValue);
             }
 

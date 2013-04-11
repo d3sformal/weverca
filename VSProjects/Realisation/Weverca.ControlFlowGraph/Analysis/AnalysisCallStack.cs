@@ -12,10 +12,13 @@ namespace Weverca.ControlFlowGraph.Analysis
     class AnalysisCallStack<FlowInfo>
     {        
         /// <summary>
-        /// Peek context of call stack
+        /// Current context of call from current dispatch level 
         /// </summary>
-        internal AnalysisCallContext<FlowInfo> Peek { get { return CurrentLevel.CurrentContext; } }
+        internal AnalysisCallContext<FlowInfo> CurrentContext { get { return CurrentLevel.CurrentContext; } }
 
+        /// <summary>
+        /// Current dispatch level.
+        /// </summary>
         internal CallDispatchLevel<FlowInfo> CurrentLevel { get { return _callStack.Peek(); } }
 
         /// <summary>
@@ -25,8 +28,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
         /// <summary>
         /// Stack of call contexts
-        /// </summary>
-        //Stack<AnalysisCallContext<FlowInfo>> _callStack = new Stack<AnalysisCallContext<FlowInfo>>();
+        /// </summary>        
         Stack<CallDispatchLevel<FlowInfo>> _callStack = new Stack<CallDispatchLevel<FlowInfo>>();
 
         /// <summary>

@@ -40,7 +40,8 @@ switch($unknown){
 
 ";
 
-        readonly static string AssumptionPrunning_CODE = SwitchBlock_CODE + @"
+        readonly static string AssumptionPrunning_CODE = 
+            SwitchBlock_CODE + @"
 $str2='before';
 switch($str){
     case '1':
@@ -74,17 +75,17 @@ $globVar='init';
 
 function m1(){
     global $globVar;
-    $globVar='m1 call';
+    $globVar='call1';
 }
 
 function m2(){
     global $globVar;
-    $globVar='m2 call';
+    $globVar='call2';
 }
 
 function m3(){
     global $globVar;
-    $globVar='m3 call';
+    $globVar='call3';
 }
 
 switch($str){
@@ -93,7 +94,7 @@ switch($str){
         $str=$str;
         break;
     default:
-        $str='m3';
+        $str='m2';
         break;
 }
 
@@ -149,7 +150,7 @@ $str();
         public void DynamicCallAnalysis()
         {
             var vars = CFGTestUtils.GetEndPointInfo(DynamicCall_CODE);
-            var test = CFGTestUtils.TestValues("globVar", vars, "m1 call","m2 call","m3 call");
+            var test = CFGTestUtils.TestValues("globVar", vars, "call1","call2");
             Assert.IsTrue(test, "Global value based on dynamic call");
         }
     }

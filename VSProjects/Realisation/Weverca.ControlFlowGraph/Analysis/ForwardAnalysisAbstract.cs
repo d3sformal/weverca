@@ -144,7 +144,7 @@ namespace Weverca.ControlFlowGraph.Analysis
 
             while (!_callStack.IsEmpty)
             {
-                var currentContext = _callStack.Peek;
+                var currentContext = _callStack.CurrentContext;
                 if (currentContext.IsComplete)
                 {
                     //pop out empty context
@@ -181,10 +181,10 @@ namespace Weverca.ControlFlowGraph.Analysis
 
             if (!_callStack.IsEmpty)
             {
-                var currentInSet = _callStack.Peek.CurrentInputSet;
-                var currentOutSet = _callStack.Peek.CurrentOutputSetUpdate;
+                var currentInSet = _callStack.CurrentContext.CurrentInputSet;
+                var currentOutSet = _callStack.CurrentContext.CurrentOutputSetUpdate;
                 ReturnedFromCall(currentInSet, LastCallOutput, currentOutSet);
-                _callStack.Peek.UpdateOutputSet(currentOutSet);
+                _callStack.CurrentContext.UpdateOutputSet(currentOutSet);
             }
         }
 
