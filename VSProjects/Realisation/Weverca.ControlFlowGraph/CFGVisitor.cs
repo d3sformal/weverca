@@ -21,6 +21,19 @@ using PHP.Core.Reflection;
 
 namespace Weverca.ControlFlowGraph
 {
+    class LinkedStack<T> : LinkedList<T> {     
+        public void Push(T t) {
+            AddLast(t);
+        }
+        public T Peek() {
+            return this.Last();
+        }
+        public T Pop() {
+            T result = this.Last();
+            RemoveLast();
+            return result;
+        }
+    }
     class LoopData
     {
         public BasicBlock ContinueTarget { get; private set; }
@@ -118,18 +131,18 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
-        Stack<LoopData> loopData = new Stack<LoopData>();
+        LinkedStack<LoopData> loopData = new LinkedStack<LoopData>();
         /// <summary>
         /// Stack of block which ends by throw
         /// </summary>
-        Stack<List<BasicBlock>> throwBlocks = new Stack<List<BasicBlock>>();
+        LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
         int numberOfNestedTrys = 0;
         
        
 
         private ClassDeclaration actualClass = null;
         private LabelDataDictionary labelDictionary = new LabelDataDictionary();
-        LinkedList<BasicBlock> functionSinkStack = new LinkedList<BasicBlock>();
+        LinkedStack<BasicBlock> functionSinkStack = new LinkedStack<BasicBlock>();
 
 
         public CFGVisitor(ControlFlowGraph graph)
@@ -137,7 +150,7 @@ namespace Weverca.ControlFlowGraph
             this.graph = graph;
             currentBasicBlock = new BasicBlock();
             graph.start = currentBasicBlock;
-            functionSinkStack.AddFirst(new BasicBlock());
+            functionSinkStack.Push(new BasicBlock());
             throwBlocks.Push(new List<BasicBlock>());
         }
 
@@ -152,10 +165,10 @@ namespace Weverca.ControlFlowGraph
             {
                 statement.VisitMe(this);
             }
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.First());
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
             foreach (var block in throwBlocks.ElementAt(0)) {
                 block.Statements.RemoveLast();
-                DirectEdge.MakeNewAndConnect(block, functionSinkStack.First());
+                DirectEdge.MakeNewAndConnect(block, functionSinkStack.Peek());
             }
        }
 
@@ -277,11 +290,11 @@ namespace Weverca.ControlFlowGraph
 
             //Add function sink to the stack for resolving returns
             BasicBlock functionSink = new BasicBlock();
-            functionSinkStack.AddFirst(functionSink);
+            functionSinkStack.Push(functionSink);
 
             //store throws blocks
             var currentThrowBlocks = throwBlocks;
-            throwBlocks = new Stack<List<BasicBlock>>();
+            throwBlocks = new LinkedStack<List<BasicBlock>>();
             int currentNumberOfNestedTrys = numberOfNestedTrys;
             numberOfNestedTrys = 0;
             
@@ -290,7 +303,7 @@ namespace Weverca.ControlFlowGraph
             VisitStatementList(functionBody);
 
             //Connects return destination
-            functionSinkStack.RemoveFirst();
+            functionSinkStack.Pop();
             DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSink);
 
             //Loads previous labels
@@ -502,11 +515,11 @@ namespace Weverca.ControlFlowGraph
                         BasicBlock target;
                         if (x.Type == JumpStmt.Types.Break)
                         {
-                            target = loopData.Last().BreakTarget;
+                            target = loopData.Peek().BreakTarget;
                         }
                         else
                         {
-                            target = loopData.Last().ContinueTarget;
+                            target = loopData.Peek().ContinueTarget;
                         }
                         DirectEdge.MakeNewAndConnect(currentBasicBlock, target);
                     }
@@ -535,7 +548,7 @@ namespace Weverca.ControlFlowGraph
                     System.Diagnostics.Debug.Assert(functionSinkStack.Count > 0);
 
                     currentBasicBlock.AddElement(x);
-                    DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.First.Value);
+                    DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
 
                     currentBasicBlock = new BasicBlock();
                     
