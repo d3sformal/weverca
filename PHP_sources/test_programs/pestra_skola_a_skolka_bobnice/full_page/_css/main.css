@@ -1,0 +1,534 @@
+/***************************************************************************************************
+**************************  Zdrojový kód stylů CSS pro stránky Pestrá Škola  ***********************
+
+ * Styl je založen na motivu pětibarevného rastru (zelená, modrá, červená, žlutá, oranžová), každá
+ * barva reprezentuje pozici hlavního menu a stránky. Každá stránka má zvýrazněné některé kontury
+ * právě podle její pozice (nebo pozice nadřazené stránky) v hlavním menu. Stránky, které nejsou
+ * v hlavním menu, mají kontury šedé.
+
+****************************************************************************************************
+Pro stránky Pestrá škola a školka Bobinice napsal Pavel Baštecký (c) září 2010 - anebril<a>seznam.cz
+***************************************************************************************************/
+
+
+/*** Předpis základních částí stránky *************************************************************/
+
+body
+{
+  padding: 20px 0px;
+  background: #DFD8FF;
+  text-align:center;
+}
+  body.formWindow /* Okno formuláře */
+  {
+    padding: 0px 5px; margin: 0px;
+    background: white; 
+  }
+
+#main /* Pole s obsahem stránky */
+{
+  position: relative;
+  width: 1000px; margin: auto;
+  background: white;
+  text-align: center;
+}
+
+#logo /* Vrchní část stránky - zobrazení loga */
+{
+  height: 180px;
+  background: white url(../_graphics/logo.png) no-repeat center center;
+  font: 13px Arial; text-align:right;
+}
+
+#corp /* Vrchní část stránky - název a adresa instituce */
+{
+  font: Bold 16px Arial; color: gray; text-align: center;
+  word-spacing: 15px; letter-spacing: 5px;
+}
+  #corp a {color: gray;}
+
+#bottom /* Spodní část stránky - doplňkové informace */
+{
+  width: 1000px; margin: auto; margin-top: 50px; padding-top: 20px; padding-bottom: 20px;
+  border: 1px solid #A0A0A0;
+  font: 12px Arial; color: #505050; text-align: center;
+  line-height: 20px;
+}
+  #bottom img {vertical-align: middle;}  
+  .reklama {margin-top: 20px;}
+
+.page_border /* vykreslení oddělovací čáry */
+{
+  clear: both; position: relative;
+  width:100%; height: 10px; margin:0px;
+  background: white url('../_graphics/border.png') repeat-y center center;
+  font-size: 1px;
+}
+
+a /* Odkazy */
+{
+  text-decoration: none;
+  color: #404040;
+}
+  a:hover
+  {
+    position: relative; top: 1px;
+    color: black
+  }
+  a img {border: none;}
+
+.float_cl /* reset vlastnosti float */
+{
+  clear: both;
+  font: 1px Arial;
+}
+
+.help /* kurzor nápovědy*/
+{
+  cursor: help;
+}
+
+.refresh /* oznámení o přesměrování */
+{
+  margin-bottom: 50px;
+  text-align: center;
+  font: Bold 13px Arial;
+}
+
+/*** Pole administračních tlačítek ****************************************************************/
+
+.toolbox /* Zapouzdření tlačítek */
+{    
+  padding: 2px;
+  background: white ;
+  border: 2px solid #da251d;
+  font: 13px Arial; text-align: right;
+}
+  div.toolbox {float: right; clear: both; margin: 2px;}
+  
+  .toolbox a, .toolbox input.button, .admin
+  {
+    display: block; float: left;
+    margin: 2px;
+    border: 1px solid #da251d;
+    background: #FFF0F0;
+  }
+  
+  .toolbox input.button
+  {
+    height: 25px; width: 35px;
+    display: block;
+    background: url('../_graphics/icon/20_move.png') center center no-repeat;
+    font-size: 1px;
+  }
+  
+  .toolbox img {margin: 1px 5px;}
+  .admin {padding: 3px 5px;}
+  
+  /* Aplikování barevného schématu */
+  .green .toolbox  {border: 2px solid #84c225;}
+  .blue .toolbox   {border: 2px solid #9188ba;}
+  .red .toolbox    {border: 2px solid #da251d;}
+  .yellow .toolbox {border: 2px solid #d3ce0c;}
+  .orange .toolbox {border: 2px solid #e87c21;}
+  .gray .toolbox   {border: 2px solid #707070;}
+
+  .green .toolbox a, .green .toolbox input.button, .green .admin  {background-color: #F0FFF0; border: 1px solid #84c225;}
+  .blue .toolbox a, .blue .toolbox input.button, .blue .admin   {background-color: #F0F0FF; border: 1px solid #9188ba;}
+  .red .toolbox a, .red .toolbox input.button, .red .admin    {background-color: #FFF0F0; border: 1px solid #da251d;}
+  .yellow .toolbox a, .yellow .toolbox input.button, .yellow .admin {background-color: #FFFFF0; border: 1px solid #d3ce0c;}
+  .orange .toolbox a, .orange .toolbox input.button, .orange .admin {background-color: #FFF2CC; border: 1px solid #e87c21;}
+  .gray .toolbox a, .gray .toolbox input.button, .gray .admin   {background-color: #F9F9F9; border: 1px solid #707070;}
+
+  .toolbox a:hover, .toolbox button:hover
+  {
+    top: 0px;
+    border: 1px solid black;
+    background: silver;
+  }  
+
+/*** Předpis menu - umístěno pod částí #corp ******************************************************/
+
+table.menu {clear: both; border: none;}
+  .menu td {background: repeat-x center center; text-align: left;}    
+  .menu a {margin: 0px; vertical-align: middle;}
+  
+table#main_menu, table.chkMenu /* Tabulka hlavního menu */
+{
+  border-collapse: collapse;
+  width: 100%;
+  border-right: 2px solid white;
+}
+  table#main_menu td { width: 20%; border-left: 2px solid white; }
+    table#main_menu td.blue   {background-image: url('../_graphics/blue_main_menu.png');}
+    table#main_menu td.green  {background-image: url('../_graphics/green_main_menu.png');}
+    table#main_menu td.red    {background-image: url('../_graphics/red_main_menu.png');}
+    table#main_menu td.orange {background-image: url('../_graphics/orange_main_menu.png');}
+    table#main_menu td.yellow {background-image: url('../_graphics/yellow_main_menu.png');}
+    
+  table#main_menu img { margin-right: 3px; vertical-align: middle; }
+  table#main_menu a {font: 15px Arial; }
+  
+table.chkMenu td /*tabulka zvýraznění vybraného menu*/
+{
+  height: 5px;
+  font-size: 1px;
+  width: 20%; border-left: 2px solid white;
+}
+  table.chkMenu td.green  {background: #84c225;}
+  table.chkMenu td.blue {background: #9188ba;}
+  table.chkMenu td.red {background: #da251d;}
+  table.chkMenu td.yellow {background: #d3ce0c;}
+  table.chkMenu td.orange {background: #e87c21;}
+
+table#nd_menu /* Tabulka menu druhé úrovně */
+{
+  margin: 0px 2px;
+}
+  .green table#nd_menu  {background: #F0FFF0; border: 2px solid #84c225;}
+  .blue table#nd_menu   {background: #F0F0FF; border: 2px solid #9188ba;}
+  .red table#nd_menu    {background: #FFF0F0; border: 2px solid #da251d;}
+  .yellow table#nd_menu {background: #FFFFF0; border: 2px solid #d3ce0c;}
+  .orange table#nd_menu {background: #FFF2CC; border: 2px solid #e87c21;}
+  .gray table#nd_menu   {background: #F9F9F9; border: 2px solid #707070;}
+
+  #nd_menu td
+  {
+    width: 194px;
+    border: none;
+    background: no-repeat left center;
+    vertical-align: top;
+  }
+  #nd_menu img {float: left; margin: 1px 2px 2px 5px;}
+  #nd_menu a
+  {
+    display: block;
+    margin: 1px 5px 2px 5px;
+    font: 13px Arial;
+  }
+
+/*** Tabulka pro zarovnání formuláře a formulářové prvky ******************************************/
+
+table.formTable /* Tabulka pro zarovnání formuláře */
+{
+  clear: both;
+  width: 585px; margin-top: 20px; margin-bottom: 20px;
+  border: 1px solid black; border-collapse: collapse;
+}
+  .formTable th /* Nadpisová buňka - normální; nadpis formuláře; nadpis políčka; chybové hlášení */
+  {
+    padding: 5px 2px 5px 5px;
+    border: 1px solid black;
+    font: 12px Arial; text-align: left;
+  }
+    .formTable th.formTitle {font: Bold Italic 14px Arial;}
+    .formTable th.inputTitle {width: 200px;}
+    .emsg th
+    {
+      padding-top: 5px;
+      font: Bold 12px Arial; color: red; text-align:center;
+    }
+  
+  .formTable td /* Normální buňka - normální; pole s formulářovým prvkem; pole s mezemi textu; 
+                   rozšířené pole; chybové hlášení */
+  {
+    border: 1px solid black;
+    font: Bold 12px Arial; text-align: right;
+  }
+    .formTable td.inputTd {width: 262px;}
+    .formTable td.rightCol {width: 100px;}
+    .formTable td.big_col {text-align: center;}
+    .error td {color: red;} 
+  
+  .formTable p {font: 12px Arial;}
+
+  table.icoTable /* Tabulka pro výběr ikon */
+  {
+    margin-top: 5px; margin-bottom: 5px;
+    border-collapse: collapse;
+  }
+    .icoTable td
+    {
+      width: 40px;
+      border-style: dotted;
+    }
+
+.input /* formulářový prvek */
+{
+  width: 250px; margin: 2px 5px;
+  border: 1px solid black;
+  background: #F0F0FF;
+}
+  textarea.input
+  {
+    width: 550px; margin: 5px;
+    background: white;
+  }
+  
+  .error .input, .error textarea /* Chybné vyplnění */
+  {
+    background: #FFF0F0;
+    border: 1px solid red;
+  }
+  
+.button /* Tlačítko */
+{
+  width: 80px; margin: 2px 5px;
+  border: 1px solid black;
+  background: #E0E0E0;
+}
+.textTools /* Panel nástrojů nad textarea */
+{
+  position: relative;
+  width: 550px; margin: auto;
+}
+
+#insert_image /* pole vložení obrázku do formuláře*/
+{
+  position: relative; display: none; height: 200px; overflow-y: scroll;
+  margin: 2px; padding: 5px;
+  border: 1px solid black;
+}
+
+#insert_image .toolbox
+{
+  position: absolute; top: 2px; right: 2px;
+  border: none; padding: 0px; margin: 0px;
+}
+  #insert_image .toolbox a {margin: 0px; }
+
+
+/*** Nadpisy, odstavce a tabulky pro zarovnání obsahu *********************************************/
+  
+h1
+{
+  margin: 5px 20px;
+  font: 25px Arial; text-align: left; vertical-align: middle;
+}
+  h1 img {vertical-align: middle;}
+  
+  .green h1  {color: #84c225;}
+  .blue h1   {color: #9188ba;}
+  .red h1    {color: #da251d;}
+  .yellow h1 {color: #d3ce0c;}
+  .orange h1 {color: #e87c21;}
+  .gray h1   {color: #707070;}
+
+h2
+{
+  margin: 20px;
+  font: Italic 18px Arial; color: #965800; text-align: center;
+}
+
+h3
+{
+  margin: 5px; padding: 1px 5px;
+  border-bottom: 1px solid black;
+  font: Bold 14px Arial;
+}
+
+p
+{
+  margin: 5px 10px;
+  text-align: justify;
+}
+  p.center {text-align: center;}
+  p.pravo {text-align: right;}
+
+div.text /* Odsazení a rámeček textu stránky */
+{
+  /*margin: 0px 150px ;*/
+  width: 700px; position:relative; margin: auto;
+  border-left: 2px solid black; border-right: 2px solid black;
+  text-align: left;
+} 
+  .textImg
+  {
+    float: left;
+    padding: 2px; margin: 2px 5px 2px 1px;
+    border: 2px solid black;}
+
+.swap /* Stránkovací tlačítka */
+{
+  padding-top: 5px;
+  font: 13px Arial; vertical-align: middle; text-align: center;
+}
+  .swap img {margin-top: -5px; vertical-align: middle;}
+  .swap a {margin: 3px;}
+
+
+table.items, table.list /* Tabulky pro zarovnání obsahu
+                              .items: zarovnává výpisy stránek a obrázků - 4 buňky na řádku
+                              .list: výpis standartních tabulkových dat
+                        */
+{
+  margin-top: 20px; margin-bottom: 20px;
+  border-spacing: 2px; border: none;
+  background: white url('../_graphics/border.png') repeat-y center center;
+}
+  .text .list {width: 680px; }
+  .items td, .items th, .list td, .list th
+  {
+    padding: 0px;
+    border: 2px solid white;
+    background: white;
+    font: 12px Arial; text-align: center;
+  }
+    .items td {width: 220px; vertical-align: top; }
+    .list td { vertical-align: middle; }
+      
+    .green .items td  {background: #F0FFF0;}
+    .blue .items td   {background: #F0F0FF;}
+    .red .items td    {background: #FFF0F0;}
+    .yellow .items td {background: #FFFFF0;}
+    .orange .items td {background: #FFF2CC;}
+    .gray .items td   {background: #F9F9F9;}
+    
+    .green .items th a  {color: #84c225;}
+    .blue .items th a   {color: #9188ba;}
+    .red .items th a    {color: #da251d;}
+    .yellow .items th a {color: #d3ce0c;}
+    .orange .items th a {color: #e87c21;}
+    .gray .items th a   {color: #707070;}
+
+    .items td.blank /* Prázdné políčko; zarovnání obrázků; pole s počtem prvků (šířka celé tabulky) */
+    {
+      padding: 2px;
+      background: none; border: none;
+    }
+    .items td.imgBox {vertical-align: middle; }
+    td.stat {width: 900px}
+      
+  .items th
+  {
+    font: Bold 14px Arial; text-align: center; vertical-align: bottom;
+  }
+    .items th a {display: block;}
+  
+  .list th
+  {
+    padding: 3px 0px 1px 0px;
+    font: Bold 12px Arial; text-align: center; vertical-align: bottom;
+  }
+  
+  .items .toolbox, .list .toolbox /* Administrační tlačítka */
+  {
+    margin: 0px; padding: 0px;
+    border: none;
+  }
+  .items p
+  {
+    margin: 2px 5px; padding: 0px;
+    font: 13px TimesNewRoman;
+  }
+  .items .date /* Zobrazení datumu */
+  {
+    border-bottom: 1px solid white;
+    text-align: right;
+  }
+    .items th .date
+    {
+      margin-bottom: 5px;
+      font: 12px Arial;
+    }
+
+
+/*** Barevné schéma pro H3, .text, .formTable, .formTable td, .formTable th ***********************/
+  
+  .green .textImg, .green h3, .green .text, .green .formTable, .green .formTable td, .green .formTable th, .green #insert_image
+    {border-color: #84c225;}
+  .blue .textImg, .blue h3, .blue .text, .blue .formTable, .blue .formTable td, .blue .formTable th, .blue #insert_image
+    {border-color: #9188ba;}
+  .red .textImg, .red h3, .red .text, .red .formTable, .red .formTable td, .red .formTable th, .red #insert_image
+    {border-color: #da251d;}
+  .yellow .textImg, .yellow h3, .yellow .text, .yellow .formTable, .yellow .formTable td, .yellow .formTable th, .yellow #insert_image
+    {border-color: #d3ce0c;}
+  .orange .textImg, .orange h3, .orange .text, .orange .formTable, .orange .formTable td, .orange .formTable th, .orange #insert_image
+    {border-color: #e87c21;}
+  .gray .textImg, .gray h3, .gray .text, .gray .formTable, .gray .formTable td, .gray .formTable th, .gray #insert_image
+    {border-color: #707070;}
+
+
+/*** Javascriptové plovoucí okno - zobrazení obrázku v galerii a formuláře ************************/
+
+div.box /* Plovoucí okno */
+{
+  position: absolute; top: 50px; left: 230px;
+  overflow: hidden; display: none; padding: 0px; margin:0px;
+}
+  .green div.box  {border: 2px solid #84c225; background:  url('../_graphics/green_transp.png');}
+  .blue div.box   {border: 2px solid #9188ba; background:  url('../_graphics/blue_transp.png');}
+  .red div.box    {border: 2px solid #da251d; background:  url('../_graphics/red_transp.png');}
+  .yellow div.box {border: 2px solid #d3ce0c; background:  url('../_graphics/yellow_transp.png');}
+  .orange div.box {border: 2px solid #e87c21; background:  url('../_graphics/orange_transp.png');}
+  .gray div.box   {border: 2px solid #707070; background:  url('../_graphics/gray_transp.png');}
+  
+  .green .wnd_box, .green .txt_box, .green .tools_box {border-color: #84c225;}
+  .blue .wnd_box, .blue .txt_box, .blue .tools_box {border-color: #9188ba;}
+  .red .wnd_box, .red .txt_box, .red .tools_box {border-color: #da251d;}
+  .yellow .wnd_box, .yellow .txt_box, .yellow .tools_box {border-color: #d3ce0c;}
+  .orange .wnd_box, .orange .txt_box, .orange .tools_box {border-color: #e87c21;}
+  .gray .wnd_box, .gray .txt_box, .gray .tools_box {border-color: #707070;}
+  
+  .wnd_table /* Zapouzdřující tabulka - zobrazuje ovladače pro změnu rozměrů (krajní buňky) */
+  {
+    border-collapse: collapse;
+    font: Bold 13px Arial; text-align: center; vertical-align: middle;
+  }
+    .wnd_table td {padding: 0px;}
+    
+    /* Ovladače změny šírky */
+    .resize {font: 1px Arial; overflow: hidden;}
+    .r_w {width: 8px; cursor: w-resize;}
+    .r_t {height: 2px; cursor: n-resize; }
+    .r_b {height: 8px; cursor: s-resize;}
+    .r_tl {height: 2px; width: 8px; cursor: nw-resize;}
+    .r_tr {height: 2px; width: 8px; cursor: ne-resize;}
+    .r_bl {height: 8px; width: 8px; cursor: sw-resize;}
+    .re_br {height: 8px; width: 8px; cursor: se-resize;}
+
+
+  .wnd_tools /* Titulkový pruh okna - ovladač pro změnu polohy */
+  {
+    height: 22px;
+    cursor: move;
+    text-align:right;
+  }
+
+  .wnd_box /* Vnitřní část okna - zapouzdření obsahu */
+  {
+    margin: 1px 5px 5px 5px; padding: 0px;
+    border: 2px solid #da251d;
+    background: white;
+  }
+
+    .txt_box /* Text okna - popisek obrázku */
+    {
+      height: 18px; overflow: hidden;
+      margin-top: 3px;
+      border-bottom: 2px solid #da251d;
+    }
+    
+    .img_box /* Pole s obrázkem */  
+    {
+      position: relative; overflow: hidden;
+      margin: 5px;
+    }
+      .img_box img {position: relative;}
+  
+    .tools_box /* Pole s ovládacími tlačítky - předchozí, další */
+    {
+      height: 34px; overflow: hidden;
+      border-top: 2px solid #da251d;
+    }
+      a.zoom /* Tlačítko přiblížení */
+      {
+        display: block; position:relative; float: left;
+        margin-top: 2px;
+      }
+      a.zoom span
+      {
+        position: absolute; top: 9px; left: 1px;
+        cursor: pointer;
+        font: 10px Courier New;
+      }
