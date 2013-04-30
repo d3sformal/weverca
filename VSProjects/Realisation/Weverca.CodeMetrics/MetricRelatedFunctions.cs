@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using PHP.Core.Reflection;
 
 namespace Weverca.CodeMetrics
 {
@@ -15,6 +14,25 @@ namespace Weverca.CodeMetrics
         /// Functions that indicates usage of autoload
         /// </summary>
         static readonly string[] Autoload_Register = new string[] { "spl_autoload_register" };
+        /// <summary>
+        /// Names of magic methods
+        /// </summary>
+        static readonly string[] Magic_Methods = new string[]{
+            DObject.SpecialMethodNames.Call.LowercaseValue,
+            DObject.SpecialMethodNames.CallStatic.LowercaseValue,
+            DObject.SpecialMethodNames.Clone.LowercaseValue,
+            DObject.SpecialMethodNames.Construct.LowercaseValue,
+            DObject.SpecialMethodNames.Destruct.LowercaseValue,
+            DObject.SpecialMethodNames.Get.LowercaseValue,
+            DObject.SpecialMethodNames.Invoke.LowercaseValue,
+            DObject.SpecialMethodNames.Isset.LowercaseValue,
+            DObject.SpecialMethodNames.Set.LowercaseValue,
+            "__set_state",
+            DObject.SpecialMethodNames.Sleep.LowercaseValue,
+            DObject.SpecialMethodNames.Tostring.LowercaseValue,
+            DObject.SpecialMethodNames.Unset.LowercaseValue,
+            DObject.SpecialMethodNames.Wakeup.LowercaseValue,
+        };
         /// <summary>
         /// Functions that indicates usage of eval
         /// </summary>
@@ -54,10 +72,11 @@ namespace Weverca.CodeMetrics
 
         static MetricRelatedFunctions()
         {
+            functions.Add(ConstructIndicator.MagicMethod, Magic_Methods);
             functions.Add(ConstructIndicator.Session, Session);
             functions.Add(ConstructIndicator.Autoload, Autoload_Register);
             functions.Add(ConstructIndicator.Eval, Eval);
-            //TODO add other metric related functions
+            // TODO: Add other metric related functions
         }
 
         /// <summary>
