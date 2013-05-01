@@ -185,7 +185,6 @@ echo $v[1][0]. " ".$v[1][1]. " ".$v[1][2]."<br>";
             variable.SetValue(value);
             
         }
-
         public Variable this[string variableName]
         {
             get
