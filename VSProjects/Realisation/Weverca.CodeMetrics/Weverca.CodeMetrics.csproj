@@ -43,6 +43,7 @@
     <Compile Include="MetricInfo.cs" />
     <Compile Include="MetricRelatedFunctions.cs" />
     <Compile Include="Processing\ASTVisitors.cs" />
+    <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\FunctionPresenceProcessor.cs" />
     <Compile Include="Processing\Implementations\MagicMethodsProcessor.cs" />
     <Compile Include="Processing\Implementations\MaxInheritanceDepthProcessor.cs" />
