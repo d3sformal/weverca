@@ -45,6 +45,7 @@
     <Compile Include="Processing\ASTVisitors.cs" />
     <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\FunctionPresenceProcessor.cs" />
+    <Compile Include="Processing\Implementations\InsideFunctionDeclarationProcessor.cs" />
     <Compile Include="Processing\Implementations\MagicMethodsProcessor.cs" />
     <Compile Include="Processing\Implementations\MaxInheritanceDepthProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfLinesProcessor.cs" />
