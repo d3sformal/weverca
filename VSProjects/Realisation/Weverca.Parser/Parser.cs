@@ -1,194 +1,181 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
 using System.Text;
-using PHP.Core.AST;
-using PHP.Core.Reflection;
+
 using PHP.Core;
+using PHP.Core.AST;
+using PHP.Core.Emit;
 using PHP.Core.Parsers;
+using PHP.Core.Reflection;
 
 namespace Weverca.Parsers
 {
-   public class CompilationUnit : CompilationUnitBase, IReductionsSink
+    public class BasicScriptAssembly : ScriptAssembly
     {
-        public sealed class PureAssembly : PhpAssembly
+        public ScriptBuilder Builder { get; private set; }
+        public ScriptModule Module { get; private set; }
+
+        public BasicScriptAssembly(Assembly/*!*/ assembly, AssemblyName assemblyName,
+            PhpSourceFile/*!*/ file, ScriptCompilationUnit/*!*/ compilationUnit)
+            : base(ApplicationContext.Default, assembly)
         {
-            public PureModule/*!*/ Module { get { return module; } internal /* friend PAB */ set { module = value; } }
-            private PureModule/*!*/ module;
+            var assemblyBuilder = new BasicScriptAssemblyBuilder(this, assemblyName, file);
+            var subNamespace = ScriptModule.GetSubnamespace(
+                compilationUnit.SourceUnit.SourceFile.RelativePath, true);
+            Module = new ScriptModule(compilationUnit, this, subNamespace);
+            Builder = new ScriptBuilder(compilationUnit, assemblyBuilder, subNamespace);
+        }
 
-            #region Construction
+        public BasicScriptAssembly(Module/*!*/ module, AssemblyName assemblyName,
+            PhpSourceFile/*!*/ file, ScriptCompilationUnit/*!*/ compilationUnit)
+            : this(module.Assembly, assemblyName, file, compilationUnit)
+        {
+        }
 
+        #region ScriptAssembly
 
-            /// <summary>
-            /// Used by the builder.
-            /// </summary>
-            internal PureAssembly(ApplicationContext/*!*/ applicationContext)
-                : base(applicationContext)
+        public override bool IsMultiScript
+        {
+            get
             {
-                // to be written-up
-            }
-
-            #endregion
-
-            public override PhpModule GetModule(PhpSourceFile name)
-            {
-                return module;
-            }
-
-        }
-
-
-        public sealed class PureModule : PhpModule
-        {
-            #region Construction
-
-            /// <summary>
-            /// Called by the loader. The module can be loaded to <see cref="PureAssembly"/> or 
-            /// <see cref="PhpLibraryAssembly"/>.
-            /// </summary>
-            internal PureModule(DAssembly/*!*/ assembly)
-                : base(assembly)
-            {
-            }
-
-
-            #endregion
-
-            protected override CompilationUnitBase CreateCompilationUnit()
-            {
-                throw new NotImplementedException();
-            }
-
-            public override void Reflect(bool full, Dictionary<string, DTypeDesc> types, Dictionary<string, DRoutineDesc> functions, DualDictionary<string, DConstantDesc> constants)
-            {
-                throw new NotImplementedException();
-            }
-
-        }
-        public override bool IsPure { get { return is_pure; } }
-        private bool is_pure=true;
-        public override bool IsTransient { get { return false; } }
-        public CompilationUnit(){
-        
-            PureAssembly a = new PureAssembly(ApplicationContext.Default);
-            this.module = a.Module = new PureModule(a);
-        }
-        public override  DType GetVisibleType(QualifiedName qualifiedName, ref string fullName, Scope currentScope,
-            bool mustResolve) {
-                throw new NotImplementedException();
-        }
-        public override  DRoutine GetVisibleFunction(QualifiedName qualifiedName, ref string fullName, Scope currentScope)
-        {
-            throw new NotImplementedException();
-        }
-        public override  DConstant GetVisibleConstant(QualifiedName qualifiedName, ref string fullName, Scope currentScope) {
-            throw new NotImplementedException();
-        }
-
-        public override  IEnumerable<PhpType> GetDeclaredTypes()
-        {
-            throw new NotImplementedException();
-        }
-        public override  IEnumerable<PhpFunction> GetDeclaredFunctions()
-        {
-            throw new NotImplementedException();
-        }
-        public override  IEnumerable<GlobalConstant> GetDeclaredConstants()
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public Dictionary<QualifiedName, Declaration> Functions;
-        public Dictionary<QualifiedName, Declaration> Types;
-        public Dictionary<QualifiedName, Declaration> Constants;
-
-        public void InclusionReduced(Parser/*!*/ parser, IncludingEx/*!*/ node)
-        {
-            // make all inclusions dynamic:
-            if (node.IsConditional == false) { 
-                
-            }
-
-        }
-
-        public void FunctionDeclarationReduced(Parser/*!*/ parser, FunctionDecl/*!*/ node)
-        {
-            if (Functions == null) Functions = new Dictionary<QualifiedName, Declaration>();
-            AddDeclaration(parser.ErrorSink, node.Function, Functions);
-        }
-
-        public void TypeDeclarationReduced(Parser/*!*/ parser, TypeDecl/*!*/ node)
-        {
-            if (Types == null) Types = new Dictionary<QualifiedName, Declaration>();
-            AddDeclaration(parser.ErrorSink, node.Type, Types);
-        }
-
-        public void GlobalConstantDeclarationReduced(Parser/*!*/ parser, GlobalConstantDecl/*!*/ node)
-        {
-            if (Constants == null) Constants = new Dictionary<QualifiedName, Declaration>();
-            AddDeclaration(parser.ErrorSink, (GlobalConstant)node.Constant, Constants);
-        }
-
-        private void AddDeclaration(ErrorSink/*!*/ errors, IDeclaree/*!*/ member, Dictionary<QualifiedName, Declaration>/*!*/ table)
-        {
-            Declaration existing;
-            Declaration current = member.Declaration;
-
-            if (table.TryGetValue(member.QualifiedName, out existing))
-            {
-                // partial declarations are not allowed in transient code => nothing to check;
-                if (CheckDeclaration(errors, member, existing))
-                    AddVersionToGroup(current, existing);
-            }
-            else
-            {
-                // add a new declaration to the table:
-                table.Add(member.QualifiedName, current);
+                return false;
             }
         }
+
+        public override IEnumerable<ScriptModule> GetModules()
+        {
+            yield return Module;
+        }
+
+        public override PhpModule GetModule(PhpSourceFile name)
+        {
+            return Module;
+        }
+
+        #endregion
     }
-   
-    public class ErrorSinkImpl : ErrorSink
+
+
+    public class BasicScriptAssemblyBuilder : ScriptAssemblyBuilder
     {
-        protected override bool Add(int id, string message, ErrorSeverity severity, int group, string fullPath, ErrorPosition pos) {
-            Console.WriteLine("Line: " + pos.FirstLine + ":\n" + message+" in "+fullPath);
-            return true;
+        public BasicScriptAssemblyBuilder(BasicScriptAssembly/*!*/ assembly,
+            AssemblyName assemblyName, PhpSourceFile/*!*/ file)
+            : base(assembly, assemblyName, file.Directory.FullFileName, file.FullPath.FileName,
+            AssemblyKinds.Library, new List<ResourceFileReference>(0), false, false, true, null)
+        {
         }
+
+        #region PhpAssemblyBuilder overrides
+
+        public override IPhpModuleBuilder DefineModule(CompilationUnitBase/*!*/ compilationUnit)
+        {
+            return compilationUnit.ModuleBuilder;
+        }
+
+        #endregion
+
+        #region ScriptAssemblyBuilder overrides
+
+        protected override ScriptBuilder GetEntryScriptBuilder()
+        {
+            Debug.Assert(assembly is BasicScriptAssembly);
+            var scriptAssembly = assembly as BasicScriptAssembly;
+            return scriptAssembly.Builder;
+        }
+
+        #endregion
     }
+
 
     /// <summary>
-    /// Wraps phalanger syntax parser in one class and provides attributes neccessary for our project. If someone needs more data from praser fell free to add metods or getters and setters.
+    /// Wraps Phalanger syntax parser into one class and provides attributes neccessary for the project.
+    /// If someone needs more data from parser, feel free to add methods, getters and setters.
     /// </summary>
     public class SyntaxParser
     {
-        private PhpSourceFile source_file;
+        private PhpSourceFile sourceFile;
         private string code;
-        private CompilationUnit compilationUnit;
+        private ScriptCompilationUnit compilationUnit = new ScriptCompilationUnit();
         private SourceUnit sourceUnit;
-        private ErrorSink errors;
 
         public GlobalCode Ast { get { return sourceUnit.Ast; } }
-        public Dictionary<QualifiedName, Declaration> Functions { get { return compilationUnit.Functions; } }
-        public Dictionary<QualifiedName, Declaration> Types { get { return compilationUnit.Types; } }
-        public Dictionary<QualifiedName, Declaration> Constants { get { return compilationUnit.Constants; } }
-        public bool IsParsed { protected set; get; }
-
-        public SyntaxParser(PhpSourceFile source_file, string code)
+        public Dictionary<QualifiedName, ScopedDeclaration<DRoutine>> Functions
         {
-            // TODO: Complete member initialization
-            this.source_file = source_file;
+            get
+            {
+                var functions = new Dictionary<QualifiedName, ScopedDeclaration<DRoutine>>();
+                var unit = compilationUnit.GetVisibleFunctions();
+                foreach (var value in unit)
+                {
+                    functions.Add(value.Key, value.Value);
+                }
+                return functions;
+            }
+        }
+        public Dictionary<QualifiedName, PhpType> Types
+        {
+            get
+            {
+                var types = new Dictionary<QualifiedName, PhpType>();
+                var unit = compilationUnit.GetDeclaredTypes();
+                foreach (var value in unit)
+                {
+                    types.Add(value.QualifiedName, value);
+                }
+                return types;
+            }
+        }
+        public Dictionary<QualifiedName, ScopedDeclaration<DConstant>> Constants
+        {
+            get
+            {
+                var constants = new Dictionary<QualifiedName, ScopedDeclaration<DConstant>>();
+                var unit = compilationUnit.GetVisibleConstants();
+                foreach (var value in unit)
+                {
+                    constants.Add(value.Key, value.Value);
+                }
+                return constants;
+            }
+        }
+        public IncludingEx[] Inclusions
+        {
+            get
+            {
+                return compilationUnit.InclusionExpressions.ToArray();
+            }
+        }
+        public bool IsParsed { get; protected set; }
+        public TextErrorSink Errors { get; protected set; }
+
+        public SyntaxParser(PhpSourceFile/*!*/ sourceFile, string/*!*/ code)
+        {
+            this.sourceFile = sourceFile;
             this.code = code;
-            this.errors = new ErrorSinkImpl();
-            this.compilationUnit = new CompilationUnit();
-            this.sourceUnit = new PHP.Core.Reflection.VirtualSourceFileUnit(compilationUnit, code, source_file, Encoding.Default);
-            this.IsParsed=false;
+
+            sourceUnit = new PHP.Core.Reflection.VirtualSourceFileUnit(compilationUnit,
+                code, sourceFile, Encoding.Default);
+            compilationUnit.SourceUnit = sourceUnit;
+
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var assemblyName = assembly.GetName();
+            var scriptAssembly = new BasicScriptAssembly(assembly, assemblyName, sourceFile, compilationUnit);
+
+            // TODO: It simulates command compilationUnit.module = scriptAssembly.Module;
+            // It affects compilationUnit.ScriptModule and compilationUnit.ScriptBuilder too
+            var type = compilationUnit.GetType();
+            var field = type.GetField("module", BindingFlags.NonPublic | BindingFlags.Instance);
+            field.SetValue(compilationUnit, scriptAssembly.Module);
+
+            IsParsed = false;
+            Errors = new TextErrorSink(new StringWriter());
         }
 
-        public void Parse(){
-            sourceUnit.Parse(errors, compilationUnit, Position.Initial, LanguageFeatures.Php5);
-            this.IsParsed=true;
+        public void Parse()
+        {
+            sourceUnit.Parse(Errors, compilationUnit, Position.Initial, LanguageFeatures.Php5);
+            this.IsParsed = true;
         }
     }
 }
