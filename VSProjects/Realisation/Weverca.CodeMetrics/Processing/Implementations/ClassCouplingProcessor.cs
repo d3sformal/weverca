@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 
 using PHP.Core.AST;
+
+using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
@@ -15,10 +16,11 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         #region MetricProcessor overrides
 
         protected override Result process(bool resolveOccurances, Rating category,
-            Parsers.SyntaxParser parser)
+            SyntaxParser parser)
         {
             Debug.Assert(category == Rating.ClassCoupling);
             Debug.Assert(parser.IsParsed);
+            Debug.Assert(!parser.Errors.AnyError);
 
             if (parser.Types == null)
             {
@@ -36,7 +38,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             var types = new Stack<TypeDecl>();
             foreach (var type in parser.Types)
             {
-                var node = type.Value.GetNode();
+                var node = type.Value.Declaration.GetNode();
                 Debug.Assert(node is TypeDecl);
 
                 var typeNode = node as TypeDecl;
@@ -79,6 +81,8 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
         }
 
+        #endregion
+
         /// <summary>
         /// Calculate average number of unique type references that a type contains
         /// </summary>
@@ -98,7 +102,5 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
             return System.Convert.ToDouble(numberOfReferences) / classCouplings.Length;
         }
-
-        #endregion
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -13,57 +9,71 @@ using Weverca.Parsers;
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Processor for analyzing maximum inheritance depth.
+    /// Processor for analyzing maximum inheritance depth
     /// </summary>
     [Metric(Quantity.MaxInheritanceDepth)]
     class MaxInheritanceDepthProcessor : QuantityProcessor
     {
-        protected override Result process(bool resolveOccurances, Quantity category, SyntaxParser parser)
-        {            
-            var occurances = new List<AstNode>();
-            var maxInheritanceDepth = findMaxInheritanceDepth(parser, occurances);
+        #region MetricProcessor overrides
 
-            return new Result(maxInheritanceDepth, occurances);
+        protected override Result process(bool resolveOccurances, Quantity category,
+            SyntaxParser parser)
+        {
+            Debug.Assert(category == Quantity.MaxInheritanceDepth);
+
+            var occurrences = new Stack<AstNode>();
+            var maxInheritanceDepth = FindMaxInheritanceDepth(parser, occurrences);
+
+            return new Result(maxInheritanceDepth, occurrences.ToArray());
         }
 
+        #endregion
+
         /// <summary>
-        /// Find max inheritance depth and fill occurences with type declarations where this depth appeared.        
+        /// Find max inheritance depth and fill occurrences with type declarations where this depth appeared.
         /// </summary>
         /// <param name="parser">Parser which contains analyzed AST</param>
         /// <param name="occurances">Type declarations where max depth appeared</param>
         /// <returns>Maximum inheritance depth that has been found</returns>
-        private int findMaxInheritanceDepth(SyntaxParser parser, List<AstNode> occurances)
-        {            
+        private int FindMaxInheritanceDepth(SyntaxParser parser, Stack<AstNode> occurrences)
+        {
+            System.Diagnostics.Debug.Assert(parser.IsParsed);
+            System.Diagnostics.Debug.Assert(!parser.Errors.AnyError);
+
             if (parser.Types == null)
-                //no types were found - there is no inheritance
+            {
+                // No type is declared, there is no inheritance
                 return 0;
+            }
 
             int maxInheritanceDepth = 0;
-            //find max inheritance depth in any types
+            // Find max inheritance depth in any types
             foreach (var qualifiedName in parser.Types.Keys)
             {
-                var inheritanceDepth = getInheritanceDepth(qualifiedName, parser);
+                var inheritanceDepth = GetInheritanceDepth(qualifiedName, parser);
                 if (inheritanceDepth > maxInheritanceDepth)
                 {
-                    //we have found greater inheritance chain - clear old entries
-                    occurances.Clear();
+                    // We have found greater inheritance chain - clear old entries
+                    occurrences.Clear();
                     maxInheritanceDepth = inheritanceDepth;
                 }
                 else if (inheritanceDepth < maxInheritanceDepth)
                 {
-                    //inheritance depth is lower skip it
+                    // Inheritance depth is lower skip it
                     continue;
                 }
                 else
                 {
-                    //inheritance depth is equal to maximum - no preprocesing is needed
+                    // Inheritance depth is equal to maximum - no preprocesing is needed
                 }
 
-                var node = parser.Types[qualifiedName].GetNode() as AstNode;
+                var node = parser.Types[qualifiedName].Declaration.GetNode();
+                // Node of type declarations should not been null
+                System.Diagnostics.Debug.Assert(node != null);
+                System.Diagnostics.Debug.Assert(node is AstNode);
 
-                //Type declarations node shouldnt been null
-                Debug.Assert(node != null);
-                occurances.Add(node);
+                var astNode = node as AstNode;
+                occurrences.Push(astNode);
             }
 
             return maxInheritanceDepth;
@@ -72,24 +82,25 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// <summary>
         /// Get inheritance depth for for given typeName.
         /// </summary>
-        /// <param name="typeName">Name of analyzed type.</param>
-        /// <param name="parser">Parser that has analyzed type.</param>
+        /// <param name="typeName">Name of analyzed type</param>
+        /// <param name="parser">Parser that has analyzed type</param>
         /// <returns>Depth of inheritance of given typeName</returns>
-        private int getInheritanceDepth(QualifiedName typeName, SyntaxParser parser)
+        private int GetInheritanceDepth(QualifiedName typeName, SyntaxParser parser)
         {
-            Declaration type;
-            if (!parser.Types.TryGetValue(typeName,out type))
+            PhpType type;
+            if (!parser.Types.TryGetValue(typeName, out type))
             {
-                //TODO: there is possible an error in parsed source
+                // TODO: There is possible an error in parsed source
                 return 1;
-            }            
-            var node = type.GetNode() as TypeDecl;
+            }
 
-            var maxInheritanceDepth = getInheritanceDepth(node.BaseClassName, parser);
+            var node = type.Declaration.GetNode() as TypeDecl;
+
+            var maxInheritanceDepth = GetInheritanceDepth(node.BaseClassName, parser);
             foreach (var implemented in node.ImplementsList)
             {
                 var implementedName = implemented.QualifiedName;
-                var inheritanceDepth = getInheritanceDepth(implementedName, parser);
+                var inheritanceDepth = GetInheritanceDepth(implementedName, parser);
 
                 if (inheritanceDepth > maxInheritanceDepth)
                 {
@@ -106,14 +117,14 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// <param name="qualifiedName">Name of analyzed type.</param>
         /// <param name="parser">Parser that has analyzed type.</param>
         /// <returns>Depth of inheritance of given qualifiedName or null if qualifiedName is null.</returns>
-        private int getInheritanceDepth(GenericQualifiedName? qualifiedName, SyntaxParser parser)
+        private int GetInheritanceDepth(GenericQualifiedName? qualifiedName, SyntaxParser parser)
         {
             if (qualifiedName == null)
             {
                 return 0;
             }
 
-            return getInheritanceDepth(qualifiedName.Value.QualifiedName, parser);
+            return GetInheritanceDepth(qualifiedName.Value.QualifiedName, parser);
         }
 
     }

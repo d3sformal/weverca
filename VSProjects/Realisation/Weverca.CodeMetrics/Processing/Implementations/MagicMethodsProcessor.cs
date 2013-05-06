@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 
 using PHP.Core.AST;
@@ -21,6 +20,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         {
             Debug.Assert(category == ConstructIndicator.MagicMethod);
             Debug.Assert(parser.IsParsed);
+            Debug.Assert(!parser.Errors.AnyError);
 
             if (parser.Types == null)
             {
@@ -42,7 +42,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             foreach (var type in parser.Types)
             {
-                var node = type.Value.GetNode();
+                var node = type.Value.Declaration.GetNode();
                 Debug.Assert(node is TypeDecl);
 
                 var typeNode = node as TypeDecl;
