@@ -99,6 +99,60 @@ namespace Weverca.CodeMetrics.UnitTest
         };
         #endregion
 
+        #region ClassPresence tests
+
+        readonly SourceTest[] classPresencePositiveTests = new SourceTest[] {
+            new SourceTest("basic class", @"
+                class TestClass{
+	                public static function TestMethod($Prava, $Patka){
+		                return false;
+		            }
+	            }"),
+            new SourceTest("class implementing interface", @"
+                interface iTemplate
+                {
+                    public function setVariable($name, $var);
+                    public function getHtml($template);
+                }
+
+                // Implement the interface
+                // This will work
+                class Template implements iTemplate
+                {
+                    private $vars = array();
+  
+                    public function setVariable($name, $var)
+                    {
+                        $this->vars[$name] = $var;
+                    }
+  
+                    public function getHtml($template)
+                    {
+                        foreach($this->vars as $name => $value) {
+                            $template = str_replace('{' . $name . '}', $value, $template);
+                        }
+ 
+                        return $template;
+                    }
+                }")
+        };
+
+        readonly SourceTest[] classPresenceNegativeTests = new SourceTest[] {
+            new SourceTest("function only", @"
+                function setVariable($name, $var)
+                {
+                    $this->vars[$name] = $var;
+                }"),
+            new SourceTest("interface only", @"
+                interface iTemplate
+                {
+                    public function setVariable($name, $var);
+                    public function getHtml($template);
+                }")
+        };
+
+        #endregion
+
         [TestMethod]
         public void Eval()
         {
@@ -127,6 +181,16 @@ namespace Weverca.CodeMetrics.UnitTest
 
             TestingUtilities.RunTests(hasSuperGlobalVar, SuperGlobalVarPositiveTests);
             TestingUtilities.RunTests(doesntHaveSuperGlobalVar, SuperGlobalVarNegativeTests);
+        }
+
+        [TestMethod]
+        public void ClassPresence()
+        {
+            var hasClass = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Class);
+            var doesntHaveClass = TestingUtilities.GetNegation(hasClass);
+
+            TestingUtilities.RunTests(hasClass, classPresencePositiveTests);
+            TestingUtilities.RunTests(doesntHaveClass, classPresenceNegativeTests);
         }
     }
 }
