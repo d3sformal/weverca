@@ -8,8 +8,8 @@ using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
-    [Metric(ConstructIndicator.Eval,ConstructIndicator.Session)]
-    class FunctionPresenceProcessor : IndicatorProcessor
+    [Metric(ConstructIndicator.Eval,ConstructIndicator.Session, ConstructIndicator.MySQL)]
+    sealed class FunctionPresenceProcessor : IndicatorProcessor
     {
         protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
         {
