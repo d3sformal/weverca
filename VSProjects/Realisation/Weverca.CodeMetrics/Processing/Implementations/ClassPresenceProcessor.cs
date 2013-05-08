@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PHP.Core.AST;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
@@ -26,6 +22,8 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             bool classPresent = classes.Count() > 0;
 
             var occurences = classes.Select(t => t.Value.Declaration.GetNode() as TypeDecl).Where(t => t != null).ToArray(); // they all should not be null
+
+            Debug.Assert(occurences.Length == classes.Count(), "The number of the occurences is invalid!");
 
             return new Result(classPresent, occurences);
         }
