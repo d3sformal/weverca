@@ -65,6 +65,10 @@ namespace Weverca.CodeMetrics
             "session_write_close",
         };
 
+        /// <summary>
+        /// MySQL function list
+        /// <seealso cref="http://www.php.net/manual/en/ref.mysql.php"/>
+        /// </summary>
         static readonly string[] mySqlFunctions = new string[] {
             "mysql_affected_rows",
             "mysql_client_encoding",
