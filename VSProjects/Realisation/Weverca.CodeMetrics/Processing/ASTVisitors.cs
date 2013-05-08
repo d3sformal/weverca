@@ -5,6 +5,8 @@ using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Reflection;
 
+//TODO: refactoring, split to multiple files in common namespace ASTVisitors
+
 namespace Weverca.CodeMetrics.Processing
 {
     /// <summary>
@@ -415,6 +417,30 @@ namespace Weverca.CodeMetrics.Processing
                 occurrenceNodes.Push(x);
             }
         }
+    }
+
+    /// <summary>
+    /// Checks AST for Dynamic dereference like $$a
+    /// </summary>
+    class DynamicDereferenceVisitor : OccurrenceTreeVisitor
+    {
+        #region TreeVisitor overrides
+
+        /// <summary>
+        /// Visits the indirect variable use and checks it for dynamic dereference.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        public override void VisitIndirectVarUse(IndirectVarUse x)
+        {
+            // variable is dynamicaly dereferenced, if it has a variable use in it's name.
+            if (x.VarNameEx is VariableUse)
+            {
+                occurrenceNodes.Push(x);
+            }
+            base.VisitIndirectVarUse(x);
+        }
+
+        #endregion
     }
 
 }

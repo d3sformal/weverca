@@ -1,6 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+
 using PHP.Core.AST;
+
+using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
@@ -12,7 +15,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
     {
         #region IndicatorProcessor overrides
 
-        protected override Result process(bool resolveOccurances, ConstructIndicator category, Parsers.SyntaxParser parser)
+        protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
         {
             Debug.Assert(category == ConstructIndicator.Class);
             Debug.Assert(parser.IsParsed);

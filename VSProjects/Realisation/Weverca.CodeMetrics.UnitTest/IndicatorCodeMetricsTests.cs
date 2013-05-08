@@ -153,6 +153,22 @@ namespace Weverca.CodeMetrics.UnitTest
 
         #endregion
 
+        #region DynamicDereference tests
+
+        readonly SourceTest[] dynamicDereferencePositiveTests = new SourceTest[] {
+            new SourceTest("basic test", " $aaa = 12; $c = \"aaa\"; $b = $$c;"),
+            new SourceTest("just access", " $aaa = 12; $c = \"aaa\"; $$c;"),
+            new SourceTest("tripple dereference", " $aaa = \"bbb\"; $bbb = 12; $c = \"aaa\"; $b = $$$c;"),
+            new SourceTest("class-function test", " class A { function b() {$aaa = 12; $c = \"aaa\"; $b = $$c;}}")
+        };
+
+        readonly SourceTest[] dynamicDereferenceNegativeTests = new SourceTest[] {
+            new SourceTest("array test", " $aaa = 12; $c = \"aaa\"; $b = $c[0];"),
+            new SourceTest("basic negative test", "$c = \"aaa\";"),
+        };
+
+        #endregion
+
         #region MySQL tests
 
         readonly SourceTest[] mySQLPositiveTests = new SourceTest[] {
@@ -211,6 +227,16 @@ namespace Weverca.CodeMetrics.UnitTest
             TestingUtilities.RunTests(hasMySQLFunction, mySQLPositiveTests);
             TestingUtilities.RunTests(doesntHaveMySQLFunction, SessionPositiveTests);
             TestingUtilities.RunTests(doesntHaveMySQLFunction, EvalPositiveTests);
+        }
+        
+        [TestMethod]
+        public void DynamicDereference()
+        {
+            var hasDynamicDereference = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.DynamicDereference);
+            var doesntHaveDynamicDereference = TestingUtilities.GetNegation(hasDynamicDereference);
+
+            TestingUtilities.RunTests(hasDynamicDereference, dynamicDereferencePositiveTests);
+            TestingUtilities.RunTests(doesntHaveDynamicDereference, dynamicDereferenceNegativeTests);
         }
     }
 }

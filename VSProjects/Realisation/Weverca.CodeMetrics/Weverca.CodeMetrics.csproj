@@ -46,6 +46,7 @@
     <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\ClassPresenceProcessor.cs" />
     <Compile Include="Processing\Implementations\DuckTypingProcessor.cs" />
+    <Compile Include="Processing\Implementations\DynamicDereferenceProcessor.cs" />
     <Compile Include="Processing\Implementations\FunctionPresenceProcessor.cs" />
     <Compile Include="Processing\Implementations\InsideFunctionDeclarationProcessor.cs" />
     <Compile Include="Processing\Implementations\MagicMethodsProcessor.cs" />
