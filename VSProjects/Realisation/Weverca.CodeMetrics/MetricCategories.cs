@@ -69,6 +69,11 @@ namespace Weverca.CodeMetrics
         /// EXAMPLE: my_function(&parameter)
         /// </summary>
         PassingByReferenceAtCallSide,
+
+        /// <summary>
+        /// Indicator of My SQL functions presence
+        /// </summary>
+        MySQL
     }
 
     /// <summary>

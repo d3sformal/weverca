@@ -9,7 +9,7 @@ using Weverca.Parsers;
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     [Metric(ConstructIndicator.Eval,ConstructIndicator.Session)]
-    sealed class FunctionPresenceProcessor : IndicatorProcessor
+    class FunctionPresenceProcessor : IndicatorProcessor
     {
         protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
         {
