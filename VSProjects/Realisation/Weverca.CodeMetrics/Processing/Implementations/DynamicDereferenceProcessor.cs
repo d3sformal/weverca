@@ -11,6 +11,8 @@ namespace Weverca.CodeMetrics.Processing.Implementations
     [Metric(ConstructIndicator.DynamicDereference)]
     class DynamicDereferenceProcessor : IndicatorProcessor
     {
+        #region IndicatorProcessor overrides
+
         protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
         {
             Debug.Assert(category == ConstructIndicator.DynamicDereference);
@@ -23,5 +25,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             return new Result(occurences.Count() > 0, occurences);
         }
+
+        #endregion
     }
 }

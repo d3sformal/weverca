@@ -112,5 +112,10 @@ namespace Weverca.CodeMetrics
         /// Total number of sources.
         /// </summary>
         NumberOfSources,
+
+        /// <summary>
+        /// The maximal depth of method overriding
+        /// </summary>
+        MaxMethodOverridingDepth
     }
 }

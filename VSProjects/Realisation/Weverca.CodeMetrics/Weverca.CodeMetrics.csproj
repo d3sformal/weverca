@@ -51,6 +51,7 @@
     <Compile Include="Processing\Implementations\InsideFunctionDeclarationProcessor.cs" />
     <Compile Include="Processing\Implementations\MagicMethodsProcessor.cs" />
     <Compile Include="Processing\Implementations\MaxInheritanceDepthProcessor.cs" />
+    <Compile Include="Processing\Implementations\MaxMethodOverridingDepthProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfLinesProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfSourcesProcessor.cs" />
     <Compile Include="Processing\Implementations\SuperGlobalVarProcessor.cs" />
