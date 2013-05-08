@@ -153,6 +153,15 @@ namespace Weverca.CodeMetrics.UnitTest
 
         #endregion
 
+        #region MySQL tests
+
+        readonly SourceTest[] mySQLPositiveTests = new SourceTest[] {
+            new SourceTest("mysql_connect", "$link = @mysql_connect(\"localhost\", \"login\", \"password\") or die (\"<p>Connection failed!</p>\");"),
+            new SourceTest("mysql_query", "$result = mysql_query(\"SELECT * FROM Table\");")
+        };
+
+        #endregion
+
         [TestMethod]
         public void Eval()
         {
@@ -191,6 +200,17 @@ namespace Weverca.CodeMetrics.UnitTest
 
             TestingUtilities.RunTests(hasClass, classPresencePositiveTests);
             TestingUtilities.RunTests(doesntHaveClass, classPresenceNegativeTests);
+        }
+
+        [TestMethod]
+        public void MySQLFunctions()
+        {
+            var hasMySQLFunction = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.MySQL);
+            var doesntHaveMySQLFunction = TestingUtilities.GetNegation(hasMySQLFunction);
+
+            TestingUtilities.RunTests(hasMySQLFunction, mySQLPositiveTests);
+            TestingUtilities.RunTests(doesntHaveMySQLFunction, SessionPositiveTests);
+            TestingUtilities.RunTests(doesntHaveMySQLFunction, EvalPositiveTests);
         }
     }
 }
