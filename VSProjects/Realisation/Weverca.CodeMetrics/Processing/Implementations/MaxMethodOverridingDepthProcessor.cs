@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Diagnostics = System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using PHP.Core;
-using PHP.Core.Reflection;
 using Weverca.Parsers;
 using PHP.Core.AST;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
+    /// <summary>
+    /// Determines the maximum depth of method overriding.
+    /// </summary>
     [Metric(Quantity.MaxMethodOverridingDepth)]
     class MaxMethodOverridingDepthProcessor : QuantityProcessor
     {
@@ -22,43 +22,47 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             Diagnostics.Debug.Assert(parser.IsParsed);
             Diagnostics.Debug.Assert(!parser.Errors.AnyError);
 
-            List<PhpTypeWrapper> inheritanceTrees = new List<PhpTypeWrapper>();
+            List<TypeDeclWrapper> inheritanceTrees = new List<TypeDeclWrapper>();
 
-            foreach (var classDeclaration in parser.Types.Values)
+            var types = parser.Types.Values.Select(t => t.Declaration.GetNode() as TypeDecl).Where(t => t != null).AsEnumerable();
+            Diagnostics.Debug.Assert(types.Count() == parser.Types.Count);
+
+            //build an inheritance trees
+            foreach (var typeDeclaration in types)
             {
-                TypeDecl typeDecl = classDeclaration.Declaration.GetNode() as TypeDecl;
-                var baseClassName = typeDecl.BaseClassName;
-
-                if (baseClassName.HasValue)
+                if (typeDeclaration.BaseClassName.HasValue)
                 {
-                    AddToInheritanceTrees(parser.Types.Values, inheritanceTrees, classDeclaration);
+                    AddToInheritanceTrees(types, inheritanceTrees, typeDeclaration);
                 }
             }
 
             int maxDepth = 0;
 
+            //find max override depth for each tree
             foreach (var inheritanceTree in inheritanceTrees)
             {
                 Dictionary<string, int> methods = new Dictionary<string, int>();
 
-                Queue<PhpTypeWrapper> queue = new Queue<PhpTypeWrapper>();
+                Queue<TypeDeclWrapper> queue = new Queue<TypeDeclWrapper>();
                 queue.Enqueue(inheritanceTree);
 
                 while (queue.Count > 0)
                 {
-                    PhpTypeWrapper currentType = queue.Dequeue();
+                    TypeDeclWrapper currentType = queue.Dequeue();
 
-                    TypeDecl currentTypeDeclaration = currentType.PhpType.Declaration.GetNode() as TypeDecl;
-
-                    foreach (var currentMethod in currentTypeDeclaration.Members)
+                    //enumerates all methods in the type. The number of the occurences of the same method in the tree is a number of overrides for the method + 1.
+                    foreach (var currentMethod in currentType.TypeDeclaration.Members)
                     {
                         MethodDecl method = currentMethod as MethodDecl;
 
-                        if (method != null && !methods.ContainsKey(method.Name.Value))
+                        if (method != null)
                         {
-                            methods.Add(method.Name.Value, -1); // will be incremented shortely
+                            if (!methods.ContainsKey(method.Name.Value))
+                            {
+                                methods.Add(method.Name.Value, -1); //will be incremented shortely, so the counter will start at 0.
+                            }
+                            methods[method.Name.Value]++;
                         }
-                        methods[method.Name.Value]++;
                     }
 
                     foreach (var child in currentType.Children)
@@ -76,6 +80,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
+            //TODO: get occurences
             return new Result(maxDepth);
         }
 
@@ -83,11 +88,17 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
         #region Private Methods
 
-        PhpTypeWrapper FindDTypeWrapper(List<PhpTypeWrapper> types, PhpType type)
+        /// <summary>
+        /// Finds the type in a set of inheritance trees
+        /// </summary>
+        /// <param name="types">The types.</param>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        TypeDeclWrapper FindDTypeWrapper(List<TypeDeclWrapper> types, TypeDecl type)
         {
             foreach (var inheritanceTree in types)
             {
-                PhpTypeWrapper result = inheritanceTree.FindType(type);
+                TypeDeclWrapper result = inheritanceTree.FindType(type);
                 if (result != null)
                 {
                     return result;
@@ -97,18 +108,23 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             return null;
         }
 
-        void AddToInheritanceTrees(IEnumerable<PhpType> types, List<PhpTypeWrapper> inheritanceTrees, PhpType newType)
+        /// <summary>
+        /// Adds a type to the correct place in the inheritance trees.
+        /// </summary>
+        /// <param name="types">The types.</param>
+        /// <param name="inheritanceTrees">The inheritance trees.</param>
+        /// <param name="newType">The new type.</param>
+        void AddToInheritanceTrees(IEnumerable<TypeDecl> types, List<TypeDeclWrapper> inheritanceTrees, TypeDecl newType)
         {
-            TypeDecl newTypeDecl = newType.Declaration.GetNode() as TypeDecl;
-            PhpType baseClass = types.First(t => t.FullName == newTypeDecl.BaseClassName.Value.QualifiedName.Name.Value);
+            TypeDecl baseClass = types.First(t => t.Name.Value == newType.BaseClassName.Value.QualifiedName.Name.Value);
 
-            PhpTypeWrapper baseTypeWrapper = FindDTypeWrapper(inheritanceTrees, baseClass);
-            PhpTypeWrapper existingTypeWrapper = FindDTypeWrapper(inheritanceTrees, newType);
+            TypeDeclWrapper baseTypeWrapper = FindDTypeWrapper(inheritanceTrees, baseClass);
+            TypeDeclWrapper existingTypeWrapper = FindDTypeWrapper(inheritanceTrees, newType);
 
             if (baseTypeWrapper == null && existingTypeWrapper == null)
             {
-                baseTypeWrapper = new PhpTypeWrapper(baseClass);
-                baseTypeWrapper.Children.Add(new PhpTypeWrapper(newType));
+                baseTypeWrapper = new TypeDeclWrapper(baseClass);
+                baseTypeWrapper.Children.Add(new TypeDeclWrapper(newType));
                 inheritanceTrees.Add(baseTypeWrapper);
             }
             else if (baseTypeWrapper != null && existingTypeWrapper == null)
@@ -117,43 +133,69 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
             else if (baseTypeWrapper == null && existingTypeWrapper != null)
             {
-                Debug.Assert(inheritanceTrees.Contains(existingTypeWrapper));
+                Diagnostics.Debug.Assert(inheritanceTrees.Contains(existingTypeWrapper));
 
-                baseTypeWrapper = new PhpTypeWrapper(baseClass);
+                baseTypeWrapper = new TypeDeclWrapper(baseClass);
                 baseTypeWrapper.Children.Add(existingTypeWrapper);
                 inheritanceTrees.Remove(existingTypeWrapper);
                 inheritanceTrees.Add(baseTypeWrapper);
             }
             else
             {
-                Debug.Fail("Unsupported state");
+                Diagnostics.Debug.Fail("Unsupported state");
             }
         }
 
         #endregion
     }
 
-    class PhpTypeWrapper
+    /// <summary>
+    /// Wrapper for the <see cref="TypeDecl"/> to maitain an inheritance tree.
+    /// The edges leeds from the base type to derived type.
+    /// </summary>
+    sealed class TypeDeclWrapper
     {
-        public PhpType PhpType { get; private set; }
-        public List<PhpTypeWrapper> Children { get; private set; }
+        #region Properties
 
-        public PhpTypeWrapper(PhpType phpType)
+        /// <summary>
+        /// Gets the base type declaration.
+        /// </summary>
+        public TypeDecl TypeDeclaration { get; private set; }
+
+        /// <summary>
+        /// Gets the derived types.
+        /// </summary>
+        public List<TypeDeclWrapper> Children { get; private set; }
+
+        #endregion
+
+        #region Constructor
+
+        public TypeDeclWrapper(TypeDecl typeDeclaration)
         {
-            PhpType = phpType;
-            Children = new List<PhpTypeWrapper>();
+            TypeDeclaration = typeDeclaration;
+            Children = new List<TypeDeclWrapper>();
         }
 
-        public PhpTypeWrapper FindType(PhpType type)
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Finds the type in the tree under this instance.
+        /// </summary>
+        /// <param name="typeDeclaration">The type declaration.</param>
+        /// <returns></returns>
+        public TypeDeclWrapper FindType(TypeDecl typeDeclaration)
         {
-            if (PhpType == type)
+            if (TypeDeclaration == typeDeclaration)
             {
                 return this;
             }
 
             foreach (var child in Children)
             {
-                PhpTypeWrapper result = child.FindType(type);
+                TypeDeclWrapper result = child.FindType(typeDeclaration);
                 if (result != null)
                 {
                     return child;
@@ -162,5 +204,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             return null;
         }
+
+        #endregion
     }
 }
