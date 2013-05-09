@@ -20,6 +20,17 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             // Is it enoght that we have IndirectFunctionCall? Could thete be something different that var use in nameExpr?
 
             occurrenceNodes.Push(x);
+            base.VisitIndirectFcnCall(x);
+        }
+
+
+        public override void VisitNewEx(NewEx x)
+        {
+            if (x.ClassNameRef is IndirectTypeRef)
+            {
+                occurrenceNodes.Push(x);
+            }
+            base.VisitNewEx(x);
         }
 
         #endregion

@@ -195,7 +195,11 @@ namespace Weverca.CodeMetrics.UnitTest
                 }
                 $instance = new A();
                 $fxname = ""Foo"";
-                $instance->$fxname();")
+                $instance->$fxname();"),
+            new SourceTest("dynamic creation", @"
+                $fxname = ""A"";
+
+                $instance = new $fxname();")
         };
 
         readonly SourceTest[] dynamicCallNegativeTests = new SourceTest[] {
