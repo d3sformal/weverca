@@ -62,6 +62,79 @@ namespace Weverca.CodeMetrics.UnitTest
             SourceTest SingleSource= new SourceTest("Single source", TestingUtilities.HelloWorldSource);
         #endregion
 
+        #region Max method overriding depth
+
+        SourceTest[] overridingDepth_0 = new SourceTest[]{
+            new SourceTest("no method", TestingUtilities.HelloWorldSource),
+            new SourceTest("no overriding", @"
+                class B{
+                    function foo(){}
+                }
+
+                class C extends B{ function aaa(){} }
+            ")
+        };
+
+        SourceTest[] overridingDepth_1 = new SourceTest[]{
+            new SourceTest("single tree", @"
+                class Foo {
+                    function myFoo() {
+                        return ""Foo"";
+                    }
+                }
+
+                class Bar extends Foo {
+                    function myFoo() {
+                        return ""Bar"";
+                    }
+                }"),
+            new SourceTest("two trees", @"
+                class Foo {
+                    function myFoo() {
+                        return ""Foo"";
+                    }
+                }
+
+                class Bar extends Foo {
+                    function myFoo() {
+                        return ""Bar"";
+                    }
+                }
+
+                class B{
+                    function foo(){}
+                }")
+        };
+
+        SourceTest[] overridingDepth_2 = new SourceTest[]{
+            new SourceTest("single tree, depth 2", @"
+                class Foo {
+                    function myFoo() {
+                        return ""Foo"";
+                    }
+                }
+
+                class Bar extends Foo {
+                    function myFoo() {
+                        return ""Bar"";
+                    }
+                }
+
+                class BarB extends Foo {
+                    function myFoo() {
+                        return ""BarB"";
+                    }
+                }
+
+                class BarBar extends Bar {
+                    function myFoo() {
+                        return ""BarBar"";
+                    }
+                }")
+        };
+
+        #endregion
+
         [TestMethod]
         public void InheritanceDepth()
         {
@@ -105,6 +178,18 @@ namespace Weverca.CodeMetrics.UnitTest
             Assert.IsTrue(sourceCn1_predicate(infoB), "Single source B");
             Assert.IsTrue(sourceCn2_predicate(infoAB), "Merged A B sources");
             Assert.IsTrue(sourceCn2_predicate(infoAAB), "Merged A A B source");
+        }
+
+        [TestMethod]
+        public void MaxMethodOverridingDepth()
+        {
+            var overriding0_predicate = TestingUtilities.GetQuantityPredicate(Quantity.MaxMethodOverridingDepth, 0);
+            var overriding1_predicate = TestingUtilities.GetQuantityPredicate(Quantity.MaxMethodOverridingDepth, 1);
+            var overriding2_predicate = TestingUtilities.GetQuantityPredicate(Quantity.MaxMethodOverridingDepth, 2);
+
+            TestingUtilities.RunTests(overriding0_predicate, overridingDepth_0);
+            TestingUtilities.RunTests(overriding1_predicate, overridingDepth_1);
+            TestingUtilities.RunTests(overriding2_predicate, overridingDepth_2);
         }
     }
 }
