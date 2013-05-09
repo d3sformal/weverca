@@ -178,6 +178,38 @@ namespace Weverca.CodeMetrics.UnitTest
 
         #endregion
 
+        #region Dynamic function call tests
+
+        readonly SourceTest[] dynamicCallPositiveTests = new SourceTest[] {
+            new SourceTest("basic test", @"
+                $fxname = ""helloWorld"";
+
+                function helloWorld(){
+                    echo ""What a beautiful world!"";
+                }
+
+                $fxname(); //echos What a beautiful world!"),
+            new SourceTest("inside class", @"
+                class A{
+                    function Foo(){ }
+                }
+                $instance = new A();
+                $fxname = ""Foo"";
+                $instance->$fxname();")
+        };
+
+        readonly SourceTest[] dynamicCallNegativeTests = new SourceTest[] {
+             new SourceTest("basic negative test", @"
+                function helloWorld(){
+                    echo ""What a beautiful world!"";
+                }
+
+                helloWorld(); //echos What a beautiful world!"),
+            new SourceTest("no function call test", "$c = \"aaa\";"),
+        };
+
+        #endregion
+
         [TestMethod]
         public void Eval()
         {
@@ -237,6 +269,16 @@ namespace Weverca.CodeMetrics.UnitTest
 
             TestingUtilities.RunTests(hasDynamicDereference, dynamicDereferencePositiveTests);
             TestingUtilities.RunTests(doesntHaveDynamicDereference, dynamicDereferenceNegativeTests);
+        }
+
+        [TestMethod]
+        public void DynamicCalls()
+        {
+            var hasDynamicCall = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.DynamicCall);
+            var doesntHaveDynamicCall = TestingUtilities.GetNegation(hasDynamicCall);
+
+            TestingUtilities.RunTests(hasDynamicCall, dynamicCallPositiveTests);
+            TestingUtilities.RunTests(doesntHaveDynamicCall, dynamicCallNegativeTests);
         }
     }
 }

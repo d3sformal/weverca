@@ -45,6 +45,7 @@
     <Compile Include="Processing\ASTVisitors\CallVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\ClassCouplingVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\DuckTypingVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\DynamicCallVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\DynamicDereferenceVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\InsideFunctionDeclarationVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\OccurrenceVisitor.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\ClassPresenceProcessor.cs" />
     <Compile Include="Processing\Implementations\DuckTypingProcessor.cs" />
+    <Compile Include="Processing\Implementations\DynamicCallProcessor.cs" />
     <Compile Include="Processing\Implementations\DynamicDereferenceProcessor.cs" />
     <Compile Include="Processing\Implementations\DynamicIncludeProcessor.cs" />
     <Compile Include="Processing\Implementations\FunctionPresenceProcessor.cs" />
