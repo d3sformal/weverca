@@ -34,6 +34,36 @@ namespace Weverca.CodeMetrics
             DObject.SpecialMethodNames.Wakeup.LowercaseValue,
         };
         /// <summary>
+        /// One-argument functions that operate with strings (implemented in PHP.Library.PhpStrings)
+        /// </summary>
+        static readonly string[] String_Functions = new string[]{
+            "addslashes",
+            "bin2hex",
+            "convert_uudecode",
+            "convert_uuencode",
+            "hebrev",
+            "hebrevc",
+            "hex2bin",
+            // All html* functions are skipped
+            "lcfirst",
+            "md5",
+            "metaphone",
+            "nl2br",
+            "number_format",
+            "quotemeta",
+            "sha1",
+            "soundex",
+            "str_rot13",
+            "strip_tags",
+            "stripcslashes",
+            "stripslashes",
+            "strrev",
+            "strtolower",
+            "strtoupper",
+            "ucfirst",
+            "ucwords",
+        };
+        /// <summary>
         /// Functions that indicates usage of eval
         /// </summary>
         static readonly string[] Eval = new string[] { "eval" };
@@ -128,6 +158,7 @@ namespace Weverca.CodeMetrics
         static MetricRelatedFunctions()
         {
             functions.Add(ConstructIndicator.MagicMethod, Magic_Methods);
+            functions.Add(ConstructIndicator.DynamicInclude, String_Functions);
             functions.Add(ConstructIndicator.Session, Session);
             functions.Add(ConstructIndicator.Autoload, Autoload_Register);
             functions.Add(ConstructIndicator.Eval, Eval);
