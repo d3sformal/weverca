@@ -36,12 +36,12 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            int maxDepth = 0;
+            List<MethodDecl> occurences = new List<MethodDecl>();
 
             //find max override depth for each tree
             foreach (var inheritanceTree in inheritanceTrees)
             {
-                Dictionary<string, int> methods = new Dictionary<string, int>();
+                Dictionary<string, List<MethodDecl>> methods = new Dictionary<string, List<MethodDecl>>();
 
                 Queue<TypeDeclWrapper> queue = new Queue<TypeDeclWrapper>();
                 queue.Enqueue(inheritanceTree);
@@ -51,17 +51,17 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                     TypeDeclWrapper currentType = queue.Dequeue();
 
                     //enumerates all methods in the type. The number of the occurences of the same method in the tree is a number of overrides for the method + 1.
-                    foreach (var currentMethod in currentType.TypeDeclaration.Members)
+                    foreach (var member in currentType.TypeDeclaration.Members)
                     {
-                        MethodDecl method = currentMethod as MethodDecl;
+                        MethodDecl method = member as MethodDecl;
 
                         if (method != null)
                         {
                             if (!methods.ContainsKey(method.Name.Value))
                             {
-                                methods.Add(method.Name.Value, -1); //will be incremented shortely, so the counter will start at 0.
+                                methods.Add(method.Name.Value, new List<MethodDecl>());
                             }
-                            methods[method.Name.Value]++;
+                            methods[method.Name.Value].Add(method);
                         }
                     }
 
@@ -71,17 +71,18 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                     }
                 }
 
-                foreach (var depth in methods.Values)
+                foreach (var currentOccurences in methods.Values)
                 {
-                    if (depth > maxDepth)
+                    if (currentOccurences.Count > occurences.Count)
                     {
-                        maxDepth = depth;
+                        occurences.Clear();
+                        occurences.AddRange(currentOccurences);
                     }
                 }
             }
 
-            //TODO: get occurences
-            return new Result(maxDepth);
+            // -1 because the first declaration is not overrided.
+            return new Result(occurences.Count - 1, occurences);
         }
 
         #endregion
