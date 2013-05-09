@@ -27,7 +27,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             var types = parser.Types.Values.Select(t => t.Declaration.GetNode() as TypeDecl).Where(t => t != null).AsEnumerable();
             Diagnostics.Debug.Assert(types.Count() == parser.Types.Count);
 
-            //build an inheritance trees
+            //build inheritance trees
             foreach (var typeDeclaration in types)
             {
                 if (typeDeclaration.BaseClassName.HasValue)
@@ -82,7 +82,12 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
 
             // -1 because the first declaration is not overrided.
-            return new Result(occurences.Count - 1, occurences);
+            int maxInheritance = occurences.Count - 1;
+            if (maxInheritance < 0) // occures when there is no method declared
+            {
+                maxInheritance = 0;
+            }
+            return new Result(maxInheritance, occurences);
         }
 
         #endregion
