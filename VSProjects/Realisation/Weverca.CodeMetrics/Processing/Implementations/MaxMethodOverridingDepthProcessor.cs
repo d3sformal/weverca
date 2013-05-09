@@ -96,16 +96,25 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// <param name="newType">The new type.</param>
         void AddToInheritanceTrees(IEnumerable<TypeDecl> types, List<TypeDeclWrapper> inheritanceTrees, TypeDecl newType)
         {
-            TypeDecl baseClass = types.First(t => t.Name.Value == newType.BaseClassName.Value.QualifiedName.Name.Value);
+            TypeDecl baseClass = types.FirstOrDefault(t => t.Name.Value == newType.BaseClassName.Value.QualifiedName.Name.Value);
+            Diagnostics.Trace.WriteIf(baseClass == null, string.Format("The base type \"{0}\" for \"{1}\" is not available in the source",
+                newType.BaseClassName.Value.QualifiedName.Name.Value, newType.Name.Value));
 
             TypeDeclWrapper baseTypeWrapper = FindDTypeWrapper(inheritanceTrees, baseClass);
             TypeDeclWrapper existingTypeWrapper = FindDTypeWrapper(inheritanceTrees, newType);
 
             if (baseTypeWrapper == null && existingTypeWrapper == null)
             {
-                baseTypeWrapper = new TypeDeclWrapper(baseClass);
-                baseTypeWrapper.Children.Add(new TypeDeclWrapper(newType));
-                inheritanceTrees.Add(baseTypeWrapper);
+                if (baseClass != null)
+                {
+                    baseTypeWrapper = new TypeDeclWrapper(baseClass);
+                    baseTypeWrapper.Children.Add(new TypeDeclWrapper(newType));
+                    inheritanceTrees.Add(baseTypeWrapper);
+                }
+                else
+                {
+                    inheritanceTrees.Add(new TypeDeclWrapper(newType));
+                }
             }
             else if (baseTypeWrapper != null && existingTypeWrapper == null)
             {
