@@ -2,7 +2,7 @@
 using System.Diagnostics;
 
 using PHP.Core.AST;
-
+using Weverca.CodeMetrics.Processing.ASTVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations

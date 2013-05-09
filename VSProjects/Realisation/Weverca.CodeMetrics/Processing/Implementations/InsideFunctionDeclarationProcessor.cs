@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
+using Weverca.CodeMetrics.Processing.ASTVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations

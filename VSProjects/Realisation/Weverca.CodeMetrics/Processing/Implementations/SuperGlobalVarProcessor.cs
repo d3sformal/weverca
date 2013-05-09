@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
+using Weverca.CodeMetrics.Processing.ASTVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations

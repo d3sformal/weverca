@@ -42,7 +42,13 @@
     <Compile Include="MetricCategories.cs" />
     <Compile Include="MetricInfo.cs" />
     <Compile Include="MetricRelatedFunctions.cs" />
-    <Compile Include="Processing\ASTVisitors.cs" />
+    <Compile Include="Processing\ASTVisitors\CallVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\ClassCouplingVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\DuckTypingVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\DynamicDereferenceVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\InsideFunctionDeclarationVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\OccurrenceVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\SuperGlobalVarVisitor.cs" />
     <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\ClassPresenceProcessor.cs" />
     <Compile Include="Processing\Implementations\DuckTypingProcessor.cs" />

@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core.AST;
-
+using Weverca.CodeMetrics.Processing.ASTVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing
