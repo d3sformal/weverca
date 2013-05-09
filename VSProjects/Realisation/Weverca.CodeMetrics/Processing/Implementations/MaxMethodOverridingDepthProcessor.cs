@@ -36,58 +36,32 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            List<MethodDecl> occurences = new List<MethodDecl>();
+            Dictionary<string, List<MethodDecl>> occurences = new Dictionary<string, List<MethodDecl>>();
+            Dictionary<string, List<MethodDecl>> methods;
 
             //find max override depth for each tree
             foreach (var inheritanceTree in inheritanceTrees)
             {
-                Dictionary<string, List<MethodDecl>> methods = new Dictionary<string, List<MethodDecl>>();
+                methods = CheckTree(inheritanceTree);
+                MergeResults(methods, occurences);
+            }
 
-                Queue<TypeDeclWrapper> queue = new Queue<TypeDeclWrapper>();
-                queue.Enqueue(inheritanceTree);
-
-                while (queue.Count > 0)
+            List<MethodDecl> maxOccurences = new List<MethodDecl>();
+            foreach (var item in occurences.Values)
+            {
+                if (item.Count > maxOccurences.Count)
                 {
-                    TypeDeclWrapper currentType = queue.Dequeue();
-
-                    //enumerates all methods in the type. The number of the occurences of the same method in the tree is a number of overrides for the method + 1.
-                    foreach (var member in currentType.TypeDeclaration.Members)
-                    {
-                        MethodDecl method = member as MethodDecl;
-
-                        if (method != null)
-                        {
-                            if (!methods.ContainsKey(method.Name.Value))
-                            {
-                                methods.Add(method.Name.Value, new List<MethodDecl>());
-                            }
-                            methods[method.Name.Value].Add(method);
-                        }
-                    }
-
-                    foreach (var child in currentType.Children)
-                    {
-                        queue.Enqueue(child);
-                    }
-                }
-
-                foreach (var currentOccurences in methods.Values)
-                {
-                    if (currentOccurences.Count > occurences.Count)
-                    {
-                        occurences.Clear();
-                        occurences.AddRange(currentOccurences);
-                    }
+                    maxOccurences = item;
                 }
             }
 
             // -1 because the first declaration is not overrided.
-            int maxInheritance = occurences.Count - 1;
-            if (maxInheritance < 0) // occures when there is no method declared
+            int maxOverrides = maxOccurences.Count - 1;
+            if (maxOverrides < 0) // occures when there is no method declared
             {
-                maxInheritance = 0;
+                maxOverrides = 0;
             }
-            return new Result(maxInheritance, occurences);
+            return new Result(maxOverrides, maxOccurences);
         }
 
         #endregion
@@ -135,7 +109,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
             else if (baseTypeWrapper != null && existingTypeWrapper == null)
             {
-                baseTypeWrapper.Children.Add(existingTypeWrapper);
+                baseTypeWrapper.Children.Add(new TypeDeclWrapper(newType));
             }
             else if (baseTypeWrapper == null && existingTypeWrapper != null)
             {
@@ -149,6 +123,62 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             else
             {
                 Diagnostics.Debug.Fail("Unsupported state");
+            }
+        }
+
+        /// <summary>
+        /// Checks the tree for max overriding depth.
+        /// </summary>
+        /// <param name="root">The root of the tree of the types to check.</param>
+        /// <returns></returns>
+        Dictionary<string, List<MethodDecl>> CheckTree(TypeDeclWrapper root)
+        {
+            Dictionary<string, List<MethodDecl>> result = new Dictionary<string, List<MethodDecl>>();
+
+            foreach (TypeDeclWrapper child in root.Children)
+            {
+                var childResult = CheckTree(child);
+                MergeResults(childResult, result);
+            }
+
+            foreach (var member in root.TypeDeclaration.Members)
+            {
+                MethodDecl method = member as MethodDecl;
+
+                if (method != null)
+                {
+                    if (!result.ContainsKey(method.Name.Value))
+                    {
+                        result.Add(method.Name.Value, new List<MethodDecl>());
+                    }
+                    result[method.Name.Value].Insert(0, method);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Merges the results of the <see cref="CheckTree"/>.
+        /// </summary>
+        /// <param name="toMerge">A list of results to merge into the second parameter.</param>
+        /// <param name="mergeInto">Result - The first parameter will be merged into this one.</param>
+        void MergeResults(Dictionary<string, List<MethodDecl>> toMerge, Dictionary<string, List<MethodDecl>> mergeInto)
+        {
+            foreach (var item in toMerge)
+            {
+                if (mergeInto.ContainsKey(item.Key))
+                {
+                    if (item.Value.Count > mergeInto[item.Key].Count)
+                    {
+                        mergeInto[item.Key].Clear();
+                        mergeInto[item.Key].AddRange(item.Value);
+                    }
+                }
+                else
+                {
+                    mergeInto.Add(item.Key, item.Value);
+                }
             }
         }
 
