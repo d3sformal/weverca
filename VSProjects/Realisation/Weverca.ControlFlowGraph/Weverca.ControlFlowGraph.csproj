@@ -39,6 +39,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AlternativeMemoryModel\Builders\ContainerBuilder.cs" />
+    <Compile Include="AlternativeMemoryModel\Builders\VariableBuilder.cs" />
+    <Compile Include="AlternativeMemoryModel\IDeepComparable.cs" />
+    <Compile Include="AlternativeMemoryModel\IValue.cs" />
+    <Compile Include="AlternativeMemoryModel\MemoryContext.cs" />
+    <Compile Include="AlternativeMemoryModel\Builders\MemoryContextBuilder.cs" />
+    <Compile Include="AlternativeMemoryModel\Reference.cs" />
+    <Compile Include="AlternativeMemoryModel\ValueImplementations\AssociativeContainer.cs" />
+    <Compile Include="AlternativeMemoryModel\ValueImplementations\StringValue.cs" />
+    <Compile Include="AlternativeMemoryModel\Variable.cs" />
     <Compile Include="Analysis\AnalysisCallStack.cs" />
     <Compile Include="Analysis\AssumptionCondition.cs" />
     <Compile Include="Analysis\CallAnalysisContext.cs" />
