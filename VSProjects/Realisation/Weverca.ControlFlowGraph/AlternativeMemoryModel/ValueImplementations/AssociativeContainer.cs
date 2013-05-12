@@ -17,8 +17,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
         private Dictionary<AbstractValue,IEnumerable< VirtualReference>> _items;
 
 
-        public AssociativeContainer(VirtualReference reference, Dictionary<AbstractValue, IEnumerable<VirtualReference>> items)
-            : base(reference)
+        public AssociativeContainer(Dictionary<AbstractValue, IEnumerable<VirtualReference>> items)            
         {
             _items = new Dictionary<AbstractValue, IEnumerable<VirtualReference>>(items);
         }

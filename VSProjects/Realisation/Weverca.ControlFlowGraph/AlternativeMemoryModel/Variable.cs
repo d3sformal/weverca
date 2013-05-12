@@ -12,7 +12,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
     /// 
     /// NOTES:
     /// * Is immutable
-    /// * Values of variable are resolved only according to concrete MemoryContext    /// 
+    /// * Values of variable are resolved only according to concrete MemoryContext
     /// </summary>
     public class Variable
     {
@@ -22,7 +22,9 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         public readonly VariableName Name;
 
         /// <summary>
-        /// References that variable can have  (no reference means, that variable is uninitialized)
+        /// References that variable can have 
+        ///     * no reference means, that variable is undefined
+        ///     * reference on no possible values is uninitialized
         /// </summary>
         public IEnumerable<VirtualReference> PossibleReferences { get; private set; }
 
@@ -33,7 +35,16 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         /// </summary>
         public IEnumerable<AbstractValue> GetPossibleValues(MemoryContext context)
         {
-            throw new NotImplementedException();
+            var outputSet = new HashSet<AbstractValue>();
+            foreach (var reference in PossibleReferences)
+            {
+                foreach (var possibleValue in context.GetPossibleValues(reference))
+                {
+                    outputSet.Add(possibleValue);
+                }
+            }
+
+            return outputSet;
         }
 
     }

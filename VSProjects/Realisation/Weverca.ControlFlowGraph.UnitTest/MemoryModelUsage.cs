@@ -49,8 +49,8 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
            var container=builder.ModificationBuilder(value);
 
-           var key1 = builder.StringValue("key1");
-           var key2 = builder.StringValue("key2");
+           var key1 = new StringValue("key1");
+           var key2 = new StringValue("key2");
 
            //assign by value
            container.Set(key1, someVariable.GetPossibleValues(context));

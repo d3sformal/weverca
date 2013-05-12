@@ -12,12 +12,10 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
     {
         public readonly string Value;
 
-        public StringValue(string value,VirtualReference reference)
-            :base(reference)
+        public StringValue(string value)            
         {
             Value = value;
         }
-
 
         public override int DeepGetHashCode()
         {

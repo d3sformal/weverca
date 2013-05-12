@@ -15,16 +15,37 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
     public class MemoryContextBuilder
     {
         /// <summary>
+        /// Version of parent (is referenced as parent from builded memory context)
+        /// </summary>
+        private readonly MemoryContextVersion _parent;
+
+        /// <summary>
+        /// Storage where data for builded context will be stored
+        /// </summary>
+        private readonly MemoryStorage _storage;
+
+
+        internal MemoryContextBuilder(MemoryContextVersion parent,MemoryStorage storage)
+        {
+            _parent = parent;            
+        }
+
+        /// <summary>
         /// Build described memory context accordingly ALL GENERATED sub-builders
         /// </summary>
         /// <returns>Builded memory context.</returns>
         public MemoryContext BuildContext()
         {
+            var currentVersion = new MemoryContextVersion(_parent);
+
+            var context = new MemoryContext(_storage, currentVersion);
             throw new NotImplementedException();
+
+            return context;
         }
 
         
-        #region Modification Sub
+        #region Modification Sub builders
         /// <summary>
         /// Get builder for "modifying accros MemoryContext instances" specified variable.
         /// 
@@ -88,15 +109,6 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
             throw new NotImplementedException();
         }
 
-        /// <summary>
-        /// Helper method for creating abstract value for string.
-        /// </summary>
-        /// <param name="value">Value of string which representation will be created.</param>
-        /// <returns>Representation of given string.</returns>
-        public StringValue StringValue(string value)
-        {
-            throw new NotImplementedException();
-        }
         #endregion
     }
 }

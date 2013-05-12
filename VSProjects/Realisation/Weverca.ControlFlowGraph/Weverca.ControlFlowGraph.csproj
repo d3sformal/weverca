@@ -45,7 +45,11 @@
     <Compile Include="AlternativeMemoryModel\IValue.cs" />
     <Compile Include="AlternativeMemoryModel\MemoryContext.cs" />
     <Compile Include="AlternativeMemoryModel\Builders\MemoryContextBuilder.cs" />
-    <Compile Include="AlternativeMemoryModel\Reference.cs" />
+    <Compile Include="AlternativeMemoryModel\MemoryContextVersion.cs" />
+    <Compile Include="AlternativeMemoryModel\MemoryEntry.cs" />
+    <Compile Include="AlternativeMemoryModel\MemoryEntryId.cs" />
+    <Compile Include="AlternativeMemoryModel\MemoryStorage.cs" />
+    <Compile Include="AlternativeMemoryModel\VirtualReference.cs" />
     <Compile Include="AlternativeMemoryModel\ValueImplementations\AssociativeContainer.cs" />
     <Compile Include="AlternativeMemoryModel\ValueImplementations\StringValue.cs" />
     <Compile Include="AlternativeMemoryModel\Variable.cs" />
