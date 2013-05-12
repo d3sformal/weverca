@@ -12,7 +12,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
     /// NOTES: 
     /// * Is immutable    
     /// </summary>
-    public class Reference
+    public class VirtualReference
     {
         /// <summary>
         /// Get values that are present on stored address in given context.

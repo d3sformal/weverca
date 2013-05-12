@@ -30,7 +30,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         /// </summary>
         /// <param name="reference">Reference where values are stored.</param>
         /// <returns>Possible values for reference.</returns>
-        public IEnumerable<AbstractValue> GetPossibleValues(Reference reference)
+        public IEnumerable<AbstractValue> GetPossibleValues(VirtualReference reference)
         {
             throw new NotImplementedException();
         }

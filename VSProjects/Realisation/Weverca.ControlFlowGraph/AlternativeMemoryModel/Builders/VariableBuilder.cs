@@ -47,7 +47,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// Set references for variable.
         /// </summary>
         /// <param name="references">References that will be set.</param>
-        public void SetReferences(IEnumerable<Reference> references)
+        public void SetReferences(IEnumerable<VirtualReference> references)
         {
             throw new NotImplementedException();
         }

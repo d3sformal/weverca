@@ -17,9 +17,9 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         /// Note that reference isn't resolved according to concrete MemoryContext.
         /// </summary>
         /// <returns>Reference to this value.</returns>
-        public Reference Reference { get; private set; }
+        public VirtualReference Reference { get; private set; }
 
-        public AbstractValue(Reference reference)
+        public AbstractValue(VirtualReference reference)
         {
             Reference = reference;
         }

@@ -14,13 +14,13 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
         /// <summary>
         /// Items that are stored in container.
         /// </summary>
-        private Dictionary<AbstractValue,IEnumerable< Reference>> _items;
+        private Dictionary<AbstractValue,IEnumerable< VirtualReference>> _items;
 
 
-        public AssociativeContainer(Reference reference, Dictionary<AbstractValue, IEnumerable<Reference>> items)
+        public AssociativeContainer(VirtualReference reference, Dictionary<AbstractValue, IEnumerable<VirtualReference>> items)
             : base(reference)
         {
-            _items = new Dictionary<AbstractValue, IEnumerable<Reference>>(items);
+            _items = new Dictionary<AbstractValue, IEnumerable<VirtualReference>>(items);
         }
 
         public override int DeepGetHashCode()

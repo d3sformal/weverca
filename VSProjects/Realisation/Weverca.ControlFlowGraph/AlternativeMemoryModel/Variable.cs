@@ -24,7 +24,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         /// <summary>
         /// References that variable can have  (no reference means, that variable is uninitialized)
         /// </summary>
-        public IEnumerable<Reference> PossibleReferences { get; private set; }
+        public IEnumerable<VirtualReference> PossibleReferences { get; private set; }
 
         /// <summary>
         /// Get values that can be possibly stored in given memory context.

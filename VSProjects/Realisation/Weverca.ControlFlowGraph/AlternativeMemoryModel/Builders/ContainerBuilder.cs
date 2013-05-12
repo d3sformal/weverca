@@ -21,7 +21,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
             throw new NotImplementedException();
         }
 
-        public void SetReferences(AbstractValue key, IEnumerable<Reference> possibleReferences)
+        public void SetReferences(AbstractValue key, IEnumerable<VirtualReference> possibleReferences)
         {
             //Associative container stores references natively, it's enough to associate key with given possible references
             throw new NotImplementedException();

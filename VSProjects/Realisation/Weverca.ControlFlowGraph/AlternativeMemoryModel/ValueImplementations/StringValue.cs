@@ -12,7 +12,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
     {
         public readonly string Value;
 
-        public StringValue(string value,Reference reference)
+        public StringValue(string value,VirtualReference reference)
             :base(reference)
         {
             Value = value;
