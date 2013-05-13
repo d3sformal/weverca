@@ -60,5 +60,20 @@ namespace Weverca.ControlFlowGraph.UnitTest
            return builder.BuildContext();
        }
 
+       static MemoryContext MergeVariables(MemoryContext context1, MemoryContext context2, Variable var1, Variable var2)
+       {
+           //we want to add new information into given context
+           var builder = context1.CreateDerivedContextBuilder();
+
+           //merge matching MemoryItems
+           builder.MergeWith(context2);
+           
+           //merge references info for variables
+           var varBuilder1=builder.ModificationBuilder(var1);
+           varBuilder1.MergeWith(var2, context2);
+
+           return builder.BuildContext();
+       }
+
     }
 }

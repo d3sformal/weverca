@@ -74,6 +74,9 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
 
         /// <summary>
         /// Create sub-builder for variables creation
+        /// IMPLEMENTATION WARNING: 
+        ///     All allocate references to same variable name has to point
+        ///     to same reference - because of merging contexts
         /// </summary>
         /// <param name="name">Name of created variable.</param>
         /// <returns>Sub-builder for variable creation.</returns>
@@ -110,5 +113,10 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         }
 
         #endregion
+
+        public void MergeWith(MemoryContext context2)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

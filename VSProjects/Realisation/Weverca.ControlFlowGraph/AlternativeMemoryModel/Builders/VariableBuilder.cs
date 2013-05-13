@@ -60,5 +60,10 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         {
             throw new NotImplementedException();
         }
+
+        public void MergeWith(Variable var2, MemoryContext context2)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
