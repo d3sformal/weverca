@@ -53,9 +53,9 @@ namespace Weverca.ControlFlowGraph.UnitTest
            var key2 = new StringValue("key2");
 
            //assign by value
-           container.Set(key1, someVariable.GetPossibleValues(context));
+           container.Assign(key1.Value, someVariable.GetPossibleValues(context));
            //assign by reference
-           container.SetReferences(key2, someVariable.PossibleReferences); 
+           container.AssignReferences(key2.Value, someVariable.PossibleReferences); 
 
            return builder.BuildContext();
        }
@@ -70,7 +70,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
            
            //merge references info for variables
            var varBuilder1=builder.ModificationBuilder(var1);
-           varBuilder1.MergeWith(var2, context2);
+           varBuilder1.MergeWith(var2);
 
            return builder.BuildContext();
        }

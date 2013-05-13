@@ -20,13 +20,20 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         /// Name of represented variable
         /// </summary>
         public readonly VariableName Name;
-
+     
         /// <summary>
         /// References that variable can have 
         ///     * no reference means, that variable is undefined
         ///     * reference on no possible values is uninitialized
         /// </summary>
         public IEnumerable<VirtualReference> PossibleReferences { get; private set; }
+
+        public Variable(VariableName name, IEnumerable<VirtualReference> possibleReferences)
+        {
+            Name = name;
+            PossibleReferences = new List<VirtualReference>(possibleReferences);
+        }
+
 
         /// <summary>
         /// Get values that can be possibly stored in given memory context.

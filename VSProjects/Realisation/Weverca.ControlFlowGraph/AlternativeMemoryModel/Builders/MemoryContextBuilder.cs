@@ -25,6 +25,8 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         private readonly MemoryStorage _storage;
 
 
+        Dictionary<VariableName, VariableSubBuilder> _varSubBuilders = new Dictionary<VariableName, VariableSubBuilder>();
+
         internal MemoryContextBuilder(MemoryContextVersion parent,MemoryStorage storage)
         {
             _parent = parent;            
@@ -36,12 +38,38 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <returns>Builded memory context.</returns>
         public MemoryContext BuildContext()
         {
-            var currentVersion = new MemoryContextVersion(_parent);
+            var buildedVersion = new MemoryContextVersion(_parent);
 
-            var context = new MemoryContext(_storage, currentVersion);
-            throw new NotImplementedException();
+            
+            _storage.OpenWriting(buildedVersion);
 
+            //write changes from subbuilders
+            writeVariableChanges();
+            _storage.CloseWriting();
+
+
+            var context = new MemoryContext(_storage, buildedVersion);
             return context;
+        }
+
+        private void writeVariableChanges()
+        {
+            foreach (var varSubBuilder in _varSubBuilders.Values)
+            {
+                var needsAllocation = varSubBuilder.IsDeclaration && varSubBuilder.PossibleReferences.Count() == 0;
+
+                IEnumerable<VirtualReference> possibleReferences;
+                if (needsAllocation)
+                {
+                    possibleReferences = new VirtualReference[] { _storage.ReferenceForVariable(varSubBuilder.Name) };
+                }
+                else
+                {
+                    possibleReferences = varSubBuilder.PossibleReferences;
+                }
+
+                _storage.Write(possibleReferences, varSubBuilder.PossibleValues);
+            }
         }
 
         
@@ -53,17 +81,24 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// </summary>
         /// <param name="variable">Variable that will be "modified"</param>
         /// <returns>Sub-builder</returns>
-        public VariableBuilder ModificationBuilder(Variable variable)
+        public VariableSubBuilder ModificationBuilder(Variable variable)
         {
-            throw new NotImplementedException();
+            if (_varSubBuilders.ContainsKey(variable.Name))
+            {
+                throw new NotSupportedException("Cannot create more sub builders for same variable");
+            }
+
+            return new VariableSubBuilder(variable);
         }
+
+
 
         /// <summary>
         /// Get builder for "modifying accros MemoryContext instances" specified container.
         /// </summary>
         /// <param name="container">Container that will be "modified"</param>
         /// <returns>Sub-builder</returns>
-        public ContainerBuilder ModificationBuilder(AssociativeContainer container)
+        public ContainerSubBuilder ModificationBuilder(AssociativeContainer container)
         {
             throw new NotImplementedException();
         }
@@ -75,21 +110,26 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <summary>
         /// Create sub-builder for variables creation
         /// IMPLEMENTATION WARNING: 
-        ///     All allocate references to same variable name has to point
+        ///     All allocated variables with sane name has to point
         ///     to same reference - because of merging contexts
         /// </summary>
         /// <param name="name">Name of created variable.</param>
         /// <returns>Sub-builder for variable creation.</returns>
-        public VariableBuilder VariableCreator(VariableName name)
+        public VariableSubBuilder VariableCreator(VariableName name)
         {
-            throw new NotImplementedException();
+            if (_varSubBuilders.ContainsKey(name))
+            {
+                throw new NotSupportedException("Cannot create more sub builders for same variable");
+            }
+
+            return _varSubBuilders[name] = new VariableSubBuilder(name);
         }
 
         /// <summary>
         /// Create sub-builder for container creation
         /// </summary>        
         /// <returns>Sub-builder for container creation</returns>
-        public ContainerBuilder ContainerCreator()
+        public ContainerSubBuilder ContainerCreator()
         {
             throw new NotImplementedException();
         }

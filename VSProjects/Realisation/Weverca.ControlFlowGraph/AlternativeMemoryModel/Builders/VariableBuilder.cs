@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
+
 namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
 {
     /// <summary>
@@ -10,27 +12,38 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
     /// 
     /// NOTE: No all operations can be proceeded on single instance of variable builder
     /// </summary>
-    public class VariableBuilder
+    public class VariableSubBuilder
     {
+        public readonly VariableName Name;
+        public readonly bool IsDeclaration;
+
+        private HashSet<VirtualReference> _possibleReferences = new HashSet<VirtualReference>();
+        private List<AbstractValue> _possibleValues = new List<AbstractValue>();
 
         /// <summary>
-        /// Declare variable in context of parent MemoryContextBuilder
+        /// Current possible referenes for builded variable
         /// </summary>
-        /// <param name="initValue">Initial value of variable (can be null)</param>
-        public void Declare(AbstractValue initValue=null)
-        {
-            throw new NotImplementedException();
-        }
-
+        public IEnumerable<VirtualReference> PossibleReferences { get { return _possibleReferences; } }
         /// <summary>
-        /// Add possible values into all references of builded variable.
+        /// Current possible values for builded variable
         /// </summary>
-        /// <param name="value">Value that will be added</param>
-        public void AddPossibleValue(AbstractValue value)
+        public IEnumerable<AbstractValue> PossibleValues { get { return _possibleValues; } }
+
+        internal VariableSubBuilder(VariableName name)
         {
-            throw new NotImplementedException();
+            IsDeclaration = true;
+            Name = name;
         }
 
+        internal VariableSubBuilder(Variable modifiedVariable)
+        {
+            IsDeclaration = false;
+            Name = modifiedVariable.Name;
+
+            AssignReferences(modifiedVariable.PossibleReferences);
+        }
+
+    
         /// <summary>
         /// Assign by value 
         /// NOTES: (this is caused by design of theoretical memory model)
@@ -40,30 +53,45 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <param name="possibleValues"></param>
         public void Assign(IEnumerable<AbstractValue> possibleValues)
         {
-            throw new NotImplementedException();
+            _possibleValues.Clear();
+            _possibleValues.AddRange(possibleValues);
         }
 
         /// <summary>
         /// Set references for variable.
         /// </summary>
         /// <param name="references">References that will be set.</param>
-        public void SetReferences(IEnumerable<VirtualReference> references)
+        public void AssignReferences(IEnumerable<VirtualReference> references)
         {
-            throw new NotImplementedException();
+            _possibleReferences.Clear();
+            foreach (var reference in references)
+            {
+                _possibleReferences.Add(reference);
+            }
         }
 
         /// <summary>
-        /// Build is called internally by parent MemoryContextBuilder
+        /// Cause merging builded variable with other variable.
+        /// NOTE:
+        ///     Only variables with same name are allowed to be merged.
         /// </summary>
-        /// <returns></returns>
-        internal Variable Build()
+        /// <param name="other">Variable that will be merged</param>
+        public void MergeWith(Variable other)
         {
-            throw new NotImplementedException();
+            Debug.Assert(other.Name == Name, "Merging variables with different names is probably mistake");
+
+            _possibleReferences.UnionWith(other.PossibleReferences);
         }
 
-        public void MergeWith(Variable var2, MemoryContext context2)
+        /// <summary>
+        /// Build variable according to current references
+        /// NOTE:
+        ///     Assigned values will be processed after building  memory context.
+        /// </summary>
+        /// <returns></returns>
+        public Variable Build()
         {
-            throw new NotImplementedException();
+            return new Variable(Name, PossibleReferences);
         }
     }
 }

@@ -26,5 +26,10 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
         {
             throw new NotImplementedException();
         }
+
+        protected override string toString()
+        {
+            return Value;
+        }
     }
 }

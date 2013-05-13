@@ -28,5 +28,27 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
 
             return entry.GetPossibleValues(context.Version);
         }
+
+
+
+        internal void OpenWriting(MemoryContextVersion buildedVersion)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void CloseWriting()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void Write(IEnumerable<VirtualReference> enumerable1, IEnumerable<AbstractValue> enumerable2)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal VirtualReference ReferenceForVariable(PHP.Core.VariableName variableName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

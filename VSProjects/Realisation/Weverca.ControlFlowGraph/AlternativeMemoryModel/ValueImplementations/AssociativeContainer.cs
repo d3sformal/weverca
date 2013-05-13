@@ -37,5 +37,19 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
         {
             throw new NotImplementedException();
         }
+
+        protected override string toString()
+        {
+            //TODO needs better implementation
+            var output = new StringBuilder();
+            output.Append('{');
+            foreach (var index in _items)
+            {
+                output.AppendFormat("{0} => {1},\n", index, "to be implemented");
+            }
+            output.Append('}');
+
+            return output.ToString();
+        }
     }
 }

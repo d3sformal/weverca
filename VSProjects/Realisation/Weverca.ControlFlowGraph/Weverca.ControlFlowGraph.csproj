@@ -40,9 +40,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AlternativeMemoryModel\Builders\ContainerBuilder.cs" />
+    <Compile Include="AlternativeMemoryModel\Builders\ContainerOperation.cs" />
     <Compile Include="AlternativeMemoryModel\Builders\VariableBuilder.cs" />
     <Compile Include="AlternativeMemoryModel\IDeepComparable.cs" />
-    <Compile Include="AlternativeMemoryModel\IValue.cs" />
+    <Compile Include="AlternativeMemoryModel\AbstractValue.cs" />
     <Compile Include="AlternativeMemoryModel\MemoryContext.cs" />
     <Compile Include="AlternativeMemoryModel\Builders\MemoryContextBuilder.cs" />
     <Compile Include="AlternativeMemoryModel\MemoryContextVersion.cs" />

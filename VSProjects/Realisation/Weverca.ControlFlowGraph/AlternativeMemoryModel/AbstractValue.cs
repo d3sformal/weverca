@@ -15,6 +15,13 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
     public abstract class AbstractValue : IDeepComparable
     {
 
+        /// <summary>
+        /// When overriden returns string representation of PHP value
+        /// </summary>
+        /// <returns>String representation of PHP value</returns>
+        protected abstract string toString();
+
+
         #region Abstract implementation of IDeepComparable
         public abstract int DeepGetHashCode();
         public abstract bool DeepEquals(object other);
@@ -24,13 +31,18 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         #region Standard method overrides
         public override bool Equals(object obj)
         {
-            var hasSameReference = this == obj;
+            var hasSameReference = base.Equals(obj);
             return hasSameReference || DeepEquals(obj);
         }
 
         public override int GetHashCode()
         {
             return DeepGetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return toString();
         }
         #endregion
     }
