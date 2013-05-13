@@ -20,6 +20,11 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         private ValueStorage  _values = new ValueStorage();
 
 
+        internal MemoryEntry(int creationVersion)
+        {
+            CreationVersion = creationVersion;
+        }
+
         internal IEnumerable<AbstractValue> GetPossibleValues(MemoryContextVersion version)
         {
             var currentVersion=version;
@@ -43,6 +48,21 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
             }
 
             return result;
+        }
+
+        internal void Set(MemoryContextVersion version, IEnumerable<AbstractValue> values)
+        {
+            _values[version] = values;
+        }
+
+        internal void Add(MemoryContextVersion version, IEnumerable<AbstractValue> values)
+        {
+            var currentValues = GetPossibleValues(version);
+
+            var newValues = new List<AbstractValue>(currentValues);
+            newValues.AddRange(values);
+
+            Set(version, newValues);
         }
     }
 }

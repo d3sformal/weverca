@@ -12,7 +12,7 @@ using Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders;
 
 namespace Weverca.ControlFlowGraph.UnitTest
 {
-   static class MemoryModelUsage
+   static class MemoryModelUsageExamples
     {
 
        static MemoryContext VariableAssign(MemoryContext context,Variable var1, Variable var2)

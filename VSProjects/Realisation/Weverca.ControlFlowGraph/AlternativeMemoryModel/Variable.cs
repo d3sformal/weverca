@@ -45,10 +45,8 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
             var outputSet = new HashSet<AbstractValue>();
             foreach (var reference in PossibleReferences)
             {
-                foreach (var possibleValue in context.GetPossibleValues(reference))
-                {
-                    outputSet.Add(possibleValue);
-                }
+                var possibleValues=context.GetPossibleValues(reference);
+                outputSet.UnionWith(possibleValues);
             }
 
             return outputSet;

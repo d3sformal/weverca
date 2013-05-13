@@ -24,9 +24,9 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         internal readonly int CreationVersion;
 
         /// <summary>
-        /// Creating references is highly internall stuff and shouldn't be accessible from outside class
+        /// Creating references is highly internall stuff and shouldn't be accessible from public
         /// </summary>
-        private VirtualReference(MemoryEntryId memoryEntryId, int versionId)
+        internal VirtualReference(MemoryEntryId memoryEntryId, int versionId)
         {
             MemoryEntryId = memoryEntryId;
             CreationVersion = versionId;

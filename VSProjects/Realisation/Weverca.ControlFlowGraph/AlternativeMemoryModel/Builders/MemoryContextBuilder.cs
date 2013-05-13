@@ -27,9 +27,10 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
 
         Dictionary<VariableName, VariableSubBuilder> _varSubBuilders = new Dictionary<VariableName, VariableSubBuilder>();
 
-        internal MemoryContextBuilder(MemoryContextVersion parent,MemoryStorage storage)
+        internal MemoryContextBuilder(MemoryContextVersion parent, MemoryStorage storage)
         {
-            _parent = parent;            
+            _storage = storage;
+            _parent = parent;
         }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         {
             var buildedVersion = new MemoryContextVersion(_parent);
 
-            
+
             _storage.OpenWriting(buildedVersion);
 
             //write changes from subbuilders
@@ -68,11 +69,16 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
                     possibleReferences = varSubBuilder.PossibleReferences;
                 }
 
-                _storage.Write(possibleReferences, varSubBuilder.PossibleValues);
+                varSubBuilder.Freeze(possibleReferences);
+
+                if (varSubBuilder.PossibleValues.Any())
+                {
+                    _storage.Write(possibleReferences, varSubBuilder.PossibleValues);
+                }
             }
         }
 
-        
+
         #region Modification Sub builders
         /// <summary>
         /// Get builder for "modifying accros MemoryContext instances" specified variable.
@@ -88,7 +94,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
                 throw new NotSupportedException("Cannot create more sub builders for same variable");
             }
 
-            return new VariableSubBuilder(variable);
+            return _varSubBuilders[variable.Name] = new VariableSubBuilder(variable);
         }
 
 
@@ -136,7 +142,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
 
         #endregion
 
-     
+
 
 
         #region Helper methods
@@ -147,9 +153,11 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <param name="varName">Name of declared variable</param>
         /// <param name="initialValue">Initial value for variable</param>
         /// <returns>Declared variable</returns>
-        public Variable Declare(VariableName varName, AbstractValue initialValue=null)
+        public VariableSubBuilder Declare(VariableName varName, AbstractValue initialValue = null)
         {
-            throw new NotImplementedException();
+            var builder = VariableCreator(varName);
+            builder.Assign(new AbstractValue[] { initialValue });
+            return builder;
         }
 
         #endregion

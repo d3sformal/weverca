@@ -16,6 +16,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
     {
         public readonly VariableName Name;
         public readonly bool IsDeclaration;
+        public bool CanBeBuilded { get; private set; }
 
         private HashSet<VirtualReference> _possibleReferences = new HashSet<VirtualReference>();
         private List<AbstractValue> _possibleValues = new List<AbstractValue>();
@@ -53,6 +54,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <param name="possibleValues"></param>
         public void Assign(IEnumerable<AbstractValue> possibleValues)
         {
+            throwWhenFrozen();
             _possibleValues.Clear();
             _possibleValues.AddRange(possibleValues);
         }
@@ -63,11 +65,9 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <param name="references">References that will be set.</param>
         public void AssignReferences(IEnumerable<VirtualReference> references)
         {
+            throwWhenFrozen();
             _possibleReferences.Clear();
-            foreach (var reference in references)
-            {
-                _possibleReferences.Add(reference);
-            }
+            _possibleReferences.UnionWith(references);
         }
 
         /// <summary>
@@ -79,6 +79,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         public void MergeWith(Variable other)
         {
             Debug.Assert(other.Name == Name, "Merging variables with different names is probably mistake");
+            throwWhenFrozen();
 
             _possibleReferences.UnionWith(other.PossibleReferences);
         }
@@ -86,12 +87,37 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.Builders
         /// <summary>
         /// Build variable according to current references
         /// NOTE:
-        ///     Assigned values will be processed after building  memory context.
+        ///     Can be used only after calling build on parent memory context builder
         /// </summary>
         /// <returns></returns>
         public Variable Build()
         {
+            if (!CanBeBuilded)
+            {
+                throw new NotSupportedException("Cannot be builded in current state");
+            }
+
             return new Variable(Name, PossibleReferences);
+        }
+
+        internal void Freeze(IEnumerable<VirtualReference> possibleReferences)
+        {
+            if (_possibleReferences != possibleReferences)
+            {
+                //references has been modified
+                _possibleReferences.Clear();
+                _possibleReferences.UnionWith(possibleReferences);
+            }
+            
+            CanBeBuilded = true;
+        }
+
+        private void throwWhenFrozen()
+        {
+            if (CanBeBuilded)
+            {
+                throw new NotSupportedException("Cannot modify state, after parent memory context has been built");
+            }
         }
     }
 }

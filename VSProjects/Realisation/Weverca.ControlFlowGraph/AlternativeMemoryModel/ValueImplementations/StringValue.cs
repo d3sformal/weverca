@@ -19,12 +19,12 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel.ValueImplementations
 
         public override int DeepGetHashCode()
         {
-            throw new NotImplementedException();
+            return Value.GetHashCode();
         }
 
         public override bool DeepEquals(object other)
         {
-            throw new NotImplementedException();
+            return Value.Equals(other);
         }
 
         protected override string toString()

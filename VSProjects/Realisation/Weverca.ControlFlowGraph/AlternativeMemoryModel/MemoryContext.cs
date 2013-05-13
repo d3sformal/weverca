@@ -41,7 +41,7 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         /// <returns></returns>
         public MemoryContextBuilder CreateDerivedContextBuilder()
         {
-            throw new NotImplementedException();
+            return new MemoryContextBuilder(Version, _storage);
         }
 
         /// <summary>
@@ -64,6 +64,13 @@ namespace Weverca.ControlFlowGraph.AlternativeMemoryModel
         public bool DeepEquals(object other)
         {
             throw new NotImplementedException();
+        }
+
+        public static MemoryContext CreateRoot()
+        {
+            var storage = new MemoryStorage();
+
+            return new MemoryContext(storage, new MemoryContextVersion(null));
         }
     }
 }
