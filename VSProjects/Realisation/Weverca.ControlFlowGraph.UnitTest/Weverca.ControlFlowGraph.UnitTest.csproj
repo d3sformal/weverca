@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="MemoryModelTest.cs" />
     <Compile Include="MemoryModelUsageExamples.cs" />
+    <Compile Include="MemorySnapshotTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ForwardAnalysisTest.cs" />
     <Compile Include="CFGTestUtils.cs" />

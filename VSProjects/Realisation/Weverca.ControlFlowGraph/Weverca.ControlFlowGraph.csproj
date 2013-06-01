@@ -54,6 +54,9 @@
     <Compile Include="AlternativeMemoryModel\ValueImplementations\AssociativeContainer.cs" />
     <Compile Include="AlternativeMemoryModel\ValueImplementations\StringValue.cs" />
     <Compile Include="AlternativeMemoryModel\Variable.cs" />
+    <Compile Include="Analysis\Memory\MemoryEntry.cs" />
+    <Compile Include="Analysis\Memory\PrimitiveValues.cs" />
+    <Compile Include="Analysis\Memory\Snapshot.cs" />
     <Compile Include="Analysis\AnalysisCallStack.cs" />
     <Compile Include="Analysis\AssumptionCondition.cs" />
     <Compile Include="Analysis\CallAnalysisContext.cs" />
@@ -68,8 +71,14 @@
     <Compile Include="Analysis\ForwardAnalysis.cs" />
     <Compile Include="Analysis\IncludeDispatch.cs" />
     <Compile Include="Analysis\Expressions\PostfixExpression.cs" />
+    <Compile Include="Analysis\Memory\ISnapshotReadonly.cs" />
+    <Compile Include="Analysis\Memory\ISnapshotReadWrite.cs" />
+    <Compile Include="Analysis\Memory\SnapshotStatistics.cs" />
+    <Compile Include="Analysis\Memory\SpecialValues.cs" />
+    <Compile Include="Analysis\Memory\StructuredValues.cs" />
     <Compile Include="Analysis\ProgramPoint.cs" />
     <Compile Include="Analysis\Expressions\ExpressionConverter.cs" />
+    <Compile Include="Analysis\Memory\Value.cs" />
     <Compile Include="BasicBlock.cs" />
     <Compile Include="BasicBlockEdge.cs" />
     <Compile Include="CFGVisitor.cs" />
