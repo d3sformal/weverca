@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using PHP.Core;
+using Weverca.ControlFlowGraph.Analysis;
 using Weverca.ControlFlowGraph.Analysis.Memory;
 
 namespace Weverca.ControlFlowGraph.UnitTest
@@ -40,18 +41,17 @@ namespace Weverca.ControlFlowGraph.UnitTest
             output.Extend(inputs);
         }
 
-        public void MergeWithCall(ISnapshotReadWrite output, ISnapshotReadonly input, ISnapshotReadonly callOutput)
+        public void MergeWithCall(ISnapshotReadWrite output, ISnapshotReadonly input,CallResult callResult, ISnapshotReadonly callOutput)
         {
             output.Extend(input);
             //process call
-            output.MergeWithCall(callOutput);
+            output.MergeWithCall(callResult,callOutput);
             //reverse assign of param aliasses
         }
 
-        public void EnterCall(ISnapshotReadWrite output ,ISnapshotReadonly callInput)
+        public Snapshot ProcessCall(Snapshot caller,CallInfo callInfo)
         {
-            output.ExtendFromEntryPoint(callInput);
-            //TODO assign params            
+            return caller.CreateCall(callInfo);
         }
 
         public void ProcessConcat(ISnapshotReadWrite output, ISnapshotReadonly input,MemoryEntry value1,MemoryEntry value2)
@@ -60,7 +60,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             {
                 foreach (var val2 in value2.PossibleValues)
                 {
-
+                    //here can be concatenation of all possible values
                 }
             }
         }

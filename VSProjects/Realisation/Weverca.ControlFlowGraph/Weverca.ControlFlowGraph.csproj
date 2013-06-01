@@ -54,6 +54,8 @@
     <Compile Include="AlternativeMemoryModel\ValueImplementations\AssociativeContainer.cs" />
     <Compile Include="AlternativeMemoryModel\ValueImplementations\StringValue.cs" />
     <Compile Include="AlternativeMemoryModel\Variable.cs" />
+    <Compile Include="Analysis\CallInfo.cs" />
+    <Compile Include="Analysis\Memory\ContainerIndex.cs" />
     <Compile Include="Analysis\Memory\MemoryEntry.cs" />
     <Compile Include="Analysis\Memory\PrimitiveValues.cs" />
     <Compile Include="Analysis\Memory\Snapshot.cs" />

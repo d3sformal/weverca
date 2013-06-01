@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
     public interface ISnapshotReadonly
     {
-        Value ReadValue(PHP.Core.VariableName sourceVar);
+        MemoryEntry ReadValue(VariableName sourceVar);
     }
 }

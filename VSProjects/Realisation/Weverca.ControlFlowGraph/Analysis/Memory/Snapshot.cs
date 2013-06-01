@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
+
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
     /// <summary>
@@ -21,16 +23,16 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
     /// If snapshot has changed against state before start transaction is determined by HasChanged
     /// </remarks>
     /// </summary>
-    public abstract class Snapshot:ISnapshotReadWrite
+    public abstract class Snapshot : ISnapshotReadWrite
     {
         /// <summary>
         /// Any value singleton
         /// </summary>
-        private readonly AnyValue _anyValue = new AnyValue();
+        private static readonly AnyValue _anyValue = new AnyValue();
         /// <summary>
         /// Undefined value singleton
         /// </summary>
-        private readonly UndefinedValue _undefinedValue = new UndefinedValue();
+        private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
 
         /// <summary>
         /// Determine that transaction of this snapshot is started - updates can be written
@@ -45,6 +47,8 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         public bool HasChanged { get; private set; }
 
+
+        #region Snapshot controll operations
         /// <summary>
         /// Start snapshot transaction - changes can be proceeded only when transaction is started
         /// </summary>
@@ -60,7 +64,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         {
             throw new NotImplementedException();
         }
-        
+
 
 
         /// <summary>
@@ -80,57 +84,44 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             throw new NotImplementedException();
         }
 
-        public void Assign(PHP.Core.VariableName targetVar, object value)
+        /// <summary>
+        /// Creat snapshot that will be used for call invoked from given info
+        /// </summary>
+        /// <param name="callInfo">Info of invoked call</param>
+        /// <returns>Snapshot that will be used as entry point of invoked call</returns>
+        public Snapshot CreateCall(CallInfo callInfo)
         {
             throw new NotImplementedException();
         }
+        #endregion
 
-
-
-        public void Extend(params ISnapshotReadonly[] inputs)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void MergeWithCall(ISnapshotReadonly callOutput)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void ExtendFromEntryPoint(ISnapshotReadonly callInput)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Value ReadValue(PHP.Core.VariableName sourceVar)
-        {
-            throw new NotImplementedException();
-        }
-
-        #region Creating value objects from primitive representation
+        #region Implementation of ISnapshotReadWrite interface
 
         public AnyValue AnyValue
         {
-            get { return _anyValue; }
+            get { throw new NotImplementedException(); }
         }
 
         public UndefinedValue UndefinedValue
         {
-            get { return _undefinedValue; }
-        }        
+            get { throw new NotImplementedException(); }
+        }
 
         public StringValue CreateString(string literal)
         {
             throw new NotImplementedException();
         }
+
         public IntegerValue CreateInt(int number)
         {
             throw new NotImplementedException();
         }
+
         public BooleanValue CreateBool(bool boolean)
         {
             throw new NotImplementedException();
         }
+
         public FloatValue CreateFloat(double number)
         {
             throw new NotImplementedException();
@@ -141,14 +132,36 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             throw new NotImplementedException();
         }
 
-        public AliasValue CreateAlias(PHP.Core.VariableName sourceVar)
+        public AliasValue CreateAlias(VariableName sourceVar)
+        {
+            throw new NotImplementedException();
+        }
+        
+        public void Assign(VariableName targetVar, Value value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Assign(VariableName targetVar, MemoryEntry value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Extend(params ISnapshotReadonly[] inputs)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MergeWithCall(CallResult result, ISnapshotReadonly callOutput)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MemoryEntry ReadValue(VariableName sourceVar)
         {
             throw new NotImplementedException();
         }
         #endregion
-
-
-  
 
     }
 }

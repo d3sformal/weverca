@@ -7,14 +7,27 @@ using PHP.Core.AST;
 
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
-    public class ObjectValue : Value
+    public abstract class ObjectValue : Value
     {
         /// <summary>
         /// Get value of specified field
         /// </summary>
-        /// <param name="fieldName">Name of field</param>
+        /// <param name="field">Index of field</param>
         /// <returns>Value for given field</returns>
-        public Value GetValue(string fieldName)
+        public Value GetValue(ContainerIndex field)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Get alias for given index
+        /// </summary>        
+        /// <param name="index">Index determining field for created alias</param>
+        /// <returns>Alias representation for given index</returns>
+        /// <example>&$a[5]</example>
+        /// <example>&$this->a</example>
+        public AliasValue GetAlias(ContainerIndex field)
         {
             throw new NotImplementedException();
         }
