@@ -6,13 +6,18 @@ using System.Text;
 
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
+    /// <summary>
+    /// Memory entry represents multiple possiblities that for example single variable can have
+    /// NOTE:
+    ///     * Is immutable    
+    /// </summary>
     public class MemoryEntry
     {
         public readonly IEnumerable<Value> PossibleValues;
 
-        internal MemoryEntry(ReadOnlyCollection<Value> possibleValues)
+        internal MemoryEntry(params Value[] values)
         {
-            PossibleValues = possibleValues;
+            PossibleValues = new ReadOnlyCollection<Value>((Value[])values.Clone());
         }
     }
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.Collections.ObjectModel;
+
 using PHP.Core;
 
 namespace Weverca.ControlFlowGraph.Analysis.Memory
@@ -33,6 +35,10 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// Undefined value singleton
         /// </summary>
         private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
+        /// <summary>
+        /// Statistics object - here are stored statistics
+        /// </summary>
+        private SnapshotStatistics _statistics = new SnapshotStatistics();
 
         /// <summary>
         /// Determine that transaction of this snapshot is started - updates can be written
@@ -48,13 +54,42 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         public bool HasChanged { get; private set; }
 
 
+        #region Template methods - API for implementors
+
+        protected abstract void transactionStart();
+        /// <summary>
+        /// Commit started transaction - if changes has been detected during transaction must return true, false otherwise
+        /// NOTE:
+        ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
+        /// </summary>
+        /// <returns>True if there is semantic change in transaction, false otherwise</returns>
+        protected abstract bool commitTransaction();
+        protected abstract ObjectValue createObject();
+        protected abstract AliasValue createAlias(VariableName sourceVar);
+        protected abstract Snapshot createCall(CallInfo info);
+        protected abstract void assign(VariableName targetVar, MemoryEntry entry);
+        protected abstract void assignAlias(VariableName targetVar, AliasValue alias);
+        protected abstract void extend(ISnapshotReadonly[] inputs);
+        protected abstract void mergeWithCall(CallResult result, ISnapshotReadonly callOutput);
+        protected abstract MemoryEntry readValue(VariableName sourceVar);
+
+        #endregion
+
         #region Snapshot controll operations
         /// <summary>
         /// Start snapshot transaction - changes can be proceeded only when transaction is started
         /// </summary>
         internal void StartTransaction()
         {
-            throw new NotImplementedException();
+            checkFrozenState();
+
+            if (IsTransactionStarted)
+            {
+                throw new NotSupportedException("Cannot start transaction multiple times");
+            }
+            IsTransactionStarted = true;
+
+            transactionStart();
         }
 
         /// <summary>
@@ -62,18 +97,25 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         internal void CommitTransaction()
         {
-            throw new NotImplementedException();
+            checkFrozenState();
+
+            if (!IsTransactionStarted)
+            {
+                throw new NotSupportedException("Cannot commit transaction because no transaction has been started yet");
+            }
+            IsTransactionStarted = false;
+
+            commitTransaction();
         }
 
-
-
         /// <summary>
-        /// Get statistics about snapshot usage
+        /// Get statistics about snapshot usage - returned statistics remains to current state and is not updated
+        /// during next usage
         /// </summary>
         /// <returns>Snapshot statistis</returns>
         public SnapshotStatistics GetStatistics()
         {
-            throw new NotImplementedException();
+            return _statistics.Clone();            
         }
 
         /// <summary>
@@ -81,7 +123,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         internal void Freeze()
         {
-            throw new NotImplementedException();
+            checkFrozenState();
+
+            if (IsTransactionStarted)
+            {
+                throw new NotSupportedException("Cannot freeze snapshot when transaction is not commited");
+            }
+
+            IsFrozen = true;
         }
 
         /// <summary>
@@ -91,77 +140,131 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
         public Snapshot CreateCall(CallInfo callInfo)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            var result = createCall(callInfo);
+            ++_statistics.CreatedCallSnapshots;
+            return result;
         }
         #endregion
 
         #region Implementation of ISnapshotReadWrite interface
 
-        public AnyValue AnyValue
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public UndefinedValue UndefinedValue
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public AnyValue AnyValue { get { return _anyValue; } }
+        public UndefinedValue UndefinedValue{get { return _undefinedValue; }}
 
         public StringValue CreateString(string literal)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            ++_statistics.CreatedStringValues;
+            return new StringValue(literal);
         }
 
         public IntegerValue CreateInt(int number)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            ++_statistics.CreatedIntValues;
+            return new IntegerValue(number);
         }
 
         public BooleanValue CreateBool(bool boolean)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            ++_statistics.CreatedBooleanValues;
+            return new BooleanValue(boolean);
         }
 
         public FloatValue CreateFloat(double number)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            ++_statistics.CreatedFloatValues;
+            return new FloatValue(number);
         }
 
         public ObjectValue CreateObject()
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            var result = createObject();
+            ++_statistics.CreatedObjectValues;
+            return result;
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            var result = createAlias(sourceVar);
+            ++_statistics.CreatedAliasValues;
+            return result;            
         }
         
         public void Assign(VariableName targetVar, Value value)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+
+            if (value is AliasValue)
+            {
+                ++_statistics.AliasAssigns;
+                assignAlias(targetVar, value as AliasValue);
+            }
+            else
+            {
+                //create implicit memory entry
+                Assign(targetVar, new MemoryEntry(value));
+            }            
         }
 
         public void Assign(VariableName targetVar, MemoryEntry value)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+            assign(targetVar, value);
+            ++_statistics.MemoryEntryAssigns;
         }
 
         public void Extend(params ISnapshotReadonly[] inputs)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+            extend(inputs);
+            ++_statistics.SnapshotExtendings;
         }
 
         public void MergeWithCall(CallResult result, ISnapshotReadonly callOutput)
         {
-            throw new NotImplementedException();
+            checkCanUpdate();
+            mergeWithCall(result, callOutput);
+            ++_statistics.WithCallMerges;
         }
 
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
-            throw new NotImplementedException();
+            var result = readValue(sourceVar);
+            ++_statistics.ValueReads;
+            return result;
         }
         #endregion
 
+        #region Snapshot private helpers
+        void checkCanUpdate()
+        {
+            checkFrozenState();
+            if (!IsTransactionStarted)
+            {
+                throw new NotSupportedException("Cannot process any updates because snapshot has no started transaction");
+            }
+        }
+
+        void checkFrozenState()
+        {
+            if (IsFrozen)
+            {
+                throw new NotSupportedException("Cannot process action because snapshot has already been frozen");
+            }
+        }
+        #endregion
     }
 }
