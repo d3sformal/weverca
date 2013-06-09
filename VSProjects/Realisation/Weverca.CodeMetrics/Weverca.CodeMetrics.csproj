@@ -49,6 +49,7 @@
     <Compile Include="Processing\ASTVisitors\DynamicDereferenceVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\InsideFunctionDeclarationVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\OccurrenceVisitor.cs" />
+    <Compile Include="Processing\ASTVisitors\PassingByReferenceVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\SuperGlobalVarVisitor.cs" />
     <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\ClassPresenceProcessor.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Processing\Implementations\MaxMethodOverridingDepthProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfLinesProcessor.cs" />
     <Compile Include="Processing\Implementations\NumberOfSourcesProcessor.cs" />
+    <Compile Include="Processing\Implementations\PassingByReferenceProcessor.cs" />
     <Compile Include="Processing\Implementations\SuperGlobalVarProcessor.cs" />
     <Compile Include="Processing\IndicatorProcessor.cs" />
     <Compile Include="Processing\MetricAttribute.cs" />
