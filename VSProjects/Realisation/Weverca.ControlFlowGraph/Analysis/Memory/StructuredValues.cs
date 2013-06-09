@@ -26,11 +26,10 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         public abstract ObjectValue SetField(ContainerIndex field, MemoryEntry value);
 
         /// <summary>
-        /// Get alias for given index
+        /// Get alias for given field
         /// </summary>        
         /// <param name="index">Index determining field for created alias</param>
         /// <returns>Alias representation for given index</returns>
-        /// <example>&$a[5]</example>
         /// <example>&$this->a</example>
         public abstract AliasValue CreateAlias(ContainerIndex field);
 
@@ -53,6 +52,39 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         ///     Prevent creating objects outside of assembly
         /// </summary>
         internal ObjectValue()
+        {
+        }
+    }
+
+    public abstract class AssociativeArray : Value
+    {
+        /// <summary>
+        /// Get value on specified index
+        /// </summary>
+        /// <param name="index">Index of field</param>
+        /// <returns>Value for given field</returns>
+        public abstract MemoryEntry GetIndex(ContainerIndex index);
+
+        /// <summary>
+        /// Set value of specified field
+        /// </summary>
+        /// <param name="index">Index of field</param>
+        /// <param name="value">Value for given field</param>
+        /// <returns>Copy of object with field containing given value</returns>
+        public abstract ObjectValue SetIndex(ContainerIndex index, MemoryEntry value);
+
+        /// <summary>
+        /// Get alias for given index
+        /// </summary>        
+        /// <param name="index">Index determining index for created alias</param>
+        /// <returns>Alias representation for given index</returns>
+        /// <example>&$a[5]</example>
+        public abstract AliasValue CreateAlias(ContainerIndex index);
+        /// <summary>
+        /// NOTE:
+        ///     Prevent creating objects outside of assembly
+        /// </summary>
+        internal AssociativeArray()
         {
         }
     }

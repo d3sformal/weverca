@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core.AST;
+
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
     public class PrimitiveValue<T> : Value
@@ -33,5 +35,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
     public class FloatValue : PrimitiveValue<double>
     {
         internal FloatValue(double value) : base(value) { }
+    }
+
+    public class FunctionValue : Value
+    {
+        public readonly FunctionDecl Declaration;
+        internal FunctionValue(FunctionDecl declaration)
+        {
+            Declaration = declaration;
+        }
     }
 }
