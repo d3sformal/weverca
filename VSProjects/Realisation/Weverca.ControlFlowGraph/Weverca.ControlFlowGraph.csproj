@@ -58,7 +58,7 @@
     <Compile Include="Analysis\Memory\ContainerIndex.cs" />
     <Compile Include="Analysis\Memory\MemoryEntry.cs" />
     <Compile Include="Analysis\Memory\PrimitiveValues.cs" />
-    <Compile Include="Analysis\Memory\Snapshot.cs" />
+    <Compile Include="Analysis\Memory\AbstractSnapshot.cs" />
     <Compile Include="Analysis\AnalysisCallStack.cs" />
     <Compile Include="Analysis\AssumptionCondition.cs" />
     <Compile Include="Analysis\CallAnalysisContext.cs" />
@@ -93,6 +93,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Analysis\ForwardAnalysisAbstract.cs" />
     <Compile Include="Analysis\FlowOutputSet.cs" />
+    <Compile Include="VirtualReferenceModel\ReferenceAlias.cs" />
+    <Compile Include="VirtualReferenceModel\Snapshot.cs" />
+    <Compile Include="VirtualReferenceModel\VariableInfo.cs" />
+    <Compile Include="VirtualReferenceModel\VirtualReference.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

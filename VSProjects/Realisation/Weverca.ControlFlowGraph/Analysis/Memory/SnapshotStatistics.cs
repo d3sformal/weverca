@@ -20,6 +20,9 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         public int ValueReads;
         public int CreatedCallSnapshots;
         public int CreatedStringValues;
+        public int SimpleHashSearches;
+        public int SimpleHashAssigns;
+        public int CreatedFunctionValues;
 
         internal SnapshotStatistics Clone()
         {

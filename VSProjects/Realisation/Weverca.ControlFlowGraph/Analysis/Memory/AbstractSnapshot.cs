@@ -6,16 +6,19 @@ using System.Text;
 using System.Collections.ObjectModel;
 
 using PHP.Core;
+using PHP.Core.AST;
 
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
     /// <summary>
     /// Represents memory snpashot used for fix point analysis.
-    /// NOTE: Snapshot will always work in context of some object.
-    /// 
-    /// NOTE: Global variables behave in different way than objets variables (cross callstack)
+    /// NOTES: 
+    ///     * Snapshot will always work in context of some object.
+    ///     * Global variables behave in different way than objets variables (cross callstack)
+    ///     * Is correct for implementors to cast input Objects, Arrays, Snapshots to concrete implementation - Two snapshot implementations never won't be used together
     /// <remarks>
-    /// For each ProgramPoint is created few snapshots (global memory, local memory,..) - these snapshots are used through all iterations of fix point algorithm
+    /// For each ProgramPoint are created few snapshots (global memory, local memory,..) - these snapshots are used through all iterations of fix point algorithm
+    /// TODO: better handling of global memory
     /// 
     /// Iteration looks like:
     /// StartTransaction
@@ -25,7 +28,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
     /// If snapshot has changed against state before start transaction is determined by HasChanged
     /// </remarks>
     /// </summary>
-    public abstract class Snapshot : ISnapshotReadWrite
+    public abstract class AbstractSnapshot : ISnapshotReadWrite
     {
         /// <summary>
         /// Any value singleton
@@ -88,7 +91,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         /// <param name="callInfo">Info of invoked call</param>
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        protected abstract Snapshot createCall(CallInfo callInfo);
+        protected abstract AbstractSnapshot createCall(CallInfo callInfo);
         /// <summary>
         /// Assign memory entry into targetVar        
         /// </summary>
@@ -121,6 +124,27 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <param name="sourceVar">Variable which value will be readed</param>
         /// <returns>Value stored for given variable</returns>
         protected abstract MemoryEntry readValue(VariableName sourceVar);
+
+        #endregion
+
+        #region Statistic interface for implementors
+
+        /// <summary>
+        /// Report hash search based on non-recursinve GetHaschode, Equals routines
+        /// </summary>
+        protected void ReportSimpleHashSearch()
+        {
+            ++_statistics.SimpleHashSearches;
+        }
+
+        /// <summary>
+        /// Report hash assigns based on non-recursinve GetHaschode, Equals routines
+        /// </summary>
+        protected void ReportSimpleHashAssign()
+        {
+            ++_statistics.SimpleHashAssigns;
+        }
+
 
         #endregion
 
@@ -187,7 +211,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         /// <param name="callInfo">Info of invoked call</param>
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        public Snapshot CreateCall(CallInfo callInfo)
+        public AbstractSnapshot CreateCall(CallInfo callInfo)
         {
             checkCanUpdate();
 
@@ -241,6 +265,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             var result = createObject();
             ++_statistics.CreatedObjectValues;
             return result;
+        }  
+        
+        public FunctionValue CreateFunction(FunctionDecl declaration)
+        {
+            checkCanUpdate();
+
+            ++_statistics.CreatedFunctionValues;
+            return new FunctionValue(declaration);
         }
 
         public AssociativeArray CreateArray()
@@ -324,5 +356,8 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             }
         }
         #endregion
+
+
+    
     }
 }
