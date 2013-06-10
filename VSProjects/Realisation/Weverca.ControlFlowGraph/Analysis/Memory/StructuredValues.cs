@@ -71,7 +71,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <param name="index">Index of field</param>
         /// <param name="value">Value for given field</param>
         /// <returns>Copy of object with field containing given value</returns>
-        public abstract ObjectValue SetIndex(ContainerIndex index, MemoryEntry value);
+        public abstract AssociativeArray SetIndex(ContainerIndex index, MemoryEntry value);
 
         /// <summary>
         /// Get alias for given index

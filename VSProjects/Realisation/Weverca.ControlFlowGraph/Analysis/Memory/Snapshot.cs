@@ -56,7 +56,10 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
 
         #region Template methods - API for implementors
 
-        protected abstract void transactionStart();
+        /// <summary>
+        /// Start snapshot transaction - changes can be proceeded only when transaction is started
+        /// </summary>
+        protected abstract void startTransaction();
         /// <summary>
         /// Commit started transaction - if changes has been detected during transaction must return true, false otherwise
         /// NOTE:
@@ -64,13 +67,59 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         /// <returns>True if there is semantic change in transaction, false otherwise</returns>
         protected abstract bool commitTransaction();
+        /// <summary>
+        /// Create object representation - TODO input information
+        /// </summary>
+        /// <returns>Created object</returns>
         protected abstract ObjectValue createObject();
+        /// <summary>
+        /// Create array representation - TODO input information
+        /// </summary>
+        /// <returns>Created array</returns>
+        protected abstract AssociativeArray createArray();
+        /// <summary>
+        /// Create alias for given variable
+        /// </summary>
+        /// <param name="sourceVar">Variable which alias will be created</param>
+        /// <returns>Created alias</returns>
         protected abstract AliasValue createAlias(VariableName sourceVar);
-        protected abstract Snapshot createCall(CallInfo info);
+        /// <summary>
+        /// Create snapshot that will be used for call invoked from given info
+        /// </summary>
+        /// <param name="callInfo">Info of invoked call</param>
+        /// <returns>Snapshot that will be used as entry point of invoked call</returns>
+        protected abstract Snapshot createCall(CallInfo callInfo);
+        /// <summary>
+        /// Assign memory entry into targetVar        
+        /// </summary>
+        /// <param name="targetVar">Target of assigning</param>
+        /// <param name="entry">Value that will be assigned</param>
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
+        /// <summary>
+        /// Assign alias to given targetVar
+        /// </summary>
+        /// <param name="targetVar">Target variable</param>
+        /// <param name="alias">Assigned alias</param>
         protected abstract void assignAlias(VariableName targetVar, AliasValue alias);
+        /// <summary>
+        /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
+        /// This merged info can be than changed with snapshot updatable operations
+        /// NOTE: Further changes of inputs can't change extended snapshot
+        /// </summary>
+        /// <param name="inputs">Input snapshots that should be merged</param>
         protected abstract void extend(ISnapshotReadonly[] inputs);
+        /// <summary>
+        /// Merge given call output with current context.
+        /// WARNING: Call can change many objects via references (they don't has to be in global context)
+        /// </summary>
+        /// <param name="callOutput">Output snapshot of call</param>
+        /// <param name="result">Result of merged call</param>
         protected abstract void mergeWithCall(CallResult result, ISnapshotReadonly callOutput);
+        /// <summary>
+        /// Read value stored in snapshot for sourceVar
+        /// </summary>
+        /// <param name="sourceVar">Variable which value will be readed</param>
+        /// <returns>Value stored for given variable</returns>
         protected abstract MemoryEntry readValue(VariableName sourceVar);
 
         #endregion
@@ -89,7 +138,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             }
             IsTransactionStarted = true;
 
-            transactionStart();
+            startTransaction();
         }
 
         /// <summary>
@@ -134,7 +183,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         }
 
         /// <summary>
-        /// Creat snapshot that will be used for call invoked from given info
+        /// Create snapshot that will be used for call invoked from given info
         /// </summary>
         /// <param name="callInfo">Info of invoked call</param>
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
@@ -191,6 +240,15 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
 
             var result = createObject();
             ++_statistics.CreatedObjectValues;
+            return result;
+        }
+
+        public AssociativeArray CreateArray()
+        {
+            checkCanUpdate();
+
+            var result = createArray();
+            ++_statistics.CreatedArrayValues;
             return result;
         }
 

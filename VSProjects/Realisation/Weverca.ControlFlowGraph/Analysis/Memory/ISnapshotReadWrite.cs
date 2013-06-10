@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using PHP.Core;
+using PHP.Core.AST;
 
 namespace Weverca.ControlFlowGraph.Analysis.Memory
 {
@@ -23,7 +24,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         IntegerValue CreateInt(int number);
         BooleanValue CreateBool(bool boolean);
         FloatValue CreateFloat(double number);
+        FunctionValue CreateFunction(FunctionDecl declaration);
 
+
+        /// <summary>
+        /// Create array - TODO what kind of info will be neaded for creation?
+        /// </summary>
+        /// <returns></returns>
+        AssociativeArray CreateArray();
         /// <summary>
         /// Create object - TODO what kind of info will be neaded for creation?
         /// </summary>
@@ -49,8 +57,8 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// Assign memory entry into targetVar        
         /// </summary>
         /// <param name="targetVar">Target of assigning</param>
-        /// <param name="value">Value that will be assigned</param>
-        void Assign(VariableName targetVar, MemoryEntry value);
+        /// <param name="entry">Value that will be assigned</param>
+        void Assign(VariableName targetVar, MemoryEntry entry);
 
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)

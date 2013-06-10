@@ -11,6 +11,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         public int CreatedBooleanValues;
         public int CreatedFloatValues;
         public int CreatedObjectValues;
+        public int CreatedArrayValues;
         public int CreatedAliasValues;
         public int AliasAssigns;
         public int MemoryEntryAssigns;
@@ -23,8 +24,6 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         internal SnapshotStatistics Clone()
         {
             throw new NotImplementedException();
-        }
-
-       
+        }        
     }
 }
