@@ -127,7 +127,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         /// <param name="value">Value to be tested on equality</param>
         /// <returns>True if value is equal, false otherwise</returns>
-        protected abstract bool equals(ObjectValue value);
+        protected abstract bool equals(AssociativeArray value);
 
         /// <summary>
         /// Hashcode so semantic equal array will be hashed on same hashcode
