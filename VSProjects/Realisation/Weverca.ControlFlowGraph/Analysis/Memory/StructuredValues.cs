@@ -54,6 +54,40 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         internal ObjectValue()
         {
         }
+
+        /// <summary>
+        /// Determine that given value is semantically equal to this
+        /// </summary>
+        /// <param name="value">Value to be tested on equality</param>
+        /// <returns>True if value is equal, false otherwise</returns>
+        protected abstract bool equals(ObjectValue value);
+
+        /// <summary>
+        /// Hashcode so semantic equal object will be hashed on same hashcode
+        /// </summary>
+        /// <returns>Computed hashcode</returns>
+        protected abstract int getHashCode();
+
+
+        public override bool Equals(object obj)
+        {
+            if (base.Equals(obj))
+            {
+                return true;
+            }
+            var o = obj as ObjectValue;
+            if (o == null)
+            {
+                return false;
+            }
+
+            return equals(o);
+        }
+
+        public override int GetHashCode()
+        {
+            return getHashCode();
+        }
     }
 
     public abstract class AssociativeArray : Value
@@ -86,6 +120,40 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         internal AssociativeArray()
         {
+        }
+
+        /// <summary>
+        /// Determine that given value is semantically equal to this
+        /// </summary>
+        /// <param name="value">Value to be tested on equality</param>
+        /// <returns>True if value is equal, false otherwise</returns>
+        protected abstract bool equals(ObjectValue value);
+
+        /// <summary>
+        /// Hashcode so semantic equal array will be hashed on same hashcode
+        /// </summary>
+        /// <returns>Computed hashcode</returns>
+        protected abstract int getHashCode();
+
+
+        public override bool Equals(object obj)
+        {
+            if (base.Equals(obj))
+            {
+                return true;
+            }
+            var o = obj as AssociativeArray;
+            if (o == null)
+            {
+                return false;
+            }
+
+            return equals(o);
+        }
+
+        public override int GetHashCode()
+        {
+            return getHashCode();
         }
     }
 }

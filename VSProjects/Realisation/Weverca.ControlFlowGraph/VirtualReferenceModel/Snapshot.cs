@@ -55,13 +55,19 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
-            var references=getInfo(targetVar).References;
+            var info=getOrCreate(targetVar);
+            var references = info.References;
 
             switch (references.Count)
             {
                 case 0:
-                    throw new NotImplementedException("This shouldn't ever happend");
+                    //reserve new virtual reference
+                    var allocatedReference = new VirtualReference(targetVar);
+                    info.References.Add(allocatedReference);
 
+                    ReportSimpleHashAssign();
+                    _data[allocatedReference] = entry;
+                    break;
                 case 1:
                     ReportSimpleHashAssign();
                     _data[references[0]] = entry;
@@ -86,9 +92,85 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             }
         }
 
+        /// <summary>
+        /// TODO this implementation is inefficient
+        /// </summary>
+        /// <param name="inputs"></param>
         protected override void extend(ISnapshotReadonly[] inputs)
         {
-            throw new NotImplementedException();
+            var oldData = _data;
+            var oldVariables = _variables;
+
+            
+            _data = new Dictionary<VirtualReference, MemoryEntry>();
+            _variables = new Dictionary<VariableName, VariableInfo>();
+            foreach (Snapshot input in inputs)
+            {
+                //merge info from extending inputs
+                extendVariables(input);
+                extendData(input);
+            }
+            
+            _hasSemanticChange = _hasSemanticChange ||
+                _data.Count != oldData.Count ||
+                _variables.Count != oldVariables.Count;
+
+            if (!_hasSemanticChange)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private void extendData(Snapshot input)
+        {
+            foreach (var dataPair in input._data)
+            {
+                MemoryEntry oldEntry;
+                ReportSimpleHashSearch();
+
+                if (!_data.TryGetValue(dataPair.Key, out oldEntry))
+                {
+                    //copy reference, because its immutable
+                    ReportSimpleHashAssign();
+                    _data[dataPair.Key] = dataPair.Value;
+                }
+                else
+                {
+                    ReportMemoryEntryComparison();
+                    if (!dataPair.Value.Equals(oldEntry))
+                    {
+                        //merge two memory entries
+                        ReportMemoryEntryMerge();
+                        _data[dataPair.Key] = MemoryEntry.Merge(oldEntry, dataPair.Value);
+                    }
+                }
+            }
+        }
+
+        private void extendVariables(Snapshot input)
+        {
+            foreach (var varPair in input._variables)
+            {
+                VariableInfo oldVar;
+                ReportSimpleHashSearch();
+                if (!_variables.TryGetValue(varPair.Key, out oldVar))
+                {
+                    //copy variable info, so we can process changes on it
+                    ReportSimpleHashAssign();
+                    _variables[varPair.Key] = varPair.Value.Clone();
+                }
+                else
+                {
+                    //merge variable references
+                    foreach (var reference in varPair.Value.References)
+                    {
+                        if (!oldVar.References.Contains(reference))
+                        {
+                            oldVar.References.Add(reference);
+                        }
+                    }
+                }
+            }
         }
 
         protected override void mergeWithCall(CallResult result, ISnapshotReadonly callOutput)
@@ -108,7 +190,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             switch (references.Count)
             {
                 case 0:
-                    return new MemoryEntry(UndefinedValue);
+                    return UndefinedValueEntry;
                 case 1:
                     ReportSimpleHashSearch();
                     return _data[references[0]];

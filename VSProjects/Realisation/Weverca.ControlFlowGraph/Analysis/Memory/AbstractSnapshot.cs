@@ -157,6 +157,16 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         }
 
 
+        protected void ReportMemoryEntryMerge()
+        {
+            ++_statistics.MemoryEntryMerges;
+        }
+
+        protected void ReportMemoryEntryComparison()
+        {
+            ++_statistics.MemoryEntryComparisons;
+        }
+
         #endregion
 
         #region Snapshot controll operations
