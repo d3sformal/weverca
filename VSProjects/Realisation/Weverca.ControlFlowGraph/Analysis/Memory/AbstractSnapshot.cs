@@ -38,6 +38,17 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// Undefined value singleton
         /// </summary>
         private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
+
+        
+        /// <summary>
+        /// Any value memory entry singleton
+        /// </summary>
+        private static readonly MemoryEntry _anyValueEntry = new MemoryEntry(_anyValue);
+        /// <summary>
+        /// Undefined value memory entry singleton
+        /// </summary>
+        private static readonly MemoryEntry _undefinedValueEntry = new MemoryEntry(_undefinedValue);
+
         /// <summary>
         /// Statistics object - here are stored statistics
         /// </summary>
@@ -225,6 +236,9 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
 
         public AnyValue AnyValue { get { return _anyValue; } }
         public UndefinedValue UndefinedValue{get { return _undefinedValue; }}
+
+        public MemoryEntry AnyValueEntry { get { return _anyValueEntry; } }
+        public MemoryEntry UndefinedValueEntry { get { return _undefinedValueEntry; } }
 
         public StringValue CreateString(string literal)
         {

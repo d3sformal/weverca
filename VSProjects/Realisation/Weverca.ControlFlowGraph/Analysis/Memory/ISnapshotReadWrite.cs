@@ -19,6 +19,14 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// Singleton representation of UndefinedValue
         /// </summary>
         UndefinedValue UndefinedValue { get; }
+        /// <summary>
+        /// Singleton representation of AnyValue inside memory entry
+        /// </summary>
+        MemoryEntry AnyValueEntry { get; }
+        /// <summary>
+        /// Singleton representation of UndefinedValue inside memory entry
+        /// </summary>
+        MemoryEntry UndefinedValueEntry { get; }
 
         StringValue CreateString(string literal);
         IntegerValue CreateInt(int number);

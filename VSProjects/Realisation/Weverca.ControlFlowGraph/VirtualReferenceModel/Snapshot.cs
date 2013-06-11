@@ -49,7 +49,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
         }
 
         protected override AbstractSnapshot createCall(CallInfo callInfo)
-        {
+        {            
             throw new NotImplementedException();
         }
 
@@ -115,6 +115,20 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                 default:
                     throw new NotImplementedException("Merge all memory entries");
             }
+        }
+
+        private VariableInfo getOrCreate(VariableName name)
+        {
+            VariableInfo result;
+
+            ReportSimpleHashSearch();
+            if (!_variables.TryGetValue(name, out result))
+            {
+                _variables[name] = new VariableInfo();
+                ReportSimpleHashAssign();
+            }
+
+            return result;
         }
 
         private VariableInfo getInfo(VariableName name)
