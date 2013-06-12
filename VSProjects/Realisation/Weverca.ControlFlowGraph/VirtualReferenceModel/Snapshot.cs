@@ -9,14 +9,26 @@ using Weverca.ControlFlowGraph.Analysis.Memory;
 
 namespace Weverca.ControlFlowGraph.VirtualReferenceModel
 {
-    class Snapshot:AbstractSnapshot
+
+    /// <summary>
+    /// Simple (non efficient) implementation as proof of concept - will be heavily optimized, refactored
+    /// </summary>
+    public class Snapshot : AbstractSnapshot
     {
+        Dictionary<VariableName, VariableInfo> _oldVariables;
         Dictionary<VariableName, VariableInfo> _variables = new Dictionary<VariableName, VariableInfo>();
+        Dictionary<VirtualReference, MemoryEntry> _oldData;
         Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
+
+
+
         bool _hasSemanticChange;
 
         protected override void startTransaction()
         {
+            _oldData = _data;
+            _oldVariables = _variables;
+
             _hasSemanticChange = false;
         }
 
@@ -28,8 +40,54 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             }
             else
             {
-                throw new NotImplementedException("Change can come from extend or from data assigns");
+                _hasSemanticChange = 
+                    _data.Count != _oldData.Count ||
+                    _variables.Count != _oldVariables.Count;
+
+                if (_hasSemanticChange)
+                {
+                    //evident change
+                    return true;
+                }
+                
+                //check variables according to old ones
+                foreach (var oldVar in _oldVariables)
+                {
+                    ReportSimpleHashSearch();
+                    VariableInfo currVar;                    
+                    if (!_variables.TryGetValue(oldVar.Key,out currVar))
+                    {
+                        //differ in some variable presence
+                        return true;
+                    }
+
+                    if (!currVar.Equals(oldVar.Value))
+                    {
+                        //differ in variable definition
+                        return true;
+                    }
+                }
+
+                foreach (var oldData in _oldData)
+                {
+                    ReportSimpleHashSearch();
+                    MemoryEntry currEntry;                    
+                    if (!_data.TryGetValue(oldData.Key, out currEntry))
+                    {
+                        //differ in presence of some reference
+                        return true;
+                    }
+
+                    ReportMemoryEntryComparison();
+                    if (!currEntry.Equals(oldData.Value))
+                    {
+                        //differ in stored data
+                        return true;
+                    }
+                }
             }
+
+            return false;   
         }
 
         protected override ObjectValue createObject()
@@ -44,18 +102,18 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
 
         protected override AliasValue createAlias(VariableName sourceVar)
         {
-            var info=getInfo(sourceVar);
+            var info = getInfo(sourceVar);
             return new ReferenceAlias(info.References);
         }
 
         protected override AbstractSnapshot createCall(CallInfo callInfo)
-        {            
+        {
             throw new NotImplementedException();
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
-            var info=getOrCreate(targetVar);
+            var info = getOrCreate(targetVar);
             var references = info.References;
 
             switch (references.Count)
@@ -82,9 +140,9 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
         protected override void assignAlias(VariableName targetVar, AliasValue alias)
         {
             var info = getInfo(targetVar);
-            var refAlias=alias as ReferenceAlias;
+            var refAlias = alias as ReferenceAlias;
 
-            if (!hasSameReferences(info,refAlias.References))
+            if (!hasSameReferences(info, refAlias.References))
             {
                 reportSemanticChange();
                 info.References.Clear();
@@ -98,10 +156,8 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
         /// <param name="inputs"></param>
         protected override void extend(ISnapshotReadonly[] inputs)
         {
-            var oldData = _data;
-            var oldVariables = _variables;
+     
 
-            
             _data = new Dictionary<VirtualReference, MemoryEntry>();
             _variables = new Dictionary<VariableName, VariableInfo>();
             foreach (Snapshot input in inputs)
@@ -109,15 +165,6 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                 //merge info from extending inputs
                 extendVariables(input);
                 extendData(input);
-            }
-            
-            _hasSemanticChange = _hasSemanticChange ||
-                _data.Count != oldData.Count ||
-                _variables.Count != oldVariables.Count;
-
-            if (!_hasSemanticChange)
-            {
-                throw new NotImplementedException();
             }
         }
 
@@ -206,7 +253,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             ReportSimpleHashSearch();
             if (!_variables.TryGetValue(name, out result))
             {
-                _variables[name] = new VariableInfo();
+                _variables[name] =result= new VariableInfo();
                 ReportSimpleHashAssign();
             }
 

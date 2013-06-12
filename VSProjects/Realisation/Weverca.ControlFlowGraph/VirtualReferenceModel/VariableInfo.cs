@@ -9,6 +9,11 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
     {
         internal List<VirtualReference> References { get; private set; }
 
+        public VariableInfo()
+        {
+            References = new List<VirtualReference>();
+        }
+
         internal VariableInfo Clone()
         {
             var result = new VariableInfo();

@@ -57,6 +57,7 @@
     <Compile Include="ForwardAnalysisTest.cs" />
     <Compile Include="CFGTestUtils.cs" />
     <Compile Include="StringAnalysis.cs" />
+    <Compile Include="VirtualReferenceModelTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

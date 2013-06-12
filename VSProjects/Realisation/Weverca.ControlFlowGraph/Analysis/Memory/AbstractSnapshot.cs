@@ -173,7 +173,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <summary>
         /// Start snapshot transaction - changes can be proceeded only when transaction is started
         /// </summary>
-        internal void StartTransaction()
+        public void StartTransaction()
         {
             checkFrozenState();
 
@@ -189,7 +189,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <summary>
         /// Commit snapshot transaction - if snapshot has been changed during transaction HasChanged is set to true
         /// </summary>
-        internal void CommitTransaction()
+        public void CommitTransaction()
         {
             checkFrozenState();
 
