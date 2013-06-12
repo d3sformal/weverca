@@ -139,7 +139,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
 
         protected override void assignAlias(VariableName targetVar, AliasValue alias)
         {
-            var info = getInfo(targetVar);
+            var info = getOrCreate(targetVar);
             var refAlias = alias as ReferenceAlias;
 
             if (!hasSameReferences(info, refAlias.References))
