@@ -39,7 +39,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
 
-        
+
         /// <summary>
         /// Any value memory entry singleton
         /// </summary>
@@ -156,15 +156,28 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             ++_statistics.SimpleHashAssigns;
         }
 
-
+        /// <summary>
+        /// Report memory entries merging
+        /// </summary>
         protected void ReportMemoryEntryMerge()
         {
             ++_statistics.MemoryEntryMerges;
         }
 
+        /// <summary>
+        /// Report explicit memory entry comparison 
+        /// </summary>
         protected void ReportMemoryEntryComparison()
         {
             ++_statistics.MemoryEntryComparisons;
+        }
+
+        /// <summary>
+        /// Report explicit memory entry creation
+        /// </summary>
+        protected void ReportMemoryEntryCreation()
+        {
+            ++_statistics.MemoryEntryCreation;
         }
 
         #endregion
@@ -183,6 +196,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             }
             IsTransactionStarted = true;
 
+            HasChanged = false;
             startTransaction();
         }
 
@@ -199,7 +213,8 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             }
             IsTransactionStarted = false;
 
-            commitTransaction();
+
+            HasChanged = commitTransaction();
         }
 
         /// <summary>
@@ -209,7 +224,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <returns>Snapshot statistis</returns>
         public SnapshotStatistics GetStatistics()
         {
-            return _statistics.Clone();            
+            return _statistics.Clone();
         }
 
         /// <summary>
@@ -245,7 +260,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         #region Implementation of ISnapshotReadWrite interface
 
         public AnyValue AnyValue { get { return _anyValue; } }
-        public UndefinedValue UndefinedValue{get { return _undefinedValue; }}
+        public UndefinedValue UndefinedValue { get { return _undefinedValue; } }
 
         public MemoryEntry AnyValueEntry { get { return _anyValueEntry; } }
         public MemoryEntry UndefinedValueEntry { get { return _undefinedValueEntry; } }
@@ -289,8 +304,8 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             var result = createObject();
             ++_statistics.CreatedObjectValues;
             return result;
-        }  
-        
+        }
+
         public FunctionValue CreateFunction(FunctionDecl declaration)
         {
             checkCanUpdate();
@@ -314,9 +329,9 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
 
             var result = createAlias(sourceVar);
             ++_statistics.CreatedAliasValues;
-            return result;            
+            return result;
         }
-        
+
         public void Assign(VariableName targetVar, Value value)
         {
             checkCanUpdate();
@@ -330,7 +345,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             {
                 //create implicit memory entry
                 Assign(targetVar, new MemoryEntry(value));
-            }            
+            }
         }
 
         public void Assign(VariableName targetVar, MemoryEntry value)
@@ -382,6 +397,6 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         #endregion
 
 
-    
+
     }
 }

@@ -29,6 +29,9 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             _oldData = _data;
             _oldVariables = _variables;
 
+            _data = new Dictionary<VirtualReference, MemoryEntry>(_data);
+            _variables = new Dictionary<VariableName, VariableInfo>(_variables);
+
             _hasSemanticChange = false;
         }
 
@@ -40,7 +43,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             }
             else
             {
-                _hasSemanticChange = 
+                _hasSemanticChange =
                     _data.Count != _oldData.Count ||
                     _variables.Count != _oldVariables.Count;
 
@@ -49,13 +52,13 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                     //evident change
                     return true;
                 }
-                
+
                 //check variables according to old ones
                 foreach (var oldVar in _oldVariables)
                 {
                     ReportSimpleHashSearch();
-                    VariableInfo currVar;                    
-                    if (!_variables.TryGetValue(oldVar.Key,out currVar))
+                    VariableInfo currVar;
+                    if (!_variables.TryGetValue(oldVar.Key, out currVar))
                     {
                         //differ in some variable presence
                         return true;
@@ -71,7 +74,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                 foreach (var oldData in _oldData)
                 {
                     ReportSimpleHashSearch();
-                    MemoryEntry currEntry;                    
+                    MemoryEntry currEntry;
                     if (!_data.TryGetValue(oldData.Key, out currEntry))
                     {
                         //differ in presence of some reference
@@ -87,7 +90,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                 }
             }
 
-            return false;   
+            return false;
         }
 
         protected override ObjectValue createObject()
@@ -156,7 +159,7 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
         /// <param name="inputs"></param>
         protected override void extend(ISnapshotReadonly[] inputs)
         {
-     
+
 
             _data = new Dictionary<VirtualReference, MemoryEntry>();
             _variables = new Dictionary<VariableName, VariableInfo>();
@@ -242,8 +245,26 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                     ReportSimpleHashSearch();
                     return _data[references[0]];
                 default:
-                    throw new NotImplementedException("Merge all memory entries");
+                    var values = new List<Value>();
+                    foreach (var reference in references)
+                    {
+                        values.AddRange(resolveValuesFrom(reference));
+                    }
+                    ReportMemoryEntryCreation();
+                    return new MemoryEntry(values.ToArray());
+
             }
+        }
+
+        private IEnumerable<Value> resolveValuesFrom(VirtualReference reference)
+        {
+            var entry = getEntry(reference);
+            if (entry == null)
+            {
+                return new Value[0];
+            }
+
+            return entry.PossibleValues;
         }
 
         private VariableInfo getOrCreate(VariableName name)
@@ -253,11 +274,20 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             ReportSimpleHashSearch();
             if (!_variables.TryGetValue(name, out result))
             {
-                _variables[name] =result= new VariableInfo();
+                _variables[name] = result = new VariableInfo();
                 ReportSimpleHashAssign();
             }
 
             return result;
+        }
+
+        private MemoryEntry getEntry(VirtualReference reference)
+        {
+            MemoryEntry entry;
+            ReportSimpleHashSearch();
+            _data.TryGetValue(reference, out entry);
+
+            return entry;
         }
 
         private VariableInfo getInfo(VariableName name)

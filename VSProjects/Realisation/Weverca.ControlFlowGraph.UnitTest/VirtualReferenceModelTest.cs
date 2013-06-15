@@ -67,19 +67,70 @@ namespace Weverca.ControlFlowGraph.UnitTest
             snapshot1.Assign(testVar2, alias);
 
             //read value from testVar1 accross testVar2
-            var mustAliasRead = readFirstValue<StringValue>(snapshot1,testVar1);
+            var mustAliasRead = readFirstValue<StringValue>(snapshot1, testVar1);
             Assert.AreEqual(testStringValue1, mustAliasRead.Value,
                 "Reading value from referencing must alias failed"
                 );
 
             //set value to testVar2 and expect its presence in testVar1
             var testValue2 = snapshot1.CreateString(testStringValue2);
-            snapshot1.Assign(testVar2,testValue2);
-            
+            snapshot1.Assign(testVar2, testValue2);
+
             var mustAliasAfterWrite = readFirstValue<StringValue>(snapshot1, testVar1);
-            Assert.AreEqual(testStringValue2,mustAliasAfterWrite.Value,
+            Assert.AreEqual(testStringValue2, mustAliasAfterWrite.Value,
                 "Rerefernced alias variable was not updated after must alias write"
                 );
+        }
+
+        [TestMethod]
+        public void ChangeHandling()
+        {
+            var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1, false);
+            snapshot1.CommitTransaction();
+            Assert.IsTrue(
+                snapshot1.HasChanged,
+                "Variable has been added, but it was not recognized as change"
+                );
+
+            snapshot1.StartTransaction();
+            snapshot1.Assign(testVar1, snapshot1.CreateString(testStringValue1));
+            snapshot1.CommitTransaction();
+
+            Assert.IsFalse(
+                snapshot1.HasChanged,
+                "Variable has been assigned with already contained value, but is recognized as change"
+                );
+
+        }
+
+        [TestMethod]
+        [Description("This test is specific for virtual reference model")]
+        public void AliasMerge()
+        {
+            /*             
+             * testVar1="TestVal1";
+             * if(?){
+             *  testVar2="TestVal2";
+             *  testVar1=&testVar2
+             * }
+             */
+
+            var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1);
+            var snapshot2 = createSnapshotWithValue(testVar2, testStringValue2, false);
+            var testVar2Alias = snapshot2.CreateAlias(testVar2);
+            snapshot2.Assign(testVar1, testVar2Alias);
+            snapshot2.CommitTransaction();
+
+            var mergedSnapshot = new Snapshot();
+            mergedSnapshot.StartTransaction();
+            mergedSnapshot.Extend(snapshot1, snapshot2);
+            var values = readStringValues(mergedSnapshot, testVar1);
+
+            CollectionAssert.AreEquivalent(
+                new string[] { testStringValue1, testStringValue2 },
+                values
+                );
+
         }
 
         private Snapshot createSnapshotWithValue(VariableName targetVar, string value, bool commit = true)

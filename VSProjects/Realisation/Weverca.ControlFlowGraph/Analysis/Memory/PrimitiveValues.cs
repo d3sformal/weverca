@@ -23,7 +23,17 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
 
         public override bool Equals(object obj)
         {
-            return Value.Equals(obj);
+            if (base.Equals(obj))
+            {
+                return true;
+            }
+
+            var o=obj as PrimitiveValue<T>;
+            if (o == null)
+            {
+                return false;
+            }
+            return Value.Equals(o.Value);
         }
     }
 
