@@ -5,47 +5,97 @@ using System.Text;
 
 using PHP.Core;
 using Weverca.ControlFlowGraph.Analysis.Memory;
+using Weverca.ControlFlowGraph.Analysis;
 
 namespace Weverca.ControlFlowGraph.MemoryModel
 {
     class MemorySnapshot : AbstractSnapshot
     {
+        Dictionary<VariableName, VariableInfo> variables = new Dictionary<VariableName, VariableInfo>();
+        Dictionary<VariableName, VariableInfo> oldVariables;
+
+        bool changedInTransaction = false;
+        bool transactionStarted = false;
+
+        TransactionCounter counterObj;
+        public uint TransactionCounter { get; private set; }
+
+        public MemorySnapshot()
+        {
+            TransactionCounter = 0;
+        }
+
         protected override void startTransaction()
         {
-            throw new NotImplementedException();
+            oldVariables = variables;
+            variables = new Dictionary<VariableName, VariableInfo>(oldVariables);
+
+            TransactionCounter++;
+            counterObj = new MemoryModel.TransactionCounter(this);
+            changedInTransaction = false;
+            transactionStarted = true;
         }
 
         protected override bool commitTransaction()
         {
-            throw new NotImplementedException();
+            transactionStarted = false;
+            return changedInTransaction;
         }
 
-        protected override ObjectValue createObject()
+        protected override Analysis.Memory.ObjectValue createObject()
         {
-            throw new NotImplementedException();
+            return new ObjectValue();
         }
 
         protected override AssociativeArray createArray()
         {
-            throw new NotImplementedException();
+            return new ArrayValue();
         }
 
-        protected override AliasValue createAlias(PHP.Core.VariableName sourceVar)
+        protected override Analysis.Memory.AliasValue createAlias(VariableName sourceVar)
+        {
+            return new AliasValue(sourceVar);
+        }
+
+        protected override AbstractSnapshot createCall(CallInfo callInfo)
         {
             throw new NotImplementedException();
         }
 
-        protected override AbstractSnapshot createCall(Analysis.CallInfo callInfo)
+        protected override void assign(VariableName targetVar, Analysis.Memory.MemoryEntry entry)
+        {
+            
+
+            VariableInfo variable;
+            if (variables.TryGetValue(targetVar, out variable))
+            {
+                if (variable.Values.Equals(entry))
+                {
+                    return;
+                }
+                else
+                {
+                    updateMayAliases(variable, entry);
+                    updateMustAliases(variable, entry);
+                }
+            }
+            else
+            {
+                variable = new VariableInfo(entry, counterObj);
+            }
+        }
+
+        private void updateMustAliases(VariableInfo variable, MemoryEntry entry)
         {
             throw new NotImplementedException();
         }
 
-        protected override void assign(PHP.Core.VariableName targetVar, MemoryEntry entry)
+        private void updateMayAliases(VariableInfo variable, MemoryEntry entry)
         {
             throw new NotImplementedException();
         }
 
-        protected override void assignAlias(PHP.Core.VariableName targetVar, AliasValue alias)
+        protected override void assignAlias(VariableName targetVar, Analysis.Memory.AliasValue alias)
         {
             throw new NotImplementedException();
         }
@@ -55,14 +105,15 @@ namespace Weverca.ControlFlowGraph.MemoryModel
             throw new NotImplementedException();
         }
 
-        protected override void mergeWithCall(Analysis.CallResult result, ISnapshotReadonly callOutput)
+        protected override void mergeWithCall(CallResult result, ISnapshotReadonly callOutput)
         {
             throw new NotImplementedException();
         }
 
-        protected override MemoryEntry readValue(PHP.Core.VariableName sourceVar)
+        protected override Analysis.Memory.MemoryEntry readValue(VariableName sourceVar)
         {
-            throw new NotImplementedException();
+            return variables[sourceVar].Values;
         }
+
     }
 }
