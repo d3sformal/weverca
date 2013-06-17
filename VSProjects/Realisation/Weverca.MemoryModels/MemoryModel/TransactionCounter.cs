@@ -5,17 +5,20 @@ using System.Text;
 
 namespace Weverca.MemoryModel
 {
-    /// <summary>
-    /// This is replacement, because of missing file in Pavel's commit - delete or replace this with your version
-    /// </summary>
     class TransactionCounter
     {
-        private MemorySnapshot memorySnapshot;
+        MemorySnapshot lastChangeIn;
+        uint changeCounter;
 
-        public TransactionCounter(MemorySnapshot memorySnapshot)
+        public TransactionCounter(MemorySnapshot snapshot)
         {
-            // TODO: Complete member initialization
-            this.memorySnapshot = memorySnapshot;
+            lastChangeIn = snapshot;
+            changeCounter = snapshot.TransactionCounter;
+        }
+
+        public bool Equals(TransactionCounter counter)
+        {
+            return lastChangeIn == counter.lastChangeIn && changeCounter == counter.changeCounter;
         }
     }
 }
