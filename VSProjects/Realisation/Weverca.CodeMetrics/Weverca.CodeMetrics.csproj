@@ -51,6 +51,7 @@
     <Compile Include="Processing\ASTVisitors\OccurrenceVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\PassingByReferenceVisitor.cs" />
     <Compile Include="Processing\ASTVisitors\SuperGlobalVarVisitor.cs" />
+    <Compile Include="Processing\Implementations\AutoloadProcessor.cs" />
     <Compile Include="Processing\Implementations\ClassCouplingProcessor.cs" />
     <Compile Include="Processing\Implementations\ClassPresenceProcessor.cs" />
     <Compile Include="Processing\Implementations\DuckTypingProcessor.cs" />
