@@ -15,6 +15,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.CodeMetrics.UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.ControlFlowGraph.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.ControlFlowGraph.UnitTest\Weverca.ControlFlowGraph.UnitTest.csproj", "{33FB3567-FB67-40C3-977A-44C8B7F0B351}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis", "..\..\..\VSProjects\Realisation\Weverca.Analysis\Weverca.Analysis.csproj", "{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.MemoryModels", "..\..\..\VSProjects\Realisation\Weverca.MemoryModels\Weverca.MemoryModels.csproj", "{01F0A818-EBE4-431B-9091-0E5DC99382AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.MemoryModels.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.MemoryModels.UnitTest\Weverca.MemoryModels.UnitTest.csproj", "{95B23A3A-D548-483C-B1C4-52AADCFC64DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.Analysis.UnitTest\Weverca.Analysis.UnitTest.csproj", "{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +57,22 @@ Global
 		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33FB3567-FB67-40C3-977A-44C8B7F0B351}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01F0A818-EBE4-431B-9091-0E5DC99382AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01F0A818-EBE4-431B-9091-0E5DC99382AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01F0A818-EBE4-431B-9091-0E5DC99382AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01F0A818-EBE4-431B-9091-0E5DC99382AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95B23A3A-D548-483C-B1C4-52AADCFC64DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95B23A3A-D548-483C-B1C4-52AADCFC64DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95B23A3A-D548-483C-B1C4-52AADCFC64DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95B23A3A-D548-483C-B1C4-52AADCFC64DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

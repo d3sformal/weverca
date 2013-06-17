@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.ControlFlowGraph.Analysis;
-using Weverca.ControlFlowGraph.Analysis.Expressions;
+using Weverca.Analysis;
+using Weverca.Analysis.Expressions;
 
 namespace Weverca.ControlFlowGraph.UnitTest
 {
