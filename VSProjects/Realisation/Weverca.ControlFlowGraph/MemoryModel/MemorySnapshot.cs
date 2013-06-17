@@ -42,16 +42,7 @@ namespace Weverca.ControlFlowGraph.MemoryModel
             return changedInTransaction;
         }
 
-        protected override Analysis.Memory.ObjectValue createObject()
-        {
-            return new ObjectValue();
-        }
-
-        protected override AssociativeArray createArray()
-        {
-            return new ArrayValue();
-        }
-
+      
         protected override Analysis.Memory.AliasValue createAlias(VariableName sourceVar)
         {
             return new AliasValue(sourceVar);
@@ -115,5 +106,35 @@ namespace Weverca.ControlFlowGraph.MemoryModel
             return variables[sourceVar].Values;
         }
 
+
+        protected override void setField(Analysis.Memory.ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setFieldAlias(Analysis.Memory.ObjectValue value, ContainerIndex index, Analysis.Memory.AliasValue alias)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, Analysis.Memory.AliasValue alias)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override MemoryEntry getField(Analysis.Memory.ObjectValue value, ContainerIndex index)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

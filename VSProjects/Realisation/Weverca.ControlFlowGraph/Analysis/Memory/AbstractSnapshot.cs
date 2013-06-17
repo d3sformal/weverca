@@ -81,16 +81,7 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// </summary>
         /// <returns>True if there is semantic change in transaction, false otherwise</returns>
         protected abstract bool commitTransaction();
-        /// <summary>
-        /// Create object representation - TODO input information
-        /// </summary>
-        /// <returns>Created object</returns>
-        protected abstract ObjectValue createObject();
-        /// <summary>
-        /// Create array representation - TODO input information
-        /// </summary>
-        /// <returns>Created array</returns>
-        protected abstract AssociativeArray createArray();
+
         /// <summary>
         /// Create alias for given variable
         /// </summary>
@@ -135,6 +126,49 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         /// <param name="sourceVar">Variable which value will be readed</param>
         /// <returns>Value stored for given variable</returns>
         protected abstract MemoryEntry readValue(VariableName sourceVar);
+
+        /// <summary>
+        /// Set field specified by index, on object represented by value 
+        /// </summary>
+        /// <param name="value">Handler for object manipulation</param>
+        /// <param name="index">Index of field that will be set</param>
+        /// <param name="entry">Data that will be set on specified field</param>
+        protected abstract void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry);
+        /// <summary>
+        /// Set specified index, in array represented by value 
+        /// </summary>
+        /// <param name="value">Handler for array manipulation</param>
+        /// <param name="index">Array index that will be set</param>
+        /// <param name="entry">Data that will be set on specified index</param>
+        protected abstract void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
+        
+        /// <summary>
+        /// Set field specified by index, on object represented by value 
+        /// </summary>
+        /// <param name="value">Handler for object manipulation</param>
+        /// <param name="index">Index of field that will be set</param>
+        /// <param name="alias">Alias that will be set for field</param>
+        protected abstract void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias);
+        /// <summary>
+        /// Set specified index, in array represented by value 
+        /// </summary>
+        /// <param name="value">Handler for array manipulation</param>
+        /// <param name="index">Index that will be set</param>
+        /// <param name="alias">Alias that will be set for field</param>
+        protected abstract void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias);
+
+        /// <summary>
+        /// Get value for field specified by index, in object represented by value 
+        /// </summary>
+        /// <param name="value">Handler for object manipulation</param>
+        /// <param name="index">Index of field that will be set</param>        
+        protected abstract MemoryEntry getField(ObjectValue value, ContainerIndex index);
+        /// <summary>
+        /// Get value for field specified by index, in array represented by value 
+        /// </summary>
+        /// <param name="value">Handler for array manipulation</param>
+        /// <param name="index">Index that will be set</param>      
+        protected abstract MemoryEntry getIndex(AssociativeArray value, ContainerIndex index);
 
         #endregion
 
@@ -297,15 +331,6 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             return new FloatValue(number);
         }
 
-        public ObjectValue CreateObject()
-        {
-            checkCanUpdate();
-
-            var result = createObject();
-            ++_statistics.CreatedObjectValues;
-            return result;
-        }
-
         public FunctionValue CreateFunction(FunctionDecl declaration)
         {
             checkCanUpdate();
@@ -314,13 +339,63 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
             return new FunctionValue(declaration);
         }
 
+        public ObjectValue CreateObject()
+        {
+            checkCanUpdate();
+
+            throw new NotImplementedException();
+        }
+
         public AssociativeArray CreateArray()
         {
             checkCanUpdate();
 
-            var result = createArray();
-            ++_statistics.CreatedArrayValues;
-            return result;
+            throw new NotImplementedException();
+        }
+
+        public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        {
+            checkCanUpdate();
+
+            ++_statistics.FieldAssigns;
+            setField(value, index, entry);
+        }
+        public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        {
+            checkCanUpdate();
+
+            ++_statistics.IndexAssigns;
+            setIndex(value, index, entry);
+        }
+
+        public void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        {
+            checkCanUpdate();
+
+            ++_statistics.FieldAliasAssigns;
+            setFieldAlias(value, index, alias);
+        }
+        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        {
+            checkCanUpdate();
+
+            ++_statistics.IndexAliasAssigns;
+            setIndexAlias(value, index, alias);
+        }
+
+        public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
+        {
+            checkCanUpdate();
+
+            ++_statistics.FieldReads;
+            return getField(value, index);
+        }
+        public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
+        {
+            checkCanUpdate();
+
+            ++_statistics.IndexReads;
+            return getIndex(value, index);
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)

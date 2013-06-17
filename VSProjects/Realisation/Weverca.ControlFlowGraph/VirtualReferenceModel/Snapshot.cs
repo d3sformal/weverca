@@ -93,15 +93,6 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
             return false;
         }
 
-        protected override ObjectValue createObject()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override AssociativeArray createArray()
-        {
-            throw new NotImplementedException();
-        }
 
         protected override AliasValue createAlias(VariableName sourceVar)
         {
@@ -318,6 +309,36 @@ namespace Weverca.ControlFlowGraph.VirtualReferenceModel
                 return;
 
             _hasSemanticChange = true;
+        }
+
+        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
+        {
+            throw new NotImplementedException();
         }
     }
 }

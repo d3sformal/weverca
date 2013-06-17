@@ -15,9 +15,7 @@ namespace Weverca.ControlFlowGraph.Analysis
     {   
         public readonly BasicBlock EntryPoint;
         public readonly FlowInputSet<FlowInfo> InSet;
-
-
-
+        
         public CallDispatch(BasicBlock entryPoint,FlowInputSet<FlowInfo> inSet)
         {
             EntryPoint = entryPoint;

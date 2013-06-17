@@ -26,6 +26,12 @@ namespace Weverca.ControlFlowGraph.Analysis.Memory
         public int MemoryEntryMerges;
         public int MemoryEntryComparisons;
         public int MemoryEntryCreation;
+        public int IndexAssigns;
+        public int FieldAssigns;
+        public int IndexReads;
+        public int FieldReads;
+        public int IndexAliasAssigns;
+        public int FieldAliasAssigns;
 
         internal SnapshotStatistics Clone()
         {
