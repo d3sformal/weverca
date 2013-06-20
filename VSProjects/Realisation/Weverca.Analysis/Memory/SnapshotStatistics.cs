@@ -32,6 +32,7 @@ namespace Weverca.Analysis.Memory
         public int FieldReads;
         public int IndexAliasAssigns;
         public int FieldAliasAssigns;
+        public int GlobalVariableFetches;
 
         internal SnapshotStatistics Clone()
         {

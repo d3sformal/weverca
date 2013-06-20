@@ -136,5 +136,15 @@ namespace Weverca.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<VariableName> getGlobalVariables()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

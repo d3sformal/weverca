@@ -163,13 +163,25 @@ namespace Weverca.Analysis.Memory
         /// <param name="value">Handler for object manipulation</param>
         /// <param name="index">Index of field that will be set</param>        
         protected abstract MemoryEntry getField(ObjectValue value, ContainerIndex index);
+
         /// <summary>
         /// Get value for field specified by index, in array represented by value 
         /// </summary>
         /// <param name="value">Handler for array manipulation</param>
         /// <param name="index">Index that will be set</param>      
         protected abstract MemoryEntry getIndex(AssociativeArray value, ContainerIndex index);
-
+        
+        /// <summary>
+        /// Fetch variables from global context into current context
+        /// </summary>
+        /// <example>global x,y;</example>
+        /// <param name="variables">Variables that will be fetched</param>
+        protected abstract void fetchFromGlobal(IEnumerable<VariableName> variables);
+        /// <summary>
+        /// Get all variables defined in global scope
+        /// </summary>
+        /// <returns>Variables defined in global scope</returns>
+        protected abstract IEnumerable<VariableName> getGlobalVariables();
         #endregion
 
         #region Statistic interface for implementors
@@ -450,6 +462,18 @@ namespace Weverca.Analysis.Memory
             ++_statistics.ValueReads;
             return result;
         }
+
+        public void FetchFromGlobal(params VariableName[] variables)
+        {
+            _statistics.GlobalVariableFetches+=variables.Length;
+            fetchFromGlobal(variables);
+        }
+
+        public void FetchFromGlobalAll()
+        {
+            var globals = getGlobalVariables();
+            FetchFromGlobal(globals.ToArray());
+        }
         #endregion
 
         #region Snapshot private helpers
@@ -470,6 +494,9 @@ namespace Weverca.Analysis.Memory
             }
         }
         #endregion
+
+
+
 
 
 

@@ -69,6 +69,18 @@ namespace Weverca.Analysis.Memory
         void Assign(VariableName targetVar, MemoryEntry entry);
 
         /// <summary>
+        /// Fetch variables from global context into current context
+        /// </summary>
+        /// <example>global x,y;</example>
+        /// <param name="variables">Variables that will be fetched</param>
+        void FetchFromGlobal(params VariableName[] variables);
+
+        /// <summary>
+        /// Fetch all variables defined in global context into current context
+        /// </summary>
+        void FetchFromGlobalAll();
+
+        /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
         /// This merged info can be than changed with snapshot updatable operations
         /// NOTE: Further changes of inputs can't change extended snapshot
