@@ -39,6 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisCallStack.cs" />
+    <Compile Include="AnalysisCallContext.cs" />
+    <Compile Include="CallDispatch.cs" />
+    <Compile Include="CallDispatchLevel.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
     <Compile Include="AssumptionCondition.cs" />
@@ -56,6 +60,10 @@
     <Compile Include="Deprecated\FlowOutputSet.cs" />
     <Compile Include="Deprecated\ForwardAnalysis.cs" />
     <Compile Include="Deprecated\ForwardAnalysisAbstract.cs" />
+    <Compile Include="FlowControler.cs" />
+    <Compile Include="FlowInputSet.cs" />
+    <Compile Include="FlowOutputSet.cs" />
+    <Compile Include="ForwardAnalysis.cs" />
     <Compile Include="IncludeDispatch.cs" />
     <Compile Include="Memory\AbstractSnapshot.cs" />
     <Compile Include="Memory\ContainerIndex.cs" />
@@ -69,6 +77,8 @@
     <Compile Include="Memory\Value.cs" />
     <Compile Include="Deprecated\ProgramPoint.cs" />
     <Compile Include="Deprecated\ProgramPointGraph.cs" />
+    <Compile Include="ProgramPoint.cs" />
+    <Compile Include="ProgramPointGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
