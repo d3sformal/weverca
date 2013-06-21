@@ -39,23 +39,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisCallStack.cs" />
-    <Compile Include="AnalysisServices.cs" />
+    <Compile Include="Deprecated\AnalysisCallStack.cs" />
+    <Compile Include="Deprecated\AnalysisServices.cs" />
     <Compile Include="AssumptionCondition.cs" />
-    <Compile Include="CallAnalysisContext.cs" />
-    <Compile Include="CallDispatch.cs" />
-    <Compile Include="CallDispatchLevel.cs" />
+    <Compile Include="Deprecated\CallAnalysisContext.cs" />
+    <Compile Include="Deprecated\CallDispatch.cs" />
+    <Compile Include="Deprecated\CallDispatchLevel.cs" />
     <Compile Include="CallInfo.cs" />
     <Compile Include="Expressions\DeclarationResolver.cs" />
     <Compile Include="Expressions\ExpressionConverter.cs" />
     <Compile Include="Expressions\ExpressionEvaluator.cs" />
     <Compile Include="Expressions\PostfixExpression.cs" />
     <Compile Include="Expressions\StatementWalker.cs" />
-    <Compile Include="FlowControler.cs" />
-    <Compile Include="FlowInputSet.cs" />
-    <Compile Include="FlowOutputSet.cs" />
-    <Compile Include="ForwardAnalysis.cs" />
-    <Compile Include="ForwardAnalysisAbstract.cs" />
+    <Compile Include="Deprecated\FlowControler.cs" />
+    <Compile Include="Deprecated\FlowInputSet.cs" />
+    <Compile Include="Deprecated\FlowOutputSet.cs" />
+    <Compile Include="Deprecated\ForwardAnalysis.cs" />
+    <Compile Include="Deprecated\ForwardAnalysisAbstract.cs" />
     <Compile Include="IncludeDispatch.cs" />
     <Compile Include="Memory\AbstractSnapshot.cs" />
     <Compile Include="Memory\ContainerIndex.cs" />
@@ -67,8 +67,8 @@
     <Compile Include="Memory\SpecialValues.cs" />
     <Compile Include="Memory\StructuredValues.cs" />
     <Compile Include="Memory\Value.cs" />
-    <Compile Include="ProgramPoint.cs" />
-    <Compile Include="ProgramPointGraph.cs" />
+    <Compile Include="Deprecated\ProgramPoint.cs" />
+    <Compile Include="Deprecated\ProgramPointGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
