@@ -8,10 +8,21 @@ using PHP.Core.AST;
 
 namespace Weverca.Analysis.Expressions
 {
-    class ExpressionConverter:TreeVisitor
+    static class Converter
     {
-        PostfixExpression _collectedExpression=new PostfixExpression();
-        public PostfixExpression GetExpression()
+        static internal Postfix GetPostfix(LangElement element)
+        {
+            var visitor = new PostfixVisitorConverter();
+            element.VisitMe(visitor);
+
+            return visitor.GetExpression();
+        }
+    }
+
+    class PostfixVisitorConverter:TreeVisitor
+    {
+        Postfix _collectedExpression=new Postfix();
+        public Postfix GetExpression()
         {
             return _collectedExpression;
         }

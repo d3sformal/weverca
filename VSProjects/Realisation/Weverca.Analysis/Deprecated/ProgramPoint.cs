@@ -26,14 +26,14 @@ namespace Weverca.Analysis
         private List<ProgramPoint<FlowInfo>> _children = new List<ProgramPoint<FlowInfo>>();
         private List<ProgramPoint<FlowInfo>> _parents = new List<ProgramPoint<FlowInfo>>();
 
-        AssumptionCondition _condition;
+        AssumptionCondition_deprecated _condition;
         LangElement _statement;
 
         public readonly bool IsCondition;
         public readonly bool IsEmpty;
         public readonly BasicBlock OuterBlock;
 
-        public AssumptionCondition Condition
+        public AssumptionCondition_deprecated Condition
         {
             get
             {
@@ -55,7 +55,7 @@ namespace Weverca.Analysis
             }
         }
 
-        internal ProgramPoint(AssumptionCondition condition, BasicBlock outerBlock)
+        internal ProgramPoint(AssumptionCondition_deprecated condition, BasicBlock outerBlock)
         {
             _condition = condition;
             IsCondition = true;

@@ -6,14 +6,15 @@ using System.Text;
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.Analysis.Memory;
+
 namespace Weverca.Analysis
 {
     /// <summary>
     /// Set of FlowInfo used as input for statement analysis.
-    /// </summary>
-    /// <typeparam name="FlowInfo">Type of object which hold information collected during statement analysis.</typeparam>
+    /// </summary>    
     public class FlowInputSet
     {
-        
+        public ISnapshotReadonly Input { get; private set; }
     }
 }

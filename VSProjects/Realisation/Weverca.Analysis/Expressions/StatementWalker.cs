@@ -13,7 +13,7 @@ namespace Weverca.Analysis.Expressions
 
         ExpressionEvaluator<FlowInfo> _evaluator;
         DeclarationResolver<FlowInfo> _resolver;
-        PostfixExpression _expression;
+        Postfix _expression;
 
         int _position;
 
@@ -24,7 +24,7 @@ namespace Weverca.Analysis.Expressions
         public bool AwaitingCallReturn { get; private set; }
 
 
-        public StatementWalker(PostfixExpression expression, ExpressionEvaluator<FlowInfo> evaluator, DeclarationResolver<FlowInfo> resolver)
+        public StatementWalker(Postfix expression, ExpressionEvaluator<FlowInfo> evaluator, DeclarationResolver<FlowInfo> resolver)
         {
             _expression = expression;
             _evaluator = evaluator;

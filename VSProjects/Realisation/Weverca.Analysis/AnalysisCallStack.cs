@@ -31,6 +31,13 @@ namespace Weverca.Analysis
         /// </summary>        
         Stack<CallDispatchLevel> _callStack = new Stack<CallDispatchLevel>();
 
+        AnalysisServices _services;
+
+        public AnalysisCallStack(AnalysisServices services)
+        {
+            _services = services;
+        }
+
         /// <summary>
         /// Pushes context at top of call stack
         /// </summary>

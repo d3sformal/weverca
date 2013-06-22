@@ -81,7 +81,7 @@ namespace Weverca.Analysis
         /// <param name="condition">Assumption condition.</param>
         /// <param name="outSet">Output set after assumption.</param>
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        protected abstract bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition condition);
+        protected abstract bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition_deprecated condition);
 
         /// <summary>
         /// Represents method which merges inSets into outSet

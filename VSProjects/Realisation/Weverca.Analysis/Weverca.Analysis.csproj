@@ -41,11 +41,13 @@
   <ItemGroup>
     <Compile Include="AnalysisCallStack.cs" />
     <Compile Include="AnalysisCallContext.cs" />
+    <Compile Include="AnalysisServices.cs" />
     <Compile Include="CallDispatch.cs" />
     <Compile Include="CallDispatchLevel.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
     <Compile Include="AssumptionCondition.cs" />
+    <Compile Include="Deprecated\AssumptionCondition.cs" />
     <Compile Include="Deprecated\CallAnalysisContext.cs" />
     <Compile Include="Deprecated\CallDispatch.cs" />
     <Compile Include="Deprecated\CallDispatchLevel.cs" />

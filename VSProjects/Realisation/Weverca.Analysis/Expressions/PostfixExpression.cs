@@ -7,7 +7,7 @@ using PHP.Core.AST;
 
 namespace Weverca.Analysis.Expressions
 {
-    class PostfixExpression
+    public class Postfix
     {
         List<LangElement> _items = new List<LangElement>();
 

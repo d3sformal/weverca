@@ -85,7 +85,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         /// </summary>
         /// <param name="flow">Current input set of flow.</param>
         /// <param name="condition">Condition to be assumed.</param>
-        protected override void Assume(FlowControler<ValueInfo> flow, AssumptionCondition condition)
+        protected override void Assume(FlowControler<ValueInfo> flow, AssumptionCondition_deprecated condition)
         {
             if (condition.Parts.Count() == 1)
             {

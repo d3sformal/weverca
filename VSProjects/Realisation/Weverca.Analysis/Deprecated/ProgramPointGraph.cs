@@ -86,7 +86,7 @@ namespace Weverca.Analysis
 
         private ProgramPoint<FlowInfo> fromDefaultBranch(IEnumerable<Expression> conditionalExpressions,BasicBlock outerBlock)
         {
-            var assumption = new AssumptionCondition(ConditionForm.SomeNot, conditionalExpressions.ToArray());
+            var assumption = new AssumptionCondition_deprecated(ConditionForm.SomeNot, conditionalExpressions.ToArray());
             return fromCondition(assumption, outerBlock);
         }
 
@@ -98,11 +98,11 @@ namespace Weverca.Analysis
 
         private ProgramPoint<FlowInfo> fromCondition(Expression condition, BasicBlock outerBlock)
         {
-            var assumption = new AssumptionCondition(ConditionForm.All, condition);
+            var assumption = new AssumptionCondition_deprecated(ConditionForm.All, condition);
             return fromCondition(assumption, outerBlock);
         }
 
-        private ProgramPoint<FlowInfo> fromCondition(AssumptionCondition condition, BasicBlock outerBlock)
+        private ProgramPoint<FlowInfo> fromCondition(AssumptionCondition_deprecated condition, BasicBlock outerBlock)
         {            
             return getPoint(condition, () => new ProgramPoint<FlowInfo>(condition,outerBlock));
         }

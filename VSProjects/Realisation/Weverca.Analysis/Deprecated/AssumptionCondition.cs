@@ -7,35 +7,13 @@ using PHP.Core.AST;
 
 namespace Weverca.Analysis
 {
-    /// <summary>
-    /// Form of conjunction condition parts.
-    /// </summary>
-    public enum ConditionForm
-    {
-        /// <summary>
-        /// Any true part is enough.
-        /// </summary>
-        Some,
-        /// <summary>
-        /// All parts has to be true.
-        /// </summary>
-        All,
-        /// <summary>
-        /// None part can be true.
-        /// </summary>
-        None,
-        /// <summary>
-        /// Some part has to be false.
-        /// </summary>
-        SomeNot
-    }
 
     /// <summary>
     /// Represents assumption condition in program flow.
     /// NOTE: Overrides GetHashCode and Equals methods so they can be used in hash containers.
     /// WARNING: All empty conditions with same form returns true for Equals, with same hashocode.
     /// </summary>
-    public class AssumptionCondition
+    public class AssumptionCondition_deprecated
     {
         /// <summary>
         /// Form of condition parts joining.
@@ -44,11 +22,11 @@ namespace Weverca.Analysis
         /// <summary>
         /// Condition parts that are joined according to Form.
         /// </summary>
-        public readonly IEnumerable<Expressions.Postfix> Parts;
+        public readonly IEnumerable<Expression> Parts;
 
-        public AssumptionCondition(ConditionForm form, params Expression[] parts)
+        public AssumptionCondition_deprecated(ConditionForm form, params Expression[] parts)
         {
-            Parts = from part in parts select Expressions.Converter.GetPostfix(part);
+            Parts = parts;
             Form = form;
         }
 
@@ -64,11 +42,10 @@ namespace Weverca.Analysis
 
         public override bool Equals(object obj)
         {
-            var o = obj as AssumptionCondition;
+            var o = obj as AssumptionCondition_deprecated;
             if (o == null)
                 return false;
 
-            throw new NotImplementedException("Needs to be reimplemented");
             var sameCount = Parts.Count() == o.Parts.Count();
             var sameEls = !Parts.Except(o.Parts).Any();
             var sameForms = Form == o.Form;

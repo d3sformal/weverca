@@ -7,6 +7,7 @@ using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
 
 using Weverca.Analysis.Memory;
+using Weverca.Analysis.Expressions;
 
 namespace Weverca.Analysis
 {
@@ -15,25 +16,29 @@ namespace Weverca.Analysis
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
     public class ProgramPoint
-    {
-        /// <summary>
-        /// Snapshot provided by this program point
-        /// </summary>
-        internal AbstractSnapshot Snapshot { get; private set; }
-        
+    {        
         public IEnumerable<ProgramPoint> Children { get { return _children; } }
         public IEnumerable<ProgramPoint> Parents { get { return _parents; } }
-        
-        private List<ProgramPoint> _children = new List<ProgramPoint>();
-        private List<ProgramPoint> _parents = new List<ProgramPoint>();
 
-        AssumptionCondition _condition;
-        //TODO convert into POSTFIX representation
-        LangElement _statement;
+        public FlowInputSet InSet { get; private set; }
+        public FlowOutputSet OutSet { get; private set; }
 
         public readonly bool IsCondition;
         public readonly bool IsEmpty;
         public readonly BasicBlock OuterBlock;
+
+        private List<ProgramPoint> _children = new List<ProgramPoint>();
+        private List<ProgramPoint> _parents = new List<ProgramPoint>();
+
+        AssumptionCondition _condition;
+        
+
+        /// <summary>
+        /// Represented statement in postfix representation
+        /// </summary>
+        Postfix _statement;
+
+
 
         public AssumptionCondition Condition
         {
@@ -45,7 +50,7 @@ namespace Weverca.Analysis
             }
         }
 
-        public LangElement Statement
+        public Postfix Statement
         {
             get
             {
@@ -66,7 +71,7 @@ namespace Weverca.Analysis
 
         internal ProgramPoint(LangElement statement, BasicBlock outerBlock)
         {
-            _statement = statement;
+            _statement = Converter.GetPostfix(statement);
             OuterBlock = outerBlock;
         }
 
@@ -81,10 +86,14 @@ namespace Weverca.Analysis
             child._parents.Add(this);
         }
 
+        internal void Initialize(FlowInputSet startInput, FlowOutputSet startOutput)
+        {
+            throw new NotImplementedException();
+        }
 
-
-        public FlowInputSet InSet { get; set; }
-
-        public FlowOutputSet OutSet { get; set; }
+        internal void ResetChanges()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -21,7 +21,8 @@ namespace Weverca.Analysis
         /// Currently analyzed call stack.
         /// </summary>
         AnalysisCallStack _callStack;
-  
+
+        AnalysisServices _services;
 
         #endregion
 
@@ -44,7 +45,8 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         public ForwardAnalysis(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph)
-        {            
+        {
+            _services = new AnalysisServices(BlockMerge, createEmptySet, ConfirmAssumption);
             EntryMethodGraph = entryMethodGraph;
         }
 
@@ -109,14 +111,6 @@ namespace Weverca.Analysis
         /// <returns></returns>
         protected abstract void ReturnedFromCall(FlowInputSet callerInSet, FlowInputSet callOutput, FlowOutputSet outSet);
 
-        /// <summary>
-        /// Creates set without any stored information.
-        /// </summary>
-        /// <returns>New empty set.</returns>
-        protected virtual FlowOutputSet NewEmptySet()
-        {
-            return new FlowOutputSet();
-        }
 
         #endregion
 
@@ -127,9 +121,55 @@ namespace Weverca.Analysis
         /// </summary>
         private void analyse()
         {
+            checkAlreadyAnalysed();
+
+            _callStack = new AnalysisCallStack(_services);
+
+            var input = new FlowInputSet();
+            var entryDispatch = new CallDispatch(EntryMethodGraph.start, input);
+            var entryLevel = new CallDispatchLevel(entryDispatch,_services);
+
+            ProgramPointGraph = entryLevel.CurrentContext.ProgramPointGraph;
+
+            _callStack.Push(entryLevel);
+
+            while (!_callStack.IsEmpty)
+            {
+                var currentContext = _callStack.CurrentContext;
+                if (currentContext.IsComplete)
+                {
+                    //pop out empty context
+                    //TODO collect result of analysis 
+
+                    if (!_callStack.CurrentLevel.ShiftToNext())
+                    {
+                        var callResult = _callStack.CurrentLevel.GetResult();
+                        _callStack.Pop();
+                        handleCompletedCallDispatch(callResult);
+                    }
+                    continue;
+                }
+
+
+                flowThroughNextPartial(currentContext);
+                currentContext.ShiftNextPartial();
+            }
+        }
+
+        private void flowThroughNextPartial(AnalysisCallContext currentContext)
+        {
             throw new NotImplementedException();
         }
 
+        private void handleCompletedCallDispatch(AnalysisCallContext[] callResult)
+        {
+            throw new NotImplementedException();
+        }
+
+        private FlowOutputSet createEmptySet()
+        {
+            throw new NotImplementedException();
+        }
      
 
         #endregion

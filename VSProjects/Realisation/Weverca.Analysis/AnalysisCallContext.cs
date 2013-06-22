@@ -5,6 +5,7 @@ using System.Text;
 
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
+using Weverca.Analysis.Expressions;
 
 namespace Weverca.Analysis
 {
@@ -33,11 +34,15 @@ namespace Weverca.Analysis
         /// </summary>
         internal FlowOutputSet CurrentOutputSet { get { return _currentProgramPoint.OutSet; } }
 
-       
+
+        /// <summary>
+        /// Return partial from current statement that should be processed
+        /// </summary>
+        internal LangElement CurrentPartial { get { throw new NotImplementedException(); } }
         /// <summary>
         /// Current statement to analyze according to worklist algorithm.
         /// </summary>
-        internal LangElement CurrentStatement { get { return _currentProgramPoint.Statement; } }
+        internal Postfix CurrentStatement { get { return _currentProgramPoint.Statement; } }
 
         public ProgramPointGraph ProgramPointGraph { get { return _ppGraph; } }
 
@@ -59,13 +64,94 @@ namespace Weverca.Analysis
 
         BasicBlock _entryPoint;
         FlowInputSet _entryInSet;
+        AnalysisServices _services;
 
-        internal AnalysisCallContext(BasicBlock entryPoint, FlowInputSet entryInSet)
+        internal AnalysisCallContext(BasicBlock entryPoint, FlowInputSet entryInSet,AnalysisServices services)
         {
             _entryPoint = entryPoint;
-            _entryInSet = entryInSet;          
+            _entryInSet = entryInSet;
+            _services = services;
+
+            _ppGraph = initProgramPoints(entryInSet);
+
+            enqueueDependencies(_ppGraph.Start);
+            dequeueNextItem();
+        }
+        
+        internal void ShiftNextPartial()
+        {
+            throw new NotImplementedException();
         }
 
-     
+        private void dequeueNextItem()
+        {
+            while (_worklist.Count > 0)
+            {
+                var work = _worklist.Dequeue();
+
+                if (!work.IsEmpty)
+                {
+                    //program point that has to be processed                    
+                    var inputs = collectInputs(work);
+
+                    setInputs(work, inputs);
+                    _currentProgramPoint = work;
+                    return;
+                }
+            }
+            _currentProgramPoint = null;
+        }
+
+        private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
+        {
+            var inputSnapshots = from input in inputs select input.Input;
+            var workInput=(work.InSet as FlowOutputSet).Output;
+
+            workInput.Extend(inputSnapshots.ToArray());
+        }
+
+        
+
+        private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
+        {
+            return from parent in point.Parents select parent.OutSet;
+        }
+
+        private ProgramPointGraph initProgramPoints(FlowInputSet startInput)
+        {
+            var ppGraph = new ProgramPointGraph(_entryPoint);
+            
+            var startOutput=_services.CreateEmptySet();
+            startOutput.StartTransaction();
+            startOutput.Output.Extend(startInput.Input);
+            startOutput.Commit();
+
+            ppGraph.Start.Initialize(startInput, startOutput);
+            
+            return ppGraph;
+        }
+
+        private void enqueueDependencies(ProgramPoint point)
+        {
+            foreach (var child in point.Children)
+            {
+                addWork(child);
+            }
+            point.ResetChanges();
+        }
+
+        /// <summary>
+        /// Add edge's block to worklist, if isn't present yet
+        /// </summary>
+        /// <param name="edge"></param>
+        private void addWork(ProgramPoint work)
+        {
+            if (_worklist.Contains(work))
+            {
+                return;
+            }
+            _worklist.Enqueue(work);
+        }
+
     }
 }

@@ -6,15 +6,25 @@ using System.Text;
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.Analysis.Memory;
+
 namespace Weverca.Analysis
 {
     /// <summary>
-    /// Set of FlowInfo used as output from statement analysis.
-    /// NOTE: Provides API for call dispatching, type resolving and include dispatching.
+    /// Set of FlowInfo used as output from statement analysis.   
     /// </summary>
-    /// <typeparam name="FlowInfo">Type of object which hold information collected during statement analysis.</typeparam>
-    public class FlowOutputSet : FlowInputSet
+    public class FlowOutputSet :FlowInputSet
     {
-    
+        public ISnapshotReadWrite Output { get; private set; }
+
+        internal void Commit()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void StartTransaction()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

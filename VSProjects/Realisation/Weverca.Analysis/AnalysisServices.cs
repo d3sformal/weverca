@@ -14,7 +14,7 @@ namespace Weverca.Analysis
     /// <param name="inSet1">Input set to be merged into output</param>
     /// <param name="inSet2">Input set to be merged into output</param>
     /// <param name="outSet">Result of merging</param>
-    delegate void MergeDelegate<FlowInfo>(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet);
+    delegate void MergeDelegate(FlowInputSet inSet1, FlowInputSet inSet2, FlowOutputSet outSet);
     /// <summary>
     /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
     /// </summary>
@@ -22,25 +22,25 @@ namespace Weverca.Analysis
     /// <param name="flow">Controler that determine program flow.</param>
     /// <param name="condition">Assumption condition.</param>
     /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-    delegate bool ConfirmAssumptionDelegate<FlowInfo>(FlowControler<FlowInfo> flow, AssumptionCondition_deprecated condition);
+    delegate bool ConfirmAssumptionDelegate(FlowControler flow, AssumptionCondition condition);
     /// <summary>
     /// Represents method which creates empty flow info set.
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
     /// <returns>Empty flow info set</returns>
-    delegate FlowOutputSet<FlowInfo> EmptySetDelegate<FlowInfo>();
+    delegate FlowOutputSet EmptySetDelegate();
 
     /// <summary>
     /// Group of services that are provided by analysis object.
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
-    class AnalysisServices<FlowInfo>
+    class AnalysisServices
     {
-        internal readonly MergeDelegate<FlowInfo> Merge;
-        internal readonly EmptySetDelegate<FlowInfo> CreateEmptySet;
-        internal readonly ConfirmAssumptionDelegate<FlowInfo> ConfirmAssumption;
+        internal readonly MergeDelegate Merge;
+        internal readonly EmptySetDelegate CreateEmptySet;
+        internal readonly ConfirmAssumptionDelegate ConfirmAssumption;
 
-        public AnalysisServices(MergeDelegate<FlowInfo> merge, EmptySetDelegate<FlowInfo> emptySet, ConfirmAssumptionDelegate<FlowInfo> confirmAssumption)
+        public AnalysisServices(MergeDelegate merge, EmptySetDelegate emptySet, ConfirmAssumptionDelegate confirmAssumption)
         {
             Merge = merge;
             CreateEmptySet = emptySet;

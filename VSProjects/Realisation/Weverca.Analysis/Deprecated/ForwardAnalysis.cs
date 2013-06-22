@@ -43,7 +43,7 @@ namespace Weverca.Analysis
         }
 
 
-        protected override bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition condition)
+        protected override bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition_deprecated condition)
         {
             flow.FillOutputFromInSet();
             if (!condition.Parts.Any())
@@ -131,7 +131,7 @@ namespace Weverca.Analysis
 
         protected abstract FlowInfo ExtractReturnValue(FlowInputSet<FlowInfo> callOutput);
 
-        protected virtual void Assume(FlowControler<FlowInfo> inSet, AssumptionCondition condition)
+        protected virtual void Assume(FlowControler<FlowInfo> inSet, AssumptionCondition_deprecated condition)
         {
             //by default we won't assume anything
         }
@@ -197,9 +197,9 @@ namespace Weverca.Analysis
         }
 
 
-        private static PostfixExpression convertExpression(LangElement statement)
+        private static Postfix convertExpression(LangElement statement)
         {
-            var converter = new ExpressionConverter();
+            var converter = new PostfixVisitorConverter();
             statement.VisitMe(converter);
             var expression = converter.GetExpression();
             expression.Add(statement);
