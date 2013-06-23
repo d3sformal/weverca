@@ -17,6 +17,8 @@ namespace Weverca.Analysis
     {
         public ISnapshotReadWrite Output { get; private set; }
 
+        public bool HasChanges { get { throw new NotImplementedException("Read changes status from snapshot"); } }
+
         internal void Commit()
         {
             throw new NotImplementedException();
@@ -25,6 +27,6 @@ namespace Weverca.Analysis
         internal void StartTransaction()
         {
             throw new NotImplementedException();
-        }
+        }        
     }
 }

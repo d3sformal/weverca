@@ -3,33 +3,24 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
 using PHP.Core.AST;
+
+using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.Expressions
 {
-    public abstract class ExpressionEvaluator<FlowInfo>
+    public abstract class ExpressionEvaluator
     {
-
-        public FlowControler<FlowInfo> Flow{ get; private set; }
-
+        public FlowControler Flow{ get; private set; }
         public LangElement Element { get; internal set; }
 
-        abstract public FlowInfo Copy(FlowInfo info);
-        abstract public FlowInfo Assign(FlowInfo p1, FlowInfo p2);
-        abstract public FlowInfo Declare(DirectVarUse x);
-        abstract public FlowInfo BinaryEx(FlowInfo op1, Operations operation, FlowInfo op2);
-        abstract public FlowInfo StringLiteral(StringLiteral x);
+        abstract public void Assign(VariableName target, MemoryEntry value);
+        abstract public void Declare(DirectVarUse x);
+        abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
+        abstract public MemoryEntry StringLiteral(StringLiteral x);
 
-        public virtual FlowInfo ResolveVar(DirectVarUse x)
-        {
-            FlowInfo result;
-            Flow.InSet.TryGetInfo(x.VarName, out result);
-            return result;
-        }
-
-
-
-        internal void SetContext(FlowControler<FlowInfo> flow, LangElement element)
+        internal void SetContext(FlowControler flow, LangElement element)
         {
             Flow = flow;
             Element = element;

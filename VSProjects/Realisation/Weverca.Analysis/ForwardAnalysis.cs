@@ -6,6 +6,8 @@ using System.Text;
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
 
+using Weverca.Analysis.Expressions;
+
 namespace Weverca.Analysis
 {
     /// <summary>
@@ -24,6 +26,7 @@ namespace Weverca.Analysis
 
         AnalysisServices _services;
 
+        PartialWalker _walker;
         #endregion
 
         /// <summary>
@@ -48,6 +51,7 @@ namespace Weverca.Analysis
         {
             _services = new AnalysisServices(BlockMerge, createEmptySet, ConfirmAssumption);
             EntryMethodGraph = entryMethodGraph;
+            _walker = new PartialWalker(null, null);
         }
 
         /// <summary>
@@ -149,15 +153,17 @@ namespace Weverca.Analysis
                     }
                     continue;
                 }
-
-
+                
                 flowThroughNextPartial(currentContext);
-                currentContext.ShiftNextPartial();
+                currentContext.MoveNextPartial();
             }
         }
 
         private void flowThroughNextPartial(AnalysisCallContext currentContext)
         {
+            //TODO handle dispatching
+            var controller = new FlowControler(currentContext.CurrentInputSet, currentContext.CurrentOutputSet);
+            _walker.EvalNext(controller, currentContext.CurrentPartial);
             throw new NotImplementedException();
         }
 
