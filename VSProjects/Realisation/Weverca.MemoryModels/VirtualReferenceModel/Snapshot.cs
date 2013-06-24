@@ -223,6 +223,11 @@ namespace Weverca.VirtualReferenceModel
         {
             var info = getInfo(sourceVar);
 
+            if (info == null)
+            {
+                return UndefinedValueEntry;
+            }
+
             return resolveReferences(info.References);
         }
 
@@ -284,7 +289,14 @@ namespace Weverca.VirtualReferenceModel
         private VariableInfo getInfo(VariableName name)
         {
             ReportSimpleHashSearch();
-            return _variables[name];
+
+            VariableInfo info;
+            if (_variables.TryGetValue(name, out info))
+            {
+                return info;
+            }
+
+            return null;
         }
 
         private bool hasSameReferences(VariableInfo info, List<VirtualReference> references)

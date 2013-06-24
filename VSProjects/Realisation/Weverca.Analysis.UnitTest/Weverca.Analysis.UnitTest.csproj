@@ -50,9 +50,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="CFGTestUtils.cs" />
+    <Compile Include="AnalysisTestUtils.cs" />
+    <Compile Include="Deprecated_ForwardAnalysisTest.cs" />
     <Compile Include="ForwardAnalysisTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SimpleAnalysis.cs" />
     <Compile Include="StringAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>

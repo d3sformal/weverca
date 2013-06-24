@@ -5,6 +5,7 @@ using System.Text;
 
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
+using Weverca.Analysis.Memory;
 using Weverca.Analysis.Expressions;
 
 namespace Weverca.Analysis
@@ -32,11 +33,16 @@ namespace Weverca.Analysis
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
         internal FlowOutputSet CurrentOutputSet { get { return _currentPartialContext.OutSet; } }
-        
+
         /// <summary>
         /// Return partial from current statement that should be processed
         /// </summary>
         internal LangElement CurrentPartial { get { return _currentPartialContext.CurrentPartial; } }
+
+        /// <summary>
+        /// Current partial walker including partial stack - is recycled between statements
+        /// </summary>
+        internal PartialWalker CurrentWalker { get; private set; }
 
         /// <summary>
         /// Program point graph for entry method CFG
@@ -48,7 +54,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Program point graph for entry method CFG
         /// </summary>
-        ProgramPointGraph _ppGraph;      
+        ProgramPointGraph _ppGraph;
         /// <summary>
         /// Items that has to be processed.
         /// </summary>
@@ -60,31 +66,58 @@ namespace Weverca.Analysis
         FlowInputSet _entryInSet;
         AnalysisServices _services;
 
-        internal AnalysisCallContext(BasicBlock entryPoint, FlowInputSet entryInSet,AnalysisServices services)
+        internal AnalysisCallContext(BasicBlock entryPoint, FlowInputSet entryInSet, AnalysisServices services)
         {
             _entryPoint = entryPoint;
             _entryInSet = entryInSet;
             _services = services;
+
+            CurrentWalker = services.CreateWalker();
 
             _ppGraph = initProgramPoints(entryInSet);
 
             enqueueWorkDependencies(_ppGraph.Start);
             dequeueNextWorkItem();
         }
-        
-        internal void MoveNextPartial()
+
+        internal void NextPartial()
         {
             _currentPartialContext.MoveNextPartial();
             if (_currentPartialContext.IsComplete)
             {
-                if (_currentPartialContext.OutSet.HasChanges)
+                var completedProgramPoint = _currentPartialContext.Source;
+
+                if (completedProgramPoint.IsCondition)
                 {
-                    //enqueue dependencies, which input has changed
-                    enqueueWorkDependencies(_currentPartialContext.Source);
+                    conditionCompleted(completedProgramPoint, CurrentWalker.PopAllValues());
                 }
-                
+                else
+                {
+                    statementCompleted(completedProgramPoint);
+                }
+
                 //creates new partial context if possible
                 dequeueNextWorkItem();
+            }
+        }
+
+        private void statementCompleted(ProgramPoint statement)
+        {
+            if (!statement.OutSet.HasChanges)
+            {
+                //nothing changed - dependencies won't be affected
+                return;
+            }
+            //enqueue dependencies, which input has changed
+            enqueueWorkDependencies(statement);
+        }
+
+        private void conditionCompleted(ProgramPoint condition, MemoryEntry[] expressionParts)
+        {
+            if (_services.ConfirmAssumption(condition.Condition, expressionParts))
+            {
+                //assumption is made
+                enqueueWorkDependencies(condition);
             }
         }
 
@@ -93,13 +126,11 @@ namespace Weverca.Analysis
             while (_worklist.Count > 0)
             {
                 var work = _worklist.Dequeue();
+                
+                //we have program point that has to be processed                    
+                initWork(work);
+                return;
 
-                if (!work.IsEmpty)
-                {
-                    //we have program point that has to be processed                    
-                    initWork(work);
-                    return;
-                }
             }
             _currentPartialContext = null;
         }
@@ -108,21 +139,33 @@ namespace Weverca.Analysis
         {
             var inputs = collectInputs(work);
 
-            setInputs(work, inputs);            
+            setInputs(work, inputs);
             _currentPartialContext = new PartialContext(work);
+            CurrentWalker.Reset();
         }
 
         private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
         {
-            var inputSnapshots = from input in inputs select input.Input;
-            var workInput=(work.InSet as FlowOutputSet);
+            var inputSnapshots =
+                from input in inputs
+                where input.Input != null
+                select input.Input;
+
+            ensureInitialized(work);
+
+            var workInput = (work.InSet as FlowOutputSet);
 
             //TODO performance improvement
             workInput.StartTransaction();
             workInput.Output.Extend(inputSnapshots.ToArray());
-            workInput.Commit();
+            workInput.CommitTransaction();
         }
-        
+
+        private void ensureInitialized(ProgramPoint work)
+        {
+            work.Initialize(_services.CreateEmptySet(), _services.CreateEmptySet());
+        }
+
         private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
         {
             return from parent in point.Parents select parent.OutSet;
@@ -131,14 +174,15 @@ namespace Weverca.Analysis
         private ProgramPointGraph initProgramPoints(FlowInputSet startInput)
         {
             var ppGraph = new ProgramPointGraph(_entryPoint);
-            
-            var startOutput=_services.CreateEmptySet();
+
+            var startOutput = _services.CreateEmptySet();
             startOutput.StartTransaction();
             startOutput.Output.Extend(startInput.Input);
-            startOutput.Commit();
+            startOutput.CommitTransaction();
 
             ppGraph.Start.Initialize(startInput, startOutput);
-            
+
+
             return ppGraph;
         }
 

@@ -45,6 +45,12 @@ namespace Weverca.Analysis
         public void MoveNextPartial()
         {
             CurrentPartial = null;
+            if (_source.IsEmpty)
+            {
+                //nothing to move
+                return;
+            }
+
             do
             {
                 var postfix = getCurrentPostfix();
@@ -62,7 +68,7 @@ namespace Weverca.Analysis
 
             if (IsComplete)
             {
-                OutSet.Commit();
+                OutSet.CommitTransaction();
             }
         }
 
@@ -83,6 +89,10 @@ namespace Weverca.Analysis
 
         private LangElement getCurrentPartial()
         {
+            if (_source.IsEmpty)
+            {
+                return null;
+            }
             return getCurrentPostfix().GetElement(_postfixIndex);
         }
 

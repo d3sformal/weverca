@@ -6,10 +6,17 @@ using System.Text;
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
 
+using Weverca.Analysis.Memory;
 using Weverca.Analysis.Expressions;
 
 namespace Weverca.Analysis
 {
+    /// <summary>
+    /// Is used for creating snapshot during Analysis
+    /// </summary>
+    /// <returns>Created snapshot</returns>
+    public delegate AbstractSnapshot SnapshotProvider();
+
     /// <summary>
     /// Provide forward CFG analysis API.
     /// !!UNDER CONSTRUCTION, API CAN BE HEAVILY CHANGED!!
@@ -25,8 +32,10 @@ namespace Weverca.Analysis
         AnalysisCallStack _callStack;
 
         AnalysisServices _services;
+        ExpressionEvaluator _expressionEvaluator;
+        DeclarationResolver _declarationResolver;
+        SnapshotProvider _snapshotProvider;
 
-        PartialWalker _walker;
         #endregion
 
         /// <summary>
@@ -47,11 +56,14 @@ namespace Weverca.Analysis
         /// Create forward analysis object for given entry method graph.
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        public ForwardAnalysis(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph)
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, ExpressionEvaluator expressionEvaluator, DeclarationResolver declarationResolver,SnapshotProvider snapshotProvider)
         {
-            _services = new AnalysisServices(BlockMerge, createEmptySet, ConfirmAssumption);
+            _expressionEvaluator = expressionEvaluator;            
+            _declarationResolver = declarationResolver;
+            _snapshotProvider = snapshotProvider;
             EntryMethodGraph = entryMethodGraph;
-            _walker = new PartialWalker(null, null);
+
+            _services = new AnalysisServices(BlockMerge, createEmptySet, ConfirmAssumption,createWalker);
         }
 
         /// <summary>
@@ -83,7 +95,7 @@ namespace Weverca.Analysis
         /// <param name="condition">Assumption condition.</param>
         /// <param name="outSet">Output set after assumption.</param>
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        protected abstract bool ConfirmAssumption(FlowControler flow, AssumptionCondition condition);
+        protected abstract bool ConfirmAssumption(AssumptionCondition condition,MemoryEntry[] expressionParts);
 
         /// <summary>
         /// Represents method which merges inSets into outSet
@@ -105,6 +117,9 @@ namespace Weverca.Analysis
         /// <param name="inSets">Input sets from all dispatched includes.</param>
         /// <param name="outSet">Output after merging.</param>
         protected abstract void CallMerge(FlowInputSet inSet1, FlowInputSet inSet2, FlowOutputSet outSet);
+
+
+        protected abstract MemoryEntry ResolveReturnValue(ProgramPointGraph[] calls);
 
         /// <summary>
         /// When call dispatch is poped from stack, all dispatches are merged into one. Then ReturnFromCall 
@@ -129,7 +144,7 @@ namespace Weverca.Analysis
 
             _callStack = new AnalysisCallStack(_services);
 
-            var input = new FlowInputSet();
+            var input = createEmptySet() as FlowInputSet;
             var entryDispatch = new CallDispatch(EntryMethodGraph.start, input);
             var entryLevel = new CallDispatchLevel(entryDispatch,_services);
 
@@ -142,41 +157,64 @@ namespace Weverca.Analysis
                 var currentContext = _callStack.CurrentContext;
                 if (currentContext.IsComplete)
                 {
-                    //pop out empty context
-                    //TODO collect result of analysis 
-
+                                                   
                     if (!_callStack.CurrentLevel.ShiftToNext())
                     {
-                        var callResult = _callStack.CurrentLevel.GetResult();
-                        _callStack.Pop();
-                        handleCompletedCallDispatch(callResult);
+                        //we can't move to next context in current level
+                        popCallStack();
                     }
                     continue;
                 }
                 
+                //NOTE: Can modify callStack - use currentContext for moving to nextPartial
                 flowThroughNextPartial(currentContext);
-                currentContext.MoveNextPartial();
+                currentContext.NextPartial();
+            }
+        }
+
+        private void popCallStack()
+        {
+            var callResult = _callStack.CurrentLevel.GetResult();
+            _callStack.Pop();
+                        
+            if (!_callStack.IsEmpty)
+            {
+                //push return value into wolker
+                var returnValue = getReturnValue(callResult);
+                _callStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
             }
         }
 
         private void flowThroughNextPartial(AnalysisCallContext currentContext)
-        {
-            //TODO handle dispatching
+        {            
             var controller = new FlowControler(currentContext.CurrentInputSet, currentContext.CurrentOutputSet);
-            _walker.EvalNext(controller, currentContext.CurrentPartial);
-            throw new NotImplementedException();
+            currentContext.CurrentWalker.Eval(controller, currentContext.CurrentPartial);
+
+            if (controller.HasCallDispatch)
+            {
+                var dispatchLevel = new CallDispatchLevel(controller.CallDispatches, _services);
+                _callStack.Push(dispatchLevel);
+            }
         }
 
-        private void handleCompletedCallDispatch(AnalysisCallContext[] callResult)
+        private MemoryEntry getReturnValue(AnalysisCallContext[] callResults)
         {
-            throw new NotImplementedException();
+            var calls = from callResult in callResults select callResult.ProgramPointGraph;
+
+            var returnValue = ResolveReturnValue(calls.ToArray());
+
+            return returnValue;
         }
 
         private FlowOutputSet createEmptySet()
         {
-            throw new NotImplementedException();
+            return new FlowOutputSet(_snapshotProvider());
         }
-     
+
+        private PartialWalker createWalker()
+        {
+            return new PartialWalker(_expressionEvaluator,_declarationResolver);
+        }
 
         #endregion
 

@@ -19,6 +19,7 @@ namespace Weverca.Analysis.Expressions
         abstract public void Declare(DirectVarUse x);
         abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
         abstract public MemoryEntry StringLiteral(StringLiteral x);
+        abstract public MemoryEntry ResolveVariable(VariableName variable);
 
         internal void SetContext(FlowControler flow, LangElement element)
         {

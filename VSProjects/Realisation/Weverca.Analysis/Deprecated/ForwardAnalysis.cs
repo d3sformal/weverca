@@ -30,8 +30,6 @@ namespace Weverca.Analysis
 
         protected override void FlowThrough(FlowControler<FlowInfo> flow, LangElement statement)
         {
-
-
             var walker = tryPush(statement);
             if (walker.AtStart)
             {
@@ -199,10 +197,7 @@ namespace Weverca.Analysis
 
         private static Postfix convertExpression(LangElement statement)
         {
-            var converter = new PostfixVisitorConverter();
-            statement.VisitMe(converter);
-            var expression = converter.GetExpression();
-            expression.Add(statement);
+            var expression=Converter.GetPostfix(statement);
             return expression;
         }
 

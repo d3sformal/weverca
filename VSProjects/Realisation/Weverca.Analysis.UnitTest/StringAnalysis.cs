@@ -10,7 +10,7 @@ using PHP.Core.AST;
 using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
 
-namespace Weverca.ControlFlowGraph.UnitTest
+namespace Weverca.Analysis.UnitTest
 {
     /// <summary>
     /// Simple string analysis implementation which demonstrates usege of ForwardAnalysis of CFG.
@@ -22,7 +22,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         /// Creates analysis object for given entryMethod. Uses SimpleEvaluator and SimpleResolver for computations.
         /// </summary>
         /// <param name="entryMethod"></param>
-        public StringAnalysis(ControlFlowGraph entryMethod)
+        public StringAnalysis(ControlFlowGraph.ControlFlowGraph entryMethod)
             : base(entryMethod, new SimpleEvaluator(), new SimpleResolver(entryMethod))
         {
         }
@@ -160,8 +160,8 @@ namespace Weverca.ControlFlowGraph.UnitTest
     /// </summary>
     class SimpleResolver : DeclarationResolver<ValueInfo>
     {
-        ControlFlowGraph _entryCFG;
-        public SimpleResolver(ControlFlowGraph entryCFG)
+        ControlFlowGraph.ControlFlowGraph _entryCFG;
+        public SimpleResolver(ControlFlowGraph.ControlFlowGraph entryCFG)
         {
             _entryCFG = entryCFG;
         }
@@ -202,7 +202,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         /// </summary>
         /// <param name="function">Function which entry point is needed.</param>
         /// <returns>BasicBlock which is entry point for given function.</returns>
-        public override BasicBlock GetEntryPoint(FunctionDecl function)
+        public override ControlFlowGraph.BasicBlock GetEntryPoint(FunctionDecl function)
         {
             return _entryCFG.GetBasicBlock(function);
         }

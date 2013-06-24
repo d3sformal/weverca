@@ -15,6 +15,13 @@ namespace Weverca.Analysis
     /// </summary>    
     public class FlowInputSet
     {
-        public ISnapshotReadonly Input { get; private set; }
+        protected internal AbstractSnapshot _snapshot;
+
+        public ISnapshotReadonly Input { get { return _snapshot; } }
+
+        internal FlowInputSet(AbstractSnapshot snapshot)
+        {
+            _snapshot = snapshot;
+        }
     }
 }

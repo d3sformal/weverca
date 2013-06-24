@@ -13,20 +13,34 @@ namespace Weverca.Analysis
     /// <summary>
     /// Set of FlowInfo used as output from statement analysis.   
     /// </summary>
-    public class FlowOutputSet :FlowInputSet
+    public class FlowOutputSet : FlowInputSet
     {
-        public ISnapshotReadWrite Output { get; private set; }
+        public ISnapshotReadWrite Output { get { return _snapshot; } }
 
-        public bool HasChanges { get { throw new NotImplementedException("Read changes status from snapshot"); } }
+        public bool HasChanges { get; private set; }
+        
 
-        internal void Commit()
+        internal FlowOutputSet(AbstractSnapshot snapshot) :
+            base(snapshot)
         {
-            throw new NotImplementedException();
+            //because new snapshot has been initialized
+            HasChanges = true; 
+        }
+
+        internal void CommitTransaction()
+        {
+            _snapshot.CommitTransaction();
+            HasChanges = _snapshot.HasChanged;
         }
 
         internal void StartTransaction()
         {
-            throw new NotImplementedException();
-        }        
+            _snapshot.StartTransaction();
+        }
+
+        internal void ResetChanges()
+        {
+            HasChanges = false;
+        }
     }
 }

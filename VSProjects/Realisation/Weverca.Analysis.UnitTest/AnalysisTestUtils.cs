@@ -5,23 +5,25 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core; 
 
 using Weverca.Parsers;
+using Weverca.Analysis.Memory;
 
-namespace Weverca.ControlFlowGraph.UnitTest
+namespace Weverca.Analysis.UnitTest
 {
-    static class CFGTestUtils
+    static class AnalysisTestUtils
     {
-        static internal ControlFlowGraph CreateCFG(string code)
+        static internal ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
         {
             var fileName="./cfg_test.php";
             var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
             code = "<?php \n" + code + "?>";
             var parser=new SyntaxParser(sourceFile,code);
             parser.Parse();
-            var cfg = new ControlFlowGraph(parser.Ast);
+            var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
 
             return cfg;
         }
@@ -67,12 +69,30 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
         static internal ValueInfo[] GetEndPointInfo(string code)
         {
-            var cfg = CFGTestUtils.CreateCFG(code);
+            var cfg = AnalysisTestUtils.CreateCFG(code);
             var analysis = new StringAnalysis(cfg);
             analysis.Analyse();
             var list=new List<ValueInfo>(analysis.ProgramPointGraph.End.OutSet.CollectedInfo);
             return list.ToArray();
         }
+
+        static internal AbstractSnapshot GetEndPointSnapshot(string code)
+        {
+            var cfg = AnalysisTestUtils.CreateCFG(code);
+            var analysis = new SimpleAnalysis(cfg);
+            analysis.Analyse();
+
+            return analysis.ProgramPointGraph.End.OutSet.Output as AbstractSnapshot;
+        }
         
+        static internal void AssertVariable<T>(this AbstractSnapshot snapshot, string variableName,string message,params T[] expectedValues)            
+        {
+            var entry=snapshot.ReadValue(new VariableName(variableName));
+
+            var actualValues = (from PrimitiveValue<T> value in entry.PossibleValues select value.Value ).ToArray();
+
+            CollectionAssert.AreEquivalent(expectedValues, actualValues,message);
+            
+        }    
     }
 }

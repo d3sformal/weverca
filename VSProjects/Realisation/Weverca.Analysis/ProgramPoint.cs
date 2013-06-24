@@ -22,13 +22,14 @@ namespace Weverca.Analysis
 
         public FlowInputSet InSet { get; private set; }
         public FlowOutputSet OutSet { get; private set; }
-
+                
         public readonly bool IsCondition;
         public readonly bool IsEmpty;
         public readonly BasicBlock OuterBlock;
 
         private List<ProgramPoint> _children = new List<ProgramPoint>();
         private List<ProgramPoint> _parents = new List<ProgramPoint>();
+        private bool _isInitialized;
 
         AssumptionCondition _condition;
         
@@ -62,6 +63,7 @@ namespace Weverca.Analysis
             }
         }
 
+        #region ProgramPoint graph building methods
         internal ProgramPoint(AssumptionCondition condition, BasicBlock outerBlock)
         {
             _condition = condition;
@@ -86,14 +88,22 @@ namespace Weverca.Analysis
             child._parents.Add(this);
         }
 
-        internal void Initialize(FlowInputSet startInput, FlowOutputSet startOutput)
+        #endregion
+
+        internal void Initialize(FlowInputSet input, FlowOutputSet output)
         {
-            throw new NotImplementedException();
+            if (_isInitialized)
+            {
+                throw new NotSupportedException("Initialization can be run only once");
+            }
+            _isInitialized = true;
+            InSet = input;
+            OutSet = output;
         }
 
         internal void ResetChanges()
         {
-            throw new NotImplementedException();
-        }
+            OutSet.ResetChanges();
+        }        
     }
 }

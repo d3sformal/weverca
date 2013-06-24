@@ -10,20 +10,26 @@ namespace Weverca.Analysis.Expressions
 {
     static class Converter
     {
+        static PostfixVisitorConverter _visitor=new PostfixVisitorConverter();
+
         static internal Postfix GetPostfix(LangElement element)
         {
-            var visitor = new PostfixVisitorConverter();
-            element.VisitMe(visitor);
-
-            return visitor.GetExpression();
+            return _visitor.GetExpression(element);
         }
     }
 
     class PostfixVisitorConverter:TreeVisitor
     {
-        Postfix _collectedExpression=new Postfix();
-        public Postfix GetExpression()
+        Postfix _collectedExpression;
+             
+
+        public Postfix GetExpression(LangElement element)
         {
+            _collectedExpression = new Postfix(element);
+            element.VisitMe(this);
+
+            //element where VisitMe is called is not traversed
+            addItem(element);
             return _collectedExpression;
         }
         
