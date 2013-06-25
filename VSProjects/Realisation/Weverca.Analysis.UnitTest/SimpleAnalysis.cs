@@ -105,7 +105,8 @@ namespace Weverca.Analysis.UnitTest
         /// </summary>
         Dictionary<string, NativeAnalyzer> _nativeAnalyzers = new Dictionary<string, NativeAnalyzer>()
         {
-            {"strtolower",new NativeAnalyzer(_strtolower)}
+            {"strtolower",new NativeAnalyzer(_strtolower)},
+            {"concat",new NativeAnalyzer(_concat)}
         };
 
         /// <summary>
@@ -174,6 +175,27 @@ namespace Weverca.Analysis.UnitTest
 
 
             flow.OutSet.Assign(flow.OutSet.ReturnValue,new MemoryEntry(possibleValues.ToArray()));
+        }
+
+
+        private static void _concat(FlowControler flow)
+        {
+            var arg0 = flow.InSet.ReadValue(flow.InSet.Argument(0));
+            var arg1 = flow.InSet.ReadValue(flow.InSet.Argument(1));
+
+            var possibleValues = new List<StringValue>();
+
+            foreach (StringValue possible0 in arg0.PossibleValues)
+            {
+                foreach (StringValue possible1 in arg1.PossibleValues)
+                {
+                    possibleValues.Add(flow.OutSet.CreateString(possible0.Value + possible1.Value));
+                }
+               
+            }
+
+
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
         }
         #endregion
     }

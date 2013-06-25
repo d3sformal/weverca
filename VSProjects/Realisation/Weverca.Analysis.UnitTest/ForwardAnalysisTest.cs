@@ -22,6 +22,11 @@ if($unknown){
 $call_result=strtolower('TEST');
 ";
 
+readonly static string NativeCallProcessing2Arguments_CODE = @"
+$call_result=concat('A','B');
+";
+
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -43,5 +48,19 @@ $call_result=strtolower('TEST');
                  "test"
                  );
         }
+
+        [TestMethod]
+        public void NativeCallProcessing2Arguments()
+        {
+            var outSet = AnalysisTestUtils.GetEndPointOutSet(NativeCallProcessing2Arguments_CODE);
+
+             outSet.AssertVariable<string>(
+                  "call_result", "Processing native concat call",
+                  "AB"
+                  );
+        }
+
+
+
     }
 }
