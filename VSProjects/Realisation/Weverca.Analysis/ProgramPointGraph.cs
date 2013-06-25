@@ -124,8 +124,12 @@ namespace Weverca.Analysis
             return result;
         }
 
-
-
         
+        public static ProgramPointGraph ForNative(NativeAnalyzer analyzer)
+        {
+            var basicBlock = new BasicBlock();
+            basicBlock.AddElement(analyzer);
+            return new ProgramPointGraph(basicBlock);
+        }
     }
 }

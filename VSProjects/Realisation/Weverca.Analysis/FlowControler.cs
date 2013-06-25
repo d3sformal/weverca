@@ -12,24 +12,24 @@ namespace Weverca.Analysis
         public readonly FlowInputSet InSet;
         public readonly FlowOutputSet OutSet;
         public bool HasCallDispatch { get { return _dispatches.Count > 0; } }
-        public IEnumerable<CallDispatch> CallDispatches { get { return _dispatches; } }
+        public IEnumerable<CallInfo> CallDispatches { get { return _dispatches; } }
 
-        private List<CallDispatch> _dispatches;
+        private List<CallInfo> _dispatches;
 
         public FlowControler(FlowInputSet inSet,FlowOutputSet outSet)
         {
-            _dispatches= new List<CallDispatch>();
+            _dispatches= new List<CallInfo>();
             InSet = inSet;
             OutSet = outSet;
         }
 
 
-        public void AddDispatch(CallDispatch dispatch)
+        public void AddDispatch(CallInfo dispatch)
         {
             _dispatches.Add(dispatch);
         }
 
-        public void AddDispatch(IEnumerable<CallDispatch> dispatches)
+        public void AddDispatch(IEnumerable<CallInfo> dispatches)
         {
             _dispatches.AddRange(dispatches);
         }

@@ -10,20 +10,7 @@ using Weverca.Analysis.Expressions;
 
 namespace Weverca.Analysis
 {
-    /// <summary>
-    /// Represents method which merges inSets into outSet
-    /// </summary>
-    /// <typeparam name="FlowInfo"></typeparam>
-    /// <param name="inSet1">Input set to be merged into output</param>
-    /// <param name="inSet2">Input set to be merged into output</param>
-    /// <param name="outSet">Result of merging</param>
-    delegate void MergeDelegate(FlowInputSet inSet1, FlowInputSet inSet2, FlowOutputSet outSet);
-    /// <summary>
-    /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
-    /// </summary>        
-    /// <param name="condition">Assumption condition.</param>
-    /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-    delegate bool ConfirmAssumptionDelegate(AssumptionCondition condition,MemoryEntry[] expressionParts);
+   
     /// <summary>
     /// Represents method which creates empty flow info set.
     /// </summary>
@@ -39,17 +26,27 @@ namespace Weverca.Analysis
     /// <typeparam name="FlowInfo"></typeparam>
     class AnalysisServices
     {
-        internal readonly MergeDelegate Merge;
-        internal readonly EmptySetDelegate CreateEmptySet;
-        internal readonly ConfirmAssumptionDelegate ConfirmAssumption;
+        private FlowResolver _flowResolver;
+
+        internal readonly EmptySetDelegate CreateEmptySet;        
         internal readonly WalkerCreatorDelegate CreateWalker;
 
-        public AnalysisServices(MergeDelegate merge, EmptySetDelegate emptySet, ConfirmAssumptionDelegate confirmAssumption, WalkerCreatorDelegate createWalker)
+        public AnalysisServices(EmptySetDelegate emptySet,WalkerCreatorDelegate createWalker, FlowResolver flowResolver)
         {
-            Merge = merge;
-            CreateEmptySet = emptySet;
-            ConfirmAssumption = confirmAssumption;
+            CreateEmptySet = emptySet;            
             CreateWalker = createWalker;
-        }     
+
+            _flowResolver = flowResolver;
+        }
+
+        internal bool ConfirmAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
+        {
+            return _flowResolver.ConfirmAssumption(condition, expressionParts);
+        }
+
+        internal void FlowThrough(ProgramPoint programPoint)
+        {
+            _flowResolver.FlowThrough(programPoint);
+        }
     }
 }

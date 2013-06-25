@@ -38,8 +38,10 @@ namespace Weverca.Analysis.Memory
         /// Undefined value singleton
         /// </summary>
         private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
-
-
+        /// <summary>
+        /// singleton variable where return value is stored
+        /// </summary>
+        private static readonly VariableName _returnValue = new VariableName(".return");
         /// <summary>
         /// Any value memory entry singleton
         /// </summary>
@@ -67,6 +69,9 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         public bool HasChanged { get; private set; }
 
+        
+
+
 
         #region Template methods - API for implementors
 
@@ -90,10 +95,9 @@ namespace Weverca.Analysis.Memory
         protected abstract AliasValue createAlias(VariableName sourceVar);
         /// <summary>
         /// Create snapshot that will be used for call invoked from given info
-        /// </summary>
-        /// <param name="callInfo">Info of invoked call</param>
+        /// </summary>        
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        protected abstract AbstractSnapshot createCall(CallInfo callInfo);
+        protected abstract AbstractSnapshot createCall(MemoryEntry ThisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Assign memory entry into targetVar        
         /// </summary>
@@ -290,16 +294,26 @@ namespace Weverca.Analysis.Memory
 
         /// <summary>
         /// Create snapshot that will be used for call invoked from given info
-        /// </summary>
-        /// <param name="callInfo">Info of invoked call</param>
+        /// NOTE:
+        ///     Returned snapshot is extension of current snapshot with defined arguments
+        /// </summary>        
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        public AbstractSnapshot CreateCall(CallInfo callInfo)
+        internal AbstractSnapshot CreateCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
+            _statistics.CreatedCallSnapshots++;
+           var snapshot= createCall(ThisObject, arguments);
 
-            var result = createCall(callInfo);
-            ++_statistics.CreatedCallSnapshots;
-            return result;
+           snapshot.StartTransaction();
+           for (int i = 0; i < arguments.Length; ++i)
+           {
+               var argVar = Argument(i);
+
+               snapshot.Assign(argVar, arguments[i]);
+           }
+           snapshot.CommitTransaction();
+
+           return snapshot;
         }
         #endregion
 
@@ -310,6 +324,17 @@ namespace Weverca.Analysis.Memory
 
         public MemoryEntry AnyValueEntry { get { return _anyValueEntry; } }
         public MemoryEntry UndefinedValueEntry { get { return _undefinedValueEntry; } }
+        public VariableName ReturnValue { get { return _returnValue; } }
+
+        public VariableName Argument(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+
+            return new VariableName(".arg"+index);
+        }
 
         public StringValue CreateString(string literal)
         {
@@ -494,11 +519,5 @@ namespace Weverca.Analysis.Memory
             }
         }
         #endregion
-
-
-
-
-
-
     }
 }

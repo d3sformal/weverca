@@ -15,9 +15,10 @@ namespace Weverca.Analysis.Expressions
         Stack<object> _valueStack = new Stack<object>();
 
         ExpressionEvaluator _evaluator;
-        DeclarationResolver _resolver;
+        FunctionResolver _resolver;
+        FlowControler _currentControler;
 
-        public PartialWalker(ExpressionEvaluator evaluator, DeclarationResolver resolver)
+        public PartialWalker(ExpressionEvaluator evaluator, FunctionResolver resolver)
         {
             _evaluator = evaluator;
             _resolver = resolver;
@@ -25,16 +26,16 @@ namespace Weverca.Analysis.Expressions
 
         internal void Eval(FlowControler flow, LangElement partial)
         {
-            flow.OutSet.Output.Extend(flow.InSet.Input);
+            flow.OutSet.Extend(flow.InSet);
 
             if (partial == null)
             {
                 return;
             }
 
+            _currentControler = flow;
             _evaluator.SetContext(flow, partial);
-            _resolver.SetContext(flow, partial);
-
+          
             partial.VisitMe(this);
         }
  
@@ -97,6 +98,22 @@ namespace Weverca.Analysis.Expressions
         {
             _valueStack.Push(variable);
         }
+
+        private List<MemoryEntry> getArguments(CallSignature signature)
+        {
+
+            var parCount = signature.Parameters.Count;
+
+            List<MemoryEntry> parameters = new List<MemoryEntry>();
+            for (int i = 0; i < parCount; ++i)
+            {
+                //TODO maybe no all parameters has to be present
+                parameters.Add(popValue());
+            }
+            parameters.Reverse();
+            return parameters;
+        }
+
         #endregion
 
         #region TreeVisitor  overrides
@@ -127,7 +144,15 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-            throw new NotImplementedException();
+            var arguments = getArguments(x.CallSignature);
+            var name = x.QualifiedName;
+
+            //Result value won't be popped, because it's directly inserted from analysis
+            var callInput = _currentControler.OutSet.CreateCall(null, arguments.ToArray());            
+            var methodGraph=_resolver.InitializeCall(callInput, name);
+
+            var info = new CallInfo(callInput, methodGraph);
+            _currentControler.AddDispatch(info);
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
@@ -139,25 +164,17 @@ namespace Weverca.Analysis.Expressions
         {
             throw new NotImplementedException();
         }
+
+        public override void VisitActualParam(ActualParam x)
+        {
+            //TODO what is its stack behaviour ?
+        }
         #endregion
 
-        private List<MemoryEntry> getParameters(CallSignature signature)
+        
+        internal void VisitNative(NativeAnalyzer nativeAnalyzer)
         {
-
-            var parCount = signature.Parameters.Count;
-
-            List<MemoryEntry> parameters = new List<MemoryEntry>();
-            for (int i = 0; i < parCount; ++i)
-            {
-                //TODO maybe no all parameters has to be present
-                parameters.Add(popValue());
-            }
-            parameters.Reverse();
-            return parameters;
+            nativeAnalyzer.Method(_currentControler);
         }
-
-
-
-       
     }
 }

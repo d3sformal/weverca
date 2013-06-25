@@ -48,7 +48,7 @@ namespace Weverca.MemoryModel
             return new AliasValue(sourceVar);
         }
 
-        protected override AbstractSnapshot createCall(CallInfo callInfo)
+        protected override AbstractSnapshot createCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }

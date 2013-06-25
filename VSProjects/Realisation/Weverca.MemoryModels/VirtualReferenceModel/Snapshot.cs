@@ -100,9 +100,11 @@ namespace Weverca.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
-        protected override AbstractSnapshot createCall(CallInfo callInfo)
+        protected override AbstractSnapshot createCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
         {
-            throw new NotImplementedException();
+            //TODO implement
+
+            return new Snapshot();
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)

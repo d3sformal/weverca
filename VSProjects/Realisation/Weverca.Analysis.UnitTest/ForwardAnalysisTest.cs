@@ -18,15 +18,30 @@ if($unknown){
 }
 ";
 
+        readonly static string NativeCallProcessing_CODE = @"
+$call_result=strtolower('TEST');
+";
+
         [TestMethod]
         public void BranchMerge()
         {
-            var snapshot = AnalysisTestUtils.GetEndPointSnapshot(ParallelBlock_CODE);
+            var outSet = AnalysisTestUtils.GetEndPointOutSet(ParallelBlock_CODE);
             
-            snapshot.AssertVariable<string>(
-                "str","Merging branches failed",
+            outSet.AssertVariable<string>(
+                "str","Merging if branches",
                 "f1a","f1b"
                 );
+        }
+
+        [TestMethod]
+        public void NativeCallProcessing()
+        {
+             var outSet = AnalysisTestUtils.GetEndPointOutSet(NativeCallProcessing_CODE);
+
+             outSet.AssertVariable<string>(
+                 "call_result","Processing native strtolower call",
+                 "test"
+                 );
         }
     }
 }

@@ -42,7 +42,7 @@
     <Compile Include="AnalysisCallStack.cs" />
     <Compile Include="AnalysisCallContext.cs" />
     <Compile Include="AnalysisServices.cs" />
-    <Compile Include="CallDispatch.cs" />
+    <Compile Include="CallInfo.cs" />
     <Compile Include="CallDispatchLevel.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
@@ -51,9 +51,10 @@
     <Compile Include="Deprecated\CallAnalysisContext.cs" />
     <Compile Include="Deprecated\CallDispatch.cs" />
     <Compile Include="Deprecated\CallDispatchLevel.cs" />
-    <Compile Include="CallInfo.cs" />
+    <Compile Include="CallResult.cs" />
     <Compile Include="Deprecated\DeclarationResolver.cs" />
-    <Compile Include="Expressions\DeclarationResolver.cs" />
+    <Compile Include="Expressions\FlowResolver.cs" />
+    <Compile Include="Expressions\FunctionResolver.cs" />
     <Compile Include="Expressions\ExpressionConverter.cs" />
     <Compile Include="Deprecated\ExpressionEvaluator.cs" />
     <Compile Include="Expressions\ExpressionEvaluator.cs" />
@@ -82,6 +83,7 @@
     <Compile Include="Memory\Value.cs" />
     <Compile Include="Deprecated\ProgramPoint.cs" />
     <Compile Include="Deprecated\ProgramPointGraph.cs" />
+    <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="PartialContext.cs" />
     <Compile Include="ProgramPoint.cs" />
     <Compile Include="ProgramPointGraph.cs" />

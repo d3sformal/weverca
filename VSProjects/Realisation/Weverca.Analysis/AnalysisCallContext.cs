@@ -47,14 +47,14 @@ namespace Weverca.Analysis
         /// <summary>
         /// Program point graph for entry method CFG
         /// </summary>
-        internal ProgramPointGraph ProgramPointGraph { get { return _ppGraph; } }
+        internal ProgramPointGraph ProgramPointGraph { get { return _methodGraph; } }
 
         #endregion
 
         /// <summary>
         /// Program point graph for entry method CFG
         /// </summary>
-        ProgramPointGraph _ppGraph;
+        ProgramPointGraph _methodGraph;
         /// <summary>
         /// Items that has to be processed.
         /// </summary>
@@ -62,21 +62,21 @@ namespace Weverca.Analysis
 
         PartialContext _currentPartialContext;
 
-        BasicBlock _entryPoint;
+    
         FlowInputSet _entryInSet;
         AnalysisServices _services;
 
-        internal AnalysisCallContext(BasicBlock entryPoint, FlowInputSet entryInSet, AnalysisServices services)
+        internal AnalysisCallContext(FlowInputSet entryInSet,ProgramPointGraph methodGraph, AnalysisServices services)
         {
-            _entryPoint = entryPoint;
             _entryInSet = entryInSet;
             _services = services;
 
             CurrentWalker = services.CreateWalker();
 
-            _ppGraph = initProgramPoints(entryInSet);
+            initializeProgramPointGraph(methodGraph, entryInSet);
+            _methodGraph = methodGraph;
 
-            enqueueWorkDependencies(_ppGraph.Start);
+            enqueueWorkDependencies(_methodGraph.Start);
             dequeueNextWorkItem();
         }
 
@@ -142,22 +142,19 @@ namespace Weverca.Analysis
             setInputs(work, inputs);
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
+
+            _services.FlowThrough(work);
         }
 
         private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
         {
-            var inputSnapshots =
-                from input in inputs
-                where input.Input != null
-                select input.Input;
-
             ensureInitialized(work);
 
             var workInput = (work.InSet as FlowOutputSet);
 
             //TODO performance improvement
             workInput.StartTransaction();
-            workInput.Output.Extend(inputSnapshots.ToArray());
+            workInput.Extend(inputs.ToArray());
             workInput.CommitTransaction();
         }
 
@@ -171,20 +168,7 @@ namespace Weverca.Analysis
             return from parent in point.Parents select parent.OutSet;
         }
 
-        private ProgramPointGraph initProgramPoints(FlowInputSet startInput)
-        {
-            var ppGraph = new ProgramPointGraph(_entryPoint);
-
-            var startOutput = _services.CreateEmptySet();
-            startOutput.StartTransaction();
-            startOutput.Output.Extend(startInput.Input);
-            startOutput.CommitTransaction();
-
-            ppGraph.Start.Initialize(startInput, startOutput);
-
-
-            return ppGraph;
-        }
+     
 
         private void enqueueWorkDependencies(ProgramPoint point)
         {
@@ -208,5 +192,14 @@ namespace Weverca.Analysis
             _worklist.Enqueue(work);
         }
 
+        private void initializeProgramPointGraph(ProgramPointGraph ppGraph,FlowInputSet startInput)
+        {
+            var startOutput = _services.CreateEmptySet();
+            startOutput.StartTransaction();
+            startOutput.Extend(startInput);
+            startOutput.CommitTransaction();
+
+            ppGraph.Start.Initialize(startInput, startOutput);
+        }
     }
 }

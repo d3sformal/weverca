@@ -49,11 +49,6 @@ namespace Weverca.ControlFlowGraph.UnitTest
             //reverse assign of param aliasses
         }
 
-        public AbstractSnapshot ProcessCall(AbstractSnapshot caller,CallInfo callInfo)
-        {
-            return caller.CreateCall(callInfo);
-        }
-
         public void ProcessConcat(ISnapshotReadWrite output, ISnapshotReadonly input,MemoryEntry value1,MemoryEntry value2)
         {
             foreach (var val1 in value1.PossibleValues)

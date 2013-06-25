@@ -10,14 +10,14 @@ namespace Weverca.Analysis
         public AnalysisCallContext CurrentContext { get; private set; }
 
         private int _position;
-        private readonly CallDispatch[] _dispatches;
+        private readonly CallInfo[] _dispatches;
 
         private List<AnalysisCallContext> _result = new List<AnalysisCallContext>();
 
 
         AnalysisServices _services;
 
-        public CallDispatchLevel(IEnumerable<CallDispatch> dispatches,AnalysisServices services)
+        public CallDispatchLevel(IEnumerable<CallInfo> dispatches,AnalysisServices services)
         {
             _dispatches = dispatches.ToArray();
             _services = services;
@@ -25,8 +25,8 @@ namespace Weverca.Analysis
             setCurrentDispatch(_position);
         }
 
-        public CallDispatchLevel(CallDispatch dispatch,AnalysisServices services)
-            : this(new CallDispatch[] { dispatch },services)
+        public CallDispatchLevel(CallInfo dispatch,AnalysisServices services)
+            : this(new CallInfo[] { dispatch },services)
         {
         }
 
@@ -58,9 +58,9 @@ namespace Weverca.Analysis
 
         }
 
-        private AnalysisCallContext createContext(CallDispatch dispatch)
+        private AnalysisCallContext createContext(CallInfo dispatch)
         {
-            var context = new AnalysisCallContext(dispatch.EntryPoint, dispatch.InSet,_services);
+            var context = new AnalysisCallContext(dispatch.InSet,dispatch.MethodGraph,_services);
             return context;
         }
     }

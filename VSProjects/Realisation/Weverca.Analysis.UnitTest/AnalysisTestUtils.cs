@@ -76,18 +76,18 @@ namespace Weverca.Analysis.UnitTest
             return list.ToArray();
         }
 
-        static internal AbstractSnapshot GetEndPointSnapshot(string code)
+        static internal FlowOutputSet GetEndPointOutSet(string code)
         {
             var cfg = AnalysisTestUtils.CreateCFG(code);
             var analysis = new SimpleAnalysis(cfg);
             analysis.Analyse();
 
-            return analysis.ProgramPointGraph.End.OutSet.Output as AbstractSnapshot;
+            return analysis.ProgramPointGraph.End.OutSet;
         }
         
-        static internal void AssertVariable<T>(this AbstractSnapshot snapshot, string variableName,string message,params T[] expectedValues)            
+        static internal void AssertVariable<T>(this FlowOutputSet outset, string variableName,string message,params T[] expectedValues)            
         {
-            var entry=snapshot.ReadValue(new VariableName(variableName));
+            var entry=outset.ReadValue(new VariableName(variableName));
 
             var actualValues = (from PrimitiveValue<T> value in entry.PossibleValues select value.Value ).ToArray();
 

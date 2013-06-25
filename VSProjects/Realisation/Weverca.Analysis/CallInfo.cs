@@ -4,25 +4,30 @@ using System.Linq;
 using System.Text;
 
 using PHP.Core.AST;
+
+using Weverca.ControlFlowGraph;
+
 using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis
 {
-    public class CallInfo
-    {
-        public readonly FunctionDecl CalledFunction;
-        public readonly MemoryEntry[] Arguments;
-    }
 
-    public class CallResult
+    /// <summary>
+    /// Represents dispatch to call
+    /// </summary>
+    public  class CallInfo
     {
+        public readonly FlowInputSet InSet;
         /// <summary>
-        /// Call was initiated with given info
+        /// Graph used for method analyzing - can be shared between multiple calls
         /// </summary>
-        public readonly CallInfo CallInfo;
-        /// <summary>
-        /// Return value of call
-        /// </summary>
-        public readonly MemoryEntry ReturnValue;
+        public readonly ProgramPointGraph MethodGraph;
+ 
+
+        public CallInfo(FlowInputSet inSet, ProgramPointGraph methodGraph)
+        {            
+            InSet = inSet;
+            MethodGraph = methodGraph;
+        }
     }
 }

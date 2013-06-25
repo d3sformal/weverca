@@ -13,15 +13,28 @@ namespace Weverca.Analysis
     /// <summary>
     /// Set of FlowInfo used as input for statement analysis.
     /// </summary>    
-    public class FlowInputSet
+    public class FlowInputSet : ISnapshotReadonly
     {
         protected internal AbstractSnapshot _snapshot;
 
-        public ISnapshotReadonly Input { get { return _snapshot; } }
+
 
         internal FlowInputSet(AbstractSnapshot snapshot)
         {
             _snapshot = snapshot;
+        }
+
+
+        public VariableName ReturnValue { get { return _snapshot.ReturnValue; } }
+
+        public VariableName Argument(int index)
+        {
+            return _snapshot.Argument(index);
+        }
+
+        public MemoryEntry ReadValue(VariableName sourceVar)
+        {
+            return _snapshot.ReadValue(sourceVar);
         }
     }
 }

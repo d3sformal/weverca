@@ -33,8 +33,9 @@ namespace Weverca.Analysis
 
         AnalysisServices _services;
         ExpressionEvaluator _expressionEvaluator;
-        DeclarationResolver _declarationResolver;
-        SnapshotProvider _snapshotProvider;
+        FunctionResolver _functionResolver;
+        FlowResolver _flowResolver;
+        
 
         #endregion
 
@@ -50,20 +51,15 @@ namespace Weverca.Analysis
         /// <summary>
         /// Control flow graph of method which is entry point of analysis.
         /// </summary>
-        public Weverca.ControlFlowGraph.ControlFlowGraph EntryMethodGraph { get; private set; }
+        public Weverca.ControlFlowGraph.ControlFlowGraph EntryCFG { get; private set; }
 
         /// <summary>
         /// Create forward analysis object for given entry method graph.
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, ExpressionEvaluator expressionEvaluator, DeclarationResolver declarationResolver,SnapshotProvider snapshotProvider)
-        {
-            _expressionEvaluator = expressionEvaluator;            
-            _declarationResolver = declarationResolver;
-            _snapshotProvider = snapshotProvider;
-            EntryMethodGraph = entryMethodGraph;
-
-            _services = new AnalysisServices(BlockMerge, createEmptySet, ConfirmAssumption,createWalker);
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
+        {           
+            EntryCFG = entryMethodGraph;            
         }
 
         /// <summary>
@@ -72,64 +68,20 @@ namespace Weverca.Analysis
         public void Analyse()
         {
             checkAlreadyAnalysed();
+            initialize();
             analyse();
             IsAnalysed = true;
         }
 
-        #region Available API for analysis handling
+        #region Template methods for obtaining resolvers
 
-        public FlowInputSet LastCallOutput { get; private set; }
+        protected abstract ExpressionEvaluator createExpressionEvaluator();
 
-        /// <summary>
-        /// Analyze given statement. 
-        /// </summary>
-        /// <param name="inSet">Information available before given statement.</param>
-        /// <param name="statement">Statement which can add new information.</param>
-        /// <param name="outSet">Output information which is known after statement analysis.</param>
-        protected abstract void FlowThrough(FlowControler flow, LangElement statement);
-        /// <summary>
-        /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
-        /// </summary>
-        /// <typeparam name="FlowInfo"></typeparam>
-        /// <param name="inSet">Input set which is available before assumption</param>
-        /// <param name="condition">Assumption condition.</param>
-        /// <param name="outSet">Output set after assumption.</param>
-        /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        protected abstract bool ConfirmAssumption(AssumptionCondition condition,MemoryEntry[] expressionParts);
+        protected abstract FlowResolver createFlowResolver();
 
-        /// <summary>
-        /// Represents method which merges inSets into outSet
-        /// </summary>
-        /// <typeparam name="FlowInfo"></typeparam>
-        /// <param name="inSet1">Input set to be merged into output</param>
-        /// <param name="inSet2">Input set to be merged into output</param>
-        /// <param name="outSet">Result of merging</param>
-        protected abstract void BlockMerge(FlowInputSet inSet1, FlowInputSet inSet2, FlowOutputSet outSet);
-        /// <summary>
-        /// All dispatched includes are merged via this call.        
-        /// </summary>
-        /// <param name="inSets">Input sets from all dispatched includes.</param>
-        /// <param name="outSet">Output after merging.</param>
-        protected abstract void IncludeMerge(IEnumerable<FlowInputSet> inSets, FlowOutputSet outSet);
-        /// <summary>
-        /// All dispatched calls are merged via this call.        
-        /// </summary>
-        /// <param name="inSets">Input sets from all dispatched includes.</param>
-        /// <param name="outSet">Output after merging.</param>
-        protected abstract void CallMerge(FlowInputSet inSet1, FlowInputSet inSet2, FlowOutputSet outSet);
+        protected abstract FunctionResolver createFunctionResolver();
 
-
-        protected abstract MemoryEntry ResolveReturnValue(ProgramPointGraph[] calls);
-
-        /// <summary>
-        /// When call dispatch is poped from stack, all dispatches are merged into one. Then ReturnFromCall 
-        /// </summary>
-        /// <param name="callerInSet"></param>
-        /// <param name="callOutput"></param>
-        /// <param name="outSet"></param>
-        /// <returns></returns>
-        protected abstract void ReturnedFromCall(FlowInputSet callerInSet, FlowInputSet callOutput, FlowOutputSet outSet);
-
+        protected abstract AbstractSnapshot createSnapshot();
 
         #endregion
 
@@ -145,19 +97,18 @@ namespace Weverca.Analysis
             _callStack = new AnalysisCallStack(_services);
 
             var input = createEmptySet() as FlowInputSet;
-            var entryDispatch = new CallDispatch(EntryMethodGraph.start, input);
+            ProgramPointGraph = new ProgramPointGraph(EntryCFG.start);
+
+            var entryDispatch = new CallInfo(input,ProgramPointGraph);
             var entryLevel = new CallDispatchLevel(entryDispatch,_services);
-
-            ProgramPointGraph = entryLevel.CurrentContext.ProgramPointGraph;
-
+            
             _callStack.Push(entryLevel);
 
             while (!_callStack.IsEmpty)
             {
                 var currentContext = _callStack.CurrentContext;
                 if (currentContext.IsComplete)
-                {
-                                                   
+                {                                                   
                     if (!_callStack.CurrentLevel.ShiftToNext())
                     {
                         //we can't move to next context in current level
@@ -201,24 +152,38 @@ namespace Weverca.Analysis
         {
             var calls = from callResult in callResults select callResult.ProgramPointGraph;
 
-            var returnValue = ResolveReturnValue(calls.ToArray());
+            var returnValue = _functionResolver.ResolveReturnValue(calls.ToArray());
 
             return returnValue;
         }
 
         private FlowOutputSet createEmptySet()
         {
-            return new FlowOutputSet(_snapshotProvider());
+            return new FlowOutputSet(createSnapshot());
         }
 
         private PartialWalker createWalker()
         {
-            return new PartialWalker(_expressionEvaluator,_declarationResolver);
+            return new PartialWalker(_expressionEvaluator,_functionResolver);
         }
+
+   
 
         #endregion
 
         #region Private utilities
+
+        /// <summary>
+        /// Initialize all resolvers and services
+        /// </summary>
+        private void initialize()
+        {
+            _expressionEvaluator=createExpressionEvaluator();
+            _flowResolver=createFlowResolver();
+            _functionResolver=createFunctionResolver();
+
+            _services = new AnalysisServices(createEmptySet,  createWalker,_flowResolver);
+        }
 
         /// <summary>
         /// Throws exception when analyze has been already proceeded
