@@ -119,6 +119,11 @@ namespace Weverca.Analysis.Expressions
         #region TreeVisitor  overrides
         public override void VisitAssignEx(AssignEx x)
         {
+            throw new NotImplementedException();
+        }
+
+        public override void VisitValueAssignEx(ValueAssignEx x)
+        {
             var value = popValue();
             var variable = popVariable();
             _evaluator.Assign(variable, value);
