@@ -136,7 +136,9 @@ namespace Weverca.Analysis.UnitTest
         /// <summary>
         /// Initialize call into callInput. 
         /// 
-        /// NOTE: arguments are already initialized
+        /// NOTE: 
+        ///     arguments are already initialized
+        ///     sharing program point graphs is possible
         /// </summary>
         /// <param name="callInput"></param>
         /// <param name="name"></param>
@@ -147,7 +149,7 @@ namespace Weverca.Analysis.UnitTest
         
             if (_nativeAnalyzers.TryGetValue(name.Name.Value,out analyzer))
             {
-                //we have native analyzer - create it's program point (NOTE: sharing program points is possible)
+                //we have native analyzer - create it's program point 
                 return ProgramPointGraph.ForNative(analyzer);
             }
             else

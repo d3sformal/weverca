@@ -99,7 +99,7 @@ namespace Weverca.Analysis.Expressions
             _valueStack.Push(variable);
         }
 
-        private List<MemoryEntry> getArguments(CallSignature signature)
+        private List<MemoryEntry> popArguments(CallSignature signature)
         {
 
             var parCount = signature.Parameters.Count;
@@ -149,15 +149,16 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-            var arguments = getArguments(x.CallSignature);
+            var arguments = popArguments(x.CallSignature);
             var name = x.QualifiedName;
-
-            //Result value won't be popped, because it's directly inserted from analysis
+                        
             var callInput = _currentControler.OutSet.CreateCall(null, arguments.ToArray());            
             var methodGraph=_resolver.InitializeCall(callInput, name);
 
             var info = new CallInfo(callInput, methodGraph);
             _currentControler.AddDispatch(info);
+
+            //Result value won't be pushed, because it's directly inserted from analysis
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
