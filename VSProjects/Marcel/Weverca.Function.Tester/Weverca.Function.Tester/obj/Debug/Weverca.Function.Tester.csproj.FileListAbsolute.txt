@@ -1,6 +1,0 @@
-C:\Users\maki\Documents\Visual Studio 2012\Projects\weverca\trunk\VSProjects\Marcel\Weverca.Function.Tester\Weverca.Function.Tester\bin\Debug\Weverca.Function.Tester.exe.config
-C:\Users\maki\Documents\Visual Studio 2012\Projects\weverca\trunk\VSProjects\Marcel\Weverca.Function.Tester\Weverca.Function.Tester\bin\Debug\Weverca.Function.Tester.exe
-C:\Users\maki\Documents\Visual Studio 2012\Projects\weverca\trunk\VSProjects\Marcel\Weverca.Function.Tester\Weverca.Function.Tester\bin\Debug\Weverca.Function.Tester.pdb
-C:\Users\maki\Documents\Visual Studio 2012\Projects\weverca\trunk\VSProjects\Marcel\Weverca.Function.Tester\Weverca.Function.Tester\obj\Debug\Weverca.Function.Tester.csprojResolveAssemblyReference.cache
-C:\Users\maki\Documents\Visual Studio 2012\Projects\weverca\trunk\VSProjects\Marcel\Weverca.Function.Tester\Weverca.Function.Tester\obj\Debug\Weverca.Function.Tester.exe
-C:\Users\maki\Documents\Visual Studio 2012\Projects\weverca\trunk\VSProjects\Marcel\Weverca.Function.Tester\Weverca.Function.Tester\obj\Debug\Weverca.Function.Tester.pdb
