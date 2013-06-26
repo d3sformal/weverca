@@ -91,8 +91,7 @@ namespace Weverca.Analysis.Memory
         /// Merge given call output with current context.
         /// WARNING: Call can change many objects via references (they don't has to be in global context)
         /// </summary>
-        /// <param name="callOutput">Output snapshot of call</param>
-        /// <param name="result">Result of merged call</param>
-        void MergeWithCall(CallResult result, ISnapshotReadonly callOutput);
+        /// <param name="callOutputs">Output snapshot of call</param>    
+        void MergeWithCallLevel(params ISnapshotReadonly[] callOutputs);
     }
 }

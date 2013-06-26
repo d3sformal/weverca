@@ -41,11 +41,11 @@ namespace Weverca.ControlFlowGraph.UnitTest
             output.Extend(inputs);
         }
 
-        public void MergeWithCall(ISnapshotReadWrite output, ISnapshotReadonly input,CallResult callResult, ISnapshotReadonly callOutput)
+        public void MergeWithCall(ISnapshotReadWrite output, ISnapshotReadonly input,ISnapshotReadonly callOutput)
         {
             output.Extend(input);
             //process call
-            output.MergeWithCall(callResult,callOutput);
+            output.MergeWithCallLevel(callOutput);
             //reverse assign of param aliasses
         }
 

@@ -13,12 +13,36 @@ namespace Weverca.Analysis
 
     public class ProgramPointGraph
     {
-        Dictionary<object, ProgramPoint> _points = new Dictionary<object, ProgramPoint>();
+        /// <summary>
+        /// Program points according to their defining objects (conditions, statements,..)
+        /// </summary>
+        private Dictionary<object, ProgramPoint> _points = new Dictionary<object, ProgramPoint>();
+        /// <summary>
+        /// Points from where program point graph is invoked
+        /// Here can be multiple points because of shared program point graphs
+        /// </summary>
+        private HashSet<ProgramPoint> _invocationPoints = new HashSet<ProgramPoint>();
 
-        internal IEnumerable<ProgramPoint> Points { get { return _points.Values; } }
+        /// <summary>
+        /// All program points defined in program point graph
+        /// </summary>
+        public IEnumerable<ProgramPoint> Points { get { return _points.Values; } }
+
+
+        /// <summary>
+        /// Input program point into program point graph
+        /// </summary>
         public readonly ProgramPoint Start;
+        /// <summary>
+        /// Output program point from program point graph
+        /// </summary>
         public readonly ProgramPoint End;
 
+        /// <summary>
+        /// All program points from where was this program point graph invoked
+        /// </summary>
+        public IEnumerable<ProgramPoint> InvocationPoints { get { return _invocationPoints; } }
+        
         internal ProgramPointGraph(BasicBlock entryPoint)
         {
             Start = empty(entryPoint);
@@ -45,6 +69,30 @@ namespace Weverca.Analysis
             {
                 endPoint.AddChild(End);
             }
+        }
+
+        /// <summary>
+        /// Creates program point graph for native analyzer
+        /// </summary>
+        /// <param name="analyzer">Native analyzer</param>
+        /// <returns>Created program point graph</returns>
+        public static ProgramPointGraph ForNative(NativeAnalyzer analyzer)
+        {
+            var basicBlock = new BasicBlock();
+            basicBlock.AddElement(analyzer);
+            return new ProgramPointGraph(basicBlock);
+        }
+
+        internal void RemoveInvocationPoint(ProgramPoint invocationPoint)
+        {
+            invocationPoint.RemoveInvokedGraph(this);
+            _invocationPoints.Remove(invocationPoint);
+        }
+
+        internal void AddInvocationPoint(ProgramPoint invocationPoint)
+        {
+            invocationPoint.AddInvokedGraph(this);
+            _invocationPoints.Add(invocationPoint);
         }
 
         private void addChildren(ProgramPoint parent, BasicBlock block)
@@ -124,12 +172,6 @@ namespace Weverca.Analysis
             return result;
         }
 
-        
-        public static ProgramPointGraph ForNative(NativeAnalyzer analyzer)
-        {
-            var basicBlock = new BasicBlock();
-            basicBlock.AddElement(analyzer);
-            return new ProgramPointGraph(basicBlock);
-        }
+
     }
 }

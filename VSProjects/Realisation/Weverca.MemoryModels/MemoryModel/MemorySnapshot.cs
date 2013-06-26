@@ -96,7 +96,7 @@ namespace Weverca.MemoryModel
             throw new NotImplementedException();
         }
 
-        protected override void mergeWithCall(CallResult result, ISnapshotReadonly callOutput)
+        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
         {
             throw new NotImplementedException();
         }

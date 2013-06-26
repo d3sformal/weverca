@@ -18,7 +18,7 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="possibleFunctionNames"></param>
         /// <returns></returns>
-        public abstract string[] GetFunctionNames(MemoryEntry possibleFunctionNames);
+        public abstract QualifiedName[] GetFunctionNames(MemoryEntry possibleFunctionNames);
 
 
         public abstract ProgramPointGraph InitializeCall(FlowOutputSet callInput, QualifiedName name);

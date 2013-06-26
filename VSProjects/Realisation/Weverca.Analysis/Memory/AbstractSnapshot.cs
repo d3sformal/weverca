@@ -121,9 +121,8 @@ namespace Weverca.Analysis.Memory
         /// Merge given call output with current context.
         /// WARNING: Call can change many objects via references (they don't has to be in global context)
         /// </summary>
-        /// <param name="callOutput">Output snapshot of call</param>
-        /// <param name="result">Result of merged call</param>
-        protected abstract void mergeWithCall(CallResult result, ISnapshotReadonly callOutput);
+        /// <param name="callOutputs">Output snapshots of call level</param>        
+        protected abstract void mergeWithCallLevel(ISnapshotReadonly[] callOutputs);
         /// <summary>
         /// Read value stored in snapshot for sourceVar
         /// </summary>
@@ -474,11 +473,11 @@ namespace Weverca.Analysis.Memory
             ++_statistics.SnapshotExtendings;
         }
 
-        public void MergeWithCall(CallResult result, ISnapshotReadonly callOutput)
+        public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             checkCanUpdate();
-            mergeWithCall(result, callOutput);
-            ++_statistics.WithCallMerges;
+            mergeWithCallLevel(callOutputs);
+            ++_statistics.CallLevelMerges;
         }
 
         public MemoryEntry ReadValue(VariableName sourceVar)

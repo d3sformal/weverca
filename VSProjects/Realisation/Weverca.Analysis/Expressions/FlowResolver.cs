@@ -18,7 +18,7 @@ namespace Weverca.Analysis.Expressions
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
         public abstract bool ConfirmAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts);
 
-        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, FlowOutputSet[] callsOutputs);
+        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs);
 
         public virtual void FlowThrough(ProgramPoint programPoint)
         {

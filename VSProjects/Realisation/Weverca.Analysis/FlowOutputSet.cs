@@ -126,21 +126,15 @@ namespace Weverca.Analysis
         /// <param name="inputs"></param>
         public void Extend(params ISnapshotReadonly[] inputs)
         {
-            var converted = new AbstractSnapshot[inputs.Length];
+            var snapshots = getSnapshots(inputs);
 
-            //we need pass wrapped snapshots into extend call
-            for (int i = 0; i < inputs.Length; ++i)
-            {
-                converted[i] = getSnapshot(inputs[i] as FlowInputSet);
-            }
-
-            _snapshot.Extend(converted);
+            _snapshot.Extend(snapshots);
         }
 
-        public void MergeWithCall(CallResult result, ISnapshotReadonly callOutput)
+        public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
-            var snapshotOutput = getSnapshot(callOutput as FlowInputSet);
-            _snapshot.MergeWithCall(result, snapshotOutput);
+            var snapshots=getSnapshots(callOutputs);
+            _snapshot.MergeWithCallLevel(snapshots);
         }
 
         #endregion
@@ -149,6 +143,19 @@ namespace Weverca.Analysis
 
 
         #region Private helpers
+
+        private AbstractSnapshot[] getSnapshots(ISnapshotReadonly[] inputs)
+        {
+            var converted = new AbstractSnapshot[inputs.Length];
+
+            //we need pass wrapped snapshots into extend call
+            for (int i = 0; i < inputs.Length; ++i)
+            {
+                converted[i] = getSnapshot(inputs[i] as FlowInputSet);
+            }
+            return converted;
+        }
+
         private AbstractSnapshot getSnapshot(FlowInputSet input)
         {
             return input._snapshot;

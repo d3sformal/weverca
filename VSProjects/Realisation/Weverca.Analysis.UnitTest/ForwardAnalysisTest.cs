@@ -9,58 +9,67 @@ namespace Weverca.Analysis.UnitTest
     [TestClass]
     public class ForwardAnalysisTest
     {
-        readonly static string ParallelBlock_CODE = @"
+        readonly static TestCase ParallelBlock_CASE = @"
 $str='f1';
 if($unknown){
     $str='f1a';
 }else{
     $str='f1b';
 }
-";
+".AssertVariable("str").HasValues("f1a", "f1b");
 
-        readonly static string NativeCallProcessing_CODE = @"
+        readonly static TestCase NativeCallProcessing_CASE = @"
 $call_result=strtolower('TEST');
-";
-
-readonly static string NativeCallProcessing2Arguments_CODE = @"
+".AssertVariable("call_result").HasValues("test");
+        
+        readonly static TestCase NativeCallProcessing2Arguments_CASE = @"
 $call_result=concat('A','B');
-";
+".AssertVariable("call_result").HasValues("AB");
+
+        readonly static TestCase IndirectCall_CASE = @"
+$call_name='strtolower';
+$call_result=$call_name('TEST');
+".AssertVariable("call_result").HasValues("test");
+
+        readonly static TestCase BranchedIndirectCall_CASE = @"
+if($unknown){
+    $call_name='strtolower';
+}else{
+    $call_name='strtoupper';
+}
+$call_result=$call_name('TEst');
+".AssertVariable("call_result").HasValues("TEST","test");
 
 
         [TestMethod]
         public void BranchMerge()
         {
-            var outSet = AnalysisTestUtils.GetEndPointOutSet(ParallelBlock_CODE);
-            
-            outSet.AssertVariable<string>(
-                "str","Merging if branches",
-                "f1a","f1b"
-                );
+            AnalysisTestUtils.RunTestCase(ParallelBlock_CASE);
         }
 
         [TestMethod]
         public void NativeCallProcessing()
         {
-             var outSet = AnalysisTestUtils.GetEndPointOutSet(NativeCallProcessing_CODE);
-
-             outSet.AssertVariable<string>(
-                 "call_result","Processing native strtolower call",
-                 "test"
-                 );
+            AnalysisTestUtils.RunTestCase(NativeCallProcessing_CASE);
         }
 
         [TestMethod]
         public void NativeCallProcessing2Arguments()
         {
-            var outSet = AnalysisTestUtils.GetEndPointOutSet(NativeCallProcessing2Arguments_CODE);
-
-             outSet.AssertVariable<string>(
-                  "call_result", "Processing native concat call",
-                  "AB"
-                  );
+            AnalysisTestUtils.RunTestCase(NativeCallProcessing2Arguments_CASE);
         }
 
+        [TestMethod]
+        public void IndirectCall()
+        {
+            AnalysisTestUtils.RunTestCase(IndirectCall_CASE);
+        }
 
+        [TestMethod]
+        public void BranchedIndirectCall()
+        {
+            AnalysisTestUtils.RunTestCase(BranchedIndirectCall_CASE);
+        }
 
     }
 }

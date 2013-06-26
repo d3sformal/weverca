@@ -16,7 +16,7 @@ namespace Weverca.Analysis.Memory
         public int AliasAssigns;
         public int MemoryEntryAssigns;
         public int SnapshotExtendings;
-        public int WithCallMerges;
+        public int CallLevelMerges;
         public int ValueReads;
         public int CreatedCallSnapshots;
         public int CreatedStringValues;

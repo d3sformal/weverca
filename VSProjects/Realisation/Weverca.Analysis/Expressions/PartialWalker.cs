@@ -99,7 +99,7 @@ namespace Weverca.Analysis.Expressions
             _valueStack.Push(variable);
         }
 
-        private List<MemoryEntry> popArguments(CallSignature signature)
+        private MemoryEntry[] popArguments(CallSignature signature)
         {
 
             var parCount = signature.Parameters.Count;
@@ -111,7 +111,7 @@ namespace Weverca.Analysis.Expressions
                 parameters.Add(popValue());
             }
             parameters.Reverse();
-            return parameters;
+            return parameters.ToArray();
         }
 
         #endregion
@@ -151,19 +151,25 @@ namespace Weverca.Analysis.Expressions
         {
             var arguments = popArguments(x.CallSignature);
             var name = x.QualifiedName;
-                        
-            var callInput = _currentControler.OutSet.CreateCall(null, arguments.ToArray());            
-            var methodGraph=_resolver.InitializeCall(callInput, name);
 
-            var info = new CallInfo(callInput, methodGraph);
-            _currentControler.AddDispatch(info);
+            addDispatch(name, arguments);
 
             //Result value won't be pushed, because it's directly inserted from analysis
         }
 
+
+
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
-            throw new NotImplementedException();
+            var arguments = popArguments(x.CallSignature);
+            var functionNameValue = popValue();
+
+            var names = _resolver.GetFunctionNames(functionNameValue);
+
+            foreach (var name in names)
+            {
+                addDispatch(name, arguments);
+            }
         }
       
         public override void VisitFunctionDecl(FunctionDecl x)
@@ -181,6 +187,15 @@ namespace Weverca.Analysis.Expressions
         internal void VisitNative(NativeAnalyzer nativeAnalyzer)
         {
             nativeAnalyzer.Method(_currentControler);
+        }
+
+        private void addDispatch(QualifiedName name, MemoryEntry[] arguments)
+        {
+            var callInput = _currentControler.OutSet.CreateCall(null, arguments);
+            var methodGraph = _resolver.InitializeCall(callInput, name);
+
+            var info = new CallInfo(callInput, methodGraph);
+            _currentControler.AddDispatch(info);            
         }
     }
 }

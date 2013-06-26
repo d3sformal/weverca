@@ -130,10 +130,24 @@ namespace Weverca.Analysis
                         
             if (!_callStack.IsEmpty)
             {
-                //push return value into wolker
+                mergeCallResult(_callStack.CurrentContext, callResult);
+
+                //push return value into walker
                 var returnValue = getReturnValue(callResult);
                 _callStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
             }
+        }
+
+        private void mergeCallResult(AnalysisCallContext currentContext, AnalysisCallContext[] callResults)
+        {
+            var callPPGraphs=from callResult in callResults select callResult.ProgramPointGraph;
+
+            foreach (var callPPGraph in callPPGraphs)
+            {
+                callPPGraph.AddInvocationPoint(currentContext.CurrentProgramPoint);
+            }
+
+            _flowResolver.CallDispatchMerge(currentContext.CurrentOutputSet, callPPGraphs.ToArray());
         }
 
         private void flowThroughNextPartial(AnalysisCallContext currentContext)

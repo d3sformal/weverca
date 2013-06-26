@@ -16,7 +16,8 @@ namespace Weverca.Analysis
     /// </summary>
     /// <typeparam name="FlowInfo"></typeparam>
     public class ProgramPoint
-    {        
+    {
+        public IEnumerable<ProgramPointGraph> InvokedGraphs { get { return _invokedGraphs; } }
         public IEnumerable<ProgramPoint> Children { get { return _children; } }
         public IEnumerable<ProgramPoint> Parents { get { return _parents; } }
 
@@ -30,6 +31,8 @@ namespace Weverca.Analysis
         private List<ProgramPoint> _children = new List<ProgramPoint>();
         private List<ProgramPoint> _parents = new List<ProgramPoint>();
         private bool _isInitialized;
+
+        private HashSet<ProgramPointGraph> _invokedGraphs = new HashSet<ProgramPointGraph>();
 
         AssumptionCondition _condition;
         
@@ -87,7 +90,16 @@ namespace Weverca.Analysis
             _children.Add(child);
             child._parents.Add(this);
         }
+        
+        internal void RemoveInvokedGraph(ProgramPointGraph programPointGraph)
+        {
+            _invokedGraphs.Remove(programPointGraph);
+        }
 
+        internal void AddInvokedGraph(ProgramPointGraph programPointGraph)
+        {
+            _invokedGraphs.Add(programPointGraph);
+        }
         #endregion
 
         internal void Initialize(FlowInputSet input, FlowOutputSet output)
@@ -104,6 +116,7 @@ namespace Weverca.Analysis
         internal void ResetChanges()
         {
             OutSet.ResetChanges();
-        }        
+        }
+
     }
 }

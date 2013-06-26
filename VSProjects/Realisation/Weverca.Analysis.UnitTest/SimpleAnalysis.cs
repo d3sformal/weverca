@@ -58,9 +58,9 @@ namespace Weverca.Analysis.UnitTest
             return true;
         }
 
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, FlowOutputSet[] callsOutputs)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
         {
-            throw new NotImplementedException();
+            //TODO
         }
     }
 
@@ -106,6 +106,7 @@ namespace Weverca.Analysis.UnitTest
         Dictionary<string, NativeAnalyzer> _nativeAnalyzers = new Dictionary<string, NativeAnalyzer>()
         {
             {"strtolower",new NativeAnalyzer(_strtolower)},
+            {"strtoupper",new NativeAnalyzer(_strtoupper)},
             {"concat",new NativeAnalyzer(_concat)}
         };
 
@@ -114,9 +115,15 @@ namespace Weverca.Analysis.UnitTest
         /// </summary>
         /// <param name="functionName"></param>
         /// <returns></returns>
-        public override string[] GetFunctionNames(MemoryEntry functionName)
+        public override QualifiedName[] GetFunctionNames(MemoryEntry functionName)
         {
-            throw new NotImplementedException();
+            var result = new List<QualifiedName>();
+            foreach (StringValue stringName in functionName.PossibleValues)
+            {
+                result.Add(new QualifiedName(new Name(stringName.Value)));
+            }
+
+            return result.ToArray();
         }
 
         /// <summary>
@@ -178,6 +185,27 @@ namespace Weverca.Analysis.UnitTest
 
             flow.OutSet.Assign(flow.OutSet.ReturnValue,new MemoryEntry(possibleValues.ToArray()));
         }
+
+        /// <summary>
+        /// Analyzer method for strtolower php function
+        /// </summary>
+        /// <param name="flow"></param>
+        private static void _strtoupper(FlowControler flow)
+        {
+            var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
+
+            var possibleValues = new List<StringValue>();
+
+            foreach (StringValue possible in arg.PossibleValues)
+            {
+                var lower = flow.OutSet.CreateString(possible.Value.ToUpper());
+                possibleValues.Add(lower);
+            }
+
+
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+        }
+
 
 
         private static void _concat(FlowControler flow)

@@ -51,7 +51,6 @@
     <Compile Include="Deprecated\CallAnalysisContext.cs" />
     <Compile Include="Deprecated\CallDispatch.cs" />
     <Compile Include="Deprecated\CallDispatchLevel.cs" />
-    <Compile Include="CallResult.cs" />
     <Compile Include="Deprecated\DeclarationResolver.cs" />
     <Compile Include="Expressions\FlowResolver.cs" />
     <Compile Include="Expressions\FunctionResolver.cs" />

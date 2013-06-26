@@ -84,7 +84,18 @@ namespace Weverca.Analysis.UnitTest
 
             return analysis.ProgramPointGraph.End.OutSet;
         }
-        
+
+        static internal void RunTestCase(TestCase testCase)
+        {
+            var output = GetEndPointOutSet(testCase.PhpCode);
+
+            while (testCase != null)
+            {
+                testCase.Assert(output);
+                testCase = testCase.PreviousTest;
+            }
+        }
+
         static internal void AssertVariable<T>(this FlowOutputSet outset, string variableName,string message,params T[] expectedValues)            
         {
             var entry=outset.ReadValue(new VariableName(variableName));
@@ -93,6 +104,42 @@ namespace Weverca.Analysis.UnitTest
 
             CollectionAssert.AreEquivalent(expectedValues, actualValues,message);
             
-        }    
+        }
+
+        static internal TestCase AssertVariable(this string test_CODE, string variableName, string assertMessage = null)
+        {
+            return new TestCase(test_CODE, variableName, assertMessage);
+        }
+    }
+
+    delegate void AssertRunner(FlowOutputSet output);
+
+    class TestCase
+    {
+        internal readonly string PhpCode;
+        internal readonly string AssertMessage;
+        internal readonly string VariableName;
+        
+        internal readonly TestCase PreviousTest;
+
+        internal AssertRunner Assert { get; private set; }
+
+        internal TestCase(string phpCode, string variableName, string assertMessage,TestCase previousTest=null)
+        {
+            PhpCode = phpCode;
+            VariableName = variableName;
+            AssertMessage = assertMessage;
+        }
+
+        internal TestCase AssertVariable(string variableName, string assertMessage = null)
+        {
+            return new TestCase(PhpCode, variableName, assertMessage, this);
+        }
+
+        internal TestCase HasValues<T>(params T[] expectedValues)
+        {
+            Assert = (output) => AnalysisTestUtils.AssertVariable<T>(output, VariableName, AssertMessage, expectedValues);
+            return this;
+        }
     }
 }

@@ -35,10 +35,13 @@ namespace Weverca.Analysis
         internal FlowOutputSet CurrentOutputSet { get { return _currentPartialContext.OutSet; } }
 
         /// <summary>
-        /// Return partial from current statement that should be processed
+        /// Get partial from current statement that should be processed
         /// </summary>
         internal LangElement CurrentPartial { get { return _currentPartialContext.CurrentPartial; } }
-
+        /// <summary>
+        /// Get currently processed program point
+        /// </summary>
+        internal ProgramPoint CurrentProgramPoint { get { return _currentPartialContext.Source; } }
         /// <summary>
         /// Current partial walker including partial stack - is recycled between statements
         /// </summary>
@@ -143,7 +146,17 @@ namespace Weverca.Analysis
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
 
+            removeAllInvokedGraphs(work);
             _services.FlowThrough(work);
+        }
+
+        private void removeAllInvokedGraphs(ProgramPoint programPoint)
+        {
+            //TODO collect info for back invoking shared graphs
+            foreach (var ppGraph in programPoint.InvokedGraphs)
+            {
+                ppGraph.RemoveInvocationPoint(programPoint);
+            }
         }
 
         private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
@@ -201,5 +214,7 @@ namespace Weverca.Analysis
 
             ppGraph.Start.Initialize(startInput, startOutput);
         }
+
+        
     }
 }
