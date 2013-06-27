@@ -91,7 +91,7 @@ namespace Weverca.Analysis
                 var completedProgramPoint = _currentPartialContext.Source;
 
                 if (completedProgramPoint.IsCondition)
-                {
+                {                    
                     conditionCompleted(completedProgramPoint, CurrentWalker.PopAllValues());
                 }
                 else
@@ -99,6 +99,8 @@ namespace Weverca.Analysis
                     statementCompleted(completedProgramPoint);
                 }
 
+                completedProgramPoint.OutSet.CommitTransaction();
+                
                 //creates new partial context if possible
                 dequeueNextWorkItem();
             }
@@ -115,12 +117,13 @@ namespace Weverca.Analysis
             enqueueWorkDependencies(statement);
         }
 
-        private void conditionCompleted(ProgramPoint condition, MemoryEntry[] expressionParts)
+        private void conditionCompleted(ProgramPoint conditionPoint, MemoryEntry[] expressionParts)
         {
-            if (_services.ConfirmAssumption(condition.Condition, expressionParts))
+            var flow = new FlowControler(conditionPoint.InSet, conditionPoint.OutSet);
+            if (_services.ConfirmAssumption(flow,conditionPoint.Condition, expressionParts))
             {
                 //assumption is made
-                enqueueWorkDependencies(condition);
+                enqueueWorkDependencies(conditionPoint);
             }
         }
 
@@ -143,11 +146,12 @@ namespace Weverca.Analysis
             var inputs = collectInputs(work);
 
             setInputs(work, inputs);
+            work.OutSet.StartTransaction();
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
 
             removeAllInvokedGraphs(work);
-            _services.FlowThrough(work);
+            _services.FlowThrough(new FlowControler(),work);
         }
 
         private void removeAllInvokedGraphs(ProgramPoint programPoint)
@@ -178,7 +182,7 @@ namespace Weverca.Analysis
 
         private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
         {
-            return from parent in point.Parents select parent.OutSet;
+            return from parent in point.Parents where parent.OutSet!=null select parent.OutSet;
         }
 
      

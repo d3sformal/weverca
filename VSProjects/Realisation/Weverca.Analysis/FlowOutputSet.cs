@@ -70,10 +70,15 @@ namespace Weverca.Analysis
             return _snapshot.CreateInt(number);
         }
 
+        public LongintValue CreateLong(long number)
+        {
+            return _snapshot.CreateLong(number);
+        }
+
         public BooleanValue CreateBool(bool boolean)
         {
             return _snapshot.CreateBool(boolean);
-        }
+        }   
 
         public FloatValue CreateFloat(double number)
         {
@@ -161,5 +166,7 @@ namespace Weverca.Analysis
             return input._snapshot;
         }
         #endregion
+
+   
     }
 }

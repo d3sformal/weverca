@@ -30,6 +30,7 @@ namespace Weverca.Analysis.Memory
 
         StringValue CreateString(string literal);
         IntegerValue CreateInt(int number);
+        LongintValue CreateLong(long number);
         BooleanValue CreateBool(bool boolean);
         FloatValue CreateFloat(double number);
         FunctionValue CreateFunction(FunctionDecl declaration);

@@ -119,19 +119,19 @@ namespace Weverca.VirtualReferenceModel
                     var allocatedReference = new VirtualReference(targetVar);
                     info.References.Add(allocatedReference);
 
-                    ReportSimpleHashAssign();
-                    _data[allocatedReference] = entry;
+                    setEntry(allocatedReference, entry);                    
                     break;
                 case 1:
-                    ReportSimpleHashAssign();
-                    _data[references[0]] = entry;
+                    setEntry(references[0], entry);                    
                     break;
 
                 default:
-                    throw new NotImplementedException("Weak update to all references");
+                    weakUpdate(references, entry);
+                    break;
             }
 
         }
+               
 
         protected override void assignAlias(VariableName targetVar, AliasValue alias)
         {
@@ -233,6 +233,19 @@ namespace Weverca.VirtualReferenceModel
             return resolveReferences(info.References);
         }
 
+        private void weakUpdate(List<VirtualReference> references, MemoryEntry update)
+        {
+            foreach (var reference in references)
+            {
+                var entry = getEntry(reference);
+                ReportMemoryEntryMerge();
+                var updated=MemoryEntry.Merge(entry, update);
+
+                setEntry(reference, updated);
+            }
+
+        }
+
         private MemoryEntry resolveReferences(List<VirtualReference> references)
         {
             switch (references.Count)
@@ -240,16 +253,11 @@ namespace Weverca.VirtualReferenceModel
                 case 0:
                     return UndefinedValueEntry;
                 case 1:
-                    ReportSimpleHashSearch();
-                    return _data[references[0]];
+                    return getEntry(references[0]);
                 default:
-                    var values = new List<Value>();
-                    foreach (var reference in references)
-                    {
-                        values.AddRange(resolveValuesFrom(reference));
-                    }
-                    ReportMemoryEntryCreation();
-                    return new MemoryEntry(values.ToArray());
+                    var entries = from reference in references select getEntry(reference);
+
+                    return MemoryEntry.Merge(entries);
 
             }
         }
@@ -286,6 +294,12 @@ namespace Weverca.VirtualReferenceModel
             _data.TryGetValue(reference, out entry);
 
             return entry;
+        }
+
+        private void setEntry(VirtualReference reference, MemoryEntry entry)
+        {
+            ReportSimpleHashAssign();
+            _data[reference] = entry;
         }
 
         private VariableInfo getInfo(VariableName name)

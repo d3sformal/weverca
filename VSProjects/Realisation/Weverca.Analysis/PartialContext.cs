@@ -30,8 +30,7 @@ namespace Weverca.Analysis
 
         public PartialContext(ProgramPoint source)
         {
-            _source = source;
-            OutSet.StartTransaction();
+            _source = source;            
 
             if (IsCondition)
             {
@@ -65,11 +64,6 @@ namespace Weverca.Analysis
                 //hack - because of incrementing at loop begining
                 _postfixIndex = -1;
             } while (moveNextPostfix());
-
-            if (IsComplete)
-            {
-                OutSet.CommitTransaction();
-            }
         }
 
         private bool moveNextPostfix()

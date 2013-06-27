@@ -21,7 +21,7 @@ if($unknown){
         readonly static TestCase NativeCallProcessing_CASE = @"
 $call_result=strtolower('TEST');
 ".AssertVariable("call_result").HasValues("test");
-        
+
         readonly static TestCase NativeCallProcessing2Arguments_CASE = @"
 $call_result=concat('A','B');
 ".AssertVariable("call_result").HasValues("AB");
@@ -38,8 +38,37 @@ if($unknown){
     $call_name='strtoupper';
 }
 $call_result=$call_name('TEst');
-".AssertVariable("call_result").HasValues("TEST","test");
+".AssertVariable("call_result").HasValues("TEST", "test");
 
+        readonly static TestCase MustAliasAssign_CASE = @"
+$VarA='ValueA';
+$VarB='ValueB';
+$VarA=&$VarB;
+".AssertVariable("VarA").HasValues("ValueB");
+
+        /// <summary>
+        /// This is virtual reference model specific test
+        /// </summary>
+        readonly static TestCase MayAliasAssign_CASE = @"
+$VarA='ValueA';
+$VarB='ValueB';
+$VarC='ValueC';
+if($unknown){
+    $VarA=&$VarB;
+}else{
+    $VarA=&$VarC;
+}
+$VarA='Assigned';
+".AssertVariable("VarA").HasValues("ValueB", "ValueC", "Assigned")
+ .AssertVariable("VarB").HasValues("ValueB", "Assigned")
+ .AssertVariable("VarC").HasValues("ValueC", "Assigned");
+
+        readonly static TestCase EqualsAssumption_CASE = @"
+$Var='init';
+if($unknown=='PossibilityA'){
+    $Var=$unknown;
+}
+".AssertVariable("Var").HasValues("init","PossibilityA");
 
         [TestMethod]
         public void BranchMerge()
@@ -71,5 +100,23 @@ $call_result=$call_name('TEst');
             AnalysisTestUtils.RunTestCase(BranchedIndirectCall_CASE);
         }
 
+        [TestMethod]
+        public void MustAliasAssign()
+        {
+            AnalysisTestUtils.RunTestCase(MustAliasAssign_CASE);
+        }
+
+
+        [TestMethod]
+        public void MayAliasAssign()
+        {
+            AnalysisTestUtils.RunTestCase(MayAliasAssign_CASE);
+        }
+
+        [TestMethod]
+        public void EqualsAssumption()
+        {
+            AnalysisTestUtils.RunTestCase(EqualsAssumption_CASE);
+        }
     }
 }

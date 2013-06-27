@@ -351,6 +351,13 @@ namespace Weverca.Analysis.Memory
             return new IntegerValue(number);
         }
 
+        public LongintValue CreateLong(long number)
+        {
+            checkCanUpdate();
+            ++_statistics.CreatedLongValues;
+            return new LongintValue(number);
+        }
+
         public BooleanValue CreateBool(bool boolean)
         {
             checkCanUpdate();
@@ -518,5 +525,7 @@ namespace Weverca.Analysis.Memory
             }
         }
         #endregion
+
+ 
     }
 }

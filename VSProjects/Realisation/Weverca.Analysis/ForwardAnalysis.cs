@@ -147,6 +147,7 @@ namespace Weverca.Analysis
                 callPPGraph.AddInvocationPoint(currentContext.CurrentProgramPoint);
             }
 
+            _flowResolver.SetContext(new FlowControler());
             _flowResolver.CallDispatchMerge(currentContext.CurrentOutputSet, callPPGraphs.ToArray());
         }
 

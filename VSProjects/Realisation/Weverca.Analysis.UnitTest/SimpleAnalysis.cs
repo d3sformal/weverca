@@ -55,12 +55,119 @@ namespace Weverca.Analysis.UnitTest
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
         public override bool ConfirmAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
         {
-            return true;
+            bool willAssume;
+            switch (condition.Form)
+            {
+                case ConditionForm.All:
+                    willAssume=needsAll(condition.Parts, expressionParts);
+                    break;
+
+                default:
+                    //we has to assume, because we can't disprove assumption
+                    willAssume=true;
+                    break;
+            }
+
+            if (willAssume)
+            {
+                processAssumption(condition, expressionParts);
+            }
+
+            return willAssume;
         }
+
 
         public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
         {
             //TODO
+        }
+
+        private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts, MemoryEntry[] evaluatedParts)
+        {
+            //we are searching for one part, that can be evaluated only as false
+
+            foreach (var evaluatedPart in evaluatedParts)
+            {
+                if (evalOnlyFalse(evaluatedPart))
+                {
+                    return false;
+                }
+            }
+
+            //can disprove any part
+            return true;
+        }
+
+        private bool evalOnlyFalse(MemoryEntry evaluatedPart)
+        {
+            foreach (var value in evaluatedPart.PossibleValues)
+            {
+                var boolean = value as BooleanValue;
+                if (boolean != null)
+                {
+                    if (!boolean.Value)
+                    {
+                        //false cannot be evaluted as true
+                        continue;
+                    }
+                }
+
+          /* //Because of tests we use UndefinedValue as non deterministic     
+           * if (value == Flow.OutSet.UndefinedValue)
+                {
+                    //undefined value ise evaluated as false
+                    continue;
+                }*/
+
+                //Thid part can be evaluated as true
+                return false;
+            }
+
+            //no of possible values can be evaluted as true
+            return true;
+        }
+
+        /// <summary>
+        /// Assume valid condition into output set
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <param name="expressionParts"></param>
+        private void processAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
+        {
+            if (condition.Form == ConditionForm.All)
+            {
+                if (condition.Parts.Count() == 1)
+                {
+                    assumeBinary(condition.Parts.First().SourceElement as BinaryEx,expressionParts[0]);
+                }
+            }
+        }
+
+        private void assumeBinary(BinaryEx exp,MemoryEntry expResult)
+        {
+            if (exp == null)
+            {
+                return;
+            }
+            switch (exp.PublicOperation)
+            {
+                case Operations.Equal:
+                    assumeEqual(exp.LeftExpr, exp.RightExpr,expResult);
+                    break;
+            }
+        }
+
+        private void assumeEqual(LangElement left, LangElement right,MemoryEntry result)
+        {
+            var leftVar = left as DirectVarUse;
+            var rightVal = right as StringLiteral;
+
+            if (leftVar == null){
+                //for simplicity resolve only $var==stringliteral statements
+                return;
+            }
+
+            Flow.OutSet.Assign(leftVar.VarName, Flow.OutSet.CreateString(rightVal.Value as string));
         }
     }
 
@@ -69,30 +176,84 @@ namespace Weverca.Analysis.UnitTest
     /// </summary>
     class SimpleExpressionEvaluator : ExpressionEvaluator
     {
-        public override void Assign(PHP.Core.VariableName target, MemoryEntry value)
+        public override void Assign(VariableName target, MemoryEntry value)
         {
             Flow.OutSet.Assign(target, value);
         }
 
-        public override void Declare(DirectVarUse x)
+        public override void AliasAssign(VariableName target, AliasValue alias)
         {
-            throw new NotImplementedException();
+            Flow.OutSet.Assign(target, alias);
         }
 
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Equal:
+                    return areEqual(leftOperand, rightOperand);            
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
-        public override MemoryEntry StringLiteral(StringLiteral x)
+        private MemoryEntry areEqual(MemoryEntry left, MemoryEntry right)
         {
-            return new MemoryEntry(Flow.OutSet.CreateString(x.Value as String));
+            
+            var result = new List<BooleanValue>();
+            if (canBeDifferent(left,right))
+            {
+                result.Add(Flow.OutSet.CreateBool(false));
+            }
+
+            if (canBeSame(left,right))
+            {
+                result.Add(Flow.OutSet.CreateBool(true));
+            }
+
+            return new MemoryEntry(result.ToArray());
+        }
+
+        private bool canBeSame(MemoryEntry left, MemoryEntry right)
+        {
+            if (containsAnyValue(left)||containsAnyValue(right)) 
+                return true;
+
+            foreach (var possibleValue in left.PossibleValues)
+            {
+                if (right.PossibleValues.Contains(possibleValue))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool canBeDifferent(MemoryEntry left, MemoryEntry right)
+        {
+            if (containsAnyValue(left) || containsAnyValue(right))
+                return true;
+
+            if (left.PossibleValues.Count() > 1 || left.PossibleValues.Count() > 1)
+            {
+                return true;
+            }
+
+            return !left.Equals(right);
+        }
+
+        private bool containsAnyValue(MemoryEntry entry)
+        {
+            //TODO Undefined value maybe is not correct to be treated as any value
+            return entry.PossibleValues.Contains(Flow.OutSet.AnyValue) || entry.PossibleValues.Contains(Flow.OutSet.UndefinedValue);
         }
 
         public override MemoryEntry ResolveVariable(VariableName variable)
         {
             return Flow.InSet.ReadValue(variable);
         }
+
+
     }
     
     /// <summary>

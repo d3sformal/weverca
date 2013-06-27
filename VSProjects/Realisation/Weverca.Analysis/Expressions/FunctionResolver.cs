@@ -12,7 +12,8 @@ using Weverca.Analysis.Memory;
 namespace Weverca.Analysis.Expressions
 {
     public abstract class FunctionResolver
-    {   
+    {
+
         /// <summary>
         /// Return possible names of function which is identified by given functionName
         /// </summary>
@@ -24,5 +25,7 @@ namespace Weverca.Analysis.Expressions
         public abstract ProgramPointGraph InitializeCall(FlowOutputSet callInput, QualifiedName name);
 
         public abstract MemoryEntry ResolveReturnValue(ProgramPointGraph[] programPointGraph);
+
+
     }
 }

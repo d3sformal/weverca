@@ -34,7 +34,7 @@ namespace Weverca.Analysis.Expressions
             }
 
             _currentControler = flow;
-            _evaluator.SetContext(flow, partial);
+            _evaluator.SetContext(flow, partial);            
           
             partial.VisitMe(this);
         }
@@ -122,11 +122,27 @@ namespace Weverca.Analysis.Expressions
             throw new NotImplementedException();
         }
 
+        public override void VisitRefAssignEx(RefAssignEx x)
+        {
+            var aliasedVariable = popVariable();
+            var assignedVariable = popVariable();
+
+            var alias=_evaluator.ResolveAlias(aliasedVariable);
+            _evaluator.AliasAssign(assignedVariable, alias);
+
+            //TODO is there alias or value assign ?
+            push(aliasedVariable);
+        }
+
+        
+
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var value = popValue();
-            var variable = popVariable();
-            _evaluator.Assign(variable, value);
+            var assignedVariable = popVariable();
+
+            _evaluator.Assign(assignedVariable, value);
+
             push(value);
         }
 

@@ -14,12 +14,12 @@ namespace Weverca.Analysis.Memory
     public class MemoryEntry
     {
         public readonly IEnumerable<Value> PossibleValues;
-      
+
         public MemoryEntry(params Value[] values)
         {
             PossibleValues = new ReadOnlyCollection<Value>((Value[])values.Clone());
         }
-        
+
         /// <summary>
         /// Is used for avoiding of copy on internall structures 
         /// </summary>
@@ -35,6 +35,11 @@ namespace Weverca.Analysis.Memory
         /// <param name="entries">Memory entries to be merged</param>
         /// <returns>Memory entry containing disctinct values from all entries</returns>
         public static MemoryEntry Merge(params MemoryEntry[] entries)
+        {
+            return Merge((IEnumerable<MemoryEntry>)entries);
+        }
+
+        public static MemoryEntry Merge(IEnumerable<MemoryEntry> entries)
         {
             var values = new HashSet<Value>();
 
@@ -57,10 +62,10 @@ namespace Weverca.Analysis.Memory
 
             if (o == null)
             {
-                return false;   
+                return false;
             }
 
-            return hasSameValues(o.PossibleValues,this.PossibleValues);   
+            return hasSameValues(o.PossibleValues, this.PossibleValues);
         }
 
         public override int GetHashCode()
@@ -72,6 +77,21 @@ namespace Weverca.Analysis.Memory
             }
 
             return hashCode;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder result = new StringBuilder();
+
+            result.Append("Values: ");
+            foreach (var value in PossibleValues)
+            {
+                result.AppendFormat("({0}),", value.ToString());
+            }
+
+            result.Length--;
+
+            return result.ToString();
         }
 
         private bool hasSameValues(IEnumerable<Value> values1, IEnumerable<Value> values2)

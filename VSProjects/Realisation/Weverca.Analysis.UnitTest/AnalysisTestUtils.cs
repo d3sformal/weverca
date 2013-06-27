@@ -129,6 +129,7 @@ namespace Weverca.Analysis.UnitTest
             PhpCode = phpCode;
             VariableName = variableName;
             AssertMessage = assertMessage;
+            PreviousTest = previousTest;
         }
 
         internal TestCase AssertVariable(string variableName, string assertMessage = null)

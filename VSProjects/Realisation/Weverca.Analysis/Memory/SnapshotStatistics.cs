@@ -33,6 +33,7 @@ namespace Weverca.Analysis.Memory
         public int IndexAliasAssigns;
         public int FieldAliasAssigns;
         public int GlobalVariableFetches;
+        public int CreatedLongValues;
 
         internal SnapshotStatistics Clone()
         {

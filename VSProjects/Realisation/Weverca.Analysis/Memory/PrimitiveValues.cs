@@ -35,11 +35,21 @@ namespace Weverca.Analysis.Memory
             }
             return Value.Equals(o.Value);
         }
+
+        public override string ToString()
+        {
+            return string.Format("'{0}', Type: {1}", Value, typeof(T).Name);
+        }
     }
 
     public class IntegerValue : PrimitiveValue<int>
     {
         internal IntegerValue(int value) : base(value) { }
+    }
+
+    public class LongintValue : PrimitiveValue<long>
+    {
+        internal LongintValue(long value) : base(value) { }
     }
 
     public class StringValue : PrimitiveValue<string>

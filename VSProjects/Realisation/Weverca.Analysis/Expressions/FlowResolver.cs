@@ -10,7 +10,9 @@ namespace Weverca.Analysis.Expressions
 {
     public abstract class FlowResolver
     {
-        //TODO add flow controller
+
+        public FlowControler Flow { get; private set; }
+  
 
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
@@ -23,6 +25,11 @@ namespace Weverca.Analysis.Expressions
         public virtual void FlowThrough(ProgramPoint programPoint)
         {
             //By default there is nothing to do
+        }
+
+        internal void SetContext(FlowControler flow)
+        {
+            Flow = flow;
         }
     }
 }
