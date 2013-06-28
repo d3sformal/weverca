@@ -118,9 +118,8 @@ namespace Weverca.Analysis
         }
 
         private void conditionCompleted(ProgramPoint conditionPoint, MemoryEntry[] expressionParts)
-        {
-            var flow = new FlowControler(conditionPoint.InSet, conditionPoint.OutSet);
-            if (_services.ConfirmAssumption(flow,conditionPoint.Condition, expressionParts))
+        {            
+            if (_services.ConfirmAssumption(conditionPoint.OutSet,conditionPoint.Condition, expressionParts))
             {
                 //assumption is made
                 enqueueWorkDependencies(conditionPoint);
@@ -150,8 +149,8 @@ namespace Weverca.Analysis
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
 
-            removeAllInvokedGraphs(work);
-            _services.FlowThrough(new FlowControler(),work);
+            removeAllInvokedGraphs(work);            
+            _services.FlowThrough(work);
         }
 
         private void removeAllInvokedGraphs(ProgramPoint programPoint)

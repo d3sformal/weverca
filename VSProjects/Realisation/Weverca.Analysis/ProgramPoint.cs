@@ -43,7 +43,9 @@ namespace Weverca.Analysis
         Postfix _statement;
 
 
-
+        /// <summary>
+        /// Get assumption condition if this program point IsCondition
+        /// </summary>
         public AssumptionCondition Condition
         {
             get
@@ -54,6 +56,9 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <summary>
+        /// Get statement converted into Postfix representation
+        /// </summary>
         public Postfix Statement
         {
             get
@@ -102,6 +107,11 @@ namespace Weverca.Analysis
         }
         #endregion
 
+        /// <summary>
+        /// Initialize program point with given input and output sets
+        /// </summary>
+        /// <param name="input">Input set of program point</param>
+        /// <param name="output">Output set of program point</param>
         internal void Initialize(FlowInputSet input, FlowOutputSet output)
         {
             if (_isInitialized)
@@ -113,10 +123,12 @@ namespace Weverca.Analysis
             OutSet = output;
         }
 
+        /// <summary>
+        /// Reset changes reported by output set - is used for Fix point computation
+        /// </summary>
         internal void ResetChanges()
         {
             OutSet.ResetChanges();
         }
-
     }
 }

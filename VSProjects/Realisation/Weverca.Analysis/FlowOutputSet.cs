@@ -27,22 +27,37 @@ namespace Weverca.Analysis
             HasChanges = true;
         }
 
+        /// <summary>
+        /// Commit transaction of contained snapshot
+        /// </summary>
         internal void CommitTransaction()
         {
             _snapshot.CommitTransaction();
             HasChanges = _snapshot.HasChanged;
         }
 
+        /// <summary>
+        /// Start transaction on contained snapshot
+        /// </summary>
         internal void StartTransaction()
         {
             _snapshot.StartTransaction();
         }
 
+        /// <summary>
+        /// Reset reported changes
+        /// </summary>
         internal void ResetChanges()
         {
             HasChanges = false;
         }
 
+        /// <summary>
+        /// Create call output set from contained snapshot
+        /// </summary>
+        /// <param name="ThisObject">ThisObject of call</param>
+        /// <param name="arguments">Arguments for call</param>
+        /// <returns>Snapshot with call context</returns>
         internal FlowOutputSet CreateCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
         {
             return new FlowOutputSet(_snapshot.CreateCall(ThisObject, arguments));
@@ -144,11 +159,13 @@ namespace Weverca.Analysis
 
         #endregion
 
-
-
-
         #region Private helpers
 
+        /// <summary>
+        /// Convert FlowInput sets info AbstractSnapshots
+        /// </summary>
+        /// <param name="inputs">FlowInput sets</param>
+        /// <returns>Input sets snapshots</returns>
         private AbstractSnapshot[] getSnapshots(ISnapshotReadonly[] inputs)
         {
             var converted = new AbstractSnapshot[inputs.Length];
@@ -161,6 +178,11 @@ namespace Weverca.Analysis
             return converted;
         }
 
+        /// <summary>
+        /// Get snapshot from FlowInputSet
+        /// </summary>
+        /// <param name="input">input set which snapshot will be returned</param>
+        /// <returns>Snapshot from FlowInputSet</returns>
         private AbstractSnapshot getSnapshot(FlowInputSet input)
         {
             return input._snapshot;

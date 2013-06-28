@@ -15,15 +15,17 @@ namespace Weverca.Analysis
     /// </summary>    
     public class FlowInputSet : ISnapshotReadonly
     {
+        /// <summary>
+        /// Stored snapshot
+        /// </summary>
         protected internal AbstractSnapshot _snapshot;
-
-
 
         internal FlowInputSet(AbstractSnapshot snapshot)
         {
             _snapshot = snapshot;
         }
 
+        #region ISnapshotReadonly implementation
 
         public VariableName ReturnValue { get { return _snapshot.ReturnValue; } }
 
@@ -36,5 +38,6 @@ namespace Weverca.Analysis
         {
             return _snapshot.ReadValue(sourceVar);
         }
+        #endregion
     }
 }

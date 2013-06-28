@@ -8,7 +8,7 @@ using PHP.Core.AST;
 namespace Weverca.Analysis
 {
     /// <summary>
-    /// Form of conjunction condition parts.
+    /// Form of condition parts conjunction.
     /// </summary>
     public enum ConditionForm
     {
@@ -38,15 +38,20 @@ namespace Weverca.Analysis
     public class AssumptionCondition
     {
         /// <summary>
-        /// Form of condition parts joining.
+        /// Form of condition parts conjunction.
         /// </summary>
         public readonly ConditionForm Form;
         /// <summary>
-        /// Condition parts that are joined according to Form.
+        /// Condition parts that are joined according to ConditionForm.
         /// </summary>
         public readonly IEnumerable<Expressions.Postfix> Parts;
 
-        public AssumptionCondition(ConditionForm form, params Expression[] parts)
+        /// <summary>
+        /// Creates assumption condition for given parts
+        /// </summary>
+        /// <param name="form">Form of condition parts conjunction</param>
+        /// <param name="parts">Condition parts</param>
+        internal AssumptionCondition(ConditionForm form, params Expression[] parts)
         {
             Parts = from part in parts select Expressions.Converter.GetPostfix(part);
             Form = form;

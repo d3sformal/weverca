@@ -39,15 +39,14 @@ namespace Weverca.Analysis
             _flowResolver = flowResolver;
         }
 
-        internal bool ConfirmAssumption(FlowControler flow, AssumptionCondition condition, MemoryEntry[] expressionParts)
+        internal bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
         {
-            _flowResolver.SetContext(flow);
-            return _flowResolver.ConfirmAssumption(condition, expressionParts);
+            
+            return _flowResolver.ConfirmAssumption(outSet,condition, expressionParts);
         }
 
-        internal void FlowThrough(FlowControler flow, ProgramPoint programPoint)
-        {
-            _flowResolver.SetContext(flow);
+        internal void FlowThrough(ProgramPoint programPoint)
+        {            
             _flowResolver.FlowThrough(programPoint);
         }
     }

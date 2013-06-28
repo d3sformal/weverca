@@ -44,133 +44,7 @@ namespace Weverca.Analysis.UnitTest
     }
 
 
-    /// <summary>
-    /// Controlling flow actions during analysis
-    /// </summary>
-    class SimpleFlowResolver : FlowResolver
-    {
-        /// <summary>
-        /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
-        /// </summary>  
-        /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        public override bool ConfirmAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
-        {
-            bool willAssume;
-            switch (condition.Form)
-            {
-                case ConditionForm.All:
-                    willAssume=needsAll(condition.Parts, expressionParts);
-                    break;
-
-                default:
-                    //we has to assume, because we can't disprove assumption
-                    willAssume=true;
-                    break;
-            }
-
-            if (willAssume)
-            {
-                processAssumption(condition, expressionParts);
-            }
-
-            return willAssume;
-        }
-
-
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
-        {
-            //TODO
-        }
-
-        private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts, MemoryEntry[] evaluatedParts)
-        {
-            //we are searching for one part, that can be evaluated only as false
-
-            foreach (var evaluatedPart in evaluatedParts)
-            {
-                if (evalOnlyFalse(evaluatedPart))
-                {
-                    return false;
-                }
-            }
-
-            //can disprove any part
-            return true;
-        }
-
-        private bool evalOnlyFalse(MemoryEntry evaluatedPart)
-        {
-            foreach (var value in evaluatedPart.PossibleValues)
-            {
-                var boolean = value as BooleanValue;
-                if (boolean != null)
-                {
-                    if (!boolean.Value)
-                    {
-                        //false cannot be evaluted as true
-                        continue;
-                    }
-                }
-
-          /* //Because of tests we use UndefinedValue as non deterministic     
-           * if (value == Flow.OutSet.UndefinedValue)
-                {
-                    //undefined value ise evaluated as false
-                    continue;
-                }*/
-
-                //Thid part can be evaluated as true
-                return false;
-            }
-
-            //no of possible values can be evaluted as true
-            return true;
-        }
-
-        /// <summary>
-        /// Assume valid condition into output set
-        /// </summary>
-        /// <param name="condition"></param>
-        /// <param name="expressionParts"></param>
-        private void processAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
-        {
-            if (condition.Form == ConditionForm.All)
-            {
-                if (condition.Parts.Count() == 1)
-                {
-                    assumeBinary(condition.Parts.First().SourceElement as BinaryEx,expressionParts[0]);
-                }
-            }
-        }
-
-        private void assumeBinary(BinaryEx exp,MemoryEntry expResult)
-        {
-            if (exp == null)
-            {
-                return;
-            }
-            switch (exp.PublicOperation)
-            {
-                case Operations.Equal:
-                    assumeEqual(exp.LeftExpr, exp.RightExpr,expResult);
-                    break;
-            }
-        }
-
-        private void assumeEqual(LangElement left, LangElement right,MemoryEntry result)
-        {
-            var leftVar = left as DirectVarUse;
-            var rightVal = right as StringLiteral;
-
-            if (leftVar == null){
-                //for simplicity resolve only $var==stringliteral statements
-                return;
-            }
-
-            Flow.OutSet.Assign(leftVar.VarName, Flow.OutSet.CreateString(rightVal.Value as string));
-        }
-    }
-
+ 
     /// <summary>
     /// Expression evaluation is resovled here
     /// </summary>
@@ -196,6 +70,8 @@ namespace Weverca.Analysis.UnitTest
                     throw new NotImplementedException();
             }
         }
+
+        #region Expression evaluation helpers
 
         private MemoryEntry areEqual(MemoryEntry left, MemoryEntry right)
         {
@@ -248,12 +124,7 @@ namespace Weverca.Analysis.UnitTest
             return entry.PossibleValues.Contains(Flow.OutSet.AnyValue) || entry.PossibleValues.Contains(Flow.OutSet.UndefinedValue);
         }
 
-        public override MemoryEntry ResolveVariable(VariableName variable)
-        {
-            return Flow.InSet.ReadValue(variable);
-        }
-
-
+        #endregion
     }
     
     /// <summary>
@@ -331,7 +202,7 @@ namespace Weverca.Analysis.UnitTest
         /// Analyzer method for strtolower php function
         /// </summary>
         /// <param name="flow"></param>
-        private static void _strtolower(FlowControler flow)
+        private static void _strtolower(FlowController flow)
         {
             var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
 
@@ -351,7 +222,7 @@ namespace Weverca.Analysis.UnitTest
         /// Analyzer method for strtolower php function
         /// </summary>
         /// <param name="flow"></param>
-        private static void _strtoupper(FlowControler flow)
+        private static void _strtoupper(FlowController flow)
         {
             var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
 
@@ -369,7 +240,7 @@ namespace Weverca.Analysis.UnitTest
 
 
 
-        private static void _concat(FlowControler flow)
+        private static void _concat(FlowController flow)
         {
             var arg0 = flow.InSet.ReadValue(flow.InSet.Argument(0));
             var arg1 = flow.InSet.ReadValue(flow.InSet.Argument(1));
@@ -390,4 +261,140 @@ namespace Weverca.Analysis.UnitTest
         }
         #endregion
     }
+
+
+    /// <summary>
+    /// Controlling flow actions during analysis
+    /// </summary>
+    class SimpleFlowResolver : FlowResolver
+    {
+        private FlowOutputSet _outSet;
+
+        /// <summary>
+        /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
+        /// </summary>  
+        /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
+        public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
+        {
+            _outSet = outSet;
+
+            bool willAssume;
+            switch (condition.Form)
+            {
+                case ConditionForm.All:
+                    willAssume = needsAll(condition.Parts, expressionParts);
+                    break;
+
+                default:
+                    //we has to assume, because we can't disprove assumption
+                    willAssume = true;
+                    break;
+            }
+
+            if (willAssume)
+            {
+                processAssumption(condition, expressionParts);
+            }
+
+            return willAssume;
+        }
+
+
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
+        {
+            //TODO
+        }
+
+        #region Assumption helpers
+        private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts, MemoryEntry[] evaluatedParts)
+        {
+            //we are searching for one part, that can be evaluated only as false
+
+            foreach (var evaluatedPart in evaluatedParts)
+            {
+                if (evalOnlyFalse(evaluatedPart))
+                {
+                    return false;
+                }
+            }
+
+            //can disprove any part
+            return true;
+        }
+
+        private bool evalOnlyFalse(MemoryEntry evaluatedPart)
+        {
+            foreach (var value in evaluatedPart.PossibleValues)
+            {
+                var boolean = value as BooleanValue;
+                if (boolean != null)
+                {
+                    if (!boolean.Value)
+                    {
+                        //false cannot be evaluted as true
+                        continue;
+                    }
+                }
+
+                /* //Because of tests we use UndefinedValue as non deterministic     
+                 * if (value == Flow.OutSet.UndefinedValue)
+                      {
+                          //undefined value ise evaluated as false
+                          continue;
+                      }*/
+
+                //Thid part can be evaluated as true
+                return false;
+            }
+
+            //no of possible values can be evaluted as true
+            return true;
+        }
+
+        /// <summary>
+        /// Assume valid condition into output set
+        /// </summary>
+        /// <param name="condition"></param>
+        /// <param name="expressionParts"></param>
+        private void processAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
+        {
+            if (condition.Form == ConditionForm.All)
+            {
+                if (condition.Parts.Count() == 1)
+                {
+                    assumeBinary(condition.Parts.First().SourceElement as BinaryEx, expressionParts[0]);
+                }
+            }
+        }
+
+        private void assumeBinary(BinaryEx exp, MemoryEntry expResult)
+        {
+            if (exp == null)
+            {
+                return;
+            }
+            switch (exp.PublicOperation)
+            {
+                case Operations.Equal:
+                    assumeEqual(exp.LeftExpr, exp.RightExpr, expResult);
+                    break;
+            }
+        }
+
+        private void assumeEqual(LangElement left, LangElement right, MemoryEntry result)
+        {
+            var leftVar = left as DirectVarUse;
+            var rightVal = right as StringLiteral;
+
+            if (leftVar == null)
+            {
+                //for simplicity resolve only $var==stringliteral statements
+                return;
+            }
+
+            _outSet.Assign(leftVar.VarName, _outSet.CreateString(rightVal.Value as string));
+        }
+        #endregion
+    }
+
 }

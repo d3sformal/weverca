@@ -13,10 +13,13 @@ namespace Weverca.Analysis
 {
 
     /// <summary>
-    /// Represents dispatch to call
+    /// Represents info for call dispatch
     /// </summary>
     public  class CallInfo
     {
+        /// <summary>
+        /// Call input set
+        /// </summary>
         public readonly FlowInputSet InSet;
         /// <summary>
         /// Graph used for method analyzing - can be shared between multiple calls

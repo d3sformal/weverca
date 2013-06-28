@@ -7,33 +7,38 @@ namespace Weverca.Analysis
 {
     /// <summary>
     /// Handle call stack for forward flow analysis.    
-    /// </summary>
-    /// <typeparam name="FlowInfo"></typeparam>
+    /// </summary>    
     class AnalysisCallStack
-    {        
+    {
+        #region Private members
+        /// <summary>
+        /// Stack of call contexts
+        /// </summary>        
+        private Stack<CallDispatchLevel> _callStack = new Stack<CallDispatchLevel>();
+        /// <summary>
+        /// Available services
+        /// </summary>
+        private readonly AnalysisServices _services;
+        #endregion
+
         /// <summary>
         /// Current context of call from current dispatch level 
         /// </summary>
         internal AnalysisCallContext CurrentContext { get { return CurrentLevel.CurrentContext; } }
-
         /// <summary>
         /// Current dispatch level.
         /// </summary>
         internal CallDispatchLevel CurrentLevel { get { return _callStack.Peek(); } }
-
         /// <summary>
         /// Determine that call stack is empty
         /// </summary>
         internal bool IsEmpty { get { return _callStack.Count == 0; } }
 
         /// <summary>
-        /// Stack of call contexts
-        /// </summary>        
-        Stack<CallDispatchLevel> _callStack = new Stack<CallDispatchLevel>();
-
-        AnalysisServices _services;
-
-        public AnalysisCallStack(AnalysisServices services)
+        /// Creats analysis call stack
+        /// </summary>
+        /// <param name="services">Available services</param>
+        internal AnalysisCallStack(AnalysisServices services)
         {
             _services = services;
         }
@@ -52,8 +57,8 @@ namespace Weverca.Analysis
         /// </summary>
         internal void Pop()
         {
-            
+
             _callStack.Pop();
-        }      
+        }
     }
 }

@@ -10,22 +10,44 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.Expressions
 {
+    /// <summary>
+    /// Partial walker is used for postfix evaluation of Postfix expressions/statements
+    /// </summary>
     class PartialWalker : TreeVisitor
     {
-        Stack<object> _valueStack = new Stack<object>();
+        #region Private members
+        /// <summary>
+        /// Stack of values (can contains Value or VariableName)
+        /// </summary>
+        private Stack<object> _valueStack = new Stack<object>();
+        /// <summary>
+        /// Available expression evaluator
+        /// </summary>
+        private ExpressionEvaluator _evaluator;
+        /// <summary>
+        /// Available function resolver
+        /// </summary>
+        private FunctionResolver _functionResolver;
+        /// <summary>
+        /// Controller available for current eval
+        /// </summary>
+        private FlowController _currentControler;
+        #endregion
 
-        ExpressionEvaluator _evaluator;
-        FunctionResolver _resolver;
-        FlowControler _currentControler;
-
-        public PartialWalker(ExpressionEvaluator evaluator, FunctionResolver resolver)
+        internal PartialWalker(ExpressionEvaluator evaluator, FunctionResolver resolver)
         {
             _evaluator = evaluator;
-            _resolver = resolver;
+            _functionResolver = resolver;
         }
 
-        internal void Eval(FlowControler flow, LangElement partial)
+        /// <summary>
+        /// Eval given partial in context of flow
+        /// </summary>
+        /// <param name="flow">Flow context of partial</param>
+        /// <param name="partial">Partial of evaluated expression/statement</param>
+        internal void Eval(FlowController flow, LangElement partial)
         {
+            //all outsets has to be extended by its in sets
             flow.OutSet.Extend(flow.InSet);
 
             if (partial == null)
@@ -39,11 +61,21 @@ namespace Weverca.Analysis.Expressions
             partial.VisitMe(this);
         }
  
+        /// <summary>
+        /// Insert return value into valueStack
+        /// NOTE:
+        ///     Is called from outside, because of non-recursive call handling
+        /// </summary>
+        /// <param name="returnValue">Inserted return value</param>
         internal void InsertReturnValue(MemoryEntry returnValue)
         {
             push(returnValue);
         }
 
+        /// <summary>
+        /// Pop all values currently available on stack
+        /// </summary>
+        /// <returns>Popped values</returns>
         internal MemoryEntry[] PopAllValues()
         {
             var result = new MemoryEntry[_valueStack.Count];
@@ -56,6 +88,7 @@ namespace Weverca.Analysis.Expressions
             return result;
         }
         #region Value stack operations
+
         /// <summary>
         /// Reset partial walker between statement processing
         /// NOTE:
@@ -66,6 +99,10 @@ namespace Weverca.Analysis.Expressions
             _valueStack.Clear();
         } 
         
+        /// <summary>
+        /// Pop top of stack as value (variableNames will be resolved)
+        /// </summary>
+        /// <returns>Popped value</returns>
         private MemoryEntry popValue()
         {
             var value = _valueStack.Pop();
@@ -80,6 +117,10 @@ namespace Weverca.Analysis.Expressions
             }
         }
 
+        /// <summary>
+        /// Pop top of stack as VariableName
+        /// </summary>
+        /// <returns>Popped variable name</returns>
         private VariableName popVariable()
         {
             var value = _valueStack.Pop();
@@ -89,19 +130,13 @@ namespace Weverca.Analysis.Expressions
             return (VariableName)value;
         }
 
-        private void push(MemoryEntry value)
-        {
-            _valueStack.Push(value);
-        }
-
-        private void push(VariableName variable)
-        {
-            _valueStack.Push(variable);
-        }
-
+        /// <summary>
+        /// Pop arguments according to call signature
+        /// </summary>
+        /// <param name="signature">Popped call signature</param>
+        /// <returns>popped values</returns>
         private MemoryEntry[] popArguments(CallSignature signature)
         {
-
             var parCount = signature.Parameters.Count;
 
             List<MemoryEntry> parameters = new List<MemoryEntry>();
@@ -114,9 +149,28 @@ namespace Weverca.Analysis.Expressions
             return parameters.ToArray();
         }
 
+        /// <summary>
+        /// Pushes value on stack
+        /// </summary>
+        /// <param name="value">Pushed value</param>
+        private void push(MemoryEntry value)
+        {
+            _valueStack.Push(value);
+        }
+
+        /// <summary>
+        /// Pushes variable on stack
+        /// </summary>
+        /// <param name="variable">Pushed variable</param>
+        private void push(VariableName variable)
+        {
+            _valueStack.Push(variable);
+        }
+        
         #endregion
 
-        #region TreeVisitor  overrides
+        #region TreeVisitor overrides - used for evaluating
+
         public override void VisitAssignEx(AssignEx x)
         {
             throw new NotImplementedException();
@@ -133,9 +187,7 @@ namespace Weverca.Analysis.Expressions
             //TODO is there alias or value assign ?
             push(aliasedVariable);
         }
-
         
-
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var value = popValue();
@@ -180,7 +232,7 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var functionNameValue = popValue();
 
-            var names = _resolver.GetFunctionNames(functionNameValue);
+            var names = _functionResolver.GetFunctionNames(functionNameValue);
 
             foreach (var name in names)
             {
@@ -199,16 +251,24 @@ namespace Weverca.Analysis.Expressions
         }
         #endregion
 
-        
+        /// <summary>
+        /// Visit method for NativeAnalyzer
+        /// </summary>
+        /// <param name="nativeAnalyzer">Native analyzer</param>
         internal void VisitNative(NativeAnalyzer nativeAnalyzer)
         {
             nativeAnalyzer.Method(_currentControler);
         }
 
+        /// <summary>
+        /// Add dispatch into _currentController
+        /// </summary>
+        /// <param name="name">Dispatched method name</param>
+        /// <param name="arguments">Arguments for call dispatch</param>
         private void addDispatch(QualifiedName name, MemoryEntry[] arguments)
         {
             var callInput = _currentControler.OutSet.CreateCall(null, arguments);
-            var methodGraph = _resolver.InitializeCall(callInput, name);
+            var methodGraph = _functionResolver.InitializeCall(callInput, name);
 
             var info = new CallInfo(callInput, methodGraph);
             _currentControler.AddDispatch(info);            

@@ -8,68 +8,70 @@ using PHP.Core.AST;
 
 namespace Weverca.Analysis.Expressions
 {
-    static class Converter
+    /// <summary>
+    /// Converts elements between representations
+    /// </summary>
+    public static class Converter
     {
-        static PostfixVisitorConverter _visitor=new PostfixVisitorConverter();
+        /// <summary>
+        /// Singleton visitor for postfix converting
+        /// </summary>
+        private static PostfixVisitorConverter _visitor=new PostfixVisitorConverter();
 
-        static internal Postfix GetPostfix(LangElement element)
+        /// <summary>
+        /// Convert given element into Postfix representation
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public static Postfix GetPostfix(LangElement element)
         {
             return _visitor.GetExpression(element);
         }
     }
 
+    /// <summary>
+    /// Visitor for postfix conversion
+    /// </summary>
     class PostfixVisitorConverter:TreeVisitor
     {
         Postfix _collectedExpression;
              
-
-        public Postfix GetExpression(LangElement element)
+        /// <summary>
+        /// Get converted expression of element
+        /// </summary>
+        /// <param name="element">Converted element</param>
+        /// <returns>Postfix representation of element</returns>
+        internal Postfix GetExpression(LangElement element)
         {
             _collectedExpression = new Postfix(element);
             element.VisitMe(this);
 
             //element where VisitMe is called is not traversed
-            addItem(element);
+            appendElement(element);
             return _collectedExpression;
         }
         
-        private void addItem(LangElement element)
+        /// <summary>
+        /// Append element into postfix representation
+        /// </summary>
+        /// <param name="element">Appended element</param>
+        private void appendElement(LangElement element)
         {
-            _collectedExpression.Add(element);
+            _collectedExpression.Append(element);
         }
 
+        #region Vistor overrides
         public override void VisitElement(LangElement element)
         {
             base.VisitElement(element);
-            addItem(element);
+            appendElement(element);
         }
 
         public override void VisitFunctionDecl(FunctionDecl x)
         {
             //no recursive traversing
-            addItem(x);
+            appendElement(x);
         }
-
-
-     /*   public override void VisitAssignEx(AssignEx x)
-        {
-            base.VisitAssignEx(x);
-            addItem(x);
-        }
-        public override void VisitBinaryEx(BinaryEx x)
-        {
-            base.VisitBinaryEx(x);
-            addItem(x);
-        }
-        public override void VisitDirectVarUse(DirectVarUse x)
-        {
-            base.VisitDirectVarUse(x);
-            addItem(x);
-        }
-        public override void VisitStringLiteral(StringLiteral x)
-        {
-            base.VisitStringLiteral(x);
-            addItem(x);
-        }*/
+        #endregion
     }
 }

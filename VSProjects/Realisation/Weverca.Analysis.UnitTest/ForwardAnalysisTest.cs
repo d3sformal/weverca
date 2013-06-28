@@ -26,6 +26,10 @@ $call_result=strtolower('TEST');
 $call_result=concat('A','B');
 ".AssertVariable("call_result").HasValues("AB");
 
+        readonly static TestCase NativeCallProcessingNestedCalls_CASE= @"
+$call_result=concat(strtolower('Ab'),strtoupper('Cd'));
+".AssertVariable("call_result").HasValues("abCD");
+
         readonly static TestCase IndirectCall_CASE = @"
 $call_name='strtolower';
 $call_result=$call_name('TEST');
@@ -86,6 +90,12 @@ if($unknown=='PossibilityA'){
         public void NativeCallProcessing2Arguments()
         {
             AnalysisTestUtils.RunTestCase(NativeCallProcessing2Arguments_CASE);
+        }  
+        
+        [TestMethod]
+        public void NativeCallProcessingNestedCalls()
+        {
+            AnalysisTestUtils.RunTestCase(NativeCallProcessingNestedCalls_CASE);
         }
 
         [TestMethod]
