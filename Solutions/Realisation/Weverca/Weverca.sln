@@ -23,7 +23,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.MemoryModels.UnitTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.Analysis.UnitTest\Weverca.Analysis.UnitTest.csproj", "{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis", "..\..\..\..\..\Weverca.TaintedAnalysis\Weverca.TaintedAnalysis.csproj", "{DCF771A1-9590-4A32-9362-00A9CF282912}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis", "..\..\..\VSProjects\Realisation\Weverca.TaintedAnalysis\Weverca.TaintedAnalysis.csproj", "{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,10 +75,10 @@ Global
 		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DCF771A1-9590-4A32-9362-00A9CF282912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DCF771A1-9590-4A32-9362-00A9CF282912}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DCF771A1-9590-4A32-9362-00A9CF282912}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DCF771A1-9590-4A32-9362-00A9CF282912}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
