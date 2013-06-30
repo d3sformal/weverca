@@ -110,9 +110,9 @@ namespace Weverca.Analysis
             return _snapshot.CreateArray();
         }
 
-        public ObjectValue CreateObject()
+        public ObjectValue CreateObject(TypeDecl type)
         {
-            return _snapshot.CreateObject();
+            return _snapshot.CreateObject(type);
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)

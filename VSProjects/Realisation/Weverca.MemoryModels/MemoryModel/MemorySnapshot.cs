@@ -146,5 +146,15 @@ namespace Weverca.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override void initializeObject(Analysis.Memory.ObjectValue createdObject, PHP.Core.AST.TypeDecl type)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void initializeArray(AssociativeArray createdArray)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

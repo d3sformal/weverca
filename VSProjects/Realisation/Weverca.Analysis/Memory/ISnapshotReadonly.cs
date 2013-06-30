@@ -26,5 +26,12 @@ namespace Weverca.Analysis.Memory
         /// <param name="sourceVar">Variable which value will be readed</param>
         /// <returns>Value stored for given variable</returns>
         MemoryEntry ReadValue(VariableName sourceVar);
+
+         /// <summary>
+        /// Creates index for given identifier
+        /// </summary>
+        /// <param name="identifier">Identifier of index</param>
+        /// <returns>Created index</returns>
+        ContainerIndex CreateIndex(string identifier);
     }
 }

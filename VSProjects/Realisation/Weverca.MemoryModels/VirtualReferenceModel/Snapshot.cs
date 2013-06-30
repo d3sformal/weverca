@@ -378,5 +378,15 @@ namespace Weverca.VirtualReferenceModel
         {
             throw new NotImplementedException();
         }
+
+        protected override void initializeObject(ObjectValue createdObject, PHP.Core.AST.TypeDecl type)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void initializeArray(AssociativeArray createdArray)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

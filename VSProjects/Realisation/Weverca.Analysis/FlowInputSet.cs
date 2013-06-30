@@ -39,5 +39,11 @@ namespace Weverca.Analysis
             return _snapshot.ReadValue(sourceVar);
         }
         #endregion
+
+
+        public ContainerIndex CreateIndex(string identifier)
+        {
+            return _snapshot.CreateIndex(identifier);
+        }
     }
 }

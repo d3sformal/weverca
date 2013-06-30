@@ -42,10 +42,10 @@ namespace Weverca.Analysis.Memory
         /// <returns></returns>
         AssociativeArray CreateArray();
         /// <summary>
-        /// Create object - TODO what kind of info will be neaded for creation?
-        /// </summary>
-        /// <returns></returns>
-        ObjectValue CreateObject();
+        /// Create object of given type
+        /// </summary>   
+        /// <param name="type">Desired type of created object</param>
+        ObjectValue CreateObject(TypeDecl type);
         /// <summary>
         /// Create alias for given variable
         /// </summary>

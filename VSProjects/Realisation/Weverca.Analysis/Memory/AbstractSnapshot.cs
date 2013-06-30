@@ -36,7 +36,7 @@ namespace Weverca.Analysis.Memory
         private static readonly AnyValue _anyValue = new AnyValue();
         /// <summary>
         /// Undefined value singleton
-        /// </summary>
+        /// </summary>s
         private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
         /// <summary>
         /// singleton variable where return value is stored
@@ -87,6 +87,18 @@ namespace Weverca.Analysis.Memory
         /// <returns>True if there is semantic change in transaction, false otherwise</returns>
         protected abstract bool commitTransaction();
 
+
+        /// <summary>
+        /// Initialize object of given type
+        /// </summary>
+        /// <param name="createdObject">Created object that has to be initialized</param>
+        /// <param name="type">Desired type of initialized object</param>
+        protected abstract void initializeObject(ObjectValue createdObject, TypeDecl type);
+        /// <summary>
+        /// Initialize array
+        /// </summary>
+        /// <param name="createdArray">Created array that has to be initalized</param>
+        protected abstract void initializeArray(AssociativeArray createdArray);
         /// <summary>
         /// Create alias for given variable
         /// </summary>
@@ -335,6 +347,17 @@ namespace Weverca.Analysis.Memory
             return new VariableName(".arg"+index);
         }
 
+        /// <summary>
+        /// Creates index for given identifier
+        /// </summary>
+        /// <param name="identifier">Identifier of index</param>
+        /// <returns>Created index</returns>
+        public ContainerIndex CreateIndex(string identifier)
+        {
+            ++_statistics.CreatedIndexes;
+            return new ContainerIndex(identifier);
+        }
+
         public StringValue CreateString(string literal)
         {
             checkCanUpdate();
@@ -382,18 +405,28 @@ namespace Weverca.Analysis.Memory
             return new FunctionValue(declaration);
         }
 
-        public ObjectValue CreateObject()
+        public ObjectValue CreateObject(TypeDecl type)
         {
             checkCanUpdate();
 
-            throw new NotImplementedException();
+            var createdObject = new ObjectValue();
+            ++_statistics.CreatedObjectValues;
+
+            initializeObject(createdObject, type);
+
+            return createdObject;
         }
 
         public AssociativeArray CreateArray()
         {
             checkCanUpdate();
 
-            throw new NotImplementedException();
+            var createdArray = new AssociativeArray();
+            ++_statistics.CreatedArrayValues;
+
+            initializeArray(createdArray);
+
+            return createdArray;
         }
 
         public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
