@@ -20,14 +20,10 @@ namespace Weverca.TaintedAnalysis
         {
             return null;
         }
-        NativeAnalyzer getNativeAnalyzer(QualifiedName name)
+        NativeAnalyzerMethod getNativeAnalyzer(QualifiedName name)
         {
             return null;
         }
 
-    }
-    interface NativeAnalyzer
-    {
-        void analyze(FlowController flow) { }
-    }
+    }    
 }
