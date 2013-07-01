@@ -67,6 +67,12 @@ namespace Weverca.Analysis.Expressions
             appendElement(element);
         }
 
+        public override void VisitIndirectVarUse(IndirectVarUse x)
+        {
+            //force traversing 
+            VisitElement(x.VarNameEx);  
+        }
+
         public override void VisitFunctionDecl(FunctionDecl x)
         {
             //no recursive traversing

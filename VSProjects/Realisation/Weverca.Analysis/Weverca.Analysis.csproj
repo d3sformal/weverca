@@ -87,6 +87,7 @@
     <Compile Include="ProgramPoint.cs" />
     <Compile Include="ProgramPointGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VariableEntry.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

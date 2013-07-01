@@ -152,8 +152,6 @@ namespace Weverca.VirtualReferenceModel
         /// <param name="inputs"></param>
         protected override void extend(ISnapshotReadonly[] inputs)
         {
-
-
             _data = new Dictionary<VirtualReference, MemoryEntry>();
             _variables = new Dictionary<VariableName, VariableInfo>();
             foreach (Snapshot input in inputs)

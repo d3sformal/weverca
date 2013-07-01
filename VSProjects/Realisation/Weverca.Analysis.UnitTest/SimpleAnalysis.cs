@@ -50,14 +50,49 @@ namespace Weverca.Analysis.UnitTest
     /// </summary>
     class SimpleExpressionEvaluator : ExpressionEvaluator
     {
-        public override void Assign(VariableName target, MemoryEntry value)
+        public override void Assign(VariableEntry target, MemoryEntry value)
         {
-            Flow.OutSet.Assign(target, value);
+            if (target.IsDirect)
+            {
+                OutSet.Assign(target.DirectName, value);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
-        public override void AliasAssign(VariableName target, AliasValue alias)
+        public override void AliasAssign(VariableEntry target, IEnumerable<AliasValue> alias)
         {
-            Flow.OutSet.Assign(target, alias);
+            if (alias.Count() != 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            if (target.IsDirect)
+            {
+                OutSet.Assign(target.DirectName, alias.First());
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public override MemoryEntry ResolveVariable(VariableEntry variable)
+        {
+            if (!variable.IsDirect)
+            {
+                throw new NotImplementedException();
+            }
+
+            return OutSet.ReadValue(variable.DirectName);
+        }
+
+        public override IEnumerable<string> VariableNames(MemoryEntry value)
+        {
+            //TODO convert all value types
+            return from StringValue possible in value.PossibleValues select possible.Value;            
         }
 
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand)
@@ -72,6 +107,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #region Expression evaluation helpers
+                
 
         private MemoryEntry areEqual(MemoryEntry left, MemoryEntry right)
         {
@@ -79,12 +115,12 @@ namespace Weverca.Analysis.UnitTest
             var result = new List<BooleanValue>();
             if (canBeDifferent(left,right))
             {
-                result.Add(Flow.OutSet.CreateBool(false));
+                result.Add(OutSet.CreateBool(false));
             }
 
             if (canBeSame(left,right))
             {
-                result.Add(Flow.OutSet.CreateBool(true));
+                result.Add(OutSet.CreateBool(true));
             }
 
             return new MemoryEntry(result.ToArray());
@@ -121,10 +157,12 @@ namespace Weverca.Analysis.UnitTest
         private bool containsAnyValue(MemoryEntry entry)
         {
             //TODO Undefined value maybe is not correct to be treated as any value
-            return entry.PossibleValues.Contains(Flow.OutSet.AnyValue) || entry.PossibleValues.Contains(Flow.OutSet.UndefinedValue);
+            return entry.PossibleValues.Contains(OutSet.AnyValue) || entry.PossibleValues.Contains(OutSet.UndefinedValue);
         }
 
-        #endregion
+        #endregion 
+    
+
     }
     
     /// <summary>

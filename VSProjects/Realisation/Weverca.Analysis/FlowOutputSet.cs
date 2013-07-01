@@ -95,9 +95,9 @@ namespace Weverca.Analysis
             return _snapshot.CreateBool(boolean);
         }   
 
-        public FloatValue CreateFloat(double number)
+        public FloatValue CreateDouble(double number)
         {
-            return _snapshot.CreateFloat(number);
+            return _snapshot.CreateDouble(number);
         }
 
         public FunctionValue CreateFunction(FunctionDecl declaration)

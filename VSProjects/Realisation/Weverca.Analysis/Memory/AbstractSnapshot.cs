@@ -389,7 +389,7 @@ namespace Weverca.Analysis.Memory
             return new BooleanValue(boolean);
         }
 
-        public FloatValue CreateFloat(double number)
+        public FloatValue CreateDouble(double number)
         {
             checkCanUpdate();
 

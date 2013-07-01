@@ -106,9 +106,9 @@ namespace Weverca.Analysis.Expressions
         private MemoryEntry popValue()
         {
             var value = _valueStack.Pop();
-            if (value is VariableName)
+            if (value is VariableEntry)
             {
-                return _evaluator.ResolveVariable((VariableName)value);
+                return _evaluator.ResolveVariable((VariableEntry)value);
             }
             else
             {
@@ -121,13 +121,13 @@ namespace Weverca.Analysis.Expressions
         /// Pop top of stack as VariableName
         /// </summary>
         /// <returns>Popped variable name</returns>
-        private VariableName popVariable()
+        private VariableEntry popVariable()
         {
             var value = _valueStack.Pop();
 
-            Debug.Assert(value is VariableName, "Variable was expected on stack - incorrect stack behaviour");
+            Debug.Assert(value is VariableEntry, "Variable was expected on stack - incorrect stack behaviour");
 
-            return (VariableName)value;
+            return (VariableEntry)value;
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace Weverca.Analysis.Expressions
         /// Pushes variable on stack
         /// </summary>
         /// <param name="variable">Pushed variable</param>
-        private void push(VariableName variable)
+        private void push(VariableEntry variable)
         {
             _valueStack.Push(variable);
         }
@@ -171,6 +171,59 @@ namespace Weverca.Analysis.Expressions
 
         #region TreeVisitor overrides - used for evaluating
 
+
+        #region Literals visiting
+        public override void VisitStringLiteral(StringLiteral x)
+        {
+            push(_evaluator.StringLiteral(x));
+        }
+
+        public override void VisitBoolLiteral(BoolLiteral x)
+        {
+            push(_evaluator.BoolLiteral(x));
+        }
+
+        public override void VisitIntLiteral(IntLiteral x)
+        {
+            push(_evaluator.IntLiteral(x));
+        }
+
+        public override void VisitLongIntLiteral(LongIntLiteral x)
+        {
+            push(_evaluator.LongIntLiteral(x));
+        }
+
+        public override void VisitDoubleLiteral(DoubleLiteral x)
+        {
+            push(_evaluator.DoubleLiteral(x));
+        }
+
+        public override void VisitBinaryStringLiteral(BinaryStringLiteral x)
+        {
+            throw new NotImplementedException("What is binary string literal ? ");
+        }
+        #endregion
+
+
+        #region Variable visiting
+        public override void VisitIndirectVarUse(IndirectVarUse x)
+        {
+            var varValue = popValue();
+
+            var varNames= _evaluator.VariableNames(varValue);
+
+
+            push(new VariableEntry(varNames));
+        }
+
+        public override void VisitDirectVarUse(DirectVarUse x)
+        {
+            push(new VariableEntry(x.VarName));
+        }
+        #endregion
+
+
+        #region Assign expressions visiting
         public override void VisitAssignEx(AssignEx x)
         {
             throw new NotImplementedException();
@@ -180,7 +233,7 @@ namespace Weverca.Analysis.Expressions
         {
             var aliasedVariable = popVariable();
             var assignedVariable = popVariable();
-
+            
             var alias=_evaluator.ResolveAlias(aliasedVariable);
             _evaluator.AliasAssign(assignedVariable, alias);
 
@@ -198,23 +251,9 @@ namespace Weverca.Analysis.Expressions
             push(value);
         }
 
-        public override void VisitStringLiteral(StringLiteral x)
-        {
-            push(_evaluator.StringLiteral(x));
-        }
+        #endregion
 
-        public override void VisitBinaryEx(BinaryEx x)
-        {
-            var rightOperand = popValue();
-            var leftOperand = popValue();
-            push(_evaluator.BinaryEx(leftOperand, x.PublicOperation, rightOperand));
-        }
-
-        public override void VisitDirectVarUse(DirectVarUse x)
-        {
-            push(x.VarName);
-        }
-
+        #region Function visiting
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
             var arguments = popArguments(x.CallSignature);
@@ -224,9 +263,7 @@ namespace Weverca.Analysis.Expressions
 
             //Result value won't be pushed, because it's directly inserted from analysis
         }
-
-
-
+        
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
             var arguments = popArguments(x.CallSignature);
@@ -249,6 +286,16 @@ namespace Weverca.Analysis.Expressions
         {
             //TODO what is its stack behaviour ?
         }
+        #endregion
+
+        public override void VisitBinaryEx(BinaryEx x)
+        {
+            var rightOperand = popValue();
+            var leftOperand = popValue();
+            push(_evaluator.BinaryEx(leftOperand, x.PublicOperation, rightOperand));
+        }
+
+
         #endregion
 
         /// <summary>

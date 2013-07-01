@@ -37,8 +37,9 @@ namespace Weverca.Analysis.Expressions
 
         #region Template API methods for implementors
 
-        abstract public void AliasAssign(VariableName target, AliasValue alias);
-        abstract public void Assign(VariableName target, MemoryEntry value);
+        abstract public MemoryEntry ResolveVariable(VariableEntry variable);
+        abstract public void AliasAssign(VariableEntry target, IEnumerable<AliasValue> possibleAliases);
+        abstract public void Assign(VariableEntry target, MemoryEntry value);
         abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
 
         #endregion
@@ -56,31 +57,47 @@ namespace Weverca.Analysis.Expressions
         
         #region Default implementation of simple routines
 
-        virtual public MemoryEntry ResolveVariable(VariableName variable)
-        {
-            return InSet.ReadValue(variable);
-        }
         
-        virtual public AliasValue ResolveAlias(VariableName aliasedVariable)
+        
+        virtual public IEnumerable<AliasValue> ResolveAlias(VariableEntry aliasedVariables)
         {
-            return Flow.OutSet.CreateAlias(aliasedVariable);
+            return from aliasedVariable in aliasedVariables.PossibleNames select Flow.OutSet.CreateAlias(aliasedVariable);
         }
 
         virtual public MemoryEntry StringLiteral(StringLiteral x)
         {
-            return new MemoryEntry(Flow.OutSet.CreateString(x.Value as String));
+            return new MemoryEntry(OutSet.CreateString(x.Value as String));
         }
 
         virtual public MemoryEntry IntLiteral(IntLiteral x)
         {
-            return new MemoryEntry(Flow.OutSet.CreateInt((int)x.Value));
+            return new MemoryEntry(OutSet.CreateInt((int)x.Value));
         }
 
-        virtual public MemoryEntry IntLiteral(LongIntLiteral x)
+        virtual public MemoryEntry LongIntLiteral(LongIntLiteral x)
         {
-            return new MemoryEntry(Flow.OutSet.CreateLong((long)x.Value));
+            return new MemoryEntry(OutSet.CreateLong((long)x.Value));
         }
 
+        virtual public MemoryEntry BoolLiteral(BoolLiteral x)
+        {
+            return new MemoryEntry(OutSet.CreateBool((bool)x.Value));
+        }
+
+        virtual public MemoryEntry DoubleLiteral(DoubleLiteral x)
+        {
+            return new MemoryEntry(OutSet.CreateDouble((double)x.Value));
+        }
         #endregion
+
+
+        /// <summary>
+        /// Resolves possible name of variable identifier by value
+        /// NOTE:
+        ///     Is used for resolving indirect variable usages
+        /// </summary>
+        /// <param name="value">Value representing possible names of variable</param>
+        /// <returns>Possible variable names</returns>
+        abstract public IEnumerable<string> VariableNames(MemoryEntry value);
     }
 }

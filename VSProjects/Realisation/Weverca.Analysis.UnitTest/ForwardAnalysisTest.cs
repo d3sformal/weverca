@@ -74,6 +74,13 @@ if($unknown=='PossibilityA'){
 }
 ".AssertVariable("Var").HasValues("init","PossibilityA");
 
+
+        readonly static TestCase IndirectVarAssign_CASE = @"
+$Indirect='x';
+$ID='Indirect';
+$$ID='Indirectly assigned';
+".AssertVariable("Indirect").HasValues("Indirectly assigned");
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -127,6 +134,12 @@ if($unknown=='PossibilityA'){
         public void EqualsAssumption()
         {
             AnalysisTestUtils.RunTestCase(EqualsAssumption_CASE);
+        }
+        
+        [TestMethod]
+        public void IndirectVarAssign()
+        {
+            AnalysisTestUtils.RunTestCase(IndirectVarAssign_CASE);
         }
     }
 }
