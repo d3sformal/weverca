@@ -13,10 +13,10 @@ using Weverca.ControlFlowGraph;
 
 namespace Weverca.Analysis.UnitTest
 {
-    class SimpleAnalysis:ForwardAnalysis
+    class SimpleAnalysis : ForwardAnalysis
     {
         public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG)
-            : base(entryCFG)           
+            : base(entryCFG)
         {
         }
 
@@ -44,7 +44,7 @@ namespace Weverca.Analysis.UnitTest
     }
 
 
- 
+
     /// <summary>
     /// Expression evaluation is resovled here
     /// </summary>
@@ -92,7 +92,7 @@ namespace Weverca.Analysis.UnitTest
         public override IEnumerable<string> VariableNames(MemoryEntry value)
         {
             //TODO convert all value types
-            return from StringValue possible in value.PossibleValues select possible.Value;            
+            return from StringValue possible in value.PossibleValues select possible.Value;
         }
 
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand)
@@ -100,25 +100,25 @@ namespace Weverca.Analysis.UnitTest
             switch (operation)
             {
                 case Operations.Equal:
-                    return areEqual(leftOperand, rightOperand);            
+                    return areEqual(leftOperand, rightOperand);
                 default:
                     throw new NotImplementedException();
             }
         }
 
         #region Expression evaluation helpers
-                
+
 
         private MemoryEntry areEqual(MemoryEntry left, MemoryEntry right)
         {
-            
+
             var result = new List<BooleanValue>();
-            if (canBeDifferent(left,right))
+            if (canBeDifferent(left, right))
             {
                 result.Add(OutSet.CreateBool(false));
             }
 
-            if (canBeSame(left,right))
+            if (canBeSame(left, right))
             {
                 result.Add(OutSet.CreateBool(true));
             }
@@ -128,7 +128,7 @@ namespace Weverca.Analysis.UnitTest
 
         private bool canBeSame(MemoryEntry left, MemoryEntry right)
         {
-            if (containsAnyValue(left)||containsAnyValue(right)) 
+            if (containsAnyValue(left) || containsAnyValue(right))
                 return true;
 
             foreach (var possibleValue in left.PossibleValues)
@@ -160,11 +160,11 @@ namespace Weverca.Analysis.UnitTest
             return entry.PossibleValues.Contains(OutSet.AnyValue) || entry.PossibleValues.Contains(OutSet.UndefinedValue);
         }
 
-        #endregion 
-    
+        #endregion
+
 
     }
-    
+
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
@@ -210,6 +210,24 @@ namespace Weverca.Analysis.UnitTest
             return new MemoryEntry(flattenValues.ToArray());
         }
 
+        public override IEnumerable<LangElement> ResolveFunction(FlowInputSet callInput, QualifiedName name)
+        {
+            NativeAnalyzer analyzer;
+
+            if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
+            {
+                //we have native analyzer - create it's program point 
+                return new LangElement[]{ analyzer};
+            }
+            else
+            {
+                var functions = callInput.ResolveFunction(name.Name);
+
+                var declarations = from FunctionValue function in functions select function.Declaration;
+                return declarations;
+            }
+        }
+
         /// <summary>
         /// Initialize call into callInput. 
         /// 
@@ -217,22 +235,10 @@ namespace Weverca.Analysis.UnitTest
         ///     arguments are already initialized
         ///     sharing program point graphs is possible
         /// </summary>
-        /// <param name="callInput"></param>
-        /// <param name="name"></param>
         /// <returns></returns>
-        public override ProgramPointGraph InitializeCall(FlowOutputSet callInput, QualifiedName name)
+        public override ProgramPointGraph InitializeCall(FlowOutputSet callInput, LangElement declaration)
         {
-            NativeAnalyzer analyzer;
-        
-            if (_nativeAnalyzers.TryGetValue(name.Name.Value,out analyzer))
-            {
-                //we have native analyzer - create it's program point 
-                return ProgramPointGraph.ForNative(analyzer);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            return ProgramPointGraph.From(declaration);
         }
 
         #region Native analyzers
@@ -253,7 +259,7 @@ namespace Weverca.Analysis.UnitTest
             }
 
 
-            flow.OutSet.Assign(flow.OutSet.ReturnValue,new MemoryEntry(possibleValues.ToArray()));
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
         }
 
         /// <summary>
@@ -291,7 +297,7 @@ namespace Weverca.Analysis.UnitTest
                 {
                     possibleValues.Add(flow.OutSet.CreateString(possible0.Value + possible1.Value));
                 }
-               
+
             }
 
 

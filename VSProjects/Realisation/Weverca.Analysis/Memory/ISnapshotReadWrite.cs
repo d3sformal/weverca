@@ -54,6 +54,8 @@ namespace Weverca.Analysis.Memory
         AliasValue CreateAlias(VariableName sourceVar);
         #endregion
 
+
+        void DeclareGlobal(FunctionDecl declaration);
         /// <summary>
         /// Assign value into targetVar
         /// If value is AliasValue - must alias has to be set for variable

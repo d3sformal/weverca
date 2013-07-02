@@ -156,5 +156,15 @@ namespace Weverca.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override void declareGlobal(FunctionValue declaration)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<FunctionValue> resolveFunction(Name functionName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

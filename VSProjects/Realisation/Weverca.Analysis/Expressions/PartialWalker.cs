@@ -56,11 +56,11 @@ namespace Weverca.Analysis.Expressions
             }
 
             _currentControler = flow;
-            _evaluator.SetContext(flow, partial);            
-          
+            _evaluator.SetContext(flow, partial);
+
             partial.VisitMe(this);
         }
- 
+
         /// <summary>
         /// Insert return value into valueStack
         /// NOTE:
@@ -97,8 +97,8 @@ namespace Weverca.Analysis.Expressions
         internal void Reset()
         {
             _valueStack.Clear();
-        } 
-        
+        }
+
         /// <summary>
         /// Pop top of stack as value (variableNames will be resolved)
         /// </summary>
@@ -112,7 +112,7 @@ namespace Weverca.Analysis.Expressions
             }
             else
             {
-                Debug.Assert(value is MemoryEntry,"Unknown type has been pushed on stack - incorrect stack behaviour");
+                Debug.Assert(value is MemoryEntry, "Unknown type has been pushed on stack - incorrect stack behaviour");
                 return value as MemoryEntry;
             }
         }
@@ -166,7 +166,7 @@ namespace Weverca.Analysis.Expressions
         {
             _valueStack.Push(variable);
         }
-        
+
         #endregion
 
         #region TreeVisitor overrides - used for evaluating
@@ -210,7 +210,7 @@ namespace Weverca.Analysis.Expressions
         {
             var varValue = popValue();
 
-            var varNames= _evaluator.VariableNames(varValue);
+            var varNames = _evaluator.VariableNames(varValue);
 
 
             push(new VariableEntry(varNames));
@@ -233,14 +233,14 @@ namespace Weverca.Analysis.Expressions
         {
             var aliasedVariable = popVariable();
             var assignedVariable = popVariable();
-            
-            var alias=_evaluator.ResolveAlias(aliasedVariable);
+
+            var alias = _evaluator.ResolveAlias(aliasedVariable);
             _evaluator.AliasAssign(assignedVariable, alias);
 
             //TODO is there alias or value assign ?
             push(aliasedVariable);
         }
-        
+
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var value = popValue();
@@ -263,7 +263,7 @@ namespace Weverca.Analysis.Expressions
 
             //Result value won't be pushed, because it's directly inserted from analysis
         }
-        
+
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
             var arguments = popArguments(x.CallSignature);
@@ -276,16 +276,17 @@ namespace Weverca.Analysis.Expressions
                 addDispatch(name, arguments);
             }
         }
-      
+
         public override void VisitFunctionDecl(FunctionDecl x)
         {
-            throw new NotImplementedException();
+            _functionResolver.DeclareGlobal(_currentControler.OutSet, x);
         }
 
         public override void VisitActualParam(ActualParam x)
         {
             //TODO what is its stack behaviour ?
         }
+
         #endregion
 
         public override void VisitBinaryEx(BinaryEx x)
@@ -295,6 +296,18 @@ namespace Weverca.Analysis.Expressions
             push(_evaluator.BinaryEx(leftOperand, x.PublicOperation, rightOperand));
         }
 
+        public override void VisitJumpStmt(JumpStmt x)
+        {
+            switch (x.Type)
+            {
+                case JumpStmt.Types.Return:
+                    var value = popValue();
+                    push(_functionResolver.Return(_currentControler.OutSet, value));
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
 
         #endregion
 
@@ -314,11 +327,16 @@ namespace Weverca.Analysis.Expressions
         /// <param name="arguments">Arguments for call dispatch</param>
         private void addDispatch(QualifiedName name, MemoryEntry[] arguments)
         {
-            var callInput = _currentControler.OutSet.CreateCall(null, arguments);
-            var methodGraph = _functionResolver.InitializeCall(callInput, name);
+            var declarations = _functionResolver.ResolveFunction(_currentControler.OutSet, name);
+            foreach (var declaration in declarations)
+            {
 
-            var info = new CallInfo(callInput, methodGraph);
-            _currentControler.AddDispatch(info);            
+                var callInput = _currentControler.OutSet.CreateCall(null, arguments);
+                var methodGraph = _functionResolver.InitializeCall(callInput, declaration);
+
+                var info = new CallInfo(callInput, methodGraph);
+                _currentControler.AddDispatch(info);
+            }
         }
     }
 }

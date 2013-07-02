@@ -386,5 +386,28 @@ namespace Weverca.VirtualReferenceModel
         {
             throw new NotImplementedException();
         }
+
+        private VariableName functionStorage(string functionName)
+        {
+            return new VariableName("$function:"+functionName);
+        }
+
+        protected override void declareGlobal(FunctionValue function)
+        {
+            var storage = functionStorage(function.Declaration.Name.Value);
+
+            ReportMemoryEntryCreation();
+            //TODO assign into global scope
+            assign(storage, new MemoryEntry(function));
+        }
+
+        protected override IEnumerable<FunctionValue> resolveFunction(Name functionName)
+        {
+            var storage = functionStorage(functionName.Value);
+            //TODO read from global scope
+            var entry=readValue(storage);
+
+            return from FunctionValue function in entry.PossibleValues select function;
+        }
     }
 }

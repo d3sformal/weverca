@@ -33,5 +33,14 @@ namespace Weverca.Analysis.Memory
         /// <param name="identifier">Identifier of index</param>
         /// <returns>Created index</returns>
         ContainerIndex CreateIndex(string identifier);
+
+        /// <summary>
+        /// Resolves all possible functions for given functionName
+        /// NOTE:
+        ///     Multiple declarations for single functionName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="functionName">Name of resolved function</param>
+        /// <returns>Resolved functions</returns>
+        IEnumerable<FunctionValue> ResolveFunction(Name functionName);
     }
 }

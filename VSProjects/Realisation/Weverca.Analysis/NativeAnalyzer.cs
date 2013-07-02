@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 
@@ -16,6 +17,7 @@ namespace Weverca.Analysis
     /// </summary>
     /// <param name="flow">Flow controller available for method</param>
     public delegate void NativeAnalyzerMethod(FlowController flow);
+
 
     /// <summary>
     /// Lang element used for storing native analyzers in ProgramPointGraphs

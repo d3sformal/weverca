@@ -81,6 +81,33 @@ $ID='Indirect';
 $$ID='Indirectly assigned';
 ".AssertVariable("Indirect").HasValues("Indirectly assigned");
 
+
+        readonly static TestCase MergedReturnValue_CASE = @"
+function testFunction(){
+    if($unknown){
+        return 'ValueA';
+    }else{
+        return 'ValueB';
+    }
+}
+
+$CallResult=testFunction();
+".AssertVariable("CallResult").HasValues("ValueA", "ValueB");
+
+        readonly static TestCase MergedFunctionDeclarations_CASE = @"
+if($unknown){
+    function testFunction(){
+        return 'ValueA';
+    }
+}else{
+    function testFunction(){
+        return 'ValueB';
+    }
+}
+
+$CallResult=testFunction();
+".AssertVariable("CallResult").HasValues("ValueA", "ValueB");
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -140,6 +167,18 @@ $$ID='Indirectly assigned';
         public void IndirectVarAssign()
         {
             AnalysisTestUtils.RunTestCase(IndirectVarAssign_CASE);
+        }
+
+        [TestMethod]
+        public void MergedReturnValue()
+        {
+            AnalysisTestUtils.RunTestCase(MergedReturnValue_CASE);
+        }
+
+        [TestMethod]
+        public void MergedFunctionDeclarations()
+        {
+            AnalysisTestUtils.RunTestCase(MergedFunctionDeclarations_CASE);
         }
     }
 }

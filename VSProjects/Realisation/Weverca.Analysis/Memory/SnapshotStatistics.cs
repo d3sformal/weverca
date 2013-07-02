@@ -35,6 +35,8 @@ namespace Weverca.Analysis.Memory
         public int GlobalVariableFetches;
         public int CreatedLongValues;
         public int CreatedIndexes;
+        public int DeclaredFunctions;
+        public int FunctionResolvings;
 
         internal SnapshotStatistics Clone()
         {

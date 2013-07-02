@@ -69,7 +69,7 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         public bool HasChanged { get; private set; }
 
-        
+
 
 
 
@@ -156,7 +156,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="index">Array index that will be set</param>
         /// <param name="entry">Data that will be set on specified index</param>
         protected abstract void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
-        
+
         /// <summary>
         /// Set field specified by index, on object represented by value 
         /// </summary>
@@ -185,7 +185,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="value">Handler for array manipulation</param>
         /// <param name="index">Index that will be set</param>      
         protected abstract MemoryEntry getIndex(AssociativeArray value, ContainerIndex index);
-        
+
         /// <summary>
         /// Fetch variables from global context into current context
         /// </summary>
@@ -197,6 +197,20 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <returns>Variables defined in global scope</returns>
         protected abstract IEnumerable<VariableName> getGlobalVariables();
+        /// <summary>
+        /// Declare given function into global context
+        /// </summary>
+        /// <param name="declaration">Declared function</param>
+        protected abstract void declareGlobal(FunctionValue declaration);
+        /// <summary>
+        /// Resolves all possible functions for given functionName
+        /// NOTE:
+        ///     Multiple declarations for single functionName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="functionName">Name of resolved function</param>
+        /// <returns>Resolved functions</returns>
+        protected abstract IEnumerable<FunctionValue> resolveFunction(Name functionName);
+
         #endregion
 
         #region Statistic interface for implementors
@@ -313,18 +327,18 @@ namespace Weverca.Analysis.Memory
         {
             checkCanUpdate();
             _statistics.CreatedCallSnapshots++;
-           var snapshot= createCall(ThisObject, arguments);
+            var snapshot = createCall(ThisObject, arguments);
 
-           snapshot.StartTransaction();
-           for (int i = 0; i < arguments.Length; ++i)
-           {
-               var argVar = Argument(i);
+            snapshot.StartTransaction();
+            for (int i = 0; i < arguments.Length; ++i)
+            {
+                var argVar = Argument(i);
 
-               snapshot.Assign(argVar, arguments[i]);
-           }
-           snapshot.CommitTransaction();
+                snapshot.Assign(argVar, arguments[i]);
+            }
+            snapshot.CommitTransaction();
 
-           return snapshot;
+            return snapshot;
         }
         #endregion
 
@@ -344,7 +358,7 @@ namespace Weverca.Analysis.Memory
                 throw new NotSupportedException("Cannot get argument variable for negative index");
             }
 
-            return new VariableName(".arg"+index);
+            return new VariableName(".arg" + index);
         }
 
         /// <summary>
@@ -529,7 +543,7 @@ namespace Weverca.Analysis.Memory
 
         public void FetchFromGlobal(params VariableName[] variables)
         {
-            _statistics.GlobalVariableFetches+=variables.Length;
+            _statistics.GlobalVariableFetches += variables.Length;
             fetchFromGlobal(variables);
         }
 
@@ -537,6 +551,19 @@ namespace Weverca.Analysis.Memory
         {
             var globals = getGlobalVariables();
             FetchFromGlobal(globals.ToArray());
+        }
+
+        public void DeclareGlobal(FunctionDecl declaration)
+        {
+            var function = CreateFunction(declaration);
+            ++_statistics.DeclaredFunctions;
+            declareGlobal(function);
+        }
+
+        public IEnumerable<FunctionValue> ResolveFunction(Name functionName)
+        {
+            ++_statistics.FunctionResolvings;
+            return resolveFunction(functionName);
         }
         #endregion
 
@@ -559,6 +586,5 @@ namespace Weverca.Analysis.Memory
         }
         #endregion
 
- 
     }
 }

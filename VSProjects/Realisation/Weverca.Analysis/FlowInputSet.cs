@@ -38,12 +38,20 @@ namespace Weverca.Analysis
         {
             return _snapshot.ReadValue(sourceVar);
         }
-        #endregion
-
-
+        
         public ContainerIndex CreateIndex(string identifier)
         {
             return _snapshot.CreateIndex(identifier);
         }
+        
+        public IEnumerable<FunctionValue> ResolveFunction(Name functionName)
+        {
+            return _snapshot.ResolveFunction(functionName);
+        }
+        #endregion
+
+
+
+
     }
 }

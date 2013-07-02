@@ -140,6 +140,11 @@ namespace Weverca.Analysis
             _snapshot.FetchFromGlobalAll();
         }
 
+        public void DeclareGlobal(FunctionDecl declaration)
+        {
+            _snapshot.DeclareGlobal(declaration);
+        }
+
         /// <summary>
         /// Expects FlowInput set objects
         /// </summary>

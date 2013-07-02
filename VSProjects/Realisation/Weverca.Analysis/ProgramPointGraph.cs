@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
 using PHP.Core.AST;
+using PHP.Core.Reflection;
+
 using Weverca.ControlFlowGraph;
 
 namespace Weverca.Analysis
@@ -42,7 +45,7 @@ namespace Weverca.Analysis
         /// All program points from where was this program point graph invoked
         /// </summary>
         public IEnumerable<ProgramPoint> InvocationPoints { get { return _invocationPoints; } }
-        
+
         internal ProgramPointGraph(BasicBlock entryPoint)
         {
             Start = empty(entryPoint);
@@ -76,11 +79,41 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="analyzer">Native analyzer</param>
         /// <returns>Created program point graph</returns>
-        public static ProgramPointGraph ForNative(NativeAnalyzer analyzer)
+        internal static ProgramPointGraph FromNative(NativeAnalyzer analyzer)
         {
             var basicBlock = new BasicBlock();
             basicBlock.AddElement(analyzer);
             return new ProgramPointGraph(basicBlock);
+        }
+
+        /// <summary>
+        /// Creates program point graph for given function declaration
+        /// </summary>
+        /// <param name="declarations"></param>
+        /// <returns></returns>
+        internal static ProgramPointGraph FromSource(FunctionDecl declaration)
+        {
+            var file = new PhpSourceFile(new FullPath("nothing"), new FullPath("nothing"));
+            var compUnit = new ScriptCompilationUnit();
+            var sourceUnit = new VirtualSourceFileUnit(compUnit, "nothing",file, Encoding.Default);
+            var functionCode = new GlobalCode(declaration.Body,sourceUnit);
+
+            //TODO create cfg for function
+            var cfg = new ControlFlowGraph.ControlFlowGraph(functionCode);
+
+            return new ProgramPointGraph(cfg.start);
+        }
+
+        public static ProgramPointGraph From(LangElement declaration)
+        {
+            if (declaration is NativeAnalyzer)
+            {
+                return FromNative(declaration as NativeAnalyzer);
+            }
+            else
+            {
+                return FromSource(declaration as FunctionDecl);
+            }
         }
 
         internal void RemoveInvocationPoint(ProgramPoint invocationPoint)
@@ -101,15 +134,15 @@ namespace Weverca.Analysis
             foreach (var stmt in block.Statements)
             {
                 //create chain of program points
-                var child = fromStatement(stmt,block);
+                var child = fromStatement(stmt, block);
                 current.AddChild(child);
                 current = child;
             }
 
-            
+
             foreach (var edge in block.OutgoingEdges)
             {
-                var condition = fromCondition(edge.Condition,block);
+                var condition = fromCondition(edge.Condition, block);
                 addChildren(condition, edge.To);
                 current.AddChild(condition);
             }
@@ -132,16 +165,16 @@ namespace Weverca.Analysis
             }
         }
 
-        private ProgramPoint fromDefaultBranch(IEnumerable<Expression> conditionalExpressions,BasicBlock outerBlock)
+        private ProgramPoint fromDefaultBranch(IEnumerable<Expression> conditionalExpressions, BasicBlock outerBlock)
         {
             var assumption = new AssumptionCondition(ConditionForm.SomeNot, conditionalExpressions.ToArray());
             return fromCondition(assumption, outerBlock);
         }
 
 
-        private ProgramPoint fromStatement(LangElement statement,BasicBlock outerBlock)
-        {            
-            return getPoint(statement, () => new ProgramPoint(statement,outerBlock));
+        private ProgramPoint fromStatement(LangElement statement, BasicBlock outerBlock)
+        {
+            return getPoint(statement, () => new ProgramPoint(statement, outerBlock));
         }
 
         private ProgramPoint fromCondition(Expression condition, BasicBlock outerBlock)
@@ -151,8 +184,8 @@ namespace Weverca.Analysis
         }
 
         private ProgramPoint fromCondition(AssumptionCondition condition, BasicBlock outerBlock)
-        {            
-            return getPoint(condition, () => new ProgramPoint(condition,outerBlock));
+        {
+            return getPoint(condition, () => new ProgramPoint(condition, outerBlock));
         }
 
         private ProgramPoint empty(object key)
@@ -167,10 +200,13 @@ namespace Weverca.Analysis
             if (!_points.TryGetValue(obj, out result))
             {
                 result = creator();
-                _points.Add(obj, result);                
+                _points.Add(obj, result);
             }
             return result;
         }
+
+
+
 
 
     }
