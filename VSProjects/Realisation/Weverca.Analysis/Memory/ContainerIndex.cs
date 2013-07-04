@@ -12,24 +12,24 @@ namespace Weverca.Analysis.Memory
     /// Representation of index in container or object
     /// 
     /// NOTE:
-    ///     Can be used for hashing
+    ///     Can be used as hash itself
     /// </summary>
     public class ContainerIndex
     {
         /// <summary>
         /// Container index identifier
         /// </summary>
-        private readonly string _identifier;
+        public readonly string Identifier;
 
 
         internal ContainerIndex(string identifier)
         {
-            _identifier = identifier;
+            Identifier = identifier;
         }
 
         public override int GetHashCode()
         {
-            return _identifier.GetHashCode();
+            return Identifier.GetHashCode();
         }
 
         public override bool Equals(object obj)
@@ -46,7 +46,7 @@ namespace Weverca.Analysis.Memory
                 return false;
             }
 
-            return o._identifier == _identifier;
+            return o.Identifier == Identifier;
         }
 
     }

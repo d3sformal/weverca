@@ -62,6 +62,67 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
+
+        public override MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index)
+        {
+            if (index.PossibleValues.Count()!=1)
+            {
+                throw new NotImplementedException();
+            }
+
+            var values = new HashSet<Value>();
+            var indexValue=index.PossibleValues.First() as PrimitiveValue;
+            var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
+
+            foreach (AssociativeArray arrayValue in array.PossibleValues)
+            {
+                var possibleIndexValues = OutSet.GetIndex(arrayValue, containerIndex).PossibleValues;
+                values.UnionWith(possibleIndexValues);   
+            }
+
+            return new MemoryEntry(values.ToArray());
+        }
+
+
+
+        public override MemoryEntry ResolveArray(VariableEntry entry)
+        {
+            if (!entry.IsDirect) {
+                throw new NotImplementedException();
+            }
+
+            var array = OutSet.ReadValue(entry.DirectName);
+            //NOTE there should be precise resolution of multiple values
+
+            var arrayValue = array.PossibleValues.First();
+            if (arrayValue is UndefinedValue)
+            {
+                //new array is implicitly created
+                arrayValue = OutSet.CreateArray();
+                array=new MemoryEntry(arrayValue);
+                OutSet.Assign(entry.DirectName, array);
+            }
+
+            return array;
+        }
+
+        public override void ArrayAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
+        {
+            if (array.PossibleValues.Count() != 1 && index.PossibleValues.Count() != 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            var arrayValue = array.PossibleValues.First();
+            var indexValue = index.PossibleValues.First() as PrimitiveValue;
+
+        
+
+            var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
+
+            OutSet.SetIndex(arrayValue as AssociativeArray, containerIndex, assignedValue);
+        }
+
         public override void AliasAssign(VariableEntry target, IEnumerable<AliasValue> alias)
         {
             if (alias.Count() != 1)
@@ -162,7 +223,6 @@ namespace Weverca.Analysis.UnitTest
 
         #endregion
 
-
     }
 
     /// <summary>
@@ -217,7 +277,7 @@ namespace Weverca.Analysis.UnitTest
             if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point 
-                return new LangElement[]{ analyzer};
+                return new LangElement[] { analyzer };
             }
             else
             {

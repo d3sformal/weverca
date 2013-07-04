@@ -48,10 +48,22 @@ namespace Weverca.Analysis
         {
             return _snapshot.ResolveFunction(functionName);
         }
+
+        public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
+        {
+            return _snapshot.GetField(value, index);
+        }
+
+        public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
+        {
+            return _snapshot.GetIndex(value, index);
+        }
         #endregion
 
 
 
 
+
+    
     }
 }

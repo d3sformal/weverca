@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using PHP.Core;
+using PHP.Core.AST;
 using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 
@@ -337,35 +338,8 @@ namespace Weverca.VirtualReferenceModel
             _hasSemanticChange = true;
         }
 
-        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
+      
 
-        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
 
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
@@ -376,16 +350,8 @@ namespace Weverca.VirtualReferenceModel
         {
             throw new NotImplementedException();
         }
-
-        protected override void initializeObject(ObjectValue createdObject, PHP.Core.AST.TypeDecl type)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void initializeArray(AssociativeArray createdArray)
-        {
-            throw new NotImplementedException();
-        }
+        
+ 
 
         private VariableName functionStorage(string functionName)
         {
@@ -408,6 +374,105 @@ namespace Weverca.VirtualReferenceModel
             var entry=readValue(storage);
 
             return from FunctionValue function in entry.PossibleValues select function;
+        }
+
+        #region Object operations
+        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        {
+            var storage = getFieldStorage(value, index);
+            assign(storage, entry);
+        }
+
+        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        {
+            var storage = getFieldStorage(value, index);
+            assignAlias(storage, alias);
+        }
+
+        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
+        {
+            var storage = getFieldStorage(value, index);
+            return readValue(storage);
+        }
+        protected override void initializeObject(ObjectValue createdObject, TypeDecl type)
+        {
+            var info = getObjectInfoStorage(createdObject);
+            //TODO set info
+            ReportMemoryEntryCreation();
+            assign(info, new MemoryEntry());
+        }
+
+        private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)
+        {
+            var name=string.Format("$obj{0}->{1}",obj.ObjectID,field.Identifier);
+            return new VariableName(name);
+        }
+
+        private VariableName getObjectInfoStorage(ObjectValue obj)
+        {
+            var name = string.Format("$obj{0}#info",obj.ObjectID);
+            return new VariableName(name);
+        }
+        #endregion
+
+        #region Array operations
+        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        {
+            var storage = getIndexStorage(value, index);
+            assign(storage, entry);
+        }
+
+        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        {
+            var storage = getIndexStorage(value, index);
+            assignAlias(storage, alias);
+        }
+
+        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
+        {
+            var storage = getIndexStorage(value, index);
+            return readValue(storage);
+        }
+
+        protected override void initializeArray(AssociativeArray createdArray)
+        {
+            //TODO initialize array
+            var info = getArrayInfoStorage(createdArray);
+            ReportMemoryEntryCreation();
+            assign(info, new MemoryEntry());
+        }
+
+        private VariableName getIndexStorage(AssociativeArray arr, ContainerIndex index)
+        {
+            var name = string.Format("$arr{0}[{1}]", arr.ArrayID, index.Identifier);
+            return new VariableName(name);
+        }
+
+        private VariableName getArrayInfoStorage(AssociativeArray arr)
+        {
+            var name = string.Format("$arr{0}#info", arr.ArrayID);
+            return new VariableName(name);
+        }
+        #endregion
+
+        public override string ToString()
+        {
+            var result = new StringBuilder();
+
+            foreach (var variable in _variables.Keys)
+            {
+                result.AppendFormat("{0}: {", variable);
+
+                foreach (var value in readValue(variable).PossibleValues)
+                {
+                    result.AppendFormat("'{0}', ", value);
+                }
+
+                result.Length -= 2;
+                result.AppendLine("}");
+            }
+
+            return result.ToString();
         }
     }
 }

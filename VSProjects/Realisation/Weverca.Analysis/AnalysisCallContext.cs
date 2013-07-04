@@ -146,6 +146,8 @@ namespace Weverca.Analysis
 
             setInputs(work, inputs);
             work.OutSet.StartTransaction();
+            //all outsets has to be extended by its in sets
+            work.OutSet.Extend(work.InSet);
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
 
@@ -169,9 +171,9 @@ namespace Weverca.Analysis
             var workInput = (work.InSet as FlowOutputSet);
 
             //TODO performance improvement
-            workInput.StartTransaction();
+            workInput.StartTransaction();            
             workInput.Extend(inputs.ToArray());
-            workInput.CommitTransaction();
+            workInput.CommitTransaction();    
         }
 
         private void ensureInitialized(ProgramPoint work)

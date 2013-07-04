@@ -19,7 +19,7 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Stack of values (can contains Value or VariableName)
         /// </summary>
-        private Stack<object> _valueStack = new Stack<object>();
+        private Stack<IStackValue> _valueStack = new Stack<IStackValue>();
         /// <summary>
         /// Available expression evaluator
         /// </summary>
@@ -40,15 +40,15 @@ namespace Weverca.Analysis.Expressions
             _functionResolver = resolver;
         }
 
+        #region Internal API for evaluation
+
         /// <summary>
         /// Eval given partial in context of flow
         /// </summary>
         /// <param name="flow">Flow context of partial</param>
         /// <param name="partial">Partial of evaluated expression/statement</param>
         internal void Eval(FlowController flow, LangElement partial)
-        {
-            //all outsets has to be extended by its in sets
-            flow.OutSet.Extend(flow.InSet);
+        {   
 
             if (partial == null)
             {
@@ -87,6 +87,9 @@ namespace Weverca.Analysis.Expressions
 
             return result;
         }
+
+        #endregion
+
         #region Value stack operations
 
         /// <summary>
@@ -100,34 +103,34 @@ namespace Weverca.Analysis.Expressions
         }
 
         /// <summary>
-        /// Pop top of stack as value (variableNames will be resolved)
+        /// Pop top of stack as rvalue
         /// </summary>
         /// <returns>Popped value</returns>
+        private RValue popRValue()
+        {
+            var rValue = _valueStack.Pop() as RValue;
+
+            Debug.Assert(rValue!=null,"RValue expected on stack - incorrect stack behaviour");
+
+            return rValue;
+        }
+
         private MemoryEntry popValue()
         {
-            var value = _valueStack.Pop();
-            if (value is VariableEntry)
-            {
-                return _evaluator.ResolveVariable((VariableEntry)value);
-            }
-            else
-            {
-                Debug.Assert(value is MemoryEntry, "Unknown type has been pushed on stack - incorrect stack behaviour");
-                return value as MemoryEntry;
-            }
+            return popRValue().ReadValue(_evaluator);
         }
 
         /// <summary>
         /// Pop top of stack as VariableName
         /// </summary>
         /// <returns>Popped variable name</returns>
-        private VariableEntry popVariable()
+        private LValue popLValue()
         {
-            var value = _valueStack.Pop();
+            var lValue = _valueStack.Pop() as LValue;
 
-            Debug.Assert(value is VariableEntry, "Variable was expected on stack - incorrect stack behaviour");
+            Debug.Assert(lValue != null, "LValue expected on stack - incorrect stack behaviour");
 
-            return (VariableEntry)value;
+            return lValue;
         }
 
         /// <summary>
@@ -155,7 +158,7 @@ namespace Weverca.Analysis.Expressions
         /// <param name="value">Pushed value</param>
         private void push(MemoryEntry value)
         {
-            _valueStack.Push(value);
+            push(new MemoryEntryValue(value));
         }
 
         /// <summary>
@@ -164,7 +167,12 @@ namespace Weverca.Analysis.Expressions
         /// <param name="variable">Pushed variable</param>
         private void push(VariableEntry variable)
         {
-            _valueStack.Push(variable);
+            push(new VariableEntryValue(variable));
+        }
+
+        private void push(IStackValue value)
+        {
+            _valueStack.Push(value);
         }
 
         #endregion
@@ -224,6 +232,15 @@ namespace Weverca.Analysis.Expressions
 
 
         #region Assign expressions visiting
+
+        public override void VisitItemUse(ItemUse x)
+        {
+            var itemHolder = popRValue().ReadArray(_evaluator);
+            var itemIndex = popValue();
+
+            push(new ArrayItem(itemHolder, itemIndex));            
+        }
+
         public override void VisitAssignEx(AssignEx x)
         {
             throw new NotImplementedException();
@@ -231,11 +248,11 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitRefAssignEx(RefAssignEx x)
         {
-            var aliasedVariable = popVariable();
-            var assignedVariable = popVariable();
+            var aliasedVariable = popRValue();
+            var assignedVariable = popLValue();
 
-            var alias = _evaluator.ResolveAlias(aliasedVariable);
-            _evaluator.AliasAssign(assignedVariable, alias);
+            var alias = aliasedVariable.ReadAlias(_evaluator);
+            assignedVariable.AliasAssign(_evaluator,alias);
 
             //TODO is there alias or value assign ?
             push(aliasedVariable);
@@ -244,9 +261,9 @@ namespace Weverca.Analysis.Expressions
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var value = popValue();
-            var assignedVariable = popVariable();
+            var assignedVariable = popLValue();
 
-            _evaluator.Assign(assignedVariable, value);
+            assignedVariable.AssignValue(_evaluator, value);
 
             push(value);
         }

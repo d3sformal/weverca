@@ -8,6 +8,10 @@ namespace Weverca.Analysis.Memory
 {
     public interface ISnapshotReadonly
     {
+        MemoryEntry GetField(ObjectValue value, ContainerIndex index);
+
+        MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index);
+
         /// <summary>
         /// Variable where return value is stored
         /// </summary>

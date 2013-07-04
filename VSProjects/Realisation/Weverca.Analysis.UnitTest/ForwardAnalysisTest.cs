@@ -26,7 +26,7 @@ $call_result=strtolower('TEST');
 $call_result=concat('A','B');
 ".AssertVariable("call_result").HasValues("AB");
 
-        readonly static TestCase NativeCallProcessingNestedCalls_CASE= @"
+        readonly static TestCase NativeCallProcessingNestedCalls_CASE = @"
 $call_result=concat(strtolower('Ab'),strtoupper('Cd'));
 ".AssertVariable("call_result").HasValues("abCD");
 
@@ -72,7 +72,7 @@ $Var='init';
 if($unknown=='PossibilityA'){
     $Var=$unknown;
 }
-".AssertVariable("Var").HasValues("init","PossibilityA");
+".AssertVariable("Var").HasValues("init", "PossibilityA");
 
 
         readonly static TestCase IndirectVarAssign_CASE = @"
@@ -108,6 +108,32 @@ if($unknown){
 $CallResult=testFunction();
 ".AssertVariable("CallResult").HasValues("ValueA", "ValueB");
 
+        readonly static TestCase ObjectFieldMerge_CASE = @"
+class Obj{
+    var $a;
+}
+
+$obj=new Obj();
+if($unknown){
+    $obj->a='ValueA';
+}else{
+    $obj->a='ValueB';
+}
+
+$FieldValue=$obj->a;
+".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
+
+        readonly static TestCase ArrayFieldMerge_CASE = @"
+if($unknown){
+    $arr[0]='ValueA';
+}else{
+    $arr[0]='ValueB';
+}
+
+$ArrayValue=$arr[0];
+".AssertVariable("ArrayValue").HasValues("ValueA", "ValueB");
+
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -124,8 +150,8 @@ $CallResult=testFunction();
         public void NativeCallProcessing2Arguments()
         {
             AnalysisTestUtils.RunTestCase(NativeCallProcessing2Arguments_CASE);
-        }  
-        
+        }
+
         [TestMethod]
         public void NativeCallProcessingNestedCalls()
         {
@@ -162,7 +188,7 @@ $CallResult=testFunction();
         {
             AnalysisTestUtils.RunTestCase(EqualsAssumption_CASE);
         }
-        
+
         [TestMethod]
         public void IndirectVarAssign()
         {
@@ -179,6 +205,18 @@ $CallResult=testFunction();
         public void MergedFunctionDeclarations()
         {
             AnalysisTestUtils.RunTestCase(MergedFunctionDeclarations_CASE);
+        }
+
+       // [TestMethod]
+        public void ObjectFieldMerge()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectFieldMerge_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayFieldMerge()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayFieldMerge_CASE);
         }
     }
 }

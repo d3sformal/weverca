@@ -57,6 +57,7 @@
     <Compile Include="Expressions\ExpressionConverter.cs" />
     <Compile Include="Deprecated\ExpressionEvaluator.cs" />
     <Compile Include="Expressions\ExpressionEvaluator.cs" />
+    <Compile Include="Expressions\IStackValue.cs" />
     <Compile Include="Expressions\PostfixExpression.cs" />
     <Compile Include="Deprecated\StatementWalker.cs" />
     <Compile Include="Deprecated\FlowControler.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Deprecated\ForwardAnalysis.cs" />
     <Compile Include="Deprecated\ForwardAnalysisAbstract.cs" />
     <Compile Include="Expressions\PartialWalker.cs" />
+    <Compile Include="Expressions\StackValues.cs" />
     <Compile Include="FlowControler.cs" />
     <Compile Include="FlowInputSet.cs" />
     <Compile Include="FlowOutputSet.cs" />

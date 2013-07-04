@@ -145,6 +145,26 @@ namespace Weverca.Analysis
             _snapshot.DeclareGlobal(declaration);
         }
 
+        public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        {
+            _snapshot.SetField(value, index, entry);
+        }
+
+        public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        {
+            _snapshot.SetIndex(value, index, entry);
+        }
+
+        public void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        {
+            _snapshot.SetFieldAlias(value, index, alias);
+        }
+
+        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        {
+            _snapshot.SetIndexAlias(value, index, alias);
+        }
+
         /// <summary>
         /// Expects FlowInput set objects
         /// </summary>
@@ -194,6 +214,9 @@ namespace Weverca.Analysis
         }
         #endregion
 
-   
+
+
+
+  
     }
 }

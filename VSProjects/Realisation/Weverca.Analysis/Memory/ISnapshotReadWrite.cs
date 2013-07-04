@@ -54,6 +54,17 @@ namespace Weverca.Analysis.Memory
         AliasValue CreateAlias(VariableName sourceVar);
         #endregion
 
+         void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry);
+   
+         void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
+     
+
+         void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias);
+
+         void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias);
+   
+
+ 
 
         void DeclareGlobal(FunctionDecl declaration);
         /// <summary>

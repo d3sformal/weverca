@@ -99,5 +99,12 @@ namespace Weverca.Analysis.Expressions
         /// <param name="value">Value representing possible names of variable</param>
         /// <returns>Possible variable names</returns>
         abstract public IEnumerable<string> VariableNames(MemoryEntry value);
+
+        abstract public void ArrayAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue);
+
+
+        abstract public MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index);
+
+        abstract public MemoryEntry ResolveArray(VariableEntry _entry);
     }
 }
