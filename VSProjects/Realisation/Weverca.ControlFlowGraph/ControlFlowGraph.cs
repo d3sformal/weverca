@@ -45,6 +45,10 @@ namespace Weverca.ControlFlowGraph
     //    private readonly Dictionary<FunctionDecl, BasicBlock> declaredFunctions = new Dictionary<FunctionDecl, BasicBlock>();
     //    private readonly List<ClassDeclaration> declaredClasses = new List<ClassDeclaration>();
 
+        /// <summary>
+        /// Constructs a confrolflow graph 
+        /// </summary>
+        /// <param name="globalCode"></param>
         public ControlFlowGraph(GlobalCode globalCode)
         {
             this.globalCode = globalCode;
@@ -54,6 +58,11 @@ namespace Weverca.ControlFlowGraph
             Simplify();
         }
 
+        /// <summary>
+        /// Constructs a confrolflow graph. This method shoud be used only for testing with purpose of testing.
+        /// </summary>
+        /// <param name="globalCode">needed for drawing</param>
+        /// <param name="function">function to construct controlflow graph</param>
         public ControlFlowGraph(GlobalCode globalCode,MethodDecl function)
         {
             this.globalCode = globalCode;
@@ -62,6 +71,11 @@ namespace Weverca.ControlFlowGraph
             Simplify();
         }
 
+        /// <summary>
+        /// Constructs a confrolflow graph. This method shoud be used only for testing with purpose of testing.
+        /// </summary>
+        /// <param name="globalCode">Globalcode needed for drawing</param>
+        /// <param name="function">function to construct controlflow graph</param>
         public ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
         {
             this.globalCode = globalCode;
@@ -71,6 +85,10 @@ namespace Weverca.ControlFlowGraph
             Simplify();
         }
 
+        /// <summary>
+        /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
+        /// </summary>
+        /// <param name="function">function to construct controlflow graph</param>
         public ControlFlowGraph(MethodDecl function)
         {
 
@@ -79,6 +97,10 @@ namespace Weverca.ControlFlowGraph
             Simplify();
         }
 
+        /// <summary>
+        /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
+        /// </summary>
+        /// <param name="function">function to construct controlflow graph<</param>
         public ControlFlowGraph(FunctionDecl function)
         {
             this.visitor = new CFGVisitor(this);
@@ -186,6 +208,16 @@ namespace Weverca.ControlFlowGraph
                     {
                         TypeDecl clas = (TypeDecl)statement;
                         label += "class " + clas.Name.ToString() + Environment.NewLine;
+                        foreach(var method in clas.Members)
+                        {
+                            if (method.GetType() == typeof(MethodDecl))
+                            {
+                                ControlFlowGraph cfg = new ControlFlowGraph(globalCode, method as MethodDecl);
+                                functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
+                                counter += 10000;
+                            }
+                        }
+                        
                     }
                     else
                     {
