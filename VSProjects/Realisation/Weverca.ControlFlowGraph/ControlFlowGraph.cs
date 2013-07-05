@@ -65,12 +65,26 @@ namespace Weverca.ControlFlowGraph
         public ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
         {
             this.globalCode = globalCode;
+            
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
             Simplify();
         }
 
+        public ControlFlowGraph(MethodDecl function)
+        {
 
+            this.visitor = new CFGVisitor(this);
+            start = visitor.MakeFunctionCFG(function, function.Body);
+            Simplify();
+        }
+
+        public ControlFlowGraph(FunctionDecl function)
+        {
+            this.visitor = new CFGVisitor(this);
+            start = visitor.MakeFunctionCFG(function, function.Body);
+            Simplify();
+        }
 
         public void Simplify()
         {
