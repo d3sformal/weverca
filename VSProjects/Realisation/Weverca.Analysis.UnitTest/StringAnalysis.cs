@@ -204,7 +204,8 @@ namespace Weverca.Analysis.UnitTest
         /// <returns>BasicBlock which is entry point for given function.</returns>
         public override ControlFlowGraph.BasicBlock GetEntryPoint(FunctionDecl function)
         {
-            return _entryCFG.GetBasicBlock(function);
+            var cfg= new ControlFlowGraph.ControlFlowGraph(function);
+            return cfg.start;
         }
     }
 
