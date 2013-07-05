@@ -1,4 +1,15 @@
 <?
+function a(){
+echo "function a";
+}
+class b{
+
+function toString(){
+
+}
+
+}
+
 do{
 	$a=$a+$a;
 	echo "cycle";

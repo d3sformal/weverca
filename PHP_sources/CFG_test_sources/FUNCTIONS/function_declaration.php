@@ -103,5 +103,4 @@ function returns2($x)
   return 5;
 }
 
-
 ?>

@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Function.Tester", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "..\..\..\External Sources\PhalangerOriginal\Source\ClassLibrary\ClassLibrary.csproj", "{D515E8F4-357C-4CAF-87C1-97D64C5F865A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis", "..\..\..\VSProjects\Realisation\Weverca.TaintedAnalysis\Weverca.TaintedAnalysis.csproj", "{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{D515E8F4-357C-4CAF-87C1-97D64C5F865A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D515E8F4-357C-4CAF-87C1-97D64C5F865A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D515E8F4-357C-4CAF-87C1-97D64C5F865A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

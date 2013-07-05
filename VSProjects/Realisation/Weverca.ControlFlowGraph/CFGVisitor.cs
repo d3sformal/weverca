@@ -241,6 +241,8 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitTypeDecl(TypeDecl x)
         {
+
+            /*
             System.Diagnostics.Debug.Assert(actualClass == null);
 
             actualClass = graph.AddClassDeclaration(x);
@@ -250,7 +252,8 @@ namespace Weverca.ControlFlowGraph
                 t.VisitMe(this);
             }
 
-            actualClass = null;
+            actualClass = null;*/
+            currentBasicBlock.AddElement(x);
         }
 
         public override void VisitMethodDecl(MethodDecl x)
@@ -263,8 +266,10 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitFunctionDecl(FunctionDecl x)
         {
+            currentBasicBlock.AddElement(x);
+            /*
             BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
-            graph.AddFunctionDeclaration(x, functionBasicBlock);
+            graph.AddFunctionDeclaration(x, functionBasicBlock);*/
         }
 
 
@@ -275,10 +280,9 @@ namespace Weverca.ControlFlowGraph
         /// <param name="functionDeclaration">The function declaration.</param>
         /// <param name="functionBody">The function body.</param>
         /// <returns>The first basic block of the function's CFG.</returns>
-        BasicBlock MakeFunctionCFG<T>(T functionDeclaration, List<Statement> functionBody) where T : LangElement
+        public BasicBlock MakeFunctionCFG<T>(T functionDeclaration, List<Statement> functionBody) where T : LangElement
         {
-            currentBasicBlock.AddElement(functionDeclaration);
-
+            
             //Store actual basic block
             BasicBlock current = currentBasicBlock;
             BasicBlock functionBasicBlock = new BasicBlock();
@@ -299,7 +303,6 @@ namespace Weverca.ControlFlowGraph
             numberOfNestedTrys = 0;
             
             
-            currentBasicBlock.AddElement(functionDeclaration);
             VisitStatementList(functionBody);
 
             //Connects return destination

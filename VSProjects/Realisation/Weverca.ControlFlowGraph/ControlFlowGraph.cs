@@ -42,8 +42,8 @@ namespace Weverca.ControlFlowGraph
         private GlobalCode globalCode;
         private CFGVisitor visitor;
 
-        private readonly Dictionary<FunctionDecl, BasicBlock> declaredFunctions = new Dictionary<FunctionDecl, BasicBlock>();
-        private readonly List<ClassDeclaration> declaredClasses = new List<ClassDeclaration>();
+    //    private readonly Dictionary<FunctionDecl, BasicBlock> declaredFunctions = new Dictionary<FunctionDecl, BasicBlock>();
+    //    private readonly List<ClassDeclaration> declaredClasses = new List<ClassDeclaration>();
 
         public ControlFlowGraph(GlobalCode globalCode)
         {
@@ -54,11 +54,29 @@ namespace Weverca.ControlFlowGraph
             Simplify();
         }
 
+        public ControlFlowGraph(GlobalCode globalCode,MethodDecl function)
+        {
+            this.globalCode = globalCode;
+            this.visitor = new CFGVisitor(this);
+            start = visitor.MakeFunctionCFG(function,function.Body);
+            Simplify();
+        }
+
+        public ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
+        {
+            this.globalCode = globalCode;
+            this.visitor = new CFGVisitor(this);
+            start = visitor.MakeFunctionCFG(function, function.Body);
+            Simplify();
+        }
+
+
+
         public void Simplify()
         {
             start.SimplifyGraph();
 
-            foreach (var function in declaredFunctions)
+          /*  foreach (var function in declaredFunctions)
             {
                 function.Value.SimplifyGraph();
             }
@@ -66,38 +84,47 @@ namespace Weverca.ControlFlowGraph
             foreach (var declaredClass in declaredClasses)
             {
                 declaredClass.SimplifyMethods();
-            }
+            }*/
         }
-
         public string getTextRepresentation()
         {
-            string result = "digraph g {node [shape=box]" + Environment.NewLine + " graph[rankdir=\"TB\", concentrate=true];"; 
+            string result = "digraph g {node [shape=box]" + Environment.NewLine + " graph[rankdir=\"TB\", concentrate=true];" + Environment.NewLine;
 
+            result += generateText(0);
+            result += "\n}" + Environment.NewLine;
+            return result;
+        }
+
+
+        private string generateText(int counter)
+        {
+            string result = "";
             List<BasicBlock> nodes = new List<BasicBlock>();
             Queue<BasicBlock> queue = new Queue<BasicBlock>();
 
             /* Nejprve pridam vsechny deklarovane funkce */
-            foreach (var func in declaredFunctions)
+            /*foreach (var func in declaredFunctions)
             {
                 queue.Enqueue(func.Value);
-            }
+            }*/
             /* a tridy */
-            foreach (var cl in declaredClasses)
+            /*foreach (var cl in declaredClasses)
             {
                 foreach (var method in cl.DeclaredMethods)
                 {
                     queue.Enqueue(method.Value);
                 }
-            }
+            }*/
 
             /*
             Prechod grafu do hlbky a poznameniae vsetkych hran do nodes 
             */
             queue.Enqueue(start);
-            while(queue.Count>0) 
+            while (queue.Count > 0)
             {
                 BasicBlock node = queue.Dequeue();
-                if (!nodes.Contains(node)) {
+                if (!nodes.Contains(node))
+                {
                     nodes.Add(node);
                     foreach (var edge in node.OutgoingEdges)
                     {
@@ -124,27 +151,48 @@ namespace Weverca.ControlFlowGraph
 
             /*
             Generovanie textu pre vsetky uzly
-             */ 
-            int i=0;
-            foreach (var node in nodes) {
+             */
+            string functionsResult = "";
+            int i = counter;
+            int oldCounter = counter;
+            foreach (var node in nodes)
+            {
                 string label = "";
-                foreach (var statement in node.Statements) {
-                    label +=globalCode.SourceUnit.GetSourceCode(statement.Position) + Environment.NewLine;
+                foreach (var statement in node.Statements)
+                {
+                    if (statement.GetType() == typeof(FunctionDecl))
+                    {
+                        FunctionDecl function = (FunctionDecl)statement;
+                        label += "function " + function.Function.Name+ Environment.NewLine;
+                        ControlFlowGraph cfg = new ControlFlowGraph(globalCode, function);
+                        functionsResult+=cfg.generateText((counter / 10000 + 1) * 10000);
+                        counter+=10000;
+                    }
+                    else if (statement.GetType() == typeof(TypeDecl))
+                    {
+                        TypeDecl clas = (TypeDecl)statement;
+                        label += "class " + clas.Name.ToString() + Environment.NewLine;
+                    }
+                    else
+                    {
+                        label += globalCode.SourceUnit.GetSourceCode(statement.Position) + Environment.NewLine;
+                    }
                 }
-                label=label.Replace("\"", "\\\"");
+
+                label = label.Replace("\"", "\\\"");
                 result += "node" + i + "[label=\"" + label + "\"]" + Environment.NewLine;
                 i++;
             }
             /*
             vykreslovanie hran
             */
-            i = 0;
+            i = oldCounter;
             foreach (var node in nodes)
             {
                 foreach (var edge in node.OutgoingEdges)
                 {
-                    int index=nodes.IndexOf(edge.To);
-                    string label = "" ;
+                    int index = oldCounter + nodes.IndexOf(edge.To);
+                    string label = "";
                     //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode
                     if (!edge.Condition.Position.IsValid)
                     {
@@ -154,17 +202,18 @@ namespace Weverca.ControlFlowGraph
                         }
                         if (edge.Condition.GetType() == typeof(BinaryEx))
                         {
-                            BinaryEx bin=(BinaryEx) edge.Condition;
-                             //dirty trick how to acces internal field
-                            var a=bin.GetType().GetField("operation",BindingFlags.NonPublic | BindingFlags.Instance);
-                            if((Operations)a.GetValue(bin)==Operations.Equal){
+                            BinaryEx bin = (BinaryEx)edge.Condition;
+                            //dirty trick how to acces internal field
+                            var a = bin.GetType().GetField("operation", BindingFlags.NonPublic | BindingFlags.Instance);
+                            if ((Operations)a.GetValue(bin) == Operations.Equal)
+                            {
                                 Expression l = (Expression)bin.GetType().GetField("leftExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
                                 Expression r = (Expression)bin.GetType().GetField("rightExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
                                 if (l.Position.IsValid == false)
                                 {
                                     if (l.GetType() == typeof(IntLiteral))
                                     {
-                                        label += ""+((IntLiteral)l).Value;
+                                        label += "" + ((IntLiteral)l).Value;
                                         label += "=";
                                         label += globalCode.SourceUnit.GetSourceCode(r.Position);
                                     }
@@ -188,19 +237,20 @@ namespace Weverca.ControlFlowGraph
                             }
                         }
                         if (edge.Condition.GetType() == typeof(DirectFcnCall))
-                        { 
-                            DirectFcnCall functionCall=(DirectFcnCall)edge.Condition;
+                        {
+                            DirectFcnCall functionCall = (DirectFcnCall)edge.Condition;
 
-                            label += functionCall.QualifiedName+"(";
-                            foreach(var parameter in functionCall.CallSignature.Parameters){
-                                if (parameter.Expression.GetType()==typeof(StringLiteral))
+                            label += functionCall.QualifiedName + "(";
+                            foreach (var parameter in functionCall.CallSignature.Parameters)
+                            {
+                                if (parameter.Expression.GetType() == typeof(StringLiteral))
                                 {
                                     StringLiteral literal = (StringLiteral)parameter.Expression;
-                                    label += "\""+literal.Value+"\""+",";
+                                    label += "\"" + literal.Value + "\"" + ",";
                                 }
                                 else
                                 {
-                                label += globalCode.SourceUnit.GetSourceCode(parameter.Expression.Position)+",";
+                                    label += globalCode.SourceUnit.GetSourceCode(parameter.Expression.Position) + ",";
                                 }
                             }
                             label += ")";
@@ -222,21 +272,20 @@ namespace Weverca.ControlFlowGraph
                         elseString = "else";
                     }
 
-                    int index = nodes.IndexOf(node.DefaultBranch.To);
+                    int index = oldCounter + nodes.IndexOf(node.DefaultBranch.To);
                     result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" " + elseString + "  \"]" + Environment.NewLine;
-                }    
-                
+                }
+
                 i++;
-                    
+
             }
-            
-            result += "\n}" + Environment.NewLine;
-          
+            result += functionsResult;
+            result += Environment.NewLine;
             return result;
         }
 
 
-        public ClassDeclaration AddClassDeclaration(TypeDecl x)
+        /*public ClassDeclaration AddClassDeclaration(TypeDecl x)
         {
             ClassDeclaration declaration = new ClassDeclaration(x);
             declaredClasses.Add(declaration);
@@ -251,7 +300,7 @@ namespace Weverca.ControlFlowGraph
         public BasicBlock GetBasicBlock(FunctionDecl function)
         {
             return declaredFunctions[function];
-        }
+        }*/
     }
 
 }
