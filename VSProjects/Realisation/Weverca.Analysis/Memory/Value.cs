@@ -13,5 +13,9 @@ namespace Weverca.Analysis.Memory
     public abstract class Value
     {
 
+        public virtual void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitValue(this);
+        }
     }
 }

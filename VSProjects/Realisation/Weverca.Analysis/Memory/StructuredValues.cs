@@ -33,6 +33,11 @@ namespace Weverca.Analysis.Memory
         {
             ObjectID = ++_objectID;
         }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitObjectValue(this);
+        }
     }
 
     /// <summary>
@@ -59,6 +64,11 @@ namespace Weverca.Analysis.Memory
         internal AssociativeArray()
         {
             ArrayID = ++_arrayID;
+        }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAssociativeArray(this);
         }
     }
 }

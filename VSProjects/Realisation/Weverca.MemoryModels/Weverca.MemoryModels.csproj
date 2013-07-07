@@ -39,16 +39,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MemoryModel\AliasValue.cs" />
-    <Compile Include="MemoryModel\ArrayValue.cs" />
+    <Compile Include="MemoryModel\ArrayDescriptor.cs" />
     <Compile Include="MemoryModel\Deprecated\MemoryModel.cs" />
     <Compile Include="MemoryModel\Deprecated\Table.cs" />
     <Compile Include="MemoryModel\Deprecated\Value.cs" />
     <Compile Include="MemoryModel\Deprecated\Variable.cs" />
-    <Compile Include="MemoryModel\MemorySnapshot.cs" />
-    <Compile Include="MemoryModel\ObjectValue.cs" />
-    <Compile Include="MemoryModel\TransactionCounter.cs" />
-    <Compile Include="MemoryModel\VariableInfo.cs" />
+    <Compile Include="MemoryModel\MemoryAlias.cs" />
+    <Compile Include="MemoryModel\MemoryIndex.cs" />
+    <Compile Include="MemoryModel\MemoryInfo.cs" />
+    <Compile Include="MemoryModel\ObjectDescriptor.cs" />
+    <Compile Include="MemoryModel\Snapshot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModel\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
