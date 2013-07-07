@@ -73,6 +73,7 @@
     <Compile Include="ForwardAnalysis.cs" />
     <Compile Include="IncludeDispatch.cs" />
     <Compile Include="Memory\AbstractSnapshot.cs" />
+    <Compile Include="Memory\AbstractValueVisitor.cs" />
     <Compile Include="Memory\ContainerIndex.cs" />
     <Compile Include="Memory\ISnapshotReadonly.cs" />
     <Compile Include="Memory\ISnapshotReadWrite.cs" />
@@ -84,6 +85,7 @@
     <Compile Include="Memory\Value.cs" />
     <Compile Include="Deprecated\ProgramPoint.cs" />
     <Compile Include="Deprecated\ProgramPointGraph.cs" />
+    <Compile Include="Memory\IValueVisitor.cs" />
     <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="PartialContext.cs" />
     <Compile Include="ProgramPoint.cs" />

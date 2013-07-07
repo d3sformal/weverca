@@ -49,6 +49,7 @@
     <Compile Include="MemoryModel\MemoryInfo.cs" />
     <Compile Include="MemoryModel\ObjectDescriptor.cs" />
     <Compile Include="MemoryModel\Snapshot.cs" />
+    <Compile Include="MemoryModel\ValueVisitors\AssignValueVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModel\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
