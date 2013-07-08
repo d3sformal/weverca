@@ -87,9 +87,9 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Fields
 
-        protected override void initializeObject(ObjectValue createdObject, PHP.Core.AST.TypeDecl type)
+        protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
-            ObjectDescriptor descriptor = new ObjectDescriptor(type);
+            ObjectDescriptor descriptor = new ObjectDescriptor(type.Declaration);
             objects[createdObject] = descriptor;
         }
 
@@ -292,27 +292,28 @@ namespace Weverca.MemoryModels.MemoryModel
             throw new NotImplementedException();
         }
 
-        protected override IEnumerable<FunctionValue> resolveFunction(Name functionName)
+        protected override void declareGlobal(TypeValue declaration)
+        {
+            throw new NotImplementedException();
+        }
+        protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
+        {
+            throw new NotImplementedException();
+        }
+        private MemoryIndex createVariable(VariableName variable)
         {
             throw new NotImplementedException();
         }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-        private MemoryIndex createVariable(VariableName variable)
+        public override MemoryEntry ThisObject
         {
-            throw new NotImplementedException();
+            get { throw new NotImplementedException(); }
         }
     }
 }

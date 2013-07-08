@@ -113,6 +113,11 @@ namespace Weverca.Analysis.Memory
             VisitValue(value);
         }
 
+        public virtual void VisitTypeValue(TypeValue typeValue)
+        {
+            VisitValue(typeValue);
+        }
+
         #endregion
     }
 }

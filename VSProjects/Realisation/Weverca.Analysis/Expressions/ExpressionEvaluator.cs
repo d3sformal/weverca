@@ -88,6 +88,18 @@ namespace Weverca.Analysis.Expressions
         {
             return new MemoryEntry(OutSet.CreateDouble((double)x.Value));
         }
+
+        virtual public MemoryEntry CreateObject(QualifiedName typeName)
+        {
+            var declarations=OutSet.ResolveType(typeName);
+
+            var result=new List<ObjectValue>();
+            foreach(var declaration in declarations){
+                result.Add(OutSet.CreateObject(declaration));
+            }
+
+            return new MemoryEntry(result.ToArray());
+        }
         #endregion
 
 
@@ -106,5 +118,7 @@ namespace Weverca.Analysis.Expressions
         abstract public MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index);
 
         abstract public MemoryEntry ResolveArray(VariableEntry _entry);
+
+  
     }
 }

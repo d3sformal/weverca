@@ -21,10 +21,14 @@ namespace Weverca.VirtualReferenceModel
         Dictionary<VirtualReference, MemoryEntry> _oldData;
         Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
 
-
-
         bool _hasSemanticChange;
 
+
+        public override MemoryEntry ThisObject
+        {
+            get { return readValue(thisObjectStorage()); }
+        }
+       
         protected override void startTransaction()
         {
             _oldData = _data;
@@ -101,11 +105,13 @@ namespace Weverca.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
-        protected override AbstractSnapshot createCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
+        protected override AbstractSnapshot createCall(MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             //TODO implement
 
-            return new Snapshot();
+            var snapshot= new Snapshot();
+            snapshot.assign(thisObjectStorage(), thisObject);
+            return snapshot;
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
@@ -120,10 +126,10 @@ namespace Weverca.VirtualReferenceModel
                     var allocatedReference = new VirtualReference(targetVar);
                     info.References.Add(allocatedReference);
 
-                    setEntry(allocatedReference, entry);                    
+                    setEntry(allocatedReference, entry);
                     break;
                 case 1:
-                    setEntry(references[0], entry);                    
+                    setEntry(references[0], entry);
                     break;
 
                 default:
@@ -132,7 +138,7 @@ namespace Weverca.VirtualReferenceModel
             }
 
         }
-               
+
 
         protected override void assignAlias(VariableName targetVar, AliasValue alias)
         {
@@ -238,7 +244,7 @@ namespace Weverca.VirtualReferenceModel
             {
                 var entry = getEntry(reference);
                 ReportMemoryEntryMerge();
-                var updated=MemoryEntry.Merge(entry, update);
+                var updated = MemoryEntry.Merge(entry, update);
 
                 setEntry(reference, updated);
             }
@@ -338,7 +344,7 @@ namespace Weverca.VirtualReferenceModel
             _hasSemanticChange = true;
         }
 
-      
+
 
 
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
@@ -350,12 +356,12 @@ namespace Weverca.VirtualReferenceModel
         {
             throw new NotImplementedException();
         }
-        
- 
+
+
 
         private VariableName functionStorage(string functionName)
         {
-            return new VariableName("$function:"+functionName);
+            return new VariableName("$function:" + functionName);
         }
 
         protected override void declareGlobal(FunctionValue function)
@@ -366,14 +372,38 @@ namespace Weverca.VirtualReferenceModel
             //TODO assign into global scope
             assign(storage, new MemoryEntry(function));
         }
-
-        protected override IEnumerable<FunctionValue> resolveFunction(Name functionName)
+        protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
-            var storage = functionStorage(functionName.Value);
+            var storage = functionStorage(functionName.Name.Value);
             //TODO read from global scope
-            var entry=readValue(storage);
+            var entry = readValue(storage);
 
             return from FunctionValue function in entry.PossibleValues select function;
+        }
+
+        protected VariableName typeStorage(string typeName)
+        {
+            return new VariableName("$type:" + typeName);
+        }
+
+        protected override void declareGlobal(TypeValue declaration)
+        {
+            var storage = typeStorage(declaration.Declaration.Type.QualifiedName.Name.Value);
+
+            var entry = readValue(storage);
+
+            ReportMemoryEntryCreation();
+            //TODO assign into global scope
+            assign(storage, new MemoryEntry(declaration));
+        }
+
+        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
+        {
+            var storage = typeStorage(typeName.Name.Value);
+            //TODO read from global scope
+            var entry = readValue(storage);
+
+            return from TypeValue type in entry.PossibleValues select type;
         }
 
         #region Object operations
@@ -394,7 +424,7 @@ namespace Weverca.VirtualReferenceModel
             var storage = getFieldStorage(value, index);
             return readValue(storage);
         }
-        protected override void initializeObject(ObjectValue createdObject, TypeDecl type)
+        protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             var info = getObjectInfoStorage(createdObject);
             //TODO set info
@@ -404,13 +434,13 @@ namespace Weverca.VirtualReferenceModel
 
         private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)
         {
-            var name=string.Format("$obj{0}->{1}",obj.ObjectID,field.Identifier);
+            var name = string.Format("$obj{0}->{1}", obj.ObjectID, field.Identifier);
             return new VariableName(name);
         }
 
         private VariableName getObjectInfoStorage(ObjectValue obj)
         {
-            var name = string.Format("$obj{0}#info",obj.ObjectID);
+            var name = string.Format("$obj{0}#info", obj.ObjectID);
             return new VariableName(name);
         }
         #endregion
@@ -446,6 +476,11 @@ namespace Weverca.VirtualReferenceModel
         {
             var name = string.Format("$arr{0}[{1}]", arr.ArrayID, index.Identifier);
             return new VariableName(name);
+        }
+
+        private VariableName thisObjectStorage()
+        {
+            return new VariableName("$this");
         }
 
         private VariableName getArrayInfoStorage(AssociativeArray arr)

@@ -48,7 +48,7 @@ namespace Weverca.Analysis.Expressions
         /// <param name="flow">Flow context of partial</param>
         /// <param name="partial">Partial of evaluated expression/statement</param>
         internal void Eval(FlowController flow, LangElement partial)
-        {   
+        {
 
             if (partial == null)
             {
@@ -110,7 +110,7 @@ namespace Weverca.Analysis.Expressions
         {
             var rValue = _valueStack.Pop() as RValue;
 
-            Debug.Assert(rValue!=null,"RValue expected on stack - incorrect stack behaviour");
+            Debug.Assert(rValue != null, "RValue expected on stack - incorrect stack behaviour");
 
             return rValue;
         }
@@ -238,7 +238,7 @@ namespace Weverca.Analysis.Expressions
             var itemHolder = popRValue().ReadArray(_evaluator);
             var itemIndex = popValue();
 
-            push(new ArrayItem(itemHolder, itemIndex));            
+            push(new ArrayItem(itemHolder, itemIndex));
         }
 
         public override void VisitAssignEx(AssignEx x)
@@ -252,7 +252,7 @@ namespace Weverca.Analysis.Expressions
             var assignedVariable = popLValue();
 
             var alias = aliasedVariable.ReadAlias(_evaluator);
-            assignedVariable.AliasAssign(_evaluator,alias);
+            assignedVariable.AliasAssign(_evaluator, alias);
 
             //TODO is there alias or value assign ?
             push(aliasedVariable);
@@ -276,7 +276,7 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var name = x.QualifiedName;
 
-            addDispatch(name, arguments);
+            addFunctionDispatch(name, arguments);
 
             //Result value won't be pushed, because it's directly inserted from analysis
         }
@@ -290,7 +290,7 @@ namespace Weverca.Analysis.Expressions
 
             foreach (var name in names)
             {
-                addDispatch(name, arguments);
+                addFunctionDispatch(name, arguments);
             }
         }
 
@@ -326,6 +326,21 @@ namespace Weverca.Analysis.Expressions
             }
         }
 
+        public override void VisitTypeDecl(TypeDecl x)
+        {
+            //no stack behaviour
+
+            _functionResolver.DeclareGlobal(_currentControler.OutSet, x);
+        }
+
+        public override void VisitNewEx(NewEx x)
+        {
+            var arguments=popArguments(x.CallSignature);
+            var possibleObjects = _evaluator.CreateObject(x.ClassNameRef.GenericQualifiedName.QualifiedName);
+
+            addMethodDispatch(possibleObjects, new QualifiedName(new Name("__constructor")), arguments);
+        }
+
         #endregion
 
         /// <summary>
@@ -337,18 +352,30 @@ namespace Weverca.Analysis.Expressions
             nativeAnalyzer.Method(_currentControler);
         }
 
+    
         /// <summary>
-        /// Add dispatch into _currentController
+        /// Add function dispatch into _currentController
         /// </summary>
-        /// <param name="name">Dispatched method name</param>
+        /// <param name="functionName">Dispatched method name</param>
         /// <param name="arguments">Arguments for call dispatch</param>
-        private void addDispatch(QualifiedName name, MemoryEntry[] arguments)
+        private void addFunctionDispatch(QualifiedName functionName, MemoryEntry[] arguments)
         {
-            var declarations = _functionResolver.ResolveFunction(_currentControler.OutSet, name);
+            var declarations = _functionResolver.ResolveFunction(_currentControler.OutSet, functionName);
+            //TODO object for global context ?
+            addDispatch(null, arguments, declarations);
+        }
+
+        private void addMethodDispatch(MemoryEntry thisObject, QualifiedName methodName, MemoryEntry[] arguments)
+        {
+            var declarations = _functionResolver.ResolveMethod(thisObject,_currentControler.OutSet, methodName);
+            addDispatch(thisObject, arguments, declarations);
+        }
+
+        private void addDispatch(MemoryEntry thisObject, MemoryEntry[] arguments, IEnumerable<LangElement> declarations)
+        {
             foreach (var declaration in declarations)
             {
-
-                var callInput = _currentControler.OutSet.CreateCall(null, arguments);
+                var callInput = _currentControler.OutSet.CreateCall(thisObject, arguments);
                 var methodGraph = _functionResolver.InitializeCall(callInput, declaration);
 
                 var info = new CallInfo(callInput, methodGraph);

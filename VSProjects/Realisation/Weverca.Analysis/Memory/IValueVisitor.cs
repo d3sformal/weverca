@@ -43,6 +43,8 @@ namespace Weverca.Analysis.Memory
 
         void VisitFunctionValue(FunctionValue value);
 
+        void VisitTypeValue(TypeValue typeValue);
+
         void VisitFloatValue(FloatValue value);
 
         void VisitBooleanValue(BooleanValue value);
@@ -54,6 +56,6 @@ namespace Weverca.Analysis.Memory
         void VisitIntegerValue(IntegerValue value);
 
         #endregion
-
+        
     }
 }

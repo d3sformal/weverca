@@ -45,7 +45,7 @@ namespace Weverca.Analysis.Memory
         /// Create object of given type
         /// </summary>   
         /// <param name="type">Desired type of created object</param>
-        ObjectValue CreateObject(TypeDecl type);
+        ObjectValue CreateObject(TypeValue type);
         /// <summary>
         /// Create alias for given variable
         /// </summary>

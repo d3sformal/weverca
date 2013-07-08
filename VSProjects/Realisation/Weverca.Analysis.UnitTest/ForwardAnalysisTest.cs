@@ -207,7 +207,7 @@ $ArrayValue=$arr[0];
             AnalysisTestUtils.RunTestCase(MergedFunctionDeclarations_CASE);
         }
 
-       // [TestMethod]
+        [TestMethod]
         public void ObjectFieldMerge()
         {
             AnalysisTestUtils.RunTestCase(ObjectFieldMerge_CASE);

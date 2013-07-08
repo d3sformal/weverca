@@ -110,7 +110,7 @@ namespace Weverca.Analysis
             return _snapshot.CreateArray();
         }
 
-        public ObjectValue CreateObject(TypeDecl type)
+        public ObjectValue CreateObject(TypeValue type)
         {
             return _snapshot.CreateObject(type);
         }
@@ -141,6 +141,11 @@ namespace Weverca.Analysis
         }
 
         public void DeclareGlobal(FunctionDecl declaration)
+        {
+            _snapshot.DeclareGlobal(declaration);
+        }
+
+        internal void DeclareGlobal(TypeDecl declaration)
         {
             _snapshot.DeclareGlobal(declaration);
         }
@@ -182,6 +187,7 @@ namespace Weverca.Analysis
             _snapshot.MergeWithCallLevel(snapshots);
         }
 
+
         #endregion
 
         #region Private helpers
@@ -216,7 +222,6 @@ namespace Weverca.Analysis
 
 
 
-
-  
+        
     }
 }

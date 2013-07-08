@@ -37,12 +37,19 @@ namespace Weverca.Analysis.Expressions
         /// <param name="functionName">Name of called function</param>
         /// <returns>Resolved declarations</returns>
         public abstract IEnumerable<LangElement> ResolveFunction(FlowInputSet callerOutput, QualifiedName functionName);
+
+        public abstract IEnumerable<LangElement> ResolveMethod(MemoryEntry thisObject, FlowOutputSet flowOutputSet, QualifiedName methodName);
         /// <summary>
         /// Resolves return value of given program point graphs
         /// </summary>
         /// <param name="programPointGraphs">Program point graphs from call dispatch</param>
         /// <returns>Resolved return value</returns>
         public abstract MemoryEntry ResolveReturnValue(ProgramPointGraph[] programPointGraphs);
+
+        public virtual void DeclareGlobal(FlowOutputSet outSet,TypeDecl declaration)
+        {
+            outSet.DeclareGlobal(declaration);
+        }
 
         public virtual void DeclareGlobal(FlowOutputSet outSet, FunctionDecl declaration)
         {
@@ -54,5 +61,9 @@ namespace Weverca.Analysis.Expressions
             outSet.Assign(outSet.ReturnValue, value);
             return value;
         }
+
+
+
+  
     }
 }

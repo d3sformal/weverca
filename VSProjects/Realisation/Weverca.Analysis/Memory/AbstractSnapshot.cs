@@ -93,7 +93,7 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="createdObject">Created object that has to be initialized</param>
         /// <param name="type">Desired type of initialized object</param>
-        protected abstract void initializeObject(ObjectValue createdObject, TypeDecl type);
+        protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
         /// <summary>
         /// Initialize array
         /// </summary>
@@ -109,7 +109,7 @@ namespace Weverca.Analysis.Memory
         /// Create snapshot that will be used for call invoked from given info
         /// </summary>        
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        protected abstract AbstractSnapshot createCall(MemoryEntry ThisObject, MemoryEntry[] arguments);
+        protected abstract AbstractSnapshot createCall(MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Assign memory entry into targetVar        
         /// </summary>
@@ -203,13 +203,28 @@ namespace Weverca.Analysis.Memory
         /// <param name="declaration">Declared function</param>
         protected abstract void declareGlobal(FunctionValue declaration);
         /// <summary>
+        /// Declare given type into global context
+        /// </summary>
+        /// <param name="declaration">Declared type</param>
+        protected abstract void declareGlobal(TypeValue declaration);
+
+        /// <summary>
         /// Resolves all possible functions for given functionName
         /// NOTE:
         ///     Multiple declarations for single functionName can happen for example because of branch merging
         /// </summary>
-        /// <param name="functionName">Name of resolved function</param>
+        /// <param name="typeName">Name of resolved function</param>
         /// <returns>Resolved functions</returns>
-        protected abstract IEnumerable<FunctionValue> resolveFunction(Name functionName);
+        protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
+
+        /// <summary>
+        /// Resolves all possible types for given typeName
+        /// NOTE:
+        ///     Multiple declarations for single typeName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="functionName">Name of resolved type</param>
+        /// <returns>Resolved types</returns>
+        protected abstract IEnumerable<TypeValue> resolveType(QualifiedName typeName);
 
         #endregion
 
@@ -258,6 +273,11 @@ namespace Weverca.Analysis.Memory
         #endregion
 
         #region Snapshot controll operations
+
+        public AbstractSnapshot()
+        {            
+        }
+
         /// <summary>
         /// Start snapshot transaction - changes can be proceeded only when transaction is started
         /// </summary>
@@ -323,11 +343,11 @@ namespace Weverca.Analysis.Memory
         ///     Returned snapshot is extension of current snapshot with defined arguments
         /// </summary>        
         /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        internal AbstractSnapshot CreateCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
+        internal AbstractSnapshot CreateCall(MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
             _statistics.CreatedCallSnapshots++;
-            var snapshot = createCall(ThisObject, arguments);
+            var snapshot = createCall(thisObject, arguments);
 
             snapshot.StartTransaction();
             for (int i = 0; i < arguments.Length; ++i)
@@ -350,6 +370,8 @@ namespace Weverca.Analysis.Memory
         public MemoryEntry AnyValueEntry { get { return _anyValueEntry; } }
         public MemoryEntry UndefinedValueEntry { get { return _undefinedValueEntry; } }
         public VariableName ReturnValue { get { return _returnValue; } }
+
+        public abstract MemoryEntry ThisObject { get; }
 
         public VariableName Argument(int index)
         {
@@ -419,7 +441,7 @@ namespace Weverca.Analysis.Memory
             return new FunctionValue(declaration);
         }
 
-        public ObjectValue CreateObject(TypeDecl type)
+        public ObjectValue CreateObject(TypeValue type)
         {
             checkCanUpdate();
 
@@ -560,10 +582,24 @@ namespace Weverca.Analysis.Memory
             declareGlobal(function);
         }
 
-        public IEnumerable<FunctionValue> ResolveFunction(Name functionName)
+        internal void DeclareGlobal(TypeDecl declaration)
+        {
+            ++_statistics.DeclaredTypes;
+
+            var type = new TypeValue(declaration);
+            declareGlobal(type);
+        }
+
+        public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
             ++_statistics.FunctionResolvings;
             return resolveFunction(functionName);
+        }
+
+        public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
+        {
+            ++_statistics.TypeResolvings;
+            return resolveType(typeName);
         }
         #endregion
 
@@ -586,5 +622,8 @@ namespace Weverca.Analysis.Memory
         }
         #endregion
 
+
+
+        
     }
 }

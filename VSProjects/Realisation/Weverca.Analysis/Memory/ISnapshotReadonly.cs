@@ -12,6 +12,8 @@ namespace Weverca.Analysis.Memory
 
         MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index);
 
+        MemoryEntry ThisObject { get; }
+
         /// <summary>
         /// Variable where return value is stored
         /// </summary>
@@ -45,6 +47,16 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="functionName">Name of resolved function</param>
         /// <returns>Resolved functions</returns>
-        IEnumerable<FunctionValue> ResolveFunction(Name functionName);
+        IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName);
+
+
+        /// <summary>
+        /// Resolves all possible types for given typeName
+        /// NOTE:
+        ///     Multiple declarations for single typeName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="typeName">Name of resolved type</param>
+        /// <returns>Resolved types</returns>
+        IEnumerable<TypeValue> ResolveType(QualifiedName typeName);
     }
 }

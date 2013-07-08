@@ -29,6 +29,8 @@ namespace Weverca.Analysis
 
         public VariableName ReturnValue { get { return _snapshot.ReturnValue; } }
 
+        public MemoryEntry ThisObject { get { return _snapshot.ThisObject; } }
+
         public VariableName Argument(int index)
         {
             return _snapshot.Argument(index);
@@ -44,9 +46,14 @@ namespace Weverca.Analysis
             return _snapshot.CreateIndex(identifier);
         }
         
-        public IEnumerable<FunctionValue> ResolveFunction(Name functionName)
+        public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
             return _snapshot.ResolveFunction(functionName);
+        }
+        
+        public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
+        {
+            return _snapshot.ResolveType(typeName);
         }
 
         public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
@@ -64,6 +71,6 @@ namespace Weverca.Analysis
 
 
 
-    
+
     }
 }

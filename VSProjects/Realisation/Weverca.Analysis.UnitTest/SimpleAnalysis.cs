@@ -237,7 +237,8 @@ namespace Weverca.Analysis.UnitTest
         {
             {"strtolower",new NativeAnalyzer(_strtolower)},
             {"strtoupper",new NativeAnalyzer(_strtoupper)},
-            {"concat",new NativeAnalyzer(_concat)}
+            {"concat",new NativeAnalyzer(_concat)},
+            {"__constructor",new NativeAnalyzer(_constructor)},
         };
 
         /// <summary>
@@ -281,11 +282,27 @@ namespace Weverca.Analysis.UnitTest
             }
             else
             {
-                var functions = callInput.ResolveFunction(name.Name);
+                var functions = callInput.ResolveFunction(name);
 
                 var declarations = from FunctionValue function in functions select function.Declaration;
                 return declarations;
             }
+        }
+
+
+        public override IEnumerable<LangElement> ResolveMethod(MemoryEntry thisObject, FlowOutputSet flowOutputSet, QualifiedName methodName)
+        {
+              NativeAnalyzer analyzer;
+
+              if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
+              {
+                  //we have native analyzer - create it's program point 
+                  return new LangElement[] { analyzer };
+              }
+              else
+              {
+                  throw new NotImplementedException();
+              }
         }
 
         /// <summary>
@@ -363,7 +380,13 @@ namespace Weverca.Analysis.UnitTest
 
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
         }
+
+        private static void _constructor(FlowController flow)
+        {
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
+        }
         #endregion
+
     }
 
 
