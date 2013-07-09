@@ -145,7 +145,7 @@ class Obj{
 
 $obj=new Obj();
 if($unknown){
-    $obj->setter('ValueAA');
+    $obj->setter('ValueA');
 }else{
     $obj->setter('ValueB');
 }
