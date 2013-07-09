@@ -16,7 +16,7 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Singleton visitor for postfix converting
         /// </summary>
-        private static PostfixVisitorConverter _visitor=new PostfixVisitorConverter();
+        private static PostfixVisitorConverter _visitor = new PostfixVisitorConverter();
 
         /// <summary>
         /// Convert given element into Postfix representation
@@ -32,10 +32,10 @@ namespace Weverca.Analysis.Expressions
     /// <summary>
     /// Visitor for postfix conversion
     /// </summary>
-    class PostfixVisitorConverter:TreeVisitor
+    class PostfixVisitorConverter : TreeVisitor
     {
         Postfix _collectedExpression;
-             
+
         /// <summary>
         /// Get converted expression of element
         /// </summary>
@@ -50,7 +50,7 @@ namespace Weverca.Analysis.Expressions
             appendElement(element);
             return _collectedExpression;
         }
-        
+
         /// <summary>
         /// Append element into postfix representation
         /// </summary>
@@ -63,14 +63,35 @@ namespace Weverca.Analysis.Expressions
         #region Vistor overrides
         public override void VisitElement(LangElement element)
         {
+            if (element == null)
+            {
+                return;
+            }
             base.VisitElement(element);
             appendElement(element);
         }
 
+        public override void VisitDirectFcnCall(DirectFcnCall x)
+        {    
+            VisitElement(x.IsMemberOf);
+            //force traversing
+            foreach (var param in x.CallSignature.Parameters)
+            {
+                VisitElement(param);
+            }
+        }
+
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
-            //force traversing 
-            VisitElement(x.VarNameEx);  
+            //force traversing
+            VisitElement(x.IsMemberOf);
+            VisitElement(x.VarNameEx);            
+        }
+
+        public override void VisitDirectVarUse(DirectVarUse x)
+        {
+            //force traversing
+            VisitElement(x.IsMemberOf);
         }
 
         public override void VisitJumpStmt(JumpStmt x)
@@ -81,8 +102,14 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitFunctionDecl(FunctionDecl x)
         {
+            //no recursive traversing            
+            
+        }
+
+        public override void VisitTypeDecl(TypeDecl x)
+        {
             //no recursive traversing
-            appendElement(x);
+            
         }
         #endregion
     }

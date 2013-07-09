@@ -93,13 +93,19 @@ namespace Weverca.Analysis
         /// <returns></returns>
         internal static ProgramPointGraph FromSource(FunctionDecl declaration)
         {
-            var file = new PhpSourceFile(new FullPath("nothing"), new FullPath("nothing"));
-            var compUnit = new ScriptCompilationUnit();
-            var sourceUnit = new VirtualSourceFileUnit(compUnit, "nothing",file, Encoding.Default);
-            var functionCode = new GlobalCode(declaration.Body,sourceUnit);
+            var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
 
-            //TODO create cfg for function
-            var cfg = new ControlFlowGraph.ControlFlowGraph(functionCode);
+            return new ProgramPointGraph(cfg.start);
+        }
+
+        /// <summary>
+        /// Creates program point graph for given function declaration
+        /// </summary>
+        /// <param name="declarations"></param>
+        /// <returns></returns>
+        internal static ProgramPointGraph FromSource(MethodDecl declaration)
+        {
+            var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
 
             return new ProgramPointGraph(cfg.start);
         }
@@ -110,8 +116,10 @@ namespace Weverca.Analysis
             {
                 return FromNative(declaration as NativeAnalyzer);
             }
-            else
+            else if (declaration is MethodDecl)
             {
+                return FromSource(declaration as MethodDecl);
+            }else{
                 return FromSource(declaration as FunctionDecl);
             }
         }

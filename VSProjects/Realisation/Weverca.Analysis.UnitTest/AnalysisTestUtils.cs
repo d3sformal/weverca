@@ -110,6 +110,16 @@ namespace Weverca.Analysis.UnitTest
         {
             return new TestCase(test_CODE, variableName, assertMessage);
         }
+
+        static internal T GetSingle<T>(this MemoryEntry entry)            
+        {
+            if (entry.PossibleValues.Count() != 1)
+            {
+                throw new NotImplementedException("Needs to implement multiple possible values behvaiour");
+            }
+
+            return (T)(object)entry.PossibleValues.First();
+        }
     }
 
     delegate void AssertRunner(FlowOutputSet output);

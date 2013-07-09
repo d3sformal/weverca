@@ -50,6 +50,12 @@ namespace Weverca.Analysis
         {
             return _snapshot.ResolveFunction(functionName);
         }
+
+
+        public IEnumerable<MethodDecl> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        {
+            return _snapshot.ResolveMethod(objectValue, methodName);
+        }
         
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
@@ -67,6 +73,11 @@ namespace Weverca.Analysis
         }
         #endregion
 
+
+        public override string ToString()
+        {
+            return _snapshot.ToString();
+        }
 
 
 

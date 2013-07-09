@@ -39,6 +39,7 @@ namespace Weverca.Analysis.Memory
         public int FunctionResolvings;
         public int DeclaredTypes;
         public int TypeResolvings;
+        public int MethodResolvings;
 
         internal SnapshotStatistics Clone()
         {

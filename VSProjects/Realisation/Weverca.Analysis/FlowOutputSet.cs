@@ -12,7 +12,7 @@ namespace Weverca.Analysis
 {
     /// <summary>
     /// Set of FlowInfo used as output from statement analysis.   
-    /// </summary>
+    /// </summary>    
     public class FlowOutputSet : FlowInputSet, ISnapshotReadWrite
     {
 
@@ -220,8 +220,5 @@ namespace Weverca.Analysis
         }
         #endregion
 
-
-
-        
     }
 }

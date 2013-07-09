@@ -217,6 +217,8 @@ namespace Weverca.Analysis.Memory
         /// <returns>Resolved functions</returns>
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
+
+        protected abstract IEnumerable<MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName);
         /// <summary>
         /// Resolves all possible types for given typeName
         /// NOTE:
@@ -596,6 +598,12 @@ namespace Weverca.Analysis.Memory
             return resolveFunction(functionName);
         }
 
+        internal IEnumerable<MethodDecl> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        {            
+            ++_statistics.MethodResolvings;
+            return resolveMethod(objectValue,methodName);
+        }
+                
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             ++_statistics.TypeResolvings;
@@ -624,6 +632,5 @@ namespace Weverca.Analysis.Memory
 
 
 
-        
     }
 }

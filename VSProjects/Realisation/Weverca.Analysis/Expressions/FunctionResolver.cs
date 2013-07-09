@@ -36,9 +36,9 @@ namespace Weverca.Analysis.Expressions
         /// <param name="callerOutput">Output set of caller</param>
         /// <param name="functionName">Name of called function</param>
         /// <returns>Resolved declarations</returns>
-        public abstract IEnumerable<LangElement> ResolveFunction(FlowInputSet callerOutput, QualifiedName functionName);
+        public abstract IEnumerable<LangElement> ResolveFunction(FlowOutputSet callerOutput, QualifiedName functionName);
 
-        public abstract IEnumerable<LangElement> ResolveMethod(MemoryEntry thisObject, FlowOutputSet flowOutputSet, QualifiedName methodName);
+        public abstract IEnumerable<LangElement> ResolveMethod(FlowOutputSet callerOutput, MemoryEntry thisObject, QualifiedName methodName);
         /// <summary>
         /// Resolves return value of given program point graphs
         /// </summary>

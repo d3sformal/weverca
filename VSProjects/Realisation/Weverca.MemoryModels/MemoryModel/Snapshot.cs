@@ -12,9 +12,9 @@ namespace Weverca.MemoryModels.MemoryModel
     {
         private static readonly MemoryIndex undefinedVariable = new MemoryIndex();
 
-        private Dictionary<VariableName, MemoryIndex> variables = new Dictionary<VariableName,MemoryIndex>();
-        private Dictionary<AssociativeArray, ArrayDescriptor> arrays = new Dictionary<AssociativeArray,ArrayDescriptor>();
-        private Dictionary<ObjectValue, ObjectDescriptor> objects = new Dictionary<ObjectValue,ObjectDescriptor>();
+        private Dictionary<VariableName, MemoryIndex> variables = new Dictionary<VariableName, MemoryIndex>();
+        private Dictionary<AssociativeArray, ArrayDescriptor> arrays = new Dictionary<AssociativeArray, ArrayDescriptor>();
+        private Dictionary<ObjectValue, ObjectDescriptor> objects = new Dictionary<ObjectValue, ObjectDescriptor>();
 
         private Dictionary<MemoryIndex, MemoryEntry> memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
         private Dictionary<MemoryIndex, MemoryInfo> memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
@@ -100,7 +100,7 @@ namespace Weverca.MemoryModels.MemoryModel
             MemoryIndex memoryIndex = getFieldOrUnknown(descriptor, index);
             return getMemoryEntry(memoryIndex);
         }
-        
+
         protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
             ObjectDescriptor descriptor = objects[value];
@@ -125,7 +125,7 @@ namespace Weverca.MemoryModels.MemoryModel
         #endregion
 
         #region Indexes
-        
+
         protected override void initializeArray(AssociativeArray createdArray)
         {
             throw new NotImplementedException();
@@ -300,7 +300,10 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
-
+        protected override IEnumerable<PHP.Core.AST.MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        {
+            throw new NotImplementedException();
+        }
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             throw new NotImplementedException();
@@ -315,5 +318,7 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             get { throw new NotImplementedException(); }
         }
+
+
     }
 }

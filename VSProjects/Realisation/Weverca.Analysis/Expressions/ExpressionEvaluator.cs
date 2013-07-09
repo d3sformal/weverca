@@ -38,9 +38,13 @@ namespace Weverca.Analysis.Expressions
         #region Template API methods for implementors
 
         abstract public MemoryEntry ResolveVariable(VariableEntry variable);
+        abstract public MemoryEntry ResolveField(MemoryEntry objectValue, VariableEntry field);
+        abstract public IEnumerable<AliasValue> ResolveAlias(MemoryEntry objectValue, VariableEntry aliasedField);
         abstract public void AliasAssign(VariableEntry target, IEnumerable<AliasValue> possibleAliases);
+        abstract public void AliasAssign(MemoryEntry objectValue, VariableEntry fieldEntry, IEnumerable<AliasValue> possibleAliasses);
         abstract public void Assign(VariableEntry target, MemoryEntry value);
-        abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
+        abstract public void Assign(MemoryEntry objectValue, VariableEntry targetField, MemoryEntry value);
+        abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);        
 
         #endregion
 
@@ -57,8 +61,6 @@ namespace Weverca.Analysis.Expressions
         
         #region Default implementation of simple routines
 
-        
-        
         virtual public IEnumerable<AliasValue> ResolveAlias(VariableEntry aliasedVariables)
         {
             return from aliasedVariable in aliasedVariables.PossibleNames select Flow.OutSet.CreateAlias(aliasedVariable);
@@ -119,6 +121,8 @@ namespace Weverca.Analysis.Expressions
 
         abstract public MemoryEntry ResolveArray(VariableEntry _entry);
 
-  
+
+
+   
     }
 }

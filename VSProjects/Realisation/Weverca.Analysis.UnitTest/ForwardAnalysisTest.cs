@@ -134,6 +134,26 @@ $ArrayValue=$arr[0];
 ".AssertVariable("ArrayValue").HasValues("ValueA", "ValueB");
 
 
+        readonly static TestCase ObjectMethodCallMerge_CASE = @"
+class Obj{
+    var $a;
+
+    function setter($value){
+        $this->a=$value;
+    }
+}
+
+$obj=new Obj();
+if($unknown){
+    $obj->setter('ValueAA');
+}else{
+    $obj->setter('ValueB');
+}
+
+$FieldValue=$obj->a;
+".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
+
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -217,6 +237,12 @@ $ArrayValue=$arr[0];
         public void ArrayFieldMerge()
         {
             AnalysisTestUtils.RunTestCase(ArrayFieldMerge_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMethodCallMerge()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
         }
     }
 }

@@ -226,7 +226,17 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            push(new VariableEntry(x.VarName));
+            var variableEntry=new VariableEntry(x.VarName);
+
+            if (x.IsMemberOf != null)
+            {
+                var objValue = popValue();
+                push(new FieldEntryValue(objValue, variableEntry));
+            }
+            else
+            {
+                push(variableEntry);
+            }
         }
         #endregion
 
@@ -261,6 +271,7 @@ namespace Weverca.Analysis.Expressions
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var value = popValue();
+            
             var assignedVariable = popLValue();
 
             assignedVariable.AssignValue(_evaluator, value);
@@ -276,7 +287,15 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var name = x.QualifiedName;
 
-            addFunctionDispatch(name, arguments);
+            if (x.IsMemberOf != null)
+            {
+                var calledObject = popValue();
+                addMethodDispatch(calledObject, name, arguments);
+            }
+            else
+            {
+                addFunctionDispatch(name, arguments);
+            }
 
             //Result value won't be pushed, because it's directly inserted from analysis
         }
@@ -367,7 +386,7 @@ namespace Weverca.Analysis.Expressions
 
         private void addMethodDispatch(MemoryEntry thisObject, QualifiedName methodName, MemoryEntry[] arguments)
         {
-            var declarations = _functionResolver.ResolveMethod(thisObject,_currentControler.OutSet, methodName);
+            var declarations = _functionResolver.ResolveMethod(_currentControler.OutSet, thisObject, methodName);
             addDispatch(thisObject, arguments, declarations);
         }
 
@@ -376,8 +395,9 @@ namespace Weverca.Analysis.Expressions
             foreach (var declaration in declarations)
             {
                 var callInput = _currentControler.OutSet.CreateCall(thisObject, arguments);
+                callInput.StartTransaction();
                 var methodGraph = _functionResolver.InitializeCall(callInput, declaration);
-
+                callInput.CommitTransaction();
                 var info = new CallInfo(callInput, methodGraph);
                 _currentControler.AddDispatch(info);
             }

@@ -28,7 +28,7 @@ namespace Weverca.VirtualReferenceModel
         {
             get { return readValue(thisObjectStorage()); }
         }
-       
+
         protected override void startTransaction()
         {
             _oldData = _data;
@@ -109,8 +109,12 @@ namespace Weverca.VirtualReferenceModel
         {
             //TODO implement
 
-            var snapshot= new Snapshot();
-            snapshot.assign(thisObjectStorage(), thisObject);
+            var snapshot = new Snapshot();
+
+            if (thisObject != null)
+            {
+                snapshot.assign(thisObjectStorage(), thisObject);
+            }
             return snapshot;
         }
 
@@ -169,6 +173,17 @@ namespace Weverca.VirtualReferenceModel
             }
         }
 
+
+        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
+        {
+            //TODO this is dummy workaround
+            foreach (Snapshot callInput in callOutput)
+            {
+                extendVariables(callInput);
+                extendData(callInput);
+            }
+        }
+
         private void extendData(Snapshot input)
         {
             foreach (var dataPair in input._data)
@@ -221,10 +236,6 @@ namespace Weverca.VirtualReferenceModel
             }
         }
 
-        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
-        {
-            throw new NotImplementedException();
-        }
 
         protected override MemoryEntry readValue(VariableName sourceVar)
         {
@@ -303,6 +314,10 @@ namespace Weverca.VirtualReferenceModel
 
         private void setEntry(VirtualReference reference, MemoryEntry entry)
         {
+            if (entry == null)
+            {
+                throw new NotSupportedException("Entry cannot be null");
+            }
             ReportSimpleHashAssign();
             _data[reference] = entry;
         }
@@ -429,7 +444,32 @@ namespace Weverca.VirtualReferenceModel
             var info = getObjectInfoStorage(createdObject);
             //TODO set info
             ReportMemoryEntryCreation();
-            assign(info, new MemoryEntry());
+            assign(info, new MemoryEntry(type));
+        }
+
+        protected override IEnumerable<MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        {
+            var info = getObjectInfoStorage(objectValue);
+            var objInfo = readValue(info);
+            if (objInfo.PossibleValues.Count() != 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            var type = objInfo.PossibleValues.First() as TypeValue;
+            foreach (var member in type.Declaration.Members)
+            {
+                var m = member as MethodDecl;
+                if (m == null)
+                {
+                    continue;
+                }
+
+                if (m.Name == methodName.Name)
+                {
+                    yield return m;
+                }                
+            }            
         }
 
         private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)
@@ -480,7 +520,7 @@ namespace Weverca.VirtualReferenceModel
 
         private VariableName thisObjectStorage()
         {
-            return new VariableName("$this");
+            return new VariableName("this");
         }
 
         private VariableName getArrayInfoStorage(AssociativeArray arr)
@@ -496,7 +536,7 @@ namespace Weverca.VirtualReferenceModel
 
             foreach (var variable in _variables.Keys)
             {
-                result.AppendFormat("{0}: {", variable);
+                result.AppendFormat("{0}: {{", variable);
 
                 foreach (var value in readValue(variable).PossibleValues)
                 {
