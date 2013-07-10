@@ -150,6 +150,8 @@ namespace Weverca.CodeMetrics
             "mysql_unbuffered_query"
         };
 
+        static readonly string[] classAliasFunction = new string[] { "class_alias" };
+
         /// <summary>
         /// Indicators to its related functions
         /// </summary>
@@ -163,6 +165,7 @@ namespace Weverca.CodeMetrics
             functions.Add(ConstructIndicator.Autoload, Autoload_Register);
             functions.Add(ConstructIndicator.Eval, Eval);
             functions.Add(ConstructIndicator.MySQL, mySqlFunctions);
+            functions.Add(ConstructIndicator.ClassAlias, classAliasFunction);
             // TODO: Add other metric related functions
         }
 

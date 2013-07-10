@@ -73,7 +73,13 @@ namespace Weverca.CodeMetrics
         /// <summary>
         /// Indicator of My SQL functions presence
         /// </summary>
-        MySQL
+        MySQL,
+
+        /// <summary>
+        /// Indicator of class alias construction
+        /// </summary>
+        /// <seealso cref="http://php.net/manual/en/function.class-alias.php"/>
+        ClassAlias
     }
 
     /// <summary>
