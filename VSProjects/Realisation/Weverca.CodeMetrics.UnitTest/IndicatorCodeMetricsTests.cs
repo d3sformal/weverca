@@ -223,7 +223,20 @@ namespace Weverca.CodeMetrics.UnitTest
                     $b = &$a;"),
                 new SourceTest("alias to array", @"
                     $a = [];
-                    $b = &$a[1];")
+                    $b = &$a[1];"),
+                new SourceTest("class field alias", @"
+                    class A {
+                        public $field = ""asdf"";
+                    }
+                    $a = new A();
+                    $b = &$a->field;"),
+                new SourceTest("class indirect field alias", @"
+                    class A {
+                        public $field = ""asdf"";
+                    }
+                    $a = new A();
+                    $c = ""field"";
+                    $b = &$a->$c;")
             };
 
         readonly SourceTest[] aliasNegativeTests = new SourceTest[]

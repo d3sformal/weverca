@@ -17,7 +17,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
 
         public override void VisitRefAssignEx(RefAssignEx x)
         {
-            if (x.RValue is DirectVarUse || x.RValue is ItemUse)
+            if (x.RValue is DirectVarUse || x.RValue is ItemUse || x.RValue is IndirectVarUse)
             {
                 occurrenceNodes.Push(x);
             }
