@@ -40,6 +40,9 @@ namespace Weverca.Analysis.Memory
         public int DeclaredTypes;
         public int TypeResolvings;
         public int MethodResolvings;
+        public int CreatedIntIntervalValues;
+        public int CreatedLongIntervalValues;
+        public int CreatedFloatIntervalValues;
 
         internal SnapshotStatistics Clone()
         {

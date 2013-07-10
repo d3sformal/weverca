@@ -35,6 +35,30 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         private static readonly AnyValue _anyValue = new AnyValue();
         /// <summary>
+        /// Any string value singleton
+        /// </summary>
+        private static readonly AnyStringValue _anyStringValue = new AnyStringValue();
+        /// <summary>
+        /// Any boolean value singleton
+        /// </summary>
+        private static readonly AnyBooleanValue _anyBooleanValue = new AnyBooleanValue();
+        /// <summary>
+        /// Any string value singleton
+        /// </summary>
+        private static readonly AnyIntegerValue _anyIntegerValue = new AnyIntegerValue();
+        /// <summary>
+        /// Any boolean value singleton
+        /// </summary>
+        private static readonly AnyLongintValue _anyLongintValue = new AnyLongintValue();
+        /// <summary>
+        /// Any string value singleton
+        /// </summary>
+        private static readonly AnyObjectValue _anyObjectValue = new AnyObjectValue();
+        /// <summary>
+        /// Any boolean value singleton
+        /// </summary>
+        private static readonly AnyArrayValue _anyArrayValue = new AnyArrayValue();
+        /// <summary>
         /// Undefined value singleton
         /// </summary>s
         private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
@@ -367,6 +391,14 @@ namespace Weverca.Analysis.Memory
         #region Implementation of ISnapshotReadWrite interface
 
         public AnyValue AnyValue { get { return _anyValue; } }
+        public AnyStringValue AnyStringValue { get { return _anyStringValue; } }
+        public AnyBooleanValue AnyBooleanValue { get { return _anyBooleanValue; } }
+        public AnyIntegerValue AnyIntegerValue { get { return _anyIntegerValue; } }
+        public AnyLongintValue AnyLongintValue { get { return _anyLongintValue; } }
+        public AnyObjectValue AnyObjectValue { get { return _anyObjectValue; } }
+        public AnyArrayValue AnyArrayValue { get { return _anyArrayValue; } }
+
+
         public UndefinedValue UndefinedValue { get { return _undefinedValue; } }
 
         public MemoryEntry AnyValueEntry { get { return _anyValueEntry; } }
@@ -465,6 +497,27 @@ namespace Weverca.Analysis.Memory
             initializeArray(createdArray);
 
             return createdArray;
+        }
+
+        public IntegerIntervalValue CreateIntegerInterval(int start,int end)
+        {
+            checkCanUpdate();
+            ++_statistics.CreatedIntIntervalValues;
+            return new IntegerIntervalValue(start,end);
+        }
+
+        public LongintIntervalValue CreateLonginInterval(long start, long end)
+        {
+            checkCanUpdate();
+            ++_statistics.CreatedLongIntervalValues;
+            return new LongintIntervalValue(start,end);
+        }
+
+        public FloatIntervalValue CreateFloatInterval(double start, double end)
+        {
+            checkCanUpdate();
+            ++_statistics.CreatedFloatIntervalValues;
+            return new FloatIntervalValue(start,end);
         }
 
         public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)

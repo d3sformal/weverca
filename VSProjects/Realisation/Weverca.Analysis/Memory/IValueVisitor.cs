@@ -33,6 +33,18 @@ namespace Weverca.Analysis.Memory
 
         void VisitUndefinedValue(UndefinedValue value);
 
+        void VisitAnyStringValue(AnyStringValue value);
+
+        void VisitAnyBooleanValue(AnyBooleanValue value);
+
+        void VisitAnyIntegerValue(AnyIntegerValue value);
+
+        void VisitAnyLongintValue(AnyLongintValue value);
+
+        void VisitAnyObjectValue(AnyObjectValue value);
+
+        void VisitAnyArrayValue(AnyArrayValue value);
+
         #endregion
 
         #region Primitive Values
@@ -56,6 +68,17 @@ namespace Weverca.Analysis.Memory
         void VisitIntegerValue(IntegerValue value);
 
         #endregion
-        
+
+        #region IntervalValues
+
+        void VisitGenericIntervalValue<T>(IntervalValue<T> value);
+
+        void VisitIntervalIntegerValue(IntegerIntervalValue value);
+
+        void VisitIntervalLongintValue(LongintIntervalValue value);
+
+        void VisitIntervalFloatValue(FloatIntervalValue value);
+        #endregion
+
     }
 }

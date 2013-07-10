@@ -52,4 +52,67 @@ namespace Weverca.Analysis.Memory
             visitor.VisitUndefinedValue(this);
         }
     }
+
+    public class AnyStringValue : AnyValue
+    {
+        internal AnyStringValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyStringValue(this);
+        }
+    }
+
+    public class AnyIntegerValue : AnyValue
+    {
+        internal AnyIntegerValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyIntegerValue(this);
+        }
+    }
+
+    public class AnyLongintValue : AnyValue
+    {
+        internal AnyLongintValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyLongintValue(this);
+        }
+    }
+
+    public class AnyBooleanValue : AnyValue
+    {
+        internal AnyBooleanValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyBooleanValue(this);
+        }
+    }
+
+    public class AnyObjectValue : AnyValue
+    {
+        internal AnyObjectValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyObjectValue(this);
+        }
+    }
+
+    public class AnyArrayValue : AnyValue
+    {
+        internal AnyArrayValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyArrayValue(this);
+        }
+    }
+
+   
+
 }
