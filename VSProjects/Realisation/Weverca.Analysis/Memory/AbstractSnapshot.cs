@@ -506,7 +506,7 @@ namespace Weverca.Analysis.Memory
             return new IntegerIntervalValue(start,end);
         }
 
-        public LongintIntervalValue CreateLonginInterval(long start, long end)
+        public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
             checkCanUpdate();
             ++_statistics.CreatedLongIntervalValues;

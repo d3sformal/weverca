@@ -18,7 +18,7 @@ namespace Weverca.Analysis
 
         #region Internal methods for transaction handling
         internal bool HasChanges { get; private set; }
-        
+
 
         internal FlowOutputSet(AbstractSnapshot snapshot) :
             base(snapshot)
@@ -67,6 +67,18 @@ namespace Weverca.Analysis
 
         #region Snapshot API wrapping
 
+        public AnyStringValue AnyStringValue { get { return _snapshot.AnyStringValue; } }
+
+        public AnyBooleanValue AnyBooleanValue { get { return _snapshot.AnyBooleanValue; } }
+
+        public AnyIntegerValue AnyIntegerValue  { get { return AnyIntegerValue; } }
+
+        public AnyLongintValue AnyLongintValue{ get { return AnyLongintValue; } }
+
+        public AnyObjectValue AnyObjectValue { get { return AnyObjectValue; } }
+
+        public AnyArrayValue AnyArrayValue { get { return AnyArrayValue; } }
+
         public AnyValue AnyValue { get { return _snapshot.AnyValue; } }
 
         public UndefinedValue UndefinedValue { get { return _snapshot.UndefinedValue; } }
@@ -93,7 +105,7 @@ namespace Weverca.Analysis
         public BooleanValue CreateBool(bool boolean)
         {
             return _snapshot.CreateBool(boolean);
-        }   
+        }
 
         public FloatValue CreateDouble(double number)
         {
@@ -113,6 +125,21 @@ namespace Weverca.Analysis
         public ObjectValue CreateObject(TypeValue type)
         {
             return _snapshot.CreateObject(type);
+        }
+
+        public IntegerIntervalValue CreateIntegerInterval(int start, int end)
+        {
+            return _snapshot.CreateIntegerInterval(start, end);
+        }
+
+        public LongintIntervalValue CreateLongintInterval(long start, long end)
+        {
+            return _snapshot.CreateLongintInterval(start, end);
+        }
+
+        public FloatIntervalValue CreateFloatInterval(double start, double end)
+        {
+            return _snapshot.CreateFloatInterval(start, end);
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)
@@ -183,7 +210,7 @@ namespace Weverca.Analysis
 
         public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
-            var snapshots=getSnapshots(callOutputs);
+            var snapshots = getSnapshots(callOutputs);
             _snapshot.MergeWithCallLevel(snapshots);
         }
 
@@ -219,6 +246,9 @@ namespace Weverca.Analysis
             return input._snapshot;
         }
         #endregion
+
+
+
 
     }
 }

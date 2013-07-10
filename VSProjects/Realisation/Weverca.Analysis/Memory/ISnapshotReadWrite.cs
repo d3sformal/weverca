@@ -23,6 +23,18 @@ namespace Weverca.Analysis.Memory
         /// Singleton representation of AnyValue inside memory entry
         /// </summary>
         MemoryEntry AnyValueEntry { get; }
+
+        AnyStringValue AnyStringValue { get; }
+        AnyBooleanValue AnyBooleanValue { get; }
+        AnyIntegerValue AnyIntegerValue { get; }
+        AnyLongintValue AnyLongintValue { get; }
+        AnyObjectValue AnyObjectValue { get; }
+        AnyArrayValue AnyArrayValue { get; }
+        IntegerIntervalValue CreateIntegerInterval(int start, int end);
+        LongintIntervalValue CreateLongintInterval(long start, long end);
+        FloatIntervalValue CreateFloatInterval(double start, double end);
+       
+
         /// <summary>
         /// Singleton representation of UndefinedValue inside memory entry
         /// </summary>
@@ -33,6 +45,9 @@ namespace Weverca.Analysis.Memory
         LongintValue CreateLong(long number);
         BooleanValue CreateBool(bool boolean);
         FloatValue CreateDouble(double number);
+
+
+
         FunctionValue CreateFunction(FunctionDecl declaration);
 
 
