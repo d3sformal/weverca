@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<functions>
 <function name="abs" returnType="number">
 <arg type="mixed" optional="false" byReference="false" dots="false"  />
 </function>
@@ -3667,8 +3669,7 @@
 <function name="fgetcsv" returnType="array">
 <arg type="resource" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false" value="0"  />
-<arg type="string" optional="true" byReference="false" dots="false" value="&#039;"  />
-<arg type="&#039;" optional="true" byReference="false" dots="false"  />
+<arg type="string" optional="true" byReference="false" dots="false" value="&#039;,&#039;"  />
 <arg type="string" optional="true" byReference="false" dots="false" value="&#039;&quot;&#039;"  />
 <arg type="string" optional="true" byReference="false" dots="false" value="&#039;\\&#039;"  />
 </function>
@@ -3854,8 +3855,7 @@
 <function name="fputcsv" returnType="int">
 <arg type="resource" optional="false" byReference="false" dots="false"  />
 <arg type="array" optional="false" byReference="false" dots="false"  />
-<arg type="string" optional="true" byReference="false" dots="false" value="&#039;"  />
-<arg type="&#039;" optional="true" byReference="false" dots="false"  />
+<arg type="string" optional="true" byReference="false" dots="false" value="&#039;,&#039;"  />
 <arg type="string" optional="true" byReference="false" dots="false" value="&#039;&quot;&#039;"  />
 </function>
 <function name="fread" returnType="string">
@@ -5716,7 +5716,6 @@
 <arg type="string" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false" value="iconv_strlen"  />
-<arg type="$charset" optional="true" byReference="false" dots="false"  />
 <arg type="string" optional="true" byReference="false" dots="false" value="ini_get"  />
 </function>
 <function name="iconv" returnType="string">
@@ -10672,10 +10671,6 @@
 <arg type="int" optional="true" byReference="false" dots="false" value="0"  />
 <arg type="bool" optional="true" byReference="false" dots="false" value="true"  />
 </function>
-<function name="handler" returnType="bool">
-<arg type="string" optional="false" byReference="false" dots="false"  />
-<arg type="int" optional="true" byReference="false" dots="false"  />
-</function>
 <function name="ob_tidyhandler" returnType="string">
 <arg type="string" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false"  />
@@ -11607,9 +11602,6 @@
 <arg type="int" optional="false" byReference="false" dots="false"  />
 <arg type="callable|int" optional="false" byReference="false" dots="false"  />
 <arg type="bool" optional="true" byReference="false" dots="false" value="true"  />
-</function>
-<function name="handler" returnType="void">
-<arg type="int" optional="false" byReference="false" dots="false"  />
 </function>
 <function name="pcntl_sigprocmask" returnType="bool">
 <arg type="int" optional="false" byReference="false" dots="false"  />
@@ -13045,9 +13037,6 @@
 <arg type="int" optional="true" byReference="false" dots="false" value="-1"  />
 <arg type="int" optional="true" byReference="true" dots="false"  />
 </function>
-<function name="handler" returnType="string">
-<arg type="array" optional="false" byReference="false" dots="false"  />
-</function>
 <function name="preg_replace" returnType="mixed">
 <arg type="mixed" optional="false" byReference="false" dots="false"  />
 <arg type="mixed" optional="false" byReference="false" dots="false"  />
@@ -14373,18 +14362,8 @@
 <arg type="callable" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false" value="E_ALL"  />
 </function>
-<function name="handler" returnType="bool">
-<arg type="int" optional="false" byReference="false" dots="false"  />
-<arg type="string" optional="false" byReference="false" dots="false"  />
-<arg type="string" optional="true" byReference="false" dots="false"  />
-<arg type="int" optional="true" byReference="false" dots="false"  />
-<arg type="array" optional="true" byReference="false" dots="false"  />
-</function>
 <function name="set_exception_handler" returnType="callable">
 <arg type="callable" optional="false" byReference="false" dots="false"  />
-</function>
-<function name="handler" returnType="void">
-<arg type="Exception" optional="false" byReference="false" dots="false"  />
 </function>
 <function name="set_include_path" returnType="string">
 <arg type="string" optional="false" byReference="false" dots="false"  />
@@ -15678,8 +15657,7 @@
 </function>
 <function name="str_getcsv" returnType="array">
 <arg type="string" optional="false" byReference="false" dots="false"  />
-<arg type="string" optional="true" byReference="false" dots="false" value="&#039;"  />
-<arg type="&#039;" optional="true" byReference="false" dots="false"  />
+<arg type="string" optional="true" byReference="false" dots="false" value="&#039;,&#039;"  />
 <arg type="string" optional="true" byReference="false" dots="false" value="&#039;&quot;&#039;"  />
 <arg type="string" optional="true" byReference="false" dots="false" value="&#039;\\&#039;"  />
 </function>
@@ -18986,7 +18964,7 @@
 <arg type="DateTimeZone" optional="true" byReference="false" dots="false" value="NULL"  />
 </function>
 <function name="date_create" returnType="DateTime">
-<arg type="string" optional="true" byReference="false" dots="false" value=""now""  />
+<arg type="string" optional="true" byReference="false" dots="false" value="now"  />
 <arg type="DateTimeZone" optional="true" byReference="false" dots="false" value="NULL"  />
 </function>
 <function name="date_date_set" returnType="DateTime">
@@ -19216,3 +19194,4 @@
 <function name="strchr" alias="strstr" />
 <function name="stream_register_wrapper" alias="stream_wrapper_register" />
 <function name="user_error" alias="trigger_error" />
+</functions>

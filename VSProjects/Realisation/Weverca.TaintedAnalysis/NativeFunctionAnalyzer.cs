@@ -35,8 +35,8 @@ namespace Weverca.TaintedAnalysis
     {
         public NativeAnalyzerMethod analyzer { get; private set; }
         public QualifiedName name { get; private set; }
-        public List<List<NativeFunctionArgument>> arguments { get; private set; }
-        public NativeFunction(NativeAnalyzerMethod analyzer,QualifiedName name,List<List<NativeFunctionArgument>> arguments)
+        public List<NativeFunctionArgument> arguments { get; private set; }
+        public NativeFunction(NativeAnalyzerMethod analyzer,QualifiedName name,List<NativeFunctionArgument> arguments)
         {
             this.analyzer = analyzer;
             this.name=name;
@@ -52,9 +52,8 @@ namespace Weverca.TaintedAnalysis
         HashSet<string> types = new HashSet<string>();
         internal NativeFunctionAnalyzer()
         {
-            XmlReader reader = XmlReader.Create(new StreamReader("../../php_functions.xml"));
-
-            bool inFunction = false;
+            string function = "";
+            XmlReader reader = XmlReader.Create(new StreamReader("php_functions.xml"));
             while (reader.Read())
             {
                 switch (reader.NodeType)
@@ -62,15 +61,13 @@ namespace Weverca.TaintedAnalysis
                     case XmlNodeType.Element:
                         if (reader.Name == "function") 
                         {
-                        //    Console.WriteLine( reader.GetAttribute(0));
-                            inFunction = true;
+                            function = reader.GetAttribute("name") ;
+                            types.Add(reader.GetAttribute("returnType"));
                         }
-                        if (inFunction && reader.Name == "type")
+                        else if (reader.Name == "arg")
                         {
-                            types.Add(reader.GetAttribute(0));
-                            inFunction = true;
+                            types.Add(reader.GetAttribute("type"));
                         }
-
                         break;
                     case XmlNodeType.Text:
                         break;
@@ -80,19 +77,15 @@ namespace Weverca.TaintedAnalysis
                     case XmlNodeType.Comment:
                         break;
                     case XmlNodeType.EndElement:
-                        if (reader.Name == "function")
-                        {
-                            inFunction = false;
-                        }
                         break;
                 }
             }
             var it=types.GetEnumerator();
-           do
+            while (it.MoveNext())
             {
                 Console.WriteLine(it.Current);
                
-            }while( it.MoveNext());
+            }
 
         }
 
