@@ -74,6 +74,7 @@
     <Compile Include="IncludeDispatch.cs" />
     <Compile Include="Memory\AbstractSnapshot.cs" />
     <Compile Include="Memory\AbstractValueVisitor.cs" />
+    <Compile Include="Memory\IntervalValues.cs" />
     <Compile Include="Memory\ContainerIndex.cs" />
     <Compile Include="Memory\ISnapshotReadonly.cs" />
     <Compile Include="Memory\ISnapshotReadWrite.cs" />
