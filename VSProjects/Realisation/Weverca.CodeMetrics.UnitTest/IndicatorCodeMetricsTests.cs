@@ -214,6 +214,27 @@ namespace Weverca.CodeMetrics.UnitTest
 
         #endregion
 
+        #region Alias tests
+
+        readonly SourceTest[] aliasPositiveTests = new SourceTest[]
+            {
+                new SourceTest("basic test", @"
+                    $a = 1;
+                    $b = &$a;"),
+                new SourceTest("alias to array", @"
+                    $a = [];
+                    $b = &$a[1];")
+            };
+
+        readonly SourceTest[] aliasNegativeTests = new SourceTest[]
+            {
+                new SourceTest("basic test", @"
+                    $a = 1;
+                    $b = $a;")
+            };
+
+        #endregion
+
         [TestMethod]
         public void Eval()
         {
@@ -283,6 +304,16 @@ namespace Weverca.CodeMetrics.UnitTest
 
             TestingUtilities.RunTests(hasDynamicCall, dynamicCallPositiveTests);
             TestingUtilities.RunTests(doesntHaveDynamicCall, dynamicCallNegativeTests);
+        }
+
+        [TestMethod]
+        public void Alias()
+        {
+            var hasAlias = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Alias);
+            var doesntHaveAlias = TestingUtilities.GetNegation(hasAlias);
+
+            TestingUtilities.RunTests(hasAlias, aliasPositiveTests);
+            TestingUtilities.RunTests(doesntHaveAlias, aliasNegativeTests);
         }
     }
 }
