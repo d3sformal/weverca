@@ -9,7 +9,7 @@ function toString(){
 }
 
 }
-
+//coment
 do{
 	$a=$a+$a;
 	echo "cycle";

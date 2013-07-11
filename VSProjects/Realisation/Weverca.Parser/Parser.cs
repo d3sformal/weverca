@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
-
 using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Emit;
@@ -92,7 +92,7 @@ namespace Weverca.Parsers
     /// Wraps Phalanger syntax parser into one class and provides attributes neccessary for the project.
     /// If someone needs more data from parser, feel free to add methods, getters and setters.
     /// </summary>
-    public class SyntaxParser
+    public class SyntaxParser :IReductionsSink, ICommentsSink
     {
         private PhpSourceFile sourceFile;
         private string code;
@@ -174,8 +174,65 @@ namespace Weverca.Parsers
 
         public void Parse()
         {
-            sourceUnit.Parse(Errors, compilationUnit, Position.Initial, LanguageFeatures.Php5);
+            sourceUnit.Parse(Errors, this, Position.Initial, LanguageFeatures.Php5);
             this.IsParsed = true;
         }
+
+
+        #region forwarding IReductionSink
+
+        public void InclusionReduced(Parser parser, IncludingEx decl)
+        {
+            compilationUnit.InclusionReduced(parser, decl);
+        }
+
+        public void FunctionDeclarationReduced(Parser parser, FunctionDecl decl)
+        {
+            compilationUnit.FunctionDeclarationReduced(parser, decl);
+        }
+
+        public void TypeDeclarationReduced(Parser parser, TypeDecl decl)
+        {
+            compilationUnit.TypeDeclarationReduced(parser, decl);
+        }
+
+        public void GlobalConstantDeclarationReduced(Parser parser, GlobalConstantDecl decl)
+        {
+            compilationUnit.GlobalConstantDeclarationReduced(parser, decl);
+        }
+        #endregion
+
+        /*
+         tieto funckie sa volaju pri nastaveni komentarov. odporucam ulozit niekam a na na konci parsovania nejakym spsobom zakomponovat do ast.
+         */
+        #region ICommentSink
+
+        public void OnLineComment(Scanner scanner, Position position)
+        {
+                          
+        }
+
+        public void OnComment(Scanner scanner, Position position)
+        {
+
+        }
+
+        public void OnPhpDocComment(Scanner scanner, PHPDocBlock phpDocBlock)
+        {
+
+        }
+
+        public void OnOpenTag(Scanner scanner, Position position)
+        {
+
+        }
+
+        public void OnCloseTag(Scanner scanner, Position position)
+        {
+
+        }
+
+        #endregion
     }
+    
 }
