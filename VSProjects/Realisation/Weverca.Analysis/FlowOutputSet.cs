@@ -71,13 +71,13 @@ namespace Weverca.Analysis
 
         public AnyBooleanValue AnyBooleanValue { get { return _snapshot.AnyBooleanValue; } }
 
-        public AnyIntegerValue AnyIntegerValue  { get { return AnyIntegerValue; } }
+        public AnyIntegerValue AnyIntegerValue  { get { return _snapshot.AnyIntegerValue; } }
 
-        public AnyLongintValue AnyLongintValue{ get { return AnyLongintValue; } }
+        public AnyLongintValue AnyLongintValue { get { return _snapshot.AnyLongintValue; } }
 
-        public AnyObjectValue AnyObjectValue { get { return AnyObjectValue; } }
+        public AnyObjectValue AnyObjectValue { get { return _snapshot.AnyObjectValue; } }
 
-        public AnyArrayValue AnyArrayValue { get { return AnyArrayValue; } }
+        public AnyArrayValue AnyArrayValue { get { return _snapshot.AnyArrayValue; } }
 
         public AnyValue AnyValue { get { return _snapshot.AnyValue; } }
 
