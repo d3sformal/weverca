@@ -31,7 +31,7 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Controller available for current eval
         /// </summary>
-        private FlowController _currentControler;
+        private FlowController _flow;
         #endregion
 
         internal PartialWalker(ExpressionEvaluator evaluator, FunctionResolver resolver)
@@ -43,20 +43,21 @@ namespace Weverca.Analysis.Expressions
         #region Internal API for evaluation
 
         /// <summary>
-        /// Eval given partial in context of flow
+        /// Evalulate current partial in flow controller
         /// </summary>
-        /// <param name="flow">Flow context of partial</param>
-        /// <param name="partial">Partial of evaluated expression/statement</param>
-        internal void Eval(FlowController flow, LangElement partial)
+        /// <param name="flow">Flow context of partial</param>        
+        internal void Eval(FlowController flow)
         {
+            var partial = flow.CurrentPartial;
 
             if (partial == null)
             {
                 return;
             }
 
-            _currentControler = flow;
-            _evaluator.SetContext(flow, partial);
+            _flow = flow;
+            _evaluator.SetContext(flow);
+            _functionResolver.SetContext(flow);
 
             partial.VisitMe(this);
         }
@@ -226,7 +227,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            var variableEntry=new VariableEntry(x.VarName);
+            var variableEntry = new VariableEntry(x.VarName);
 
             if (x.IsMemberOf != null)
             {
@@ -271,7 +272,7 @@ namespace Weverca.Analysis.Expressions
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var value = popValue();
-            
+
             var assignedVariable = popLValue();
 
             assignedVariable.AssignValue(_evaluator, value);
@@ -284,38 +285,51 @@ namespace Weverca.Analysis.Expressions
         #region Function visiting
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-            var arguments = popArguments(x.CallSignature);
+            var arguments = popArguments(x.CallSignature);            
             var name = x.QualifiedName;
+
+            _flow.Arguments=arguments;
 
             if (x.IsMemberOf != null)
             {
                 var calledObject = popValue();
-                addMethodDispatch(calledObject, name, arguments);
+                _flow.CalledObject=calledObject;
+
+                _functionResolver.MethodCall(calledObject, name, arguments);
             }
             else
             {
-                addFunctionDispatch(name, arguments);
+                _functionResolver.Call(name, arguments);
             }
 
-            //Result value won't be pushed, because it's directly inserted from analysis
+            //Return value won't be pushed, because it's directly inserted from analysis
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
             var arguments = popArguments(x.CallSignature);
-            var functionNameValue = popValue();
+            var name = popValue();
 
-            var names = _functionResolver.GetFunctionNames(functionNameValue);
+            _flow.Arguments=arguments;
 
-            foreach (var name in names)
+            if (x.IsMemberOf != null)
             {
-                addFunctionDispatch(name, arguments);
+                var calledObject = popValue();
+                _flow.CalledObject=calledObject;
+
+                _functionResolver.IndirectMethodCall(calledObject, name, arguments);
             }
+            else
+            {
+                _functionResolver.IndirectCall(name, arguments);
+            }
+
+            //Return value won't be pushed, because it's directly inserted from analysis
         }
 
         public override void VisitFunctionDecl(FunctionDecl x)
         {
-            _functionResolver.DeclareGlobal(_currentControler.OutSet, x);
+            _functionResolver.DeclareGlobal(x);
         }
 
         public override void VisitActualParam(ActualParam x)
@@ -338,7 +352,7 @@ namespace Weverca.Analysis.Expressions
             {
                 case JumpStmt.Types.Return:
                     var value = popValue();
-                    push(_functionResolver.Return(_currentControler.OutSet, value));
+                    push(_functionResolver.Return(_flow.OutSet, value));
                     break;
                 default:
                     throw new NotImplementedException();
@@ -349,15 +363,15 @@ namespace Weverca.Analysis.Expressions
         {
             //no stack behaviour
 
-            _functionResolver.DeclareGlobal(_currentControler.OutSet, x);
+            _functionResolver.DeclareGlobal(x);
         }
 
         public override void VisitNewEx(NewEx x)
         {
-            var arguments=popArguments(x.CallSignature);
+            var arguments = popArguments(x.CallSignature);
             var possibleObjects = _evaluator.CreateObject(x.ClassNameRef.GenericQualifiedName.QualifiedName);
 
-            addMethodDispatch(possibleObjects, new QualifiedName(new Name("__constructor")), arguments);
+            push(possibleObjects);
         }
 
         #endregion
@@ -368,31 +382,15 @@ namespace Weverca.Analysis.Expressions
         /// <param name="nativeAnalyzer">Native analyzer</param>
         internal void VisitNative(NativeAnalyzer nativeAnalyzer)
         {
-            nativeAnalyzer.Method(_currentControler);
+            nativeAnalyzer.Method(_flow);
         }
 
-    
-        /// <summary>
-        /// Add function dispatch into _currentController
-        /// </summary>
-        /// <param name="functionName">Dispatched method name</param>
-        /// <param name="arguments">Arguments for call dispatch</param>
-        private void addFunctionDispatch(QualifiedName functionName, MemoryEntry[] arguments)
-        {
-            var declarations = _functionResolver.ResolveFunction(_currentControler.OutSet, functionName);
-            //TODO object for global context ?
-            addDispatch(null, arguments, declarations);
-        }
 
-        private void addMethodDispatch(MemoryEntry thisObject, QualifiedName methodName, MemoryEntry[] arguments)
-        {
-            var declarations = _functionResolver.ResolveMethod(_currentControler.OutSet, thisObject, methodName);
-            addDispatch(thisObject, arguments, declarations);
-        }
+ 
 
         private void addDispatch(MemoryEntry thisObject, MemoryEntry[] arguments, IEnumerable<LangElement> declarations)
         {
-            foreach (var declaration in declarations)
+/*            foreach (var declaration in declarations)
             {
                 var callInput = _currentControler.OutSet.CreateCall(thisObject, arguments);
                 callInput.StartTransaction();
@@ -400,7 +398,7 @@ namespace Weverca.Analysis.Expressions
                 callInput.CommitTransaction();
                 var info = new CallInfo(callInput, methodGraph);
                 _currentControler.AddDispatch(info);
-            }
+            }*/
         }
     }
 }

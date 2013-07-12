@@ -5,6 +5,9 @@ using System.Text;
 
 using PHP.Core.AST;
 
+using Weverca.Analysis.Memory;
+using Weverca.Analysis.Expressions;
+
 namespace Weverca.Analysis
 {
     /// <summary>
@@ -12,57 +15,74 @@ namespace Weverca.Analysis
     /// </summary>
     public class FlowController
     {
+        public readonly ProgramPoint ProgramPoint;
+        public readonly LangElement CurrentPartial;
         /// <summary>
         /// Input set
         /// </summary>
-        public readonly FlowInputSet InSet;
+        public FlowInputSet InSet { get { return ProgramPoint.InSet; } }
         /// <summary>
         /// Output set
         /// </summary>
-        public readonly FlowOutputSet OutSet;
-        /// <summary>
-        /// Determine that controller has call dispatch
-        /// </summary>
-        public bool HasCallDispatch { get { return _dispatches.Count > 0; } }
-        /// <summary>
-        /// Available call dispatches
-        /// </summary>
-        public IEnumerable<CallInfo> CallDispatches { get { return _dispatches; } }
+        public FlowOutputSet OutSet { get { return ProgramPoint.OutSet; } }
 
         /// <summary>
-        /// Stored dispatches
+        /// Get/Set arguments used for call branches
+        /// NOTE:
+        ///     Default arguments are set by framework (you can override them)
         /// </summary>
-        private List<CallInfo> _dispatches;
+        public MemoryEntry[] Arguments { get; set; }
+        /// <summary>
+        /// Get/Set this object for call branches
+        /// NOTE:
+        ///     Default called object is set by framework (you can override it)
+        /// </summary>
+        public MemoryEntry CalledObject { get; set; }
+
+        public PartialExtension CurrentExtension
+        {
+            get            
+            {
+                if (CurrentPartial == null)
+                {
+                    return null;
+                }
+                return ProgramPoint.GetExtension(CurrentPartial);
+            }
+        }
+
+        public bool HasCallExtension{get{return CurrentExtension != null && !CurrentExtension.IsEmpty;}}
 
         /// <summary>
         /// Create flow controller for given input and output set
         /// </summary>
-        /// <param name="inSet">Input set</param>
-        /// <param name="outSet">Output set</param>
-        internal FlowController(FlowInputSet inSet,FlowOutputSet outSet)
+        internal FlowController(ProgramPoint programPoint, LangElement currentPartial)
         {
-            _dispatches= new List<CallInfo>();
-            InSet = inSet;
-            OutSet = outSet;
+            ProgramPoint = programPoint;
+            CurrentPartial = currentPartial;
         }
 
-        /// <summary>
-        /// Add call dispatch into controller
-        /// </summary>
-        /// <param name="dispatch">Call dispatch</param>
-        public void AddDispatch(CallInfo dispatch)
+        public IEnumerable<LangElement> CallBranchingKeys
         {
-            _dispatches.Add(dispatch);
+            get
+            {
+                if (CurrentExtension == null)
+                {
+                    return new LangElement[0];
+                }
+
+                return CurrentExtension.BranchingKeys;
+            }
         }
 
-        /// <summary>
-        /// Add multiple dispatches into controller
-        /// </summary>
-        /// <param name="dispatches">Call dispatches</param>
-        public void AddDispatch(IEnumerable<CallInfo> dispatches)
+        public void AddCallBranch(LangElement branchKey, ProgramPointGraph branchGraph)
         {
-            _dispatches.AddRange(dispatches);
+            ProgramPoint.AddCallBranch(CurrentPartial, branchKey, branchGraph);
         }
 
+        public void RemoveCallBranch(LangElement branchKey)
+        {
+            ProgramPoint.RemoveCallExtension(branchKey);
+        }
     }
 }

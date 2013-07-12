@@ -150,20 +150,10 @@ namespace Weverca.Analysis
             work.OutSet.Extend(work.InSet);
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
-
-            removeAllInvokedGraphs(work);            
+            
             _services.FlowThrough(work);
         }
-
-        private void removeAllInvokedGraphs(ProgramPoint programPoint)
-        {
-            //TODO collect info for back invoking shared graphs
-            foreach (var ppGraph in programPoint.InvokedGraphs)
-            {
-                ppGraph.RemoveInvocationPoint(programPoint);
-            }
-        }
-
+        
         private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
         {
             ensureInitialized(work);

@@ -33,7 +33,7 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Element which is currently evaluated
         /// </summary>
-        public LangElement Element { get; internal set; }
+        public LangElement Element { get { return Flow.CurrentPartial; } }
 
         #region Template API methods for implementors
 
@@ -53,10 +53,9 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="flow">Flow controller available for evaluation</param>
         /// <param name="element">Currently evaluated element</param>
-        internal void SetContext(FlowController flow, LangElement element)
+        internal void SetContext(FlowController flow)
         {
-            Flow = flow;
-            Element = element;
+            Flow = flow;            
         }
         
         #region Default implementation of simple routines
@@ -119,10 +118,7 @@ namespace Weverca.Analysis.Expressions
 
         abstract public MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index);
 
-        abstract public MemoryEntry ResolveArray(VariableEntry _entry);
-
-
-
+        abstract public MemoryEntry ResolveArray(VariableEntry entry);
    
     }
 }

@@ -18,65 +18,64 @@ namespace Weverca.Analysis
         /// <summary>
         /// Stored snapshot
         /// </summary>
-        protected internal AbstractSnapshot _snapshot;
+        protected internal readonly AbstractSnapshot Snapshot;
 
         internal FlowInputSet(AbstractSnapshot snapshot)
         {
-            _snapshot = snapshot;
+            Snapshot = snapshot;
         }
 
         #region ISnapshotReadonly implementation
 
-        public VariableName ReturnValue { get { return _snapshot.ReturnValue; } }
+        public VariableName ReturnValue { get { return Snapshot.ReturnValue; } }
 
-        public MemoryEntry ThisObject { get { return _snapshot.ThisObject; } }
+        public MemoryEntry ThisObject { get { return Snapshot.ThisObject; } }
 
         public VariableName Argument(int index)
         {
-            return _snapshot.Argument(index);
+            return Snapshot.Argument(index);
         }
 
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
-            return _snapshot.ReadValue(sourceVar);
+            return Snapshot.ReadValue(sourceVar);
         }
         
         public ContainerIndex CreateIndex(string identifier)
         {
-            return _snapshot.CreateIndex(identifier);
+            return Snapshot.CreateIndex(identifier);
         }
         
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
-            return _snapshot.ResolveFunction(functionName);
+            return Snapshot.ResolveFunction(functionName);
         }
-
 
         public IEnumerable<MethodDecl> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
-            return _snapshot.ResolveMethod(objectValue, methodName);
+            return Snapshot.ResolveMethod(objectValue, methodName);
         }
         
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
-            return _snapshot.ResolveType(typeName);
+            return Snapshot.ResolveType(typeName);
         }
 
         public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
         {
-            return _snapshot.GetField(value, index);
+            return Snapshot.GetField(value, index);
         }
 
         public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
         {
-            return _snapshot.GetIndex(value, index);
+            return Snapshot.GetIndex(value, index);
         }
         #endregion
 
 
         public override string ToString()
         {
-            return _snapshot.ToString();
+            return Snapshot.ToString();
         }
 
 

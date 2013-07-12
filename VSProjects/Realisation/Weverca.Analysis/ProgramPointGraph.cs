@@ -8,6 +8,7 @@ using PHP.Core.AST;
 using PHP.Core.Reflection;
 
 using Weverca.ControlFlowGraph;
+using Weverca.Analysis.Expressions;
 
 namespace Weverca.Analysis
 {
@@ -19,18 +20,21 @@ namespace Weverca.Analysis
         /// <summary>
         /// Program points according to their defining objects (conditions, statements,..)
         /// </summary>
-        private Dictionary<object, ProgramPoint> _points = new Dictionary<object, ProgramPoint>();
+        private readonly Dictionary<object, ProgramPoint> _points = new Dictionary<object, ProgramPoint>();
         /// <summary>
-        /// Points from where program point graph is invoked
-        /// Here can be multiple points because of shared program point graphs
+        /// Partial extensions where program point graph is included
         /// </summary>
-        private HashSet<ProgramPoint> _invocationPoints = new HashSet<ProgramPoint>();
+        private readonly HashSet<PartialExtension> _includingExtensions = new HashSet<PartialExtension>();
 
         /// <summary>
         /// All program points defined in program point graph
         /// </summary>
         public IEnumerable<ProgramPoint> Points { get { return _points.Values; } }
 
+        /// <summary>
+        /// Partial extensions where program point graph is included
+        /// </summary>
+        public IEnumerable<PartialExtension> IncludingExtensions { get { return _includingExtensions; } }
 
         /// <summary>
         /// Input program point into program point graph
@@ -41,10 +45,7 @@ namespace Weverca.Analysis
         /// </summary>
         public readonly ProgramPoint End;
 
-        /// <summary>
-        /// All program points from where was this program point graph invoked
-        /// </summary>
-        public IEnumerable<ProgramPoint> InvocationPoints { get { return _invocationPoints; } }
+    
 
         internal ProgramPointGraph(BasicBlock entryPoint)
         {
@@ -124,16 +125,15 @@ namespace Weverca.Analysis
             }
         }
 
-        internal void RemoveInvocationPoint(ProgramPoint invocationPoint)
+
+        internal void AddExtension(PartialExtension extension)
         {
-            invocationPoint.RemoveInvokedGraph(this);
-            _invocationPoints.Remove(invocationPoint);
+            _includingExtensions.Add(extension);
         }
 
-        internal void AddInvocationPoint(ProgramPoint invocationPoint)
+        internal void RemoveExtension(PartialExtension extension)
         {
-            invocationPoint.AddInvokedGraph(this);
-            _invocationPoints.Add(invocationPoint);
+            _includingExtensions.Remove(extension);
         }
 
         private void addChildren(ProgramPoint parent, BasicBlock block)
@@ -212,10 +212,6 @@ namespace Weverca.Analysis
             }
             return result;
         }
-
-
-
-
 
     }
 }

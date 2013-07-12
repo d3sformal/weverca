@@ -69,7 +69,7 @@ namespace Weverca.Analysis.UnitTest
                 throw new NotImplementedException();
             }
 
-            var index=OutSet.CreateIndex(targetField.DirectName.Value);
+            var index = OutSet.CreateIndex(targetField.DirectName.Value);
             foreach (ObjectValue obj in objectValue.PossibleValues)
             {
                 OutSet.SetField(obj, index, value);
@@ -78,31 +78,31 @@ namespace Weverca.Analysis.UnitTest
 
         public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableEntry field)
         {
-            if (!field.IsDirect || objectValue.PossibleValues.Count()!=1)
+            if (!field.IsDirect || objectValue.PossibleValues.Count() != 1)
             {
                 throw new NotImplementedException();
             }
 
-            var obj=objectValue.PossibleValues.First() as ObjectValue;
+            var obj = objectValue.PossibleValues.First() as ObjectValue;
             var index = OutSet.CreateIndex(field.DirectName.Value);
             return OutSet.GetField(obj, index);
         }
 
         public override MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index)
         {
-            if (index.PossibleValues.Count()!=1)
+            if (index.PossibleValues.Count() != 1)
             {
                 throw new NotImplementedException();
             }
 
             var values = new HashSet<Value>();
-            var indexValue=index.PossibleValues.First() as PrimitiveValue;
+            var indexValue = index.PossibleValues.First() as PrimitiveValue;
             var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
 
             foreach (AssociativeArray arrayValue in array.PossibleValues)
             {
                 var possibleIndexValues = OutSet.GetIndex(arrayValue, containerIndex).PossibleValues;
-                values.UnionWith(possibleIndexValues);   
+                values.UnionWith(possibleIndexValues);
             }
 
             return new MemoryEntry(values.ToArray());
@@ -112,7 +112,8 @@ namespace Weverca.Analysis.UnitTest
 
         public override MemoryEntry ResolveArray(VariableEntry entry)
         {
-            if (!entry.IsDirect) {
+            if (!entry.IsDirect)
+            {
                 throw new NotImplementedException();
             }
 
@@ -124,7 +125,7 @@ namespace Weverca.Analysis.UnitTest
             {
                 //new array is implicitly created
                 arrayValue = OutSet.CreateArray();
-                array=new MemoryEntry(arrayValue);
+                array = new MemoryEntry(arrayValue);
                 OutSet.Assign(entry.DirectName, array);
             }
 
@@ -141,7 +142,7 @@ namespace Weverca.Analysis.UnitTest
             var arrayValue = array.PossibleValues.First();
             var indexValue = index.PossibleValues.First() as PrimitiveValue;
 
-        
+
 
             var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
 
@@ -249,7 +250,7 @@ namespace Weverca.Analysis.UnitTest
         #endregion
 
 
-  
+
 
         public override IEnumerable<AliasValue> ResolveAlias(MemoryEntry objectValue, VariableEntry aliasedField)
         {
@@ -278,22 +279,58 @@ namespace Weverca.Analysis.UnitTest
             {"concat",new NativeAnalyzer(_concat)},
             {"__constructor",new NativeAnalyzer(_constructor)},
         };
+        
+        #region Call processing 
 
-        /// <summary>
-        /// Resolving names according to given memory entry
-        /// </summary>
-        /// <param name="functionName"></param>
-        /// <returns></returns>
-        public override QualifiedName[] GetFunctionNames(MemoryEntry functionName)
+        public override void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
-            var result = new List<QualifiedName>();
-            foreach (StringValue stringName in functionName.PossibleValues)
+            var methods = resolveMethod(calledObject, name);
+            setCallBranching(methods);
+        }
+
+        public override void Call(QualifiedName name, MemoryEntry[] arguments)
+        {
+            var functions = resolveFunction(name);
+            setCallBranching(functions);
+        }
+
+        public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
+        {
+            var functionNames = getFunctionNames(name);
+            var functions = new HashSet<LangElement>();
+
+            foreach (var functionName in functionNames)
             {
-                result.Add(new QualifiedName(new Name(stringName.Value)));
+                functions.UnionWith(resolveFunction(functionName));
             }
 
-            return result.ToArray();
+            setCallBranching(functions);
         }
+
+
+        /// <summary>
+        /// Initialize call into callInput. 
+        /// 
+        /// NOTE: 
+        ///     arguments are already initialized
+        ///     sharing program point graphs is possible
+        /// </summary>
+        /// <returns></returns>
+        public override void InitializeCall(FlowOutputSet callInput, LangElement declaration)
+        {
+            var method = declaration as MethodDecl;
+            if (method != null)
+            {
+                joinArgumentAliases(callInput, method.Signature);
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Resolve return value from all possible calls
@@ -308,75 +345,7 @@ namespace Weverca.Analysis.UnitTest
 
             return new MemoryEntry(flattenValues.ToArray());
         }
-
-        public override IEnumerable<LangElement> ResolveFunction(FlowOutputSet callerOutput, QualifiedName name)
-        {
-            NativeAnalyzer analyzer;
-
-            if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
-            {
-                //we have native analyzer - create it's program point 
-                return new LangElement[] { analyzer };
-            }
-            else
-            {
-                var functions = callerOutput.ResolveFunction(name);
-
-                var declarations = from FunctionValue function in functions select function.Declaration;
-                return declarations;
-            }
-        }
-
-
-        public override IEnumerable<LangElement> ResolveMethod(FlowOutputSet callerOutput, MemoryEntry thisObject, QualifiedName methodName)
-        {
-              NativeAnalyzer analyzer;
-
-              if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
-              {
-                  //we have native analyzer - create it's program point 
-                  return new LangElement[] { analyzer };
-              }
-              else
-              {
-                  var thisObj = thisObject.GetSingle<ObjectValue>();
-
-                  var functions = callerOutput.ResolveMethod(thisObj, methodName);
-                  return functions;
-              }
-        }
-
-        /// <summary>
-        /// Initialize call into callInput. 
-        /// 
-        /// NOTE: 
-        ///     arguments are already initialized
-        ///     sharing program point graphs is possible
-        /// </summary>
-        /// <returns></returns>
-        public override ProgramPointGraph InitializeCall(FlowOutputSet callInput, LangElement declaration)
-        {
-            var method = declaration as MethodDecl;
-            if (method!=null)
-            {
-                joinArgumentAliases(callInput, method.Signature);
-            }
-
-            return ProgramPointGraph.From(declaration);
-        }
-
-        private void joinArgumentAliases(FlowOutputSet callInput, Signature signature)
-        {            
-            for (int i = 0; i < signature.FormalParams.Count; ++i)
-            {
-                var param = signature.FormalParams[i];
-                var arg = callInput.Argument(i);
-
-                var argAlias=callInput.CreateAlias(arg);
-                callInput.Assign(param.Name, argAlias);
-            }
-        }
-
+        
         #region Native analyzers
         /// <summary>
         /// Analyzer method for strtolower php function
@@ -442,10 +411,102 @@ namespace Weverca.Analysis.UnitTest
 
         private static void _constructor(FlowController flow)
         {
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
+            //  flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
         }
         #endregion
 
+        #region Private helpers
+
+        private void setCallBranching(HashSet<LangElement> functions)
+        {
+            foreach (var branchKey in Flow.CallBranchingKeys)
+            {
+                if (!functions.Remove(branchKey))
+                {
+                    //this call is now not resolved as possible call branch
+                    Flow.RemoveCallBranch(branchKey);
+                }
+            }
+
+            foreach (var function in functions)
+            {
+                //Create graph for every function - NOTE: we can share pp graphs
+                var ppGraph = ProgramPointGraph.From(function);
+                Flow.AddCallBranch(function, ppGraph);
+            }
+        }
+
+        /// <summary>
+        /// Resolving names according to given memory entry
+        /// </summary>
+        /// <param name="functionName"></param>
+        /// <returns></returns>
+        private QualifiedName[] getFunctionNames(MemoryEntry functionName)
+        {
+            var result = new List<QualifiedName>();
+            foreach (StringValue stringName in functionName.PossibleValues)
+            {
+                result.Add(new QualifiedName(new Name(stringName.Value)));
+            }
+
+            return result.ToArray();
+        }
+
+        private HashSet<LangElement> resolveFunction(QualifiedName name)
+        {
+            NativeAnalyzer analyzer;
+            var result = new HashSet<LangElement>();
+
+            if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
+            {
+                //we have native analyzer - create it's program point 
+                result.Add(analyzer);
+            }
+            else
+            {
+                var functions = OutSet.ResolveFunction(name);
+
+                var declarations = from FunctionValue function in functions select function.Declaration;
+                result.UnionWith(declarations);
+            }
+
+            return result;
+        }
+
+        private HashSet<LangElement> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        {
+            NativeAnalyzer analyzer;
+
+            var result = new HashSet<LangElement>();
+
+            if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
+            {
+                //we have native analyzer - create it's program point 
+                result.Add(analyzer);
+            }
+            else
+            {
+                var thisObj = thisObject.GetSingle<ObjectValue>();
+
+                var functions = Flow.OutSet.ResolveMethod(thisObj, methodName);
+                result.UnionWith(functions);
+            }
+
+            return result;
+        }
+
+        private void joinArgumentAliases(FlowOutputSet callInput, Signature signature)
+        {
+            for (int i = 0; i < signature.FormalParams.Count; ++i)
+            {
+                var param = signature.FormalParams[i];
+                var arg = callInput.Argument(i);
+
+                var argAlias = callInput.CreateAlias(arg);
+                callInput.Assign(param.Name, argAlias);
+            }
+        }
+        #endregion
     }
 
 
@@ -487,7 +548,7 @@ namespace Weverca.Analysis.UnitTest
 
 
         public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
-        {            
+        {
             var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);
         }

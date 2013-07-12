@@ -17,13 +17,13 @@ namespace Weverca.Analysis
     /// <typeparam name="FlowInfo"></typeparam>
     public class ProgramPoint
     {
-        public IEnumerable<ProgramPointGraph> InvokedGraphs { get { return _invokedGraphs; } }
+        public IEnumerable<PartialExtension> ContainedExtensions { get { return _containedExtensions.Values; } }
         public IEnumerable<ProgramPoint> Children { get { return _children; } }
         public IEnumerable<ProgramPoint> Parents { get { return _parents; } }
 
         public FlowInputSet InSet { get; private set; }
         public FlowOutputSet OutSet { get; private set; }
-                
+
         public readonly bool IsCondition;
         public readonly bool IsEmpty;
         public readonly BasicBlock OuterBlock;
@@ -32,10 +32,13 @@ namespace Weverca.Analysis
         private List<ProgramPoint> _parents = new List<ProgramPoint>();
         private bool _isInitialized;
 
-        private HashSet<ProgramPointGraph> _invokedGraphs = new HashSet<ProgramPointGraph>();
+        /// <summary>
+        /// Extensions indexed by partials which creates them
+        /// </summary>
+        private readonly Dictionary<LangElement, PartialExtension> _containedExtensions = new Dictionary<LangElement, PartialExtension>();
 
         AssumptionCondition _condition;
-        
+
 
         /// <summary>
         /// Represented statement in postfix representation
@@ -95,17 +98,42 @@ namespace Weverca.Analysis
             _children.Add(child);
             child._parents.Add(this);
         }
-        
-        internal void RemoveInvokedGraph(ProgramPointGraph programPointGraph)
+
+        #endregion
+
+
+        internal PartialExtension GetExtension(LangElement partial)
         {
-            _invokedGraphs.Remove(programPointGraph);
+            PartialExtension result;
+            _containedExtensions.TryGetValue(partial, out result);
+
+            return result;
         }
 
-        internal void AddInvokedGraph(ProgramPointGraph programPointGraph)
+
+
+        internal void AddCallBranch(LangElement partial, LangElement branchKey, ProgramPointGraph branchGraph)
         {
-            _invokedGraphs.Add(programPointGraph);
+            var extension = GetExtension(partial);
+            if (extension == null)
+            {
+                extension = new PartialExtension(InSet.Snapshot, OutSet.Snapshot);
+                _containedExtensions.Add(partial, extension);
+            }
+            extension.AddBranch(branchKey, branchGraph);
         }
-        #endregion
+
+        internal void RemoveCallExtension(LangElement branchKey)
+        {
+            var extension = GetExtension(branchKey);
+            if (extension == null)
+            {
+                //nothing to remove
+                return;
+            }
+
+            extension.RemoveBranch(branchKey);
+        }
 
         /// <summary>
         /// Initialize program point with given input and output sets
@@ -130,5 +158,7 @@ namespace Weverca.Analysis
         {
             OutSet.ResetChanges();
         }
+
+
     }
 }

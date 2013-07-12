@@ -32,8 +32,8 @@ namespace Weverca.Analysis
         /// </summary>
         internal void CommitTransaction()
         {
-            _snapshot.CommitTransaction();
-            HasChanges = _snapshot.HasChanged;
+            Snapshot.CommitTransaction();
+            HasChanges = Snapshot.HasChanged;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Weverca.Analysis
         /// </summary>
         internal void StartTransaction()
         {
-            _snapshot.StartTransaction();
+            Snapshot.StartTransaction();
         }
 
         /// <summary>
@@ -60,141 +60,141 @@ namespace Weverca.Analysis
         /// <returns>Snapshot with call context</returns>
         internal FlowOutputSet CreateCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
         {
-            return new FlowOutputSet(_snapshot.CreateCall(ThisObject, arguments));
+            return new FlowOutputSet(Snapshot.CreateCall(ThisObject, arguments));
         }
         #endregion
 
 
         #region Snapshot API wrapping
 
-        public AnyStringValue AnyStringValue { get { return _snapshot.AnyStringValue; } }
+        public AnyStringValue AnyStringValue { get { return Snapshot.AnyStringValue; } }
 
-        public AnyBooleanValue AnyBooleanValue { get { return _snapshot.AnyBooleanValue; } }
+        public AnyBooleanValue AnyBooleanValue { get { return Snapshot.AnyBooleanValue; } }
 
-        public AnyIntegerValue AnyIntegerValue  { get { return _snapshot.AnyIntegerValue; } }
+        public AnyIntegerValue AnyIntegerValue  { get { return Snapshot.AnyIntegerValue; } }
 
-        public AnyLongintValue AnyLongintValue { get { return _snapshot.AnyLongintValue; } }
+        public AnyLongintValue AnyLongintValue { get { return Snapshot.AnyLongintValue; } }
 
-        public AnyObjectValue AnyObjectValue { get { return _snapshot.AnyObjectValue; } }
+        public AnyObjectValue AnyObjectValue { get { return Snapshot.AnyObjectValue; } }
 
-        public AnyArrayValue AnyArrayValue { get { return _snapshot.AnyArrayValue; } }
+        public AnyArrayValue AnyArrayValue { get { return Snapshot.AnyArrayValue; } }
 
-        public AnyValue AnyValue { get { return _snapshot.AnyValue; } }
+        public AnyValue AnyValue { get { return Snapshot.AnyValue; } }
 
-        public UndefinedValue UndefinedValue { get { return _snapshot.UndefinedValue; } }
+        public UndefinedValue UndefinedValue { get { return Snapshot.UndefinedValue; } }
 
-        public MemoryEntry AnyValueEntry { get { return _snapshot.AnyValueEntry; } }
+        public MemoryEntry AnyValueEntry { get { return Snapshot.AnyValueEntry; } }
 
-        public MemoryEntry UndefinedValueEntry { get { return _snapshot.UndefinedValueEntry; } }
+        public MemoryEntry UndefinedValueEntry { get { return Snapshot.UndefinedValueEntry; } }
 
         public StringValue CreateString(string literal)
         {
-            return _snapshot.CreateString(literal);
+            return Snapshot.CreateString(literal);
         }
 
         public IntegerValue CreateInt(int number)
         {
-            return _snapshot.CreateInt(number);
+            return Snapshot.CreateInt(number);
         }
 
         public LongintValue CreateLong(long number)
         {
-            return _snapshot.CreateLong(number);
+            return Snapshot.CreateLong(number);
         }
 
         public BooleanValue CreateBool(bool boolean)
         {
-            return _snapshot.CreateBool(boolean);
+            return Snapshot.CreateBool(boolean);
         }
 
         public FloatValue CreateDouble(double number)
         {
-            return _snapshot.CreateDouble(number);
+            return Snapshot.CreateDouble(number);
         }
 
         public FunctionValue CreateFunction(FunctionDecl declaration)
         {
-            return _snapshot.CreateFunction(declaration);
+            return Snapshot.CreateFunction(declaration);
         }
 
         public AssociativeArray CreateArray()
         {
-            return _snapshot.CreateArray();
+            return Snapshot.CreateArray();
         }
 
         public ObjectValue CreateObject(TypeValue type)
         {
-            return _snapshot.CreateObject(type);
+            return Snapshot.CreateObject(type);
         }
 
         public IntegerIntervalValue CreateIntegerInterval(int start, int end)
         {
-            return _snapshot.CreateIntegerInterval(start, end);
+            return Snapshot.CreateIntegerInterval(start, end);
         }
 
         public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
-            return _snapshot.CreateLongintInterval(start, end);
+            return Snapshot.CreateLongintInterval(start, end);
         }
 
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
-            return _snapshot.CreateFloatInterval(start, end);
+            return Snapshot.CreateFloatInterval(start, end);
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)
         {
-            return _snapshot.CreateAlias(sourceVar);
+            return Snapshot.CreateAlias(sourceVar);
         }
 
         public void Assign(VariableName targetVar, Value value)
         {
-            _snapshot.Assign(targetVar, value);
+            Snapshot.Assign(targetVar, value);
         }
 
         public void Assign(VariableName targetVar, MemoryEntry entry)
         {
-            _snapshot.Assign(targetVar, entry);
+            Snapshot.Assign(targetVar, entry);
         }
 
         public void FetchFromGlobal(params VariableName[] variables)
         {
-            _snapshot.FetchFromGlobal(variables);
+            Snapshot.FetchFromGlobal(variables);
         }
 
         public void FetchFromGlobalAll()
         {
-            _snapshot.FetchFromGlobalAll();
+            Snapshot.FetchFromGlobalAll();
         }
 
         public void DeclareGlobal(FunctionDecl declaration)
         {
-            _snapshot.DeclareGlobal(declaration);
+            Snapshot.DeclareGlobal(declaration);
         }
 
         internal void DeclareGlobal(TypeDecl declaration)
         {
-            _snapshot.DeclareGlobal(declaration);
+            Snapshot.DeclareGlobal(declaration);
         }
 
         public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
-            _snapshot.SetField(value, index, entry);
+            Snapshot.SetField(value, index, entry);
         }
 
         public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
-            _snapshot.SetIndex(value, index, entry);
+            Snapshot.SetIndex(value, index, entry);
         }
 
         public void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
         {
-            _snapshot.SetFieldAlias(value, index, alias);
+            Snapshot.SetFieldAlias(value, index, alias);
         }
 
         public void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
         {
-            _snapshot.SetIndexAlias(value, index, alias);
+            Snapshot.SetIndexAlias(value, index, alias);
         }
 
         /// <summary>
@@ -205,13 +205,13 @@ namespace Weverca.Analysis
         {
             var snapshots = getSnapshots(inputs);
 
-            _snapshot.Extend(snapshots);
+            Snapshot.Extend(snapshots);
         }
 
         public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             var snapshots = getSnapshots(callOutputs);
-            _snapshot.MergeWithCallLevel(snapshots);
+            Snapshot.MergeWithCallLevel(snapshots);
         }
 
 
@@ -243,7 +243,7 @@ namespace Weverca.Analysis
         /// <returns>Snapshot from FlowInputSet</returns>
         private AbstractSnapshot getSnapshot(FlowInputSet input)
         {
-            return input._snapshot;
+            return input.Snapshot;
         }
         #endregion
 

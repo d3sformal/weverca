@@ -89,6 +89,7 @@
     <Compile Include="Memory\IValueVisitor.cs" />
     <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="PartialContext.cs" />
+    <Compile Include="Expressions\PartialExtension.cs" />
     <Compile Include="ProgramPoint.cs" />
     <Compile Include="ProgramPointGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

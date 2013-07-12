@@ -140,13 +140,28 @@ namespace Weverca.Analysis
         /// <param name="context">Context where partial will be flown through</param>
         private void flowThroughCurrentPartial(AnalysisCallContext context)
         {
-            var controller = new FlowController(context.CurrentInputSet, context.CurrentOutputSet);
-            context.CurrentWalker.Eval(controller, context.CurrentPartial);
-
-            if (controller.HasCallDispatch)
+            var controller = new FlowController(context.CurrentProgramPoint,context.CurrentPartial);
+            context.CurrentWalker.Eval(controller);
+            
+            if (controller.HasCallExtension)
             {
-                var dispatchLevel = new CallDispatchLevel(controller.CallDispatches, _services);
-                _callStack.Push(dispatchLevel);
+                var dispatches = new List<CallInfo>();
+                foreach (var branchKey in controller.CurrentExtension.BranchingKeys)
+                {
+                    var branch=controller.CurrentExtension.GetBranch(branchKey);
+                    //!!!THIS IS ONLY WORKAROUND USED FOR TESTING!!!
+                    //TODO optimize - This is only workaround for passing tests
+                    //Needs implementing of Extension inputs
+
+                    var inputSnapshot=controller.OutSet.CreateCall(controller.CalledObject,controller.Arguments);
+                    var callInput = createEmptySet();
+                    callInput.StartTransaction();
+                    callInput.Extend(inputSnapshot);
+                    _functionResolver.InitializeCall(callInput, branchKey);
+                    dispatches.Add(new CallInfo(callInput, branch));                    
+                }
+                var callLevel = new CallDispatchLevel(dispatches, _services);
+                _callStack.Push(callLevel);
             }
         }
 
@@ -176,12 +191,7 @@ namespace Weverca.Analysis
         private void mergeCallResult(AnalysisCallContext callerContext, AnalysisCallContext[] callResults)
         {
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
-
-            foreach (var callPPGraph in callPPGraphs)
-            {
-                callPPGraph.AddInvocationPoint(callerContext.CurrentProgramPoint);
-            }
-
+     
             _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray());
         }
         
