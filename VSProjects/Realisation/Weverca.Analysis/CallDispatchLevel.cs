@@ -105,7 +105,7 @@ namespace Weverca.Analysis
         /// <returns>Created context</returns>
         private AnalysisCallContext createContext(CallInfo dispatch)
         {
-            var context = new AnalysisCallContext(dispatch.InSet, dispatch.MethodGraph, _services);
+            var context = new AnalysisCallContext(dispatch.MethodGraph, _services, dispatch.InSet);
             return context;
         }
     }

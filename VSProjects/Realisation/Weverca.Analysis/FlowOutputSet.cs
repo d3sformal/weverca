@@ -52,16 +52,11 @@ namespace Weverca.Analysis
             HasChanges = false;
         }
 
-        /// <summary>
-        /// Create call output set from contained snapshot
-        /// </summary>
-        /// <param name="ThisObject">ThisObject of call</param>
-        /// <param name="arguments">Arguments for call</param>
-        /// <returns>Snapshot with call context</returns>
-        internal FlowOutputSet CreateCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
+        internal void ExtendAsCall(FlowOutputSet callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            return new FlowOutputSet(Snapshot.CreateCall(ThisObject, arguments));
+            Snapshot.ExtendAsCall(getSnapshot(callerContext), thisObject, arguments);
         }
+
         #endregion
 
 
@@ -247,8 +242,7 @@ namespace Weverca.Analysis
         }
         #endregion
 
-
-
-
+        
+     
     }
 }

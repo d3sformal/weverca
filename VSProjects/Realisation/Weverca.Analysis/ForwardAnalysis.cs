@@ -98,7 +98,7 @@ namespace Weverca.Analysis
             ProgramPointGraph = new ProgramPointGraph(EntryCFG.start);
 
             //create analysis entry point from given graph 
-            var entryDispatch = new CallInfo(input, ProgramPointGraph);
+            var entryDispatch = new CallInfo(ProgramPointGraph, input);
             var entryLevel = new CallDispatchLevel(entryDispatch, _services);
 
             runCallStackAnalysis(entryLevel);
@@ -140,29 +140,48 @@ namespace Weverca.Analysis
         /// <param name="context">Context where partial will be flown through</param>
         private void flowThroughCurrentPartial(AnalysisCallContext context)
         {
-            var controller = new FlowController(context.CurrentProgramPoint,context.CurrentPartial);
+            var controller = new FlowController(_services, context.CurrentProgramPoint, context.CurrentPartial);
             context.CurrentWalker.Eval(controller);
-            
+
             if (controller.HasCallExtension)
             {
-                var dispatches = new List<CallInfo>();
-                foreach (var branchKey in controller.CurrentExtension.BranchingKeys)
-                {
-                    var branch=controller.CurrentExtension.GetBranch(branchKey);
-                    //!!!THIS IS ONLY WORKAROUND USED FOR TESTING!!!
-                    //TODO optimize - This is only workaround for passing tests
-                    //Needs implementing of Extension inputs
-
-                    var inputSnapshot=controller.OutSet.CreateCall(controller.CalledObject,controller.Arguments);
-                    var callInput = createEmptySet();
-                    callInput.StartTransaction();
-                    callInput.Extend(inputSnapshot);
-                    _functionResolver.InitializeCall(callInput, branchKey);
-                    dispatches.Add(new CallInfo(callInput, branch));                    
-                }
-                var callLevel = new CallDispatchLevel(dispatches, _services);
+                var callLevel = createCallLevel(controller);
                 _callStack.Push(callLevel);
             }
+        }
+
+        private CallDispatchLevel createCallLevel(FlowController controller)
+        {
+            var dispatches = new List<CallInfo>();
+            var currentExtension = controller.CurrentExtension;
+            foreach (var branchKey in currentExtension.BranchingKeys)
+            {
+                var branch = currentExtension.GetBranch(branchKey);
+                var currentInput = currentExtension.GetInput(branch);
+
+                currentInput.StartTransaction();
+                currentInput.ExtendAsCall(controller.OutSet, controller.CalledObject, controller.Arguments);
+                _functionResolver.InitializeCall(currentInput, branchKey);
+                currentInput.CommitTransaction();
+
+                var inputs = getExtensionInputs(branch);
+
+                dispatches.Add(new CallInfo(branch, inputs));
+            }
+
+            return new CallDispatchLevel(dispatches, _services);
+        }
+
+        private FlowInputSet[] getExtensionInputs(ProgramPointGraph branch)
+        {
+            var result = new List<FlowInputSet>();
+
+            foreach (var extension in branch.IncludingExtensions)
+            {
+                result.Add(extension.GetInput(branch));
+            }
+
+            return result.ToArray();
         }
 
         /// <summary>
@@ -191,10 +210,10 @@ namespace Weverca.Analysis
         private void mergeCallResult(AnalysisCallContext callerContext, AnalysisCallContext[] callResults)
         {
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
-     
+
             _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray());
         }
-        
+
         /// <summary>
         /// Resolve return value from given callResults
         /// </summary>
@@ -208,7 +227,7 @@ namespace Weverca.Analysis
 
             return returnValue;
         }
-        
+
         #endregion
 
         #region Private utilities

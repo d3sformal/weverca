@@ -105,17 +105,13 @@ namespace Weverca.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
-        protected override AbstractSnapshot createCall(MemoryEntry thisObject, MemoryEntry[] arguments)
+        protected override void extendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             //TODO implement
-
-            var snapshot = new Snapshot();
-
             if (thisObject != null)
             {
-                snapshot.assign(thisObjectStorage(), thisObject);
-            }
-            return snapshot;
+                assign(thisObjectStorage(), thisObject);
+            }            
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)

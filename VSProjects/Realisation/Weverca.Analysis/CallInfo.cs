@@ -20,14 +20,14 @@ namespace Weverca.Analysis
         /// <summary>
         /// Call input set
         /// </summary>
-        public readonly FlowInputSet InSet;
+        public readonly FlowInputSet[] InSet;
         /// <summary>
         /// Graph used for method analyzing - can be shared between multiple calls
         /// </summary>
         public readonly ProgramPointGraph MethodGraph;
- 
 
-        public CallInfo(FlowInputSet inSet, ProgramPointGraph methodGraph)
+
+        public CallInfo(ProgramPointGraph methodGraph, params FlowInputSet[] inSet)
         {            
             InSet = inSet;
             MethodGraph = methodGraph;

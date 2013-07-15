@@ -17,6 +17,8 @@ namespace Weverca.Analysis
     {
         public readonly ProgramPoint ProgramPoint;
         public readonly LangElement CurrentPartial;
+
+        private readonly AnalysisServices _services;
         /// <summary>
         /// Input set
         /// </summary>
@@ -56,8 +58,9 @@ namespace Weverca.Analysis
         /// <summary>
         /// Create flow controller for given input and output set
         /// </summary>
-        internal FlowController(ProgramPoint programPoint, LangElement currentPartial)
+        internal FlowController(AnalysisServices services,ProgramPoint programPoint, LangElement currentPartial)
         {
+            _services = services;
             ProgramPoint = programPoint;
             CurrentPartial = currentPartial;
         }
@@ -77,7 +80,8 @@ namespace Weverca.Analysis
 
         public void AddCallBranch(LangElement branchKey, ProgramPointGraph branchGraph)
         {
-            ProgramPoint.AddCallBranch(CurrentPartial, branchKey, branchGraph);
+            var input = _services.CreateEmptySet();
+            ProgramPoint.AddCallBranch(CurrentPartial, branchKey, branchGraph,input);
         }
 
         public void RemoveCallBranch(LangElement branchKey)

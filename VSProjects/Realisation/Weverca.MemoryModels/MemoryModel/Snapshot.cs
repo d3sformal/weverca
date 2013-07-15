@@ -153,12 +153,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
 
         #region Flow Controll
-
-        protected override AbstractSnapshot createCall(MemoryEntry ThisObject, MemoryEntry[] arguments)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         protected override void extend(ISnapshotReadonly[] inputs)
         {
             throw new NotImplementedException();
@@ -320,5 +315,10 @@ namespace Weverca.MemoryModels.MemoryModel
         }
 
 
+
+        protected override void extendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

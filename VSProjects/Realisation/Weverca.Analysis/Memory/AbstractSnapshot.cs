@@ -129,11 +129,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="sourceVar">Variable which alias will be created</param>
         /// <returns>Created alias</returns>
         protected abstract AliasValue createAlias(VariableName sourceVar);
-        /// <summary>
-        /// Create snapshot that will be used for call invoked from given info
-        /// </summary>        
-        /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        protected abstract AbstractSnapshot createCall(MemoryEntry thisObject, MemoryEntry[] arguments);
+        
         /// <summary>
         /// Assign memory entry into targetVar        
         /// </summary>
@@ -153,6 +149,11 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="inputs">Input snapshots that should be merged</param>
         protected abstract void extend(ISnapshotReadonly[] inputs);
+
+        /// <summary>
+        /// Extend snapshot as call from given callerContext
+        /// </summary>                
+        protected abstract void extendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Merge given call output with current context.
         /// WARNING: Call can change many objects via references (they don't has to be in global context)
@@ -363,29 +364,23 @@ namespace Weverca.Analysis.Memory
             IsFrozen = true;
         }
 
-        /// <summary>
-        /// Create snapshot that will be used for call invoked from given info
-        /// NOTE:
-        ///     Returned snapshot is extension of current snapshot with defined arguments
-        /// </summary>        
-        /// <returns>Snapshot that will be used as entry point of invoked call</returns>
-        internal AbstractSnapshot CreateCall(MemoryEntry thisObject, MemoryEntry[] arguments)
+
+
+        internal void ExtendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
-            _statistics.CreatedCallSnapshots++;
-            var snapshot = createCall(thisObject, arguments);
 
-            snapshot.StartTransaction();
+            _statistics.AsCallExtendings++;
+            extendAsCall(callerContext, thisObject, arguments);
+
             for (int i = 0; i < arguments.Length; ++i)
             {
                 var argVar = Argument(i);
 
-                snapshot.Assign(argVar, arguments[i]);
+                Assign(argVar, arguments[i]);
             }
-            snapshot.CommitTransaction();
-
-            return snapshot;
         }
+
         #endregion
 
         #region Implementation of ISnapshotReadWrite interface
@@ -682,8 +677,6 @@ namespace Weverca.Analysis.Memory
             }
         }
         #endregion
-
-
-
+        
     }
 }

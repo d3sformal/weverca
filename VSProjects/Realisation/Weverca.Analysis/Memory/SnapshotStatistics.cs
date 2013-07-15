@@ -18,7 +18,7 @@ namespace Weverca.Analysis.Memory
         public int SnapshotExtendings;
         public int CallLevelMerges;
         public int ValueReads;
-        public int CreatedCallSnapshots;
+        public int AsCallExtendings;
         public int CreatedStringValues;
         public int SimpleHashSearches;
         public int SimpleHashAssigns;

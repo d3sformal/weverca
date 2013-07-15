@@ -20,6 +20,7 @@ namespace Weverca.Analysis
         public IEnumerable<PartialExtension> ContainedExtensions { get { return _containedExtensions.Values; } }
         public IEnumerable<ProgramPoint> Children { get { return _children; } }
         public IEnumerable<ProgramPoint> Parents { get { return _parents; } }
+        public bool IsInitialized { get { return _isInitialized; } }
 
         public FlowInputSet InSet { get; private set; }
         public FlowOutputSet OutSet { get; private set; }
@@ -112,7 +113,7 @@ namespace Weverca.Analysis
 
 
 
-        internal void AddCallBranch(LangElement partial, LangElement branchKey, ProgramPointGraph branchGraph)
+        internal void AddCallBranch(LangElement partial, LangElement branchKey, ProgramPointGraph branchGraph,FlowOutputSet branchInput)
         {
             var extension = GetExtension(partial);
             if (extension == null)
@@ -120,7 +121,7 @@ namespace Weverca.Analysis
                 extension = new PartialExtension(InSet.Snapshot, OutSet.Snapshot);
                 _containedExtensions.Add(partial, extension);
             }
-            extension.AddBranch(branchKey, branchGraph);
+            extension.AddBranch(branchKey, branchGraph,branchInput);
         }
 
         internal void RemoveCallExtension(LangElement branchKey)
@@ -151,6 +152,8 @@ namespace Weverca.Analysis
             OutSet = output;
         }
 
+
+
         /// <summary>
         /// Reset changes reported by output set - is used for Fix point computation
         /// </summary>
@@ -160,5 +163,7 @@ namespace Weverca.Analysis
         }
 
 
+
+        
     }
 }

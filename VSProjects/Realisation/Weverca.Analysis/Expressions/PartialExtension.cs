@@ -16,7 +16,8 @@ namespace Weverca.Analysis.Expressions
     /// </summary>
     public class PartialExtension
     {
-        private Dictionary<LangElement,ProgramPointGraph> _branches=new Dictionary<LangElement,ProgramPointGraph>();
+        private Dictionary<LangElement, ProgramPointGraph> _branches = new Dictionary<LangElement, ProgramPointGraph>();
+        private Dictionary<ProgramPointGraph, FlowOutputSet> _inputs = new Dictionary<ProgramPointGraph, FlowOutputSet>();
 
         internal readonly AbstractSnapshot ExtensionInput;
         internal readonly AbstractSnapshot ExtensionOutput;
@@ -49,9 +50,10 @@ namespace Weverca.Analysis.Expressions
             return result;
         }
 
-        internal void AddBranch(LangElement key, ProgramPointGraph branch)
+        internal void AddBranch(LangElement key, ProgramPointGraph branch, FlowOutputSet input)
         {
             _branches.Add(key, branch);
+            _inputs.Add(branch, input);
             branch.AddExtension(this);
         }
 
@@ -59,7 +61,15 @@ namespace Weverca.Analysis.Expressions
         {
             var branch = GetBranch(key);
             _branches.Remove(key);
+            _inputs.Remove(branch);
             branch.RemoveExtension(this);
+        }
+
+        internal FlowOutputSet GetInput(ProgramPointGraph branch)
+        {
+            FlowOutputSet input;
+            _inputs.TryGetValue(branch, out input);
+            return input;
         }
     }
 }

@@ -65,18 +65,15 @@ namespace Weverca.Analysis
 
         PartialContext _currentPartialContext;
 
-    
-        FlowInputSet _entryInSet;
         AnalysisServices _services;
 
-        internal AnalysisCallContext(FlowInputSet entryInSet,ProgramPointGraph methodGraph, AnalysisServices services)
-        {
-            _entryInSet = entryInSet;
+        internal AnalysisCallContext(ProgramPointGraph methodGraph, AnalysisServices services, params FlowInputSet[] entryInSets)
+        {            
             _services = services;
 
             CurrentWalker = services.CreateWalker();
 
-            initializeProgramPointGraph(methodGraph, entryInSet);
+            initializeProgramPointGraph(methodGraph, entryInSets);
             _methodGraph = methodGraph;
 
             enqueueWorkDependencies(_methodGraph.Start);
@@ -91,7 +88,7 @@ namespace Weverca.Analysis
                 var completedProgramPoint = _currentPartialContext.Source;
 
                 if (completedProgramPoint.IsCondition)
-                {                    
+                {
                     conditionCompleted(completedProgramPoint, CurrentWalker.PopAllValues());
                 }
                 else
@@ -100,7 +97,7 @@ namespace Weverca.Analysis
                 }
 
                 completedProgramPoint.OutSet.CommitTransaction();
-                
+
                 //creates new partial context if possible
                 dequeueNextWorkItem();
             }
@@ -118,8 +115,8 @@ namespace Weverca.Analysis
         }
 
         private void conditionCompleted(ProgramPoint conditionPoint, MemoryEntry[] expressionParts)
-        {            
-            if (_services.ConfirmAssumption(conditionPoint.OutSet,conditionPoint.Condition, expressionParts))
+        {
+            if (_services.ConfirmAssumption(conditionPoint.OutSet, conditionPoint.Condition, expressionParts))
             {
                 //assumption is made
                 enqueueWorkDependencies(conditionPoint);
@@ -131,7 +128,7 @@ namespace Weverca.Analysis
             while (_worklist.Count > 0)
             {
                 var work = _worklist.Dequeue();
-                
+
                 //we have program point that has to be processed                    
                 initWork(work);
                 return;
@@ -150,10 +147,10 @@ namespace Weverca.Analysis
             work.OutSet.Extend(work.InSet);
             _currentPartialContext = new PartialContext(work);
             CurrentWalker.Reset();
-            
+
             _services.FlowThrough(work);
         }
-        
+
         private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
         {
             ensureInitialized(work);
@@ -161,9 +158,9 @@ namespace Weverca.Analysis
             var workInput = (work.InSet as FlowOutputSet);
 
             //TODO performance improvement
-            workInput.StartTransaction();            
+            workInput.StartTransaction();
             workInput.Extend(inputs.ToArray());
-            workInput.CommitTransaction();    
+            workInput.CommitTransaction();
         }
 
         private void ensureInitialized(ProgramPoint work)
@@ -173,10 +170,10 @@ namespace Weverca.Analysis
 
         private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
         {
-            return from parent in point.Parents where parent.OutSet!=null select parent.OutSet;
+            return from parent in point.Parents where parent.OutSet != null select parent.OutSet;
         }
 
-     
+
 
         private void enqueueWorkDependencies(ProgramPoint point)
         {
@@ -200,16 +197,26 @@ namespace Weverca.Analysis
             _worklist.Enqueue(work);
         }
 
-        private void initializeProgramPointGraph(ProgramPointGraph ppGraph,FlowInputSet startInput)
+        private void initializeProgramPointGraph(ProgramPointGraph ppGraph, FlowInputSet[] startInputs)
         {
-            var startOutput = _services.CreateEmptySet();
-            startOutput.StartTransaction();
-            startOutput.Extend(startInput);
-            startOutput.CommitTransaction();
+            if (!ppGraph.Start.IsInitialized)
+            {
+                var startInput = _services.CreateEmptySet();
+                var startOutput = _services.CreateEmptySet();
 
-            ppGraph.Start.Initialize(startInput, startOutput);
+                ppGraph.Start.Initialize(startInput, startOutput);
+            }
+            
+            var inputSet = (ppGraph.Start.InSet as FlowOutputSet);
+            inputSet.StartTransaction();
+            inputSet.Extend(startInputs);
+            inputSet.CommitTransaction();
+
+            ppGraph.Start.OutSet.StartTransaction();
+            ppGraph.Start.OutSet.Extend(inputSet);
+            ppGraph.Start.OutSet.CommitTransaction();
         }
 
-        
+
     }
 }
