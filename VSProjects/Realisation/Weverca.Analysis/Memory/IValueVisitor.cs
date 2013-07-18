@@ -45,6 +45,10 @@ namespace Weverca.Analysis.Memory
 
         void VisitAnyArrayValue(AnyArrayValue value);
 
+        void VisitInfoValue(InfoValue value);
+
+        void VisitInfoValue<T>(InfoValue<T> value);
+
         #endregion
 
         #region Primitive Values
@@ -80,5 +84,7 @@ namespace Weverca.Analysis.Memory
         void VisitIntervalFloatValue(FloatIntervalValue value);
         #endregion
 
+
+        
     }
 }

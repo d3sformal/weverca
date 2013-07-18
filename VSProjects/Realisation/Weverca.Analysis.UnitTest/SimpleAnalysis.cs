@@ -13,11 +13,21 @@ using Weverca.ControlFlowGraph;
 
 namespace Weverca.Analysis.UnitTest
 {
+    /// <summary>
+    /// Initializer used for setting environment because of testing purposes
+    /// </summary>
+    /// <param name="outSet">Initialized output set</param>
+    delegate void EnvironmentInitializer(FlowOutputSet outSet);
+
     class SimpleAnalysis : ForwardAnalysis
     {
-        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG)
+
+        private readonly EnvironmentInitializer _initializer;
+
+        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG,EnvironmentInitializer initializer)
             : base(entryCFG)
         {
+            _initializer = initializer;
         }
 
         #region Resolvers that are used during analysis
@@ -33,7 +43,7 @@ namespace Weverca.Analysis.UnitTest
 
         protected override FunctionResolver createFunctionResolver()
         {
-            return new SimpleFunctionResolver();
+            return new SimpleFunctionResolver(_initializer);
         }
 
         protected override AbstractSnapshot createSnapshot()
@@ -43,6 +53,16 @@ namespace Weverca.Analysis.UnitTest
         #endregion
     }
 
+
+    class SimpleInfo
+    {
+        internal readonly bool XssSanitized;
+        internal SimpleInfo(bool xssSanitized)
+        {
+            XssSanitized = xssSanitized;
+        }
+
+    }
 
 
     /// <summary>
@@ -99,13 +119,24 @@ namespace Weverca.Analysis.UnitTest
             var indexValue = index.PossibleValues.First() as PrimitiveValue;
             var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
 
-            foreach (AssociativeArray arrayValue in array.PossibleValues)
+            foreach (var arrayValue in array.PossibleValues)
             {
-                var possibleIndexValues = OutSet.GetIndex(arrayValue, containerIndex).PossibleValues;
-                values.UnionWith(possibleIndexValues);
+                if (arrayValue is AssociativeArray)
+                {
+
+                    var possibleIndexValues = OutSet.GetIndex((AssociativeArray)arrayValue, containerIndex).PossibleValues;
+                    values.UnionWith(possibleIndexValues);
+                }
+                else
+                {
+                    values.Add(OutSet.AnyValue);
+                }
             }
 
-            return new MemoryEntry(values.ToArray());
+            var result = new MemoryEntry(values.ToArray());
+            keepParentInfo(array, result);
+
+            return result;
         }
 
 
@@ -196,6 +227,11 @@ namespace Weverca.Analysis.UnitTest
         #region Expression evaluation helpers
 
 
+        private void keepParentInfo(MemoryEntry parent, MemoryEntry child)
+        {
+            AnalysisTestUtils.CopyInfo(OutSet, parent, child);
+        }
+
         private MemoryEntry areEqual(MemoryEntry left, MemoryEntry right)
         {
 
@@ -244,13 +280,10 @@ namespace Weverca.Analysis.UnitTest
         private bool containsAnyValue(MemoryEntry entry)
         {
             //TODO Undefined value maybe is not correct to be treated as any value
-            return entry.PossibleValues.Contains(OutSet.AnyValue) || entry.PossibleValues.Contains(OutSet.UndefinedValue);
+            return entry.PossibleValues.Contains(OutSet.AnyValue);
         }
 
         #endregion
-
-
-
 
         public override IEnumerable<AliasValue> ResolveAlias(MemoryEntry objectValue, VariableEntry aliasedField)
         {
@@ -264,23 +297,32 @@ namespace Weverca.Analysis.UnitTest
 
     }
 
+
+
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
     class SimpleFunctionResolver : FunctionResolver
     {
+        private readonly EnvironmentInitializer _environmentInitializer;
+
         /// <summary>
         /// Table of native analyzers
         /// </summary>
-        Dictionary<string, NativeAnalyzer> _nativeAnalyzers = new Dictionary<string, NativeAnalyzer>()
+        private readonly Dictionary<string, NativeAnalyzer> _nativeAnalyzers = new Dictionary<string, NativeAnalyzer>()
         {
             {"strtolower",new NativeAnalyzer(_strtolower)},
             {"strtoupper",new NativeAnalyzer(_strtoupper)},
             {"concat",new NativeAnalyzer(_concat)},
             {"__constructor",new NativeAnalyzer(_constructor)},
         };
-        
-        #region Call processing 
+
+        internal SimpleFunctionResolver(EnvironmentInitializer initializer)
+        {
+            _environmentInitializer = initializer;
+        }
+
+        #region Call processing
 
         public override void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
@@ -323,6 +365,7 @@ namespace Weverca.Analysis.UnitTest
         /// <returns></returns>
         public override void InitializeCall(FlowOutputSet callInput, LangElement declaration)
         {
+            _environmentInitializer(callInput);
             var method = declaration as MethodDecl;
             if (method != null)
             {
@@ -345,8 +388,11 @@ namespace Weverca.Analysis.UnitTest
 
             return new MemoryEntry(flattenValues.ToArray());
         }
-        
+
         #region Native analyzers
+
+        
+
         /// <summary>
         /// Analyzer method for strtolower php function
         /// </summary>
@@ -354,17 +400,26 @@ namespace Weverca.Analysis.UnitTest
         private static void _strtolower(FlowController flow)
         {
             var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
+            
+            var possibleValues = new List<Value>();
 
-            var possibleValues = new List<StringValue>();
-
-            foreach (StringValue possible in arg.PossibleValues)
+            foreach (var possible in arg.PossibleValues)
             {
-                var lower = flow.OutSet.CreateString(possible.Value.ToLower());
-                possibleValues.Add(lower);
+                if (possible is StringValue)
+                {
+                    var lower = flow.OutSet.CreateString(((StringValue)possible).Value.ToLower());
+                    possibleValues.Add(lower);
+                }
+                else
+                {
+                    possibleValues.Add(flow.OutSet.AnyValue);
+                }
             }
 
+            var output = new MemoryEntry(possibleValues.ToArray());
 
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+            keepArgumentInfo(flow, arg, output);
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
         }
 
         /// <summary>
@@ -374,6 +429,8 @@ namespace Weverca.Analysis.UnitTest
         private static void _strtoupper(FlowController flow)
         {
             var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
+            
+
 
             var possibleValues = new List<StringValue>();
 
@@ -383,8 +440,10 @@ namespace Weverca.Analysis.UnitTest
                 possibleValues.Add(lower);
             }
 
+            var output=new MemoryEntry(possibleValues.ToArray());
 
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+            keepArgumentInfo(flow, arg, output);
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
         }
 
 
@@ -506,9 +565,13 @@ namespace Weverca.Analysis.UnitTest
                 callInput.Assign(param.Name, argAlias);
             }
         }
+
+        private static void keepArgumentInfo(FlowController flow, MemoryEntry argument, MemoryEntry resultValue )
+        {
+            AnalysisTestUtils.CopyInfo(flow.OutSet, argument,resultValue);
+        }
         #endregion
     }
-
 
     /// <summary>
     /// Controlling flow actions during analysis
@@ -566,7 +629,7 @@ namespace Weverca.Analysis.UnitTest
                 }
             }
 
-            //can disprove any part
+            //can disprove some part
             return true;
         }
 
@@ -584,18 +647,18 @@ namespace Weverca.Analysis.UnitTest
                     }
                 }
 
-                /* //Because of tests we use UndefinedValue as non deterministic     
-                 * if (value == Flow.OutSet.UndefinedValue)
-                      {
-                          //undefined value ise evaluated as false
-                          continue;
-                      }*/
 
-                //Thid part can be evaluated as true
+                if (value is UndefinedValue)
+                {
+                    //undefined value is evaluated as false
+                    continue;
+                }
+
+                //This part can be evaluated as true
                 return false;
             }
 
-            //no of possible values can be evaluted as true
+            //any of possible values cant be evaluted as true
             return true;
         }
 

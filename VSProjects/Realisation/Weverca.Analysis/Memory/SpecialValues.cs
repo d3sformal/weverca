@@ -113,6 +113,50 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-   
+
+    public abstract class InfoValue : SpecialValue
+    {
+        public readonly object RawData;
+
+        internal InfoValue(object rawData)
+        {
+            RawData = rawData;
+        }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitInfoValue(this);
+        }
+
+        public override int GetHashCode()
+        {
+            return RawData.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as InfoValue;
+            if (o == null)
+            {
+                return false;   
+            }
+            return o.RawData.Equals(RawData);
+        }
+    }
+
+    public class InfoValue<T> : InfoValue
+    {
+        public readonly T Data;
+
+        internal InfoValue(T data):base(data)
+        {
+            Data = data;
+        }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitInfoValue<T>(this);
+        }
+    }
 
 }

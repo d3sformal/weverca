@@ -12,6 +12,17 @@ namespace Weverca.Analysis.Memory
     /// </summary>
     public abstract class Value
     {
+        /// <summary>
+        /// Unique id for every instance of value
+        /// </summary>
+        public readonly int UID;
+
+        private static int _lastValueUID = 0;
+
+        internal Value()
+        {
+            UID = ++_lastValueUID;
+        }
 
         public virtual void Accept(IValueVisitor visitor)
         {

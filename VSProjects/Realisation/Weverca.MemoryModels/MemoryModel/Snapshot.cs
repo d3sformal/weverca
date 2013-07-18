@@ -320,5 +320,25 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override void setInfo(Value value, params InfoValue[] info)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void setInfo(VariableName variable, params InfoValue[] info)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override InfoValue[] readInfo(Value value)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override InfoValue[] readInfo(VariableName variable)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

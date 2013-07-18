@@ -6,6 +6,9 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.UnitTest
 {
+    /// <summary>
+    /// NOTE: Variable unknown is set by default as non-deterministic (AnyValue)
+    /// </summary>
     [TestClass]
     public class ForwardAnalysisTest
     {
@@ -153,6 +156,26 @@ if($unknown){
 $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
 
+        readonly static TestCase SimpleXSSDirty_CASE = @"
+$x=$_POST['dirty'];
+$x=$x;
+".AssertVariable("x").IsXSSDirty();
+
+
+        readonly static TestCase XSSSanitized_CASE = @"
+$x=$_POST['dirty'];
+$x='sanitized';
+".AssertVariable("x").IsXSSClean();
+
+        readonly static TestCase XSSPossibleDirty_CASE= @"
+$x=$_POST['dirty'];
+if($unknown){
+    $x='sanitized';
+}
+".AssertVariable("x").IsXSSDirty();
+
+
+
 
         [TestMethod]
         public void BranchMerge()
@@ -243,6 +266,24 @@ $FieldValue=$obj->a;
         public void ObjectMethodCallMerge()
         {
             AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
+        }
+
+        [TestMethod]
+        public void SimpleXSSDirty()
+        {
+            AnalysisTestUtils.RunTestCase(SimpleXSSDirty_CASE);
+        }
+
+        [TestMethod]
+        public void XSSSanitized()
+        {
+            AnalysisTestUtils.RunTestCase(XSSSanitized_CASE);
+        }
+
+        [TestMethod]
+        public void XSSPossibleDirty()
+        {
+            AnalysisTestUtils.RunTestCase(XSSPossibleDirty_CASE);
         }
     }
 }

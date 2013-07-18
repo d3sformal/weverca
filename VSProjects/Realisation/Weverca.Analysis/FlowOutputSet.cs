@@ -77,11 +77,7 @@ namespace Weverca.Analysis
         public AnyValue AnyValue { get { return Snapshot.AnyValue; } }
 
         public UndefinedValue UndefinedValue { get { return Snapshot.UndefinedValue; } }
-
-        public MemoryEntry AnyValueEntry { get { return Snapshot.AnyValueEntry; } }
-
-        public MemoryEntry UndefinedValueEntry { get { return Snapshot.UndefinedValueEntry; } }
-
+        
         public StringValue CreateString(string literal)
         {
             return Snapshot.CreateString(literal);
@@ -140,6 +136,21 @@ namespace Weverca.Analysis
         public AliasValue CreateAlias(VariableName sourceVar)
         {
             return Snapshot.CreateAlias(sourceVar);
+        }
+        
+        public InfoValue<T> CreateInfo<T>(T data)
+        {
+            return Snapshot.CreateInfo(data);
+        }
+
+        public void SetInfo(Value value, params InfoValue[] info)
+        {
+            Snapshot.SetInfo(value, info);
+        }
+
+        public void SetInfo(VariableName variable, params InfoValue[] info)
+        {
+            Snapshot.SetInfo(variable, info);
         }
 
         public void Assign(VariableName targetVar, Value value)
@@ -242,7 +253,6 @@ namespace Weverca.Analysis
         }
         #endregion
 
-        
-     
+
     }
 }

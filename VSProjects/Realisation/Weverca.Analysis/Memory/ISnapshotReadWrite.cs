@@ -19,10 +19,7 @@ namespace Weverca.Analysis.Memory
         /// Singleton representation of UndefinedValue
         /// </summary>
         UndefinedValue UndefinedValue { get; }
-        /// <summary>
-        /// Singleton representation of AnyValue inside memory entry
-        /// </summary>
-        MemoryEntry AnyValueEntry { get; }
+
 
         AnyStringValue AnyStringValue { get; }
         AnyBooleanValue AnyBooleanValue { get; }
@@ -34,22 +31,32 @@ namespace Weverca.Analysis.Memory
         LongintIntervalValue CreateLongintInterval(long start, long end);
         FloatIntervalValue CreateFloatInterval(double start, double end);
        
-
-        /// <summary>
-        /// Singleton representation of UndefinedValue inside memory entry
-        /// </summary>
-        MemoryEntry UndefinedValueEntry { get; }
-
+        
         StringValue CreateString(string literal);
         IntegerValue CreateInt(int number);
         LongintValue CreateLong(long number);
         BooleanValue CreateBool(bool boolean);
         FloatValue CreateDouble(double number);
 
-
-
+        InfoValue<T> CreateInfo<T>(T data);
+        
         FunctionValue CreateFunction(FunctionDecl declaration);
 
+        /// <summary>
+        /// Set given info for value
+        /// </summary>
+        /// <param name="value">Value which info is stored</param>
+        /// <param name="info">Info stored for value</param>
+        void SetInfo(Value value, params InfoValue[] info);
+
+        /// <summary>
+        /// Set given info for variable
+        /// </summary>
+        /// <param name="variable">Variable which info is stored</param>
+        /// <param name="info">Info stored for variable</param>
+        void SetInfo(VariableName variable, params InfoValue[] info);
+
+     
 
         /// <summary>
         /// Create array - TODO what kind of info will be neaded for creation?

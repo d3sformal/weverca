@@ -239,7 +239,8 @@ namespace Weverca.VirtualReferenceModel
 
             if (info == null)
             {
-                return UndefinedValueEntry;
+                ReportMemoryEntryCreation();
+                return new MemoryEntry(UndefinedValue);
             }
 
             return resolveReferences(info.References);
@@ -263,7 +264,8 @@ namespace Weverca.VirtualReferenceModel
             switch (references.Count)
             {
                 case 0:
-                    return UndefinedValueEntry;
+                    ReportMemoryEntryCreation();
+                    return new MemoryEntry(UndefinedValue);
                 case 1:
                     return getEntry(references[0]);
                 default:
@@ -544,6 +546,54 @@ namespace Weverca.VirtualReferenceModel
             }
 
             return result.ToString();
+        }
+
+        protected override void setInfo(Value value, params InfoValue[] info)
+        {
+            var storage = infoStorage(value);
+            ReportMemoryEntryCreation();
+            assign(storage, new MemoryEntry(info));
+        }
+
+        protected override void setInfo(VariableName variable, params InfoValue[] info)
+        {
+            var storage = infoStorage(variable);
+            ReportMemoryEntryCreation();
+            assign(storage, new MemoryEntry(info));
+        }
+        
+        protected override InfoValue[] readInfo(Value value)
+        {
+            var storage = infoStorage(value);
+
+            return getInfoValues(storage);
+        }
+
+        protected override InfoValue[] readInfo(VariableName variable)
+        {
+            var storage = infoStorage(variable);
+
+            return getInfoValues(storage);
+        }
+
+        protected VariableName infoStorage(VariableName variable)
+        {
+            var storage = string.Format(".info_{0}", variable.Value);
+            return new VariableName(storage);
+        }
+
+        protected VariableName infoStorage(Value value)
+        {
+            var storage = string.Format(".value_info-{0}", value.UID);
+            return new VariableName(storage);
+        }
+
+        private InfoValue[] getInfoValues(VariableName storage)
+        {
+            var possibleValues = readValue(storage).PossibleValues;
+            var info = from value in possibleValues where value is InfoValue select value as InfoValue;
+
+            return info.ToArray();
         }
     }
 }

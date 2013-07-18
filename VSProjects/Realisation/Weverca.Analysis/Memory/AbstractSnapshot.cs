@@ -29,52 +29,12 @@ namespace Weverca.Analysis.Memory
     /// </remarks>
     /// </summary>
     public abstract class AbstractSnapshot : ISnapshotReadWrite
-    {
-        /// <summary>
-        /// Any value singleton
-        /// </summary>
-        private static readonly AnyValue _anyValue = new AnyValue();
-        /// <summary>
-        /// Any string value singleton
-        /// </summary>
-        private static readonly AnyStringValue _anyStringValue = new AnyStringValue();
-        /// <summary>
-        /// Any boolean value singleton
-        /// </summary>
-        private static readonly AnyBooleanValue _anyBooleanValue = new AnyBooleanValue();
-        /// <summary>
-        /// Any string value singleton
-        /// </summary>
-        private static readonly AnyIntegerValue _anyIntegerValue = new AnyIntegerValue();
-        /// <summary>
-        /// Any boolean value singleton
-        /// </summary>
-        private static readonly AnyLongintValue _anyLongintValue = new AnyLongintValue();
-        /// <summary>
-        /// Any string value singleton
-        /// </summary>
-        private static readonly AnyObjectValue _anyObjectValue = new AnyObjectValue();
-        /// <summary>
-        /// Any boolean value singleton
-        /// </summary>
-        private static readonly AnyArrayValue _anyArrayValue = new AnyArrayValue();
-        /// <summary>
-        /// Undefined value singleton
-        /// </summary>s
-        private static readonly UndefinedValue _undefinedValue = new UndefinedValue();
+    {       
         /// <summary>
         /// singleton variable where return value is stored
         /// </summary>
         private static readonly VariableName _returnValue = new VariableName(".return");
-        /// <summary>
-        /// Any value memory entry singleton
-        /// </summary>
-        private static readonly MemoryEntry _anyValueEntry = new MemoryEntry(_anyValue);
-        /// <summary>
-        /// Undefined value memory entry singleton
-        /// </summary>
-        private static readonly MemoryEntry _undefinedValueEntry = new MemoryEntry(_undefinedValue);
-
+       
         /// <summary>
         /// Statistics object - here are stored statistics
         /// </summary>
@@ -160,6 +120,35 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="callOutputs">Output snapshots of call level</param>        
         protected abstract void mergeWithCallLevel(ISnapshotReadonly[] callOutputs);
+
+        /// <summary>
+        /// Set given info for value
+        /// </summary>
+        /// <param name="value">Value which info is stored</param>
+        /// <param name="info">Info stored for value</param>
+        protected abstract void setInfo(Value value, params InfoValue[] info);
+
+        /// <summary>
+        /// Set given info for variable
+        /// </summary>
+        /// <param name="variable">Variable which info is stored</param>
+        /// <param name="info">Info stored for variable</param>
+        protected abstract void setInfo(VariableName variable, params InfoValue[] info);
+
+        /// <summary>
+        /// Read info stored for given value
+        /// </summary>
+        /// <param name="value">value which info is readed</param>
+        /// <returns>Stored info</returns>
+        protected abstract InfoValue[] readInfo(Value value);
+
+        /// <summary>
+        /// Read info stored for given variable
+        /// </summary>
+        /// <param name="variable">variable which info is readed</param>
+        /// <returns>Stored info</returns>
+        protected abstract InfoValue[] readInfo(VariableName variable);
+
         /// <summary>
         /// Read value stored in snapshot for sourceVar
         /// </summary>
@@ -385,19 +374,18 @@ namespace Weverca.Analysis.Memory
 
         #region Implementation of ISnapshotReadWrite interface
 
-        public AnyValue AnyValue { get { return _anyValue; } }
-        public AnyStringValue AnyStringValue { get { return _anyStringValue; } }
-        public AnyBooleanValue AnyBooleanValue { get { return _anyBooleanValue; } }
-        public AnyIntegerValue AnyIntegerValue { get { return _anyIntegerValue; } }
-        public AnyLongintValue AnyLongintValue { get { return _anyLongintValue; } }
-        public AnyObjectValue AnyObjectValue { get { return _anyObjectValue; } }
-        public AnyArrayValue AnyArrayValue { get { return _anyArrayValue; } }
+        public AnyValue AnyValue { get { return new AnyValue(); } }
+        public AnyStringValue AnyStringValue { get { return new AnyStringValue(); } }
+        public AnyBooleanValue AnyBooleanValue { get { return new AnyBooleanValue(); } }
+        public AnyIntegerValue AnyIntegerValue { get { return new AnyIntegerValue(); } }
+        public AnyLongintValue AnyLongintValue { get { return new AnyLongintValue(); } }
+        public AnyObjectValue AnyObjectValue { get { return new AnyObjectValue(); } }
+        public AnyArrayValue AnyArrayValue { get { return new AnyArrayValue(); } }
 
 
-        public UndefinedValue UndefinedValue { get { return _undefinedValue; } }
+        public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
 
-        public MemoryEntry AnyValueEntry { get { return _anyValueEntry; } }
-        public MemoryEntry UndefinedValueEntry { get { return _undefinedValueEntry; } }
+        
         public VariableName ReturnValue { get { return _returnValue; } }
 
         public abstract MemoryEntry ThisObject { get; }
@@ -410,6 +398,11 @@ namespace Weverca.Analysis.Memory
             }
 
             return new VariableName(".arg" + index);
+        }
+
+        public InfoValue<T> CreateInfo<T>(T data)
+        {
+            return new InfoValue<T>(data);
         }
 
         /// <summary>
@@ -513,6 +506,32 @@ namespace Weverca.Analysis.Memory
             checkCanUpdate();
             ++_statistics.CreatedFloatIntervalValues;
             return new FloatIntervalValue(start,end);
+        }
+
+        public void SetInfo(Value value, params InfoValue[] info)
+        {
+            checkCanUpdate();
+            ++_statistics.ValueInfoSettings;
+            setInfo(value, info);
+        }
+
+        public void SetInfo(VariableName variable, params InfoValue[] info)
+        {
+            checkCanUpdate();
+            ++_statistics.VariableInfoSettings;
+            setInfo(variable, info);
+        }
+
+        public InfoValue[] ReadInfo(Value value)
+        {
+            ++_statistics.ValueInfoReads;
+            return readInfo(value);
+        }
+
+        public InfoValue[] ReadInfo(VariableName variable)
+        {
+            ++_statistics.VariableInfoReads;
+            return readInfo(variable);
         }
 
         public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
@@ -677,6 +696,6 @@ namespace Weverca.Analysis.Memory
             }
         }
         #endregion
-        
+
     }
 }

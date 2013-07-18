@@ -99,6 +99,16 @@ namespace Weverca.Analysis.Memory
             VisitAnyValue(value);
         }
 
+        public void VisitInfoValue(InfoValue value)
+        {
+            VisitSpecialValue(value);
+        }
+
+        public void VisitInfoValue<T>(InfoValue<T> value)
+        {
+            VisitInfoValue(value);
+        }
+
         #endregion
 
         #region Primitive Value
@@ -173,8 +183,6 @@ namespace Weverca.Analysis.Memory
         }
 
         #endregion
-
-
-      
+    
     }
 }

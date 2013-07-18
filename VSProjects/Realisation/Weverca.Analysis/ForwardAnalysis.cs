@@ -50,6 +50,11 @@ namespace Weverca.Analysis
         /// </summary>
         public Weverca.ControlFlowGraph.ControlFlowGraph EntryCFG { get; private set; }
 
+        /// <summary>
+        /// Input which is used only once when starting analysis - can be modified only before analysing
+        /// </summary>
+        public readonly FlowOutputSet EntryInput;
+
         #endregion
 
         /// <summary>
@@ -58,6 +63,8 @@ namespace Weverca.Analysis
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
         {
+            EntryInput= createEmptySet();
+            EntryInput.StartTransaction();
             EntryCFG = entryMethodGraph;
         }
 
@@ -92,13 +99,12 @@ namespace Weverca.Analysis
         private void analyse()
         {
             checkAlreadyAnalysed();
+            EntryInput.CommitTransaction();
 
-            //TODO API for creating input
-            var input = createEmptySet() as FlowInputSet;
             ProgramPointGraph = new ProgramPointGraph(EntryCFG.start);
 
             //create analysis entry point from given graph 
-            var entryDispatch = new CallInfo(ProgramPointGraph, input);
+            var entryDispatch = new CallInfo(ProgramPointGraph, EntryInput);
             var entryLevel = new CallDispatchLevel(entryDispatch, _services);
 
             runCallStackAnalysis(entryLevel);

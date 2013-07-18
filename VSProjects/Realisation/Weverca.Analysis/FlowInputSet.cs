@@ -35,7 +35,15 @@ namespace Weverca.Analysis
         {
             return Snapshot.Argument(index);
         }
+        public InfoValue[] ReadInfo(Value value)
+        {
+            return Snapshot.ReadInfo(value);
+        }
 
+        public InfoValue[] ReadInfo(VariableName variable)
+        {
+            return Snapshot.ReadInfo(variable);
+        }
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
             return Snapshot.ReadValue(sourceVar);
@@ -77,6 +85,9 @@ namespace Weverca.Analysis
         {
             return Snapshot.ToString();
         }
+
+
+
 
 
 

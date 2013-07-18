@@ -27,6 +27,21 @@ namespace Weverca.Analysis.Memory
         VariableName Argument(int index);
 
         /// <summary>
+        /// Read info stored for given value
+        /// </summary>
+        /// <param name="value">value which info is readed</param>
+        /// <returns>Stored info</returns>
+        InfoValue[] ReadInfo(Value value);
+
+        /// <summary>
+        /// Read info stored for given variable
+        /// </summary>
+        /// <param name="variable">variable which info is readed</param>
+        /// <returns>Stored info</returns>
+        InfoValue[] ReadInfo(VariableName variable);
+
+
+        /// <summary>
         /// Read value stored in snapshot for sourceVar
         /// </summary>
         /// <param name="sourceVar">Variable which value will be readed</param>

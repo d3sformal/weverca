@@ -43,10 +43,16 @@ namespace Weverca.Analysis.Memory
         public int CreatedIntIntervalValues;
         public int CreatedLongIntervalValues;
         public int CreatedFloatIntervalValues;
+        public int VariableInfoSettings;
+        public int ValueInfoSettings;
+        public int ValueInfoReads;
+        public int VariableInfoReads;
 
         internal SnapshotStatistics Clone()
         {
             throw new NotImplementedException();
-        }        
+        }
+
+        
     }
 }
