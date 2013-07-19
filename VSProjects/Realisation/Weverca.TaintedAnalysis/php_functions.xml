@@ -19065,7 +19065,46 @@
 <arg type="int" optional="true" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false"  />
 </function>
-
+  <function name="mysqli_stmt_bind_param" returnType="bool">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+    <arg type="string" optional="false" byReference="false" dots="false"  />
+    <arg type="mixed" optional="false" byReference="true" dots="false"  />
+    <arg type="mixed" optional="true" byReference="true" dots="true"  />
+  </function>
+  <function name="mysqli_stmt_bind_result" returnType="bool">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+    <arg type="mixed" optional="false" byReference="true" dots="false"  />
+    <arg type="mixed" optional="true" byReference="true" dots="true"  />
+  </function>
+  <function name="mysqli_character_set_name" returnType="string">
+    <arg type="mysqli" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_real_escape_string" returnType="string">
+    <arg type="mysqli" optional="false" byReference="false" dots="false"  />
+    <arg type="string" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_stmt_execute" returnType="bool">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_stmt_fetch" returnType="bool">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_stmt_result_metadata" returnType="mysqli_result">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_stmt_param_count" returnType="int">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_stmt_send_long_data" returnType="bool">
+    <arg type="mysqli_stmt" optional="false" byReference="false" dots="false"  />
+    <arg type="int" optional="false" byReference="false" dots="false"  />
+    <arg type="string" optional="false" byReference="false" dots="false"  />
+  </function>
+  <function name="mysqli_options" returnType="bool">
+    <arg type="mysqli" optional="false" byReference="false" dots="false"  />
+    <arg type="int" optional="false" byReference="false" dots="false"  />
+    <arg type="mixed" optional="false" byReference="false" dots="false"  />
+  </function>
 
 
 
@@ -19075,9 +19114,12 @@
 
 <function name="aggregation_info" alias="aggregate_info" />
 <function name="chop" alias="rtrim" />
+  <!--
+deprecated
 <function name="com_propget" alias="com_get" />
 <function name="com_propput" alias="com_set" />
 <function name="com_propset" alias="com_set" />
+-->
 <function name="diskfreespace" alias="disk_free_space" />
 <function name="dns_check_record" alias="checkdnsrr" />
 <function name="dns_get_mx" alias="getmxrr" />
