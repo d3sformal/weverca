@@ -36,7 +36,7 @@ namespace Weverca.Analysis.UnitTest
             return new SimpleExpressionEvaluator();
         }
 
-        protected override FlowResolver createFlowResolver()
+        protected override FlowResolverBase createFlowResolver()
         {
             return new SimpleFlowResolver();
         }
@@ -576,7 +576,7 @@ namespace Weverca.Analysis.UnitTest
     /// <summary>
     /// Controlling flow actions during analysis
     /// </summary>
-    class SimpleFlowResolver : FlowResolver
+    class SimpleFlowResolver : FlowResolverBase
     {
         private FlowOutputSet _outSet;
 

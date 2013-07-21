@@ -26,12 +26,12 @@ namespace Weverca.Analysis
     /// <typeparam name="FlowInfo"></typeparam>
     class AnalysisServices
     {
-        private FlowResolver _flowResolver;
+        private FlowResolverBase _flowResolver;
 
         internal readonly EmptySetDelegate CreateEmptySet;        
         internal readonly WalkerCreatorDelegate CreateWalker;
 
-        public AnalysisServices(EmptySetDelegate emptySet,WalkerCreatorDelegate createWalker, FlowResolver flowResolver)
+        public AnalysisServices(EmptySetDelegate emptySet,WalkerCreatorDelegate createWalker, FlowResolverBase flowResolver)
         {
             CreateEmptySet = emptySet;            
             CreateWalker = createWalker;

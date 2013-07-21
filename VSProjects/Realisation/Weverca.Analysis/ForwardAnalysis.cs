@@ -28,7 +28,7 @@ namespace Weverca.Analysis
         AnalysisServices _services;
         ExpressionEvaluator _expressionEvaluator;
         FunctionResolver _functionResolver;
-        FlowResolver _flowResolver;
+        FlowResolverBase _flowResolver;
 
 
         #endregion
@@ -83,7 +83,7 @@ namespace Weverca.Analysis
 
         protected abstract ExpressionEvaluator createExpressionEvaluator();
 
-        protected abstract FlowResolver createFlowResolver();
+        protected abstract FlowResolverBase createFlowResolver();
 
         protected abstract FunctionResolver createFunctionResolver();
 

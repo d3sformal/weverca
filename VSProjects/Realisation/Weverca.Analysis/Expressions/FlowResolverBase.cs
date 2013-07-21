@@ -8,7 +8,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.Expressions
 {
-    public abstract class FlowResolver
+    public abstract class FlowResolverBase
     {
         /// <summary>
         /// Represents method which is used for confirming assumption condition. 
