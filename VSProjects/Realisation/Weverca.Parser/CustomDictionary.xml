@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Dictionary>
+  <Words>
+    <Recognized>
+      <Word>Weverca</Word>
+      <Word>Phalanger</Word>
+      <!-- Abstract syntax tree -->
+      <Word>Ast</Word>
+    </Recognized>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <!-- PHP: Hypertext Preprocessor -->
+      <Acronym>PHP</Acronym>
+      <!-- Abstract syntax tree -->
+      <Acronym>Ast</Acronym>
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>
