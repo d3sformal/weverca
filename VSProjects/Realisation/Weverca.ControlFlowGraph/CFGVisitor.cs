@@ -156,11 +156,7 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
-    //1:54 minut
-    //23:49
-
     //TODO multiple labels, no labels for jump. Is there an exception???
-
 
     /// <summary>
     /// AST visitor, which contructs controlflow graph.
