@@ -30,6 +30,8 @@ namespace Weverca.MemoryModel.Deprecated
     class ObjectReference : Value
     {
         Table table = new Table();
+        //Marcel  - mozno je lepsi napad pouzit class respresentation z parsera
+        //PhpType - ma viac informacii a ClassDeclaration uklada len confrloflow grafy metod, co nieje pre memory model uzitocne...
         ClassDeclaration classInfo;
 
         internal override Value CopyStructure(CopyResolver resolver)

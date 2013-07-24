@@ -11,7 +11,7 @@ using PHP.Core.Parsers;
 
 namespace Weverca.ControlFlowGraph
 {
-
+    //pravdepodobne sa nebude pouzivat
     public class ClassDeclaration
     {
         TypeDecl classData;
@@ -36,14 +36,31 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
+    /// <summary>
+    /// Represents Controlflow graph.
+    /// </summary>
     public class ControlFlowGraph
     {
+        #region fields
+
+        /// <summary>
+        /// Reference on the starting block inside coltroflow graph
+        /// </summary>
         public BasicBlock start;
+
+        /// <summary>
+        /// Globalcode is stored in controlflow graph for pursposes of drawing controflow graph. Analysis doesn't have to provide this field, because it doesn't draw controflow graph.
+        /// </summary>
         private GlobalCode globalCode;
+        
+        /// <summary>
+        /// Visitor used for controflow graph construction.
+        /// </summary>
         private CFGVisitor visitor;
 
-    //    private readonly Dictionary<FunctionDecl, BasicBlock> declaredFunctions = new Dictionary<FunctionDecl, BasicBlock>();
-    //    private readonly List<ClassDeclaration> declaredClasses = new List<ClassDeclaration>();
+        #endregion fields
+
+        #region construction
 
         /// <summary>
         /// Constructs a confrolflow graph 
@@ -59,7 +76,7 @@ namespace Weverca.ControlFlowGraph
         }
 
         /// <summary>
-        /// Constructs a confrolflow graph. This method shoud be used only for testing with purpose of testing.
+        /// Constructs a confrolflow graph. This method should be used only for testing with purpose of testing.
         /// </summary>
         /// <param name="globalCode">needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
@@ -72,7 +89,7 @@ namespace Weverca.ControlFlowGraph
         }
 
         /// <summary>
-        /// Constructs a confrolflow graph. This method shoud be used only for testing with purpose of testing.
+        /// Constructs a confrolflow graph. This method should be used only for testing with purpose of testing.
         /// </summary>
         /// <param name="globalCode">Globalcode needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
@@ -108,20 +125,22 @@ namespace Weverca.ControlFlowGraph
             Simplify();
         }
 
+        #endregion construction
+
+        /// <summary>
+        /// Simplifies the controlflow graph. It merges blocks which has only one outgoing edge.
+        /// </summary>
         public void Simplify()
         {
             start.SimplifyGraph();
-
-          /*  foreach (var function in declaredFunctions)
-            {
-                function.Value.SimplifyGraph();
-            }
-
-            foreach (var declaredClass in declaredClasses)
-            {
-                declaredClass.SimplifyMethods();
-            }*/
         }
+
+        #region generatingTextRepresentation
+
+        /// <summary>
+        /// Generates the graph in dot language for purspose of drawing.
+        /// </summary>
+        /// <returns>String representation in dot language of current conftrolflow graph.</returns>
         public string getTextRepresentation()
         {
             string result = "digraph g {node [shape=box]" + Environment.NewLine + " graph[rankdir=\"TB\", concentrate=true];" + Environment.NewLine;
@@ -131,29 +150,21 @@ namespace Weverca.ControlFlowGraph
             return result;
         }
 
-
+        /// <summary>
+        /// Recursive method used for generating the body of text representation of controlflow graph.
+        /// It generates the result for globalcode and dureing the generation it calls
+        /// itself resursivly on controlflow graphs of declared functions and methods.
+        /// </summary>
+        /// <param name="counter">Body of string representation in dot language of current conftrolflow graph.</param>
+        /// <returns></returns>
         private string generateText(int counter)
         {
             string result = "";
             List<BasicBlock> nodes = new List<BasicBlock>();
             Queue<BasicBlock> queue = new Queue<BasicBlock>();
 
-            /* Nejprve pridam vsechny deklarovane funkce */
-            /*foreach (var func in declaredFunctions)
-            {
-                queue.Enqueue(func.Value);
-            }*/
-            /* a tridy */
-            /*foreach (var cl in declaredClasses)
-            {
-                foreach (var method in cl.DeclaredMethods)
-                {
-                    queue.Enqueue(method.Value);
-                }
-            }*/
-
             /*
-            Prechod grafu do hlbky a poznameniae vsetkych hran do nodes 
+            Prechod grafu do hlbky a poznamenanie vsetkych hran do nodes 
             */
             queue.Enqueue(start);
             while (queue.Count > 0)
@@ -196,6 +207,9 @@ namespace Weverca.ControlFlowGraph
                 string label = "";
                 foreach (var statement in node.Statements)
                 {
+                    /*
+                     rekurzivne generovanie cfg a textovej reprezentacii pre funkcie
+                     */
                     if (statement.GetType() == typeof(FunctionDecl))
                     {
                         FunctionDecl function = (FunctionDecl)statement;
@@ -204,6 +218,9 @@ namespace Weverca.ControlFlowGraph
                         functionsResult+=cfg.generateText((counter / 10000 + 1) * 10000);
                         counter+=10000;
                     }
+                     /*
+                     rekurzivne generovanie cfg a textovej reprezentacii pre metody objektov
+                     */
                     else if (statement.GetType() == typeof(TypeDecl))
                     {
                         TypeDecl clas = (TypeDecl)statement;
@@ -239,7 +256,7 @@ namespace Weverca.ControlFlowGraph
                 {
                     int index = oldCounter + nodes.IndexOf(edge.To);
                     string label = "";
-                    //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode
+                    //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode, je potrebne ju inym sposobom vypisat
                     if (!edge.Condition.Position.IsValid)
                     {
                         if (edge.Condition.GetType() == typeof(BoolLiteral))
@@ -329,24 +346,6 @@ namespace Weverca.ControlFlowGraph
             result += Environment.NewLine;
             return result;
         }
-
-
-        /*public ClassDeclaration AddClassDeclaration(TypeDecl x)
-        {
-            ClassDeclaration declaration = new ClassDeclaration(x);
-            declaredClasses.Add(declaration);
-            return declaration;
-        }
-
-        public void AddFunctionDeclaration(FunctionDecl x, BasicBlock functionBasicBlock)
-        {
-            declaredFunctions.Add(x, functionBasicBlock);
-        }
-
-        public BasicBlock GetBasicBlock(FunctionDecl function)
-        {
-            return declaredFunctions[function];
-        }*/
+        #endregion generatingTextRepresentation
     }
-
 }

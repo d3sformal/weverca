@@ -21,30 +21,63 @@ using PHP.Core.Reflection;
 
 namespace Weverca.ControlFlowGraph
 {
-    class LinkedStack<T> : LinkedList<T> {     
+    /// <summary>
+    /// Linked stack is stack using linked list and not resizeable field. It is creating only for performance purpose.
+    /// </summary>
+    /// <typeparam name="T">Anything</typeparam>
+    class LinkedStack<T> : LinkedList<T> {    
+        /// <summary>
+        /// Inserts an object at the top of the Stack.
+        /// </summary>
+        /// <param name="t">Object</param>
         public void Push(T t) {
             AddLast(t);
         }
+        /// <summary>
+        /// Returns the object at the top of the Stack without removing it.
+        /// </summary>
+        /// <returns>Returns the object at the top of the Stack.</returns>
         public T Peek() {
             return this.Last();
         }
+        /// <summary>
+        /// Removes and returns the object at the top of the Stack.
+        /// </summary>
+        /// <returns>Returns removed object.</returns>
         public T Pop() {
             T result = this.Last();
             RemoveLast();
             return result;
         }
     }
+
+    /// <summary>
+    /// Stores blocks for jumping from break and continue statements.
+    /// </summary>
     class LoopData
     {
+        /// <summary>
+        /// Stores target for jump from continue statement.
+        /// </summary>
         public BasicBlock ContinueTarget { get; private set; }
+        
+        /// <summary>
+        /// Stores target for jump from break statement.
+        /// </summary>
         public BasicBlock BreakTarget { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoopData" /> class.
+        /// </summary>
+        /// <param name="ContinueTarget">Basic block, which is target for continue statement</param>
+        /// <param name="BreakTarget">Basic block, which is target for break statement</param>
         public LoopData(BasicBlock ContinueTarget, BasicBlock BreakTarget)
         {
             this.ContinueTarget = ContinueTarget;
             this.BreakTarget = BreakTarget;
         }
     }
+
 
     /// <summary>
     /// Saves reference to the target basic block of the known label 
@@ -123,28 +156,56 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
+    //1:54 minut
+    //23:49
+
+    //TODO multiple labels, no labels for jump. Is there an exception???
+
+
+    /// <summary>
+    /// AST visitor, which contructs controlflow graph.
+    /// </summary>
     class CFGVisitor : TreeVisitor
     {
+
+        #region fields
+        
+        /// <summary>
+        /// Resulting controlgflow graph.
+        /// </summary>
         ControlFlowGraph graph;
+        
+        /// <summary>
+        /// Stores current basic block, where the visitor insert statements.
+        /// </summary>
         BasicBlock currentBasicBlock;
         
         /// <summary>
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
         LinkedStack<LoopData> loopData = new LinkedStack<LoopData>();
+        
         /// <summary>
         /// Stack of block which ends by throw
         /// </summary>
         LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
-        int numberOfNestedTrys = 0;
-        
-       
-
-        private ClassDeclaration actualClass = null;
+                
+        /// <summary>
+        /// Improved dictonary storing labels in context.
+        /// </summary>
         private LabelDataDictionary labelDictionary = new LabelDataDictionary();
+        
+        /// <summary>
+        /// Stores the last blocks of defined functions.
+        /// </summary>
         LinkedStack<BasicBlock> functionSinkStack = new LinkedStack<BasicBlock>();
+        
+        #endregion fields 
 
-
+        /// <summary>
+        /// Creates instance of CFGVisitor.
+        /// </summary>
+        /// <param name="graph"></param>
         public CFGVisitor(ControlFlowGraph graph)
         {
             this.graph = graph;
@@ -153,6 +214,7 @@ namespace Weverca.ControlFlowGraph
             functionSinkStack.Push(new BasicBlock());
             throwBlocks.Push(new List<BasicBlock>());
         }
+
 
         public override void VisitElement(LangElement element)
         {
@@ -176,6 +238,14 @@ namespace Weverca.ControlFlowGraph
         {
             currentBasicBlock.AddElement(x);
         }
+
+        public override void VisitBlockStmt(BlockStmt x)
+        {
+            VisitStatementList(x.Statements);
+
+        }
+
+        #region Labels and jumps
 
         public override void VisitLabelStmt(LabelStmt x)
         {
@@ -203,6 +273,10 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = new BasicBlock();
         }
 
+        #endregion Labels and jumps
+
+        #region conditions
+
         public override void VisitIfStmt(IfStmt x)
         {
             //Merge destination for if and else branch
@@ -228,6 +302,31 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = bottomBox;
         }
 
+        /// <summary>
+        /// Constructs if branch basic block.
+        /// </summary>
+        /// <param name="bottomBox">Merge destination for if and else branch.</param>
+        /// <param name="condition">The condition of the if branch.</param>
+        /// <returns>Empty basic block for the else branch</returns>
+        private BasicBlock constructIfBranch(BasicBlock bottomBox, ConditionalStmt condition)
+        {
+            BasicBlock thenBranchBlock = new BasicBlock();
+            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
+
+            BasicBlock elseBranchBlock = new BasicBlock();
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock);
+
+            currentBasicBlock = thenBranchBlock;
+            condition.Statement.VisitMe(this);
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, bottomBox);
+
+            return elseBranchBlock;
+        }
+
+        #endregion
+
+        #region declarations
+
         public override void VisitNamespaceDecl(NamespaceDecl x)
         {
             if (x.Statements != null)
@@ -241,27 +340,12 @@ namespace Weverca.ControlFlowGraph
 
         public override void VisitTypeDecl(TypeDecl x)
         {
-
-            /*
-            System.Diagnostics.Debug.Assert(actualClass == null);
-
-            actualClass = graph.AddClassDeclaration(x);
-            
-            foreach (TypeMemberDecl t in x.Members)
-            {
-                t.VisitMe(this);
-            }
-
-            actualClass = null;*/
             currentBasicBlock.AddElement(x);
         }
 
         public override void VisitMethodDecl(MethodDecl x)
         {
-            System.Diagnostics.Debug.Assert(actualClass != null);
-
-            BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
-            actualClass.AddFunctionDeclaration(x, functionBasicBlock);
+             BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
         }
 
         public override void VisitFunctionDecl(FunctionDecl x)
@@ -294,16 +378,16 @@ namespace Weverca.ControlFlowGraph
 
             //Add function sink to the stack for resolving returns
             BasicBlock functionSink = new BasicBlock();
-            functionSinkStack.Push(functionSink);
-
-            //store throws blocks
-            var currentThrowBlocks = throwBlocks;
-            throwBlocks = new LinkedStack<List<BasicBlock>>();
-            int currentNumberOfNestedTrys = numberOfNestedTrys;
-            numberOfNestedTrys = 0;
-            
+            functionSinkStack.Push(functionSink);        
             
             VisitStatementList(functionBody);
+
+            foreach (var block in throwBlocks.ElementAt(0))
+            {
+                block.Statements.RemoveLast();
+                DirectEdge.MakeNewAndConnect(block, functionSink);
+            }
+
 
             //Connects return destination
             functionSinkStack.Pop();
@@ -313,33 +397,12 @@ namespace Weverca.ControlFlowGraph
             labelDictionary = oldLabelData;
             currentBasicBlock = current;
 
-            //loads throw blocks
-            throwBlocks = currentThrowBlocks;
-            numberOfNestedTrys = currentNumberOfNestedTrys;
             return functionBasicBlock;
         }
 
-        /// <summary>
-        /// Constructs if branch basic block.
-        /// </summary>
-        /// <param name="bottomBox">Merge destination for if and else branch.</param>
-        /// <param name="condition">The condition of the if branch.</param>
-        /// <returns>Empty basic block for the else branch</returns>
-        private BasicBlock constructIfBranch(BasicBlock bottomBox, ConditionalStmt condition)
-        {
-            BasicBlock thenBranchBlock = new BasicBlock();
-            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
+        #endregion 
 
-            BasicBlock elseBranchBlock = new BasicBlock();
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock);
-
-            currentBasicBlock = thenBranchBlock;
-            condition.Statement.VisitMe(this);
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, bottomBox);
-
-            return elseBranchBlock;
-        }
-
+        #region cycles
 
         public override void VisitForeachStmt(ForeachStmt x)
         {
@@ -406,48 +469,42 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = forEnd;
         }
 
-        /// <summary>
-        /// Constructs the simple condition from the given list.
-        /// </summary>
-        /// <param name="conditionList">The condition list.</param>
-        /// <returns></returns>
-        private Expression constructSimpleCondition(List<Expression> conditionList)
+
+        public override void VisitWhileStmt(WhileStmt x)
         {
-            Expression groupCondition;
-            if (conditionList.Count > 0)
+            BasicBlock aboveLoop = currentBasicBlock;
+            BasicBlock startLoop = new BasicBlock();
+            if (x.LoopType == WhileStmt.Type.While)
             {
-                groupCondition = conditionList[0];
-                for (int index = 1; index < conditionList.Count; index++)
-                {
-                    Position newPosition = mergePositions(groupCondition.Position, conditionList[index].Position);
-                    groupCondition = new BinaryEx(newPosition, Operations.And, groupCondition, conditionList[index]);
-                }
+                ConditionalEdge.MakeNewAndConnect(aboveLoop, startLoop, x.CondExpr);
             }
             else
             {
-                groupCondition = new BoolLiteral(Position.Invalid, true);
+                DirectEdge.MakeNewAndConnect(aboveLoop, startLoop);
             }
+            currentBasicBlock = startLoop;
+            BasicBlock underLoop = new BasicBlock();
+            loopData.Push(new LoopData(startLoop, underLoop));
+            x.Body.VisitMe(this);
+            loopData.Pop();
 
-            return groupCondition;
+            BasicBlock endLoop = currentBasicBlock;
+
+
+            DirectEdge.MakeNewAndConnect(endLoop, underLoop);
+
+            if (x.LoopType == WhileStmt.Type.While)
+            {
+                DirectEdge.MakeNewAndConnect(aboveLoop, underLoop);
+            }
+            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
+
+            currentBasicBlock = underLoop;
         }
 
-        /// <summary>
-        /// Merges the positions.
-        /// </summary>
-        /// <param name="first">The first.</param>
-        /// <param name="last">The last.</param>
-        /// <returns></returns>
-        private Position mergePositions(Position first, Position last)
-        {
-            return new Position(
-                first.FirstLine,
-                first.FirstColumn,
-                first.FirstOffset,
-                last.LastLine,
-                last.LastColumn,
-                last.LastOffset);
-        }
+        #endregion
 
+        #region switch
 
         public override void VisitSwitchStmt(SwitchStmt x)
         {
@@ -455,9 +512,10 @@ namespace Weverca.ControlFlowGraph
             BasicBlock last;
             bool containsDefault=false;
             currentBasicBlock = new BasicBlock();
-            //in case of swich statement, continue and break means the same so we make the egde allways to the block under the switch
+            //in case of switch statement, continue and break means the same so we make the egde allways to the block under the switch
             BasicBlock underLoop = new BasicBlock();
             loopData.Push(new LoopData(underLoop, underLoop));
+            
             foreach (var switchItem in x.SwitchItems) {
 
                 Expression right = null;
@@ -475,7 +533,7 @@ namespace Weverca.ControlFlowGraph
                         containsDefault = true;
                     }
                     else {
-                        throw new Exception("more than one default in switch");
+                        throw new ControlFlowException(ControlFlowExceptionCause.MULTIPLE_DEFAULT_USE);
                     }
                 }
                 
@@ -505,6 +563,9 @@ namespace Weverca.ControlFlowGraph
             VisitStatementList(x.Statements);
         }
 
+        #endregion
+
+        #region break contniue return 
 
         public override void VisitJumpStmt(JumpStmt x)
         {
@@ -516,6 +577,18 @@ namespace Weverca.ControlFlowGraph
                     if (x.Expression == null)//break without saying how many loops to break
                     {
                         BasicBlock target;
+                        //break/continue
+                        if (loopData.Count == 0)
+                        {
+                            if (x.Type == JumpStmt.Types.Break)
+                            {
+                                throw new ControlFlowException(ControlFlowExceptionCause.BREAK_NOT_IN_CYCLE);
+                            }
+                            else 
+                            {
+                                throw new ControlFlowException(ControlFlowExceptionCause.CONTINUE_NOT_IN_CYCLE);
+                            }
+                        }
                         if (x.Type == JumpStmt.Types.Break)
                         {
                             target = loopData.Peek().BreakTarget;
@@ -563,46 +636,7 @@ namespace Weverca.ControlFlowGraph
 
         }
 
-        public override void VisitWhileStmt(WhileStmt x)
-        {
-            BasicBlock aboveLoop = currentBasicBlock;
-            BasicBlock startLoop = new BasicBlock();
-            if (x.LoopType == WhileStmt.Type.While)
-            {
-                ConditionalEdge.MakeNewAndConnect(aboveLoop, startLoop, x.CondExpr);
-            }
-            else
-            {
-                DirectEdge.MakeNewAndConnect(aboveLoop, startLoop);
-            }
-            currentBasicBlock = startLoop;
-            BasicBlock underLoop = new BasicBlock();
-            loopData.Push(new LoopData(startLoop, underLoop));
-            x.Body.VisitMe(this);
-            loopData.Pop();
-            
-            BasicBlock endLoop = currentBasicBlock;
-          
-
-            DirectEdge.MakeNewAndConnect(endLoop, underLoop);
-
-            if (x.LoopType == WhileStmt.Type.While)
-            {
-                DirectEdge.MakeNewAndConnect(aboveLoop, underLoop);
-            }
-            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
-
-            currentBasicBlock = underLoop;
-        }
-
-
-       
-
-        public override void VisitBlockStmt(BlockStmt x)
-        {
-            VisitStatementList(x.Statements);
-
-        }
+        #endregion
 
         #region Forwarding to VisitStatementList or VisitExpressionList
 
@@ -666,7 +700,7 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock followingBlock = new BasicBlock();
          
-            numberOfNestedTrys++;
+
             throwBlocks.Push(new List<BasicBlock>());
             VisitStatementList(x.Statements);
             DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
@@ -693,7 +727,6 @@ namespace Weverca.ControlFlowGraph
             }
             
             
-            numberOfNestedTrys--;
             throwBlocks.Pop();
             currentBasicBlock=followingBlock;
             
@@ -707,6 +740,52 @@ namespace Weverca.ControlFlowGraph
                 item.Add(currentBasicBlock);
             }
             currentBasicBlock=new BasicBlock();
+        }
+
+        #endregion
+
+        #region other
+
+        /// <summary>
+        /// Constructs the simple condition from the given list.
+        /// </summary>
+        /// <param name="conditionList">The condition list.</param>
+        /// <returns></returns>
+        private Expression constructSimpleCondition(List<Expression> conditionList)
+        {
+            Expression groupCondition;
+            if (conditionList.Count > 0)
+            {
+                groupCondition = conditionList[0];
+                for (int index = 1; index < conditionList.Count; index++)
+                {
+                    Position newPosition = mergePositions(groupCondition.Position, conditionList[index].Position);
+                    groupCondition = new BinaryEx(newPosition, Operations.And, groupCondition, conditionList[index]);
+                }
+            }
+            else
+            {
+                groupCondition = new BoolLiteral(Position.Invalid, true);
+            }
+
+            return groupCondition;
+        }
+
+        /// <summary>
+        /// Merges the positions.
+        /// </summary>
+        /// <param name="first">The first.</param>
+        /// <param name="last">The last.</param>
+        /// <returns></returns>
+        private Position mergePositions(Position first, Position last)
+        {
+            return new Position(
+                first.FirstLine,
+                first.FirstColumn,
+                first.FirstOffset,
+                last.LastLine,
+                last.LastColumn,
+                last.LastOffset);
         }
 
         #endregion

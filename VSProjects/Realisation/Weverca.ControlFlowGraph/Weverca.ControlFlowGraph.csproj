@@ -42,6 +42,7 @@
     <Compile Include="BasicBlock.cs" />
     <Compile Include="BasicBlockEdge.cs" />
     <Compile Include="CFGVisitor.cs" />
+    <Compile Include="ControlFlowException.cs" />
     <Compile Include="ControlFlowGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

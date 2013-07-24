@@ -22,13 +22,37 @@ function test($a){
 		echo "a";
 	}
 }
+class A{
+	function foo()
+	{
+		try
+		{
+			throw new Exp();
+		}
+		catch(Exp $e)
+		{
+			echo "Exp catchced";
+		}		
+	}
+}
+function B()
+{
+		try
+		{
+			throw new Exp();
+		}
+		catch(Exp $e)
+		{
+			echo "Exp catchced";
+		}		
+}
 
 try{
 	throw new Exception2("");
 		
 }
 catch(Exception $e){
-	echo "exception catched";
+	echo "exception catcheds";
 	echo "a";
 }
 ?>
