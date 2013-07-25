@@ -19,6 +19,6 @@ namespace Weverca.ControlFlowGraph
     /// Cause of ControlFlowException.
     /// </summary>
     enum ControlFlowExceptionCause {
-        BREAK_NOT_IN_CYCLE, CONTINUE_NOT_IN_CYCLE, MULTIPLE_DEFAULT_USE
+        BREAK_NOT_IN_CYCLE, CONTINUE_NOT_IN_CYCLE
     }
 }

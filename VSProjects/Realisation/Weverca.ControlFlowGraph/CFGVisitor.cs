@@ -571,7 +571,7 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock above=currentBasicBlock;
             BasicBlock last;
-            bool containsDefault=false;
+            bool containsDefault = false;
             currentBasicBlock = new BasicBlock();
             //in case of switch statement, continue and break means the same so we make the egde allways to the block under the switch
             BasicBlock underLoop = new BasicBlock();
@@ -588,13 +588,10 @@ namespace Weverca.ControlFlowGraph
                 else 
                 {
                     DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
-
+                    //TODO last default sa vykonava
                     if (containsDefault == false)
                     {
                         containsDefault = true;
-                    }
-                    else {
-                        throw new ControlFlowException(ControlFlowExceptionCause.MULTIPLE_DEFAULT_USE);
                     }
                 }
                 
