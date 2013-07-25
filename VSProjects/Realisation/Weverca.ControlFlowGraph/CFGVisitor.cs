@@ -156,7 +156,18 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
-    //TODO multiple labels, no labels for jump. Is there an exception???
+    //TODO multiple labels, no labels for jump. Is there an exception??? - malo by to vyhodit ControlFlowException
+    //TODO kod 
+    /*
+     a:
+     a:
+     echo $a;
+     goto a;
+     goto b;
+     */
+    //sposobuje zacyklenie
+
+
 
     /// <summary>
     /// AST visitor, which contructs controlflow graph.
@@ -211,12 +222,19 @@ namespace Weverca.ControlFlowGraph
             throwBlocks.Push(new List<BasicBlock>());
         }
 
-
+        /// <summary>
+        /// Visits LangElement and apends the element to controlflow graph.
+        /// </summary>
+        /// <param name="element">LangElement</param>
         public override void VisitElement(LangElement element)
         {
             currentBasicBlock.AddElement(element);
         }
 
+        /// <summary>
+        /// Visits the Globalcode element and solves the uncatch exceptions in globalcode.
+        /// </summary>
+        /// <param name="x">Globalcode</param>
         public override void VisitGlobalCode(GlobalCode x)
         {
             foreach(Statement statement in x.Statements)
@@ -230,11 +248,19 @@ namespace Weverca.ControlFlowGraph
             }
        }
 
+        /// <summary>
+        /// Visits GlobalStmt and apends the element to controlflow graph.
+        /// </summary>
+        /// <param name="x">GlobalStmt</param>
         public override void VisitGlobalStmt(GlobalStmt x)
         {
             currentBasicBlock.AddElement(x);
         }
 
+        /// <summary>
+        /// Visits BlockStmt and apends the element to controlflow graph.
+        /// </summary>
+        /// <param name="x">BlockStmt</param>
         public override void VisitBlockStmt(BlockStmt x)
         {
             VisitStatementList(x.Statements);
@@ -243,6 +269,10 @@ namespace Weverca.ControlFlowGraph
 
         #region Labels and jumps
 
+        /// <summary>
+        /// Visit LabelStmt, stores the label in dictionary and creates new basic block.
+        /// </summary>
+        /// <param name="x">LabelStmt</param>
         public override void VisitLabelStmt(LabelStmt x)
         {
             BasicBlock labelBlock = new BasicBlock();
@@ -253,26 +283,34 @@ namespace Weverca.ControlFlowGraph
             DirectEdge.MakeNewAndConnect(currentBasicBlock, labelBlock);
             currentBasicBlock = labelBlock;
 
-            //Next line could be used for label visualization
-            labelBlock.AddElement(x);
+            //Next line could be used for label visualization, label statement shouldnt be in resulting cgf
+            //labelBlock.AddElement(x);
         }
 
+        /// <summary>
+        /// Visit GotoStmt, and creates the jump to defined label.
+        /// </summary>
+        /// <param name="x">GotoStmt</param>
         public override void VisitGotoStmt(GotoStmt x)
         {
             labelDictionary.GetOrCreateLabelData(x.LabelName)
                 .AsociateGoto(currentBasicBlock);
 
-            //Next line could be used for label visualization
-            currentBasicBlock.AddElement(x);
+            //Next line could be used for label visualization, label statement shouldnt be in resulting cgf
+            //currentBasicBlock.AddElement(x);
 
             //THIS COULD BE AN UNREACHABLE BLOCK
             currentBasicBlock = new BasicBlock();
         }
 
-        #endregion Labels and jumps
+        #endregion 
 
         #region conditions
 
+        /// <summary>
+        /// Visits IfStmt and constructs if branch basic block.
+        /// </summary>
+        /// <param name="x">IfStmt</param>
         public override void VisitIfStmt(IfStmt x)
         {
             //Merge destination for if and else branch
@@ -323,6 +361,10 @@ namespace Weverca.ControlFlowGraph
 
         #region declarations
 
+        /// <summary>
+        /// Visit declaration of namespace.
+        /// </summary>
+        /// <param name="x">NamespaceDecl</param>
         public override void VisitNamespaceDecl(NamespaceDecl x)
         {
             if (x.Statements != null)
@@ -334,24 +376,32 @@ namespace Weverca.ControlFlowGraph
             }
         }
 
+        /// <summary>
+        /// Visits TypeDecl and adds it in the controlflow graph. Analysis will create the controlflow graph of methods in the type.
+        /// </summary>
+        /// <param name="x">TypeDecl</param>
         public override void VisitTypeDecl(TypeDecl x)
         {
             currentBasicBlock.AddElement(x);
         }
 
-        public override void VisitMethodDecl(MethodDecl x)
-        {
-             BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
-        }
-
+        /// <summary>
+        /// Visits FunctionDecl and adds it in the controlflow graph. Analysis will create the controlflow of this method.
+        /// </summary>
+        /// <param name="x">FunctionDecl</param>
         public override void VisitFunctionDecl(FunctionDecl x)
         {
             currentBasicBlock.AddElement(x);
-            /*
-            BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
-            graph.AddFunctionDeclaration(x, functionBasicBlock);*/
         }
 
+        /// <summary>
+        /// Visits MethodDecl. This method will be not called during constructuion cfg. Analysis creates cfg of method via MakeFunctionCFG<T> method.
+        /// </summary>
+        /// <param name="x">MethodDecl</param>
+        public override void VisitMethodDecl(MethodDecl x)
+        {
+             //BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
+        }
 
         /// <summary>
         /// Makes the control flow graph for the function or method declaration.
@@ -400,6 +450,10 @@ namespace Weverca.ControlFlowGraph
 
         #region cycles
 
+        /// <summary>
+        /// Visits foreach statement and creates the foreach contruct in cfg. 
+        /// </summary>
+        /// <param name="x">ForeachStmt</param>
         public override void VisitForeachStmt(ForeachStmt x)
         {
             BasicBlock foreachHead = new BasicBlock();
@@ -426,6 +480,10 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = foreachSink;
         }
 
+        /// <summary>
+        /// Visits ForStmt and builds controlflow graf for for cycle.
+        /// </summary>
+        /// <param name="x">ForStmt</param>
         public override void VisitForStmt(ForStmt x)
         {
             BasicBlock forTest = new BasicBlock();
@@ -465,7 +523,10 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = forEnd;
         }
 
-
+        /// <summary>
+        /// Visits WhileStmt(do while and while) and builds controlflow graf for while cycle.
+        /// </summary>
+        /// <param name="x">WhileStmt</param>
         public override void VisitWhileStmt(WhileStmt x)
         {
             BasicBlock aboveLoop = currentBasicBlock;
@@ -502,6 +563,10 @@ namespace Weverca.ControlFlowGraph
 
         #region switch
 
+        /// <summary>
+        /// Visits switch statement and builds controlflow graf for switch construct.
+        /// </summary>
+        /// <param name="x">SwitchStmt</param>
         public override void VisitSwitchStmt(SwitchStmt x)
         {
             BasicBlock above=currentBasicBlock;
@@ -549,11 +614,19 @@ namespace Weverca.ControlFlowGraph
             }
         }
 
+        /// <summary>
+        /// Visits CaseItem, and forwards visitor for all statements.
+        /// </summary>
+        /// <param name="x">CaseItem</param>
         public override void VisitCaseItem(CaseItem x)
         {
             VisitStatementList(x.Statements);
         }
 
+        /// <summary>
+        /// Visits DefaultItem, and forwards visitor for all statements.
+        /// </summary>
+        /// <param name="x">DefaultItem</param>
         public override void VisitDefaultItem(DefaultItem x)
         {
             VisitStatementList(x.Statements);
@@ -561,8 +634,12 @@ namespace Weverca.ControlFlowGraph
 
         #endregion
 
-        #region break contniue return 
+        #region break continue return 
 
+        /// <summary>
+        /// Visits JumpStmt (break, continue, return).
+        /// </summary>
+        /// <param name="x">JumpStmt</param>
         public override void VisitJumpStmt(JumpStmt x)
         {
 
@@ -636,12 +713,20 @@ namespace Weverca.ControlFlowGraph
 
         #region Forwarding to VisitStatementList or VisitExpressionList
 
+        /// <summary>
+        /// Visits list of statements and forwards the visitor to children.
+        /// </summary>
+        /// <param name="list">list</param>
         private void VisitStatementList(List<Statement> list)
         {
             foreach (var stmt in list)
                 stmt.VisitMe(this);
         }
 
+        /// <summary>
+        /// Visits list of expressions and forwarrds the visitor to children.
+        /// </summary>
+        /// <param name="list">list</param>
         private void VisitExpressionList(List<Expression> list)
         {
             foreach (var e in list)
@@ -652,36 +737,64 @@ namespace Weverca.ControlFlowGraph
 
         #region Forwarding to default VisitElement
 
+        /// <summary>
+        /// Visits the StringLiteral.
+        /// </summary>
+        /// <param name="x">StringLiteral</param>
         public override void VisitStringLiteral(StringLiteral x)
         {
             this.VisitElement(x);
         }
 
+        /// <summary>
+        /// Visits DirectVarUse.
+        /// </summary>
+        /// <param name="x">DirectVarUse</param>
         public override void VisitDirectVarUse(DirectVarUse x)
         {
             this.VisitElement(x);
         }
 
+        /// <summary>
+        /// Visits the ConstantUse statement.
+        /// </summary>
+        /// <param name="x">ConstantUse</param>
         public override void VisitConstantUse(ConstantUse x)
         {
             this.VisitElement(x);
         }
 
+        /// <summary>
+        /// Visits EchoStmt.
+        /// </summary>
+        /// <param name="x">EchoStmt</param>
         public override void VisitEchoStmt(EchoStmt x)
         {
             this.VisitElement(x);
         }
 
+        /// <summary>
+        /// Visits BinaryEx.
+        /// </summary>
+        /// <param name="x"></param>
         public override void VisitBinaryEx(BinaryEx x)
         {
             this.VisitElement(x);
         }
 
+        /// <summary>
+        /// Visits ValueAssignEx.
+        /// </summary>
+        /// <param name="x">ValueAssignEx</param>
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             this.VisitElement(x);
         }
 
+        /// <summary>
+        /// Visits IncDecEx.
+        /// </summary>
+        /// <param name="x">IncDecEx</param>
         public override void VisitIncDecEx(IncDecEx x)
         {
             this.VisitElement(x);
@@ -691,7 +804,10 @@ namespace Weverca.ControlFlowGraph
 
         #region handling Exceptions
 
-
+        /// <summary>
+        /// Visits try catch statement and connects thrown exceptions to catch blocks or function sink.
+        /// </summary>
+        /// <param name="x">TryStmt</param>
         public override void VisitTryStmt(TryStmt x)
         {
             BasicBlock followingBlock = new BasicBlock();
@@ -728,6 +844,10 @@ namespace Weverca.ControlFlowGraph
             
         }
 
+        /// <summary>
+        /// Visits throw statement adds it to controlflow graph.
+        /// </summary>
+        /// <param name="x">ThrowStmt</param>
         public override void VisitThrowStmt(ThrowStmt x)
         {
             currentBasicBlock.AddElement(x);
