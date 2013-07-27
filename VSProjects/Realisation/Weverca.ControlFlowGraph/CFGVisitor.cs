@@ -88,20 +88,29 @@ namespace Weverca.ControlFlowGraph
         readonly LinkedList<BasicBlock> GotoQueue = new LinkedList<BasicBlock>();
         BasicBlock labelBlock = null;
 
+        public bool HasAssociatedLabel { get { return labelBlock != null;  } }
+
         /// <summary>
         /// Saves target block of this label and process all blocks in GOTO queue.
         /// </summary>
         /// <param name="labelBlock">The label block.</param>
         public void AsociateLabel(BasicBlock labelBlock)
         {
-            this.labelBlock = labelBlock;
-
-            foreach (BasicBlock gotoBlock in GotoQueue)
+            if (HasAssociatedLabel)
             {
-                _asociateGoto(gotoBlock);
+                throw new ControlFlowException(ControlFlowExceptionCause.DUPLICATED_LABEL);
             }
+            else
+            {
+                this.labelBlock = labelBlock;
 
-            GotoQueue.Clear();
+                foreach (BasicBlock gotoBlock in GotoQueue)
+                {
+                    _asociateGoto(gotoBlock);
+                }
+
+                GotoQueue.Clear();
+            }
         }
 
         /// <summary>
@@ -220,6 +229,17 @@ namespace Weverca.ControlFlowGraph
             graph.start = currentBasicBlock;
             functionSinkStack.Push(new BasicBlock());
             throwBlocks.Push(new List<BasicBlock>());
+        }
+
+        public void CheckLabels()
+        {
+            foreach (var labelData in labelDictionary)
+            {
+                if (!labelData.Value.HasAssociatedLabel)
+                {
+                    throw new ControlFlowException(ControlFlowExceptionCause.MISSING_LABEL);
+                }
+            }
         }
 
         /// <summary>

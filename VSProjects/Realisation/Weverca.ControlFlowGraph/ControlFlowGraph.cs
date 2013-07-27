@@ -72,7 +72,7 @@ namespace Weverca.ControlFlowGraph
             this.visitor = new CFGVisitor(this);
             globalCode.VisitMe(visitor);
 
-            Simplify();
+            PostProcess(visitor);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Weverca.ControlFlowGraph
             this.globalCode = globalCode;
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function,function.Body);
-            Simplify();
+            PostProcess(visitor);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Weverca.ControlFlowGraph
             
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
-            Simplify();
+            PostProcess(visitor);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Weverca.ControlFlowGraph
 
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
-            Simplify();
+            PostProcess(visitor);
         }
 
         /// <summary>
@@ -122,16 +122,14 @@ namespace Weverca.ControlFlowGraph
         {
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
-            Simplify();
+            PostProcess(visitor);
         }
 
         #endregion construction
 
-        /// <summary>
-        /// Simplifies the controlflow graph. It merges blocks which has only one outgoing edge.
-        /// </summary>
-        public void Simplify()
+        private void PostProcess(CFGVisitor visitor)
         {
+            visitor.CheckLabels();
             start.SimplifyGraph();
         }
 

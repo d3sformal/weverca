@@ -67,7 +67,15 @@ namespace Weverca.Parser.Tester
 
             if (parser.Ast != null)
             {
-                return new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+                try
+                {
+                    return new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+                }
+                catch (Weverca.ControlFlowGraph.ControlFlowException e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return null;
             }
             else
             {

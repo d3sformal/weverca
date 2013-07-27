@@ -40,10 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MemoryModel\ArrayDescriptor.cs" />
-    <Compile Include="MemoryModel\Deprecated\MemoryModel.cs" />
-    <Compile Include="MemoryModel\Deprecated\Table.cs" />
-    <Compile Include="MemoryModel\Deprecated\Value.cs" />
-    <Compile Include="MemoryModel\Deprecated\Variable.cs" />
     <Compile Include="MemoryModel\MemoryAlias.cs" />
     <Compile Include="MemoryModel\MemoryIndex.cs" />
     <Compile Include="MemoryModel\MemoryInfo.cs" />

@@ -146,8 +146,11 @@ namespace Weverca.ControlFlowGraph
 
                     if (accBlock.DefaultBranch != null)
                     {
-                        queue.AddLast(accBlock.DefaultBranch.To);
-                        processed.Add(accBlock.DefaultBranch.To);
+                        if (!processed.Contains(accBlock.DefaultBranch.To))
+                        {
+                            queue.AddLast(accBlock.DefaultBranch.To);
+                            processed.Add(accBlock.DefaultBranch.To);
+                        }
                     }
                 }
             }
