@@ -9,6 +9,7 @@ using System.IO;
 
 using Weverca.Analysis;
 using PHP.Core;
+using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis
 {
@@ -40,17 +41,32 @@ namespace Weverca.TaintedAnalysis
             this.Name = name;
             this.Arguments = arguments;
             this.ReturnType = returnType;
+            this.Analyzer = null;
         }
     }
+    
+    //TODO informacie o objektoch kvoli implementacii is_subclass, ktora je potreba pri exceptions
 
-    class NativeFunctionAnalyzer
+    public class NativeFunctionAnalyzer
     {
         private Dictionary<QualifiedName, List<NativeFunction>> allNativeFunctions = new Dictionary<QualifiedName, List<NativeFunction>>();
         private Dictionary<QualifiedName, NativeAnalyzerMethod> phalangerImplementedFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
         private Dictionary<QualifiedName, NativeAnalyzerMethod> wevercaImplementedFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
         private HashSet<string> types = new HashSet<string>();
-        internal NativeFunctionAnalyzer()
+
+        private static NativeFunctionAnalyzer instance=null;
+        
+        private NativeFunctionAnalyzer()
         {
+        }
+
+        static public NativeFunctionAnalyzer CreateInstance()
+        {
+            if (instance != null)
+            {
+                return instance;
+            }
+            instance = new NativeFunctionAnalyzer();
             string function = "";
             string returnType = "";
             string functionAlias = "";
@@ -71,13 +87,13 @@ namespace Weverca.TaintedAnalysis
                             QualifiedName functionName = new QualifiedName(new Name(function));
                             if (functionAlias != null)
                             {
-                                allNativeFunctions[functionName] = allNativeFunctions[new QualifiedName(new Name(functionAlias))];
+                                instance.allNativeFunctions[functionName] = instance.allNativeFunctions[new QualifiedName(new Name(functionAlias))];
                             }
-                            types.Add(reader.GetAttribute("returnType"));
+                            instance.types.Add(reader.GetAttribute("returnType"));
                         }
                         else if (reader.Name == "arg")
                         {
-                            types.Add(reader.GetAttribute("type"));
+                            instance.types.Add(reader.GetAttribute("type"));
                             bool optional=false;
                             bool byReference=false;
                             bool dots = false;
@@ -108,35 +124,35 @@ namespace Weverca.TaintedAnalysis
                         if (reader.Name == "function")
                         {
                             QualifiedName functionName = new QualifiedName(new Name(function));
-                            if (!allNativeFunctions.ContainsKey(functionName))
+                            if (!instance.allNativeFunctions.ContainsKey(functionName))
                             {
-                                allNativeFunctions[functionName] = new List<NativeFunction>();
+                                instance.allNativeFunctions[functionName] = new List<NativeFunction>();
                             }
-                            allNativeFunctions[functionName].Add(new NativeFunction(functionName, returnType, arguments));
+                            instance.allNativeFunctions[functionName].Add(new NativeFunction(functionName, returnType, arguments));
                             
                         }
                         break;
                 }
             }
-            var it=types.GetEnumerator();
+            var it = instance.types.GetEnumerator();
             while (it.MoveNext())
             {
                 Console.WriteLine(it.Current);
                
             }
-
+            return instance;
         }
 
 
-        bool existNativeFunction(QualifiedName name)
+        public bool existNativeFunction(QualifiedName name)
         {
             return allNativeFunctions.Keys.Contains(name);
         }
-        QualifiedName[] getNativeFunctions()
+        public QualifiedName[] getNativeFunctions()
         {
             return allNativeFunctions.Keys.ToArray();
         }
-        NativeAnalyzerMethod getNativeAnalyzer(QualifiedName name)
+        public NativeAnalyzerMethod getNativeAnalyzer(QualifiedName name)
         {
             if(!existNativeFunction(name))
             {
@@ -151,22 +167,44 @@ namespace Weverca.TaintedAnalysis
             {
                 return phalangerImplementedFunctions[name];
             }
-            else{
-                if (allNativeFunctions[name] == null)
+            else if (existNativeFunction(name))
+            {
+                if (allNativeFunctions[name][0].Analyzer == null)
                 {
-                    //create and return analyzer
+                    AnalyzerClass analyzer = new AnalyzerClass(allNativeFunctions[name]);
+                    allNativeFunctions[name][0].Analyzer = new NativeAnalyzerMethod(analyzer.analyze);
                 }
-                else 
-                {
-                    return allNativeFunctions[name][0].Analyzer;
-                }
+                return allNativeFunctions[name][0].Analyzer;
+                
             }
+            //doesnt exist
             return null;
         }
+
         public static void Main(string[] args)
         {
-            new NativeFunctionAnalyzer();
+            NativeFunctionAnalyzer.CreateInstance();
         }
-    }    
-    
+    }
+
+    class AnalyzerClass
+    {
+        List<NativeFunction> nativeFunctions;
+        public AnalyzerClass(List<NativeFunction> nativeFunctions)
+        {
+            this.nativeFunctions = nativeFunctions;
+        }
+
+        public void analyze(FlowController flow)
+        {
+            //check number of arduments
+            
+            //int argumentNumber pocet argumentov
+            //check types
+            //return value
+            var possibleValues = new List<Value>();
+            possibleValues.Add(flow.OutSet.AnyValue);
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+        }
+    }
 }

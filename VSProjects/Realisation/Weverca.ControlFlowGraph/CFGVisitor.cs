@@ -165,19 +165,6 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
-    //TODO multiple labels, no labels for jump. Is there an exception??? - malo by to vyhodit ControlFlowException
-    //TODO kod 
-    /*
-     a:
-     a:
-     echo $a;
-     goto a;
-     goto b;
-     */
-    //sposobuje zacyklenie
-
-
-
     /// <summary>
     /// AST visitor, which contructs controlflow graph.
     /// </summary>
@@ -439,7 +426,7 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = functionBasicBlock;
 
             //Store actual Label data - function has its own label namespace 
-            LabelDataDictionary oldLabelData = labelDictionary;
+            
             labelDictionary = new LabelDataDictionary();
 
             //Add function sink to the stack for resolving returns
@@ -460,7 +447,6 @@ namespace Weverca.ControlFlowGraph
             DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSink);
 
             //Loads previous labels
-            labelDictionary = oldLabelData;
             currentBasicBlock = current;
 
             return functionBasicBlock;
@@ -596,8 +582,12 @@ namespace Weverca.ControlFlowGraph
             //in case of switch statement, continue and break means the same so we make the egde allways to the block under the switch
             BasicBlock underLoop = new BasicBlock();
             loopData.Push(new LoopData(underLoop, underLoop));
+
+
             
-            foreach (var switchItem in x.SwitchItems) {
+            for (int j = 0;j<x.SwitchItems.Count;j++) {
+
+                var switchItem = x.SwitchItems[j];
 
                 Expression right = null;
                 if (switchItem.GetType() == typeof(CaseItem))
@@ -607,12 +597,22 @@ namespace Weverca.ControlFlowGraph
                 }
                 else 
                 {
-                    DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
-                    //TODO last default sa vykonava
-                    if (containsDefault == false)
+                    bool hasMoreDefaults = false;
+                    for (int i = j+1; i < x.SwitchItems.Count; i++)
                     {
-                        containsDefault = true;
+                        if (x.SwitchItems[i].GetType() == typeof(DefaultItem))
+                        {
+                            hasMoreDefaults = true;
+                        }
                     }
+
+                        if (hasMoreDefaults == false)
+                        {
+                            //conecting only to last default
+                            DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
+                        }
+                    containsDefault = true;
+                    
                 }
                 
                 
@@ -620,7 +620,7 @@ namespace Weverca.ControlFlowGraph
                 last = currentBasicBlock;
                 currentBasicBlock = new BasicBlock();
                 DirectEdge.MakeNewAndConnect(last, currentBasicBlock);
-   
+                
             }
             loopData.Pop();
             DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);

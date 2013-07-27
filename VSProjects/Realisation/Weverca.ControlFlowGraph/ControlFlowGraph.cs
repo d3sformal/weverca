@@ -212,9 +212,20 @@ namespace Weverca.ControlFlowGraph
                     {
                         FunctionDecl function = (FunctionDecl)statement;
                         label += "function " + function.Function.Name+ Environment.NewLine;
-                        ControlFlowGraph cfg = new ControlFlowGraph(globalCode, function);
-                        functionsResult+=cfg.generateText((counter / 10000 + 1) * 10000);
-                        counter+=10000;
+                        
+                        try
+                        {
+                            ControlFlowGraph cfg = new ControlFlowGraph(globalCode, function);
+                             functionsResult+=cfg.generateText((counter / 10000 + 1) * 10000);
+                            counter+=10000;
+                        }
+                        catch (Weverca.ControlFlowGraph.ControlFlowException e)
+                        {
+                            Console.WriteLine(e.Message);
+                            return "";
+                        }
+                      
+                       
                     }
                      /*
                      rekurzivne generovanie cfg a textovej reprezentacii pre metody objektov
@@ -227,9 +238,17 @@ namespace Weverca.ControlFlowGraph
                         {
                             if (method.GetType() == typeof(MethodDecl))
                             {
+                                try
+                                {
                                 ControlFlowGraph cfg = new ControlFlowGraph(globalCode, method as MethodDecl);
                                 functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
                                 counter += 10000;
+                                }
+                                catch (Weverca.ControlFlowGraph.ControlFlowException e)
+                                {
+                                    Console.WriteLine(e.Message);
+                                    return "";
+                                }
                             }
                         }
                         
