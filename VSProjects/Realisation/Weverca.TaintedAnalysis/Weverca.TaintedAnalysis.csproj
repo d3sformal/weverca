@@ -59,6 +59,8 @@
   <ItemGroup>
     <Compile Include="ExpressionEvaluator.cs" />
     <Compile Include="FlowResolver.cs" />
+    <Compile Include="ForwardAnalysis.cs" />
+    <Compile Include="FunctionResolver.cs" />
     <Compile Include="NativeFunctionAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -70,6 +72,10 @@
     <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.Analysis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
+      <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
+      <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
       <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
