@@ -8,7 +8,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.MemoryModels.MemoryModel
 {
-    public class Snapshot : AbstractSnapshot
+    public class Snapshot : SnapshotBase
     {
         private static readonly MemoryIndex undefinedVariable = new MemoryIndex();
 
@@ -316,7 +316,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
 
 
-        protected override void extendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }

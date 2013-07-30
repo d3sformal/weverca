@@ -20,7 +20,7 @@ namespace Weverca.Analysis
         internal bool HasChanges { get; private set; }
 
 
-        internal FlowOutputSet(AbstractSnapshot snapshot) :
+        internal FlowOutputSet(SnapshotBase snapshot) :
             base(snapshot)
         {
             //because new snapshot has been initialized
@@ -230,9 +230,9 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="inputs">FlowInput sets</param>
         /// <returns>Input sets snapshots</returns>
-        private AbstractSnapshot[] getSnapshots(ISnapshotReadonly[] inputs)
+        private SnapshotBase[] getSnapshots(ISnapshotReadonly[] inputs)
         {
-            var converted = new AbstractSnapshot[inputs.Length];
+            var converted = new SnapshotBase[inputs.Length];
 
             //we need pass wrapped snapshots into extend call
             for (int i = 0; i < inputs.Length; ++i)
@@ -247,7 +247,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="input">input set which snapshot will be returned</param>
         /// <returns>Snapshot from FlowInputSet</returns>
-        private AbstractSnapshot getSnapshot(FlowInputSet input)
+        private SnapshotBase getSnapshot(FlowInputSet input)
         {
             return input.Snapshot;
         }

@@ -87,7 +87,7 @@ namespace Weverca.Analysis
 
         protected abstract FunctionResolver createFunctionResolver();
 
-        protected abstract AbstractSnapshot createSnapshot();
+        protected abstract SnapshotBase createSnapshot();
 
         #endregion
 
@@ -167,7 +167,7 @@ namespace Weverca.Analysis
 
                 currentInput.StartTransaction();
                 currentInput.ExtendAsCall(controller.OutSet, controller.CalledObject, controller.Arguments);
-                _functionResolver.InitializeCall(currentInput, branchKey);
+                _functionResolver.InitializeCall(currentInput, branchKey,controller.Arguments);
                 currentInput.CommitTransaction();
 
                 var inputs = getExtensionInputs(branch);

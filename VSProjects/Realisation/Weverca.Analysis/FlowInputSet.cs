@@ -18,9 +18,9 @@ namespace Weverca.Analysis
         /// <summary>
         /// Stored snapshot
         /// </summary>
-        protected internal readonly AbstractSnapshot Snapshot;
+        protected internal readonly SnapshotBase Snapshot;
 
-        internal FlowInputSet(AbstractSnapshot snapshot)
+        internal FlowInputSet(SnapshotBase snapshot)
         {
             Snapshot = snapshot;
         }
@@ -31,10 +31,6 @@ namespace Weverca.Analysis
 
         public MemoryEntry ThisObject { get { return Snapshot.ThisObject; } }
 
-        public VariableName Argument(int index)
-        {
-            return Snapshot.Argument(index);
-        }
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);
@@ -44,6 +40,7 @@ namespace Weverca.Analysis
         {
             return Snapshot.ReadInfo(variable);
         }
+
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
             return Snapshot.ReadValue(sourceVar);
@@ -85,13 +82,5 @@ namespace Weverca.Analysis
         {
             return Snapshot.ToString();
         }
-
-
-
-
-
-
-
-
     }
 }

@@ -20,13 +20,6 @@ namespace Weverca.Analysis.Memory
         VariableName ReturnValue { get; }
 
         /// <summary>
-        /// Returns variable where argument on zero based index position is stored
-        /// </summary>
-        /// <param name="index">Index of argument</param>
-        /// <returns>Name of variable</returns>
-        VariableName Argument(int index);
-
-        /// <summary>
         /// Read info stored for given value
         /// </summary>
         /// <param name="value">value which info is readed</param>

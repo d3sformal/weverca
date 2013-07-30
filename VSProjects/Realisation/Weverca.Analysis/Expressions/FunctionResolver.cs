@@ -65,11 +65,11 @@ namespace Weverca.Analysis.Expressions
         public abstract void IndirectCall(MemoryEntry name, MemoryEntry[] arguments);
 
 
-        public abstract void InitializeCall(FlowOutputSet callInput, LangElement declaration);
+        public abstract void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments);
 
         internal void SetContext(FlowController flow)
         {
-            Flow=flow;
+            Flow = flow;
         }
     }
 }

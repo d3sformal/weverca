@@ -144,6 +144,12 @@ namespace Weverca.Analysis.Memory
         }
     }
 
+    /// <summary>
+    /// Stores meta information for variables and values
+    /// WARNING:
+    ///     Has to be immutable - also generic type T
+    /// </summary>
+    /// <typeparam name="T">Type of meta information</typeparam>
     public class InfoValue<T> : InfoValue
     {
         public readonly T Data;

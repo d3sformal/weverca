@@ -72,7 +72,7 @@
     <Compile Include="FlowOutputSet.cs" />
     <Compile Include="ForwardAnalysis.cs" />
     <Compile Include="IncludeDispatch.cs" />
-    <Compile Include="Memory\AbstractSnapshot.cs" />
+    <Compile Include="Memory\SnapshotBase.cs" />
     <Compile Include="Memory\AbstractValueVisitor.cs" />
     <Compile Include="Memory\IntervalValues.cs" />
     <Compile Include="Memory\ContainerIndex.cs" />

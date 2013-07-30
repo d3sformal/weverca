@@ -24,7 +24,7 @@ namespace Weverca.Analysis.UnitTest
 
         private readonly EnvironmentInitializer _initializer;
 
-        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG,EnvironmentInitializer initializer)
+        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, EnvironmentInitializer initializer)
             : base(entryCFG)
         {
             _initializer = initializer;
@@ -46,13 +46,12 @@ namespace Weverca.Analysis.UnitTest
             return new SimpleFunctionResolver(_initializer);
         }
 
-        protected override AbstractSnapshot createSnapshot()
+        protected override SnapshotBase createSnapshot()
         {
             return new VirtualReferenceModel.Snapshot();
         }
         #endregion
     }
-
 
     class SimpleInfo
     {
@@ -63,7 +62,6 @@ namespace Weverca.Analysis.UnitTest
         }
 
     }
-
 
     /// <summary>
     /// Expression evaluation is resovled here
@@ -297,8 +295,6 @@ namespace Weverca.Analysis.UnitTest
 
     }
 
-
-
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
@@ -359,39 +355,45 @@ namespace Weverca.Analysis.UnitTest
         /// Initialize call into callInput. 
         /// 
         /// NOTE: 
-        ///     arguments are already initialized
+        ///     arguments has to be initialized
         ///     sharing program point graphs is possible
         /// </summary>
         /// <returns></returns>
-        public override void InitializeCall(FlowOutputSet callInput, LangElement declaration)
+        public override void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
         {
             _environmentInitializer(callInput);
             var method = declaration as MethodDecl;
-            if (method != null)
+            var hasNamedSignature = method != null;
+            if (hasNamedSignature)
             {
-                joinArgumentAliases(callInput, method.Signature);
+                //we have names for passed arguments
+                setNamedArguments(callInput, arguments, method.Signature);
+            }
+            else
+            {
+                //there are no names - use numbered arguments
+                setOrderedArguments(callInput, arguments);
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Resolve return value from all possible calls
         /// </summary>
-        /// <param name="calls"></param>
-        /// <returns></returns>
+        /// <param name="calls">All calls on dispatch level, which return value is resolved</param>
+        /// <returns>Resolved return value</returns>
         public override MemoryEntry ResolveReturnValue(ProgramPointGraph[] calls)
         {
             var possibleMemoryEntries = from call in calls select call.End.OutSet.ReadValue(call.End.OutSet.ReturnValue).PossibleValues;
             var flattenValues = possibleMemoryEntries.SelectMany((i) => i);
 
-
             return new MemoryEntry(flattenValues.ToArray());
         }
 
+        #endregion
+        
         #region Native analyzers
 
-        
+
 
         /// <summary>
         /// Analyzer method for strtolower php function
@@ -399,8 +401,8 @@ namespace Weverca.Analysis.UnitTest
         /// <param name="flow"></param>
         private static void _strtolower(FlowController flow)
         {
-            var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
-            
+            var arg = flow.InSet.ReadValue(argument(0));
+
             var possibleValues = new List<Value>();
 
             foreach (var possible in arg.PossibleValues)
@@ -428,9 +430,7 @@ namespace Weverca.Analysis.UnitTest
         /// <param name="flow"></param>
         private static void _strtoupper(FlowController flow)
         {
-            var arg = flow.InSet.ReadValue(flow.InSet.Argument(0));
-            
-
+            var arg = flow.InSet.ReadValue(argument(0));
 
             var possibleValues = new List<StringValue>();
 
@@ -440,7 +440,7 @@ namespace Weverca.Analysis.UnitTest
                 possibleValues.Add(lower);
             }
 
-            var output=new MemoryEntry(possibleValues.ToArray());
+            var output = new MemoryEntry(possibleValues.ToArray());
 
             keepArgumentInfo(flow, arg, output);
             flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
@@ -450,8 +450,8 @@ namespace Weverca.Analysis.UnitTest
 
         private static void _concat(FlowController flow)
         {
-            var arg0 = flow.InSet.ReadValue(flow.InSet.Argument(0));
-            var arg1 = flow.InSet.ReadValue(flow.InSet.Argument(1));
+            var arg0 = flow.InSet.ReadValue(argument(0));
+            var arg1 = flow.InSet.ReadValue(argument(1));
 
             var possibleValues = new List<StringValue>();
 
@@ -475,6 +475,23 @@ namespace Weverca.Analysis.UnitTest
         #endregion
 
         #region Private helpers
+
+        /// <summary>
+        /// Get storage for argument at given index
+        /// NOTE:
+        ///     Is used only for native analyzers in Simple analysis
+        /// </summary>
+        /// <param name="index">Index of argument at given storage</param>
+        /// <returns>Storage for argument at given index</returns>
+        private static VariableName argument(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+
+            return new VariableName(".arg" + index);
+        }
 
         private void setCallBranching(HashSet<LangElement> functions)
         {
@@ -554,21 +571,32 @@ namespace Weverca.Analysis.UnitTest
             return result;
         }
 
-        private void joinArgumentAliases(FlowOutputSet callInput, Signature signature)
+        private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
             for (int i = 0; i < signature.FormalParams.Count; ++i)
             {
                 var param = signature.FormalParams[i];
-                var arg = callInput.Argument(i);
 
-                var argAlias = callInput.CreateAlias(arg);
-                callInput.Assign(param.Name, argAlias);
+                callInput.Assign(param.Name, arguments[i]);
             }
         }
 
-        private static void keepArgumentInfo(FlowController flow, MemoryEntry argument, MemoryEntry resultValue )
+        private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
         {
-            AnalysisTestUtils.CopyInfo(flow.OutSet, argument,resultValue);
+            var argCount = callInput.CreateInt(arguments.Length);
+            callInput.Assign(new VariableName(".argument_count"), argCount);
+
+            for (int i = 0; i < arguments.Length; ++i)
+            {
+                var argVar = argument(i);
+
+                callInput.Assign(argVar, arguments[i]);
+            }
+        }
+
+        private static void keepArgumentInfo(FlowController flow, MemoryEntry argument, MemoryEntry resultValue)
+        {
+            AnalysisTestUtils.CopyInfo(flow.OutSet, argument, resultValue);
         }
         #endregion
     }

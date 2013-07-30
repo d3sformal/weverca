@@ -14,7 +14,7 @@ namespace Weverca.VirtualReferenceModel
     /// <summary>
     /// Simple (non efficient) implementation as proof of concept - will be heavily optimized, refactored
     /// </summary>
-    public class Snapshot : AbstractSnapshot
+    public class Snapshot : SnapshotBase
     {
         Dictionary<VariableName, VariableInfo> _oldVariables;
         Dictionary<VariableName, VariableInfo> _variables = new Dictionary<VariableName, VariableInfo>();
@@ -105,7 +105,7 @@ namespace Weverca.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
-        protected override void extendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             //TODO implement
             if (thisObject != null)

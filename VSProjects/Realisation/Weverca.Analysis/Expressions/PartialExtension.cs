@@ -19,15 +19,15 @@ namespace Weverca.Analysis.Expressions
         private Dictionary<LangElement, ProgramPointGraph> _branches = new Dictionary<LangElement, ProgramPointGraph>();
         private Dictionary<ProgramPointGraph, FlowOutputSet> _inputs = new Dictionary<ProgramPointGraph, FlowOutputSet>();
 
-        internal readonly AbstractSnapshot ExtensionInput;
-        internal readonly AbstractSnapshot ExtensionOutput;
+        internal readonly SnapshotBase ExtensionInput;
+        internal readonly SnapshotBase ExtensionOutput;
 
         public ISnapshotReadonly Input { get { return ExtensionInput; } }
         public ISnapshotReadonly Output { get { return ExtensionOutput; } }
 
         public bool IsEmpty { get { return _branches.Count == 0; } }
 
-        internal PartialExtension(AbstractSnapshot input, AbstractSnapshot output)
+        internal PartialExtension(SnapshotBase input, SnapshotBase output)
         {
             ExtensionInput = input;
             ExtensionOutput = output;

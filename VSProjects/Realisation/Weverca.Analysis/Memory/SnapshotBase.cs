@@ -16,9 +16,7 @@ namespace Weverca.Analysis.Memory
     ///     * Snapshot will always work in context of some object.
     ///     * Global variables behave in different way than objets variables (cross callstack)
     ///     * Is correct for implementors to cast input Objects, Arrays, Snapshots to concrete implementation - Two snapshot implementations never won't be used together
-    /// <remarks>
-    /// For each ProgramPoint are created few snapshots (global memory, local memory,..) - these snapshots are used through all iterations of fix point algorithm
-    /// TODO: better handling of global memory
+    /// <remarks>        
     /// 
     /// Iteration looks like:
     /// StartTransaction
@@ -28,7 +26,7 @@ namespace Weverca.Analysis.Memory
     /// If snapshot has changed against state before start transaction is determined by HasChanged
     /// </remarks>
     /// </summary>
-    public abstract class AbstractSnapshot : ISnapshotReadWrite
+    public abstract class SnapshotBase : ISnapshotReadWrite
     {       
         /// <summary>
         /// singleton variable where return value is stored
@@ -113,7 +111,7 @@ namespace Weverca.Analysis.Memory
         /// <summary>
         /// Extend snapshot as call from given callerContext
         /// </summary>                
-        protected abstract void extendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
+        protected abstract void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Merge given call output with current context.
         /// WARNING: Call can change many objects via references (they don't has to be in global context)
@@ -290,7 +288,7 @@ namespace Weverca.Analysis.Memory
 
         #region Snapshot controll operations
 
-        public AbstractSnapshot()
+        public SnapshotBase()
         {            
         }
 
@@ -355,19 +353,12 @@ namespace Weverca.Analysis.Memory
 
 
 
-        internal void ExtendAsCall(AbstractSnapshot callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        internal void ExtendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
 
             _statistics.AsCallExtendings++;
-            extendAsCall(callerContext, thisObject, arguments);
-
-            for (int i = 0; i < arguments.Length; ++i)
-            {
-                var argVar = Argument(i);
-
-                Assign(argVar, arguments[i]);
-            }
+            extendAsCall(callerContext, thisObject, arguments);         
         }
 
         #endregion
@@ -389,17 +380,7 @@ namespace Weverca.Analysis.Memory
         public VariableName ReturnValue { get { return _returnValue; } }
 
         public abstract MemoryEntry ThisObject { get; }
-
-        public VariableName Argument(int index)
-        {
-            if (index < 0)
-            {
-                throw new NotSupportedException("Cannot get argument variable for negative index");
-            }
-
-            return new VariableName(".arg" + index);
-        }
-
+        
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return new InfoValue<T>(data);
