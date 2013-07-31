@@ -58,7 +58,7 @@ namespace Weverca.Parsers
 
             IsParsed = false;
             output = new StringWriter(assemblyName.CultureInfo);
-            Errors = new TextErrorSink(output);
+            Errors = new ErrorSinkThrowingException();
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Weverca.Parsers
         /// <summary>
         /// Gets or sets an information about errors occurred during parsing
         /// </summary>
-        public TextErrorSink Errors { get; protected set; }
+        public ErrorSink Errors { get; protected set; }
 
         /// <summary>
         /// Performs syntactic analysis of the source code and creates abstract syntax tree.
@@ -319,5 +319,28 @@ namespace Weverca.Parsers
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// ErrorSink implementation. Throws exception at every parser error and doesnt allow parser to continue.
+    /// </summary>
+    public class ErrorSinkThrowingException : ErrorSink
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">Id of error</param>
+        /// <param name="message">Error message</param>
+        /// <param name="severity">Error severity</param>
+        /// <param name="group"></param>
+        /// <param name="fullPath">Full path of parser file</param>
+        /// <param name="pos">Error position</param>
+        /// <returns>Doesn't return anything ends with excpetion</returns>
+        protected override bool Add(int id, string message, ErrorSeverity severity, int group, string fullPath, ErrorPosition pos)
+        {
+            //for now every parser error ends with excption. I am not really sure if there are errors or parser warning s that doenst have to end with excpetion
+            throw new Exception(String.Format("Parser Error: {0} at line {1}, char {2}: {3}",fullPath,pos.FirstLine,pos.FirstColumn,message));
+            
+        }
     }
 }
