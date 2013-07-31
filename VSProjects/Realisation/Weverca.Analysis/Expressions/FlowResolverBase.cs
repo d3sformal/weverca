@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using Weverca.Analysis.Memory;
 
+using PHP.Core.AST;
+
 namespace Weverca.Analysis.Expressions
 {
     public abstract class FlowResolverBase
@@ -25,7 +27,15 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
-        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs);
+        /// <param name="callType">Type of merged call</param>
+        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,CallType callType);
+
+        /// <summary>
+        /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)
+        /// </summary>
+        /// <param name="flow">Flow controller where include extensions can be stored</param>
+        /// <param name="includeFile">File argument of include statement</param>        
+        public abstract void Include(FlowController flow, MemoryEntry includeFile);
 
         /// <summary>
         /// Handler called before programPoint analysis starts 
@@ -35,5 +45,6 @@ namespace Weverca.Analysis.Expressions
         {
             //By default there is nothing to do           
         }
+
     }
 }

@@ -18,6 +18,8 @@ namespace Weverca.Analysis
     {
         #region Worklist algorithm output API
 
+        internal readonly CallType CallType;
+
         /// <summary>
         /// Determine that call context has empty worklist queue => analysis of call context is complete.
         /// </summary>
@@ -67,9 +69,10 @@ namespace Weverca.Analysis
 
         AnalysisServices _services;
 
-        internal AnalysisCallContext(ProgramPointGraph methodGraph, AnalysisServices services, params FlowInputSet[] entryInSets)
+        internal AnalysisCallContext(ProgramPointGraph methodGraph, AnalysisServices services,CallType callType, params FlowInputSet[] entryInSets)
         {            
             _services = services;
+            CallType = callType;
 
             CurrentWalker = services.CreateWalker();
 
@@ -172,9 +175,7 @@ namespace Weverca.Analysis
         {
             return from parent in point.Parents where parent.OutSet != null select parent.OutSet;
         }
-
-
-
+        
         private void enqueueWorkDependencies(ProgramPoint point)
         {
             foreach (var child in point.Children)
@@ -216,7 +217,5 @@ namespace Weverca.Analysis
             ppGraph.Start.OutSet.Extend(inputSet);
             ppGraph.Start.OutSet.CommitTransaction();
         }
-
-
     }
 }

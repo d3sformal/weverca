@@ -18,6 +18,8 @@ namespace Weverca.Analysis
         public readonly ProgramPoint ProgramPoint;
         public readonly LangElement CurrentPartial;
 
+        internal FlowResolverBase FlowResolver { get { return _services.FlowResolver; } }
+
         private readonly AnalysisServices _services;
         /// <summary>
         /// Input set
@@ -40,21 +42,7 @@ namespace Weverca.Analysis
         ///     Default called object is set by framework (you can override it)
         /// </summary>
         public MemoryEntry CalledObject { get; set; }
-
-        public PartialExtension CurrentExtension
-        {
-            get            
-            {
-                if (CurrentPartial == null)
-                {
-                    return null;
-                }
-                return ProgramPoint.GetExtension(CurrentPartial);
-            }
-        }
-
-        public bool HasCallExtension{get{return CurrentExtension != null && !CurrentExtension.IsEmpty;}}
-
+        
         /// <summary>
         /// Create flow controller for given input and output set
         /// </summary>
@@ -65,16 +53,32 @@ namespace Weverca.Analysis
             CurrentPartial = currentPartial;
         }
 
+        #region Call extension handling
+
+        public bool HasCallExtension{get{return CurrentCallExtension != null && !CurrentCallExtension.IsEmpty;}}
+
+        public PartialExtension<LangElement> CurrentCallExtension
+        {
+            get
+            {
+                if (CurrentPartial == null)
+                {
+                    return null;
+                }
+                return ProgramPoint.GetCallExtension(CurrentPartial);
+            }
+        }
+
         public IEnumerable<LangElement> CallBranchingKeys
         {
             get
             {
-                if (CurrentExtension == null)
+                if (CurrentCallExtension == null)
                 {
                     return new LangElement[0];
                 }
 
-                return CurrentExtension.BranchingKeys;
+                return CurrentCallExtension.BranchingKeys;
             }
         }
 
@@ -86,7 +90,50 @@ namespace Weverca.Analysis
 
         public void RemoveCallBranch(LangElement branchKey)
         {
-            ProgramPoint.RemoveCallExtension(branchKey);
+            ProgramPoint.RemoveCallExtension(CurrentPartial, branchKey);
         }
+
+        #endregion
+
+        #region Include extension handling
+        public bool HasIncludeExtension { get { return CurrentIncludeExtension != null && !CurrentIncludeExtension.IsEmpty; } }
+
+        public PartialExtension<string> CurrentIncludeExtension
+        {
+            get
+            {
+                if (CurrentPartial == null)
+                {
+                    return null;
+                }
+                return ProgramPoint.GetIncludeExtension(CurrentPartial);
+            }
+        }
+
+        public IEnumerable<string> IncludeBranchingKeys
+        {
+            get
+            {
+                if (CurrentIncludeExtension == null)
+                {
+                    return new string[0];
+                }
+
+                return CurrentIncludeExtension.BranchingKeys;
+            }
+        }
+
+        public void AddIncludeBranch(string branchKey, ProgramPointGraph branchGraph)
+        {
+            var input = _services.CreateEmptySet();
+            ProgramPoint.AddIncludeBranch(CurrentPartial, branchKey, branchGraph, input);
+        }
+
+        public void RemoveIncludeBranch(string branchKey)
+        {
+            ProgramPoint.RemoveIncludeExtension(CurrentPartial,branchKey);
+        }
+
+        #endregion
     }
 }

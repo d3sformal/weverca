@@ -285,15 +285,15 @@ namespace Weverca.Analysis.Expressions
         #region Function visiting
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-            var arguments = popArguments(x.CallSignature);            
+            var arguments = popArguments(x.CallSignature);
             var name = x.QualifiedName;
 
-            _flow.Arguments=arguments;
+            _flow.Arguments = arguments;
 
             if (x.IsMemberOf != null)
             {
                 var calledObject = popValue();
-                _flow.CalledObject=calledObject;
+                _flow.CalledObject = calledObject;
 
                 _functionResolver.MethodCall(calledObject, name, arguments);
             }
@@ -310,12 +310,12 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var name = popValue();
 
-            _flow.Arguments=arguments;
+            _flow.Arguments = arguments;
 
             if (x.IsMemberOf != null)
             {
                 var calledObject = popValue();
-                _flow.CalledObject=calledObject;
+                _flow.CalledObject = calledObject;
 
                 _functionResolver.IndirectMethodCall(calledObject, name, arguments);
             }
@@ -374,6 +374,13 @@ namespace Weverca.Analysis.Expressions
             push(possibleObjects);
         }
 
+        public override void VisitIncludingEx(IncludingEx x)
+        {
+            var possibleFiles = popValue();
+
+            _flow.FlowResolver.Include(_flow, possibleFiles);             
+        }
+
         #endregion
 
         /// <summary>
@@ -385,20 +392,5 @@ namespace Weverca.Analysis.Expressions
             nativeAnalyzer.Method(_flow);
         }
 
-
- 
-
-        private void addDispatch(MemoryEntry thisObject, MemoryEntry[] arguments, IEnumerable<LangElement> declarations)
-        {
-/*            foreach (var declaration in declarations)
-            {
-                var callInput = _currentControler.OutSet.CreateCall(thisObject, arguments);
-                callInput.StartTransaction();
-                var methodGraph = _functionResolver.InitializeCall(callInput, declaration);
-                callInput.CommitTransaction();
-                var info = new CallInfo(callInput, methodGraph);
-                _currentControler.AddDispatch(info);
-            }*/
-        }
     }
 }

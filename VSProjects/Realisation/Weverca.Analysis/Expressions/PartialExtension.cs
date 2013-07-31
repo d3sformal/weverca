@@ -14,9 +14,9 @@ namespace Weverca.Analysis.Expressions
     /// NOTE:
     ///     Program point graph extending is caused because of call invocation or include
     /// </summary>
-    public class PartialExtension
+    public class PartialExtension<Key>
     {
-        private Dictionary<LangElement, ProgramPointGraph> _branches = new Dictionary<LangElement, ProgramPointGraph>();
+        private Dictionary<Key, ProgramPointGraph> _branches = new Dictionary<Key, ProgramPointGraph>();
         private Dictionary<ProgramPointGraph, FlowOutputSet> _inputs = new Dictionary<ProgramPointGraph, FlowOutputSet>();
 
         internal readonly SnapshotBase ExtensionInput;
@@ -36,13 +36,13 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Keys registering extension branches
         /// </summary>
-        public IEnumerable<LangElement> BranchingKeys { get { return _branches.Keys; } }
+        public IEnumerable<Key> BranchingKeys { get { return _branches.Keys; } }
         /// <summary>
         /// All registered branches
         /// </summary>
         public IEnumerable<ProgramPointGraph> Branches { get { return _branches.Values; } }
 
-        public ProgramPointGraph GetBranch(LangElement key)
+        public ProgramPointGraph GetBranch(Key key)
         {
             ProgramPointGraph result;
             _branches.TryGetValue(key, out result);
@@ -50,19 +50,17 @@ namespace Weverca.Analysis.Expressions
             return result;
         }
 
-        internal void AddBranch(LangElement key, ProgramPointGraph branch, FlowOutputSet input)
+        internal void AddBranch(Key key, ProgramPointGraph branch, FlowOutputSet input)
         {
             _branches.Add(key, branch);
-            _inputs.Add(branch, input);
-            branch.AddExtension(this);
+            _inputs.Add(branch, input);            
         }
 
-        internal void RemoveBranch(LangElement key)
+        internal void RemoveBranch(Key key)
         {
             var branch = GetBranch(key);
             _branches.Remove(key);
-            _inputs.Remove(branch);
-            branch.RemoveExtension(this);
+            _inputs.Remove(branch);            
         }
 
         internal FlowOutputSet GetInput(ProgramPointGraph branch)

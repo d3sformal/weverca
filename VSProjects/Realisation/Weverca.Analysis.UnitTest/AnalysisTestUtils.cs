@@ -116,6 +116,8 @@ namespace Weverca.Analysis.UnitTest
             var cfg = AnalysisTestUtils.CreateCFG(test.PhpCode);
             var analysis = new SimpleAnalysis(cfg, test.EnvironmentInitializer);
 
+            test.IncludeInitializer(analysis);
+
             GLOBAL_ENVIRONMENT_INITIALIZER(analysis.EntryInput);
             test.EnvironmentInitializer(analysis.EntryInput);
             analysis.Analyse();
@@ -201,6 +203,7 @@ namespace Weverca.Analysis.UnitTest
 
         private readonly List<AssertRunner> _asserts = new List<AssertRunner>();
 
+        private readonly Dictionary<string, string> _includedFiles = new Dictionary<string, string>();
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
 
         internal TestCase(string phpCode, string variableName, string assertMessage, TestCase previousTest = null)
@@ -219,6 +222,12 @@ namespace Weverca.Analysis.UnitTest
         internal TestCase SetNonDeterministic(string variable)
         {
             _nonDeterminiticVariables.Add(variable);
+            return this;
+        }
+
+        internal TestCase Include(string fileName, string fileCode)
+        {
+            _includedFiles.Add(fileName, fileCode);
             return this;
         }
 
@@ -273,6 +282,19 @@ namespace Weverca.Analysis.UnitTest
             if (PreviousTest != null)
             {
                 PreviousTest.EnvironmentInitializer(outSet);
+            }
+        }
+
+        internal void IncludeInitializer(SimpleAnalysis analysis)
+        {
+            foreach (var include in _includedFiles)
+            {
+                analysis.SetInclude(include.Key, include.Value);
+            }
+
+            if (PreviousTest != null)
+            {
+                PreviousTest.IncludeInitializer(analysis);
             }
         }
     }

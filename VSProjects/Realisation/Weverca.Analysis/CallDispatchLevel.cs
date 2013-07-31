@@ -6,6 +6,23 @@ using System.Text;
 namespace Weverca.Analysis
 {
     /// <summary>
+    /// Specifies type of call (In analyzis there are multiple types of calls e.g. include is handled as special type of call)
+    /// </summary>
+    public enum CallType
+    {
+        /// <summary>
+        /// There can be multiple calls processed at one level         
+        /// </summary>
+        ParallelCall,
+        /// <summary>
+        /// There can be processed multiple includes processed at one level
+        /// NOTE:
+        ///     This call type doesn't increase call stack depth
+        /// </summary>
+        ParallelInclude,
+    }
+
+    /// <summary>
     /// Handle multiple call dispatches on single stack level
     /// </summary>
     class CallDispatchLevel
@@ -18,7 +35,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// All dispatches on level
         /// </summary>
-        private readonly CallInfo[] _dispatches;
+        private readonly DispatchInfo[] _dispatches;
         /// <summary>
         /// Index of currently processed dispatch
         /// </summary>
@@ -29,6 +46,8 @@ namespace Weverca.Analysis
         private List<AnalysisCallContext> _callResults = new List<AnalysisCallContext>();
 
         #endregion
+
+        public readonly CallType CallType;
 
         /// <summary>
         /// Current analysis call context 
@@ -41,10 +60,11 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="dispatches">Dispaches at same stack level</param>
         /// <param name="services">Available services</param>
-        public CallDispatchLevel(IEnumerable<CallInfo> dispatches, AnalysisServices services)
-        {
+        public CallDispatchLevel(IEnumerable<DispatchInfo> dispatches, AnalysisServices services, CallType callType)
+        {            
             _dispatches = dispatches.ToArray();
             _services = services;
+            CallType = callType;
 
             setCurrentDispatch(_dispatchIndex);
         }
@@ -54,8 +74,8 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="dispatch">Single dispatch in level</param>
         /// <param name="services">Available services</param>
-        public CallDispatchLevel(CallInfo dispatch, AnalysisServices services)
-            : this(new CallInfo[] { dispatch }, services)
+        public CallDispatchLevel(DispatchInfo dispatch, AnalysisServices services, CallType callType)
+            : this(new DispatchInfo[] { dispatch }, services, callType)
         {
         }
 
@@ -103,9 +123,9 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="dispatch">Call dispatch</param>
         /// <returns>Created context</returns>
-        private AnalysisCallContext createContext(CallInfo dispatch)
+        private AnalysisCallContext createContext(DispatchInfo dispatch)
         {
-            var context = new AnalysisCallContext(dispatch.MethodGraph, _services, dispatch.InSet);
+            var context = new AnalysisCallContext(dispatch.MethodGraph, _services, CallType, dispatch.InSet);
             return context;
         }
     }

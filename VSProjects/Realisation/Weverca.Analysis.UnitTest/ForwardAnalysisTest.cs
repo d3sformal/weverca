@@ -156,6 +156,32 @@ if($unknown){
 $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
 
+
+        readonly static TestCase DynamicIncludeMerge_CASE = @"
+if($unknown){
+    $file='file_a.php';
+}else{
+    $file='file_b.php';
+}
+
+include $file;
+".AssertVariable("IncludedVar").HasValues("ValueA", "ValueB")
+ .Include("file_a.php", @"
+    $IncludedVar='ValueA';
+")
+ .Include("file_b.php", @"
+    $IncludedVar='ValueB';
+");
+
+
+        readonly static TestCase IncludeReturn_CASE = @"
+$IncludeResult=(include 'test.php');
+
+".AssertVariable("IncludeResult").HasValues("IncludedReturn")
+ .Include("test.php",@"
+    return 'IncludedReturn';
+");
+
         readonly static TestCase SimpleXSSDirty_CASE = @"
 $x=$_POST['dirty'];
 $x=$x;
@@ -266,6 +292,19 @@ if($unknown){
         public void ObjectMethodCallMerge()
         {
             AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
+        }
+
+
+        [TestMethod]
+        public void DynamicIncludeMerge()
+        {
+            AnalysisTestUtils.RunTestCase(DynamicIncludeMerge_CASE);
+        }
+
+        [TestMethod]
+        public void IncludeReturn()
+        {
+            AnalysisTestUtils.RunTestCase(IncludeReturn_CASE);
         }
 
         [TestMethod]

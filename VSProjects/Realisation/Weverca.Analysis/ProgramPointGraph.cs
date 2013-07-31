@@ -24,7 +24,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Partial extensions where program point graph is included
         /// </summary>
-        private readonly HashSet<PartialExtension> _includingExtensions = new HashSet<PartialExtension>();
+        private readonly HashSet<PartialExtension<LangElement>> _containingCallExtensions = new HashSet<PartialExtension<LangElement>>();
+        private readonly HashSet<PartialExtension<string>> _containingIncludeExtensions = new HashSet<PartialExtension<string>>();
 
         /// <summary>
         /// All program points defined in program point graph
@@ -34,7 +35,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Partial extensions where program point graph is included
         /// </summary>
-        public IEnumerable<PartialExtension> IncludingExtensions { get { return _includingExtensions; } }
+        public IEnumerable<PartialExtension<LangElement>> ContainingCallExtensions { get { return _containingCallExtensions; } }
+        public IEnumerable<PartialExtension<string>> ContainingIncludeExtensions { get { return _containingIncludeExtensions; } }
 
         /// <summary>
         /// Input program point into program point graph
@@ -47,7 +49,7 @@ namespace Weverca.Analysis
 
     
 
-        internal ProgramPointGraph(BasicBlock entryPoint)
+        public ProgramPointGraph(BasicBlock entryPoint)
         {
             Start = empty(entryPoint);
             addChildren(Start, entryPoint);
@@ -126,14 +128,24 @@ namespace Weverca.Analysis
         }
 
 
-        internal void AddExtension(PartialExtension extension)
+        internal void AddCallExtension(PartialExtension<LangElement> extension)
         {
-            _includingExtensions.Add(extension);
+            _containingCallExtensions.Add(extension);
         }
 
-        internal void RemoveExtension(PartialExtension extension)
+        internal void RemoveCallExtension(PartialExtension<LangElement> extension)
         {
-            _includingExtensions.Remove(extension);
+            _containingCallExtensions.Remove(extension);
+        }
+
+        internal void AddIncludeExtension(PartialExtension<string> extension)
+        {
+            _containingIncludeExtensions.Add(extension);
+        }
+
+        internal void RemoveIncludeExtension(PartialExtension<string> extension)
+        {
+            _containingIncludeExtensions.Remove(extension);
         }
 
         private void addChildren(ProgramPoint parent, BasicBlock block)

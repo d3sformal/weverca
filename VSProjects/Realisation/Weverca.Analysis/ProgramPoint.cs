@@ -17,7 +17,9 @@ namespace Weverca.Analysis
     /// <typeparam name="FlowInfo"></typeparam>
     public class ProgramPoint
     {
-        public IEnumerable<PartialExtension> ContainedExtensions { get { return _containedExtensions.Values; } }
+        public IEnumerable<PartialExtension<LangElement>> ContainedCallExtensions { get { return _containedCallExtensions.Values; } }
+        public IEnumerable<PartialExtension<string>> ContainedIncludeExtensions { get { return _containedIncludeExtensions.Values; } }
+
         public IEnumerable<ProgramPoint> Children { get { return _children; } }
         public IEnumerable<ProgramPoint> Parents { get { return _parents; } }
         public bool IsInitialized { get { return _isInitialized; } }
@@ -36,7 +38,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Extensions indexed by partials which creates them
         /// </summary>
-        private readonly Dictionary<LangElement, PartialExtension> _containedExtensions = new Dictionary<LangElement, PartialExtension>();
+        private readonly Dictionary<LangElement, PartialExtension<LangElement>> _containedCallExtensions = new Dictionary<LangElement, PartialExtension<LangElement>>();
+        private readonly Dictionary<LangElement, PartialExtension<string>> _containedIncludeExtensions = new Dictionary<LangElement, PartialExtension<string>>();
 
         AssumptionCondition _condition;
 
@@ -103,38 +106,83 @@ namespace Weverca.Analysis
         #endregion
 
 
-        internal PartialExtension GetExtension(LangElement partial)
+        #region Call extension handling
+        internal PartialExtension<LangElement> GetCallExtension(LangElement partial)
         {
-            PartialExtension result;
-            _containedExtensions.TryGetValue(partial, out result);
+            PartialExtension<LangElement> result;
+            _containedCallExtensions.TryGetValue(partial, out result);
 
             return result;
         }
 
-
-
         internal void AddCallBranch(LangElement partial, LangElement branchKey, ProgramPointGraph branchGraph,FlowOutputSet branchInput)
         {
-            var extension = GetExtension(partial);
+            var extension = GetCallExtension(partial);
             if (extension == null)
             {
-                extension = new PartialExtension(InSet.Snapshot, OutSet.Snapshot);
-                _containedExtensions.Add(partial, extension);
+                extension = new PartialExtension<LangElement>(InSet.Snapshot, OutSet.Snapshot);
+                _containedCallExtensions.Add(partial, extension);
             }
             extension.AddBranch(branchKey, branchGraph,branchInput);
+            branchGraph.AddCallExtension(extension);
         }
 
-        internal void RemoveCallExtension(LangElement branchKey)
+        internal void RemoveCallExtension(LangElement partial, LangElement branchKey)
         {
-            var extension = GetExtension(branchKey);
+            var extension = GetCallExtension(partial);
             if (extension == null)
             {
                 //nothing to remove
                 return;
             }
 
-            extension.RemoveBranch(branchKey);
+            var branch=extension.GetBranch(branchKey);                        
+            if (branch != null)
+            {
+                extension.RemoveBranch(branchKey);
+                branch.RemoveCallExtension(extension);
+            }
         }
+        #endregion
+
+        #region Call extension handling
+        internal PartialExtension<string> GetIncludeExtension(LangElement partial)
+        {
+            PartialExtension<string> result;
+            _containedIncludeExtensions.TryGetValue(partial, out result);
+
+            return result;
+        }
+
+        internal void AddIncludeBranch(LangElement partial, string branchKey, ProgramPointGraph branchGraph, FlowOutputSet branchInput)
+        {
+            var extension = GetIncludeExtension(partial);
+            if (extension == null)
+            {
+                extension = new PartialExtension<string>(InSet.Snapshot, OutSet.Snapshot);
+                _containedIncludeExtensions.Add(partial, extension);
+            }
+            extension.AddBranch(branchKey, branchGraph, branchInput);
+            branchGraph.AddIncludeExtension(extension);
+        }
+
+        internal void RemoveIncludeExtension(LangElement partial, string branchKey)
+        {
+            var extension = GetIncludeExtension(partial);
+            if (extension == null)
+            {
+                //nothing to remove
+                return;
+            }
+
+            var branch = extension.GetBranch(branchKey);
+            if (branch != null)
+            {
+                extension.RemoveBranch(branchKey);
+                branch.RemoveIncludeExtension(extension);
+            }
+        }
+        #endregion
 
         /// <summary>
         /// Initialize program point with given input and output sets

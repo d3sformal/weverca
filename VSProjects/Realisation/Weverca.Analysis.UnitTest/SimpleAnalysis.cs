@@ -24,6 +24,8 @@ namespace Weverca.Analysis.UnitTest
 
         private readonly EnvironmentInitializer _initializer;
 
+        private readonly SimpleFlowResolver _flowResolver= new SimpleFlowResolver();
+
         public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, EnvironmentInitializer initializer)
             : base(entryCFG)
         {
@@ -38,7 +40,7 @@ namespace Weverca.Analysis.UnitTest
 
         protected override FlowResolverBase createFlowResolver()
         {
-            return new SimpleFlowResolver();
+            return _flowResolver;
         }
 
         protected override FunctionResolver createFunctionResolver()
@@ -49,6 +51,13 @@ namespace Weverca.Analysis.UnitTest
         protected override SnapshotBase createSnapshot()
         {
             return new VirtualReferenceModel.Snapshot();
+        }
+        #endregion
+
+        #region Analysis settings routines
+        internal void SetInclude(string fileName, string fileCode)
+        {
+            _flowResolver.SetInclude(fileName, fileCode);
         }
         #endregion
     }
@@ -606,6 +615,8 @@ namespace Weverca.Analysis.UnitTest
     /// </summary>
     class SimpleFlowResolver : FlowResolverBase
     {
+        private readonly Dictionary<string, string> _includes = new Dictionary<string, string>();
+
         private FlowOutputSet _outSet;
 
         /// <summary>
@@ -638,10 +649,41 @@ namespace Weverca.Analysis.UnitTest
         }
 
 
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,CallType callType)
         {
             var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);
+        }
+
+        public override void Include(FlowController flow, MemoryEntry includeFile)
+        {
+            var files = new HashSet<string>();
+            foreach (StringValue possibleFile in includeFile.PossibleValues)
+            {
+                files.Add(possibleFile.Value);
+            }
+
+            foreach (var branchKey in flow.IncludeBranchingKeys)
+            {
+                if (!files.Remove(branchKey))
+                {
+                    //this include is now not resolved as possible include branch
+                    flow.RemoveIncludeBranch(branchKey);
+                }
+            }
+
+            foreach (var file in files)
+            {
+                //Create graph for every include - NOTE: we can share pp graphs
+                var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
+                var ppGraph = new ProgramPointGraph(cfg.start);
+                flow.AddIncludeBranch(file, ppGraph);
+            }
+        }
+
+        internal void SetInclude(string fileName, string fileCode)
+        {
+            _includes.Add(fileName, fileCode);
         }
 
         #region Assumption helpers
@@ -734,6 +776,7 @@ namespace Weverca.Analysis.UnitTest
             _outSet.Assign(leftVar.VarName, _outSet.CreateString(rightVal.Value as string));
         }
         #endregion
+
     }
 
 }

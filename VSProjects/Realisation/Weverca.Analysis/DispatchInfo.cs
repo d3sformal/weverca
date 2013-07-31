@@ -13,9 +13,9 @@ namespace Weverca.Analysis
 {
 
     /// <summary>
-    /// Represents info for call dispatch
+    /// Represents info for graph dispatch
     /// </summary>
-    public  class CallInfo
+    public class DispatchInfo
     {
         /// <summary>
         /// Call input set
@@ -27,7 +27,7 @@ namespace Weverca.Analysis
         public readonly ProgramPointGraph MethodGraph;
 
 
-        public CallInfo(ProgramPointGraph methodGraph, params FlowInputSet[] inSet)
+        public DispatchInfo(ProgramPointGraph methodGraph, params FlowInputSet[] inSet)
         {            
             InSet = inSet;
             MethodGraph = methodGraph;

@@ -104,8 +104,8 @@ namespace Weverca.Analysis
             ProgramPointGraph = new ProgramPointGraph(EntryCFG.start);
 
             //create analysis entry point from given graph 
-            var entryDispatch = new CallInfo(ProgramPointGraph, EntryInput);
-            var entryLevel = new CallDispatchLevel(entryDispatch, _services);
+            var entryDispatch = new DispatchInfo(ProgramPointGraph, EntryInput);
+            var entryLevel = new CallDispatchLevel(entryDispatch, _services,CallType.ParallelCall);
 
             runCallStackAnalysis(entryLevel);
         }
@@ -149,20 +149,33 @@ namespace Weverca.Analysis
             var controller = new FlowController(_services, context.CurrentProgramPoint, context.CurrentPartial);
             context.CurrentWalker.Eval(controller);
 
+
+            CallDispatchLevel level = null;
             if (controller.HasCallExtension)
             {
-                var callLevel = createCallLevel(controller);
-                _callStack.Push(callLevel);
+                level = createCallLevel(controller);                
             }
+            else if (controller.HasIncludeExtension)
+            {
+                level = createIncludeLevel(controller);
+            }
+            else
+            {
+                //there is no dispatching
+                return;
+            }
+
+            _callStack.Push(level);
         }
 
         private CallDispatchLevel createCallLevel(FlowController controller)
         {
-            var dispatches = new List<CallInfo>();
-            var currentExtension = controller.CurrentExtension;
+            var dispatches = new List<DispatchInfo>();
+            var currentExtension = controller.CurrentCallExtension;
             foreach (var branchKey in currentExtension.BranchingKeys)
             {
                 var branch = currentExtension.GetBranch(branchKey);
+                //get input for branch so it could be initialized
                 var currentInput = currentExtension.GetInput(branch);
 
                 currentInput.StartTransaction();
@@ -170,19 +183,46 @@ namespace Weverca.Analysis
                 _functionResolver.InitializeCall(currentInput, branchKey,controller.Arguments);
                 currentInput.CommitTransaction();
 
+                //get inputs from all containing extensions
                 var inputs = getExtensionInputs(branch);
 
-                dispatches.Add(new CallInfo(branch, inputs));
+                dispatches.Add(new DispatchInfo(branch, inputs));
             }
 
-            return new CallDispatchLevel(dispatches, _services);
+            return new CallDispatchLevel(dispatches, _services,CallType.ParallelCall);
+        }
+
+        private CallDispatchLevel createIncludeLevel(FlowController controller)
+        {
+            var dispatches = new List<DispatchInfo>();
+            var currentExtension = controller.CurrentIncludeExtension;
+            foreach (var branchKey in currentExtension.BranchingKeys)
+            {
+                var branch = currentExtension.GetBranch(branchKey);
+                var currentInput = currentExtension.GetInput(branch);
+
+                currentInput.StartTransaction();
+                currentInput.Extend(controller.OutSet);
+                currentInput.CommitTransaction();
+
+                var inputs = getExtensionInputs(branch);
+
+                dispatches.Add(new DispatchInfo(branch, inputs));
+            }
+
+            return new CallDispatchLevel(dispatches,_services,CallType.ParallelInclude);
         }
 
         private FlowInputSet[] getExtensionInputs(ProgramPointGraph branch)
         {
             var result = new List<FlowInputSet>();
 
-            foreach (var extension in branch.IncludingExtensions)
+            foreach (var extension in branch.ContainingCallExtensions)
+            {
+                result.Add(extension.GetInput(branch));
+            }
+
+            foreach (var extension in branch.ContainingIncludeExtensions)
             {
                 result.Add(extension.GetInput(branch));
             }
@@ -217,7 +257,7 @@ namespace Weverca.Analysis
         {
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
 
-            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray());
+            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(),callerContext.CallType);
         }
 
         /// <summary>

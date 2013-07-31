@@ -26,7 +26,7 @@ namespace Weverca.Analysis
     /// <typeparam name="FlowInfo"></typeparam>
     class AnalysisServices
     {
-        private FlowResolverBase _flowResolver;
+        internal readonly FlowResolverBase FlowResolver;
 
         internal readonly EmptySetDelegate CreateEmptySet;        
         internal readonly WalkerCreatorDelegate CreateWalker;
@@ -36,18 +36,17 @@ namespace Weverca.Analysis
             CreateEmptySet = emptySet;            
             CreateWalker = createWalker;
 
-            _flowResolver = flowResolver;
+            FlowResolver = flowResolver;
         }
 
         internal bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
-        {
-            
-            return _flowResolver.ConfirmAssumption(outSet,condition, expressionParts);
+        {            
+            return FlowResolver.ConfirmAssumption(outSet,condition, expressionParts);
         }
 
         internal void FlowThrough(ProgramPoint programPoint)
         {            
-            _flowResolver.FlowThrough(programPoint);
+            FlowResolver.FlowThrough(programPoint);
         }
     }
 }

@@ -42,7 +42,7 @@
     <Compile Include="AnalysisCallStack.cs" />
     <Compile Include="AnalysisCallContext.cs" />
     <Compile Include="AnalysisServices.cs" />
-    <Compile Include="CallInfo.cs" />
+    <Compile Include="DispatchInfo.cs" />
     <Compile Include="CallDispatchLevel.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
@@ -71,7 +71,6 @@
     <Compile Include="FlowInputSet.cs" />
     <Compile Include="FlowOutputSet.cs" />
     <Compile Include="ForwardAnalysis.cs" />
-    <Compile Include="IncludeDispatch.cs" />
     <Compile Include="Memory\SnapshotBase.cs" />
     <Compile Include="Memory\AbstractValueVisitor.cs" />
     <Compile Include="Memory\IntervalValues.cs" />

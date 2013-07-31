@@ -51,12 +51,16 @@ namespace Weverca.TaintedAnalysis
         }
 
 
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,CallType callType)
         {
             var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);
         }
 
+        public override void Include(FlowController flow, MemoryEntry includeFile)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
 
         #region Private Methods
@@ -150,5 +154,7 @@ namespace Weverca.TaintedAnalysis
             outSet.Assign(leftVar.VarName, outSet.CreateString(rightVal.Value as string));
         }
         #endregion
+
+
     }
 }
