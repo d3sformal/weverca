@@ -339,8 +339,24 @@ namespace Weverca.Parsers
         protected override bool Add(int id, string message, ErrorSeverity severity, int group, string fullPath, ErrorPosition pos)
         {
             //for now every parser error ends with excption. I am not really sure if there are errors or parser warning s that doenst have to end with excpetion
-            throw new Exception(String.Format("Parser Error: {0} at line {1}, char {2}: {3}",fullPath,pos.FirstLine,pos.FirstColumn,message));
-            
+            throw new ParserException(String.Format("Parser {4}: {0} at line {1}, char {2}: {3}",fullPath,pos.FirstLine,pos.FirstColumn,message,severity.Value),severity,group,fullPath,pos);
         }
+    }
+
+    public class ParserException : Exception
+    {
+        public string FullPath { get; protected set; }
+        public ErrorSeverity Severity { get; protected set; }
+        public int Group { get; protected set; }
+        public ErrorPosition Position { get; protected set; }
+        public ParserException(string message, ErrorSeverity severity, int group, string path, ErrorPosition pos)
+            : base(message)
+        {
+            FullPath = path;
+            Severity = severity;
+            Group = group;
+            Position = pos;
+        }
+    
     }
 }

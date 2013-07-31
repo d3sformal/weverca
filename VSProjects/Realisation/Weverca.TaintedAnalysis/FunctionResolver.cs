@@ -16,6 +16,9 @@ namespace Weverca.TaintedAnalysis
     /// </summary>
     class AdvancedFunctionResolver : FunctionResolver
     {
+        private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance(); 
+        
+        
         /// <summary>
         /// Table of native analyzers
         /// </summary>
@@ -237,10 +240,14 @@ namespace Weverca.TaintedAnalysis
             NativeAnalyzer analyzer;
             var result = new HashSet<LangElement>();
 
-            if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
+            /*if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point 
                 result.Add(analyzer);
+            }*/
+            if (nativeFunctionAnalyzer.existNativeFunction(name))
+            {
+                result.Add(new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name)));
             }
             else
             {

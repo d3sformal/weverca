@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using PHP.Core;
+using PHP.Core.AST;
+using PHP.Core.Parsers;
+
 
 namespace Weverca.ControlFlowGraph
 {
@@ -10,9 +14,10 @@ namespace Weverca.ControlFlowGraph
     /// </summary>
     public class ControlFlowException : Exception
     {
-        public ControlFlowExceptionCause Cause { private set; get; }
-        public ControlFlowException(ControlFlowExceptionCause cause) 
-            : base("Control flow creation error: " + cause.ToString())
+        public ControlFlowExceptionCause Cause { protected set; get; }
+        public Position position { protected set; get; }
+        public ControlFlowException(ControlFlowExceptionCause cause,Position postion) 
+            : base("Control flow creation error: " + cause.ToString()+" at line "+postion.FirstLine+" char "+postion.FirstColumn)
         {
             this.Cause = cause;
         }

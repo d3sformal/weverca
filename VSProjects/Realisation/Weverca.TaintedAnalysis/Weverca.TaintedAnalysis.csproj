@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Weverca.TaintedAnalysis</RootNamespace>
     <AssemblyName>Weverca.TaintedAnalysis</AssemblyName>
@@ -80,6 +80,10 @@
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
       <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
       <Name>Weverca.MemoryModels</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
+      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+      <Name>Weverca.Parser</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

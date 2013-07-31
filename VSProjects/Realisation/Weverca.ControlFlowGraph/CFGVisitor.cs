@@ -90,15 +90,22 @@ namespace Weverca.ControlFlowGraph
 
         public bool HasAssociatedLabel { get { return labelBlock != null;  } }
 
+        public Position Position { get; private set; }
+
+        public LabelData(Position position)
+        {
+            Position = position;
+        }
+
         /// <summary>
         /// Saves target block of this label and process all blocks in GOTO queue.
         /// </summary>
         /// <param name="labelBlock">The label block.</param>
-        public void AsociateLabel(BasicBlock labelBlock)
+        public void AsociateLabel(BasicBlock labelBlock,Position position)
         {
             if (HasAssociatedLabel)
             {
-                throw new ControlFlowException(ControlFlowExceptionCause.DUPLICATED_LABEL);
+                throw new ControlFlowException(ControlFlowExceptionCause.DUPLICATED_LABEL, position);
             }
             else
             {
@@ -152,12 +159,12 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="key">´The name of the label.</param>
         /// <returns></returns>
-        public LabelData GetOrCreateLabelData(VariableName key)
+        public LabelData GetOrCreateLabelData(VariableName key,Position postion)
         {
             LabelData data;
             if (!TryGetValue(key.Value, out data))
             {
-                data = new LabelData();
+                data = new LabelData(postion);
                 Add(key.Value, data);
             }
 
@@ -224,7 +231,7 @@ namespace Weverca.ControlFlowGraph
             {
                 if (!labelData.Value.HasAssociatedLabel)
                 {
-                    throw new ControlFlowException(ControlFlowExceptionCause.MISSING_LABEL);
+                    throw new ControlFlowException(ControlFlowExceptionCause.MISSING_LABEL, labelData.Value.Position);
                 }
             }
         }
@@ -284,8 +291,8 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock labelBlock = new BasicBlock();
 
-            labelDictionary.GetOrCreateLabelData(x.Name)
-                .AsociateLabel(labelBlock);
+            labelDictionary.GetOrCreateLabelData(x.Name,x.Position)
+                .AsociateLabel(labelBlock, x.Position);
 
             DirectEdge.MakeNewAndConnect(currentBasicBlock, labelBlock);
             currentBasicBlock = labelBlock;
@@ -300,7 +307,7 @@ namespace Weverca.ControlFlowGraph
         /// <param name="x">GotoStmt</param>
         public override void VisitGotoStmt(GotoStmt x)
         {
-            labelDictionary.GetOrCreateLabelData(x.LabelName)
+            labelDictionary.GetOrCreateLabelData(x.LabelName,x.Position)
                 .AsociateGoto(currentBasicBlock);
 
             //Next line could be used for label visualization, label statement shouldnt be in resulting cgf
@@ -672,11 +679,11 @@ namespace Weverca.ControlFlowGraph
                         {
                             if (x.Type == JumpStmt.Types.Break)
                             {
-                                throw new ControlFlowException(ControlFlowExceptionCause.BREAK_NOT_IN_CYCLE);
+                                throw new ControlFlowException(ControlFlowExceptionCause.BREAK_NOT_IN_CYCLE,x.Position);
                             }
                             else 
                             {
-                                throw new ControlFlowException(ControlFlowExceptionCause.CONTINUE_NOT_IN_CYCLE);
+                                throw new ControlFlowException(ControlFlowExceptionCause.CONTINUE_NOT_IN_CYCLE,x.Position);
                             }
                         }
                         if (x.Type == JumpStmt.Types.Break)

@@ -10,13 +10,13 @@ using System.IO;
 using Weverca.Analysis;
 using PHP.Core;
 using Weverca.Analysis.Memory;
-
+using Weverca.Parsers;
 namespace Weverca.TaintedAnalysis
 {
 
-    
 
-    class NativeFunctionArgument
+
+    public class NativeFunctionArgument
     {
         public string Type { get; private set; }
         public bool byReference { get; private set; }
@@ -30,7 +30,7 @@ namespace Weverca.TaintedAnalysis
         }
     }
 
-    class NativeFunction 
+    public class NativeFunction 
     {
         public NativeAnalyzerMethod Analyzer { get; set; }
         public QualifiedName Name { get; private set; }
@@ -137,7 +137,7 @@ namespace Weverca.TaintedAnalysis
             var it = instance.types.GetEnumerator();
             while (it.MoveNext())
             {
-                Console.WriteLine(it.Current);
+            //    Console.WriteLine(it.Current);
                
             }
             return instance;
@@ -181,9 +181,49 @@ namespace Weverca.TaintedAnalysis
             return null;
         }
 
+
+
+        static public void checkFunctionsArguments(List<NativeFunction> nativeFunctions,FlowController flow)
+        {
+            //check number of arduments
+            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+            Console.WriteLine(argumentCount);
+            //int argumentNumber pocet argumentov
+            for (int i = 0; i < argumentCount; i++)
+            {
+
+            }
+            //check types
+        }
+
+
+
+
         public static void Main(string[] args)
         {
-            NativeFunctionAnalyzer.CreateInstance();
+            try
+            {
+                string code = @"
+                $a=mysql_query(4);
+                ";
+                var fileName = "./cfg_test.php";
+                var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
+                code = "<?php \n" + code + "?>";
+                
+                var parser = new SyntaxParser(sourceFile, code);
+                parser.Parse();
+                var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
+
+                var analysis = new AdvancedForwardAnalysis(cfg);
+                analysis.Analyse();
+
+                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
     }
 
@@ -197,10 +237,7 @@ namespace Weverca.TaintedAnalysis
 
         public void analyze(FlowController flow)
         {
-            //check number of arduments
-            
-            //int argumentNumber pocet argumentov
-            //check types
+            NativeFunctionAnalyzer.checkFunctionsArguments(nativeFunctions, flow);
             //return value
             var possibleValues = new List<Value>();
             possibleValues.Add(flow.OutSet.AnyValue);
