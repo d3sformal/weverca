@@ -26,8 +26,8 @@ namespace Weverca.Analysis
         AnalysisCallStack _callStack;
 
         AnalysisServices _services;
-        ExpressionEvaluator _expressionEvaluator;
-        FunctionResolver _functionResolver;
+        ExpressionEvaluatorBase _expressionEvaluator;
+        FunctionResolverBase _functionResolver;
         FlowResolverBase _flowResolver;
 
 
@@ -81,11 +81,11 @@ namespace Weverca.Analysis
 
         #region Template methods for obtaining resolvers
 
-        protected abstract ExpressionEvaluator createExpressionEvaluator();
+        protected abstract ExpressionEvaluatorBase createExpressionEvaluator();
 
         protected abstract FlowResolverBase createFlowResolver();
 
-        protected abstract FunctionResolver createFunctionResolver();
+        protected abstract FunctionResolverBase createFunctionResolver();
 
         protected abstract SnapshotBase createSnapshot();
 

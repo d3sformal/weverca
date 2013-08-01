@@ -13,7 +13,7 @@ namespace Weverca.TaintedAnalysis
 
         #region ForwardAnalysis override
 
-        protected override ExpressionEvaluator createExpressionEvaluator()
+        protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
             return new AndvancedExpressionEvaluator();
         }
@@ -23,7 +23,7 @@ namespace Weverca.TaintedAnalysis
             return new FlowResolver();
         }
 
-        protected override FunctionResolver createFunctionResolver()
+        protected override FunctionResolverBase createFunctionResolver()
         {
             return new AdvancedFunctionResolver();
         }

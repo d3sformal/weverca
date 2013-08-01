@@ -14,7 +14,7 @@ namespace Weverca.TaintedAnalysis
     /// <summary>
     /// Expression evaluation is resolved here
     /// </summary>
-    class AndvancedExpressionEvaluator : ExpressionEvaluator
+    class AndvancedExpressionEvaluator : ExpressionEvaluatorBase
     {
         #region ExpressionEvaluator overrides
 
@@ -222,7 +222,7 @@ namespace Weverca.TaintedAnalysis
             return from StringValue possible in value.PossibleValues select possible.Value;
         }
 
-        public override void ArrayAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
+        public override void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
         {
             if (array.PossibleValues.Count() != 1 && index.PossibleValues.Count() != 1)
             {
@@ -237,7 +237,7 @@ namespace Weverca.TaintedAnalysis
             OutSet.SetIndex(arrayValue as AssociativeArray, containerIndex, assignedValue);
         }
 
-        public override MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index)
+        public override MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
         {
             if (index.PossibleValues.Count() != 1)
             {
@@ -266,7 +266,7 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
-        public override MemoryEntry ResolveArray(VariableEntry entry)
+        public override MemoryEntry ResolveIndexedVariable(VariableEntry entry)
         {
             // TODO: If method is analyzed, $this is the object, otherwise a runtime error has occurred.
             // Outset contains property ThisObject with current $this value

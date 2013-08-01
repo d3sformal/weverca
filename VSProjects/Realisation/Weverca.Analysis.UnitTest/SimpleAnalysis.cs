@@ -33,7 +33,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #region Resolvers that are used during analysis
-        protected override ExpressionEvaluator createExpressionEvaluator()
+        protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
             return new SimpleExpressionEvaluator();
         }
@@ -43,7 +43,7 @@ namespace Weverca.Analysis.UnitTest
             return _flowResolver;
         }
 
-        protected override FunctionResolver createFunctionResolver()
+        protected override FunctionResolverBase createFunctionResolver()
         {
             return new SimpleFunctionResolver(_initializer);
         }
@@ -75,7 +75,7 @@ namespace Weverca.Analysis.UnitTest
     /// <summary>
     /// Expression evaluation is resovled here
     /// </summary>
-    class SimpleExpressionEvaluator : ExpressionEvaluator
+    class SimpleExpressionEvaluator : ExpressionEvaluatorBase
     {
         public override void Assign(VariableEntry target, MemoryEntry value)
         {
@@ -115,7 +115,7 @@ namespace Weverca.Analysis.UnitTest
             return OutSet.GetField(obj, index);
         }
 
-        public override MemoryEntry ArrayRead(MemoryEntry array, MemoryEntry index)
+        public override MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
         {
             if (index.PossibleValues.Count() != 1)
             {
@@ -148,7 +148,7 @@ namespace Weverca.Analysis.UnitTest
 
 
 
-        public override MemoryEntry ResolveArray(VariableEntry entry)
+        public override MemoryEntry ResolveIndexedVariable(VariableEntry entry)
         {
             if (!entry.IsDirect)
             {
@@ -170,7 +170,7 @@ namespace Weverca.Analysis.UnitTest
             return array;
         }
 
-        public override void ArrayAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
+        public override void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
         {
             if (array.PossibleValues.Count() != 1 && index.PossibleValues.Count() != 1)
             {
@@ -307,7 +307,7 @@ namespace Weverca.Analysis.UnitTest
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
-    class SimpleFunctionResolver : FunctionResolver
+    class SimpleFunctionResolver : FunctionResolverBase
     {
         private readonly EnvironmentInitializer _environmentInitializer;
 

@@ -16,18 +16,18 @@ namespace Weverca.Analysis.Expressions
             _entry = entry;
         }
 
-        public MemoryEntry ReadValue(ExpressionEvaluator evaluator)
+        public MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator)
         {
             return _entry;
         }
         
-        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluator evaluator)
+        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator)
         {
             throw new NotSupportedException("Cannot get alias on memory entry");
         }
 
 
-        public MemoryEntry ReadArray(ExpressionEvaluator evaluator)
+        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }
@@ -44,27 +44,27 @@ namespace Weverca.Analysis.Expressions
             _fieldEntry = fieldEntry;
         }
 
-        public MemoryEntry ReadValue(ExpressionEvaluator evaluator)
+        public MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator)
         {
             return evaluator.ResolveField(_objectValue, _fieldEntry);
         }
 
-        public MemoryEntry ReadArray(ExpressionEvaluator evaluator)
+        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluator evaluator)
+        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator)
         {
             return evaluator.ResolveAlias(_objectValue, _fieldEntry);
         }
 
-        public void AssignValue(ExpressionEvaluator evaluator, MemoryEntry value)
+        public void AssignValue(ExpressionEvaluatorBase evaluator, MemoryEntry value)
         {
             evaluator.Assign(_objectValue, _fieldEntry, value);
         }
 
-        public void AliasAssign(ExpressionEvaluator evaluator, IEnumerable<AliasValue> possibleAliasses)
+        public void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
         {
             evaluator.AliasAssign(_objectValue, _fieldEntry, possibleAliasses);
         }
@@ -79,27 +79,27 @@ namespace Weverca.Analysis.Expressions
             _entry = entry;
         }
 
-        public void AssignValue(ExpressionEvaluator evaluator, MemoryEntry value)
+        public void AssignValue(ExpressionEvaluatorBase evaluator, MemoryEntry value)
         {
             evaluator.Assign(_entry, value);
         }
 
-        public void AliasAssign(ExpressionEvaluator evaluator, IEnumerable<AliasValue> possibleAliasses)
+        public void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
         {
             evaluator.AliasAssign(_entry, possibleAliasses);
         }
 
-        public MemoryEntry ReadValue(ExpressionEvaluator evaluator)
+        public MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator)
         {
             return evaluator.ResolveVariable(_entry);
         }
 
-        public MemoryEntry ReadArray(ExpressionEvaluator evaluator)
+        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
         {
-            return evaluator.ResolveArray(_entry);
+            return evaluator.ResolveIndexedVariable(_entry);
         }
 
-        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluator evaluator)
+        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator)
         {
             return evaluator.ResolveAlias(_entry);
         }
@@ -116,28 +116,28 @@ namespace Weverca.Analysis.Expressions
             _array = array;
             _index = index;
         }
-        public void AssignValue(ExpressionEvaluator evaluator, MemoryEntry value)
+        public void AssignValue(ExpressionEvaluatorBase evaluator, MemoryEntry value)
         {
-            evaluator.ArrayAssign(_array, _index,value);            
+            evaluator.IndexAssign(_array, _index,value);            
         }
 
-        public void AliasAssign(ExpressionEvaluator evaluator, IEnumerable<AliasValue> possibleAliasses)
-        {
-            throw new NotImplementedException();
-        }
-
-        public MemoryEntry ReadValue(ExpressionEvaluator evaluator)
-        {
-           return evaluator.ArrayRead(_array, _index);
-        }
-
-        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluator evaluator)
+        public void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
         {
             throw new NotImplementedException();
         }
 
+        public MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator)
+        {
+           return evaluator.ResolveIndex(_array, _index);
+        }
 
-        public MemoryEntry ReadArray(ExpressionEvaluator evaluator)
+        public IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }

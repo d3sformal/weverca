@@ -11,7 +11,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.Expressions
 {
-    public abstract class FunctionResolver
+    public abstract class FunctionResolverBase
     {
         /// <summary>
         /// Current flow controller available for expression evaluation

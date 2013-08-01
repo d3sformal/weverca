@@ -14,20 +14,20 @@ namespace Weverca.Analysis.Expressions
 
     interface RValue:IStackValue
     {
-        MemoryEntry ReadValue(ExpressionEvaluator evaluator);
+        MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator);
         /// <summary>
         /// Special kind of read - can be used for implicit array creation
         /// </summary>
         /// <param name="evaluator"></param>
         /// <returns></returns>
-        MemoryEntry ReadArray(ExpressionEvaluator evaluator);
-        IEnumerable<AliasValue> ReadAlias(ExpressionEvaluator evaluator);
+        MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator);
+        IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator);
     }
 
     interface LValue:IStackValue
     {
-        void AssignValue(ExpressionEvaluator evaluator, MemoryEntry value);
+        void AssignValue(ExpressionEvaluatorBase evaluator, MemoryEntry value);
 
-        void AliasAssign(ExpressionEvaluator evaluator, IEnumerable<AliasValue> possibleAliasses);
+        void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses);
     }
 }

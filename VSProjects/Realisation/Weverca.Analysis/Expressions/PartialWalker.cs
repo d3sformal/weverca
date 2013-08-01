@@ -23,18 +23,18 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Available expression evaluator
         /// </summary>
-        private ExpressionEvaluator _evaluator;
+        private ExpressionEvaluatorBase _evaluator;
         /// <summary>
         /// Available function resolver
         /// </summary>
-        private FunctionResolver _functionResolver;
+        private FunctionResolverBase _functionResolver;
         /// <summary>
         /// Controller available for current eval
         /// </summary>
         private FlowController _flow;
         #endregion
 
-        internal PartialWalker(ExpressionEvaluator evaluator, FunctionResolver resolver)
+        internal PartialWalker(ExpressionEvaluatorBase evaluator, FunctionResolverBase resolver)
         {
             _evaluator = evaluator;
             _functionResolver = resolver;
