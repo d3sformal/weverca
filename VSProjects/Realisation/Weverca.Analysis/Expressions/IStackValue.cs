@@ -8,26 +8,51 @@ using Weverca.Analysis.Memory;
 namespace Weverca.Analysis.Expressions
 {
 
+    /// <summary>
+    /// Base for stack value used for partial evaluation of statements
+    /// </summary>
     interface IStackValue
     {
     }
 
     interface RValue:IStackValue
     {
-        MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator);
         /// <summary>
-        /// Special kind of read - can be used for implicit array creation
+        /// Read as simple value
         /// </summary>
-        /// <param name="evaluator"></param>
-        /// <returns></returns>
-        MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator);
+        /// <param name="evaluator">Evaluator used for reading value</param>
+        /// <returns>Read values</returns>
+        MemoryEntry ReadValue(ExpressionEvaluatorBase evaluator);
+
+        /// <summary>
+        /// Read value as index - can be used for implicit array creation
+        /// </summary>
+        /// <param name="evaluator">Evaluator used for reading value</param>
+        /// <returns>Read values</returns>
+        MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator);
+
+        /// <summary>
+        /// Read value as alias 
+        /// </summary>
+        /// <param name="evaluator">Evaluator used for reading value</param>
+        /// <returns>Read alias</returns>
         IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator);
     }
 
     interface LValue:IStackValue
     {
+        /// <summary>
+        /// Simple value assign to LValue
+        /// </summary>
+        /// <param name="evaluator">Evaluator used for assigning value</param>
+        /// <param name="value">Assigned value</param>
         void AssignValue(ExpressionEvaluatorBase evaluator, MemoryEntry value);
 
-        void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses);
+        /// <summary>
+        /// Simple alias assign to LValue
+        /// </summary>
+        /// <param name="evaluator">Evaluator used for assigning value</param>
+        /// <param name="possibleAliasses">Assigned aliases</param>
+        void AssignAlias(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses);
     }
 }

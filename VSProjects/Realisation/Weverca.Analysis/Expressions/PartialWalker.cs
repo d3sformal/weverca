@@ -246,7 +246,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitItemUse(ItemUse x)
         {
-            var itemHolder = popRValue().ReadArray(_evaluator);
+            var itemHolder = popRValue().ReadIndex(_evaluator);
             var itemIndex = popValue();
 
             push(new ArrayItem(itemHolder, itemIndex));
@@ -263,7 +263,7 @@ namespace Weverca.Analysis.Expressions
             var assignedVariable = popLValue();
 
             var alias = aliasedVariable.ReadAlias(_evaluator);
-            assignedVariable.AliasAssign(_evaluator, alias);
+            assignedVariable.AssignAlias(_evaluator, alias);
 
             //TODO is there alias or value assign ?
             push(aliasedVariable);
@@ -352,7 +352,7 @@ namespace Weverca.Analysis.Expressions
             {
                 case JumpStmt.Types.Return:
                     var value = popValue();
-                    push(_functionResolver.Return(_flow.OutSet, value));
+                    push(_functionResolver.Return(value));
                     break;
                 default:
                     throw new NotImplementedException();

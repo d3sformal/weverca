@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using Weverca.Analysis.Memory;
 namespace Weverca.Analysis.Expressions
 {
+
+    /// <summary>
+    /// RValue wrapping memory entry
+    /// </summary>
     class MemoryEntryValue : RValue
     {
         private readonly MemoryEntry _entry;
@@ -25,14 +29,16 @@ namespace Weverca.Analysis.Expressions
         {
             throw new NotSupportedException("Cannot get alias on memory entry");
         }
-
-
-        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
+        
+        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }
     }
 
+    /// <summary>
+    /// Stack value wrapping Object field
+    /// </summary>
     class FieldEntryValue : LValue, RValue
     {
         private readonly MemoryEntry _objectValue;
@@ -49,7 +55,7 @@ namespace Weverca.Analysis.Expressions
             return evaluator.ResolveField(_objectValue, _fieldEntry);
         }
 
-        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }
@@ -64,12 +70,15 @@ namespace Weverca.Analysis.Expressions
             evaluator.Assign(_objectValue, _fieldEntry, value);
         }
 
-        public void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
+        public void AssignAlias(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
         {
             evaluator.AliasAssign(_objectValue, _fieldEntry, possibleAliasses);
         }
     }
 
+    /// <summary>
+    /// Stack value wrapping variable
+    /// </summary>
     class VariableEntryValue : LValue,RValue
     {
         private readonly VariableEntry _entry;
@@ -84,7 +93,7 @@ namespace Weverca.Analysis.Expressions
             evaluator.Assign(_entry, value);
         }
 
-        public void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
+        public void AssignAlias(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
         {
             evaluator.AliasAssign(_entry, possibleAliasses);
         }
@@ -94,7 +103,7 @@ namespace Weverca.Analysis.Expressions
             return evaluator.ResolveVariable(_entry);
         }
 
-        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
         {
             return evaluator.ResolveIndexedVariable(_entry);
         }
@@ -106,6 +115,9 @@ namespace Weverca.Analysis.Expressions
          
     }
 
+    /// <summary>
+    /// Stack value wrapping array item
+    /// </summary>
     class ArrayItem:LValue,RValue
     {
         private readonly MemoryEntry _array;
@@ -121,7 +133,7 @@ namespace Weverca.Analysis.Expressions
             evaluator.IndexAssign(_array, _index,value);            
         }
 
-        public void AliasAssign(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
+        public void AssignAlias(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses)
         {
             throw new NotImplementedException();
         }
@@ -137,7 +149,7 @@ namespace Weverca.Analysis.Expressions
         }
 
 
-        public MemoryEntry ReadArray(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }

@@ -77,15 +77,45 @@ namespace Weverca.Analysis.Expressions
         /// <param name="index">Specifier of an index</param>
         /// <returns>Possible values obtained from resolving given index</returns>
         abstract public MemoryEntry ResolveIndex(MemoryEntry indexedValue, MemoryEntry index);
-
-
-        
-
+                
+        /// <summary>
+        /// Resolves alias from given field specifier
+        /// </summary>
+        /// <param name="objectValue">Object containing aliased field</param>
+        /// <param name="aliasedField">Specifier of an field</param>
+        /// <returns>Resolved aliases</returns>
         abstract public IEnumerable<AliasValue> ResolveAlias(MemoryEntry objectValue, VariableEntry aliasedField);
+
+        /// <summary>
+        /// Assign possible aliases to given target
+        /// </summary>
+        /// <param name="target">Target variable specifier</param>
+        /// <param name="possibleAliases">Possible aliases to be assigned</param>
         abstract public void AliasAssign(VariableEntry target, IEnumerable<AliasValue> possibleAliases);
+
+        /// <summary>
+        /// Assign possible aliases to given object field
+        /// </summary>
+        /// <param name="objectValue">Object containing assigned field</param>
+        /// <param name="fieldEntry">Specifier of an field</param>
+        /// <param name="possibleAliasses">Possible aliases to be assigned</param>
         abstract public void AliasAssign(MemoryEntry objectValue, VariableEntry fieldEntry, IEnumerable<AliasValue> possibleAliasses);
+
+        /// <summary>
+        /// Assign possible values to given target
+        /// </summary>
+        /// <param name="target">Target variable specifier</param>
+        /// <param name="value">Possible values to be assigned</param>
         abstract public void Assign(VariableEntry target, MemoryEntry value);
+
+        /// <summary>
+        /// Assign possible values to given targetField of an objectValue
+        /// </summary>
+        /// <param name="objectValue">Object containing assigned field</param>
+        /// <param name="targetField">Specifier of an field</param>
+        /// <param name="value">Possible values to be assigned</param>
         abstract public void Assign(MemoryEntry objectValue, VariableEntry targetField, MemoryEntry value);
+
         /// <summary>
         /// Assign assignedValue at indexedValue[index]
         /// NOTE:
@@ -96,6 +126,13 @@ namespace Weverca.Analysis.Expressions
         /// <param name="assignedValue">Value that is assigned</param>
         abstract public void IndexAssign(MemoryEntry indexedValue, MemoryEntry index, MemoryEntry assignedValue);
 
+        /// <summary>
+        /// Proccess binary operation on given operands
+        /// </summary>
+        /// <param name="leftOperand">Left operand of operation</param>
+        /// <param name="operation">Binary operation</param>
+        /// <param name="rightOperand">Right operand of operation</param>
+        /// <returns></returns>
         abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
 
         
@@ -103,36 +140,71 @@ namespace Weverca.Analysis.Expressions
                 
         #region Default implementation of simple routines
 
-        virtual public IEnumerable<AliasValue> ResolveAlias(VariableEntry aliasedVariables)
+        /// <summary>
+        /// Resolve alias of given variable specifier
+        /// </summary>
+        /// <param name="variable">Aliased variable specifier</param>
+        /// <returns>Resolved aliases</returns>
+        virtual public IEnumerable<AliasValue> ResolveAlias(VariableEntry variable)
         {
-            return from aliasedVariable in aliasedVariables.PossibleNames select Flow.OutSet.CreateAlias(aliasedVariable);
+            return from aliasedVariable in variable.PossibleNames select Flow.OutSet.CreateAlias(aliasedVariable);
         }
 
+        /// <summary>
+        /// Create string representation of given literal
+        /// </summary>
+        /// <param name="x">Literal value</param>
+        /// <returns>Created literal value representation</returns>
         virtual public MemoryEntry StringLiteral(StringLiteral x)
         {
             return new MemoryEntry(OutSet.CreateString(x.Value as String));
         }
-
+        
+        /// <summary>
+        /// Create integer representation of given literal
+        /// </summary>
+        /// <param name="x">Literal value</param>
+        /// <returns>Created literal value representation</returns>
         virtual public MemoryEntry IntLiteral(IntLiteral x)
         {
             return new MemoryEntry(OutSet.CreateInt((int)x.Value));
         }
-
+        
+        /// <summary>
+        /// Create long integer representation of given literal
+        /// </summary>
+        /// <param name="x">Literal value</param>
+        /// <returns>Created literal value representation</returns>
         virtual public MemoryEntry LongIntLiteral(LongIntLiteral x)
         {
             return new MemoryEntry(OutSet.CreateLong((long)x.Value));
         }
 
+        /// <summary>
+        /// Create boolean representation of given literal
+        /// </summary>
+        /// <param name="x">Literal value</param>
+        /// <returns>Created literal value representation</returns>
         virtual public MemoryEntry BoolLiteral(BoolLiteral x)
         {
             return new MemoryEntry(OutSet.CreateBool((bool)x.Value));
         }
-
+        
+        /// <summary>
+        /// Create string representation of given literal
+        /// </summary>
+        /// <param name="x">Literal value</param>
+        /// <returns>Created literal value representation</returns>
         virtual public MemoryEntry DoubleLiteral(DoubleLiteral x)
         {
             return new MemoryEntry(OutSet.CreateDouble((double)x.Value));
         }
-
+        
+        /// <summary>
+        /// Create object value of given type
+        /// </summary>
+        /// <param name="typeName">Object type specifier</param>
+        /// <returns>Created object</returns>
         virtual public MemoryEntry CreateObject(QualifiedName typeName)
         {
             var declarations=OutSet.ResolveType(typeName);

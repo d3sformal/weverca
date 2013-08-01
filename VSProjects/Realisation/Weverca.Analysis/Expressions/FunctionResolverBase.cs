@@ -13,6 +13,8 @@ namespace Weverca.Analysis.Expressions
 {
     public abstract class FunctionResolverBase
     {
+        #region Template API methods for implementors
+
         /// <summary>
         /// Current flow controller available for expression evaluation
         /// </summary>
@@ -40,33 +42,84 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Resolved return value</returns>
         public abstract MemoryEntry ResolveReturnValue(ProgramPointGraph[] programPointGraphs);
 
+
+        #region Default implementations of simple routines
+
+        /// <summary>
+        /// Declare type into global context
+        /// </summary>
+        /// <param name="declaration">Declared type</param>
         public virtual void DeclareGlobal(TypeDecl declaration)
         {
             OutSet.DeclareGlobal(declaration);
         }
 
+        /// <summary>
+        /// Declare function into global context
+        /// </summary>
+        /// <param name="declaration">Declared function</param>
         public virtual void DeclareGlobal(FunctionDecl declaration)
         {
             OutSet.DeclareGlobal(declaration);
         }
 
-        public virtual MemoryEntry Return(FlowOutputSet outSet, MemoryEntry value)
+        /// <summary>
+        /// Set return value to current call context via OutSet
+        /// </summary>        
+        /// <param name="value">Value from return expression</param>
+        /// <returns>Returned value</returns>
+        public virtual MemoryEntry Return(MemoryEntry value)
         {
-            OutSet.Assign(outSet.ReturnValue, value);
+            OutSet.Assign(OutSet.ReturnValue, value);
             return value;
         }
 
-        public abstract void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments);
-
+        /// <summary>
+        /// Initialization of call of function with given declaration and arguments
+        /// </summary>
+        /// <param name="callInput">Input of initialized call</param>
+        /// <param name="declaration">Function declaration</param>
+        /// <param name="arguments">Call arguments</param>
+        public abstract void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments);
+        
+        /// <summary>
+        /// Builds program point extension for call of given name and arguments via flow controller
+        /// </summary>
+        /// <param name="name">Name of called function</param>
+        /// <param name="arguments">Arguments of call</param>
         public abstract void Call(QualifiedName name, MemoryEntry[] arguments);
-
-        public abstract void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments);
-
+        
+        /// <summary>
+        /// Builds program point extension for indirect call of given name and arguments via flow controller
+        /// </summary>
+        /// <param name="name">Name of called function</param>
+        /// <param name="arguments">Arguments of call</param>
         public abstract void IndirectCall(MemoryEntry name, MemoryEntry[] arguments);
 
+        /// <summary>
+        /// Builds program point extension for method call of given name and arguments via flow controller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Name of called method</param>
+        /// <param name="arguments">Arguments of call</param>
+        public abstract void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments);
+        
+        /// <summary>
+        /// Builds program point extension for indirect method call of given name and arguments via flow conroller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Name of called method</param>
+        /// <param name="arguments">Arguments of call</param>
+        public abstract void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments);
+        
+        #endregion
 
-        public abstract void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments);
+        #endregion
 
+        /// <summary>
+        /// Set context for resolver
+        /// </summary>
+        /// <param name="flow">Flow controller for current context</param>
         internal void SetContext(FlowController flow)
         {
             Flow = flow;
