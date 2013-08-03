@@ -220,6 +220,10 @@ namespace Weverca.Analysis.Expressions
             var varValue = popValue();
 
             var varNames = _evaluator.VariableNames(varValue);
+            if (varNames == null)
+            {
+                varNames = new string[0];
+            }
 
 
             push(new VariableEntry(varNames));
