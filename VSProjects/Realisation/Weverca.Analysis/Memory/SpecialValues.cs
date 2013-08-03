@@ -166,6 +166,12 @@ namespace Weverca.Analysis.Memory
         {
             visitor.VisitInfoValue<T>(this);
         }
+
+
+        public override string ToString()
+        {
+            return Data.ToString();
+        }
     }
 
 }

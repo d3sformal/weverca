@@ -11,6 +11,9 @@ using Weverca.Analysis;
 using PHP.Core;
 using Weverca.Analysis.Memory;
 using Weverca.Parsers;
+
+using PHP.Core.Parsers;
+
 namespace Weverca.TaintedAnalysis
 {
 
@@ -19,14 +22,15 @@ namespace Weverca.TaintedAnalysis
     public class NativeFunctionArgument
     {
         public string Type { get; private set; }
-        public bool byReference { get; private set; }
+        public bool ByReference { get; private set; }
         public bool Optional { get; private set; }
-        public bool dots { get; private set; }
-        public NativeFunctionArgument(string type, bool byReference, bool optional,bool dots)
+        public bool Dots { get; private set; }
+        public NativeFunctionArgument(string type,  bool optional,bool byReference,bool dots)
         {
             this.Type=type;
-            this.byReference=byReference;
+            this.ByReference=byReference;
             this.Optional=optional;
+            this.Dots = dots;
         }
     }
 
@@ -36,6 +40,8 @@ namespace Weverca.TaintedAnalysis
         public QualifiedName Name { get; private set; }
         public List<NativeFunctionArgument> Arguments { get; private set; }
         public string ReturnType { get; private set; }
+        public int MinArgumentCount = -1;
+        public int MaxArgumentCount = -1;
         public NativeFunction( QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
         {
             this.Name = name;
@@ -140,9 +146,45 @@ namespace Weverca.TaintedAnalysis
             //    Console.WriteLine(it.Current);
                
             }
+            
+            
+            
+            /*foreach(var fnc in instance.allNativeFunctions)
+            {
+                checkFunctionsArguments(fnc.Value, null);
+                for (int i = 0; i < fnc.Value.Count; i++)
+                {
+                    for (int j = i + 1; j < fnc.Value.Count; j++)
+                    {
+                        if (false==areIntervalsDisjuct(fnc.Value.ElementAt(i).MinArgumentCount, fnc.Value.ElementAt(i).MaxArgumentCount,fnc.Value.ElementAt(j).MinArgumentCount, fnc.Value.ElementAt(j).MaxArgumentCount))
+                        {
+                        Console.WriteLine("function: {0}", fnc.Value.ElementAt(0).Name);
+                        Console.WriteLine("{0} {1} {2} {3}",fnc.Value.ElementAt(i).MinArgumentCount, fnc.Value.ElementAt(i).MaxArgumentCount,fnc.Value.ElementAt(j).MinArgumentCount, fnc.Value.ElementAt(j).MaxArgumentCount);
+                        }
+                    }
+                }
+            }*/
             return instance;
         }
-
+        /// <summary>
+        /// Tells us if the two intervals intersects.
+        /// </summary>
+        /// <param name="a">start of first interval</param>
+        /// <param name="b">end of first interval</param>
+        /// <param name="c">start of second interval</param>
+        /// <param name="d">end of second interval</param>
+        /// <returns>Return true when interval a,b intersects c,d</returns>
+        private static bool areIntervalsDisjuct(int a, int b, int c, int d)
+        {
+            if (b >= c && a < d)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
 
         public bool existNativeFunction(QualifiedName name)
         {
@@ -188,7 +230,50 @@ namespace Weverca.TaintedAnalysis
             //check number of arduments
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
-            Console.WriteLine(argumentCount);
+
+            //argument count hassnt been comupted yet
+            if (nativeFunctions.ElementAt(0).MinArgumentCount == -1)
+            {
+                foreach (var nativeFuntion in nativeFunctions)
+                {
+                    nativeFuntion.MinArgumentCount = 0;
+                    nativeFuntion.MaxArgumentCount = 0;
+                    foreach (var nativeFunctionArgument in nativeFuntion.Arguments)
+                    {
+                        if (nativeFunctionArgument.Dots)
+                        {
+                            nativeFuntion.MaxArgumentCount = 1000000000;
+                        }
+                        else if (nativeFunctionArgument.Optional)
+                        {
+                            nativeFuntion.MaxArgumentCount++;
+                        }
+                        else
+                        {
+                            nativeFuntion.MinArgumentCount++;
+                            nativeFuntion.MaxArgumentCount++;
+                        }
+                    }
+                    //Console.WriteLine("Name: {0},Min: {1}, Max: {2}", nativeFuntion.Name,nativeFuntion.MinArgumentCount, nativeFuntion.MaxArgumentCount);
+                }
+                
+            }
+            AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(nativeFunctions.ElementAt(0).Name.ToString(), Position.Invalid));
+
+            bool argumentCountMatches = false;
+            foreach (var nativeFuntion in nativeFunctions)
+            {
+                if (nativeFuntion.MinArgumentCount >= argumentCount && nativeFuntion.MaxArgumentCount <= argumentCount) 
+                {
+                    argumentCountMatches = true;
+                }
+            }
+
+            if (argumentCountMatches == false)
+            {
+                //nahlasit warning
+                return;
+            }
             //int argumentNumber pocet argumentov
             for (int i = 0; i < argumentCount; i++)
             {
@@ -202,10 +287,13 @@ namespace Weverca.TaintedAnalysis
 
         public static void Main(string[] args)
         {
-            try
+           try
             {
                 string code = @"
                 $a=mysql_query(4);
+                $b=min(4,5);
+                $c=max($array);
+                $d=htmlspecialchars($array);
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -219,6 +307,11 @@ namespace Weverca.TaintedAnalysis
                 analysis.Analyse();
 
                 Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));
+                foreach (var warning in AnalysisWarningHandler.ReadWarnings(analysis.ProgramPointGraph.End.OutSet))
+                {
+                    Console.WriteLine(warning);
+                }
+
             }
             catch (Exception e)
             {
