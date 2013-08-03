@@ -6,14 +6,31 @@ using System.Threading.Tasks;
 
 namespace Weverca.Analysis.Memory
 {
+    /// <summary>
+    /// Value representing interval of values
+    /// </summary>
+    /// <typeparam name="T">Type of stored value - NOTE: Has to provide immutability</typeparam>
     public abstract class IntervalValue<T> : Value
     {
+        /// <summary>
+        /// Start, End of Interval
+        /// </summary>
         public readonly T Start, End;
 
-        public IntervalValue(T start, T end)
+        /// <summary>
+        /// Create Interval value
+        /// </summary>
+        /// <param name="start">Start of interval</param>
+        /// <param name="end">End of interval</param>
+        internal IntervalValue(T start, T end)
         {
             Start = start;
             End = end;
+        }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitGenericIntervalValue(this);
         }
 
         public override bool Equals(object obj)
@@ -36,10 +53,7 @@ namespace Weverca.Analysis.Memory
             return string.Format("'({0},{1})', Type: {2}", Start, End, typeof(T).Name);
         }
 
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitGenericIntervalValue(this);
-        }
+
     }
 
     public class IntegerIntervalValue : IntervalValue<int>

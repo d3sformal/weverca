@@ -372,15 +372,9 @@ namespace Weverca.Analysis.Memory
         public AnyLongintValue AnyLongintValue { get { return new AnyLongintValue(); } }
         public AnyObjectValue AnyObjectValue { get { return new AnyObjectValue(); } }
         public AnyArrayValue AnyArrayValue { get { return new AnyArrayValue(); } }
-
-
         public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
-
-        
         public VariableName ReturnValue { get { return _returnValue; } }
-
-        public abstract MemoryEntry ThisObject { get; }
-        
+                
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return new InfoValue<T>(data);

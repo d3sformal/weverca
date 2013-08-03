@@ -22,13 +22,7 @@ namespace Weverca.VirtualReferenceModel
         Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
 
         bool _hasSemanticChange;
-
-
-        public override MemoryEntry ThisObject
-        {
-            get { return readValue(thisObjectStorage()); }
-        }
-
+        
         protected override void startTransaction()
         {
             _oldData = _data;

@@ -307,15 +307,7 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
-
-
-        public override MemoryEntry ThisObject
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-
-
+        
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();

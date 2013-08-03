@@ -13,8 +13,15 @@ namespace Weverca.Analysis.Memory
     /// </summary>
     public class MemoryEntry
     {
+        /// <summary>
+        /// Values that are possible for current memory entry
+        /// </summary>
         public readonly IEnumerable<Value> PossibleValues;
 
+        /// <summary>
+        /// Create memory entry from given values
+        /// </summary>
+        /// <param name="values">Possible values for created memory entry</param>
         public MemoryEntry(params Value[] values)
         {
             PossibleValues = new ReadOnlyCollection<Value>((Value[])values.Clone());
@@ -28,6 +35,7 @@ namespace Weverca.Analysis.Memory
         {
             PossibleValues = values;
         }
+
         /// <summary>
         /// Shallow memory entries merge
         /// Distincity is reached by Equals and GetHashCode comparison.
@@ -39,6 +47,13 @@ namespace Weverca.Analysis.Memory
             return Merge((IEnumerable<MemoryEntry>)entries);
         }
 
+        /// <summary>
+        /// Shallow memory entries merge
+        /// NOTE:
+        ///    * Distincity is reached by Equals and GetHashCode comparison of enumerated values.
+        /// </summary>
+        /// <param name="entries">Memory entries to be merged</param>
+        /// <returns>Memory entry containing disctinct values from all entries</returns>
         public static MemoryEntry Merge(IEnumerable<MemoryEntry> entries)
         {
             var values = new HashSet<Value>();
@@ -94,6 +109,12 @@ namespace Weverca.Analysis.Memory
             return result.ToString();
         }
 
+        /// <summary>
+        /// Determine that first and second enumeration contains same values (according to their equals and hashcode)
+        /// </summary>
+        /// <param name="values1">First values enumeration</param>
+        /// <param name="values2">Second values enumeration</param>
+        /// <returns>True if values are same (in any order), false otherwise</returns>
         private bool hasSameValues(IEnumerable<Value> values1, IEnumerable<Value> values2)
         {
             var set1 = new HashSet<Value>(values1);

@@ -21,7 +21,10 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         public readonly string Identifier;
 
-
+        /// <summary>
+        /// Creates container index identified by given identifier
+        /// </summary>
+        /// <param name="identifier">Index indentifier for container</param>
         internal ContainerIndex(string identifier)
         {
             Identifier = identifier;

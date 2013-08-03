@@ -7,6 +7,9 @@ using System.Text;
 namespace Weverca.Analysis.Memory
 {
 
+    /// <summary>
+    /// Represent special kind of value. For example these values can express some non-determinism.    
+    /// </summary>
     public class SpecialValue : Value
     {
         public override int GetHashCode()

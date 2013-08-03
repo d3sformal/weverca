@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Weverca.Analysis.Memory
 {
+    /// <summary>
+    /// TODO Convert as Enum indexed array based storage
+    /// </summary>
     public class SnapshotStatistics
     {
         public int CreatedIntValues;

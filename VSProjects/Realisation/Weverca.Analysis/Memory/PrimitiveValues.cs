@@ -7,8 +7,15 @@ using PHP.Core.AST;
 
 namespace Weverca.Analysis.Memory
 {
+
+    /// <summary>
+    /// Abstract class for primitive values
+    /// </summary>
     public abstract class PrimitiveValue : Value
     {
+        /// <summary>
+        /// Value that is stored in PrimitiveValue casted as object
+        /// </summary>
         public abstract object RawValue { get; }
 
 
@@ -20,11 +27,14 @@ namespace Weverca.Analysis.Memory
 
     public class PrimitiveValue<T> : PrimitiveValue
     {
+        /// <summary>
+        /// Strong typed value stored in PrimitiveValue
+        /// </summary>
         public readonly T Value;
-
+        
         public override object RawValue { get { return Value; } }
 
-        public PrimitiveValue(T value)
+        internal PrimitiveValue(T value)
         {
             Value = value;
         }

@@ -28,9 +28,7 @@ namespace Weverca.Analysis
         #region ISnapshotReadonly implementation
 
         public VariableName ReturnValue { get { return Snapshot.ReturnValue; } }
-
-        public MemoryEntry ThisObject { get { return Snapshot.ThisObject; } }
-
+        
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);

@@ -8,66 +8,134 @@ using PHP.Core.AST;
 
 namespace Weverca.Analysis.Memory
 {
-    public interface ISnapshotReadWrite:ISnapshotReadonly
+    public interface ISnapshotReadWrite : ISnapshotReadonly
     {
+        #region Snapshot flow operations
+        /// <summary>
+        /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
+        /// This merged info can be than changed with snapshot updatable operations
+        /// NOTE: Further changes of inputs can't change extended snapshot
+        /// </summary>
+        /// <param name="inputs">Input snapshots that should be merged</param>
+        void Extend(params ISnapshotReadonly[] inputs);
+
+        /// <summary>
+        /// Merge given call output with current context.
+        /// WARNING: Call can change many objects via references (they don't has to be in global context)
+        /// </summary>
+        /// <param name="callOutputs">Output snapshot of call</param>    
+        void MergeWithCallLevel(params ISnapshotReadonly[] callOutputs);
+
+        #endregion
+
         #region Creating values
-        /// <summary>
-        /// Singleton representation of AnyValue
-        /// </summary>
+
+
+        //=========TODO==============================
+        //=These properties should be rewritten to methods 
+        //=(because of storing info for values we don't want any singletons)
+        //===========================================
+
         AnyValue AnyValue { get; }
-        /// <summary>
-        /// Singleton representation of UndefinedValue
-        /// </summary>
         UndefinedValue UndefinedValue { get; }
-
-
         AnyStringValue AnyStringValue { get; }
         AnyBooleanValue AnyBooleanValue { get; }
         AnyIntegerValue AnyIntegerValue { get; }
         AnyLongintValue AnyLongintValue { get; }
         AnyObjectValue AnyObjectValue { get; }
         AnyArrayValue AnyArrayValue { get; }
+        //===========================================
+
+
+        /// <summary>
+        /// Create interval of integers
+        /// </summary>
+        /// <param name="start">Lower bound</param>
+        /// <param name="end">Upper bound</param>
+        /// <returns>Created interval</returns>
         IntegerIntervalValue CreateIntegerInterval(int start, int end);
+
+        /// <summary>
+        /// Create interval of long integers
+        /// </summary>
+        /// <param name="start">Lower bound</param>
+        /// <param name="end">Upper bound</param>
+        /// <returns>Created interval</returns>
         LongintIntervalValue CreateLongintInterval(long start, long end);
+
+
+        /// <summary>
+        /// Create interval of doubles
+        /// </summary>
+        /// <param name="start">Lower bound</param>
+        /// <param name="end">Upper bound</param>
+        /// <returns>Created interval</returns>
         FloatIntervalValue CreateFloatInterval(double start, double end);
-       
-        
+
+        /// <summary>
+        /// Create string value from given literal
+        /// </summary>
+        /// <param name="literal">String literal</param>
+        /// <returns>Created value</returns>
         StringValue CreateString(string literal);
+        
+        /// <summary>
+        /// Create integer value from given number
+        /// </summary>
+        /// <param name="number">Represented number</param>
+        /// <returns>Created value</returns>
         IntegerValue CreateInt(int number);
+
+        /// <summary>
+        /// Create long integer value from given number
+        /// </summary>
+        /// <param name="number">Represented number</param>
+        /// <returns>Created value</returns>
         LongintValue CreateLong(long number);
-        BooleanValue CreateBool(bool boolean);
+
+        /// <summary>
+        /// Create float value from given number
+        /// </summary>
+        /// <param name="number">Represented number</param>
+        /// <returns>Created value</returns>
         FloatValue CreateDouble(double number);
 
-        InfoValue<T> CreateInfo<T>(T data);
+        /// <summary>
+        /// Create boolean value from given value
+        /// </summary>
+        /// <param name="boolean">Boolean value</param>
+        /// <returns>Created value</returns>
+        BooleanValue CreateBool(bool boolean);
         
+        /// <summary>
+        /// Create info value from given data
+        /// NOTE:
+        ///     T should provide immutability that avoid wrong usage
+        /// </summary>
+        /// <typeparam name="T">Type of stored info</typeparam>
+        /// <param name="data">Info data</param>
+        /// <returns>Created info value</returns>
+        InfoValue<T> CreateInfo<T>(T data);
+
+        /// <summary>
+        /// Create function value from given declaration
+        /// </summary>
+        /// <param name="declaration">Function declaration</param>
+        /// <returns>Created value</returns>
         FunctionValue CreateFunction(FunctionDecl declaration);
 
         /// <summary>
-        /// Set given info for value
+        /// Create array empty array
         /// </summary>
-        /// <param name="value">Value which info is stored</param>
-        /// <param name="info">Info stored for value</param>
-        void SetInfo(Value value, params InfoValue[] info);
-
-        /// <summary>
-        /// Set given info for variable
-        /// </summary>
-        /// <param name="variable">Variable which info is stored</param>
-        /// <param name="info">Info stored for variable</param>
-        void SetInfo(VariableName variable, params InfoValue[] info);
-
-     
-
-        /// <summary>
-        /// Create array - TODO what kind of info will be neaded for creation?
-        /// </summary>
-        /// <returns></returns>
+        /// <returns>Created value</returns>
         AssociativeArray CreateArray();
+
         /// <summary>
         /// Create object of given type
         /// </summary>   
         /// <param name="type">Desired type of created object</param>
         ObjectValue CreateObject(TypeValue type);
+
         /// <summary>
         /// Create alias for given variable
         /// </summary>
@@ -76,19 +144,10 @@ namespace Weverca.Analysis.Memory
         AliasValue CreateAlias(VariableName sourceVar);
         #endregion
 
-         void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry);
-   
-         void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
-     
 
-         void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias);
 
-         void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias);
-   
+        #region Value storing
 
- 
-
-        void DeclareGlobal(FunctionDecl declaration);
         /// <summary>
         /// Assign value into targetVar
         /// If value is AliasValue - must alias has to be set for variable
@@ -105,6 +164,64 @@ namespace Weverca.Analysis.Memory
         void Assign(VariableName targetVar, MemoryEntry entry);
 
         /// <summary>
+        /// Set given info for value
+        /// </summary>
+        /// <param name="value">Value which info is stored</param>
+        /// <param name="info">Info stored for value</param>
+        void SetInfo(Value value, params InfoValue[] info);
+
+        /// <summary>
+        /// Set given info for variable
+        /// </summary>
+        /// <param name="variable">Variable which info is stored</param>
+        /// <param name="info">Info stored for variable</param>
+        void SetInfo(VariableName variable, params InfoValue[] info);
+
+        /// <summary>
+        /// Set given value into field in objectValue
+        /// </summary>
+        /// <param name="objectValue">Object which field will be set</param>
+        /// <param name="field">Field where value will be stored</param>
+        /// <param name="value">Value that will be stored</param>
+        void SetField(ObjectValue objectValue, ContainerIndex field, MemoryEntry value);
+
+        /// <summary>
+        /// Set given alias into field in objectValue
+        /// </summary>
+        /// <param name="objectValue">Object which field will be set</param>
+        /// <param name="field">Field where alias will be set</param>
+        /// <param name="alias">Alias that will be set</param>
+        void SetFieldAlias(ObjectValue objectValue, ContainerIndex field, AliasValue alias);
+        
+        /// <summary>
+        /// Set given value at specified index in array
+        /// </summary>
+        /// <param name="array">Array which index will be set</param>
+        /// <param name="index">Index where value will be stored</param>
+        /// <param name="value">Value that will be stored</param>
+        void SetIndex(AssociativeArray array, ContainerIndex index, MemoryEntry value);
+
+        /// <summary>
+        /// Set given alias at index in array
+        /// </summary>
+        /// <param name="array">Array which index will be set</param>
+        /// <param name="index">Index where alias will be set</param>
+        /// <param name="alias">Alias that will be set</param>
+        void SetIndexAlias(AssociativeArray array, ContainerIndex index, AliasValue alias);
+
+
+        #endregion
+
+
+        #region Global context manipulation
+
+        /// <summary>
+        /// Declare function into global scope
+        /// </summary>
+        /// <param name="declaration">Function declaration</param>
+        void DeclareGlobal(FunctionDecl declaration);
+
+        /// <summary>
         /// Fetch variables from global context into current context
         /// </summary>
         /// <example>global x,y;</example>
@@ -116,18 +233,7 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         void FetchFromGlobalAll();
 
-        /// <summary>
-        /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
-        /// This merged info can be than changed with snapshot updatable operations
-        /// NOTE: Further changes of inputs can't change extended snapshot
-        /// </summary>
-        /// <param name="inputs">Input snapshots that should be merged</param>
-        void Extend(params ISnapshotReadonly[] inputs);
-        /// <summary>
-        /// Merge given call output with current context.
-        /// WARNING: Call can change many objects via references (they don't has to be in global context)
-        /// </summary>
-        /// <param name="callOutputs">Output snapshot of call</param>    
-        void MergeWithCallLevel(params ISnapshotReadonly[] callOutputs);
+        #endregion
+
     }
 }
