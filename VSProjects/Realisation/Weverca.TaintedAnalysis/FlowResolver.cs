@@ -11,6 +11,10 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis
 {
+    /// <summary>
+    /// This class is used for evaluating conditions and assumptions.
+    /// According to the result of the assumption the environment inside of the code block is set up.
+    /// </summary>
     class FlowResolver : FlowResolverBase
     {
         #region Members
@@ -23,48 +27,89 @@ namespace Weverca.TaintedAnalysis
 
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
-        /// </summary>  
-        /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
+        /// </summary>
+        /// <param name="outSet">Output set where condition will be assumed</param>
+        /// <param name="condition">Assumed condition</param>
+        /// <param name="expressionParts">Evaluated values for condition parts</param>
+        /// <returns>
+        /// <c>false</c> if condition cannot be ever satisfied, true otherwise.
+        /// </returns>
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
         {
+            //TODO: How to resolve not-bool conditions, like if (1) etc.?
+            //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
+
             this.outSet = outSet;
 
             bool willAssume;
             switch (condition.Form)
             {
                 case ConditionForm.All:
+                    //TODO: in this case we will need to know which parts can be evaluated as true, and which as false to set up environment.
                     willAssume = NeedsAll(condition.Parts, expressionParts);
                     break;
-
-                default:
-                    //we has to assume, because we can't disprove assumption
-                    willAssume = true;
+                case ConditionForm.None:
+                    //TODO: in this case we will need to know which parts can be evaluated as true, and which as false to set up environment.
+                    willAssume = NeedsNone(condition.Parts, expressionParts);
                     break;
+                case ConditionForm.Some:
+                    //TODO: in this case we will need to know which parts can be evaluated as true, and which as false.
+                    willAssume = NeedsSome(condition.Parts, expressionParts);
+                    break;
+                case ConditionForm.SomeNot:
+                    //TODO: in this case we will need to know which parts can be evaluated as true, and which as false.
+                    willAssume = NeedsSomeNot(condition.Parts, expressionParts);
+                    break;
+                default:
+                    throw new NotSupportedException(string.Format("Condition form \"{0}\" is not supported", condition.Form));
             }
 
-            if (willAssume)
-            {
-                ProcessAssumption(condition, expressionParts);
-            }
+            //if (willAssume)
+            //{
+            //    ProcessAssumption(condition, expressionParts);
+            //}
 
             return willAssume;
         }
 
 
+        /// <summary>
+        /// Is called after each invoked call - has to merge data from dispatched calls into callerOutput
+        /// </summary>
+        /// <param name="callerOutput">Output of caller, which dispatch calls</param>
+        /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
+        /// <param name="callType">Type of merged call</param>
         public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,CallType callType)
         {
             var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);
         }
 
+        /// <summary>
+        /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)
+        /// </summary>
+        /// <param name="flow">Flow controller where include extensions can be stored</param>
+        /// <param name="includeFile">File argument of include statement</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
             throw new NotImplementedException();
         }
+
         #endregion
 
         #region Private Methods
 
+        /// <summary>
+        /// Checks if all parts of the condition can be <c>true</c>.
+        /// If at least one part of the condition can be proven to be <c>false</c>, <c>false</c> is returned.
+        /// </summary>
+        /// <param name="conditionParts">The condition parts.</param>
+        /// <param name="evaluatedParts">The evaluated parts of the condition.</param>
+        /// <returns>
+        /// <c>true</c> if none of the parts of the condition can be proved to be <c>false</c>;
+        /// <c>false</c> otherwise (at least one part can be evaluated as <c>false</c>.
+        /// </returns>
         bool NeedsAll(IEnumerable<Postfix> conditionParts, MemoryEntry[] evaluatedParts)
         {
             //we are searching for one part, that can be evaluated only as false
@@ -79,6 +124,21 @@ namespace Weverca.TaintedAnalysis
 
             //can disprove some part
             return true;
+        }
+
+        bool NeedsNone(IEnumerable<Postfix> conditionParts, MemoryEntry[] evaluatedParts)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool NeedsSome(IEnumerable<Postfix> conditionParts, MemoryEntry[] evaluatedParts)
+        {
+            throw new NotImplementedException();
+        }
+
+        bool NeedsSomeNot(IEnumerable<Postfix> conditionParts, MemoryEntry[] evaluatedParts)
+        {
+            throw new NotImplementedException();
         }
 
         bool EvalOnlyFalse(MemoryEntry evaluatedPart)
