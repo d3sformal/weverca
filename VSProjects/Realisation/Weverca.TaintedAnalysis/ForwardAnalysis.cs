@@ -20,7 +20,7 @@ namespace Weverca.TaintedAnalysis
 
         protected override FlowResolverBase createFlowResolver()
         {
-            return new FlowResolver();
+            return new FlowResolver.FlowResolver();
         }
 
         protected override FunctionResolverBase createFunctionResolver()
