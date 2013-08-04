@@ -8,8 +8,8 @@ using Weverca.Analysis;
 using PHP.Core;
 using Weverca.Analysis.Memory;
 using Weverca.Parsers;
-
 using PHP.Core.Parsers;
+using PHP.Core.AST;
 
 namespace Weverca.TaintedAnalysis
 {
@@ -24,18 +24,26 @@ namespace Weverca.TaintedAnalysis
 
         public static Value[] ReadWarnings(FlowOutputSet flowOutSet)
         {
-            return flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues.ToArray();
+            var result = flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues;
+            if ((result.Count() == 1) && (result.ElementAt(0).GetType() == typeof(UndefinedValue)))
+            {
+                return new Value[0];
+            }
+            else
+            {
+                return flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues.ToArray();
+            }
         }
     }
 
     class AnalysisWarning
     {
         public string Message { private set; get; }
-        public Position Position { private set; get; }
-        public AnalysisWarning(string message, Position postion)
+        public LangElement LangElement { private set; get; }
+        public AnalysisWarning(string message, LangElement element)
         {
             Message = message;
-            postion = Position;
+            LangElement = element;
         }
 
         public override string ToString()

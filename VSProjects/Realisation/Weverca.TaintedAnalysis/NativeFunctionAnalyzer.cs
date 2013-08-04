@@ -258,42 +258,110 @@ namespace Weverca.TaintedAnalysis
                 }
                 
             }
-            AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(nativeFunctions.ElementAt(0).Name.ToString(), Position.Invalid));
+            
+
+            string numberOfArgumentMessage="";
 
             bool argumentCountMatches = false;
-            foreach (var nativeFuntion in nativeFunctions)
+            foreach (var nativeFunction in nativeFunctions)
             {
-                if (nativeFuntion.MinArgumentCount >= argumentCount && nativeFuntion.MaxArgumentCount <= argumentCount) 
+                if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount) 
                 {
                     argumentCountMatches = true;
+                }
+                
+                if (numberOfArgumentMessage != "")
+                {
+                    numberOfArgumentMessage += " or";
+                }
+
+                if (nativeFunction.MaxArgumentCount >= 1000000000)
+                {
+                    if (nativeFunction.MinArgumentCount == 1)
+                    {
+                        numberOfArgumentMessage += " at least " + nativeFunction.MinArgumentCount + " parameter";
+                    }
+                    else 
+                    {
+                        numberOfArgumentMessage += " at least " + nativeFunction.MinArgumentCount + " parameters";
+                    }
+                }
+                else
+                {
+                    if (nativeFunction.MaxArgumentCount == nativeFunction.MinArgumentCount)
+                    {
+                        if (nativeFunction.MinArgumentCount == 1)
+                        {
+                            numberOfArgumentMessage += " " + nativeFunction.MinArgumentCount + " parameter";
+                        }
+                        else
+                        {
+                            numberOfArgumentMessage += " " + nativeFunction.MinArgumentCount + " parameters";
+                        }
+                    }
+                    else 
+                    {
+                        numberOfArgumentMessage += " " + nativeFunction.MinArgumentCount + "-" + nativeFunction.MaxArgumentCount + " parameters";                  
+                    }
                 }
             }
 
             if (argumentCountMatches == false)
             {
-                //nahlasit warning
+                string s = "";
+                if (argumentCount != 1)
+                {
+                    s = "s";
+                }
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function "+nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter"+s+" given.", flow.CurrentPartial));
                 return;
             }
-            //int argumentNumber pocet argumentov
-            for (int i = 0; i < argumentCount; i++)
-            {
 
+            foreach (var nativeFunction in nativeFunctions)
+            {
+                List<AnalysisWarning> warnings = new List<AnalysisWarning>();
+                if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
+                {
+                    for (int i = 0; i < argumentCount; i++)
+                    {
+                        MemoryEntry arg = flow.InSet.ReadValue(argument(0));
+                        checkArgument(arg, nativeFunction.Arguments.ElementAt(i), warnings);
+                    }
+                }
             }
-            //check types
+       }
+
+
+        private static void checkArgument(MemoryEntry possibleValues, NativeFunctionArgument argument, List<AnalysisWarning> warnings)
+        {
+                
         }
 
+        private static Value getReturnValue(NativeFunction function)
+        {
+            return null;
+        }
 
+        private static VariableName argument(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+            return new VariableName(".arg" + index);
+        }
 
 
         public static void Main(string[] args)
         {
-           try
+            try
             {
                 string code = @"
-                $a=mysql_query(4);
-                $b=min(4,5);
-                $c=max($array);
-                $d=htmlspecialchars($array);
+                $a=mysql_query();
+                $b=min();
+                $c=max($array,$array,$array,$array);
+                $d=htmlspecialchars(0,1,2,3,4,5,6);
+                $e=strstr($a);
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -307,6 +375,7 @@ namespace Weverca.TaintedAnalysis
                 analysis.Analyse();
 
                 Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));
+                Console.WriteLine();
                 foreach (var warning in AnalysisWarningHandler.ReadWarnings(analysis.ProgramPointGraph.End.OutSet))
                 {
                     Console.WriteLine(warning);
