@@ -231,6 +231,22 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
+        public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
+        {
+            var result= new HashSet<IntegerValue>();
+            switch (operation)
+            {
+                case Operations.Minus:
+                    var negations = from IntegerValue number in operand.PossibleValues select Flow.OutSet.CreateInt(-number.Value);
+                    result.UnionWith(negations);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+
+            return new MemoryEntry(result.ToArray());
+        }
+
         #region Expression evaluation helpers
 
 
@@ -301,6 +317,8 @@ namespace Weverca.Analysis.UnitTest
         {
             throw new NotImplementedException();
         }
+
+
 
     }
 

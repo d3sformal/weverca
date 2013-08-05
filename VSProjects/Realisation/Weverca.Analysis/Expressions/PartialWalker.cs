@@ -347,7 +347,17 @@ namespace Weverca.Analysis.Expressions
         {
             var rightOperand = popValue();
             var leftOperand = popValue();
-            push(_evaluator.BinaryEx(leftOperand, x.PublicOperation, rightOperand));
+
+            var result = _evaluator.BinaryEx(leftOperand, x.PublicOperation, rightOperand);
+            push(result);
+        }
+
+        public override void VisitUnaryEx(UnaryEx x)
+        {
+            var operand = popValue();
+
+            var result = _evaluator.UnaryEx(x.PublicOperation, operand);
+            push(result);
         }
 
         public override void VisitJumpStmt(JumpStmt x)

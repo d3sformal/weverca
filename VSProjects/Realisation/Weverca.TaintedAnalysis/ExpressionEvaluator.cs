@@ -492,5 +492,10 @@ namespace Weverca.TaintedAnalysis
 
             return MemoryEntry.Merge(entries);
         }
+
+        public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

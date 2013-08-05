@@ -132,10 +132,17 @@ namespace Weverca.Analysis.Expressions
         /// <param name="leftOperand">Left operand of operation</param>
         /// <param name="operation">Binary operation</param>
         /// <param name="rightOperand">Right operand of operation</param>
-        /// <returns></returns>
+        /// <returns>Result of binary expression</returns>
         abstract public MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
 
-        
+        /// <summary>
+        /// Process unary operation on given operand
+        /// </summary>
+        /// <param name="operation">Unary operation</param>
+        /// <param name="operand">Operand of operation</param>
+        /// <returns>Result of unary expression</returns>
+        abstract public MemoryEntry UnaryEx(Operations operation, MemoryEntry operand);
+
         #endregion
                 
         #region Default implementation of simple routines

@@ -19,21 +19,41 @@ namespace Weverca.Analysis.Memory
         public readonly IEnumerable<Value> PossibleValues;
 
         /// <summary>
-        /// Create memory entry from given values
+        /// Create memory entry from given values.
+        /// NOTE:
+        ///     * Values has to be distinct
         /// </summary>
         /// <param name="values">Possible values for created memory entry</param>
-        public MemoryEntry(params Value[] values)
+        public MemoryEntry(params Value[] values):
+            this((Value[])values.Clone(),false)
+        {            
+        }
+
+        /// <summary>
+        /// Create memory entry from given values.
+        /// NOTE:
+        ///     * Values has to be distinct
+        /// </summary>
+        /// <param name="values">Possible values for created memory entry</param>
+        public MemoryEntry(IEnumerable<Value> values):
+            this(new List<Value>(values).ToArray(),false)
         {
-            PossibleValues = new ReadOnlyCollection<Value>((Value[])values.Clone());
         }
 
         /// <summary>
         /// Is used for avoiding of copy on internall structures 
         /// </summary>
         /// <param name="values">Values that will be passed into memory entry - no copy is proceeded</param>
-        private MemoryEntry(IEnumerable<Value> values)
+        /// <param name="copy">Determine that copy has to be created for values</param>
+        private MemoryEntry(Value[] values,bool copy)
         {
-            PossibleValues = values;
+            if (copy)
+            {
+                var copiedValues= new List<Value>();
+                copiedValues.AddRange(values);
+                values = copiedValues.ToArray();
+            }
+            PossibleValues = new ReadOnlyCollection<Value>(values);
         }
 
         /// <summary>

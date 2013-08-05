@@ -26,6 +26,11 @@ namespace PHP.Core.AST
 		internal override Operations Operation { get { return operation; } }
 		private Operations operation;
 
+        /// <summary>
+        /// This is needed member for Wewerca.Analysis
+        /// </summary>
+        public Operations PublicOperation { get { return Operation; } }
+
 		private Expression/*!*/ expr;
         /// <summary>Expression the operator is applied on</summary>
         public Expression /*!*/ Expr { get { return expr; } }

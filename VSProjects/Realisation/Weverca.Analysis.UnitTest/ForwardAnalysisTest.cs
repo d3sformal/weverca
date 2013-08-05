@@ -21,6 +21,11 @@ if($unknown){
 }
 ".AssertVariable("str").HasValues("f1a", "f1b");
 
+        readonly static TestCase UnaryNegation_CASE = @"
+$result=42;
+$result=-$result;
+".AssertVariable("result").HasValues(-42);
+
         readonly static TestCase NativeCallProcessing_CASE = @"
 $call_result=strtolower('TEST');
 ".AssertVariable("call_result").HasValues("test");
@@ -32,7 +37,7 @@ $call_result=concat('A','B');
         readonly static TestCase NativeCallProcessingNestedCalls_CASE = @"
 $call_result=concat(strtolower('Ab'),strtoupper('Cd'));
 ".AssertVariable("call_result").HasValues("abCD");
-
+        
         readonly static TestCase IndirectCall_CASE = @"
 $call_name='strtolower';
 $call_result=$call_name('TEST');
@@ -207,6 +212,13 @@ if($unknown){
         public void BranchMerge()
         {
             AnalysisTestUtils.RunTestCase(ParallelBlock_CASE);
+        }
+
+
+        [TestMethod]
+        public void UnaryNegation()
+        {
+            AnalysisTestUtils.RunTestCase(UnaryNegation_CASE);
         }
 
         [TestMethod]
