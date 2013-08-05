@@ -102,8 +102,8 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
-        /// <param name="callType">Type of merged call</param>
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,CallType callType)
+        /// <param name="dispatchType">Type of merged call</param>
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,DispatchType dispatchType)
         {
             var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);

@@ -39,11 +39,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisCallStack.cs" />
-    <Compile Include="AnalysisCallContext.cs" />
+    <Compile Include="AnalysisDispatchStack.cs" />
+    <Compile Include="AnalysisDispatchContext.cs" />
     <Compile Include="AnalysisServices.cs" />
     <Compile Include="DispatchInfo.cs" />
-    <Compile Include="CallDispatchLevel.cs" />
+    <Compile Include="DispatchLevel.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
     <Compile Include="AssumptionCondition.cs" />

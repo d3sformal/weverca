@@ -17,15 +17,27 @@ namespace Weverca.Analysis
 
     public class ProgramPointGraph
     {
+        #region Private fields
+
         /// <summary>
         /// Program points according to their defining objects (conditions, statements,..)
         /// </summary>
         private readonly Dictionary<object, ProgramPoint> _points = new Dictionary<object, ProgramPoint>();
+
         /// <summary>
-        /// Partial extensions where program point graph is included
+        /// Partial call extensions where program point graph is included
         /// </summary>
         private readonly HashSet<PartialExtension<LangElement>> _containingCallExtensions = new HashSet<PartialExtension<LangElement>>();
+
+        /// <summary>
+        /// Partial include extensions where program point graph is included
+        /// </summary>
         private readonly HashSet<PartialExtension<string>> _containingIncludeExtensions = new HashSet<PartialExtension<string>>();
+
+        #endregion 
+
+
+        #region Public fields
 
         /// <summary>
         /// All program points defined in program point graph
@@ -33,9 +45,13 @@ namespace Weverca.Analysis
         public IEnumerable<ProgramPoint> Points { get { return _points.Values; } }
 
         /// <summary>
-        /// Partial extensions where program point graph is included
+        /// Partial call extensions where program point graph is included
         /// </summary>
         public IEnumerable<PartialExtension<LangElement>> ContainingCallExtensions { get { return _containingCallExtensions; } }
+
+        /// <summary>
+        /// Partial include extensions where program point graph is included
+        /// </summary>
         public IEnumerable<PartialExtension<string>> ContainingIncludeExtensions { get { return _containingIncludeExtensions; } }
 
         /// <summary>
@@ -47,12 +63,18 @@ namespace Weverca.Analysis
         /// </summary>
         public readonly ProgramPoint End;
 
-    
+        #endregion
 
+        #region Program point graph creating
+
+        /// <summary>
+        /// Create program point graph from source begining by entryPoint
+        /// </summary>
+        /// <param name="entryPoint">Entry point into source (all feasible basic blocks will be included in program point graph)</param>
         public ProgramPointGraph(BasicBlock entryPoint)
         {
-            Start = empty(entryPoint);
-            addChildren(Start, entryPoint);
+            Start = getEmpty(entryPoint);
+            addChild(Start, entryPoint);
 
             var endPoints = new List<ProgramPoint>();
             foreach (var point in _points.Values)
@@ -70,7 +92,7 @@ namespace Weverca.Analysis
                 return;
             }
 
-            End = empty(Start);
+            End = getEmpty(Start);
             foreach (var endPoint in endPoints)
             {
                 endPoint.AddChild(End);
@@ -92,8 +114,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Creates program point graph for given function declaration
         /// </summary>
-        /// <param name="declarations"></param>
-        /// <returns></returns>
+        /// <param name="declaration">Function which program point graph will be created</param>
+        /// <returns>Created program point graph</returns>
         internal static ProgramPointGraph FromSource(FunctionDecl declaration)
         {
             var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
@@ -102,10 +124,10 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Creates program point graph for given function declaration
+        /// Creates program point graph for given method declaration
         /// </summary>
-        /// <param name="declarations"></param>
-        /// <returns></returns>
+        /// <param name="declaration">Method which program point graph will be created</param>
+        /// <returns>Created program point graph</returns>
         internal static ProgramPointGraph FromSource(MethodDecl declaration)
         {
             var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
@@ -113,6 +135,11 @@ namespace Weverca.Analysis
             return new ProgramPointGraph(cfg.start);
         }
 
+        /// <summary>
+        /// Create program point graph from given declaration
+        /// </summary>
+        /// <param name="declaration">Declaration which program point graph is created</param>
+        /// <returns>Created program point graph</returns>
         public static ProgramPointGraph From(LangElement declaration)
         {
             if (declaration is NativeAnalyzer)
@@ -122,48 +149,78 @@ namespace Weverca.Analysis
             else if (declaration is MethodDecl)
             {
                 return FromSource(declaration as MethodDecl);
-            }else{
+            }
+            else
+            {
                 return FromSource(declaration as FunctionDecl);
             }
         }
 
+        #endregion
 
-        internal void AddCallExtension(PartialExtension<LangElement> extension)
+        #region Containing extensions handling
+
+        /// <summary>
+        /// Add call extension which contains this program point graph
+        /// </summary>
+        /// <param name="extension">Extension which contains this program point graph</param>
+        internal void AddContainingCallExtension(PartialExtension<LangElement> extension)
         {
             _containingCallExtensions.Add(extension);
         }
 
-        internal void RemoveCallExtension(PartialExtension<LangElement> extension)
+        /// <summary>
+        /// Remove call extension which doesn't contains this program point graph yet
+        /// </summary>
+        /// <param name="extension">Removed extension</param>
+        internal void RemoveContainingCallExtension(PartialExtension<LangElement> extension)
         {
             _containingCallExtensions.Remove(extension);
         }
 
-        internal void AddIncludeExtension(PartialExtension<string> extension)
+        /// <summary>
+        /// Add include extension which contains this program point graph
+        /// </summary>
+        /// <param name="extension">Extension which contains this program point graph</param>
+        internal void AddContainingIncludeExtension(PartialExtension<string> extension)
         {
             _containingIncludeExtensions.Add(extension);
         }
 
-        internal void RemoveIncludeExtension(PartialExtension<string> extension)
+        /// <summary>
+        /// Remove include extension which doesn't contains this program point graph yet
+        /// </summary>
+        /// <param name="extension">Removed extension</param>
+        internal void RemoveContainingIncludeExtension(PartialExtension<string> extension)
         {
             _containingIncludeExtensions.Remove(extension);
         }
 
-        private void addChildren(ProgramPoint parent, BasicBlock block)
+        #endregion
+
+
+        #region Program point graph building
+
+        /// <summary>
+        /// Add child created from given block. This child already contains all its children within basic block.
+        /// </summary>
+        /// <param name="parent">Parent which child will be added</param>
+        /// <param name="block">Block which first statement generates child</param>
+        private void addChild(ProgramPoint parent, BasicBlock block)
         {
             var current = parent;
             foreach (var stmt in block.Statements)
             {
                 //create chain of program points
-                var child = fromStatement(stmt, block);
+                var child = getStatement(stmt, block);
                 current.AddChild(child);
                 current = child;
             }
 
-
             foreach (var edge in block.OutgoingEdges)
             {
-                var condition = fromCondition(edge.Condition, block);
-                addChildren(condition, edge.To);
+                var condition = getCondition(edge.Condition, block);
+                addChild(condition, edge.To);
                 current.AddChild(condition);
             }
 
@@ -173,57 +230,91 @@ namespace Weverca.Analysis
 
                 if (conditionExpressions.Any())
                 {
-                    var defaultPoint = fromDefaultBranch(conditionExpressions, block);
-                    addChildren(defaultPoint, block.DefaultBranch.To);
+                    var defaultPoint = getDefaultBranch(conditionExpressions, block);
+                    addChild(defaultPoint, block.DefaultBranch.To);
                     current.AddChild(defaultPoint);
                 }
                 else
                 {
                     //there is no condition on edge
-                    addChildren(current, block.DefaultBranch.To);
+                    addChild(current, block.DefaultBranch.To);
                 }
             }
         }
-
-        private ProgramPoint fromDefaultBranch(IEnumerable<Expression> conditionalExpressions, BasicBlock outerBlock)
+                
+        /// <summary>
+        /// Get program point indexed by default branch of given expressions. If there is no such a point, new is created.
+        /// </summary>
+        /// <param name="expressions">Expressions for created ConditionForm.SomeNot condition</param>
+        /// <param name="outerBlock">Block where expressions are located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPoint getDefaultBranch(IEnumerable<Expression> expressions, BasicBlock outerBlock)
         {
-            var assumption = new AssumptionCondition(ConditionForm.SomeNot, conditionalExpressions.ToArray());
-            return fromCondition(assumption, outerBlock);
+            var assumption = new AssumptionCondition(ConditionForm.SomeNot, expressions.ToArray());
+            return getCondition(assumption, outerBlock);
         }
 
-
-        private ProgramPoint fromStatement(LangElement statement, BasicBlock outerBlock)
+        /// <summary>
+        /// Get program point indexed by statement. If there is no such a point, new is created.
+        /// </summary>
+        /// <param name="statement">Index of program point</param>
+        /// <param name="outerBlock">Block where statement is located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPoint getStatement(LangElement statement, BasicBlock outerBlock)
         {
             return getPoint(statement, () => new ProgramPoint(statement, outerBlock));
         }
 
-        private ProgramPoint fromCondition(Expression condition, BasicBlock outerBlock)
+        /// <summary>
+        /// Get program point indexed by ConditionForm.All condition, created from given expression. If there is no such point, new is created.
+        /// </summary>
+        /// <param name="expression">Expression for created condition</param>
+        /// <param name="outerBlock">Block where expression is located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPoint getCondition(Expression expression, BasicBlock outerBlock)
         {
-            var assumption = new AssumptionCondition(ConditionForm.All, condition);
-            return fromCondition(assumption, outerBlock);
+            var assumption = new AssumptionCondition(ConditionForm.All, expression);
+            return getCondition(assumption, outerBlock);
         }
 
-        private ProgramPoint fromCondition(AssumptionCondition condition, BasicBlock outerBlock)
+        /// <summary>
+        /// Get program point indexed by condition. If there is no such point, new is created.
+        /// </summary>
+        /// <param name="condition">Index of program point</param>
+        /// <param name="outerBlock">Block where condition is located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPoint getCondition(AssumptionCondition condition, BasicBlock outerBlock)
         {
             return getPoint(condition, () => new ProgramPoint(condition, outerBlock));
         }
 
-        private ProgramPoint empty(object key)
+        /// <summary>
+        /// Get program point indexed by key. If there is no such point, create new empty point.
+        /// </summary>
+        /// <param name="key">Key of created program point</param>
+        /// <returns>Program point indexed by key</returns>
+        private ProgramPoint getEmpty(object key)
         {
             return getPoint(key, () => new ProgramPoint());
         }
 
-        private ProgramPoint getPoint(object obj, ProgramPointCreator creator)
+        /// <summary>
+        /// Get point indexed by given key. If there is no such point, create new with creator
+        /// </summary>
+        /// <param name="key">Index of program point</param>
+        /// <param name="creator">Creator of program point</param>
+        /// <returns>Program point indexed by key</returns>
+        private ProgramPoint getPoint(object key, ProgramPointCreator creator)
         {
             ProgramPoint result;
 
-            if (!_points.TryGetValue(obj, out result))
+            if (!_points.TryGetValue(key, out result))
             {
                 result = creator();
-                _points.Add(obj, result);
+                _points.Add(key, result);
             }
             return result;
         }
-
+        #endregion
     }
 }

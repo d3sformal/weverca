@@ -12,13 +12,18 @@ namespace Weverca.Analysis
 {
     /// <summary>
     /// Handle context for inter procedural analysis (Program points, dependencies,...)
-    /// NOTE: Uses worklist algorithm for serving statements.
+    /// NOTE:
+    ///     * Uses worklist algorithm for serving statements.
+    ///     * Dispatch can be caused because of call, include,...
     /// </summary>    
-    class AnalysisCallContext
+    class AnalysisDispatchContext
     {
         #region Worklist algorithm output API
 
-        internal readonly CallType CallType;
+        /// <summary>
+        /// Type of dispatch (describes why dispatch was made)
+        /// </summary>
+        internal readonly DispatchType DispatchType;
 
         /// <summary>
         /// Determine that call context has empty worklist queue => analysis of call context is complete.
@@ -30,6 +35,7 @@ namespace Weverca.Analysis
         /// WARNING: sets are copied because of avoiding unwanted changes.
         /// </summary>
         internal FlowInputSet CurrentInputSet { get { return _currentPartialContext.InSet; } }
+
         /// <summary>
         /// Set which belongs to program point after current statement.
         /// WARNING: sets are copied because of avoiding unwanted changes.
@@ -40,10 +46,12 @@ namespace Weverca.Analysis
         /// Get partial from current statement that should be processed
         /// </summary>
         internal LangElement CurrentPartial { get { return _currentPartialContext.CurrentPartial; } }
+
         /// <summary>
         /// Get currently processed program point
         /// </summary>
         internal ProgramPoint CurrentProgramPoint { get { return _currentPartialContext.Source; } }
+
         /// <summary>
         /// Current partial walker including partial stack - is recycled between statements
         /// </summary>
@@ -60,19 +68,26 @@ namespace Weverca.Analysis
         /// Program point graph for entry method CFG
         /// </summary>
         ProgramPointGraph _methodGraph;
+
         /// <summary>
         /// Items that has to be processed.
         /// </summary>
         Queue<ProgramPoint> _worklist = new Queue<ProgramPoint>();
 
+        /// <summary>
+        /// Partial context of current partial
+        /// </summary>
         PartialContext _currentPartialContext;
 
+        /// <summary>
+        /// Services available from analysis
+        /// </summary>
         AnalysisServices _services;
 
-        internal AnalysisCallContext(ProgramPointGraph methodGraph, AnalysisServices services,CallType callType, params FlowInputSet[] entryInSets)
-        {            
+        internal AnalysisDispatchContext(ProgramPointGraph methodGraph, AnalysisServices services, DispatchType dispatchType, params FlowInputSet[] entryInSets)
+        {
             _services = services;
-            CallType = callType;
+            DispatchType = dispatchType;
 
             CurrentWalker = services.CreateWalker();
 
@@ -83,6 +98,10 @@ namespace Weverca.Analysis
             dequeueNextWorkItem();
         }
 
+        #region Worklist algorithm processing
+        /// <summary>
+        /// Move current partial to next partial. Uses Work list algorithm.
+        /// </summary>
         internal void NextPartial()
         {
             _currentPartialContext.MoveNextPartial();
@@ -106,26 +125,9 @@ namespace Weverca.Analysis
             }
         }
 
-        private void statementCompleted(ProgramPoint statement)
-        {
-            if (!statement.OutSet.HasChanges)
-            {
-                //nothing changed - dependencies won't be affected
-                return;
-            }
-            //enqueue dependencies, which input has changed
-            enqueueWorkDependencies(statement);
-        }
-
-        private void conditionCompleted(ProgramPoint conditionPoint, MemoryEntry[] expressionParts)
-        {
-            if (_services.ConfirmAssumption(conditionPoint.OutSet, conditionPoint.Condition, expressionParts))
-            {
-                //assumption is made
-                enqueueWorkDependencies(conditionPoint);
-            }
-        }
-
+        /// <summary>
+        /// Dequeue (with initialization) next work item from worklist
+        /// </summary>
         private void dequeueNextWorkItem()
         {
             while (_worklist.Count > 0)
@@ -140,42 +142,10 @@ namespace Weverca.Analysis
             _currentPartialContext = null;
         }
 
-        private void initWork(ProgramPoint work)
-        {
-            var inputs = collectInputs(work);
-
-            setInputs(work, inputs);
-            work.OutSet.StartTransaction();
-            //all outsets has to be extended by its in sets
-            work.OutSet.Extend(work.InSet);
-            _currentPartialContext = new PartialContext(work);
-            CurrentWalker.Reset();
-
-            _services.FlowThrough(work);
-        }
-
-        private void setInputs(ProgramPoint work, IEnumerable<FlowInputSet> inputs)
-        {
-            ensureInitialized(work);
-
-            var workInput = (work.InSet as FlowOutputSet);
-
-            //TODO performance improvement
-            workInput.StartTransaction();
-            workInput.Extend(inputs.ToArray());
-            workInput.CommitTransaction();
-        }
-
-        private void ensureInitialized(ProgramPoint work)
-        {
-            work.Initialize(_services.CreateEmptySet(), _services.CreateEmptySet());
-        }
-
-        private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
-        {
-            return from parent in point.Parents where parent.OutSet != null select parent.OutSet;
-        }
-        
+        /// <summary>
+        /// Enqueue depencencies of given point into worklist
+        /// </summary>
+        /// <param name="point">Resolved program point</param>
         private void enqueueWorkDependencies(ProgramPoint point)
         {
             foreach (var child in point.Children)
@@ -186,9 +156,9 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Add edge's block to worklist, if isn't present yet
+        /// Enqueue given work as program point to worklist (if is not present yet)
         /// </summary>
-        /// <param name="edge"></param>
+        /// <param name="work">Enqueued program point</param>
         private void enqueueWork(ProgramPoint work)
         {
             if (_worklist.Contains(work))
@@ -198,6 +168,104 @@ namespace Weverca.Analysis
             _worklist.Enqueue(work);
         }
 
+        #endregion
+
+        #region Completition handlers
+
+        /// <summary>
+        /// Handler called when analysis of all partials in statement is completed
+        /// </summary>
+        /// <param name="statement">Program point of completed statement</param>
+        private void statementCompleted(ProgramPoint statement)
+        {
+            if (!statement.OutSet.HasChanges)
+            {
+                //nothing changed - dependencies won't be affected
+                return;
+            }
+            //enqueue dependencies, which input has changed
+            enqueueWorkDependencies(statement);
+        }
+
+        /// <summary>
+        /// Handler called when analysis of all partials in condition is completed
+        /// </summary>
+        /// <param name="conditionPoint">Program point of completed condition</param>
+        /// <param name="expressionParts">Values of expression parts in condition</param>
+        private void conditionCompleted(ProgramPoint conditionPoint, MemoryEntry[] expressionParts)
+        {
+            if (_services.ConfirmAssumption(conditionPoint.OutSet, conditionPoint.Condition, expressionParts))
+            {
+                //assumption is made
+                enqueueWorkDependencies(conditionPoint);
+            }
+        }
+        #endregion
+
+        #region Initialization routines
+
+        /// <summary>
+        /// Initialize program point after dequeing from worklist
+        /// </summary>
+        /// <param name="point">Program point that will be initialized</param>
+        private void initWork(ProgramPoint point)
+        {
+            var inputs = collectInputs(point);
+
+            setInputs(point, inputs);
+            point.OutSet.StartTransaction();
+            //all outsets has to be extended by its in sets
+            point.OutSet.Extend(point.InSet);
+            _currentPartialContext = new PartialContext(point);
+            CurrentWalker.Reset();
+
+            _services.FlowThrough(point);
+        }
+
+        /// <summary>
+        /// Set input of given program point
+        /// </summary>
+        /// <param name="point">Program point, which input will be set</param>
+        /// <param name="inputs">Inputs available for program point</param>
+        private void setInputs(ProgramPoint point, IEnumerable<FlowInputSet> inputs)
+        {
+            ensureInitialized(point);
+
+            var workInput = (point.InSet as FlowOutputSet);
+
+            //TODO performance improvement
+            workInput.StartTransaction();
+            workInput.Extend(inputs.ToArray());
+            workInput.CommitTransaction();
+        }
+
+        /// <summary>
+        /// Initialize program point if needed
+        /// </summary>
+        /// <param name="point">Program point to be initialized</param>
+        private void ensureInitialized(ProgramPoint point)
+        {
+            if (!point.IsInitialized)
+            {
+                point.Initialize(_services.CreateEmptySet(), _services.CreateEmptySet());
+            }
+        }
+
+        /// <summary>
+        /// Collect inputs from given program point
+        /// </summary>
+        /// <param name="point">Program point which inputs are returned</param>
+        /// <returns>Collected inputs</returns>
+        private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
+        {
+            return from parent in point.Parents where parent.OutSet != null select parent.OutSet;
+        }
+               
+        /// <summary>
+        /// Initialize program point graph. Input is set for start program point.
+        /// </summary>
+        /// <param name="ppGraph">Initialized program point graph</param>
+        /// <param name="startInputs">Inputs that will be merged as input for ppGraph.Start</param>
         private void initializeProgramPointGraph(ProgramPointGraph ppGraph, FlowInputSet[] startInputs)
         {
             if (!ppGraph.Start.IsInitialized)
@@ -207,7 +275,7 @@ namespace Weverca.Analysis
 
                 ppGraph.Start.Initialize(startInput, startOutput);
             }
-            
+
             var inputSet = (ppGraph.Start.InSet as FlowOutputSet);
             inputSet.StartTransaction();
             inputSet.Extend(startInputs);
@@ -217,5 +285,6 @@ namespace Weverca.Analysis
             ppGraph.Start.OutSet.Extend(inputSet);
             ppGraph.Start.OutSet.CommitTransaction();
         }
+        #endregion
     }
 }

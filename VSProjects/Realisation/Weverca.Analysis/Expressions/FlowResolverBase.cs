@@ -27,8 +27,8 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
-        /// <param name="callType">Type of merged call</param>
-        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,CallType callType);
+        /// <param name="dispatchType">Type of merged call</param>
+        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,DispatchType dispatchType);
 
         /// <summary>
         /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)

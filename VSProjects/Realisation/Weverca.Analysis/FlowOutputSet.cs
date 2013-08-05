@@ -17,9 +17,12 @@ namespace Weverca.Analysis
     {
 
         #region Internal methods for transaction handling
+
+        /// <summary>
+        /// Determine that output has changed when flow through statement
+        /// </summary>
         internal bool HasChanges { get; private set; }
-
-
+        
         internal FlowOutputSet(SnapshotBase snapshot) :
             base(snapshot)
         {
@@ -52,14 +55,19 @@ namespace Weverca.Analysis
             HasChanges = false;
         }
 
+        /// <summary>
+        /// Extend output set as call - new entry in call stack is created
+        /// </summary>
+        /// <param name="callerContext">Flow output of caller</param>
+        /// <param name="thisObject">Called object</param>
+        /// <param name="arguments">Arguments of call</param>
         internal void ExtendAsCall(FlowOutputSet callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             Snapshot.ExtendAsCall(getSnapshot(callerContext), thisObject, arguments);
         }
 
         #endregion
-
-
+        
         #region Snapshot API wrapping
 
         public AnyStringValue AnyStringValue { get { return Snapshot.AnyStringValue; } }

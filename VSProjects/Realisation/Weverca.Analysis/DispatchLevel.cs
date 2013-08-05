@@ -6,9 +6,9 @@ using System.Text;
 namespace Weverca.Analysis
 {
     /// <summary>
-    /// Specifies type of call (In analyzis there are multiple types of calls e.g. include is handled as special type of call)
+    /// Specifies type of dispatch (In analyzis there are multiple types of dispatch e.g. include is handled as special type of call)
     /// </summary>
-    public enum CallType
+    public enum DispatchType
     {
         /// <summary>
         /// There can be multiple calls processed at one level         
@@ -17,7 +17,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// There can be processed multiple includes processed at one level
         /// NOTE:
-        ///     This call type doesn't increase call stack depth
+        ///     This dispatch type doesn't increase call stack depth
         /// </summary>
         ParallelInclude,
     }
@@ -25,7 +25,7 @@ namespace Weverca.Analysis
     /// <summary>
     /// Handle multiple call dispatches on single stack level
     /// </summary>
-    class CallDispatchLevel
+    class DispatchLevel
     {
         #region Private members
         /// <summary>
@@ -43,28 +43,30 @@ namespace Weverca.Analysis
         /// <summary>
         /// Results of every dispatch in level
         /// </summary>        
-        private List<AnalysisCallContext> _callResults = new List<AnalysisCallContext>();
+        private List<AnalysisDispatchContext> _callResults = new List<AnalysisDispatchContext>();
 
         #endregion
 
-        public readonly CallType CallType;
+        /// <summary>
+        /// Type of dispatch level
+        /// </summary>
+        public readonly DispatchType DispatchType;
 
         /// <summary>
         /// Current analysis call context 
         /// </summary>
-        public AnalysisCallContext CurrentContext { get; private set; }
-
+        public AnalysisDispatchContext CurrentContext { get; private set; }
 
         /// <summary>
         /// Create call dispatch level from given dispatches 
         /// </summary>
         /// <param name="dispatches">Dispaches at same stack level</param>
         /// <param name="services">Available services</param>
-        public CallDispatchLevel(IEnumerable<DispatchInfo> dispatches, AnalysisServices services, CallType callType)
+        public DispatchLevel(IEnumerable<DispatchInfo> dispatches, AnalysisServices services, DispatchType dispatchType)
         {            
             _dispatches = dispatches.ToArray();
             _services = services;
-            CallType = callType;
+            DispatchType = dispatchType;
 
             setCurrentDispatch(_dispatchIndex);
         }
@@ -74,8 +76,8 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="dispatch">Single dispatch in level</param>
         /// <param name="services">Available services</param>
-        public CallDispatchLevel(DispatchInfo dispatch, AnalysisServices services, CallType callType)
-            : this(new DispatchInfo[] { dispatch }, services, callType)
+        public DispatchLevel(DispatchInfo dispatch, AnalysisServices services, DispatchType dispatchType)
+            : this(new DispatchInfo[] { dispatch }, services, dispatchType)
         {
         }
 
@@ -100,7 +102,7 @@ namespace Weverca.Analysis
         /// Get results from dispatches
         /// </summary>
         /// <returns>Dispatches results</returns>
-        public AnalysisCallContext[] GetResult()
+        public AnalysisDispatchContext[] GetResult()
         {
             if (_callResults.Count != _dispatches.Length)
                 throw new InvalidOperationException("Cannot get result in given dispatch level state");
@@ -123,9 +125,9 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="dispatch">Call dispatch</param>
         /// <returns>Created context</returns>
-        private AnalysisCallContext createContext(DispatchInfo dispatch)
+        private AnalysisDispatchContext createContext(DispatchInfo dispatch)
         {
-            var context = new AnalysisCallContext(dispatch.MethodGraph, _services, CallType, dispatch.InSet);
+            var context = new AnalysisDispatchContext(dispatch.MethodGraph, _services, DispatchType, dispatch.InSet);
             return context;
         }
     }

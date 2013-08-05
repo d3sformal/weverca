@@ -23,17 +23,31 @@ namespace Weverca.Analysis
         /// <summary>
         /// Currently analyzed call stack.
         /// </summary>
-        AnalysisCallStack _callStack;
+        AnalysisDispatchStack _dispatchStack;
 
+        /// <summary>
+        /// Available services provided by analysis
+        /// </summary>        
         AnalysisServices _services;
+
+        /// <summary>
+        /// Available expression evaluator
+        /// </summary>
         ExpressionEvaluatorBase _expressionEvaluator;
+
+        /// <summary>
+        /// Available function resolver
+        /// </summary>
         FunctionResolverBase _functionResolver;
+
+        /// <summary>
+        /// Available flow resolver
+        /// </summary>
         FlowResolverBase _flowResolver;
 
 
         #endregion
-
-
+        
         #region Analysis result API
 
         /// <summary>
@@ -81,12 +95,36 @@ namespace Weverca.Analysis
 
         #region Template methods for obtaining resolvers
 
+        /// <summary>
+        /// Create expression evaluator which is used during analysis
+        /// NOTE:  
+        ///     * Is created only once
+        /// </summary>
+        /// <returns>Created evaluator</returns>
         protected abstract ExpressionEvaluatorBase createExpressionEvaluator();
 
+        /// <summary>
+        /// Create flow resolver which is used during analysis
+        /// NOTE:  
+        ///     * Is created only once
+        /// </summary>
+        /// <returns>Created resolver</returns>
         protected abstract FlowResolverBase createFlowResolver();
 
+        /// <summary>
+        /// Create function resolver which is used during analysis
+        /// NOTE:  
+        ///     * Is created only once
+        /// </summary>
+        /// <returns>Created resolver</returns>
         protected abstract FunctionResolverBase createFunctionResolver();
 
+        /// <summary>
+        /// Create snapshot used during analysis
+        /// NOTE:  
+        ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
+        /// </summary>
+        /// <returns>Created snapshot</returns>
         protected abstract SnapshotBase createSnapshot();
 
         #endregion
@@ -105,7 +143,7 @@ namespace Weverca.Analysis
 
             //create analysis entry point from given graph 
             var entryDispatch = new DispatchInfo(ProgramPointGraph, EntryInput);
-            var entryLevel = new CallDispatchLevel(entryDispatch, _services,CallType.ParallelCall);
+            var entryLevel = new DispatchLevel(entryDispatch, _services,DispatchType.ParallelCall);
 
             runCallStackAnalysis(entryLevel);
         }
@@ -114,17 +152,17 @@ namespace Weverca.Analysis
         /// Run analysis on callstack from given entryLevel
         /// </summary>
         /// <param name="entryLevel">Entry level, where analysis starts</param>
-        private void runCallStackAnalysis(CallDispatchLevel entryLevel)
+        private void runCallStackAnalysis(DispatchLevel entryLevel)
         {
-            _callStack = new AnalysisCallStack(_services);
-            _callStack.Push(entryLevel);
+            _dispatchStack = new AnalysisDispatchStack(_services);
+            _dispatchStack.Push(entryLevel);
 
-            while (!_callStack.IsEmpty)
+            while (!_dispatchStack.IsEmpty)
             {
-                var currentContext = _callStack.CurrentContext;
+                var currentContext = _dispatchStack.CurrentContext;
                 if (currentContext.IsComplete)
                 {
-                    if (!_callStack.CurrentLevel.ShiftToNextDispatch())
+                    if (!_dispatchStack.CurrentLevel.ShiftToNextDispatch())
                     {
                         //we can't move to next context in current level
                         popCallStack();
@@ -144,13 +182,12 @@ namespace Weverca.Analysis
         ///     Can emit call dispatches
         /// </summary>
         /// <param name="context">Context where partial will be flown through</param>
-        private void flowThroughCurrentPartial(AnalysisCallContext context)
+        private void flowThroughCurrentPartial(AnalysisDispatchContext context)
         {
             var controller = new FlowController(_services, context.CurrentProgramPoint, context.CurrentPartial);
             context.CurrentWalker.Eval(controller);
-
-
-            CallDispatchLevel level = null;
+            
+            DispatchLevel level = null;
             if (controller.HasCallExtension)
             {
                 level = createCallLevel(controller);                
@@ -165,10 +202,10 @@ namespace Weverca.Analysis
                 return;
             }
 
-            _callStack.Push(level);
+            _dispatchStack.Push(level);
         }
 
-        private CallDispatchLevel createCallLevel(FlowController controller)
+        private DispatchLevel createCallLevel(FlowController controller)
         {
             var dispatches = new List<DispatchInfo>();
             var currentExtension = controller.CurrentCallExtension;
@@ -189,10 +226,10 @@ namespace Weverca.Analysis
                 dispatches.Add(new DispatchInfo(branch, inputs));
             }
 
-            return new CallDispatchLevel(dispatches, _services,CallType.ParallelCall);
+            return new DispatchLevel(dispatches, _services,DispatchType.ParallelCall);
         }
 
-        private CallDispatchLevel createIncludeLevel(FlowController controller)
+        private DispatchLevel createIncludeLevel(FlowController controller)
         {
             var dispatches = new List<DispatchInfo>();
             var currentExtension = controller.CurrentIncludeExtension;
@@ -210,7 +247,7 @@ namespace Weverca.Analysis
                 dispatches.Add(new DispatchInfo(branch, inputs));
             }
 
-            return new CallDispatchLevel(dispatches,_services,CallType.ParallelInclude);
+            return new DispatchLevel(dispatches,_services,DispatchType.ParallelInclude);
         }
 
         private FlowInputSet[] getExtensionInputs(ProgramPointGraph branch)
@@ -235,16 +272,16 @@ namespace Weverca.Analysis
         /// </summary>
         private void popCallStack()
         {
-            var callResult = _callStack.CurrentLevel.GetResult();
-            _callStack.Pop();
+            var callResult = _dispatchStack.CurrentLevel.GetResult();
+            _dispatchStack.Pop();
 
-            if (!_callStack.IsEmpty)
+            if (!_dispatchStack.IsEmpty)
             {
-                mergeCallResult(_callStack.CurrentContext, callResult);
+                mergeCallResult(_dispatchStack.CurrentContext, callResult);
 
                 //push return value into walker
                 var returnValue = getReturnValue(callResult);
-                _callStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
+                _dispatchStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
             }
         }
 
@@ -253,11 +290,11 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="callerContext">Context of caller that invokes calls</param>
         /// <param name="callResults">Results of invoked calls</param>
-        private void mergeCallResult(AnalysisCallContext callerContext, AnalysisCallContext[] callResults)
+        private void mergeCallResult(AnalysisDispatchContext callerContext, AnalysisDispatchContext[] callResults)
         {
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
 
-            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(),callerContext.CallType);
+            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(),callerContext.DispatchType);
         }
 
         /// <summary>
@@ -265,7 +302,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="callResults">Resolts of call dispatches</param>
         /// <returns>Resolved return value</returns>
-        private MemoryEntry getReturnValue(AnalysisCallContext[] callResults)
+        private MemoryEntry getReturnValue(AnalysisDispatchContext[] callResults)
         {
             var calls = from callResult in callResults select callResult.ProgramPointGraph;
 

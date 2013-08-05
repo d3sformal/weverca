@@ -18,16 +18,16 @@ namespace Weverca.Analysis
     public class DispatchInfo
     {
         /// <summary>
-        /// Call input set
+        /// Dispatch input set
         /// </summary>
         public readonly FlowInputSet[] InSet;
         /// <summary>
-        /// Graph used for method analyzing - can be shared between multiple calls
+        /// Graph used for method analyzing - can be shared between multiple dispatches
         /// </summary>
         public readonly ProgramPointGraph MethodGraph;
 
 
-        public DispatchInfo(ProgramPointGraph methodGraph, params FlowInputSet[] inSet)
+        internal DispatchInfo(ProgramPointGraph methodGraph, params FlowInputSet[] inSet)
         {            
             InSet = inSet;
             MethodGraph = methodGraph;

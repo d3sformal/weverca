@@ -8,13 +8,24 @@ using PHP.Core;
 
 namespace Weverca.Analysis
 {
+    /// <summary>
+    /// Represents possible names resolved for single variable selector in source code
+    /// </summary>
     public class VariableEntry
     {
+        /// <summary>
+        /// Possible names of variable
+        /// </summary>
+        public readonly VariableName[] PossibleNames;   
+
         /// <summary>
         /// Determine that there is only single possible name
         /// </summary>
         public bool IsDirect { get { return PossibleNames.Length == 1; } }
 
+        /// <summary>
+        /// If VariableEntry IsDirect we can read it's name
+        /// </summary>
         public VariableName DirectName
         {
             get
@@ -29,20 +40,22 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Possible names of variable
+        /// Creates variable entry from given possible names
         /// </summary>
-        public readonly VariableName[] PossibleNames;        
-
-
-        internal VariableEntry(IEnumerable<string> variableNames)
+        /// <param name="possibleNames">Possible names for variable selector</param>
+        internal VariableEntry(IEnumerable<string> possibleNames)
         {
-            var possibleNames = from name in variableNames select new VariableName(name);
-            PossibleNames = possibleNames.ToArray();            
+            var names= from name in possibleNames select new VariableName(name);
+            PossibleNames = names.ToArray();            
         }
 
-        public VariableEntry(VariableName variableName)
+        /// <summary>
+        /// Creates variable entry from direct name
+        /// </summary>
+        /// <param name="directName">Direct name for variable selector</param>
+        internal VariableEntry(VariableName directName)
         {
-            PossibleNames = new VariableName[] { variableName };
+            PossibleNames = new VariableName[] { directName };
         }
     }
 }

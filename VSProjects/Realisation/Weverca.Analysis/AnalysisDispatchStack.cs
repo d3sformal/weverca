@@ -6,17 +6,19 @@ using System.Text;
 namespace Weverca.Analysis
 {
     /// <summary>
-    /// Handle call stack for forward flow analysis.    
+    /// Handle dispatch stack for forward flow analysis.    
+    /// Dispatch can be caused by call, include,...
     /// </summary>    
-    class AnalysisCallStack
+    class AnalysisDispatchStack
     {
         #region Private members
         /// <summary>
         /// Stack of call contexts
         /// </summary>        
-        private Stack<CallDispatchLevel> _callStack = new Stack<CallDispatchLevel>();
+        private Stack<DispatchLevel> _callStack = new Stack<DispatchLevel>();
+
         /// <summary>
-        /// Available services
+        /// Available services obtained from analysis
         /// </summary>
         private readonly AnalysisServices _services;
         #endregion
@@ -24,11 +26,11 @@ namespace Weverca.Analysis
         /// <summary>
         /// Current context of call from current dispatch level 
         /// </summary>
-        internal AnalysisCallContext CurrentContext { get { return CurrentLevel.CurrentContext; } }
+        internal AnalysisDispatchContext CurrentContext { get { return CurrentLevel.CurrentContext; } }
         /// <summary>
         /// Current dispatch level.
         /// </summary>
-        internal CallDispatchLevel CurrentLevel { get { return _callStack.Peek(); } }
+        internal DispatchLevel CurrentLevel { get { return _callStack.Peek(); } }
         /// <summary>
         /// Determine that call stack is empty
         /// </summary>
@@ -38,7 +40,7 @@ namespace Weverca.Analysis
         /// Creats analysis call stack
         /// </summary>
         /// <param name="services">Available services</param>
-        internal AnalysisCallStack(AnalysisServices services)
+        internal AnalysisDispatchStack(AnalysisServices services)
         {
             _services = services;
         }
@@ -46,8 +48,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Pushes context at top of call stack
         /// </summary>
-        /// <param name="context"></param>
-        internal void Push(CallDispatchLevel context)
+        /// <param name="context">Pushed context</param>
+        internal void Push(DispatchLevel context)
         {
             _callStack.Push(context);
         }

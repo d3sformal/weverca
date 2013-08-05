@@ -65,6 +65,10 @@ namespace Weverca.Analysis
         internal bool IsCondition { get { return _source.IsCondition; } }
         #endregion
 
+        /// <summary>
+        /// Create partial context for given source program point
+        /// </summary>
+        /// <param name="source">Program point which statement/condition creates partial context</param>
         internal PartialContext(ProgramPoint source)
         {
             _source = source;            

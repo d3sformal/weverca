@@ -25,21 +25,22 @@ namespace Weverca.Analysis
     public class NativeAnalyzer:LangElement
     {
         /// <summary>
-        /// Singleton for empty position - this LangElement is virtual
-        /// </summary>
-        static private Position virtualPosition = new Position();
-
-        /// <summary>
         /// Stored native analyzer
         /// </summary>
         internal readonly NativeAnalyzerMethod Method;
 
         /// <summary>
+        /// Element which caused invoking of this analyzer - is used for sharing position
+        /// </summary>
+        public readonly LangElement InvokingElement;
+
+        /// <summary>
         /// Create NativeAnalyzer with specified method
         /// </summary>
-        /// <param name="method"></param>
-        public NativeAnalyzer(NativeAnalyzerMethod method)
-            :base(virtualPosition)
+        /// <param name="method">Method which is invoked via native analyzer</param>
+        /// <param name="invokingElement">Element which caused invoking of this analyzer - is used for sharing position</param>
+        public NativeAnalyzer(NativeAnalyzerMethod method,LangElement invokingElement)
+            :base(invokingElement.Position)
         {
             Method = method;
         }

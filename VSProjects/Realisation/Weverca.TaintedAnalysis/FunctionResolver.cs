@@ -22,12 +22,12 @@ namespace Weverca.TaintedAnalysis
         /// <summary>
         /// Table of native analyzers
         /// </summary>
-        private readonly Dictionary<string, NativeAnalyzer> _nativeAnalyzers = new Dictionary<string, NativeAnalyzer>()
+        private readonly Dictionary<string, NativeAnalyzerMethod> _nativeAnalyzers = new Dictionary<string, NativeAnalyzerMethod>()
         {
-            {"strtolower",new NativeAnalyzer(_strtolower)},
-            {"strtoupper",new NativeAnalyzer(_strtoupper)},
-            {"concat",new NativeAnalyzer(_concat)},
-            {"__constructor",new NativeAnalyzer(_constructor)},
+            {"strtolower",_strtolower},
+            {"strtoupper",_strtoupper},
+            {"concat",_concat},
+            {"__constructor",_constructor},
         };
 
         internal AdvancedFunctionResolver()
@@ -237,7 +237,7 @@ namespace Weverca.TaintedAnalysis
 
         private HashSet<LangElement> resolveFunction(QualifiedName name)
         {
-            NativeAnalyzer analyzer;
+            //    NativeAnalyzerMethod analyzer;
             var result = new HashSet<LangElement>();
 
             /*if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
@@ -247,7 +247,7 @@ namespace Weverca.TaintedAnalysis
             }*/
             if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
-                result.Add(new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name)));
+                result.Add(new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name),Flow.CurrentPartial));
             }
             else
             {
@@ -262,14 +262,14 @@ namespace Weverca.TaintedAnalysis
 
         private HashSet<LangElement> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
         {
-            NativeAnalyzer analyzer;
+            NativeAnalyzerMethod analyzer;
 
             var result = new HashSet<LangElement>();
 
             if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point 
-                result.Add(analyzer);
+                result.Add(new NativeAnalyzer(analyzer,Flow.CurrentPartial));
             }
             else
             {
