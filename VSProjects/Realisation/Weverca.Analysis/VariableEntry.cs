@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core;
 
@@ -16,7 +13,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Possible names of variable
         /// </summary>
-        public readonly VariableName[] PossibleNames;   
+        public readonly VariableName[] PossibleNames;
 
         /// <summary>
         /// Determine that there is only single possible name
@@ -45,8 +42,12 @@ namespace Weverca.Analysis
         /// <param name="possibleNames">Possible names for variable selector</param>
         internal VariableEntry(IEnumerable<string> possibleNames)
         {
-            var names= from name in possibleNames select new VariableName(name);
-            PossibleNames = names.ToArray();            
+            var variableNames = new Stack<VariableName>();
+            foreach (var name in possibleNames)
+            {
+                variableNames.Push(new VariableName(name));
+            }
+            PossibleNames = variableNames.ToArray();
         }
 
         /// <summary>

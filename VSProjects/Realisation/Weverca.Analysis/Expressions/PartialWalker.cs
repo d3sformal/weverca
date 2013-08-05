@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -16,6 +14,7 @@ namespace Weverca.Analysis.Expressions
     class PartialWalker : TreeVisitor
     {
         #region Private members
+
         /// <summary>
         /// Stack of values (can contains Value or VariableName)
         /// </summary>
@@ -32,6 +31,7 @@ namespace Weverca.Analysis.Expressions
         /// Controller available for current eval
         /// </summary>
         private FlowController _flow;
+
         #endregion
 
         internal PartialWalker(ExpressionEvaluatorBase evaluator, FunctionResolverBase resolver)
@@ -45,7 +45,7 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Evalulate current partial in flow controller
         /// </summary>
-        /// <param name="flow">Flow context of partial</param>        
+        /// <param name="flow">Flow context of partial</param>
         internal void Eval(FlowController flow)
         {
             var partial = flow.CurrentPartial;
@@ -180,8 +180,8 @@ namespace Weverca.Analysis.Expressions
 
         #region TreeVisitor overrides - used for evaluating
 
-
         #region Literals visiting
+
         public override void VisitStringLiteral(StringLiteral x)
         {
             push(_evaluator.StringLiteral(x));
@@ -211,10 +211,16 @@ namespace Weverca.Analysis.Expressions
         {
             throw new NotImplementedException("What is binary string literal ? ");
         }
+
+        public override void VisitNullLiteral(NullLiteral x)
+        {
+            push(_evaluator.NullLiteral(x));
+        }
+
         #endregion
 
-
         #region Variable visiting
+
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
             var varValue = popValue();
@@ -224,7 +230,6 @@ namespace Weverca.Analysis.Expressions
             {
                 varNames = new string[0];
             }
-
 
             push(new VariableEntry(varNames));
         }
@@ -243,8 +248,8 @@ namespace Weverca.Analysis.Expressions
                 push(variableEntry);
             }
         }
-        #endregion
 
+        #endregion
 
         #region Assign expressions visiting
 
@@ -287,6 +292,7 @@ namespace Weverca.Analysis.Expressions
         #endregion
 
         #region Function visiting
+
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
             var arguments = popArguments(x.CallSignature);
@@ -392,7 +398,7 @@ namespace Weverca.Analysis.Expressions
         {
             var possibleFiles = popValue();
 
-            _flow.FlowResolver.Include(_flow, possibleFiles);             
+            _flow.FlowResolver.Include(_flow, possibleFiles);
         }
 
         #endregion
@@ -405,6 +411,5 @@ namespace Weverca.Analysis.Expressions
         {
             nativeAnalyzer.Method(_flow);
         }
-
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -77,7 +75,7 @@ namespace Weverca.Analysis.Expressions
         /// <param name="index">Specifier of an index</param>
         /// <returns>Possible values obtained from resolving given index</returns>
         abstract public MemoryEntry ResolveIndex(MemoryEntry indexedValue, MemoryEntry index);
-                
+
         /// <summary>
         /// Resolves alias from given field specifier
         /// </summary>
@@ -144,7 +142,7 @@ namespace Weverca.Analysis.Expressions
         abstract public MemoryEntry UnaryEx(Operations operation, MemoryEntry operand);
 
         #endregion
-                
+
         #region Default implementation of simple routines
 
         /// <summary>
@@ -154,7 +152,13 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Resolved aliases</returns>
         virtual public IEnumerable<AliasValue> ResolveAlias(VariableEntry variable)
         {
-            return from aliasedVariable in variable.PossibleNames select Flow.OutSet.CreateAlias(aliasedVariable);
+            var aliases = new Stack<AliasValue>(variable.PossibleNames.Length);
+            foreach (var aliasedVariable in variable.PossibleNames)
+            {
+                aliases.Push(Flow.OutSet.CreateAlias(aliasedVariable));
+            }
+
+            return aliases;
         }
 
         /// <summary>
@@ -166,7 +170,7 @@ namespace Weverca.Analysis.Expressions
         {
             return new MemoryEntry(OutSet.CreateString(x.Value as String));
         }
-        
+
         /// <summary>
         /// Create integer representation of given literal
         /// </summary>
@@ -176,7 +180,7 @@ namespace Weverca.Analysis.Expressions
         {
             return new MemoryEntry(OutSet.CreateInt((int)x.Value));
         }
-        
+
         /// <summary>
         /// Create long integer representation of given literal
         /// </summary>
@@ -196,9 +200,9 @@ namespace Weverca.Analysis.Expressions
         {
             return new MemoryEntry(OutSet.CreateBool((bool)x.Value));
         }
-        
+
         /// <summary>
-        /// Create string representation of given literal
+        /// Create double representation of given literal
         /// </summary>
         /// <param name="x">Literal value</param>
         /// <returns>Created literal value representation</returns>
@@ -206,7 +210,17 @@ namespace Weverca.Analysis.Expressions
         {
             return new MemoryEntry(OutSet.CreateDouble((double)x.Value));
         }
-        
+
+        /// <summary>
+        /// Create null representation of given literal
+        /// </summary>
+        /// <param name="x">Literal value</param>
+        /// <returns>Created literal value representation</returns>
+        virtual public MemoryEntry NullLiteral(NullLiteral x)
+        {
+            return new MemoryEntry(OutSet.UndefinedValue);
+        }
+
         /// <summary>
         /// Create object value of given type
         /// </summary>
@@ -214,15 +228,17 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Created object</returns>
         virtual public MemoryEntry CreateObject(QualifiedName typeName)
         {
-            var declarations=OutSet.ResolveType(typeName);
+            var declarations = OutSet.ResolveType(typeName);
 
-            var result=new List<ObjectValue>();
-            foreach(var declaration in declarations){
+            var result = new List<ObjectValue>();
+            foreach (var declaration in declarations)
+            {
                 result.Add(OutSet.CreateObject(declaration));
             }
 
             return new MemoryEntry(result.ToArray());
         }
+
         #endregion
 
         /// <summary>
