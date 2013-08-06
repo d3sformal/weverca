@@ -32,9 +32,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="outSet">Output set where condition will be assumed</param>
         /// <param name="condition">Assumed condition</param>
         /// <param name="expressionParts">Evaluated values for condition parts</param>
-        /// <returns>
-        /// <c>false</c> if condition cannot be ever satisfied, true otherwise.
-        /// </returns>
+        /// <returns><c>false</c> if condition cannot be ever satisfied, true otherwise.</returns>
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
         {
             //TODO: How to resolve not-bool conditions, like if (1) etc.?
@@ -42,59 +40,8 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
             Debug.Assert(condition.Parts.Count() == expressionParts.Length);
 
-            List<ConditionPart> trueParts = new List<ConditionPart>();
-            List<ConditionPart> falseParts = new List<ConditionPart>();
-            List<ConditionPart> unkwownParts = new List<ConditionPart>();
-
-            //create and sort out condition parts according to the results of the conditions.
-            int i = 0;
-            foreach (var conditionPart in condition.Parts)
-            {
-                ConditionPart part = new ConditionPart(conditionPart, expressionParts[i]);
-                i++;
-
-                var conditionResult = part.GetConditionResult();
-                if (conditionResult == ConditionPart.PossibleValues.OnlyFalse)
-                {
-                    falseParts.Add(part);
-                }
-                else if (conditionResult == ConditionPart.PossibleValues.OnlyTrue)
-                {
-                    trueParts.Add(part);
-                }
-                else
-                {
-                    unkwownParts.Add(part);
-                }
-            }
-
-            this.outSet = outSet;
-
-            bool willAssume;
-            switch (condition.Form)
-            {
-                case ConditionForm.All:
-                    willAssume = falseParts.Count == 0;
-                    break;
-                case ConditionForm.None:
-                    willAssume = trueParts.Count == 0;
-                    break;
-                case ConditionForm.Some:
-                    willAssume = trueParts.Count > 0;
-                    break;
-                case ConditionForm.SomeNot:
-                    willAssume = falseParts.Count > 0;
-                    break;
-                default:
-                    throw new NotSupportedException(string.Format("Condition form \"{0}\" is not supported", condition.Form));
-            }
-
-            //if (willAssume)
-            //{
-            //    ProcessAssumption(condition, expressionParts);
-            //}
-
-            return willAssume;
+            ConditionParts conditionParts = new ConditionParts(condition, expressionParts, outSet);
+            return conditionParts.MakeAssumption();
         }
 
         /// <summary>
@@ -103,7 +50,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
         /// <param name="dispatchType">Type of merged call</param>
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,DispatchType dispatchType)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs, DispatchType dispatchType)
         {
             var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);

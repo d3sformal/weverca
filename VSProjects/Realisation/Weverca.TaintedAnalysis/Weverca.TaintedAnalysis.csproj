@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="ExpressionEvaluator.cs" />
     <Compile Include="FlowResolver\ConditionPart.cs" />
+    <Compile Include="FlowResolver\ConditionParts.cs" />
     <Compile Include="FlowResolver\FlowResolver.cs" />
     <Compile Include="ForwardAnalysis.cs" />
     <Compile Include="FunctionResolver.cs" />
