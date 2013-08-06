@@ -18,9 +18,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
     {
         #region Members
 
-        List<ConditionPart> trueParts = new List<ConditionPart>();
-        List<ConditionPart> falseParts = new List<ConditionPart>();
-        List<ConditionPart> unknownParts = new List<ConditionPart>();
+        List<ConditionPart> conditionParts = new List<ConditionPart>();
         //TODO: something for holding values of variables. It might be useful to extend memory model.
 
         FlowOutputSet flowOutputSet;
@@ -35,7 +33,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         public int TruePartsCount
         {
-            get { return trueParts.Count; }
+            get { return conditionParts.Where(c => c.ConditionResult == ConditionPart.PossibleValues.OnlyTrue).Count(); }
         }
 
         /// <summary>
@@ -43,7 +41,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         public int FalsePartsCount
         {
-            get { return falseParts.Count; }
+            get { return conditionParts.Where(c => c.ConditionResult == ConditionPart.PossibleValues.OnlyFalse).Count(); }
         }
 
         /// <summary>
@@ -51,7 +49,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         public int UnknownPartsCount
         {
-            get { return unknownParts.Count; }
+            get { return conditionParts.Where(c => c.ConditionResult == ConditionPart.PossibleValues.Unknown).Count(); }
         }
 
         #endregion
@@ -72,23 +70,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             this.flowOutputSet = flowOutputSet;
             conditionForm = condition.Form;
 
-            var conditionParts = condition.Parts.ToArray();
-            for (int i = 0; i < conditionParts.Length; i++)
+            var parts = condition.Parts.ToArray();
+            for (int i = 0; i < parts.Length; i++)
             {
-                ConditionPart part = new ConditionPart(conditionParts[i], expressionParts[i]);
-                var conditionResult = part.GetConditionResult();
-                if (conditionResult == ConditionPart.PossibleValues.OnlyFalse)
-                {
-                    falseParts.Add(part);
-                }
-                else if (conditionResult == ConditionPart.PossibleValues.OnlyTrue)
-                {
-                    trueParts.Add(part);
-                }
-                else
-                {
-                    unknownParts.Add(part);
-                }
+                ConditionPart part = new ConditionPart(parts[i], expressionParts[i]);
+                conditionParts.Add(part);
             }
         }
 
@@ -127,31 +113,13 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
             if (willAssume)
             {
-                AssumeTrue();
-                AssumeUnknown();
-                AssumeUnknown();
+                foreach (var conditionPart in conditionParts)
+                {
+                    conditionPart.AssumeCondition(flowOutputSet);
+                }
             }
 
             return willAssume;
-        }
-
-        #endregion
-
-        #region Private methods
-
-        void AssumeTrue()
-        {
-
-        }
-
-        void AssumeUnknown()
-        {
-            // only variables which are not used in true parts will be evaluated.
-        }
-
-        void AssumeFalse()
-        {
-            // will be used only if the variable is not used in true or unknown parts. Possible values of the variable can be still infinit after few are eliminated.
         }
 
         #endregion

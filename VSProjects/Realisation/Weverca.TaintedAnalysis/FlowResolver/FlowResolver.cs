@@ -68,53 +68,5 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         }
 
         #endregion
-
-        #region Private Methods
-
-        /// <summary>
-        /// Assume valid condition into output set
-        /// </summary>
-        /// <param name="condition"></param>
-        /// <param name="expressionParts"></param>
-        void ProcessAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
-        {
-            if (condition.Form == ConditionForm.All)
-            {
-                if (condition.Parts.Count() == 1)
-                {
-                    AssumeBinary(condition.Parts.First().SourceElement as BinaryEx, expressionParts[0]);
-                }
-            }
-        }
-
-        void AssumeBinary(BinaryEx exp, MemoryEntry expResult)
-        {
-            if (exp == null)
-            {
-                return;
-            }
-            switch (exp.PublicOperation)
-            {
-                case Operations.Equal:
-                    AssumeEqual(exp.LeftExpr, exp.RightExpr, expResult);
-                    break;
-            }
-        }
-
-        void AssumeEqual(LangElement left, LangElement right, MemoryEntry result)
-        {
-            var leftVar = left as DirectVarUse;
-            var rightVal = right as StringLiteral;
-
-            if (leftVar == null)
-            {
-                //for simplicity resolve only $var==stringliteral statements
-                return;
-            }
-
-            outSet.Assign(leftVar.VarName, outSet.CreateString(rightVal.Value as string));
-        }
-
-        #endregion
     }
 }
