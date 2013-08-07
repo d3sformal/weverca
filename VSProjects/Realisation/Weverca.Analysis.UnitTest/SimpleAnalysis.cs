@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.Memory;
 using Weverca.Analysis.Expressions;
-using Weverca.ControlFlowGraph;
+using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.UnitTest
 {
@@ -19,12 +16,11 @@ namespace Weverca.Analysis.UnitTest
     /// <param name="outSet">Initialized output set</param>
     delegate void EnvironmentInitializer(FlowOutputSet outSet);
 
-    class SimpleAnalysis : ForwardAnalysis
+    class SimpleAnalysis : ForwardAnalysisBase
     {
-
         private readonly EnvironmentInitializer _initializer;
 
-        private readonly SimpleFlowResolver _flowResolver= new SimpleFlowResolver();
+        private readonly SimpleFlowResolver _flowResolver = new SimpleFlowResolver();
 
         public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, EnvironmentInitializer initializer)
             : base(entryCFG)
@@ -33,6 +29,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #region Resolvers that are used during analysis
+
         protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
             return new SimpleExpressionEvaluator();
@@ -55,21 +52,23 @@ namespace Weverca.Analysis.UnitTest
         #endregion
 
         #region Analysis settings routines
+
         internal void SetInclude(string fileName, string fileCode)
         {
             _flowResolver.SetInclude(fileName, fileCode);
         }
+
         #endregion
     }
 
     class SimpleInfo
     {
         internal readonly bool XssSanitized;
+
         internal SimpleInfo(bool xssSanitized)
         {
             XssSanitized = xssSanitized;
         }
-
     }
 
     /// <summary>
@@ -89,7 +88,7 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
-        public override void Assign(MemoryEntry objectValue, VariableEntry targetField, MemoryEntry value)
+        public override void FieldAssign(MemoryEntry objectValue, VariableEntry targetField, MemoryEntry value)
         {
             if (!targetField.IsDirect)
             {
@@ -145,8 +144,6 @@ namespace Weverca.Analysis.UnitTest
 
             return result;
         }
-
-
 
         public override MemoryEntry ResolveIndexedVariable(VariableEntry entry)
         {
@@ -233,7 +230,7 @@ namespace Weverca.Analysis.UnitTest
 
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
-            var result= new HashSet<IntegerValue>();
+            var result = new HashSet<IntegerValue>();
             switch (operation)
             {
                 case Operations.Minus:
@@ -249,7 +246,6 @@ namespace Weverca.Analysis.UnitTest
 
         #region Expression evaluation helpers
 
-
         private void keepParentInfo(MemoryEntry parent, MemoryEntry child)
         {
             AnalysisTestUtils.CopyInfo(OutSet, parent, child);
@@ -257,7 +253,6 @@ namespace Weverca.Analysis.UnitTest
 
         private MemoryEntry areEqual(MemoryEntry left, MemoryEntry right)
         {
-
             var result = new List<BooleanValue>();
             if (canBeDifferent(left, right))
             {
@@ -308,18 +303,15 @@ namespace Weverca.Analysis.UnitTest
 
         #endregion
 
-        public override IEnumerable<AliasValue> ResolveAlias(MemoryEntry objectValue, VariableEntry aliasedField)
+        public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue, VariableEntry aliasedField)
         {
             throw new NotImplementedException();
         }
 
-        public override void AliasAssign(MemoryEntry objectValue, VariableEntry fieldEntry, IEnumerable<AliasValue> possibleAliasses)
+        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry fieldEntry, IEnumerable<AliasValue> possibleAliasses)
         {
             throw new NotImplementedException();
         }
-
-
-
     }
 
     /// <summary>
@@ -377,7 +369,6 @@ namespace Weverca.Analysis.UnitTest
             setCallBranching(functions);
         }
 
-
         /// <summary>
         /// Initialize call into callInput. 
         /// 
@@ -417,10 +408,8 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #endregion
-        
+
         #region Native analyzers
-
-
 
         /// <summary>
         /// Analyzer method for strtolower php function
@@ -473,8 +462,6 @@ namespace Weverca.Analysis.UnitTest
             flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
         }
 
-
-
         private static void _concat(FlowController flow)
         {
             var arg0 = flow.InSet.ReadValue(argument(0));
@@ -491,7 +478,6 @@ namespace Weverca.Analysis.UnitTest
 
             }
 
-
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
         }
 
@@ -499,6 +485,7 @@ namespace Weverca.Analysis.UnitTest
         {
             //  flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
         }
+
         #endregion
 
         #region Private helpers
@@ -563,7 +550,7 @@ namespace Weverca.Analysis.UnitTest
             if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point graph
-                result.Add(new NativeAnalyzer(analyzer,Flow.CurrentPartial));
+                result.Add(new NativeAnalyzer(analyzer, Flow.CurrentPartial));
             }
             else
             {
@@ -624,6 +611,7 @@ namespace Weverca.Analysis.UnitTest
         {
             AnalysisTestUtils.CopyInfo(flow.OutSet, argument, resultValue);
         }
+
         #endregion
     }
 
@@ -638,7 +626,7 @@ namespace Weverca.Analysis.UnitTest
 
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
-        /// </summary>  
+        /// </summary>
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
         {
@@ -665,8 +653,7 @@ namespace Weverca.Analysis.UnitTest
             return willAssume;
         }
 
-
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,DispatchType callType)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs, DispatchType callType)
         {
             var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);
@@ -704,6 +691,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #region Assumption helpers
+
         private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts, MemoryEntry[] evaluatedParts)
         {
             //we are searching for one part, that can be evaluated only as false
@@ -733,7 +721,6 @@ namespace Weverca.Analysis.UnitTest
                         continue;
                     }
                 }
-
 
                 if (value is UndefinedValue)
                 {
@@ -792,8 +779,7 @@ namespace Weverca.Analysis.UnitTest
 
             _outSet.Assign(leftVar.VarName, _outSet.CreateString(rightVal.Value as string));
         }
+
         #endregion
-
     }
-
 }

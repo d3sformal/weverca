@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-using PHP.Core.AST;
-using Weverca.ControlFlowGraph;
-
-using Weverca.Analysis.Memory;
 using Weverca.Analysis.Expressions;
+using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis
 {
@@ -15,52 +11,51 @@ namespace Weverca.Analysis
     /// Provide forward CFG analysis API.
     /// !!UNDER CONSTRUCTION, API CAN BE HEAVILY CHANGED!!
     /// </summary>
-    /// <typeparam name="FlowInfo"></typeparam>
-    public abstract class ForwardAnalysis
+    public abstract class ForwardAnalysisBase
     {
         #region Private members
 
         /// <summary>
         /// Currently analyzed call stack.
         /// </summary>
-        AnalysisDispatchStack _dispatchStack;
+        private AnalysisDispatchStack _dispatchStack;
 
         /// <summary>
         /// Available services provided by analysis
-        /// </summary>        
-        AnalysisServices _services;
+        /// </summary>
+        private AnalysisServices _services;
 
         /// <summary>
         /// Available expression evaluator
         /// </summary>
-        ExpressionEvaluatorBase _expressionEvaluator;
+        private ExpressionEvaluatorBase _expressionEvaluator;
 
         /// <summary>
         /// Available function resolver
         /// </summary>
-        FunctionResolverBase _functionResolver;
+        private FunctionResolverBase _functionResolver;
 
         /// <summary>
         /// Available flow resolver
         /// </summary>
-        FlowResolverBase _flowResolver;
-
+        private FlowResolverBase _flowResolver;
 
         #endregion
-        
+
         #region Analysis result API
 
         /// <summary>
-        /// Determine that analysis has been already runned.
+        /// Gets a value indicating whether analysis has already finished.
         /// </summary>
         public bool IsAnalysed { get; private set; }
 
         /// <summary>
-        /// Root output from analysis
+        /// Gets root output from analysis
         /// </summary>
         public ProgramPointGraph ProgramPointGraph { get; private set; }
+
         /// <summary>
-        /// Control flow graph of method which is entry point of analysis.
+        /// Gets control flow graph of method which is entry point of analysis.
         /// </summary>
         public Weverca.ControlFlowGraph.ControlFlowGraph EntryCFG { get; private set; }
 
@@ -72,12 +67,13 @@ namespace Weverca.Analysis
         #endregion
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ForwardAnalysisBase" /> class.
         /// Create forward analysis object for given entry method graph.
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
+        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph)
         {
-            EntryInput= createEmptySet();
+            EntryInput = createEmptySet();
             EntryInput.StartTransaction();
             EntryCFG = entryMethodGraph;
         }
@@ -97,7 +93,7 @@ namespace Weverca.Analysis
 
         /// <summary>
         /// Create expression evaluator which is used during analysis
-        /// NOTE:  
+        /// NOTE:
         ///     * Is created only once
         /// </summary>
         /// <returns>Created evaluator</returns>
@@ -105,7 +101,7 @@ namespace Weverca.Analysis
 
         /// <summary>
         /// Create flow resolver which is used during analysis
-        /// NOTE:  
+        /// NOTE:
         ///     * Is created only once
         /// </summary>
         /// <returns>Created resolver</returns>
@@ -113,7 +109,7 @@ namespace Weverca.Analysis
 
         /// <summary>
         /// Create function resolver which is used during analysis
-        /// NOTE:  
+        /// NOTE:
         ///     * Is created only once
         /// </summary>
         /// <returns>Created resolver</returns>
@@ -121,7 +117,7 @@ namespace Weverca.Analysis
 
         /// <summary>
         /// Create snapshot used during analysis
-        /// NOTE:  
+        /// NOTE:
         ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
         /// </summary>
         /// <returns>Created snapshot</returns>
@@ -132,7 +128,7 @@ namespace Weverca.Analysis
         #region Analysis routines
 
         /// <summary>
-        /// Run analyzis starting at EntryMethodGraph
+        /// Run analysis starting at EntryMethodGraph
         /// </summary>
         private void analyse()
         {
@@ -141,15 +137,15 @@ namespace Weverca.Analysis
 
             ProgramPointGraph = new ProgramPointGraph(EntryCFG.start);
 
-            //create analysis entry point from given graph 
+            // create analysis entry point from given graph
             var entryDispatch = new DispatchInfo(ProgramPointGraph, EntryInput);
-            var entryLevel = new DispatchLevel(entryDispatch, _services,DispatchType.ParallelCall);
+            var entryLevel = new DispatchLevel(entryDispatch, _services, DispatchType.ParallelCall);
 
             runCallStackAnalysis(entryLevel);
         }
 
         /// <summary>
-        /// Run analysis on callstack from given entryLevel
+        /// Run analysis on call stack from given entryLevel
         /// </summary>
         /// <param name="entryLevel">Entry level, where analysis starts</param>
         private void runCallStackAnalysis(DispatchLevel entryLevel)
@@ -164,13 +160,14 @@ namespace Weverca.Analysis
                 {
                     if (!_dispatchStack.CurrentLevel.ShiftToNextDispatch())
                     {
-                        //we can't move to next context in current level
+                        // we can't move to next context in current level
                         popCallStack();
                     }
+
                     continue;
                 }
 
-                //NOTE: Can modify callStack - use currentContext for moving to nextPartial
+                // NOTE: Can modify callStack - use currentContext for moving to nextPartial
                 flowThroughCurrentPartial(currentContext);
                 currentContext.NextPartial();
             }
@@ -186,11 +183,11 @@ namespace Weverca.Analysis
         {
             var controller = new FlowController(_services, context.CurrentProgramPoint, context.CurrentPartial);
             context.CurrentWalker.Eval(controller);
-            
+
             DispatchLevel level = null;
             if (controller.HasCallExtension)
             {
-                level = createCallLevel(controller);                
+                level = createCallLevel(controller);
             }
             else if (controller.HasIncludeExtension)
             {
@@ -198,7 +195,7 @@ namespace Weverca.Analysis
             }
             else
             {
-                //there is no dispatching
+                // there is no dispatching
                 return;
             }
 
@@ -212,21 +209,22 @@ namespace Weverca.Analysis
             foreach (var branchKey in currentExtension.BranchingKeys)
             {
                 var branch = currentExtension.GetBranch(branchKey);
-                //get input for branch so it could be initialized
+
+                // get input for branch so it could be initialized
                 var currentInput = currentExtension.GetInput(branch);
 
                 currentInput.StartTransaction();
                 currentInput.ExtendAsCall(controller.OutSet, controller.CalledObject, controller.Arguments);
-                _functionResolver.InitializeCall(currentInput, branchKey,controller.Arguments);
+                _functionResolver.InitializeCall(currentInput, branchKey, controller.Arguments);
                 currentInput.CommitTransaction();
 
-                //get inputs from all containing extensions
+                // get inputs from all containing extensions
                 var inputs = getExtensionInputs(branch);
 
                 dispatches.Add(new DispatchInfo(branch, inputs));
             }
 
-            return new DispatchLevel(dispatches, _services,DispatchType.ParallelCall);
+            return new DispatchLevel(dispatches, _services, DispatchType.ParallelCall);
         }
 
         private DispatchLevel createIncludeLevel(FlowController controller)
@@ -247,7 +245,7 @@ namespace Weverca.Analysis
                 dispatches.Add(new DispatchInfo(branch, inputs));
             }
 
-            return new DispatchLevel(dispatches,_services,DispatchType.ParallelInclude);
+            return new DispatchLevel(dispatches, _services, DispatchType.ParallelInclude);
         }
 
         private FlowInputSet[] getExtensionInputs(ProgramPointGraph branch)
@@ -279,7 +277,7 @@ namespace Weverca.Analysis
             {
                 mergeCallResult(_dispatchStack.CurrentContext, callResult);
 
-                //push return value into walker
+                // push return value into walker
                 var returnValue = getReturnValue(callResult);
                 _dispatchStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
             }
@@ -294,13 +292,13 @@ namespace Weverca.Analysis
         {
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
 
-            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(),callerContext.DispatchType);
+            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(), callerContext.DispatchType);
         }
 
         /// <summary>
         /// Resolve return value from given callResults
         /// </summary>
-        /// <param name="callResults">Resolts of call dispatches</param>
+        /// <param name="callResults">Results of call dispatches</param>
         /// <returns>Resolved return value</returns>
         private MemoryEntry getReturnValue(AnalysisDispatchContext[] callResults)
         {

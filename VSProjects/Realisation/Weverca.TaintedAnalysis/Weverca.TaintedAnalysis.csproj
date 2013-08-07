@@ -57,7 +57,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExpressionEvaluator.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperations.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\ExpressionEvaluator.cs" />
+    <Compile Include="ExpressionEvaluator\StringConvertVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\UnaryOperationVisitor.cs" />
     <Compile Include="FlowResolver\ConditionPart.cs" />
     <Compile Include="FlowResolver\ConditionParts.cs" />
     <Compile Include="FlowResolver\FlowResolver.cs" />

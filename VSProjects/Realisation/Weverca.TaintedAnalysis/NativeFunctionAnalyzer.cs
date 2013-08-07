@@ -371,7 +371,7 @@ namespace Weverca.TaintedAnalysis
                 parser.Parse();
                 var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
 
-                var analysis = new AdvancedForwardAnalysis(cfg);
+                var analysis = new ForwardAnalysis(cfg);
                 analysis.Analyse();
 
                 Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));

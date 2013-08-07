@@ -4,9 +4,9 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis
 {
-    public class AdvancedForwardAnalysis : ForwardAnalysis
+    public class ForwardAnalysis : ForwardAnalysisBase
     {
-        public AdvancedForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
             : base(entryMethodGraph)
         {
         }
@@ -15,7 +15,7 @@ namespace Weverca.TaintedAnalysis
 
         protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
-            return new AndvancedExpressionEvaluator();
+            return new ExpressionEvaluator.ExpressionEvaluator();
         }
 
         protected override FlowResolverBase createFlowResolver()
@@ -25,7 +25,7 @@ namespace Weverca.TaintedAnalysis
 
         protected override FunctionResolverBase createFunctionResolver()
         {
-            return new AdvancedFunctionResolver();
+            return new FunctionResolver();
         }
 
         protected override SnapshotBase createSnapshot()

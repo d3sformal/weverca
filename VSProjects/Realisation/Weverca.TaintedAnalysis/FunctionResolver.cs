@@ -14,7 +14,7 @@ namespace Weverca.TaintedAnalysis
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
-    class AdvancedFunctionResolver : FunctionResolverBase
+    class FunctionResolver : FunctionResolverBase
     {
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance(); 
         
@@ -30,7 +30,7 @@ namespace Weverca.TaintedAnalysis
             {"__constructor",_constructor},
         };
 
-        internal AdvancedFunctionResolver()
+        internal FunctionResolver()
         {
         }
 
