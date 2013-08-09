@@ -13,7 +13,7 @@ using PHP.Core.AST;
 
 namespace Weverca.TaintedAnalysis
 {
-    class AnalysisWarningHandler
+    public class AnalysisWarningHandler
     {
         public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning) 
         {
@@ -37,7 +37,7 @@ namespace Weverca.TaintedAnalysis
         }
     }
 
-    class AnalysisWarning
+    public class AnalysisWarning
     {
         public string Message { private set; get; }
         public LangElement LangElement { private set; get; }
@@ -61,7 +61,7 @@ namespace Weverca.TaintedAnalysis
         }
     }
 
-    enum AnalysisWarningCause
+    public enum AnalysisWarningCause
     {
         WRONG_NUMBER_OF_ARGUMENTS,
         WRONG_ARGUMENTS_TYPE

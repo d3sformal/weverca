@@ -5,7 +5,7 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Weverca.TaintedAnalysis</RootNamespace>
     <AssemblyName>Weverca.TaintedAnalysis</AssemblyName>
