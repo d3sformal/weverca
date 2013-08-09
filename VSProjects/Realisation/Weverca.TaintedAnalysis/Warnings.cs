@@ -17,21 +17,22 @@ namespace Weverca.TaintedAnalysis
     {
         public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning) 
         {
-            List<Value> previousWarnings = new List<Value>(ReadWarnings(flowOutSet));
-            previousWarnings.Add(flowOutSet.CreateInfo(warning));
-            flowOutSet.Assign(new VariableName(".analysisWarning"), new MemoryEntry(previousWarnings.ToArray()));
+            IEnumerable<Value> previousWarnings = ReadWarnings(flowOutSet);
+            List<Value> newEntry = new List<Value>(previousWarnings);
+            newEntry.Add(flowOutSet.CreateInfo(warning));
+            flowOutSet.Assign(new VariableName(".analysisWarning"), new MemoryEntry(newEntry));
         }
 
-        public static Value[] ReadWarnings(FlowOutputSet flowOutSet)
+        public static IEnumerable<Value> ReadWarnings(FlowOutputSet flowOutSet)
         {
             var result = flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues;
             if ((result.Count() == 1) && (result.ElementAt(0).GetType() == typeof(UndefinedValue)))
             {
-                return new Value[0];
+                return new List<Value>();
             }
             else
             {
-                return flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues.ToArray();
+                return flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues;
             }
         }
     }
@@ -48,7 +49,7 @@ namespace Weverca.TaintedAnalysis
 
         public override string ToString()
         {
-            return Message.ToString();
+            return "Warning at line "+LangElement.Position.FirstLine+" char "+LangElement.Position.FirstColumn+": "+Message.ToString();
         }
     }
 }

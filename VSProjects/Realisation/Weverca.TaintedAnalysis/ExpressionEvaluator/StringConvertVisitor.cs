@@ -154,6 +154,14 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             VisitGenericIntervalValue<double>(value);
         }
 
+        public void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
+
+
+       
     }
 }

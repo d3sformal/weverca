@@ -86,6 +86,16 @@ namespace Weverca.Analysis.Memory
         }
     }
 
+    public class AnyFloatValue : AnyValue
+    {
+        internal AnyFloatValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyFloatValue(this);
+        }
+    }
+
     public class AnyBooleanValue : AnyValue
     {
         internal AnyBooleanValue() { }

@@ -84,6 +84,11 @@ namespace Weverca.Analysis.Memory
             VisitAnyValue(value);
         }
 
+        public void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            VisitAnyValue(value);
+        }
+
         public void VisitAnyLongintValue(AnyLongintValue value)
         {
             VisitAnyValue(value);

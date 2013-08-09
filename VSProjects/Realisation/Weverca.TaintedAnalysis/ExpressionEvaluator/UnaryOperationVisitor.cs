@@ -249,5 +249,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
+
+
+        public void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

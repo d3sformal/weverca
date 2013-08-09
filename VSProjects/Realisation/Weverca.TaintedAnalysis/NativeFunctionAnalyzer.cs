@@ -140,13 +140,14 @@ namespace Weverca.TaintedAnalysis
                         break;
                 }
             }
+            /*
             var it = instance.types.GetEnumerator();
             while (it.MoveNext())
             {
-            //    Console.WriteLine(it.Current);
+                Console.WriteLine(it.Current);
                
             }
-            
+            */
             
             
             /*foreach(var fnc in instance.allNativeFunctions)
@@ -188,7 +189,7 @@ namespace Weverca.TaintedAnalysis
 
         public bool existNativeFunction(QualifiedName name)
         {
-            return allNativeFunctions.Keys.Contains(name);
+            return allNativeFunctions.ContainsKey(name);
         }
         public QualifiedName[] getNativeFunctions()
         {
@@ -317,24 +318,128 @@ namespace Weverca.TaintedAnalysis
                 return;
             }
 
+            List<List<AnalysisWarning>> warningsList = new List<List<AnalysisWarning>>();
+
+
             foreach (var nativeFunction in nativeFunctions)
             {
-                List<AnalysisWarning> warnings = new List<AnalysisWarning>();
+                warningsList.Add(new List<AnalysisWarning>());
                 if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
                 {
+                    int functionArgumentNumber=0;
                     for (int i = 0; i < argumentCount; i++)
                     {
-                        MemoryEntry arg = flow.InSet.ReadValue(argument(0));
-                        checkArgument(arg, nativeFunction.Arguments.ElementAt(i), warnings);
+                        MemoryEntry arg = flow.InSet.ReadValue(argument(i));
+
+                        NativeFunctionArgument functionArgument = nativeFunction.Arguments.ElementAt(functionArgumentNumber);
+
+                        checkArgument(flow, arg, functionArgument, i + 1, nativeFunctions.ElementAt(0).Name.ToString(), warningsList.Last());
+
+                        //incremeneting functionArgumentNumber
+                        if (nativeFunction.Arguments.ElementAt(functionArgumentNumber).Dots == false)
+                        {
+                            functionArgumentNumber++;               
+                        }
                     }
                 }
+
+            }
+            int index_min = -1;
+            int value_min = int.MaxValue;
+            for (int i = 0; i < warningsList.Count; i++)
+            {
+                if (warningsList[i].Count < value_min)
+                {
+                    value_min = warningsList[i].Count;
+                    index_min = i;
+                }
+            }
+            foreach (AnalysisWarning warning in warningsList[index_min])
+            {
+                AnalysisWarningHandler.SetWarning(flow.OutSet, warning);
             }
        }
 
 
-        private static void checkArgument(MemoryEntry possibleValues, NativeFunctionArgument argument, List<AnalysisWarning> warnings)
+        private static void checkArgument(FlowController flow,MemoryEntry memoryEntry, NativeFunctionArgument argument,int argumentNumber,string functionName, List<AnalysisWarning> warnings)
         {
-                
+            bool argumentMatches = true;
+            foreach (Value value in memoryEntry.PossibleValues)
+            {
+                if (value.GetType() == typeof(AnyValue) && value.GetType() == typeof(UndefinedValue))
+                {
+                    continue;
+                }
+
+                switch (argument.Type)
+                {
+                    case "mixed":                  
+                        break;
+                    case "int":
+                    case "integer":
+                        if (value.GetType() != typeof(IntegerIntervalValue) && value.GetType() != typeof(IntegerValue) && value.GetType() != typeof(AnyIntegerValue) && value.GetType() != typeof(LongintValue) && value.GetType() != typeof(AnyLongintValue) && value.GetType() != typeof(LongintIntervalValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "float":
+                        if (value.GetType() != typeof(FloatIntervalValue) && value.GetType() != typeof(FloatValue) && value.GetType() != typeof(AnyFloatValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "number":
+                        if (value.GetType() != typeof(FloatIntervalValue) && value.GetType() != typeof(FloatValue) && value.GetType() != typeof(AnyFloatValue) && value.GetType() != typeof(IntegerIntervalValue) && value.GetType() != typeof(IntegerValue) && value.GetType() != typeof(AnyIntegerValue) && value.GetType() != typeof(LongintValue) && value.GetType() != typeof(AnyLongintValue) && value.GetType() != typeof(LongintIntervalValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "string":
+                    case "char":
+                        if(value.GetType()!=typeof(StringValue) && value.GetType()!=typeof(AnyStringValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "array":
+                        if(value.GetType()!=typeof(AssociativeArray) && value.GetType()!=typeof(AnyArrayValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "object":
+                        if(value.GetType()!=typeof(ObjectValue) && value.GetType()!=typeof(AnyObjectValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "bool":
+                    case "boolean":
+                        if(value.GetType()!=typeof(BooleanValue) && value.GetType()!=typeof(AnyBooleanValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                    case "resource":
+                        break;
+                    case "callable":
+                        break;
+                    case "callback":
+                        break;
+                    case "void":
+                        throw new Exception("Void is not a type of argument");
+                    default:
+                        if (value.GetType() != typeof(ObjectValue) && value.GetType() != typeof(AnyObjectValue))
+                        {
+                            argumentMatches = false;
+                        }
+                        break;
+                }
+            }
+            if (argumentMatches == false)
+            {
+                warnings.Add(new AnalysisWarning("Wrong type in argument no " + argumentNumber + "  in function " + functionName, flow.CurrentPartial));
+            }
         }
 
         private static Value getReturnValue(NativeFunction function)
@@ -360,13 +465,15 @@ namespace Weverca.TaintedAnalysis
                 $a=mysql_query();
                 $b=min();
                 $c=max($array,$array,$array,$array);
-                $d=htmlspecialchars(0,1,2,3,4,5,6);
-                $e=strstr($a);
+                $d=htmlspecialchars(0,1,2,3);
+                $e=strstr($v);
+                $f=max(2,'aaa',$a);
+                $g=htmlspecialchars(1);
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
                 code = "<?php \n" + code + "?>";
-                
+
                 var parser = new SyntaxParser(sourceFile, code);
                 parser.Parse();
                 var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
@@ -385,6 +492,7 @@ namespace Weverca.TaintedAnalysis
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
             }
         }
     }

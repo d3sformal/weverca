@@ -69,6 +69,8 @@ namespace Weverca.Analysis.Memory
 
         void VisitLongintValue(LongintValue value);
 
+        void VisitAnyFloatValue(AnyFloatValue value);
+
         void VisitIntegerValue(IntegerValue value);
 
         #endregion

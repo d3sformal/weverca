@@ -163,7 +163,15 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+
+        public void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
+
+
     }
 
     public class BinaryOperationVisitor : IValueVisitor
@@ -342,6 +350,14 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+        public void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
+
+
+        
     }
 }
