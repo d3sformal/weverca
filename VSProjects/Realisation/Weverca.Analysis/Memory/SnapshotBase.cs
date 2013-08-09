@@ -369,9 +369,11 @@ namespace Weverca.Analysis.Memory
         public AnyStringValue AnyStringValue { get { return new AnyStringValue(); } }
         public AnyBooleanValue AnyBooleanValue { get { return new AnyBooleanValue(); } }
         public AnyIntegerValue AnyIntegerValue { get { return new AnyIntegerValue(); } }
+        public AnyFloatValue AnyFloatValue { get { return new AnyFloatValue(); } }
         public AnyLongintValue AnyLongintValue { get { return new AnyLongintValue(); } }
         public AnyObjectValue AnyObjectValue { get { return new AnyObjectValue(); } }
         public AnyArrayValue AnyArrayValue { get { return new AnyArrayValue(); } }
+        public AnyResourceValue AnyResourceValue { get { return new AnyResourceValue(); } }
         public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
         public VariableName ReturnValue { get { return _returnValue; } }
                 

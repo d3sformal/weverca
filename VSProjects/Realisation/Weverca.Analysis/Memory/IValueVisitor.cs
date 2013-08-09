@@ -45,6 +45,8 @@ namespace Weverca.Analysis.Memory
 
         void VisitAnyArrayValue(AnyArrayValue value);
 
+        void VisitAnyResourceValue(AnyResourceValue value);
+
         void VisitInfoValue(InfoValue value);
 
         void VisitInfoValue<T>(InfoValue<T> value);

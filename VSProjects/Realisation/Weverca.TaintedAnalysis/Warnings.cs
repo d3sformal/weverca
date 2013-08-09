@@ -41,15 +41,29 @@ namespace Weverca.TaintedAnalysis
     {
         public string Message { private set; get; }
         public LangElement LangElement { private set; get; }
+        public AnalysisWarningCause Cause { private set; get; }
         public AnalysisWarning(string message, LangElement element)
         {
             Message = message;
             LangElement = element;
         }
 
+        public AnalysisWarning(string message, LangElement element,AnalysisWarningCause cause)
+        {
+            Message = message;
+            LangElement = element;
+            Cause = cause;
+        }
+
         public override string ToString()
         {
             return "Warning at line "+LangElement.Position.FirstLine+" char "+LangElement.Position.FirstColumn+": "+Message.ToString();
         }
+    }
+
+    enum AnalysisWarningCause
+    {
+        WRONG_NUMBER_OF_ARGUMENTS,
+        WRONG_ARGUMENTS_TYPE
     }
 }

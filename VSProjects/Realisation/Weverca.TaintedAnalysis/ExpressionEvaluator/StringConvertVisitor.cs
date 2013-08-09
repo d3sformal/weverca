@@ -159,9 +159,12 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+        public void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
-
-
-       
+     
     }
 }

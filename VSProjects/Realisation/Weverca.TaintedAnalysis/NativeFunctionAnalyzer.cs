@@ -59,7 +59,7 @@ namespace Weverca.TaintedAnalysis
         private Dictionary<QualifiedName, NativeAnalyzerMethod> phalangerImplementedFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
         private Dictionary<QualifiedName, NativeAnalyzerMethod> wevercaImplementedFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
         private HashSet<string> types = new HashSet<string>();
-
+        private HashSet<string> returnTypes = new HashSet<string>();
         private static NativeFunctionAnalyzer instance=null;
         
         private NativeFunctionAnalyzer()
@@ -95,7 +95,7 @@ namespace Weverca.TaintedAnalysis
                             {
                                 instance.allNativeFunctions[functionName] = instance.allNativeFunctions[new QualifiedName(new Name(functionAlias))];
                             }
-                            instance.types.Add(reader.GetAttribute("returnType"));
+                            instance.returnTypes.Add(reader.GetAttribute("returnType"));
                         }
                         else if (reader.Name == "arg")
                         {
@@ -147,8 +147,14 @@ namespace Weverca.TaintedAnalysis
                 Console.WriteLine(it.Current);
                
             }
+            Console.WriteLine();
+            it = instance.returnTypes.GetEnumerator();
+            while (it.MoveNext())
+            {
+                Console.WriteLine(it.Current);
+
+            }
             */
-            
             
             /*foreach(var fnc in instance.allNativeFunctions)
             {
@@ -314,7 +320,7 @@ namespace Weverca.TaintedAnalysis
                 {
                     s = "s";
                 }
-                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function "+nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter"+s+" given.", flow.CurrentPartial));
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function "+nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter"+s+" given.", flow.CurrentPartial,AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
                 return;
             }
 
@@ -421,10 +427,18 @@ namespace Weverca.TaintedAnalysis
                         }
                         break;
                     case "resource":
+                    case "resouce":
+                        if (value.GetType() != typeof(AnyResourceValue))
+                        {
+                            argumentMatches = false;
+                        }
                         break;
                     case "callable":
-                        break;
                     case "callback":
+                        if(value.GetType()!=typeof(StringValue) && value.GetType()!=typeof(AnyStringValue) && value.GetType()!=typeof(FunctionValue))
+                        {
+                            argumentMatches = false;
+                        }
                         break;
                     case "void":
                         throw new Exception("Void is not a type of argument");
@@ -438,13 +452,42 @@ namespace Weverca.TaintedAnalysis
             }
             if (argumentMatches == false)
             {
-                warnings.Add(new AnalysisWarning("Wrong type in argument no " + argumentNumber + "  in function " + functionName, flow.CurrentPartial));
+                warnings.Add(new AnalysisWarning("Wrong type in argument No. " + argumentNumber + " in function " + functionName + ", expecting " + argument.Type, flow.CurrentPartial, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
             }
         }
 
-        private static Value getReturnValue(NativeFunction function)
+        public static Value getReturnValue(NativeFunction function,FlowController flow)
         {
-            return null;
+            var outset = flow.OutSet;
+            switch(function.ReturnType)
+            {
+                case "number":
+                    return outset.AnyIntegerValue;
+                case "float":
+                    return outset.AnyFloatValue;
+                case "int":
+                case "integer":
+                    return outset.AnyIntegerValue;
+                case "string":
+                    return outset.AnyStringValue;
+                case "array":
+                    return outset.AnyArrayValue;
+                case "void":
+                    return outset.UndefinedValue;
+                case "boolean":
+                case "bool":
+                    return outset.AnyBooleanValue;
+                case "object":
+                    return outset.AnyObjectValue;
+                case "mixed":
+                    return outset.AnyValue;
+                case "resource":
+                    return outset.AnyResourceValue;
+                case "callable":
+                    return outset.AnyStringValue;
+                default:
+                    return outset.AnyObjectValue;
+            }
         }
 
         private static VariableName argument(int index)
@@ -462,13 +505,10 @@ namespace Weverca.TaintedAnalysis
             try
             {
                 string code = @"
-                $a=mysql_query();
-                $b=min();
-                $c=max($array,$array,$array,$array);
-                $d=htmlspecialchars(0,1,2,3);
-                $e=strstr($v);
-                $f=max(2,'aaa',$a);
-                $g=htmlspecialchars(1);
+                $c=max(1,2,3,4);
+                $e=strstr('a',4,8);
+                $f=max(2,'aaa',$e);
+                $g=htmlspecialchars('a');
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -481,7 +521,7 @@ namespace Weverca.TaintedAnalysis
                 var analysis = new ForwardAnalysis(cfg);
                 analysis.Analyse();
 
-                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));
+                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("g")));
                 Console.WriteLine();
                 foreach (var warning in AnalysisWarningHandler.ReadWarnings(analysis.ProgramPointGraph.End.OutSet))
                 {
@@ -509,8 +549,26 @@ namespace Weverca.TaintedAnalysis
         {
             NativeFunctionAnalyzer.checkFunctionsArguments(nativeFunctions, flow);
             //return value
+
+            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+            
             var possibleValues = new List<Value>();
-            possibleValues.Add(flow.OutSet.AnyValue);
+            foreach (var nativeFunction in nativeFunctions)
+            {
+                if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
+                {
+                    possibleValues.Add(NativeFunctionAnalyzer.getReturnValue(nativeFunction, flow));
+                }
+            }
+
+            if (possibleValues.Count == 0)
+            {
+                foreach (var nativeFunction in nativeFunctions)
+                {
+                    possibleValues.Add(NativeFunctionAnalyzer.getReturnValue(nativeFunction, flow));
+                }
+            }
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
         }
     }

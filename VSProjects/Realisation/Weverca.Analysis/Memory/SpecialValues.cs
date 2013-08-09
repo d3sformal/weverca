@@ -126,7 +126,16 @@ namespace Weverca.Analysis.Memory
         }
     }
 
+    public class AnyResourceValue : AnyValue
+    {
+        internal AnyResourceValue() { }
 
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyResourceValue(this);
+        }
+    }
+    
     public abstract class InfoValue : SpecialValue
     {
         public readonly object RawData;

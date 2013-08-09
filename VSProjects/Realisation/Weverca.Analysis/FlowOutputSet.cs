@@ -76,11 +76,15 @@ namespace Weverca.Analysis
 
         public AnyIntegerValue AnyIntegerValue  { get { return Snapshot.AnyIntegerValue; } }
 
+        public AnyFloatValue AnyFloatValue { get { return Snapshot.AnyFloatValue; } }
+
         public AnyLongintValue AnyLongintValue { get { return Snapshot.AnyLongintValue; } }
 
         public AnyObjectValue AnyObjectValue { get { return Snapshot.AnyObjectValue; } }
 
         public AnyArrayValue AnyArrayValue { get { return Snapshot.AnyArrayValue; } }
+
+        public AnyResourceValue AnyResourceValue { get { return Snapshot.AnyResourceValue; } }
 
         public AnyValue AnyValue { get { return Snapshot.AnyValue; } }
 

@@ -169,9 +169,12 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+        public void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
-
-
     }
 
     public class BinaryOperationVisitor : IValueVisitor
@@ -355,9 +358,12 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+        public void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
-
-        
     }
 }

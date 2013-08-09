@@ -104,6 +104,11 @@ namespace Weverca.Analysis.Memory
             VisitAnyValue(value);
         }
 
+        public void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitInfoValue(InfoValue value)
         {
             VisitSpecialValue(value);
@@ -113,6 +118,7 @@ namespace Weverca.Analysis.Memory
         {
             VisitInfoValue(value);
         }
+
 
         #endregion
 
@@ -188,6 +194,9 @@ namespace Weverca.Analysis.Memory
         }
 
         #endregion
-    
+
+
+
+       
     }
 }
