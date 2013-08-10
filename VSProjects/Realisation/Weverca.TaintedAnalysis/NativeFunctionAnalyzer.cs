@@ -329,9 +329,10 @@ namespace Weverca.TaintedAnalysis
 
             foreach (var nativeFunction in nativeFunctions)
             {
-                warningsList.Add(new List<AnalysisWarning>());
+                
                 if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
                 {
+                    warningsList.Add(new List<AnalysisWarning>());
                     int functionArgumentNumber=0;
                     for (int i = 0; i < argumentCount; i++)
                     {
@@ -372,7 +373,7 @@ namespace Weverca.TaintedAnalysis
             bool argumentMatches = true;
             foreach (Value value in memoryEntry.PossibleValues)
             {
-                if (value.GetType() == typeof(AnyValue) && value.GetType() == typeof(UndefinedValue))
+                if (value.GetType() == typeof(AnyValue) || value.GetType() == typeof(UndefinedValue))
                 {
                     continue;
                 }
@@ -389,7 +390,7 @@ namespace Weverca.TaintedAnalysis
                         }
                         break;
                     case "float":
-                        if (value.GetType() != typeof(FloatIntervalValue) && value.GetType() != typeof(FloatValue) && value.GetType() != typeof(AnyFloatValue))
+                        if (value.GetType() != typeof(FloatIntervalValue) && value.GetType() != typeof(FloatValue) && value.GetType() != typeof(AnyFloatValue) && value.GetType() != typeof(IntegerIntervalValue) && value.GetType() != typeof(IntegerValue) && value.GetType() != typeof(AnyIntegerValue) && value.GetType() != typeof(LongintValue) && value.GetType() != typeof(AnyLongintValue) && value.GetType() != typeof(LongintIntervalValue))
                         {
                             argumentMatches = false;
                         }
@@ -505,10 +506,14 @@ namespace Weverca.TaintedAnalysis
             try
             {
                 string code = @"
+/*
                 $c=max(1,2,3,4);
                 $e=strstr('a',4,8);
                 $f=max(2,'aaa',$e);
-                $g=htmlspecialchars('a');
+                $g=htmlspecialchars('a');*/
+                $a['7']=4;
+                $x=$_POST['dirty'];
+                
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -521,12 +526,12 @@ namespace Weverca.TaintedAnalysis
                 var analysis = new ForwardAnalysis(cfg);
                 analysis.Analyse();
 
-                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("g")));
-                Console.WriteLine();
+
                 foreach (var warning in AnalysisWarningHandler.ReadWarnings(analysis.ProgramPointGraph.End.OutSet))
                 {
                     Console.WriteLine(warning);
                 }
+                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadInfo(new VariableName("x")));
 
             }
             catch (Exception e)

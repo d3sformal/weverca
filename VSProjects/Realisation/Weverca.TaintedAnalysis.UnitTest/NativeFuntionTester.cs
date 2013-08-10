@@ -48,9 +48,14 @@ namespace Weverca.TaintedAnalysis.UnitTest
             return false;
         }
 
-        public bool ArgumentNumberTest(string code,AnalysisWarningCause cause)
+        public bool ArgumentWarningTest(string code,AnalysisWarningCause cause)
         {
             return ContainsWarning(Analyze(code), cause);
+        }
+
+        public Value ResultTest(string code)
+        {
+            return Analyze(code).ReadValue(new VariableName("result")).PossibleValues.ElementAt(0);
         }
 
         string wrongArgumentcount1 = @"
@@ -69,6 +74,30 @@ namespace Weverca.TaintedAnalysis.UnitTest
             strstr(1);
         ";
 
+        [TestMethod]
+        public void WrongArgumentCount1()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
+        [TestMethod]
+        public void WrongArgumentCount2()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
+        [TestMethod]
+        public void WrongArgumentCount3()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
+        [TestMethod]
+        public void WrongArgumentCount4()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
         string correctArgumentcount1 = @"
             min(1,2,3,4,5,6,7,8);
         ";
@@ -86,51 +115,246 @@ namespace Weverca.TaintedAnalysis.UnitTest
         ";
 
         [TestMethod]
-        public void WrongArgumentCount1()
-        {
-            Assert.IsTrue(ArgumentNumberTest(wrongArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
-        }
-
-        [TestMethod]
-        public void WrongArgumentCount2()
-        {
-            Assert.IsTrue(ArgumentNumberTest(wrongArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
-        }
-
-        [TestMethod]
-        public void WrongArgumentCount3()
-        {
-            Assert.IsTrue(ArgumentNumberTest(wrongArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
-        }
-
-        [TestMethod]
-        public void WrongArgumentCount4()
-        {
-            Assert.IsTrue(ArgumentNumberTest(wrongArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
-        }
-
-        [TestMethod]
         public void CorrectArgumentCount1()
         {
-            Assert.IsFalse(ArgumentNumberTest(correctArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void CorrectArgumentCount2()
         {
-            Assert.IsFalse(ArgumentNumberTest(correctArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void CorrectArgumentCount3()
         {
-            Assert.IsFalse(ArgumentNumberTest(correctArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void CorrectArgumentCount4()
         {
-            Assert.IsFalse(ArgumentNumberTest(correctArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
+        string correctArgumentType1 = @"
+           levenshtein ('a', 'b', 1,2,3 );
+        ";
+
+        string correctArgumentType2 = @"
+            levenshtein ( 'a','b');
+        ";
+
+        string correctArgumentType3 = @"
+           $fdf = fdf_open('test.fdf');
+           fdf_close($fdf);
+        ";
+
+        string correctArgumentType4 = @"
+            $a['a']='string';
+            sort($a,5);
+        ";
+
+        string correctArgumentType5 = @"
+            $b[0]=4;
+            usort($b,'cmp');
+        ";
+
+        //failed test - mozno chyba vo frameworku mozno v expression resolveri, niesom si isty
+        string correctArgumentType6 = @"
+            $b[0]=4;
+            $b[1]=5;
+            $b[2]=3;
+            $b[3]=1;
+            $a=function($a,$b){};
+            usort($b,$a);
+        ";
+
+        string correctArgumentType7 = @"
+            wordwrap ('a', 10, 'a' , (1==1) );
+        ";
+
+        string correctArgumentType8 = @"
+            acos(1.1);
+            acos(8);
+        ";
+
+        [TestMethod]
+        public void CorrectArgumentType1()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType1, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void CorrectArgumentType2()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType2, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void CorrectArgumentType3()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType3, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void CorrectArgumentType4()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType4, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void CorrectArgumentType5()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType5, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void CorrectArgumentType6()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType6, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void CorrectArgumentType7()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType7, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        public void CorrectArgumentType8()
+        {
+            Assert.IsFalse(ArgumentWarningTest(correctArgumentType8, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        string wrongArgumentType1 = @"
+           acosh ('aa'); 
+        ";
+
+        string wrongArgumentType2 = @"
+          chunk_split ( 'a' , 'a' );
+        ";
+
+        string wrongArgumentType3 = @"
+            chunk_split ( 'a' , 1 ,1);
+        ";
+
+        string wrongArgumentType4 = @"
+            md5 ( 'a', 5 );
+        ";
+
+        string wrongArgumentType5 = @"
+           strtr ( 'a','a' ) ;
+        ";
+
+        [TestMethod]
+        public void WrongArgumentType1()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType1, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void WrongArgumentType2()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType2, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void WrongArgumentType3()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType3, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void WrongArgumentType4()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType4, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        [TestMethod]
+        public void WrongArgumentType5()
+        {
+            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType5, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+        }
+
+        string functionResult1 = @"
+            $result=money_format ( '0' , 1 );
+        ";
+
+        string functionResult2 = @"
+            $result=atan ( 1 );
+        ";
+
+        string functionResult3 = @"
+            $result= intval ( 1==1 );
+        ";
+
+        string functionResult4 = @"
+            $result=localeconv  (  );
+        ";
+
+        string functionResult5 = @"
+            $result=sort ( $a );
+        ";
+
+        string functionResult6 = @"
+            $result=mysql_connect ( );
+        ";
+
+        string functionResult7 = @"
+            $result=mysqli_connect ();
+        ";
+
+        string functionResult8 = @"
+            $result=substr_replace('a');
+        ";
+
+        [TestMethod]
+        public void FunctionResult1()
+        {
+            Assert.AreEqual(ResultTest(functionResult1).GetType(), typeof(AnyStringValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult2()
+        {
+            Assert.AreEqual(ResultTest(functionResult2).GetType(), typeof(AnyFloatValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult3()
+        {
+            Assert.AreEqual(ResultTest(functionResult3).GetType(), typeof(AnyIntegerValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult4()
+        {
+            Assert.AreEqual(ResultTest(functionResult4).GetType(), typeof(AnyArrayValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult5()
+        {
+            Assert.AreEqual(ResultTest(functionResult5).GetType(), typeof(AnyBooleanValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult6()
+        {
+            Assert.AreEqual(ResultTest(functionResult6).GetType(), typeof(AnyResourceValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult7()
+        {
+            Assert.AreEqual(ResultTest(functionResult7).GetType(), typeof(AnyObjectValue));
+        }
+
+        [TestMethod]
+        public void FunctionResult8()
+        {
+            Assert.AreEqual(ResultTest(functionResult8).GetType(), typeof(AnyValue));
         }
 
     }
