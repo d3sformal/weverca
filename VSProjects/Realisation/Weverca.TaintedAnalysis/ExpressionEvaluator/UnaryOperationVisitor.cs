@@ -3,6 +3,7 @@
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.ExpressionEvaluator
@@ -18,7 +19,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             evaluator = expressionEvaluator;
         }
 
-        public Value Result { get; private set; }
+        public FlowOutputSet OutSet
+        {
+            get { return evaluator.OutSet; }
+        }
 
         public Value Evaluate(Operations unaryOperation, Value operand)
         {
@@ -29,7 +33,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             operand.Accept(this);
 
             // Returns result of unary operation
-            Debug.Assert(result != null, "The rusult must be assigned after visiting the value");
+            Debug.Assert(result != null, "The result must be assigned after visiting the value");
             return result;
         }
 
@@ -37,22 +41,135 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public void VisitValue(Value value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.UnsetCast:
+                    // TODO: Is resolved to null value
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.Int8Cast:
+                case Operations.Int16Cast:
+                case Operations.Int64Cast:
+                case Operations.UInt8Cast:
+                case Operations.UInt16Cast:
+                case Operations.UInt32Cast:
+                case Operations.UInt64Cast:
+                case Operations.DecimalCast:
+                    throw new NotSupportedException("Cast to different integral types is not supported");
+                case Operations.BinaryCast:
+                    throw new NotSupportedException("Binary strings are not supported");
+                case Operations.AtSign:
+                    throw new InvalidOperationException("The references is resolved as special construct");
+                default:
+                    throw new InvalidOperationException("Resolving of non-unary operation");
+            }
         }
 
         public void VisitObjectValue(ObjectValue value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Plus:
+                    evaluator.SetWarning("Object could not be converted to int");
+                    // TODO: Converting from object to int is undefined
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.Minus:
+                    evaluator.SetWarning("Object could not be converted to int");
+                    // TODO: Converting from object to int is undefined
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.LogicNegation:
+                    throw new NotImplementedException();
+                case Operations.BitNegation:
+                    // TODO: This is fatal error
+                    evaluator.SetWarning("Unsupported operand types");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.BoolCast:
+                    throw new NotImplementedException();
+                case Operations.Int32Cast:
+                    throw new NotImplementedException();
+                case Operations.FloatCast:
+                case Operations.DoubleCast:
+                    throw new NotImplementedException();
+                case Operations.StringCast:
+                case Operations.UnicodeCast:
+                    // TODO: Object can by converted only if it has __toString magic method implemented
+                    throw new NotImplementedException();
+                case Operations.Print:
+                    throw new NotImplementedException();
+                case Operations.Clone:
+                    throw new NotImplementedException();
+                case Operations.ObjectCast:
+                    result = value;
+                    break;
+                case Operations.ArrayCast:
+                    throw new NotImplementedException();
+                default:
+                    VisitValue(value);
+                    break;
+            }
         }
 
         public void VisitAssociativeArray(AssociativeArray value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Plus:
+                    evaluator.SetWarning("Array could not be converted to int");
+                    // TODO: Converting from array to int is undefined
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.Minus:
+                    evaluator.SetWarning("Array could not be converted to int");
+                    // TODO: Converting from array to int is undefined
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.LogicNegation:
+                    throw new NotImplementedException();
+                case Operations.BitNegation:
+                    // TODO: This is fatal error
+                    evaluator.SetWarning("Unsupported operand types");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.BoolCast:
+                    throw new NotImplementedException();
+                case Operations.Int32Cast:
+                    throw new NotImplementedException();
+                case Operations.FloatCast:
+                case Operations.DoubleCast:
+                    throw new NotImplementedException();
+                case Operations.StringCast:
+                case Operations.UnicodeCast:
+                    result = TypeConversion.ToString(OutSet, value);
+                    break;
+                case Operations.Print:
+                    // The operator convert value to string and print it. The string value is not used
+                    // to resolve the entire expression. Instead, the false value is returned.
+                    TypeConversion.ToString(OutSet, value);
+                    // TODO: This is a quest for tainted analysis
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.Clone:
+                    // TODO: This must be fatal error
+                    evaluator.SetWarning("__clone method called on non-object");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.ObjectCast:
+                    throw new NotImplementedException();
+                case Operations.ArrayCast:
+                    result = value;
+                    break;
+                default:
+                    VisitValue(value);
+                    break;
+            }
         }
 
         public void VisitSpecialValue(SpecialValue value)
         {
-            throw new NotImplementedException();
+            VisitValue(value);
         }
 
         public void VisitAliasValue(AliasValue value)
@@ -67,7 +184,58 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public void VisitUndefinedValue(UndefinedValue value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Plus:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Minus:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.LogicNegation:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.BitNegation:
+                    // TODO: This is fatal error
+                    evaluator.SetWarning("Unsupported operand types");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.BoolCast:
+                    result = TypeConversion.ToBoolean(OutSet, value);
+                    break;
+                case Operations.Int32Cast:
+                    result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.FloatCast:
+                case Operations.DoubleCast:
+                    result = TypeConversion.ToFloat(OutSet, value);
+                    break;
+                case Operations.StringCast:
+                case Operations.UnicodeCast:
+                    result = TypeConversion.ToString(OutSet, value);
+                    break;
+                case Operations.Print:
+                    // The operator convert value to string and print it. The string value is not used
+                    // to resolve the entire expression. Instead, the false value is returned.
+                    TypeConversion.ToString(OutSet, value);
+                    // TODO: This is a quest for tainted analysis
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.Clone:
+                    // TODO: This must be fatal error
+                    evaluator.SetWarning("__clone method called on non-object");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.ObjectCast:
+                    // TODO: Create new stdClass object
+                    throw new NotImplementedException();
+                case Operations.ArrayCast:
+                    result = OutSet.CreateArray();
+                    break;
+                default:
+                    VisitSpecialValue(value);
+                    break;
+            }
         }
 
         public void VisitAnyStringValue(AnyStringValue value)
@@ -90,12 +258,22 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+        public void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void VisitAnyObjectValue(AnyObjectValue value)
         {
             throw new NotImplementedException();
         }
 
         public void VisitAnyArrayValue(AnyArrayValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAnyResourceValue(AnyResourceValue value)
         {
             throw new NotImplementedException();
         }
@@ -112,12 +290,12 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public void VisitPrimitiveValue(PrimitiveValue value)
         {
-            throw new NotImplementedException();
+            VisitValue(value);
         }
 
         public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
         {
-            throw new NotImplementedException();
+            VisitPrimitiveValue(value);
         }
 
         public void VisitFunctionValue(FunctionValue value)
@@ -132,17 +310,163 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public void VisitFloatValue(FloatValue value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Plus:
+                    result = value;
+                    break;
+                case Operations.Minus:
+                    result = OutSet.CreateDouble(-value.Value);
+                    break;
+                case Operations.LogicNegation:
+                    result = OutSet.CreateBool(value.Value == 0.0);
+                    break;
+                case Operations.BitNegation:
+                    var number = TypeConversion.ToInteger(OutSet, value);
+                    result = OutSet.CreateInt(~number.Value);
+                    break;
+                case Operations.BoolCast:
+                    result = TypeConversion.ToBoolean(OutSet, value);
+                    break;
+                case Operations.Int32Cast:
+                    result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.FloatCast:
+                case Operations.DoubleCast:
+                    result = value;
+                    break;
+                case Operations.StringCast:
+                case Operations.UnicodeCast:
+                    result = TypeConversion.ToString(OutSet, value);
+                    break;
+                case Operations.Print:
+                    // The operator convert value to string and print it. The string value is not used
+                    // to resolve the entire expression. Instead, the false value is returned.
+                    TypeConversion.ToString(OutSet, value);
+                    // TODO: This is a quest for tainted analysis
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.Clone:
+                    // TODO: This must be fatal error
+                    evaluator.SetWarning("__clone method called on non-object");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.ObjectCast:
+                    // TODO: Create new stdClass object and save value as "scalar" field
+                    throw new NotImplementedException();
+                case Operations.ArrayCast:
+                    // TODO: Create new array with the value at the zero position
+                    throw new NotImplementedException();
+                default:
+                    VisitGenericPrimitiveValue<double>(value);
+                    break;
+            }
         }
 
         public void VisitBooleanValue(BooleanValue value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Plus:
+                    result = OutSet.CreateInt(value.Value ? 1 : 0);
+                    break;
+                case Operations.Minus:
+                    result = OutSet.CreateInt(value.Value ? -1 : 0);
+                    break;
+                case Operations.LogicNegation:
+                    result = OutSet.CreateBool(!value.Value);
+                    break;
+                case Operations.BitNegation:
+                    // TODO: This is fatal error
+                    evaluator.SetWarning("Unsupported operand types");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.BoolCast:
+                    result = value;
+                    break;
+                case Operations.Int32Cast:
+                    result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.FloatCast:
+                case Operations.DoubleCast:
+                    result = TypeConversion.ToFloat(OutSet, value);
+                    break;
+                case Operations.StringCast:
+                case Operations.UnicodeCast:
+                    result = TypeConversion.ToString(OutSet, value);
+                    break;
+                case Operations.Clone:
+                    // TODO: This must be fatal error
+                    evaluator.SetWarning("__clone method called on non-object");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.ObjectCast:
+                    // TODO: Create new stdClass object and save value as "scalar" field
+                    throw new NotImplementedException();
+                case Operations.ArrayCast:
+                    // TODO: Create new array with the value at the zero position
+                    throw new NotImplementedException();
+                default:
+                    VisitGenericPrimitiveValue<bool>(value);
+                    break;
+            }
         }
 
         public void VisitStringValue(StringValue value)
         {
-            throw new NotImplementedException();
+            switch (operation)
+            {
+                case Operations.Plus:
+                    result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.Minus:
+                    var number = TypeConversion.ToInteger(OutSet, value);
+                    if ((number.Value == 0) || ((-number.Value) != 0))
+                    {
+                        result = OutSet.CreateInt(-number.Value);
+                    }
+                    else
+                    {
+                        // <seealso cref="UnaryOperationVisitor.VisitStringValue"/>
+                        result = OutSet.CreateDouble(-(System.Convert.ToDouble(number.Value)));
+                    }
+                    break;
+                case Operations.LogicNegation:
+                    var boolean = TypeConversion.ToBoolean(OutSet, value);
+                    result = OutSet.CreateBool(!boolean.Value);
+                    break;
+                case Operations.BitNegation:
+                    // TODO: Is this defined?
+                    throw new NotImplementedException();
+                case Operations.BoolCast:
+                    result = TypeConversion.ToBoolean(OutSet, value);
+                    break;
+                case Operations.Int32Cast:
+                    result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.FloatCast:
+                case Operations.DoubleCast:
+                    result = TypeConversion.ToFloat(OutSet, value);
+                    break;
+                case Operations.StringCast:
+                case Operations.UnicodeCast:
+                    result = value;
+                    break;
+                case Operations.Clone:
+                    // TODO: This must be fatal error
+                    evaluator.SetWarning("__clone method called on non-object");
+                    result = OutSet.UndefinedValue;
+                    break;
+                case Operations.ObjectCast:
+                    // TODO: Create new stdClass object and save value as "scalar" field
+                    throw new NotImplementedException();
+                case Operations.ArrayCast:
+                    // TODO: Create new array with the value at the zero position
+                    throw new NotImplementedException();
+                default:
+                    VisitGenericPrimitiveValue<string>(value);
+                    break;
+            }
         }
 
         public void VisitLongintValue(LongintValue value)
@@ -160,7 +484,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.Minus:
                     if ((value.Value == 0) || ((-value.Value) != 0))
                     {
-                        result = evaluator.OutSet.CreateInt(-value.Value);
+                        result = OutSet.CreateInt(-value.Value);
                     }
                     else
                     {
@@ -168,69 +492,56 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         // is the same value. PHP behaves differently. It converts the number
                         // to the same positive value, but that cause overflow. Then integer value
                         // is converted to appropriate double value
-                        result = evaluator.OutSet.CreateDouble(-((double)value.Value));
+                        result = OutSet.CreateDouble(-(System.Convert.ToDouble(value.Value)));
                     }
                     break;
                 case Operations.LogicNegation:
-                    result = evaluator.OutSet.CreateBool(value.Value == 0);
+                    result = OutSet.CreateBool(value.Value == 0);
                     break;
                 case Operations.BitNegation:
-                    result = evaluator.OutSet.CreateInt(~value.Value);
+                    result = OutSet.CreateInt(~value.Value);
                     break;
-                case Operations.Int8Cast:
-                case Operations.Int16Cast:
-                case Operations.Int64Cast:
-                case Operations.UInt8Cast:
-                case Operations.UInt16Cast:
-                case Operations.UInt32Cast:
-                case Operations.UInt64Cast:
-                case Operations.DecimalCast:
-                    Debug.Fail("Cast to different integral types is not supported");
-                    result = value;
+                case Operations.BoolCast:
+                    result = TypeConversion.ToBoolean(OutSet, value);
                     break;
                 case Operations.Int32Cast:
                     result = value;
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = evaluator.OutSet.CreateDouble(System.Convert.ToDouble(value.Value));
+                    result = TypeConversion.ToFloat(OutSet, value);
                     break;
                 case Operations.StringCast:
                 case Operations.UnicodeCast:
-                    // TODO: Use defined function
-                    result = evaluator.OutSet.CreateString(value.Value.ToString());
-                    break;
-                case Operations.BoolCast:
-                    result = evaluator.OutSet.CreateBool(value.Value != 0);
-                    break;
-                case Operations.UnsetCast:
-                    // TOOD: It should destroy the variable. However, the name of variable is not know
-                    // inside UnaryEx method, the variable can have more name and values too.
-                    // TODO: Is resolved to null value
-                    result = evaluator.OutSet.UndefinedValue;
-                    break;
-                case Operations.Clone:
-                    // TODO: Fatal Error
-                    Debug.Fail("Cloning of number causes fatal error");
+                    result = TypeConversion.ToString(OutSet, value);
                     break;
                 case Operations.Print:
+                    // The operator convert value to string and print it. The string value is not used
+                    // to resolve the entire expression. Instead, the false value is returned.
+                    TypeConversion.ToString(OutSet, value);
                     // TODO: This is a quest for tainted analysis
-                    result = evaluator.OutSet.CreateBool(false);
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.Clone:
+                    // TODO: This must be fatal error
+                    evaluator.SetWarning("__clone method called on non-object");
+                    result = OutSet.UndefinedValue;
                     break;
                 case Operations.ObjectCast:
-                case Operations.ArrayCast:
-                case Operations.BinaryCast:
-
-                case Operations.AtSign:
-
-                default:
+                    // TODO: Create new stdClass object and save value as "scalar" field
                     throw new NotImplementedException();
+                case Operations.ArrayCast:
+                    // TODO: Create new array with the value at the zero position
+                    throw new NotImplementedException();
+                default:
+                    VisitGenericPrimitiveValue<int>(value);
+                    break;
             }
         }
 
         public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
-            throw new NotImplementedException();
+            VisitValue(value);
         }
 
         public void VisitIntervalIntegerValue(IntegerIntervalValue value)
@@ -240,7 +551,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public void VisitIntervalLongintValue(LongintIntervalValue value)
         {
-            VisitGenericIntervalValue<long>(value);
+            throw new NotSupportedException();
         }
 
         public void VisitIntervalFloatValue(FloatIntervalValue value)
@@ -249,17 +560,5 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
-
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

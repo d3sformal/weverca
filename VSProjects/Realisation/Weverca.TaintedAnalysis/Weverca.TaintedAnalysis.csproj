@@ -60,7 +60,7 @@
     <Compile Include="ExpressionEvaluator\BinaryOperations.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitor.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluator.cs" />
-    <Compile Include="ExpressionEvaluator\StringConvertVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\TypeConversion.cs" />
     <Compile Include="ExpressionEvaluator\UnaryOperationVisitor.cs" />
     <Compile Include="FlowResolver\ConditionPart.cs" />
     <Compile Include="FlowResolver\ConditionParts.cs" />

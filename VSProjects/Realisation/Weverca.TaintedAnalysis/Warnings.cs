@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using PHP.Core;
+using PHP.Core.AST;
 
 using Weverca.Analysis;
-using PHP.Core;
 using Weverca.Analysis.Memory;
-using Weverca.Parsers;
-using PHP.Core.Parsers;
-using PHP.Core.AST;
 
 namespace Weverca.TaintedAnalysis
 {
     public class AnalysisWarningHandler
     {
-        public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning) 
+        public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning)
         {
             IEnumerable<Value> previousWarnings = ReadWarnings(flowOutSet);
             List<Value> newEntry = new List<Value>(previousWarnings);
@@ -39,16 +35,17 @@ namespace Weverca.TaintedAnalysis
 
     public class AnalysisWarning
     {
-        public string Message { private set; get; }
-        public LangElement LangElement { private set; get; }
-        public AnalysisWarningCause Cause { private set; get; }
+        public string Message { get; private set; }
+        public LangElement LangElement { get; private set; }
+        public AnalysisWarningCause Cause { get; private set; }
+
         public AnalysisWarning(string message, LangElement element)
         {
             Message = message;
             LangElement = element;
         }
 
-        public AnalysisWarning(string message, LangElement element,AnalysisWarningCause cause)
+        public AnalysisWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
             Message = message;
             LangElement = element;
@@ -57,13 +54,15 @@ namespace Weverca.TaintedAnalysis
 
         public override string ToString()
         {
-            return "Warning at line "+LangElement.Position.FirstLine+" char "+LangElement.Position.FirstColumn+": "+Message.ToString();
+            return "Warning at line " + LangElement.Position.FirstLine + " char " + LangElement.Position.FirstColumn + ": " + Message.ToString();
         }
     }
 
     public enum AnalysisWarningCause
     {
         WRONG_NUMBER_OF_ARGUMENTS,
-        WRONG_ARGUMENTS_TYPE
+        WRONG_ARGUMENTS_TYPE,
+        PROPERTY_OF_NON_OBJECT_VARIABLE,
+        UNDEFINED_VALUE,
     }
 }

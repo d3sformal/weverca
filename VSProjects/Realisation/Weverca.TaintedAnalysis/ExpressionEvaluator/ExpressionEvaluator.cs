@@ -17,8 +17,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
     {
         private UnaryOperationVisitor unaryOperationVisitor;
         private BinaryOperationVisitor binaryOperationVisitor;
-        private StringConvertVisitor stringConvertVisitor = new StringConvertVisitor();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionEvaluator" /> class.
+        /// </summary>
         public ExpressionEvaluator()
         {
             unaryOperationVisitor = new UnaryOperationVisitor(this);
@@ -56,11 +58,13 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 // Undefined value means that variable was not initializes, we report that.
                 if (HasMoreValues(entry))
                 {
-                    SetWarning("Reading of possible undefined variable, null is returned");
+                    SetWarning("Reading of possible undefined variable, null is returned",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
                 }
                 else
                 {
-                    SetWarning("Reading of undefined variable, null is returned");
+                    SetWarning("Reading of undefined variable, null is returned",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
                 }
             }
 
@@ -77,6 +81,12 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             var isPossibleNonObject = false;
             var isAtLeastOneObject = false;
 
+            var indeces = new List<ContainerIndex>();
+            foreach (var fieldName in field.PossibleNames)
+            {
+                indeces.Add(OutSet.CreateIndex(fieldName.Value));
+            }
+
             foreach (var variableValue in objectValue.PossibleValues)
             {
                 // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
@@ -90,9 +100,9 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         isAtLeastOneObject = true;
                     }
 
-                    foreach (var fieldName in field.PossibleNames)
+                    foreach (var index in indeces)
                     {
-                        if (fieldName.Value.Equals(String.Empty))
+                        if (index.Identifier.Equals(string.Empty))
                         {
                             // Everything, that can be converted to empty string ("", null, false etc.),
                             // produce empty property that does not represent any memory storage
@@ -103,8 +113,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         }
                         else
                         {
-                            // TODO: It should be created at the beginning of the method
-                            var index = OutSet.CreateIndex(fieldName.Value);
                             // TODO: All fields are undefined after creation.
                             entries.Add(OutSet.GetField(objectInstance, index));
                         }
@@ -123,13 +131,15 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             {
                 if (isAtLeastOneObject)
                 {
-                    SetWarning("Trying to get property of possible non-object variable");
+                    SetWarning("Trying to get property of possible non-object variable",
+                        AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
                     // TODO: Add null value instead of undefined one
                     entries.Add(new MemoryEntry(OutSet.UndefinedValue));
                 }
                 else
                 {
-                    SetWarning("Trying to get property of non-object variable");
+                    SetWarning("Trying to get property of non-object variable",
+                        AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
                     // TODO: Return null value instead of undefined one
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
@@ -141,11 +151,13 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 // Undefined value means that property was not initializes, we report that.
                 if (HasMoreValues(entry))
                 {
-                    SetWarning("Reading of possible undefined property, null is returned");
+                    SetWarning("Reading of possible undefined property, null is returned",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
                 }
                 else
                 {
-                    SetWarning("Reading of undefined property, null is returned");
+                    SetWarning("Reading of undefined property, null is returned",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
                 }
             }
 
@@ -159,22 +171,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override void AliasAssign(VariableEntry target, IEnumerable<AliasValue> alias)
+        public override void AliasAssign(VariableEntry target, IEnumerable<AliasValue> possibleAliases)
         {
-            var enumerator = alias.GetEnumerator();
-            if (enumerator.MoveNext() && (!enumerator.MoveNext()))
-            {
-                enumerator = alias.GetEnumerator();
-                enumerator.MoveNext();
-
-                var value = enumerator.Current;
-                var entry = new MemoryEntry(value);
-                Assign(target, entry);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            var entry = new MemoryEntry(possibleAliases);
+            Assign(target, entry);
         }
 
         public override void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry aliasedField,
@@ -237,7 +237,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 if (possibleObject != null)
                 {
                     string fieldName = targetField.DirectName.Value;
-                    if (fieldName.Equals(String.Empty))
+                    if (fieldName.Equals(string.Empty))
                     {
                         // Everything, that can be converted to empty string ("", null, false etc.),
                         // produce empty property that does not represent any memory storage
@@ -252,7 +252,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 }
                 else
                 {
-                    SetWarning("Attempt to assign property of non-object");
+                    SetWarning("Attempt to assign property of non-object",
+                        AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
                 }
             }
             else
@@ -278,7 +279,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
                         foreach (var fieldName in targetField.PossibleNames)
                         {
-                            if (fieldName.Value.Equals(String.Empty))
+                            if (fieldName.Value.Equals(string.Empty))
                             {
                                 // Everything, that can be converted to empty string ("", null, false etc.),
                                 // produce empty property that does not represent any memory storage
@@ -304,11 +305,13 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 {
                     if (isAtLeastOneObject)
                     {
-                        SetWarning("Possible attempt to assign property of non-object");
+                        SetWarning("Possible attempt to assign property of non-object",
+                            AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
                     }
                     else
                     {
-                        SetWarning("Attempt to assign property of non-object");
+                        SetWarning("Attempt to assign property of non-object",
+                            AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
                     }
                 }
             }
@@ -342,6 +345,45 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
+        public override MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
+        {
+            // TODO: It is not done
+
+            int counter = 0;
+            var array = OutSet.CreateArray();
+            foreach (var keyValue in keyValuePairs)
+            {
+                ContainerIndex index;
+                if (keyValue.Key != null)
+                {
+                    var enumerator = keyValue.Key.PossibleValues.GetEnumerator();
+                    enumerator.MoveNext();
+
+                    var possibleInteger = enumerator.Current as IntegerValue;
+                    if (possibleInteger != null)
+                    {
+                        if (possibleInteger.Value >= 0)
+                        {
+                            counter = possibleInteger.Value + 1;
+                        }
+                    }
+
+                    var key = unaryOperationVisitor.Evaluate(Operations.StringCast, enumerator.Current);
+                    var stringKey = key as StringValue;
+                    index = OutSet.CreateIndex(stringKey.Value);
+                }
+                else
+                {
+                    index = OutSet.CreateIndex(counter.ToString());
+                    ++counter;
+                }
+
+                OutSet.SetIndex(array, index, keyValue.Value);
+            }
+
+            return new MemoryEntry(array);
+        }
+
         public override IEnumerable<string> VariableNames(MemoryEntry variableSpecifier)
         {
             Debug.Assert(HasValues(variableSpecifier), "Every variable must have at least one name");
@@ -349,8 +391,9 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             var names = new HashSet<string>();
             foreach (var possible in variableSpecifier.PossibleValues)
             {
-                possible.Accept(stringConvertVisitor);
-                names.Add(stringConvertVisitor.Value);
+                var value = unaryOperationVisitor.Evaluate(Operations.StringCast, possible);
+                var stringValue = value as StringValue;
+                names.Add(stringValue.Value);
             }
 
             return names;
@@ -369,7 +412,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             {
                 var arrayEnumerator = array.PossibleValues.GetEnumerator();
                 arrayEnumerator.MoveNext();
-                var possibleArray = arrayEnumerator.Current as AssociativeArray;
+
+                AssociativeArray possibleArray;
+                if (arrayEnumerator.Current is UndefinedValue)
+                {
+                    // Array is created, if value of variable is null
+                    possibleArray = OutSet.CreateArray();
+                }
+                else
+                {
+                    possibleArray = arrayEnumerator.Current as AssociativeArray;
+                }
 
                 if (possibleArray != null)
                 {
@@ -380,7 +433,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 else
                 {
                     // TODO: String can be accessed by index too
-                    SetWarning("Cannot assign using a key to variable different from array.");
+                    SetWarning("Cannot assign using a key to variable different from array");
                 }
             }
             else
@@ -406,6 +459,15 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
                         foreach (var containerIndex in indexes)
                         {
+                            IndexAppendValue(possibleArray, containerIndex, assignedValue);
+                        }
+                    }
+                    else if (variableValue is UndefinedValue)
+                    {
+                        foreach (var containerIndex in indexes)
+                        {
+                            // Every value creates new single array
+                            possibleArray = OutSet.CreateArray();
                             IndexAppendValue(possibleArray, containerIndex, assignedValue);
                         }
                     }
@@ -514,6 +576,16 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #endregion
 
+        public void SetWarning(string message)
+        {
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+        }
+
+        public void SetWarning(string message, AnalysisWarningCause cause)
+        {
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+        }
+
         private void AppendValue(VariableName variable, MemoryEntry entry)
         {
             var currentValue = OutSet.ReadValue(variable);
@@ -539,7 +611,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         private bool HasExactlyOneValue(MemoryEntry entry)
         {
             var enumerator = entry.PossibleValues.GetEnumerator();
-            return (enumerator.MoveNext() && !enumerator.MoveNext());
+            return enumerator.MoveNext() && !enumerator.MoveNext();
         }
 
         private bool HasValues(MemoryEntry entry)
@@ -578,11 +650,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
 
             return indexes;
-        }
-
-        private void SetWarning(string message)
-        {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
         }
     }
 }

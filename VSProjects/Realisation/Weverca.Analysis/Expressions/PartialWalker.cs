@@ -11,7 +11,7 @@ namespace Weverca.Analysis.Expressions
     /// <summary>
     /// Partial walker is used for postfix evaluation of Postfix expressions/statements
     /// </summary>
-    class PartialWalker : TreeVisitor
+    internal class PartialWalker : TreeVisitor
     {
         #region Private members
 
@@ -19,14 +19,17 @@ namespace Weverca.Analysis.Expressions
         /// Stack of values (can contains Value or VariableName)
         /// </summary>
         private Stack<IStackValue> _valueStack = new Stack<IStackValue>();
+
         /// <summary>
         /// Available expression evaluator
         /// </summary>
         private ExpressionEvaluatorBase _evaluator;
+
         /// <summary>
         /// Available function resolver
         /// </summary>
         private FunctionResolverBase _functionResolver;
+
         /// <summary>
         /// Controller available for current eval
         /// </summary>
@@ -34,6 +37,11 @@ namespace Weverca.Analysis.Expressions
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PartialWalker" /> class.
+        /// </summary>
+        /// <param name="evaluator"></param>
+        /// <param name="resolver"></param>
         internal PartialWalker(ExpressionEvaluatorBase evaluator, FunctionResolverBase resolver)
         {
             _evaluator = evaluator;
@@ -43,7 +51,7 @@ namespace Weverca.Analysis.Expressions
         #region Internal API for evaluation
 
         /// <summary>
-        /// Evalulate current partial in flow controller
+        /// Evaluate current partial in flow controller
         /// </summary>
         /// <param name="flow">Flow context of partial</param>
         internal void Eval(FlowController flow)
@@ -138,17 +146,18 @@ namespace Weverca.Analysis.Expressions
         /// Pop arguments according to call signature
         /// </summary>
         /// <param name="signature">Popped call signature</param>
-        /// <returns>popped values</returns>
+        /// <returns>Popped values</returns>
         private MemoryEntry[] popArguments(CallSignature signature)
         {
             var parCount = signature.Parameters.Count;
 
-            List<MemoryEntry> parameters = new List<MemoryEntry>();
+            var parameters = new List<MemoryEntry>();
             for (int i = 0; i < parCount; ++i)
             {
-                //TODO maybe no all parameters has to be present
+                // TODO: Maybe no all parameters has to be present
                 parameters.Add(popValue());
             }
+
             parameters.Reverse();
             return parameters.ToArray();
         }
@@ -274,7 +283,7 @@ namespace Weverca.Analysis.Expressions
             var alias = aliasedVariable.ReadAlias(_evaluator);
             assignedVariable.AssignAlias(_evaluator, alias);
 
-            //TODO is there alias or value assign ?
+            // TODO: Is there alias or value assign?
             push(aliasedVariable);
         }
 
@@ -312,7 +321,7 @@ namespace Weverca.Analysis.Expressions
                 _functionResolver.Call(name, arguments);
             }
 
-            //Return value won't be pushed, because it's directly inserted from analysis
+            // Return value won't be pushed, because it's directly inserted from analysis
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
@@ -334,7 +343,7 @@ namespace Weverca.Analysis.Expressions
                 _functionResolver.IndirectCall(name, arguments);
             }
 
-            //Return value won't be pushed, because it's directly inserted from analysis
+            // Return value won't be pushed, because it's directly inserted from analysis
         }
 
         public override void VisitFunctionDecl(FunctionDecl x)
@@ -344,7 +353,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitActualParam(ActualParam x)
         {
-            //TODO what is its stack behaviour ?
+            // TODO: what is its stack behaviour ?
         }
 
         #endregion
@@ -366,6 +375,28 @@ namespace Weverca.Analysis.Expressions
             push(result);
         }
 
+        public override void VisitArrayEx(ArrayEx x)
+        {
+            var operands = new Stack<KeyValuePair<MemoryEntry, MemoryEntry>>(x.Items.Count);
+            for (int i = x.Items.Count - 1; i >= 0; --i)
+            {
+                var value = popValue();
+                MemoryEntry key;
+                if (x.Items[i].Index != null)
+                {
+                    key = popValue();
+                }
+                else
+                {
+                    key = null;
+                }
+                operands.Push(new KeyValuePair<MemoryEntry, MemoryEntry>(key, value));
+            }
+
+            var result = _evaluator.ArrayEx(operands);
+            push(result);
+        }
+
         public override void VisitJumpStmt(JumpStmt x)
         {
             switch (x.Type)
@@ -381,7 +412,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitTypeDecl(TypeDecl x)
         {
-            //no stack behaviour
+            // No stack behaviour
 
             _functionResolver.DeclareGlobal(x);
         }

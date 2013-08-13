@@ -15,20 +15,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        private static Value DoubleToInteger(ExpressionEvaluator evaluator, double value)
-        {
-            // TODO: Mozna bude lepsi pouzit PHP.Core.Convert
-            try
-            {
-                var converted = System.Convert.ToInt32(value);
-                return evaluator.OutSet.CreateInt(converted);
-            }
-            catch (OverflowException)
-            {
-                return evaluator.OutSet.UndefinedValue;
-            }
-        }
-
         public static Value BinaryOperation(ExpressionEvaluator evaluator, BooleanValue leftOperand,
             Operations operation, BooleanValue rightOperand)
         {
@@ -57,7 +43,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.Div:
                     if (rightOperand.Value)
                     {
-                        return evaluator.OutSet.CreateInt(System.Convert.ToInt32(leftOperand.Value));
+                        return TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
                     }
                     else
                     {
@@ -93,7 +79,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.Xor:
                     return evaluator.OutSet.CreateBool(leftOperand.Value != rightOperand.Value);
                 case Operations.Concat:
-                    return evaluator.OutSet.CreateString((leftOperand.Value ? "1" : String.Empty) + (rightOperand.Value ? "1" : String.Empty));
+                    return evaluator.OutSet.CreateString((leftOperand.Value ? "1" : string.Empty) + (rightOperand.Value ? "1" : string.Empty));
                 default:
                     Debug.Fail("There is no other binary operation between integers!");
                     return evaluator.OutSet.AnyValue;
@@ -110,8 +96,23 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     return evaluator.OutSet.CreateBool(true);
                 default:
-                    var intValue = evaluator.OutSet.CreateInt(System.Convert.ToInt32(leftOperand.Value));
-                    return BinaryOperation(evaluator, intValue, operation, rightOperand);
+                    var value = TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
+                    return BinaryOperation(evaluator, value, operation, rightOperand);
+            }
+        }
+
+        public static Value BinaryOperation(ExpressionEvaluator evaluator, BooleanValue leftOperand,
+            Operations operation, FloatValue rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    return evaluator.OutSet.CreateBool(false);
+                case Operations.NotIdentical:
+                    return evaluator.OutSet.CreateBool(true);
+                default:
+                    var value = TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
+                    return BinaryOperation(evaluator, value, operation, rightOperand);
             }
         }
 
@@ -125,8 +126,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     return evaluator.OutSet.CreateBool(true);
                 default:
-                    var intValue = evaluator.OutSet.CreateInt(System.Convert.ToInt32(rightOperand.Value));
-                    return BinaryOperation(evaluator, leftOperand, operation, intValue);
+                    var value = TypeConversion.ToInteger(evaluator.OutSet, rightOperand);
+                    return BinaryOperation(evaluator, leftOperand, operation, value);
             }
         }
 
@@ -242,6 +243,107 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
+        public static Value BinaryOperation(ExpressionEvaluator evaluator, IntegerValue leftOperand,
+            Operations operation, FloatValue rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    return evaluator.OutSet.CreateBool(false);
+                case Operations.NotIdentical:
+                    return evaluator.OutSet.CreateBool(true);
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.Mul:
+                case Operations.Div:
+                    var floatValue = TypeConversion.ToFloat(evaluator.OutSet, leftOperand);
+                    return BinaryOperation(evaluator, floatValue, operation, rightOperand);
+                case Operations.Mod:
+                case Operations.BitAnd:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    var intValue = TypeConversion.ToInteger(evaluator.OutSet, rightOperand);
+                    return BinaryOperation(evaluator, leftOperand, operation, intValue);
+                case Operations.And:
+                    return evaluator.OutSet.CreateBool((leftOperand.Value != 0) && (rightOperand.Value != 0.0));
+                case Operations.Or:
+                    return evaluator.OutSet.CreateBool((leftOperand.Value != 0) || (rightOperand.Value != 0.0));
+                case Operations.Xor:
+                    return evaluator.OutSet.CreateBool((leftOperand.Value != 0) != (rightOperand.Value != 0.0));
+                case Operations.Concat:
+                    return evaluator.OutSet.CreateString(leftOperand.Value.ToString() + rightOperand.Value.ToString());
+                default:
+                    Debug.Fail("There are no other binary operators!");
+                    return null;
+            }
+        }
+
+        public static Value BinaryOperation(ExpressionEvaluator evaluator, FloatValue leftOperand,
+            Operations operation, BooleanValue rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    return evaluator.OutSet.CreateBool(false);
+                case Operations.NotIdentical:
+                    return evaluator.OutSet.CreateBool(true);
+                default:
+                    var value = TypeConversion.ToInteger(evaluator.OutSet, rightOperand);
+                    return BinaryOperation(evaluator, leftOperand, operation, value);
+            }
+        }
+
+        public static Value BinaryOperation(ExpressionEvaluator evaluator, FloatValue leftOperand,
+            Operations operation, IntegerValue rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    return evaluator.OutSet.CreateBool(false);
+                case Operations.NotIdentical:
+                    return evaluator.OutSet.CreateBool(true);
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.Mul:
+                case Operations.Div:
+                    var floatValue = TypeConversion.ToFloat(evaluator.OutSet, rightOperand);
+                    return BinaryOperation(evaluator, leftOperand, operation, floatValue);
+                case Operations.Mod:
+                case Operations.BitAnd:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    var intValue = TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
+                    return BinaryOperation(evaluator, intValue, operation, rightOperand);
+                case Operations.And:
+                    return evaluator.OutSet.CreateBool((leftOperand.Value != 0.0) && (rightOperand.Value != 0));
+                case Operations.Or:
+                    return evaluator.OutSet.CreateBool((leftOperand.Value != 0.0) || (rightOperand.Value != 0));
+                case Operations.Xor:
+                    return evaluator.OutSet.CreateBool((leftOperand.Value != 0.0) != (rightOperand.Value != 0));
+                case Operations.Concat:
+                    return evaluator.OutSet.CreateString(leftOperand.Value.ToString() + rightOperand.Value.ToString());
+                default:
+                    Debug.Fail("There are no other binary operators!");
+                    return null;
+            }
+        }
+
         public static Value BinaryOperation(ExpressionEvaluator evaluator, FloatValue leftOperand,
             Operations operation, FloatValue rightOperand)
         {
@@ -280,18 +382,19 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         return evaluator.OutSet.CreateBool(false);
                     }
                 case Operations.Mod:
-                    // TODO: Incorrect, it trun
-                    var dividend = DoubleToInteger(evaluator, leftOperand.Value) as IntegerValue;
-                    var divisor = DoubleToInteger(evaluator, rightOperand.Value) as IntegerValue;
-                    if ((dividend != null) && (divisor != null))
+                    var dividend = TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
+                    var divisor = TypeConversion.ToInteger(evaluator.OutSet, rightOperand);
+                    if (divisor.Value != 0)
                     {
-                        return evaluator.OutSet.CreateDouble(dividend.Value % divisor.Value);
+                        // Value has the same sign as dividend
+                        return evaluator.OutSet.CreateInt(dividend.Value % divisor.Value);
                     }
                     else
                     {
-                        return dividend;
+                        // TODO: Return warning value
+                        // Division by zero returns false boolean value
+                        return evaluator.OutSet.CreateBool(false);
                     }
-
                 // TODO: Vsechny bitove operace nejdrive prevadeji na int
                 case Operations.BitAnd:
                     return evaluator.OutSet.CreateDouble((int)leftOperand.Value & (int)rightOperand.Value);

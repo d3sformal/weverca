@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using PHP.Core.AST;
-
 
 namespace Weverca.Analysis.Expressions
 {
@@ -32,9 +28,9 @@ namespace Weverca.Analysis.Expressions
     /// <summary>
     /// Visitor for postfix conversion
     /// </summary>
-    class PostfixVisitorConverter : TreeVisitor
+    internal class PostfixVisitorConverter : TreeVisitor
     {
-        Postfix _collectedExpression;
+        private Postfix _collectedExpression;
 
         /// <summary>
         /// Get converted expression of element
@@ -46,7 +42,7 @@ namespace Weverca.Analysis.Expressions
             _collectedExpression = new Postfix(element);
             element.VisitMe(this);
 
-            //element where VisitMe is called is not traversed
+            // Element where VisitMe is called is not traversed
             appendElement(element);
             return _collectedExpression;
         }
@@ -60,21 +56,24 @@ namespace Weverca.Analysis.Expressions
             _collectedExpression.Append(element);
         }
 
-        #region Vistor overrides
+        #region TreeVisitor overrides
+
         public override void VisitElement(LangElement element)
         {
             if (element == null)
             {
                 return;
             }
+
             base.VisitElement(element);
             appendElement(element);
         }
 
         public override void VisitDirectFcnCall(DirectFcnCall x)
-        {    
+        {
             VisitElement(x.IsMemberOf);
-            //force traversing
+
+            // Force traversing
             foreach (var param in x.CallSignature.Parameters)
             {
                 VisitElement(param);
@@ -83,34 +82,61 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
-            //force traversing
+            // Force traversing
             VisitElement(x.IsMemberOf);
-            VisitElement(x.VarNameEx);            
+            VisitElement(x.VarNameEx);
         }
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            //force traversing
+            // Force traversing
             VisitElement(x.IsMemberOf);
         }
 
         public override void VisitJumpStmt(JumpStmt x)
         {
-            //force traversing
+            // Force traversing
             VisitElement(x.Expression);
         }
 
         public override void VisitFunctionDecl(FunctionDecl x)
         {
-            //no recursive traversing            
-            
+            // No recursive traversing
         }
 
         public override void VisitTypeDecl(TypeDecl x)
         {
-            //no recursive traversing
-            
+            // No recursive traversing
         }
+
+        public override void VisitArrayEx(ArrayEx x)
+        {
+            // Force traversing
+            foreach (Item item in x.Items)
+            {
+                // It may not be listed and can be null
+                VisitElement(item.Index);
+
+                var valueItem = item as ValueItem;
+                if (valueItem != null)
+                {
+                    VisitElement(valueItem.ValueExpr);
+                }
+                else
+                {
+                    var refItem = item as RefItem;
+                    if (refItem != null)
+                    {
+                        VisitElement(refItem.RefToGet);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("There is no other array item type");
+                    }
+                }
+            }
+        }
+
         #endregion
     }
 }

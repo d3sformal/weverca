@@ -141,6 +141,14 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Result of unary expression</returns>
         public abstract MemoryEntry UnaryEx(Operations operation, MemoryEntry operand);
 
+        /// <summary>
+        /// Process n-ary operation on given operands
+        /// </summary>
+        /// <param name="operation">Unary operation</param>
+        /// <param name="operands">All operands of operation</param>
+        /// <returns>Result of n-ary expression</returns>
+        public abstract MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs);
+
         #endregion
 
         #region Default implementation of simple routines
@@ -156,7 +164,7 @@ namespace Weverca.Analysis.Expressions
             var aliases = new List<AliasValue>(possibleNames.Length);
             foreach (var aliasedVariable in possibleNames)
             {
-                aliases.Add(Flow.OutSet.CreateAlias(aliasedVariable));
+                aliases.Add(OutSet.CreateAlias(aliasedVariable));
             }
 
             return aliases;

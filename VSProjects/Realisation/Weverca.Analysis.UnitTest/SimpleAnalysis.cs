@@ -244,6 +244,11 @@ namespace Weverca.Analysis.UnitTest
             return new MemoryEntry(result.ToArray());
         }
 
+        public override MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
+        {
+            throw new NotImplementedException();
+        }
+
         #region Expression evaluation helpers
 
         private void keepParentInfo(MemoryEntry parent, MemoryEntry child)
