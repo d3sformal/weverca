@@ -248,6 +248,12 @@ namespace Weverca.Analysis.Expressions
             return new MemoryEntry(result.ToArray());
         }
 
+        public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
+        {
+            //TODO: All functions has to be wrapped to common object            
+            return new MemoryEntry(new FunctionValue(null));
+        }
+
         #endregion
 
         /// <summary>

@@ -351,6 +351,11 @@ namespace Weverca.Analysis.Expressions
             _functionResolver.DeclareGlobal(x);
         }
 
+        public override void VisitLambdaFunctionExpr(LambdaFunctionExpr x)
+        {
+            push(_evaluator.CreateLambda(x));
+        }
+
         public override void VisitActualParam(ActualParam x)
         {
             // TODO: what is its stack behaviour ?
