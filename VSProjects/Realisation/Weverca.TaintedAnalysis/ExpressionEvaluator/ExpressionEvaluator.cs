@@ -571,7 +571,37 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override MemoryEntry ResolveIndexedVariable(VariableEntry variable)
         {
-            return ResolveVariable(variable);
+            var names = variable.PossibleNames;
+            Debug.Assert(names.Length > 0, "Every variable must have at least one name");
+
+            var entries = new List<MemoryEntry>(names.Length);
+            foreach (var name in names)
+            {
+                // TODO: Variable $this cannot be assigned and can be only object or null
+                var entry = OutSet.ReadValue(name);
+                Debug.Assert(HasValues(entry), "Every resolved variable must give at least one value");
+
+                var values = new List<Value>();
+                foreach (var value in entry.PossibleValues)
+                {
+                    var undefined = value as UndefinedValue;
+                    if (undefined != null)
+                    {
+                        var arrayValue = OutSet.CreateArray();
+                        values.Add(arrayValue);
+                    }
+                    else
+                    {
+                        values.Add(value);
+                    }
+                }
+
+                var newEntry = new MemoryEntry(values);
+                OutSet.Assign(name, newEntry);
+                entries.Add(newEntry);
+            }
+
+            return MemoryEntry.Merge(entries);
         }
 
         #endregion
