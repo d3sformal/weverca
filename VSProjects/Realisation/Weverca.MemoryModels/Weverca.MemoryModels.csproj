@@ -40,6 +40,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MemoryModel\ArrayDescriptor.cs" />
+    <Compile Include="MemoryModel\DestroyemoryEntryVisitor.cs" />
+    <Compile Include="MemoryModel\IndexMemoryInfo.cs" />
     <Compile Include="MemoryModel\MemoryAlias.cs" />
     <Compile Include="MemoryModel\MemoryIndex.cs" />
     <Compile Include="MemoryModel\MemoryInfo.cs" />

@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="MemoryModelUnitTest.cs" />
     <Compile Include="MemorySnapshotTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModelTest.cs" />

@@ -8,36 +8,41 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
 {
+    /// <summary>
+    /// 
+    /// </summary>
     class AssignValueVisitor : AbstractValueVisitor
     {
+        private Snapshot snapshot;
         private MemoryIndex index;
-        private MemoryInfo info;
+        private List<Value> values = new List<Value>();
 
-        public AssignValueVisitor(MemoryIndex index, MemoryInfo info)
+        public AssignValueVisitor(Snapshot snapshot, MemoryIndex index)
         {
-            // TODO: Complete member initialization
+            this.snapshot = snapshot;
             this.index = index;
-            this.info = info;
         }
 
         public override void VisitValue(Value value)
         {
-            throw new NotImplementedException();
+            values.Add(value);
         }
 
         public override void VisitAssociativeArray(AssociativeArray value)
         {
-            throw new NotImplementedException();
+            AssociativeArray arrayValue = snapshot.AssignArrayValue(index, value);
+            values.Add(arrayValue);
         }
 
         public override void VisitObjectValue(ObjectValue value)
         {
-            throw new NotImplementedException();
+            ObjectValue objectValue = snapshot.AssignObjectValue(index, value);
+            values.Add(objectValue);
         }
 
         internal MemoryEntry GetCopiedEntry()
         {
-            throw new NotImplementedException();
+            return new MemoryEntry(values);
         }
     }
 }
