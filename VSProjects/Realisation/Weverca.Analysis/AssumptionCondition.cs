@@ -38,6 +38,11 @@ namespace Weverca.Analysis
     public class AssumptionCondition
     {
         /// <summary>
+        /// Holds initial parts for condition equality resolution
+        /// </summary>
+        private readonly Expression[] _initialParts;
+
+        /// <summary>
         /// Form of condition parts conjunction.
         /// </summary>
         public readonly ConditionForm Form;
@@ -46,6 +51,7 @@ namespace Weverca.Analysis
         /// </summary>
         public readonly IEnumerable<Expressions.Postfix> Parts;
 
+
         /// <summary>
         /// Creates assumption condition for given parts
         /// </summary>
@@ -53,6 +59,7 @@ namespace Weverca.Analysis
         /// <param name="parts">Condition parts</param>
         internal AssumptionCondition(ConditionForm form, params Expression[] parts)
         {
+            _initialParts = parts;
             Parts = from part in parts select Expressions.Converter.GetPostfix(part);
             Form = form;
         }
@@ -60,7 +67,7 @@ namespace Weverca.Analysis
         public override int GetHashCode()
         {
             var sum = (int)Form;
-            foreach (var part in Parts)
+            foreach (var part in _initialParts)
             {
                 sum += part.GetHashCode();
             }
@@ -73,9 +80,9 @@ namespace Weverca.Analysis
             if (o == null)
                 return false;
 
-            throw new NotImplementedException("Needs to be reimplemented");
-            var sameCount = Parts.Count() == o.Parts.Count();
-            var sameEls = !Parts.Except(o.Parts).Any();
+
+            var sameCount = _initialParts.Length == o._initialParts.Length;
+            var sameEls = !_initialParts.Except(o._initialParts).Any();
             var sameForms = Form == o.Form;
 
             return sameForms && sameCount && sameEls;

@@ -317,6 +317,23 @@ namespace Weverca.Analysis.UnitTest
         {
             throw new NotImplementedException();
         }
+
+        public override void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable)
+        {
+            if (valueVariable.IsDirect)
+            {
+                var values=new HashSet<Value>();
+                
+                var array=enumeree.PossibleValues.First() as AssociativeArray;
+                var indexes=OutSet.IterateArray(array);
+
+                foreach(var index in indexes){
+                    values.UnionWith(OutSet.GetIndex(array,index).PossibleValues);
+                }
+
+                OutSet.Assign(valueVariable.DirectName, new MemoryEntry(values));
+            }
+        }
     }
 
     /// <summary>
@@ -775,6 +792,7 @@ namespace Weverca.Analysis.UnitTest
         {
             var leftVar = left as DirectVarUse;
             var rightVal = right as StringLiteral;
+            var rightVar = right as DirectVarUse;
 
             if (leftVar == null)
             {
@@ -782,7 +800,15 @@ namespace Weverca.Analysis.UnitTest
                 return;
             }
 
-            _outSet.Assign(leftVar.VarName, _outSet.CreateString(rightVal.Value as string));
+            if (rightVal != null)
+            {
+                _outSet.Assign(leftVar.VarName, _outSet.CreateString(rightVal.Value as string));
+            }
+
+            if (rightVar != null)
+            {
+                _outSet.Assign(leftVar.VarName, _outSet.ReadValue(rightVar.VarName));
+            }
         }
 
         #endregion

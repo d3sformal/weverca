@@ -520,6 +520,22 @@ namespace Weverca.VirtualReferenceModel
             var name = string.Format("$arr{0}#info", arr.ArrayID);
             return new VariableName(name);
         }
+
+
+        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
+        {
+            var arrayPrefix=string.Format("$arr{0}[",iteratedArray.ArrayID);
+            foreach (var variable in _variables.Keys)
+            {
+                var varName = variable.Value;
+                if (!varName.StartsWith(arrayPrefix))
+                    continue;
+
+                var indexIdentifier=varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
+
+                yield return CreateIndex(indexIdentifier);
+            }
+        }
         #endregion
 
         public override string ToString()
@@ -590,14 +606,10 @@ namespace Weverca.VirtualReferenceModel
             return info.ToArray();
         }
 
-        protected override IEnumerable<IEnumerable<ContainerIndex>> iterateObject(ObjectValue iteratedObject)
+        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
             throw new NotImplementedException();
         }
 
-        protected override IEnumerable<IEnumerable<ContainerIndex>> iterateArray(AssociativeArray iteratedArray)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

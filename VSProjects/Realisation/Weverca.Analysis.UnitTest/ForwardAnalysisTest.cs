@@ -213,15 +213,17 @@ if($unknown){
 }
 ".AssertVariable("x").HasValues(true, false);
 
-        readonly static TestCase ForeachIteration_CASE = @"
-$arr=array('val1','val2','val3');
+readonly static TestCase ForeachIteration_CASE = @"
+$arr[0]='val1';
+$arr[1]='val2';
+$arr[2]='val3';
+
 foreach($arr as $value){
     if($unknown ==  $value){
         $test=$value;
     }
 }
-".AssertVariable("test").HasValues("val1","val2","val3");
-
+".AssertVariable("test").HasValues("val1", "val2", "val3");
 
         [TestMethod]
         public void BranchMerge()
@@ -358,7 +360,7 @@ foreach($arr as $value){
             AnalysisTestUtils.RunTestCase(BoolResolving_CASE);
         } 
         
-        //Not implemented yet[TestMethod]
+        [TestMethod]
         public void ForeachIteration()
         {
             AnalysisTestUtils.RunTestCase(ForeachIteration_CASE);

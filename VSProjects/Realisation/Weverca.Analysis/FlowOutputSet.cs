@@ -22,6 +22,8 @@ namespace Weverca.Analysis
         /// Determine that output has changed when flow through statement
         /// </summary>
         internal bool HasChanges { get; private set; }
+
+        private int _commitCount = 0;
         
         internal FlowOutputSet(SnapshotBase snapshot) :
             base(snapshot)
@@ -36,7 +38,9 @@ namespace Weverca.Analysis
         internal void CommitTransaction()
         {
             Snapshot.CommitTransaction();
-            HasChanges = Snapshot.HasChanged;
+
+            HasChanges = Snapshot.HasChanged || _commitCount==0;
+            ++_commitCount;
         }
 
         /// <summary>

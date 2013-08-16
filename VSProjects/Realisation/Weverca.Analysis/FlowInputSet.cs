@@ -74,12 +74,12 @@ namespace Weverca.Analysis
             return Snapshot.GetIndex(value, index);
         }   
         
-        public IEnumerable<IEnumerable<ContainerIndex>> IterateObject(ObjectValue iteratedObject)
+        public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
         {
             return Snapshot.IterateObject(iteratedObject);
         }
 
-        public IEnumerable<IEnumerable<ContainerIndex>> IterateArray(AssociativeArray iteratedArray)
+        public IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray)
         {
             return Snapshot.IterateArray(iteratedArray);
         }

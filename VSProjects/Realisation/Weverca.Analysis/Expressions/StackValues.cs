@@ -71,6 +71,12 @@ namespace Weverca.Analysis.Expressions
         {
             evaluator.AliasedFieldAssign(_objectValue, _fieldEntry, possibleAliasses);
         }
+
+
+        public VariableEntry GetVariableEntry()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -109,6 +115,12 @@ namespace Weverca.Analysis.Expressions
         {
             return evaluator.ResolveAlias(_entry);
         }
+
+
+        public VariableEntry GetVariableEntry()
+        {
+            return _entry;
+        }
     }
 
     /// <summary>
@@ -146,6 +158,12 @@ namespace Weverca.Analysis.Expressions
         }
 
         public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public VariableEntry GetVariableEntry()
         {
             throw new NotImplementedException();
         }

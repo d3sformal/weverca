@@ -681,5 +681,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
             return indexes;
         }
+
+        public override void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

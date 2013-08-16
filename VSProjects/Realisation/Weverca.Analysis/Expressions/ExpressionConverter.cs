@@ -99,6 +99,16 @@ namespace Weverca.Analysis.Expressions
             VisitElement(x.Expression);
         }
 
+        public override void VisitForeachStmt(ForeachStmt x)
+        {
+            // Traverse only header
+            if (x.KeyVariable != null)
+                VisitElement(x.KeyVariable.Variable);
+            if (x.ValueVariable != null)
+                VisitElement(x.ValueVariable.Variable);
+            VisitElement(x.Enumeree);
+
+        }
         public override void VisitFunctionDecl(FunctionDecl x)
         {
             // No recursive traversing
@@ -108,6 +118,8 @@ namespace Weverca.Analysis.Expressions
         {
             // No recursive traversing
         }
+
+
 
         public override void VisitArrayEx(ArrayEx x)
         {

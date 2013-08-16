@@ -34,7 +34,12 @@ namespace Weverca.Analysis
         /// </summary>
         private readonly HashSet<PartialExtension<string>> _containingIncludeExtensions = new HashSet<PartialExtension<string>>();
 
-        #endregion 
+        /// <summary>
+        /// Set of processed blocks - is used for avoiding cycling at graph building
+        /// </summary>
+        private readonly HashSet<BasicBlock> _processedBlocks = new HashSet<BasicBlock>();
+
+        #endregion
 
 
         #region Public fields
@@ -208,6 +213,16 @@ namespace Weverca.Analysis
         /// <param name="block">Block which first statement generates child</param>
         private void addChild(ProgramPoint parent, BasicBlock block)
         {
+            //Check that given basic block is not already processed
+            if (_processedBlocks.Contains(block))
+            {
+                fillWithBlockEntry(parent, block);
+                return;
+            }
+
+            _processedBlocks.Add(block);
+
+
             var current = parent;
             foreach (var stmt in block.Statements)
             {
@@ -241,7 +256,62 @@ namespace Weverca.Analysis
                 }
             }
         }
-                
+
+        private void fillWithBlockEntry(ProgramPoint point, BasicBlock block, HashSet<BasicBlock> fillingBlocks=null)
+        {
+            if (fillingBlocks == null)
+            {
+                fillingBlocks = new HashSet<BasicBlock>();
+            }
+
+            if (!fillingBlocks.Add(block))
+            {
+                //empty cycle
+                point.AddChild(point);                
+                return;
+            }
+
+            //parent has to point to first statement of block
+            if (block.Statements.Count > 0)
+            {
+                var entryPoint = getStatement(block.Statements[0], block);
+                point.AddChild(entryPoint);
+                return;
+            }
+            else
+            {
+                var conditionExpressions = new List<Expression>();
+                foreach (var edge in block.OutgoingEdges)
+                {
+                    //every outgoing edge is child of point, because of empty block body
+                    point.AddChild(getCondition(edge.Condition, block));
+                    conditionExpressions.Add(edge.Condition);
+                }
+
+                if (conditionExpressions.Count == 0)
+                {
+                    //there is no program point on default branch     
+
+                    if (block.DefaultBranch != null)
+                    {
+                        fillWithBlockEntry(point, block.DefaultBranch.To, fillingBlocks);
+                    }
+                    else
+                    {
+                        //TODO Are there cases, where point wont get to EndPoint ?
+                    }
+                    
+                }
+                else
+                {
+                    //there is program point on default branch
+                    var defaultPoint = getDefaultBranch(conditionExpressions, block);
+                    point.AddChild(defaultPoint);
+                }
+            }
+            
+        }
+
         /// <summary>
         /// Get program point indexed by default branch of given expressions. If there is no such a point, new is created.
         /// </summary>

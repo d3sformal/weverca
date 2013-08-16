@@ -149,6 +149,17 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Result of n-ary expression</returns>
         public abstract MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs);
 
+        /// <summary>
+        /// Process foreach statement on given variables
+        /// <remarks>
+        ///  Is intented to store all possible values from enumeration into keyVariable and valueVariable
+        /// </remarks>
+        /// </summary>
+        /// <param name="enumeree">Enumerated value</param>
+        /// <param name="keyVariable">Varible where keys are stored</param>
+        /// <param name="valueVariable">Variable where values are stored</param>
+        public abstract void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable);
+
         #endregion
 
         #region Default implementation of simple routines

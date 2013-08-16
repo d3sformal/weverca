@@ -77,11 +77,11 @@ namespace Weverca.Analysis.Memory
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
         /// <summary>
-        /// Create possible iterators for given object
+        /// Iterator for given object
         /// </summary>
-        /// <param name="iteratedObject">Object which iterators will be created</param>
-        /// <returns>Possible iterators for given object</returns>
-        protected abstract IEnumerable<IEnumerable<ContainerIndex>> iterateObject(ObjectValue iteratedObject);
+        /// <param name="iteratedObject">Object which iterator will be created</param>
+        /// <returns>Iterator for given object</returns>
+        protected abstract IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject);
 
         /// <summary>
         /// Initialize array
@@ -89,11 +89,11 @@ namespace Weverca.Analysis.Memory
         /// <param name="createdArray">Created array that has to be initalized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
         /// <summary>
-        /// Create possible iterators for given array
+        /// Create iterator for given array
         /// </summary>
-        /// <param name="iteratedArray">Aray which iterators will be created</param>
-        /// <returns>Possible iterators for given array</returns>
-        protected abstract IEnumerable<IEnumerable<ContainerIndex>> iterateArray(AssociativeArray iteratedArray);
+        /// <param name="iteratedArray">Aray which iterator will be created</param>
+        /// <returns>Iterators for given array</returns>
+        protected abstract IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray);
 
         /// <summary>
         /// Create alias for given variable
@@ -668,13 +668,13 @@ namespace Weverca.Analysis.Memory
             return resolveType(typeName);
         }
 
-        public IEnumerable<IEnumerable<ContainerIndex>> IterateObject(ObjectValue iteratedObject)
+        public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
         {
             ++_statistics.ObjectIterations;
             return iterateObject(iteratedObject);
         }
 
-        public IEnumerable<IEnumerable<ContainerIndex>> IterateArray(AssociativeArray iteratedArray)
+        public IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray)
         {
             ++_statistics.ArrayIterations;
             return iterateArray(iteratedArray);

@@ -148,11 +148,14 @@ namespace Weverca.Analysis
         /// <param name="point">Resolved program point</param>
         private void enqueueWorkDependencies(ProgramPoint point)
         {
-            foreach (var child in point.Children)
+            if (point.OutSet.HasChanges)
             {
-                enqueueWork(child);
+                foreach (var child in point.Children)
+                {
+                    enqueueWork(child);
+                }
+                point.ResetChanges();
             }
-            point.ResetChanges();
         }
 
         /// <summary>

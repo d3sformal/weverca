@@ -366,6 +366,11 @@ namespace Weverca.Analysis.Expressions
             // TODO: what is its stack behaviour ?
         }
 
+        public override void VisitBlockStmt(BlockStmt x)
+        {
+            // TODO: what is its stack behaviour ?
+        }
+
         #endregion
 
         public override void VisitBinaryEx(BinaryEx x)
@@ -440,6 +445,26 @@ namespace Weverca.Analysis.Expressions
             var possibleFiles = popValue();
 
             _flow.FlowResolver.Include(_flow, possibleFiles);
+        }
+
+        public override void VisitForeachStmt(ForeachStmt x)
+        {
+            var enumerre = popValue();
+
+            VariableEntry keyVar=null;
+            VariableEntry valueVar=null;
+
+            if (x.KeyVariable != null)
+            {                
+                keyVar = popLValue().GetVariableEntry();
+            }
+
+            if (x.ValueVariable != null)
+            {
+                valueVar = popLValue().GetVariableEntry();
+            }
+
+            _evaluator.Foreach(enumerre, keyVar, valueVar);
         }
 
         #endregion

@@ -37,6 +37,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="evaluator">Evaluator used for reading value</param>
         /// <returns>Read alias</returns>
         IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator);
+
+        
     }
 
     interface LValue:IStackValue
@@ -54,5 +56,7 @@ namespace Weverca.Analysis.Expressions
         /// <param name="evaluator">Evaluator used for assigning value</param>
         /// <param name="possibleAliasses">Assigned aliases</param>
         void AssignAlias(ExpressionEvaluatorBase evaluator, IEnumerable<AliasValue> possibleAliasses);
+
+        VariableEntry GetVariableEntry();
     }
 }
