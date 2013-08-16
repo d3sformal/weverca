@@ -516,5 +516,15 @@ namespace Weverca.MemoryModels.MemoryModel
 
 
 
+
+        protected override IEnumerable<IEnumerable<ContainerIndex>> iterateObject(ObjectValue iteratedObject)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<IEnumerable<ContainerIndex>> iterateArray(AssociativeArray iteratedArray)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

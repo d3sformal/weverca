@@ -77,10 +77,24 @@ namespace Weverca.Analysis.Memory
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
         /// <summary>
+        /// Create possible iterators for given object
+        /// </summary>
+        /// <param name="iteratedObject">Object which iterators will be created</param>
+        /// <returns>Possible iterators for given object</returns>
+        protected abstract IEnumerable<IEnumerable<ContainerIndex>> iterateObject(ObjectValue iteratedObject);
+
+        /// <summary>
         /// Initialize array
         /// </summary>
         /// <param name="createdArray">Created array that has to be initalized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
+        /// <summary>
+        /// Create possible iterators for given array
+        /// </summary>
+        /// <param name="iteratedArray">Aray which iterators will be created</param>
+        /// <returns>Possible iterators for given array</returns>
+        protected abstract IEnumerable<IEnumerable<ContainerIndex>> iterateArray(AssociativeArray iteratedArray);
+
         /// <summary>
         /// Create alias for given variable
         /// </summary>
@@ -653,6 +667,19 @@ namespace Weverca.Analysis.Memory
             ++_statistics.TypeResolvings;
             return resolveType(typeName);
         }
+
+        public IEnumerable<IEnumerable<ContainerIndex>> IterateObject(ObjectValue iteratedObject)
+        {
+            ++_statistics.ObjectIterations;
+            return iterateObject(iteratedObject);
+        }
+
+        public IEnumerable<IEnumerable<ContainerIndex>> IterateArray(AssociativeArray iteratedArray)
+        {
+            ++_statistics.ArrayIterations;
+            return iterateArray(iteratedArray);
+        }
+
         #endregion
 
         #region Snapshot private helpers
@@ -674,5 +701,7 @@ namespace Weverca.Analysis.Memory
         }
         #endregion
 
+
+ 
     }
 }

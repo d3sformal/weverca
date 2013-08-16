@@ -9,6 +9,20 @@ namespace Weverca.Analysis.Memory
     public interface ISnapshotReadonly
     {
         /// <summary>
+        /// Create possible iterators for given object
+        /// </summary>
+        /// <param name="iteratedObject">Object which iterators will be created</param>
+        /// <returns>Possible iterators for given object</returns>
+         IEnumerable<IEnumerable<ContainerIndex>> IterateObject(ObjectValue iteratedObject);
+
+        /// <summary>
+        /// Create possible iterators for given array
+        /// </summary>
+        /// <param name="iteratedArray">Aray which iterators will be created</param>
+        /// <returns>Possible iterators for given array</returns>
+        IEnumerable<IEnumerable<ContainerIndex>> IterateArray(AssociativeArray iteratedArray);
+
+        /// <summary>
         /// Get value from object at specified field
         /// </summary>
         /// <param name="objectValue">Object which field is resolved</param>

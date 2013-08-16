@@ -231,6 +231,30 @@ namespace Weverca.Analysis.Expressions
         }
 
         /// <summary>
+        /// Get value representation of given constant
+        /// </summary>
+        /// <param name="x">Constant</param>
+        /// <returns>Represented value</returns>
+        public virtual MemoryEntry Constant(GlobalConstUse x)
+        {
+            Value result;
+            switch (x.Name.Name.Value)
+            {
+                case "true":
+                    result = OutSet.CreateBool(true);
+                    break;
+                case "false":
+                    result = OutSet.CreateBool(false);
+                    break;
+                default:
+                    result = OutSet.UndefinedValue;
+                    break;
+            }
+
+            return new MemoryEntry(result);
+        }
+
+        /// <summary>
         /// Create object value of given type
         /// </summary>
         /// <param name="typeName">Object type specifier</param>

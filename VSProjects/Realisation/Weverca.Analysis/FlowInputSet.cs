@@ -72,6 +72,16 @@ namespace Weverca.Analysis
         public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
         {
             return Snapshot.GetIndex(value, index);
+        }   
+        
+        public IEnumerable<IEnumerable<ContainerIndex>> IterateObject(ObjectValue iteratedObject)
+        {
+            return Snapshot.IterateObject(iteratedObject);
+        }
+
+        public IEnumerable<IEnumerable<ContainerIndex>> IterateArray(AssociativeArray iteratedArray)
+        {
+            return Snapshot.IterateArray(iteratedArray);
         }
         #endregion
 
@@ -80,5 +90,7 @@ namespace Weverca.Analysis
         {
             return Snapshot.ToString();
         }
+
+ 
     }
 }

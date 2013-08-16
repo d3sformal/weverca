@@ -50,6 +50,8 @@ namespace Weverca.Analysis.Memory
         public int ValueInfoSettings;
         public int ValueInfoReads;
         public int VariableInfoReads;
+        public int ObjectIterations;
+        public int ArrayIterations;
 
         internal SnapshotStatistics Clone()
         {

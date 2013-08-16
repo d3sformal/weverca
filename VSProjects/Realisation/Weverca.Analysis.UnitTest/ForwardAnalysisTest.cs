@@ -205,7 +205,22 @@ if($unknown){
 }
 ".AssertVariable("x").IsXSSDirty();
 
+        readonly static TestCase BoolResolving_CASE = @"
+if($unknown){
+    $x=true;
+}else{
+    $x=false;
+}
+".AssertVariable("x").HasValues(true, false);
 
+        readonly static TestCase ForeachIteration_CASE = @"
+$arr=array('val1','val2','val3');
+foreach($arr as $value){
+    if($unknown ==  $value){
+        $test=$value;
+    }
+}
+".AssertVariable("test").HasValues("val1","val2","val3");
 
 
         [TestMethod]
@@ -335,6 +350,18 @@ if($unknown){
         public void XSSPossibleDirty()
         {
             AnalysisTestUtils.RunTestCase(XSSPossibleDirty_CASE);
+        }
+
+        [TestMethod]
+        public void BoolResolving()
+        {
+            AnalysisTestUtils.RunTestCase(BoolResolving_CASE);
+        } 
+        
+        //Not implemented yet[TestMethod]
+        public void ForeachIteration()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachIteration_CASE);
         }
     }
 }

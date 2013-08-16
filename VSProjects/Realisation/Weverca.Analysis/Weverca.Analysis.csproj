@@ -82,6 +82,7 @@
     <Compile Include="Memory\SnapshotStatistics.cs" />
     <Compile Include="Memory\SpecialValues.cs" />
     <Compile Include="Memory\StructuredValues.cs" />
+    <Compile Include="Memory\ContainerIteratorBase.cs" />
     <Compile Include="Memory\Value.cs" />
     <Compile Include="Deprecated\ProgramPoint.cs" />
     <Compile Include="Deprecated\ProgramPointGraph.cs" />

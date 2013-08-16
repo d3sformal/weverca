@@ -226,6 +226,11 @@ namespace Weverca.Analysis.Expressions
             push(_evaluator.NullLiteral(x));
         }
 
+        public override void VisitGlobalConstUse(GlobalConstUse x)
+        {
+            push(_evaluator.Constant(x));
+        }
+
         #endregion
 
         #region Variable visiting
