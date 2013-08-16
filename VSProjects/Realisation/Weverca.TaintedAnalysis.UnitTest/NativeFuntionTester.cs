@@ -152,16 +152,16 @@ namespace Weverca.TaintedAnalysis.UnitTest
         ";
 
         string correctArgumentType4 = @"
-            $a['a']='string';
+             $a=array(1,0,1,5,8,7);
             sort($a,5);
         ";
 
         string correctArgumentType5 = @"
-            $b[0]=4;
+             $b=array('a','a','a');
             usort($b,'cmp');
         ";
 
-        //failed test - mozno chyba vo frameworku mozno v expression resolveri, niesom si isty
+
         string correctArgumentType6 = @"
             $b[0]=4;
             $b[1]=5;

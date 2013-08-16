@@ -491,7 +491,7 @@ namespace Weverca.TaintedAnalysis
             }
         }
 
-        private static VariableName argument(int index)
+        internal static VariableName argument(int index)
         {
             if (index < 0)
             {
@@ -511,8 +511,7 @@ namespace Weverca.TaintedAnalysis
                 $e=strstr('a',4,8);
                 $f=max(2,'aaa',$e);
                 $g=htmlspecialchars('a');*/
-                $a['7']=4;
-                $x=$_POST['dirty'];
+                $a[$i]=5;
                 
                 ";
                 var fileName = "./cfg_test.php";
@@ -531,8 +530,9 @@ namespace Weverca.TaintedAnalysis
                 {
                     Console.WriteLine(warning);
                 }
-                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadInfo(new VariableName("x")));
 
+                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadInfo(new VariableName("a")));
+                Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));
             }
             catch (Exception e)
             {
@@ -574,6 +574,7 @@ namespace Weverca.TaintedAnalysis
                     possibleValues.Add(NativeFunctionAnalyzer.getReturnValue(nativeFunction, flow));
                 }
             }
+
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
         }
     }
