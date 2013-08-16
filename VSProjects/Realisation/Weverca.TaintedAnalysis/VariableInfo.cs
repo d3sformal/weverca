@@ -76,6 +76,11 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
+        public static void CopyFlags(FlowController flow, Value source, Value value)
+        {
+            CopyFlags(flow, new MemoryEntry(source), value);
+        }
+
         public static void CopyFlags(FlowController flow, IEnumerable<MemoryEntry> source, MemoryEntry target)
         {
             foreach (var value in target.PossibleValues)
