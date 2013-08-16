@@ -22,13 +22,7 @@ namespace Weverca.TaintedAnalysis
         /// <summary>
         /// Table of native analyzers
         /// </summary>
-        private readonly Dictionary<string, NativeAnalyzerMethod> _nativeAnalyzers = new Dictionary<string, NativeAnalyzerMethod>()
-        {
-            {"strtolower",_strtolower},
-            {"strtoupper",_strtoupper},
-            {"concat",_concat},
-            {"__constructor",_constructor},
-        };
+       
 
         internal FunctionResolver()
         {
@@ -101,82 +95,6 @@ namespace Weverca.TaintedAnalysis
             var flattenValues = possibleMemoryEntries.SelectMany((i) => i);
 
             return new MemoryEntry(flattenValues.ToArray());
-        }
-
-        #endregion
-
-        #region Native analyzers
-
-
-        /// <summary>
-        /// Analyzer method for strtolower php function
-        /// </summary>
-        /// <param name="flow"></param>
-        private static void _strtolower(FlowController flow)
-        {
-            var arg = flow.InSet.ReadValue(argument(0));
-            var possibleValues = new List<Value>();
-
-            foreach (var possible in arg.PossibleValues)
-            {
-                if (possible is StringValue)
-                {
-                    var lower = flow.OutSet.CreateString(((StringValue)possible).Value.ToLower());
-                    possibleValues.Add(lower);
-                }
-                else
-                {
-                    possibleValues.Add(flow.OutSet.AnyValue);
-                }
-            }
-
-            var output = new MemoryEntry(possibleValues.ToArray());
-
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
-        }
-
-        /// <summary>
-        /// Analyzer method for strtolower php function
-        /// </summary>
-        /// <param name="flow"></param>
-        private static void _strtoupper(FlowController flow)
-        {
-            var arg = flow.InSet.ReadValue(argument(0));
-
-            var possibleValues = new List<StringValue>();
-
-            foreach (StringValue possible in arg.PossibleValues)
-            {
-                var lower = flow.OutSet.CreateString(possible.Value.ToUpper());
-                possibleValues.Add(lower);
-            }
-
-            var output = new MemoryEntry(possibleValues.ToArray());
-
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
-        }
-
-        private static void _concat(FlowController flow)
-        {
-            var arg0 = flow.InSet.ReadValue(argument(0));
-            var arg1 = flow.InSet.ReadValue(argument(1));
-
-            var possibleValues = new List<StringValue>();
-
-            foreach (StringValue possible0 in arg0.PossibleValues)
-            {
-                foreach (StringValue possible1 in arg1.PossibleValues)
-                {
-                    possibleValues.Add(flow.OutSet.CreateString(possible0.Value + possible1.Value));
-                }
-            }
-
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
-        }
-
-        private static void _constructor(FlowController flow)
-        {
-            //  flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
         }
 
         #endregion
@@ -260,16 +178,15 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
-        private HashSet<LangElement> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        private HashSet<LangElement> resolveMethod(MemoryEntry thisObject, QualifiedName name)
         {
             NativeAnalyzerMethod analyzer;
 
             var result = new HashSet<LangElement>();
 
-            if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
+            if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
-                //we have native analyzer - create it's program point 
-                result.Add(new NativeAnalyzer(analyzer,Flow.CurrentPartial));
+                result.Add(new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
             }
             else
             {

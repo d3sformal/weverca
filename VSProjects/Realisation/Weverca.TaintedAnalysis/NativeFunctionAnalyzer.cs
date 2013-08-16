@@ -152,9 +152,9 @@ namespace Weverca.TaintedAnalysis
             while (it.MoveNext())
             {
                 Console.WriteLine(it.Current);
-
-            }
-            */
+                
+            }*/
+            
             
             /*foreach(var fnc in instance.allNativeFunctions)
             {
@@ -384,45 +384,40 @@ namespace Weverca.TaintedAnalysis
                         break;
                     case "int":
                     case "integer":
-                        if (value.GetType() != typeof(IntegerIntervalValue) && value.GetType() != typeof(IntegerValue) && value.GetType() != typeof(AnyIntegerValue) && value.GetType() != typeof(LongintValue) && value.GetType() != typeof(AnyLongintValue) && value.GetType() != typeof(LongintIntervalValue))
+                        if (!(ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value)))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "float":
-                        if (value.GetType() != typeof(FloatIntervalValue) && value.GetType() != typeof(FloatValue) && value.GetType() != typeof(AnyFloatValue) && value.GetType() != typeof(IntegerIntervalValue) && value.GetType() != typeof(IntegerValue) && value.GetType() != typeof(AnyIntegerValue) && value.GetType() != typeof(LongintValue) && value.GetType() != typeof(AnyLongintValue) && value.GetType() != typeof(LongintIntervalValue))
-                        {
-                            argumentMatches = false;
-                        }
-                        break;
                     case "number":
-                        if (value.GetType() != typeof(FloatIntervalValue) && value.GetType() != typeof(FloatValue) && value.GetType() != typeof(AnyFloatValue) && value.GetType() != typeof(IntegerIntervalValue) && value.GetType() != typeof(IntegerValue) && value.GetType() != typeof(AnyIntegerValue) && value.GetType() != typeof(LongintValue) && value.GetType() != typeof(AnyLongintValue) && value.GetType() != typeof(LongintIntervalValue))
+                        if (!(ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value) || ValueTypeResolver.isFloat(value)))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "string":
                     case "char":
-                        if(value.GetType()!=typeof(StringValue) && value.GetType()!=typeof(AnyStringValue))
+                        if (!ValueTypeResolver.isString(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "array":
-                        if(value.GetType()!=typeof(AssociativeArray) && value.GetType()!=typeof(AnyArrayValue))
+                        if(!ValueTypeResolver.isArray(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "object":
-                        if(value.GetType()!=typeof(ObjectValue) && value.GetType()!=typeof(AnyObjectValue))
+                        if(!ValueTypeResolver.isObject(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "bool":
                     case "boolean":
-                        if(value.GetType()!=typeof(BooleanValue) && value.GetType()!=typeof(AnyBooleanValue))
+                        if(!ValueTypeResolver.isBool(value))
                         {
                             argumentMatches = false;
                         }
@@ -509,8 +504,8 @@ namespace Weverca.TaintedAnalysis
 /*
                 $c=max(1,2,3,4);
                 $e=strstr('a',4,8);
-                $f=max(2,'aaa',$e);
-                $g=htmlspecialchars('a');*/
+                $f=max(2,'aaa',$e);*/
+                $g=htmlspecialchars('a');
                 $a[$i]=5;
                 
                 ";
@@ -538,6 +533,19 @@ namespace Weverca.TaintedAnalysis
             {
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
+            }
+        }
+
+        public static bool CanBeDirty(Value value)
+        {
+            var valueType=value.GetType();
+            if(valueType==typeof(BooleanValue))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
     }
@@ -575,7 +583,63 @@ namespace Weverca.TaintedAnalysis
                 }
             }
 
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+            List<MemoryEntry> arguments = new List<MemoryEntry>();
+            for(int i=0;i<argumentCount;i++)
+            {
+                arguments.Add(flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(i)));
+            }
+
+            MemoryEntry functionResult = new MemoryEntry(possibleValues.ToArray());
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
+            foreach (var value in functionResult.PossibleValues)
+            {
+                if (NativeFunctionAnalyzer.CanBeDirty(value))
+                {
+                    VariableInfoHandler.CopyFlags(flow, arguments, value);
+                }
+            }
         }
     }
+
+
+
+
+    class ValueTypeResolver
+    {
+        public static bool isInt(Value value)
+        {
+            return (value.GetType() == typeof(IntegerIntervalValue) || value.GetType() == typeof(IntegerValue) || value.GetType() == typeof(AnyIntegerValue));
+        }
+
+        public static bool isLong(Value value)
+        {
+            return (value.GetType() == typeof(LongintValue) || value.GetType() == typeof(AnyLongintValue) || value.GetType() == typeof(LongintIntervalValue));
+        }
+
+        public static bool isFloat(Value value)
+        {
+            return (value.GetType() == typeof(FloatIntervalValue) || value.GetType() == typeof(FloatValue) || value.GetType() == typeof(AnyFloatValue));
+        }
+
+        public static bool isBool(Value value)
+        {
+            return (value.GetType() == typeof(BooleanValue) || value.GetType() == typeof(AnyBooleanValue));
+        }
+
+        public static bool isString(Value value)
+        {
+            return (value.GetType() == typeof(StringValue) || value.GetType() == typeof(AnyStringValue));
+        }
+
+        public static bool isObject(Value value)
+        {
+            return (value.GetType() == typeof(ObjectValue) || value.GetType() == typeof(AnyObjectValue));
+        }
+
+        public static bool isArray(Value value)
+        {
+            return (value.GetType() == typeof(AssociativeArray) || value.GetType() == typeof(AnyArrayValue));
+        }
+    }
+
 }

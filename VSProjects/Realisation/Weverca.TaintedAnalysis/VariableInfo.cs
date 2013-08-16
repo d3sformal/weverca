@@ -28,40 +28,39 @@ namespace Weverca.TaintedAnalysis
             }
         }
 
-        public static void setDirty(FlowController flow, Value value, DirtyType dirty)
+
+        private static Dictionary<DirtyType, bool> MergeAndCreateVariableInfo(FlowController flow, Value value)
         {
-            InfoValue<VariableInfo>[] InfoValue = (InfoValue<VariableInfo>[])flow.OutSet.ReadInfo(value);
+
+            InfoValue[] infos = flow.OutSet.ReadInfo(value);
             Dictionary<DirtyType, bool> dirtyFlags = VariableInfo.CreateDirtyFlags();
 
-            foreach (var info in InfoValue)
+            foreach (var info in infos)
             {
-                Array values = DirtyType.GetValues(typeof(DirtyType));
-                foreach (DirtyType val in values)
+                if (info.GetType() == typeof(InfoValue<VariableInfo>))
                 {
-                    dirtyFlags[val] |= info.Data.isDirty(val);
+                    Array values = DirtyType.GetValues(typeof(DirtyType));
+                    foreach (DirtyType val in values)
+                    {
+                        dirtyFlags[val] |= ((InfoValue<VariableInfo>)info).Data.isDirty(val);
+                    }
                 }
             }
+            return dirtyFlags;
+        }
 
-            VariableInfo newInfo = new VariableInfo(dirtyFlags);
-            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[1] {flow.OutSet.CreateInfo(newInfo)});
+        public static void setDirty(FlowController flow, Value value, DirtyType dirty)
+        {
+            VariableInfo newInfo = new VariableInfo(MergeAndCreateVariableInfo(flow,value));
+            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] {flow.OutSet.CreateInfo(newInfo)});
         }
 
         public static void setClean(FlowController flow, Value value, DirtyType dirty)
         {
-            InfoValue<VariableInfo>[] InfoValue = (InfoValue<VariableInfo>[])flow.OutSet.ReadInfo(value);
-            Dictionary<DirtyType, bool> dirtyFlags = VariableInfo.CreateDirtyFlags();
-
-            foreach (var info in InfoValue)
-            {
-                Array values = DirtyType.GetValues(typeof(DirtyType));
-                foreach (DirtyType val in values)
-                {
-                    dirtyFlags[val] |= info.Data.isDirty(val);
-                }
-            }
-            dirtyFlags[dirty] = false;
-            VariableInfo newInfo = new VariableInfo(dirtyFlags);
-            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[1] { flow.OutSet.CreateInfo(newInfo) });
+            var flags = MergeAndCreateVariableInfo(flow, value);
+            flags[dirty] = false;
+            VariableInfo newInfo = new VariableInfo(flags);
+            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] { flow.OutSet.CreateInfo(newInfo) });
         }
 
         public static bool isDirty(FlowController flow, Value value, DirtyType dirty)
@@ -69,9 +68,72 @@ namespace Weverca.TaintedAnalysis
             bool result=false;
             foreach(InfoValue info in flow.OutSet.ReadInfo(value))
             {
-                result|=((InfoValue<VariableInfo>)info).Data.isDirty(dirty);
+                if (info.GetType() == typeof(InfoValue<VariableInfo>))
+                {
+                    result |= ((InfoValue<VariableInfo>)info).Data.isDirty(dirty);
+                }
             }
             return result;
+        }
+
+        public static void CopyFlags(FlowController flow, IEnumerable<MemoryEntry> source, MemoryEntry target)
+        {
+            foreach (var value in target.PossibleValues)
+            {
+                CopyFlags(flow, source, value);
+            }
+        }
+
+        public static void CopyFlags(FlowController flow, MemoryEntry source, MemoryEntry target)
+        {
+            foreach (var value in target.PossibleValues)
+            {
+                CopyFlags(flow, source, value);
+            }
+        }
+
+        public static void CopyFlags(FlowController flow, IEnumerable<MemoryEntry> source, Value value)
+        {
+            var dirtyFlags = VariableInfo.CreateDirtyFlags();
+            foreach (var entry in source)
+            {
+                var functionResult = copyFlags(flow, entry);
+                dirtyFlags = mergeFlags(dirtyFlags, functionResult);
+            }
+
+         
+            VariableInfo newInfo = new VariableInfo(dirtyFlags);
+            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] { flow.OutSet.CreateInfo(newInfo) });
+        }
+
+        public static void CopyFlags(FlowController flow, MemoryEntry source, Value value)
+        {
+            var dirtyFlags = copyFlags(flow, source);
+           
+            VariableInfo newInfo = new VariableInfo(dirtyFlags);
+            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] { flow.OutSet.CreateInfo(newInfo) });
+            
+        }
+
+        private static Dictionary<DirtyType, bool> copyFlags(FlowController flow, MemoryEntry source)
+        {
+            var dirtyFlags = VariableInfo.CreateDirtyFlags();
+            foreach (Value value in source.PossibleValues)
+            {
+                var functionResult=MergeAndCreateVariableInfo(flow, value);
+                dirtyFlags = mergeFlags(dirtyFlags, functionResult);
+            }
+            return dirtyFlags;
+        }
+
+        private static Dictionary<DirtyType, bool> mergeFlags(Dictionary<DirtyType, bool> flag1,Dictionary<DirtyType, bool> flag2)
+        {
+            Array values = DirtyType.GetValues(typeof(DirtyType));
+            foreach (DirtyType val in values)
+            {
+                flag1[val] |= flag2[val];
+            }
+            return flag1;
         }
 
     }
