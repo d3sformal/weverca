@@ -19,20 +19,20 @@ namespace Weverca.TaintedAnalysis
     class VariableInfoHandler 
     {
 
-        public static void setDirty(FlowController flow, Value value)
+        public static void setDirty(FlowOutputSet outSet, Value value)
         {
             Array values = DirtyType.GetValues(typeof(DirtyType));
             foreach (DirtyType val in values)
             {
-                setDirty(flow, value, val);
+                setDirty(outSet, value, val);
             }
         }
 
 
-        private static Dictionary<DirtyType, bool> MergeAndCreateVariableInfo(FlowController flow, Value value)
+        private static Dictionary<DirtyType, bool> MergeAndCreateVariableInfo(FlowOutputSet outSet, Value value)
         {
 
-            InfoValue[] infos = flow.OutSet.ReadInfo(value);
+            InfoValue[] infos = outSet.ReadInfo(value);
             Dictionary<DirtyType, bool> dirtyFlags = VariableInfo.CreateDirtyFlags();
 
             foreach (var info in infos)
@@ -49,24 +49,24 @@ namespace Weverca.TaintedAnalysis
             return dirtyFlags;
         }
 
-        public static void setDirty(FlowController flow, Value value, DirtyType dirty)
+        public static void setDirty(FlowOutputSet outSet, Value value, DirtyType dirty)
         {
-            VariableInfo newInfo = new VariableInfo(MergeAndCreateVariableInfo(flow,value));
-            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] {flow.OutSet.CreateInfo(newInfo)});
+            VariableInfo newInfo = new VariableInfo(MergeAndCreateVariableInfo(outSet,value));
+            outSet.SetInfo(value, new InfoValue<VariableInfo>[] {outSet.CreateInfo(newInfo)});
         }
 
-        public static void setClean(FlowController flow, Value value, DirtyType dirty)
+        public static void setClean(FlowOutputSet outSet, Value value, DirtyType dirty)
         {
-            var flags = MergeAndCreateVariableInfo(flow, value);
+            var flags = MergeAndCreateVariableInfo(outSet, value);
             flags[dirty] = false;
             VariableInfo newInfo = new VariableInfo(flags);
-            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] { flow.OutSet.CreateInfo(newInfo) });
+            outSet.SetInfo(value, new InfoValue<VariableInfo>[] { outSet.CreateInfo(newInfo) });
         }
 
-        public static bool isDirty(FlowController flow, Value value, DirtyType dirty)
+        public static bool isDirty(FlowOutputSet outSet, Value value, DirtyType dirty)
         { 
             bool result=false;
-            foreach(InfoValue info in flow.OutSet.ReadInfo(value))
+            foreach(InfoValue info in outSet.ReadInfo(value))
             {
                 if (info.GetType() == typeof(InfoValue<VariableInfo>))
                 {
@@ -76,56 +76,56 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
-        public static void CopyFlags(FlowController flow, Value source, Value value)
+        public static void CopyFlags(FlowOutputSet outSet, Value source, Value value)
         {
-            CopyFlags(flow, new MemoryEntry(source), value);
+            CopyFlags(outSet, new MemoryEntry(source), value);
         }
 
-        public static void CopyFlags(FlowController flow, IEnumerable<MemoryEntry> source, MemoryEntry target)
-        {
-            foreach (var value in target.PossibleValues)
-            {
-                CopyFlags(flow, source, value);
-            }
-        }
-
-        public static void CopyFlags(FlowController flow, MemoryEntry source, MemoryEntry target)
+        public static void CopyFlags(FlowOutputSet outSet, IEnumerable<MemoryEntry> source, MemoryEntry target)
         {
             foreach (var value in target.PossibleValues)
             {
-                CopyFlags(flow, source, value);
+                CopyFlags(outSet, source, value);
             }
         }
 
-        public static void CopyFlags(FlowController flow, IEnumerable<MemoryEntry> source, Value value)
+        public static void CopyFlags(FlowOutputSet outSet, MemoryEntry source, MemoryEntry target)
+        {
+            foreach (var value in target.PossibleValues)
+            {
+                CopyFlags(outSet, source, value);
+            }
+        }
+
+        public static void CopyFlags(FlowOutputSet outSet, IEnumerable<MemoryEntry> source, Value value)
         {
             var dirtyFlags = VariableInfo.CreateDirtyFlags();
             foreach (var entry in source)
             {
-                var functionResult = copyFlags(flow, entry);
+                var functionResult = copyFlags(outSet, entry);
                 dirtyFlags = mergeFlags(dirtyFlags, functionResult);
             }
 
          
             VariableInfo newInfo = new VariableInfo(dirtyFlags);
-            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] { flow.OutSet.CreateInfo(newInfo) });
+            outSet.SetInfo(value, new InfoValue<VariableInfo>[] { outSet.CreateInfo(newInfo) });
         }
 
-        public static void CopyFlags(FlowController flow, MemoryEntry source, Value value)
+        public static void CopyFlags(FlowOutputSet outSet, MemoryEntry source, Value value)
         {
-            var dirtyFlags = copyFlags(flow, source);
+            var dirtyFlags = copyFlags(outSet, source);
            
             VariableInfo newInfo = new VariableInfo(dirtyFlags);
-            flow.OutSet.SetInfo(value, new InfoValue<VariableInfo>[] { flow.OutSet.CreateInfo(newInfo) });
+            outSet.SetInfo(value, new InfoValue<VariableInfo>[] { outSet.CreateInfo(newInfo) });
             
         }
 
-        private static Dictionary<DirtyType, bool> copyFlags(FlowController flow, MemoryEntry source)
+        private static Dictionary<DirtyType, bool> copyFlags(FlowOutputSet outSet, MemoryEntry source)
         {
             var dirtyFlags = VariableInfo.CreateDirtyFlags();
             foreach (Value value in source.PossibleValues)
             {
-                var functionResult=MergeAndCreateVariableInfo(flow, value);
+                var functionResult=MergeAndCreateVariableInfo(outSet, value);
                 dirtyFlags = mergeFlags(dirtyFlags, functionResult);
             }
             return dirtyFlags;

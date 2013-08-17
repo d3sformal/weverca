@@ -1,7 +1,7 @@
 ﻿using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
-
+using PHP.Core;
 namespace Weverca.TaintedAnalysis
 {
     public class ForwardAnalysis : ForwardAnalysisBase
@@ -9,6 +9,7 @@ namespace Weverca.TaintedAnalysis
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
             : base(entryMethodGraph)
         {
+            GlobalsInitializer();
         }
 
         #region ForwardAnalysis override
@@ -34,5 +35,19 @@ namespace Weverca.TaintedAnalysis
         }
 
         #endregion
+
+        protected void GlobalsInitializer()
+        { 
+            var post = new VariableName("_POST");
+            var postValue = EntryInput.AnyArrayValue;
+            EntryInput.Assign(post, new MemoryEntry(postValue));
+            VariableInfoHandler.setDirty(EntryInput, postValue);
+
+            var get = new VariableName("_GET");
+            var getValue = EntryInput.AnyArrayValue;
+            EntryInput.Assign(post, new MemoryEntry(getValue));
+            VariableInfoHandler.setDirty(EntryInput, getValue);
+
+        }
     }
 }

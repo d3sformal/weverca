@@ -505,8 +505,9 @@ namespace Weverca.TaintedAnalysis
                 $c=max(1,2,3,4);
                 $e=strstr('a',4,8);
                 $f=max(2,'aaa',$e);*/
-                $g=htmlspecialchars('a');
-                $a[$i]=5;
+
+                //$a=strstr($_POST['a'],0);
+                $a=true;
                 
                 ";
                 var fileName = "./cfg_test.php";
@@ -538,8 +539,7 @@ namespace Weverca.TaintedAnalysis
 
         public static bool CanBeDirty(Value value)
         {
-            var valueType=value.GetType();
-            if(valueType==typeof(BooleanValue))
+            if (ValueTypeResolver.isBool(value) || ValueTypeResolver.isInt(value) || ValueTypeResolver.isFloat(value) || ValueTypeResolver.isLong(value))
             {
                 return false;
             }
@@ -595,7 +595,7 @@ namespace Weverca.TaintedAnalysis
             {
                 if (NativeFunctionAnalyzer.CanBeDirty(value))
                 {
-                    VariableInfoHandler.CopyFlags(flow, arguments, value);
+                    VariableInfoHandler.CopyFlags(flow.OutSet, arguments, value);
                 }
             }
         }

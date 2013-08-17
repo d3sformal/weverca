@@ -686,5 +686,25 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             throw new NotImplementedException();
         }
+
+        //TODO pridat podporu pre konstanty
+        public override MemoryEntry Constant(GlobalConstUse x)
+        {
+            Value result;
+            switch (x.Name.Name.Value)
+            {
+                case "true":
+                    result = OutSet.CreateBool(true);
+                    break;
+                case "false":
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    result = OutSet.UndefinedValue;
+                    break;
+            }
+
+            return new MemoryEntry(result);
+        }
     }
 }
