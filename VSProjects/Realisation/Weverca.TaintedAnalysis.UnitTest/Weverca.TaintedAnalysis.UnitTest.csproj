@@ -50,6 +50,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="FlowResolverTests\EqualsValueVisitor.cs" />
+    <Compile Include="FlowResolverTests\FlowResolverTests.cs" />
+    <Compile Include="FlowResolverTests\TestCase.cs" />
     <Compile Include="NativeFuntionTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -66,6 +69,10 @@
       <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
+      <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
+      <Name>Weverca.MemoryModels</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
       <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
       <Name>Weverca.Parser</Name>
@@ -75,6 +82,7 @@
       <Name>Weverca.TaintedAnalysis</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Weverca.Analysis;
-using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.FlowResolver
