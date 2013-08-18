@@ -691,19 +691,18 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public override MemoryEntry Constant(GlobalConstUse x)
         {
             Value result;
-            switch (x.Name.Name.Value)
+            NativeConstantAnalyzer constantAnalyzer = NativeConstantAnalyzer.Create(OutSet);
+            QualifiedName qName=new QualifiedName(new Name(x.Name.Name.Value));
+            //if is user constant
+            //native constants
+            if(constantAnalyzer.ExistContant(qName))
             {
-                case "true":
-                    result = OutSet.CreateBool(true);
-                    break;
-                case "false":
-                    result = OutSet.CreateBool(true);
-                    break;
-                default:
-                    result = OutSet.UndefinedValue;
-                    break;
+                result = constantAnalyzer.GetConstantValue(qName);
             }
-
+            else
+            {
+                result = OutSet.UndefinedValue;
+            }
             return new MemoryEntry(result);
         }
     }

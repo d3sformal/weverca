@@ -498,17 +498,17 @@ namespace Weverca.TaintedAnalysis
 
         public static void Main(string[] args)
         {
-            try
-            {
+         /*  try
+            {*/
+
                 string code = @"
-/*
+                /*
                 $c=max(1,2,3,4);
                 $e=strstr('a',4,8);
                 $f=max(2,'aaa',$e);*/
 
-                //$a=strstr($_POST['a'],0);
-                $a=true;
-                
+                $a=strstr($_POST['a'],0);
+                $a=M_E;
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -529,12 +529,12 @@ namespace Weverca.TaintedAnalysis
 
                 Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadInfo(new VariableName("a")));
                 Console.WriteLine(analysis.ProgramPointGraph.End.OutSet.ReadValue(new VariableName("a")));
-            }
+          /*  }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 Console.WriteLine(e.StackTrace);
-            }
+            }*/
         }
 
         public static bool CanBeDirty(Value value)

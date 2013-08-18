@@ -12,6 +12,7 @@ using Weverca.Parsers;
 using Weverca.TaintedAnalysis;
 
 using PHP.Core.Parsers;
+using Weverca.ControlFlowGraph;
 
 
 namespace Weverca.TaintedAnalysis.UnitTest
@@ -28,7 +29,7 @@ namespace Weverca.TaintedAnalysis.UnitTest
 
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
-            var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            var cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
 
             var analysis = new ForwardAnalysis(cfg);
             analysis.Analyse();
