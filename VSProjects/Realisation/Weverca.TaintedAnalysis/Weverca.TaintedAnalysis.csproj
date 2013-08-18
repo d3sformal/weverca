@@ -98,6 +98,7 @@
   <ItemGroup>
     <Content Include="php_constants.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="php_functions.xml">
       <SubType>Designer</SubType>
