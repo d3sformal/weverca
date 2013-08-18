@@ -12,11 +12,26 @@ using System.IO;
 using Weverca.Analysis;
 namespace Weverca.TaintedAnalysis
 {
+
+    /// <summary>
+    /// Represents constant defined by Php
+    /// </summary>
     class NativeConstant
     {
+        /// <summary>
+        /// Name of the constant, is case insensitive.
+        /// </summary>
         public QualifiedName Name { private set; get; }
+        /// <summary>
+        /// Constant value
+        /// </summary>
         public Value Value { private set; get; }
 
+        /// <summary>
+        /// Creates an instance of Native constant
+        /// </summary>
+        /// <param name="name">Name of the constant</param>
+        /// <param name="value">Constant value</param>
         public NativeConstant(QualifiedName name, Value value)
         {
             Name = name;
@@ -25,14 +40,27 @@ namespace Weverca.TaintedAnalysis
     }
 
 
+    /// <summary>
+    /// Stores all php defined constatns and provides functionality do retrieve their values.
+    /// This class is singleton.
+    /// </summary>
     class NativeConstantAnalyzer
     {
+        /// <summary>
+        /// Stores singleton instance
+        /// </summary>
         private static NativeConstantAnalyzer instance = null;
+        /// <summary>
+        /// Stores defined constants.
+        /// </summary>
         private Dictionary<QualifiedName, NativeConstant> constants = new Dictionary<QualifiedName,NativeConstant>();
-        private FlowOutputSet outset;
+
+        /// <summary>
+        /// Creates new instance of NativeConstantAnalyzer. Is private because this class is singleton.
+        /// </summary>
+        /// <param name="outset"></param>
         private NativeConstantAnalyzer(FlowOutputSet outset)
         {
-            this.outset = outset;
             XmlReader reader = XmlReader.Create(new StreamReader("php_constants.xml"));
             
             string value = "";
@@ -151,11 +179,21 @@ namespace Weverca.TaintedAnalysis
             */
         }
 
+        /// <summary>
+        /// Method used when parsing xml with constants.
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>Returns true the value equals unknown</returns>
         private static bool isValueUnknown(string value)
         {
             return (value == "unknown");
         }
 
+        /// <summary>
+        /// Return the singleton instance of NativeConstantAnalyzer. If it doesn't exist, it will be created here.
+        /// </summary>
+        /// <param name="outset">FlowOutputSet used for creating constant values.</param>
+        /// <returns>Instance</returns>
         public static NativeConstantAnalyzer Create(FlowOutputSet outset)
         {
             
@@ -166,15 +204,24 @@ namespace Weverca.TaintedAnalysis
             return instance;
         }
 
+        /// <summary>
+        /// Determing if the constant exist
+        /// </summary>
+        /// <param name="constant">Name of the constant.</param>
+        /// <returns>True when the constant exists.</returns>
         public bool ExistContant(QualifiedName constant)
         {
             return constants.ContainsKey(constant);
         }
 
+        /// <summary>
+        /// Return the constant value.
+        /// </summary>
+        /// <param name="constant">Name of the constant.</param>
+        /// <returns>Return the value of constant.</returns>
         public Value GetConstantValue(QualifiedName constant)
         {
             return constants[constant].Value;
         }
-
     }
 }

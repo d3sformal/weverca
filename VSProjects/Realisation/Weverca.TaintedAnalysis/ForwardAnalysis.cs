@@ -48,6 +48,11 @@ namespace Weverca.TaintedAnalysis
             EntryInput.Assign(post, new MemoryEntry(getValue));
             VariableInfoHandler.setDirty(EntryInput, getValue);
 
+            var contants = new VariableName(".constants");
+            var constValue = EntryInput.CreateArray();
+            EntryInput.Assign(contants, new MemoryEntry(constValue));
+
+
         }
     }
 }

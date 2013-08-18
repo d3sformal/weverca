@@ -506,9 +506,9 @@ namespace Weverca.TaintedAnalysis
                 $c=max(1,2,3,4);
                 $e=strstr('a',4,8);
                 $f=max(2,'aaa',$e);*/
-
-                $a=strstr($_POST['a'],0);
-                $a=M_E;
+                const a=4;
+                $a=a;
+               
                 ";
                 var fileName = "./cfg_test.php";
                 var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
