@@ -695,7 +695,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             QualifiedName qName=x.Name;
             if(constantAnalyzer.ExistContant(qName))
             {
-                //native constants
                 result.Add(constantAnalyzer.GetConstantValue(qName));
             }
             else 
@@ -708,7 +707,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
         {
-            throw new NotImplementedException();
+            UserDefinedConstantHandler.insertConstant(OutSet, new QualifiedName(new Name(x.Name.Value)), constantValue,false);
         }
     }
 }

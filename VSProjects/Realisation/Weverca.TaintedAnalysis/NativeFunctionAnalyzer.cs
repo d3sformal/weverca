@@ -13,6 +13,7 @@ using Weverca.Analysis.Memory;
 using Weverca.Parsers;
 
 using PHP.Core.Parsers;
+using Weverca.TaintedAnalysis.ExpressionEvaluator;
 
 namespace Weverca.TaintedAnalysis
 {
@@ -64,15 +65,7 @@ namespace Weverca.TaintedAnalysis
         
         private NativeFunctionAnalyzer()
         {
-        }
 
-        static public NativeFunctionAnalyzer CreateInstance()
-        {
-            if (instance != null)
-            {
-                return instance;
-            }
-            instance = new NativeFunctionAnalyzer();
             string function = "";
             string returnType = "";
             string functionAlias = "";
@@ -84,36 +77,36 @@ namespace Weverca.TaintedAnalysis
                 switch (reader.NodeType)
                 {
                     case XmlNodeType.Element:
-                        if (reader.Name == "function") 
+                        if (reader.Name == "function")
                         {
-                            arguments=new List<NativeFunctionArgument>();
-                            function = reader.GetAttribute("name") ;
+                            arguments = new List<NativeFunctionArgument>();
+                            function = reader.GetAttribute("name");
                             returnType = reader.GetAttribute("returnType");
                             functionAlias = reader.GetAttribute("alias");
                             QualifiedName functionName = new QualifiedName(new Name(function));
                             if (functionAlias != null)
                             {
-                                instance.allNativeFunctions[functionName] = instance.allNativeFunctions[new QualifiedName(new Name(functionAlias))];
+                                allNativeFunctions[functionName] = allNativeFunctions[new QualifiedName(new Name(functionAlias))];
                             }
-                            instance.returnTypes.Add(reader.GetAttribute("returnType"));
+                            returnTypes.Add(reader.GetAttribute("returnType"));
                         }
                         else if (reader.Name == "arg")
                         {
-                            instance.types.Add(reader.GetAttribute("type"));
-                            bool optional=false;
-                            bool byReference=false;
+                            types.Add(reader.GetAttribute("type"));
+                            bool optional = false;
+                            bool byReference = false;
                             bool dots = false;
-                            if(reader.GetAttribute("optional")=="true")
+                            if (reader.GetAttribute("optional") == "true")
                             {
-                                optional=true;
+                                optional = true;
                             }
-                            if(reader.GetAttribute("byReference")=="true")
+                            if (reader.GetAttribute("byReference") == "true")
                             {
-                                byReference=true;
+                                byReference = true;
                             }
-                            if(reader.GetAttribute("dots")=="true")
+                            if (reader.GetAttribute("dots") == "true")
                             {
-                                dots=true;
+                                dots = true;
                             }
                             NativeFunctionArgument argument = new NativeFunctionArgument(reader.GetAttribute("type"), optional, byReference, dots);
                             arguments.Add(argument);
@@ -130,12 +123,12 @@ namespace Weverca.TaintedAnalysis
                         if (reader.Name == "function")
                         {
                             QualifiedName functionName = new QualifiedName(new Name(function));
-                            if (!instance.allNativeFunctions.ContainsKey(functionName))
+                            if (!allNativeFunctions.ContainsKey(functionName))
                             {
-                                instance.allNativeFunctions[functionName] = new List<NativeFunction>();
+                                allNativeFunctions[functionName] = new List<NativeFunction>();
                             }
-                            instance.allNativeFunctions[functionName].Add(new NativeFunction(functionName, returnType, arguments));
-                            
+                            allNativeFunctions[functionName].Add(new NativeFunction(functionName, returnType, arguments));
+
                         }
                         break;
                 }
@@ -154,8 +147,8 @@ namespace Weverca.TaintedAnalysis
                 Console.WriteLine(it.Current);
                 
             }*/
-            
-            
+
+
             /*foreach(var fnc in instance.allNativeFunctions)
             {
                 checkFunctionsArguments(fnc.Value, null);
@@ -171,10 +164,25 @@ namespace Weverca.TaintedAnalysis
                     }
                 }
             }*/
+            
+
+            QualifiedName defineName = new QualifiedName(new Name("define"));
+            AnalyzerClass analyzer = new AnalyzerClass(allNativeFunctions[defineName]);
+            wevercaImplementedFunctions.Add(defineName, new NativeAnalyzerMethod(analyzer._define));
+        }
+
+        static public NativeFunctionAnalyzer CreateInstance()
+        {
+            if (instance != null)
+            {
+                return instance;
+            }
+            instance = new NativeFunctionAnalyzer();
             return instance;
         }
+        
         /// <summary>
-        /// Tells us if the two intervals intersects.
+        /// Tells if the two intervals intersects.
         /// </summary>
         /// <param name="a">start of first interval</param>
         /// <param name="b">end of first interval</param>
@@ -495,6 +503,7 @@ namespace Weverca.TaintedAnalysis
             return new VariableName(".arg" + index);
         }
 
+        
 
         public static void Main(string[] args)
         {
@@ -599,47 +608,143 @@ namespace Weverca.TaintedAnalysis
                 }
             }
         }
+
+
+        //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
+        public void _define(FlowController flow)
+        {
+            NativeFunctionAnalyzer.checkFunctionsArguments(nativeFunctions, flow);
+            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+
+            var nativeFunction = nativeFunctions.ElementAt(0);
+            List<Value> possibleValues = new List<Value>();
+            bool canBeTrue = false;
+            bool canBeFalse = false;
+            if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
+            {
+                bool canBeCaseSensitive=false, canBeCaseInsensitive=false;
+                if (argumentCount == 2)
+                {
+                    canBeCaseSensitive = true;
+                }
+                else 
+                {
+                    foreach (var arg2 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(2)).PossibleValues)
+                    {
+                        if (arg2.GetType() == typeof(StringValue))
+                        {
+                            if (TypeConversion.ToBoolean(flow.OutSet,arg2 as StringValue).Value==true)
+                            {
+                                canBeCaseInsensitive = true;
+                            }
+                        }
+                        else if (arg2.GetType() == typeof(IntegerValue))
+                        {
+                            if (TypeConversion.ToBoolean(flow.OutSet, arg2 as IntegerValue).Value == true)
+                            {
+                                canBeCaseInsensitive = true;
+                            }
+                        }
+                        else if (arg2.GetType() == typeof(FloatValue))
+                        {
+                            if (TypeConversion.ToBoolean(flow.OutSet, arg2 as FloatValue).Value == true)
+                            {
+                                canBeCaseInsensitive = true;
+                            }
+                        }
+                        else if (arg2.GetType() == typeof(LongintValue))
+                        {
+                            if (TypeConversion.ToBoolean(flow.OutSet, arg2 as LongintValue).Value == true)
+                            {
+                                canBeCaseInsensitive = true;
+                            }
+                        }
+                        else if (arg2.GetType() == typeof(BooleanValue))
+                        {
+                            if ((arg2 as BooleanValue).Value == true)
+                            {
+                                canBeCaseInsensitive = true;
+                            }
+                        }
+                        else 
+                        {
+                            canBeCaseSensitive = true;
+                            canBeCaseInsensitive = true;
+                        }
+                    }
+                }
+                foreach (var arg0 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(0)).PossibleValues)
+                {
+                    string constantName = "";
+                    if (arg0.GetType() == typeof(StringValue))
+                    {
+                        constantName = (arg0 as StringValue).Value;
+                    }
+                    else if (arg0.GetType() == typeof(IntegerValue))
+                    {
+                        constantName = TypeConversion.ToString(flow.OutSet, arg0 as IntegerValue).Value;
+                    }
+                    else if (arg0.GetType() == typeof(FloatValue))
+                    {
+                        constantName = TypeConversion.ToString(flow.OutSet, arg0 as FloatValue).Value;
+                    }
+                    else if (arg0.GetType() == typeof(LongintValue))
+                    {
+                        constantName = TypeConversion.ToString(flow.OutSet, arg0 as LongintValue).Value;
+                    }
+                    else if (arg0.GetType() == typeof(BooleanValue))
+                    {
+                        constantName = TypeConversion.ToString(flow.OutSet, arg0 as BooleanValue).Value;
+                    }
+                    else
+                    {
+                        canBeFalse = true;
+                        continue;
+                    }
+                    QualifiedName qConstantName=new QualifiedName(new Name(constantName));
+                    List<Value> result=new List<Value>();
+                    foreach (var arg1 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(1)).PossibleValues)
+                    {
+                        if (ValueTypeResolver.isBool(arg1) || ValueTypeResolver.isFloat(arg1) || ValueTypeResolver.isInt(arg1) || ValueTypeResolver.isLong(arg1) || ValueTypeResolver.isString(arg1) || arg1.GetType() == typeof(AnyResourceValue) || arg1.GetType() == typeof(AnyValue))
+                        {
+                            result.Add(arg1);
+                            canBeTrue = true;
+                        }
+                        else 
+                        {
+                            canBeFalse = true;
+                        }
+                        //skontroluj values aby boli  null, integer, float, string or boolean, resource
+                    }
+                    if (canBeCaseSensitive)
+                    {
+                        UserDefinedConstantHandler.insertConstant(flow.OutSet, qConstantName, new MemoryEntry(result.ToArray()), false);
+                    }
+                    if (canBeCaseInsensitive)
+                    {
+                        UserDefinedConstantHandler.insertConstant(flow.OutSet, qConstantName, new MemoryEntry(result.ToArray()), true);
+                    }
+                }
+                if (canBeTrue)
+                {
+                    possibleValues.Add(flow.OutSet.CreateBool(true));
+                }
+                if (canBeFalse)
+                {
+                    possibleValues.Add(flow.OutSet.CreateBool(false));
+                }
+            }
+            else 
+            {
+                possibleValues.Add(flow.OutSet.CreateBool(false));
+            }
+        }
     }
 
 
 
 
-    class ValueTypeResolver
-    {
-        public static bool isInt(Value value)
-        {
-            return (value.GetType() == typeof(IntegerIntervalValue) || value.GetType() == typeof(IntegerValue) || value.GetType() == typeof(AnyIntegerValue));
-        }
-
-        public static bool isLong(Value value)
-        {
-            return (value.GetType() == typeof(LongintValue) || value.GetType() == typeof(AnyLongintValue) || value.GetType() == typeof(LongintIntervalValue));
-        }
-
-        public static bool isFloat(Value value)
-        {
-            return (value.GetType() == typeof(FloatIntervalValue) || value.GetType() == typeof(FloatValue) || value.GetType() == typeof(AnyFloatValue));
-        }
-
-        public static bool isBool(Value value)
-        {
-            return (value.GetType() == typeof(BooleanValue) || value.GetType() == typeof(AnyBooleanValue));
-        }
-
-        public static bool isString(Value value)
-        {
-            return (value.GetType() == typeof(StringValue) || value.GetType() == typeof(AnyStringValue));
-        }
-
-        public static bool isObject(Value value)
-        {
-            return (value.GetType() == typeof(ObjectValue) || value.GetType() == typeof(AnyObjectValue));
-        }
-
-        public static bool isArray(Value value)
-        {
-            return (value.GetType() == typeof(AssociativeArray) || value.GetType() == typeof(AnyArrayValue));
-        }
-    }
+ 
 
 }

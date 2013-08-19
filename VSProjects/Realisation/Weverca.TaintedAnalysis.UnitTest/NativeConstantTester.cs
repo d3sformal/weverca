@@ -82,18 +82,19 @@ using Weverca.ControlFlowGraph;
             Assert.AreEqual(value.GetType(), type);
         }
 
-        public void testResult<T>(Value value,T compareValue)
+        public void testValue<T>(Value value,T compareValue)
         {
             PrimitiveValue<T> val = (PrimitiveValue<T>)value;
             Assert.IsTrue(val.Value.Equals(compareValue));
         }
+
 
         [TestMethod]
         public void NativeConstantTrue()
         {
             var result=ResultTest(nativeConstantTrue);
             testType(result, typeof(BooleanValue));
-            testResult(result, true);
+            testValue(result, true);
         }
 
         [TestMethod]
@@ -101,7 +102,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantFalse);
             testType(result, typeof(BooleanValue));
-            testResult(result, false);
+            testValue(result, false);
         }
 
         [TestMethod]
@@ -109,7 +110,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantInt1);
             testType(result, typeof(IntegerValue));
-            testResult(result, 256);
+            testValue(result, 256);
         }
 
         [TestMethod]
@@ -117,7 +118,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantInt2);
             testType(result, typeof(IntegerValue));
-            testResult(result, 4);
+            testValue(result, 4);
         }
 
         [TestMethod]
@@ -125,7 +126,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantString1);
             testType(result, typeof(StringValue));
-            testResult(result, "l, d-M-y H:i:s T");
+            testValue(result, "l, d-M-y H:i:s T");
         }
 
         [TestMethod]
@@ -133,7 +134,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantString2);
             testType(result, typeof(StringValue));
-            testResult(result, @"Y-m-d\TH:i:sP");
+            testValue(result, @"Y-m-d\TH:i:sP");
 
         }
 
@@ -142,7 +143,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantFloat1);
             testType(result, typeof(FloatValue));
-            testResult(result, 2.718281828459);
+            testValue(result, 2.718281828459);
         }
 
         [TestMethod]
@@ -150,7 +151,7 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantFloat2);
             testType(result, typeof(FloatValue));
-            testResult(result, double.PositiveInfinity);
+            testValue(result, double.PositiveInfinity);
 
         }
 
@@ -160,6 +161,31 @@ using Weverca.ControlFlowGraph;
             var result = ResultTest(nativeConstantResource);
             testType(result, typeof(AnyResourceValue));
 
+        }
+
+        string globalConstDeclaration= @"
+            const a=0;
+            $result=a;
+        ";
+
+        string globalConstDeclarationCaseInsensitive = @"
+            const aAa=4;
+            $result=aaa;
+        ";
+
+        [TestMethod]
+        public void GlobalConstDeclaration()
+        {
+            var result = ResultTest(globalConstDeclaration);
+            testType(result, typeof(IntegerValue));
+            testValue(result, 0);
+        }
+
+        [TestMethod]
+        public void GlobalConstDeclarationCaseInsensitive()
+        {
+            var result = ResultTest(globalConstDeclarationCaseInsensitive);
+            testType(result, typeof(UndefinedValue));
         }
 
     }

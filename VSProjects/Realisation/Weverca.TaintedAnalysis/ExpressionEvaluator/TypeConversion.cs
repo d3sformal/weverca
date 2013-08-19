@@ -14,6 +14,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             return output.CreateBool(value.Value != 0);
         }
 
+        public static BooleanValue ToBoolean(FlowOutputSet output, LongintValue value)
+        {
+            return output.CreateBool(value.Value != 0);
+        }
+
         public static BooleanValue ToBoolean(FlowOutputSet output, FloatValue value)
         {
             return output.CreateBool(value.Value != 0.0);
@@ -117,6 +122,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             return output.CreateString(System.Convert.ToString(value.Value));
         }
 
+        public static StringValue ToString(FlowOutputSet output, LongintValue value)
+        {
+            return output.CreateString(System.Convert.ToString(value.Value));
+        }
+
         public static StringValue ToString(FlowOutputSet output, FloatValue value)
         {
             return output.CreateString(System.Convert.ToString(value.Value));
@@ -137,4 +147,44 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             return output.CreateArray();
         }
     }
+
+
+    class ValueTypeResolver
+    {
+        public static bool isInt(Value value)
+        {
+            return (value.GetType() == typeof(IntegerIntervalValue) || value.GetType() == typeof(IntegerValue) || value.GetType() == typeof(AnyIntegerValue));
+        }
+
+        public static bool isLong(Value value)
+        {
+            return (value.GetType() == typeof(LongintValue) || value.GetType() == typeof(AnyLongintValue) || value.GetType() == typeof(LongintIntervalValue));
+        }
+
+        public static bool isFloat(Value value)
+        {
+            return (value.GetType() == typeof(FloatIntervalValue) || value.GetType() == typeof(FloatValue) || value.GetType() == typeof(AnyFloatValue));
+        }
+
+        public static bool isBool(Value value)
+        {
+            return (value.GetType() == typeof(BooleanValue) || value.GetType() == typeof(AnyBooleanValue));
+        }
+
+        public static bool isString(Value value)
+        {
+            return (value.GetType() == typeof(StringValue) || value.GetType() == typeof(AnyStringValue));
+        }
+
+        public static bool isObject(Value value)
+        {
+            return (value.GetType() == typeof(ObjectValue) || value.GetType() == typeof(AnyObjectValue));
+        }
+
+        public static bool isArray(Value value)
+        {
+            return (value.GetType() == typeof(AssociativeArray) || value.GetType() == typeof(AnyArrayValue));
+        }
+    }
+
 }

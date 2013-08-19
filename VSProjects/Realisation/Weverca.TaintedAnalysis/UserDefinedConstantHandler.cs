@@ -28,7 +28,7 @@ namespace Weverca.TaintedAnalysis
             {
                 AssociativeArray constArray = (AssociativeArray)value;
                 //case insensitive constants
-                foreach(Value it in outset.GetIndex(constArray, outset.CreateIndex(name.Name.LowercaseValue)).PossibleValues)
+                foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex("." + name.Name.LowercaseValue)).PossibleValues)
                 {
                     if(!it.Equals(undefinedValue))
                     {
@@ -36,7 +36,7 @@ namespace Weverca.TaintedAnalysis
                     }
                 }
                 //case sensitive constant
-                foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex("."+name)).PossibleValues)
+                foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex(name.Name.Value)).PossibleValues)
                 {
                     if(!it.Equals(undefinedValue))
                     {
@@ -59,7 +59,7 @@ namespace Weverca.TaintedAnalysis
         /// <param name="name">Constant name.</param>
         /// <param name="value">constant value</param>
         /// <param name="caseInsensitive">determins if the constant is case sensitive of insensitive</param>
-        public static void insertConstant(FlowOutputSet outset, QualifiedName name, MemoryEntry value, bool caseInsensitive = true)
+        public static void insertConstant(FlowOutputSet outset, QualifiedName name, MemoryEntry value, bool caseInsensitive = false)
         {
 
             foreach (Value array in outset.ReadValue(new VariableName(".constants")).PossibleValues)
@@ -68,16 +68,16 @@ namespace Weverca.TaintedAnalysis
                 ContainerIndex index;
                 if (caseInsensitive == true)
                 {
-                    index=outset.CreateIndex(name.Name.LowercaseValue);
+                    index=outset.CreateIndex("."+name.Name.LowercaseValue);
                 }
                 else
                 {
-                    index=outset.CreateIndex(name.Name.LowercaseValue);
+                    index=outset.CreateIndex(name.Name.Value);
                 }
                 MemoryEntry entry = outset.GetIndex(constArray, index);
                 if (entry.PossibleValues.Count() == 0 || (entry.PossibleValues.Count() == 1 && entry.PossibleValues.ElementAt(0).Equals(outset.UndefinedValue)))
                 {
-                    outset.SetIndex(constArray, outset.CreateIndex("." + name.Name), value);
+                    outset.SetIndex(constArray, index, value);
                 }
             }
         }
