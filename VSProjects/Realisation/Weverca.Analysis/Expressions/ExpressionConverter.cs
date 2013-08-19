@@ -99,6 +99,12 @@ namespace Weverca.Analysis.Expressions
             VisitElement(x.Expression);
         }
 
+        public override void VisitGlobalConstantDecl(GlobalConstantDecl x)
+        {
+            // Force traversing
+            VisitElement(x.Initializer);
+        }
+
         public override void VisitForeachStmt(ForeachStmt x)
         {
             // Traverse only header

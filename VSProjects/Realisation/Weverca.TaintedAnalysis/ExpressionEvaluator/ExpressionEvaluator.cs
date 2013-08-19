@@ -705,5 +705,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             
             return new MemoryEntry(result);
         }
+
+        public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

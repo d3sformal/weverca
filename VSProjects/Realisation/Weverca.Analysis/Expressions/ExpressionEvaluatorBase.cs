@@ -249,6 +249,13 @@ namespace Weverca.Analysis.Expressions
         public abstract MemoryEntry Constant(GlobalConstUse x);
 
         /// <summary>
+        /// Is called on const x=5 declarations
+        /// </summary>
+        /// <param name="x">Constant declaration</param>
+        /// <param name="constantValue">Value assigned into constant</param>
+        public abstract void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue);
+
+        /// <summary>
         /// Create object value of given type
         /// </summary>
         /// <param name="typeName">Object type specifier</param>
@@ -282,5 +289,7 @@ namespace Weverca.Analysis.Expressions
         {
             Flow = flow;
         }
+
+
     }
 }

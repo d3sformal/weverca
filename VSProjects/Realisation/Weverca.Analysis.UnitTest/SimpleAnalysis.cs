@@ -355,6 +355,13 @@ namespace Weverca.Analysis.UnitTest
 
             return new MemoryEntry(result);
         }
+
+        public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
+        {
+            var constName=new VariableName(".constant_"+x.Name);
+            OutSet.FetchFromGlobal(constName);
+            OutSet.Assign(constName, constantValue);
+        }
     }
 
     /// <summary>

@@ -207,6 +207,8 @@ if($unknown){
 
 
         readonly static TestCase ConstantDeclaring_CASE = @"
+const test='Direct constant';
+
 if($unknown){
     define('declared','constant1');
 }else{
@@ -214,8 +216,10 @@ if($unknown){
 }
 
 $x=declared;
+$y=test;
 
-".AssertVariable("x").HasValues("constant1", "constant2");
+".AssertVariable("x").HasValues("constant1", "constant2")
+ .AssertVariable("y").HasValues("Direct constant");
 
         readonly static TestCase BoolResolving_CASE = @"
 if($unknown){

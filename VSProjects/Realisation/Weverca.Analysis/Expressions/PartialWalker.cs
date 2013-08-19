@@ -231,6 +231,12 @@ namespace Weverca.Analysis.Expressions
             push(_evaluator.Constant(x));
         }
 
+        public override void VisitGlobalConstantDecl(GlobalConstantDecl x)
+        {
+            var constantValue = popValue();
+            _evaluator.ConstantDeclaration(x, constantValue);
+        }
+
         #endregion
 
         #region Variable visiting
@@ -451,11 +457,11 @@ namespace Weverca.Analysis.Expressions
         {
             var enumerre = popValue();
 
-            VariableEntry keyVar=null;
-            VariableEntry valueVar=null;
+            VariableEntry keyVar = null;
+            VariableEntry valueVar = null;
 
             if (x.KeyVariable != null)
-            {                
+            {
                 keyVar = popLValue().GetVariableEntry();
             }
 
