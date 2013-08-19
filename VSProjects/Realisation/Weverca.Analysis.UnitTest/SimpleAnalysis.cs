@@ -334,6 +334,27 @@ namespace Weverca.Analysis.UnitTest
                 OutSet.Assign(valueVariable.DirectName, new MemoryEntry(values));
             }
         }
+
+        public override MemoryEntry Constant(GlobalConstUse x)
+        {
+            Value result;
+            switch (x.Name.Name.Value)
+            {
+                case "true":
+                    result = OutSet.CreateBool(true);
+                    break;
+                case "false":
+                    result = OutSet.CreateBool(false);
+                    break;
+                default:
+                    var constantName=".constant_"+x.Name;
+                    var constantVar=new VariableName(constantName);
+                    OutSet.FetchFromGlobal(constantVar);
+                    return OutSet.ReadValue(constantVar);
+            }
+
+            return new MemoryEntry(result);
+        }
     }
 
     /// <summary>
@@ -351,6 +372,7 @@ namespace Weverca.Analysis.UnitTest
             {"strtolower",_strtolower},
             {"strtoupper",_strtoupper},
             {"concat",_concat},
+            {"define",_define},
             {"__constructor",_constructor},
         };
 
@@ -501,6 +523,19 @@ namespace Weverca.Analysis.UnitTest
             }
 
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+        }
+
+        private static void _define(FlowController flow)
+        {
+            var arg0 = flow.InSet.ReadValue(argument(0));
+            var arg1 = flow.InSet.ReadValue(argument(1));
+
+            foreach (StringValue constName in arg0.PossibleValues)
+            {
+                var constVar=new VariableName(".constant_"+constName.Value);
+                flow.OutSet.FetchFromGlobal(constVar);
+                flow.OutSet.Assign(constVar, new MemoryEntry(arg1.PossibleValues));               
+            }
         }
 
         private static void _constructor(FlowController flow)

@@ -18,6 +18,8 @@ namespace Weverca.VirtualReferenceModel
     {
         Dictionary<VariableName, VariableInfo> _oldVariables;
         Dictionary<VariableName, VariableInfo> _variables = new Dictionary<VariableName, VariableInfo>();
+        Dictionary<VariableName, VariableInfo> _oldGlobals;
+        Dictionary<VariableName, VariableInfo> _globals= new Dictionary<VariableName, VariableInfo>();
         Dictionary<VirtualReference, MemoryEntry> _oldData;
         Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
 
@@ -27,9 +29,11 @@ namespace Weverca.VirtualReferenceModel
         {
             _oldData = _data;
             _oldVariables = _variables;
+            _oldGlobals = _globals;
 
             _data = new Dictionary<VirtualReference, MemoryEntry>(_data);
             _variables = new Dictionary<VariableName, VariableInfo>(_variables);
+            _globals = new Dictionary<VariableName, VariableInfo>(_globals);
 
             _hasSemanticChange = false;
         }
@@ -44,7 +48,9 @@ namespace Weverca.VirtualReferenceModel
             {
                 _hasSemanticChange =
                     _data.Count != _oldData.Count ||
-                    _variables.Count != _oldVariables.Count;
+                    _variables.Count != _oldVariables.Count ||
+                    _globals.Count != _oldGlobals.Count
+                    ;
 
                 if (_hasSemanticChange)
                 {
@@ -53,21 +59,9 @@ namespace Weverca.VirtualReferenceModel
                 }
 
                 //check variables according to old ones
-                foreach (var oldVar in _oldVariables)
+                if (checkChange(_oldVariables, _variables) || checkChange(_oldGlobals, _globals))
                 {
-                    ReportSimpleHashSearch();
-                    VariableInfo currVar;
-                    if (!_variables.TryGetValue(oldVar.Key, out currVar))
-                    {
-                        //differ in some variable presence
-                        return true;
-                    }
-
-                    if (!currVar.Equals(oldVar.Value))
-                    {
-                        //differ in variable definition
-                        return true;
-                    }
+                    return true;
                 }
 
                 foreach (var oldData in _oldData)
@@ -93,6 +87,27 @@ namespace Weverca.VirtualReferenceModel
         }
 
 
+        private bool checkChange(Dictionary<VariableName, VariableInfo> oldVariables, Dictionary<VariableName, VariableInfo> variables)
+        {
+            foreach (var oldVar in oldVariables)
+            {
+                ReportSimpleHashSearch();
+                VariableInfo currVar;
+                if (!variables.TryGetValue(oldVar.Key, out currVar))
+                {
+                    //differ in some variable presence
+                    return true;
+                }
+
+                if (!currVar.Equals(oldVar.Value))
+                {
+                    //differ in variable definition
+                    return true;
+                }
+            }
+            return false;
+        }
+
         protected override AliasValue createAlias(VariableName sourceVar)
         {
             var info = getInfo(sourceVar);
@@ -110,7 +125,12 @@ namespace Weverca.VirtualReferenceModel
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
-            var info = getOrCreate(targetVar);
+            assign(targetVar, entry, false);
+        }
+
+        protected void assign(VariableName targetVar, MemoryEntry entry, bool asGlobal = false)
+        {
+            var info = getOrCreate(targetVar, asGlobal);
             var references = info.References;
 
             switch (references.Count)
@@ -130,7 +150,6 @@ namespace Weverca.VirtualReferenceModel
                     weakUpdate(references, entry);
                     break;
             }
-
         }
 
 
@@ -158,7 +177,8 @@ namespace Weverca.VirtualReferenceModel
             foreach (Snapshot input in inputs)
             {
                 //merge info from extending inputs
-                extendVariables(input);
+                extendVariables(input._variables,_variables);
+                extendVariables(input._globals, _globals);
                 extendData(input);
             }
         }
@@ -169,7 +189,8 @@ namespace Weverca.VirtualReferenceModel
             //TODO this is dummy workaround
             foreach (Snapshot callInput in callOutput)
             {
-                extendVariables(callInput);
+                extendVariables(callInput._variables, _variables);
+                extendVariables(callInput._globals, _globals);
                 extendData(callInput);
             }
         }
@@ -200,17 +221,17 @@ namespace Weverca.VirtualReferenceModel
             }
         }
 
-        private void extendVariables(Snapshot input)
+        private void extendVariables(Dictionary<VariableName, VariableInfo> inputVariables, Dictionary<VariableName, VariableInfo> variables)
         {
-            foreach (var varPair in input._variables)
+            foreach (var varPair in inputVariables)
             {
                 VariableInfo oldVar;
                 ReportSimpleHashSearch();
-                if (!_variables.TryGetValue(varPair.Key, out oldVar))
+                if (!variables.TryGetValue(varPair.Key, out oldVar))
                 {
                     //copy variable info, so we can process changes on it
                     ReportSimpleHashAssign();
-                    _variables[varPair.Key] = varPair.Value.Clone();
+                    variables[varPair.Key] = varPair.Value.Clone();
                 }
                 else
                 {
@@ -226,10 +247,14 @@ namespace Weverca.VirtualReferenceModel
             }
         }
 
-
         protected override MemoryEntry readValue(VariableName sourceVar)
         {
-            var info = getInfo(sourceVar);
+            return readValue(sourceVar, false);
+        }
+        
+        protected MemoryEntry readValue(VariableName sourceVar,bool asGlobal=false)
+        {
+            var info = getInfo(sourceVar,asGlobal);
 
             if (info == null)
             {
@@ -281,19 +306,28 @@ namespace Weverca.VirtualReferenceModel
             return entry.PossibleValues;
         }
 
-        private VariableInfo getOrCreate(VariableName name)
+        private VariableInfo getOrCreate(VariableName name,bool asGlobal=false)
         {
             VariableInfo result;
 
+            var storage = asGlobal ? _globals : _variables;
+
             ReportSimpleHashSearch();
-            if (!_variables.TryGetValue(name, out result))
+            if (!storage.TryGetValue(name, out result))
             {
-                _variables[name] = result = new VariableInfo();
+                storage[name] = result = new VariableInfo(asGlobal);
                 ReportSimpleHashAssign();
             }
 
             return result;
         }
+
+        private void fetch(VariableName name, VariableInfo info)
+        {
+            ReportSimpleHashAssign();
+            _variables[name] = info;
+        }
+
 
         private MemoryEntry getEntry(VirtualReference reference)
         {
@@ -314,12 +348,14 @@ namespace Weverca.VirtualReferenceModel
             _data[reference] = entry;
         }
 
-        private VariableInfo getInfo(VariableName name)
+        private VariableInfo getInfo(VariableName name,bool asGlobal=false)
         {
             ReportSimpleHashSearch();
 
+            var storage = asGlobal ? _globals : _variables;
+
             VariableInfo info;
-            if (_variables.TryGetValue(name, out info))
+            if (storage.TryGetValue(name, out info))
             {
                 return info;
             }
@@ -350,22 +386,22 @@ namespace Weverca.VirtualReferenceModel
 
             _hasSemanticChange = true;
         }
-
-
-
-
+        
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
-            throw new NotImplementedException();
+            foreach (var variable in variables)
+            {
+                var global=getOrCreate(variable, true);
+                fetch(variable, global);
+            }
         }
+
 
         protected override IEnumerable<VariableName> getGlobalVariables()
         {
-            throw new NotImplementedException();
+            return _globals.Keys;
         }
-
-
-
+        
         private VariableName functionStorage(string functionName)
         {
             return new VariableName("$function:" + functionName);
@@ -375,15 +411,13 @@ namespace Weverca.VirtualReferenceModel
         {
             var storage = functionStorage(function.Declaration.Name.Value);
 
-            ReportMemoryEntryCreation();
-            //TODO assign into global scope
-            assign(storage, new MemoryEntry(function));
+            ReportMemoryEntryCreation();            
+            assign(storage, new MemoryEntry(function),true);
         }
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
-            var storage = functionStorage(functionName.Name.Value);
-            //TODO read from global scope
-            var entry = readValue(storage);
+            var storage = functionStorage(functionName.Name.Value);            
+            var entry = readValue(storage,true);
 
             return from FunctionValue function in entry.PossibleValues select function;
         }
@@ -399,16 +433,14 @@ namespace Weverca.VirtualReferenceModel
 
             var entry = readValue(storage);
 
-            ReportMemoryEntryCreation();
-            //TODO assign into global scope
-            assign(storage, new MemoryEntry(declaration));
+            ReportMemoryEntryCreation();            
+            assign(storage, new MemoryEntry(declaration),true);
         }
 
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             var storage = typeStorage(typeName.Name.Value);
-            //TODO read from global scope
-            var entry = readValue(storage);
+            var entry = readValue(storage,true);
 
             return from TypeValue type in entry.PossibleValues select type;
         }
@@ -538,25 +570,7 @@ namespace Weverca.VirtualReferenceModel
         }
         #endregion
 
-        public override string ToString()
-        {
-            var result = new StringBuilder();
-
-            foreach (var variable in _variables.Keys)
-            {
-                result.AppendFormat("{0}: {{", variable);
-
-                foreach (var value in readValue(variable).PossibleValues)
-                {
-                    result.AppendFormat("'{0}', ", value);
-                }
-
-                result.Length -= 2;
-                result.AppendLine("}");
-            }
-
-            return result.ToString();
-        }
+     
 
         protected override void setInfo(Value value, params InfoValue[] info)
         {
@@ -611,5 +625,42 @@ namespace Weverca.VirtualReferenceModel
             throw new NotImplementedException();
         }
 
+
+        public override string ToString()
+        {
+            return Representation;
+        }
+
+        public string Representation
+        {
+            get
+            {
+                var result = new StringBuilder();
+
+                result.AppendLine("===LOCALS===");
+                fillWithVariables(result, false);
+                result.AppendLine("\n===GLOBALS===");
+                fillWithVariables(result, true);
+
+                return result.ToString();
+            }
+        }
+
+        private void fillWithVariables(StringBuilder result, bool asGlobal)
+        {
+            var variables = asGlobal ? _globals : _variables;
+            foreach (var variable in variables.Keys)
+            {
+                result.AppendFormat("{0}: {{", variable);
+
+                foreach (var value in readValue(variable, asGlobal).PossibleValues)
+                {
+                    result.AppendFormat("'{0}', ", value);
+                }
+
+                result.Length -= 2;
+                result.AppendLine("}");
+            }
+        }
     }
 }

@@ -205,6 +205,18 @@ if($unknown){
 }
 ".AssertVariable("x").IsXSSDirty();
 
+
+        readonly static TestCase ConstantDeclaring_CASE = @"
+if($unknown){
+    define('declared','constant1');
+}else{
+    define('declared','constant2');
+}
+
+$x=declared;
+
+".AssertVariable("x").HasValues("constant1", "constant2");
+
         readonly static TestCase BoolResolving_CASE = @"
 if($unknown){
     $x=true;
@@ -353,6 +365,12 @@ foreach($arr as $value){
         {
             AnalysisTestUtils.RunTestCase(XSSPossibleDirty_CASE);
         }
+
+        [TestMethod]
+        public void ConstantDeclaring()
+        {
+            AnalysisTestUtils.RunTestCase(ConstantDeclaring_CASE);
+        } 
 
         [TestMethod]
         public void BoolResolving()

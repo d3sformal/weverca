@@ -8,15 +8,17 @@ namespace Weverca.VirtualReferenceModel
     class VariableInfo
     {
         internal List<VirtualReference> References { get; private set; }
+        internal readonly bool IsGlobal;
 
-        public VariableInfo()
+        public VariableInfo(bool isGlobal)
         {
             References = new List<VirtualReference>();
+            IsGlobal = isGlobal;
         }
 
         internal VariableInfo Clone()
         {
-            var result = new VariableInfo();
+            var result = new VariableInfo(IsGlobal);
 
             result.References.AddRange(References);
             return result;

@@ -88,9 +88,16 @@ namespace Weverca.Analysis
 
         public override string ToString()
         {
-            return Snapshot.ToString();
+            return Representation;
         }
 
+        public string Representation
+        {
+            get
+            {
+                return Snapshot.ToString();
+            }
+        }
  
     }
 }
