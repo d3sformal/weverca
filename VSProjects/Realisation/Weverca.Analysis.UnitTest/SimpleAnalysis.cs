@@ -203,12 +203,13 @@ namespace Weverca.Analysis.UnitTest
 
         public override MemoryEntry ResolveVariable(VariableEntry variable)
         {
-            if (!variable.IsDirect)
+            var values = new HashSet<Value>();
+            foreach (var varName in variable.PossibleNames)
             {
-                throw new NotImplementedException();
+                values.UnionWith(OutSet.ReadValue(varName).PossibleValues);
             }
 
-            return OutSet.ReadValue(variable.DirectName);
+            return new MemoryEntry(values); ;
         }
 
         public override IEnumerable<string> VariableNames(MemoryEntry value)
@@ -303,7 +304,7 @@ namespace Weverca.Analysis.UnitTest
         private bool containsAnyValue(MemoryEntry entry)
         {
             //TODO Undefined value maybe is not correct to be treated as any value
-            return entry.PossibleValues.Contains(OutSet.AnyValue);
+            return entry.PossibleValues.Any((val)=>val is AnyValue);
         }
 
         #endregion
@@ -380,6 +381,7 @@ namespace Weverca.Analysis.UnitTest
             {"strtoupper",_strtoupper},
             {"concat",_concat},
             {"define",_define},
+            {"abs",_abs},
             {"__constructor",_constructor},
         };
 
@@ -545,6 +547,13 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
+        private static void _abs(FlowController flow)
+        {
+            var arg0 = flow.InSet.ReadValue(argument(0));
+
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.AnyFloatValue));
+        }
+
         private static void _constructor(FlowController flow)
         {
             //  flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
@@ -687,20 +696,22 @@ namespace Weverca.Analysis.UnitTest
         private readonly Dictionary<string, string> _includes = new Dictionary<string, string>();
 
         private FlowOutputSet _outSet;
-
+        private EvaluationLog _log;
+        
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
         /// </summary>
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
+        public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log)
         {
             _outSet = outSet;
+            _log = log;
 
             bool willAssume;
             switch (condition.Form)
             {
                 case ConditionForm.All:
-                    willAssume = needsAll(condition.Parts, expressionParts);
+                    willAssume = needsAll(condition.Parts);
                     break;
 
                 default:
@@ -711,7 +722,7 @@ namespace Weverca.Analysis.UnitTest
 
             if (willAssume)
             {
-                processAssumption(condition, expressionParts);
+                processAssumption(condition);
             }
 
             return willAssume;
@@ -756,13 +767,14 @@ namespace Weverca.Analysis.UnitTest
 
         #region Assumption helpers
 
-        private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts, MemoryEntry[] evaluatedParts)
+        private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts)
         {
             //we are searching for one part, that can be evaluated only as false
 
-            foreach (var evaluatedPart in evaluatedParts)
+            foreach (var evaluatedPart in conditionParts)
             {
-                if (evalOnlyFalse(evaluatedPart))
+                var value=_log.GetValue(evaluatedPart.SourceElement);          
+                if (evalOnlyFalse(value))
                 {
                     return false;
                 }
@@ -774,6 +786,12 @@ namespace Weverca.Analysis.UnitTest
 
         private bool evalOnlyFalse(MemoryEntry evaluatedPart)
         {
+            if (evaluatedPart == null)
+            {
+                //Possible cause of this is that evaluatedPart doesn't contains expression
+                //Syntax error
+                throw new NotSupportedException("Can assume only expression - PHP syntax error");
+            }
             foreach (var value in evaluatedPart.PossibleValues)
             {
                 var boolean = value as BooleanValue;
@@ -796,7 +814,7 @@ namespace Weverca.Analysis.UnitTest
                 return false;
             }
 
-            //any of possible values cant be evaluted as true
+            //some of possible values cant be evaluted as true
             return true;
         }
 
@@ -805,18 +823,18 @@ namespace Weverca.Analysis.UnitTest
         /// </summary>
         /// <param name="condition"></param>
         /// <param name="expressionParts"></param>
-        private void processAssumption(AssumptionCondition condition, MemoryEntry[] expressionParts)
+        private void processAssumption(AssumptionCondition condition)
         {
             if (condition.Form == ConditionForm.All)
             {
                 if (condition.Parts.Count() == 1)
                 {
-                    assumeBinary(condition.Parts.First().SourceElement as BinaryEx, expressionParts[0]);
+                    assumeBinary(condition.Parts.First().SourceElement as BinaryEx);
                 }
             }
         }
 
-        private void assumeBinary(BinaryEx exp, MemoryEntry expResult)
+        private void assumeBinary(BinaryEx exp)
         {
             if (exp == null)
             {
@@ -825,32 +843,49 @@ namespace Weverca.Analysis.UnitTest
             switch (exp.PublicOperation)
             {
                 case Operations.Equal:
-                    assumeEqual(exp.LeftExpr, exp.RightExpr, expResult);
+                    assumeEqual(exp.LeftExpr, exp.RightExpr);
                     break;
             }
         }
 
-        private void assumeEqual(LangElement left, LangElement right, MemoryEntry result)
+        private void assumeEqual(LangElement left, LangElement right)
         {
-            var leftVar = left as DirectVarUse;
-            var rightVal = right as StringLiteral;
-            var rightVar = right as DirectVarUse;
+            VariableEntry leftVar;
+            MemoryEntry value;
 
-            if (leftVar == null)
+            var call=left as DirectFcnCall;
+            if (call != null && call.QualifiedName.Name.Value=="abs")
             {
-                //for simplicity resolve only $var==stringliteral statements
-                return;
+                var absParam = call.CallSignature.Parameters[0];
+                leftVar = _log.GetVariable(absParam.Expression);
+                value = getReverse_abs(_log.GetValue(right));
+            }
+            else
+            {
+                leftVar = _log.GetVariable(left);
+                value = _log.GetValue(right);
+            }
+          
+            if (leftVar != null && value!=null)
+            {
+                foreach (var possibleVar in leftVar.PossibleNames)
+                {
+                    _outSet.Assign(possibleVar,value);
+                }
+             
+            }
+        }
+
+        private MemoryEntry getReverse_abs(MemoryEntry entry)
+        {
+            var values= new HashSet<Value>();
+            foreach (IntegerValue value in entry.PossibleValues)
+            {
+                values.Add(_outSet.CreateInt(value.Value));
+                values.Add(_outSet.CreateInt(-value.Value));
             }
 
-            if (rightVal != null)
-            {
-                _outSet.Assign(leftVar.VarName, _outSet.CreateString(rightVal.Value as string));
-            }
-
-            if (rightVar != null)
-            {
-                _outSet.Assign(leftVar.VarName, _outSet.ReadValue(rightVar.VarName));
-            }
+            return new MemoryEntry(values);
         }
 
         #endregion

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Weverca.Analysis.Memory;
+using PHP.Core.AST;
+
 namespace Weverca.Analysis.Expressions
 {
 
@@ -43,6 +45,7 @@ namespace Weverca.Analysis.Expressions
 
     interface LValue:IStackValue
     {
+        LangElement AssociatedPartial { get; }
         /// <summary>
         /// Simple value assign to LValue
         /// </summary>

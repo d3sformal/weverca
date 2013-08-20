@@ -34,7 +34,9 @@ namespace Weverca.Analysis
         /// Currently analyzed partial (elementary part of analyzed statement)
         /// </summary>
         public readonly LangElement CurrentPartial;
-      
+
+        public EvaluationLog Log { get; private set; }
+
         /// <summary>
         /// Input set of program analysis flow
         /// </summary>
@@ -188,5 +190,15 @@ namespace Weverca.Analysis
         }
 
         #endregion
+
+        /// <summary>
+        /// Set evaluation log for use by resolvers
+        /// </summary>
+        /// <param name="log">Evaluation log</param>
+        internal void SetLog(EvaluationLog log)
+        {
+            Log = log;
+        }
+
     }
 }

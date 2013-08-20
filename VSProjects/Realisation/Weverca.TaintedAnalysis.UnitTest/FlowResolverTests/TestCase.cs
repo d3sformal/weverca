@@ -57,7 +57,15 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             FlowOutputSet flowOutputSet = new FlowOutputSet(snapshot);
 
             FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
-            bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, conditionsEvaluations.ToArray());
+
+            //This change is because of new API for retrieving values
+            var log = new EvaluationLog();
+            var index=0;
+            foreach (var part in conditions.Parts) {
+                log.AssociateValue(part.SourceElement, conditionsEvaluations[index]);
+            }
+
+            bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, log);
 
             Assert.AreEqual(expectedAssume, assume);
 

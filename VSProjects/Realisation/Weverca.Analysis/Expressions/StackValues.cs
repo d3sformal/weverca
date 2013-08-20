@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using PHP.Core.AST;
 using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.Expressions
@@ -41,8 +42,11 @@ namespace Weverca.Analysis.Expressions
         private readonly MemoryEntry _objectValue;
         private readonly VariableEntry _fieldEntry;
 
-        public FieldEntryValue(MemoryEntry objectValue, VariableEntry fieldEntry)
+        public LangElement AssociatedPartial { get; private set; }
+
+        public FieldEntryValue(LangElement associatedPartial,MemoryEntry objectValue, VariableEntry fieldEntry)
         {
+            AssociatedPartial = associatedPartial;
             _objectValue = objectValue;
             _fieldEntry = fieldEntry;
         }
@@ -86,8 +90,11 @@ namespace Weverca.Analysis.Expressions
     {
         private readonly VariableEntry _entry;
 
-        public VariableEntryValue(VariableEntry entry)
+        public LangElement AssociatedPartial { get; private set; }
+
+        public VariableEntryValue(LangElement associatedPartial,VariableEntry entry)
         {
+            AssociatedPartial = associatedPartial;    
             _entry = entry;
         }
 
@@ -131,8 +138,11 @@ namespace Weverca.Analysis.Expressions
         private readonly MemoryEntry _array;
         private readonly MemoryEntry _index;
 
-        public ArrayItem(MemoryEntry array, MemoryEntry index)
+        public LangElement AssociatedPartial { get; private set; }
+
+        public ArrayItem(LangElement associatedPartial,MemoryEntry array, MemoryEntry index)
         {
+            AssociatedPartial = associatedPartial;
             _array = array;
             _index = index;
         }

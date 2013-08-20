@@ -18,9 +18,9 @@ namespace Weverca.Analysis.Expressions
         /// </summary>  
         /// <param name="outSet">Output set where condition will be assumed</param>
         /// <param name="condition">Assumed condition</param>
-        /// <param name="expressionParts">Evaluated values for condition parts</param>
+        /// <param name="evaluationLog">Provide access to values computed during analysis</param>
         /// <returns>False if you can prove that condition cannot be ever satisfied, true otherwise.</returns>
-        public abstract bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts);
+        public abstract bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log);
 
         /// <summary>
         /// Is called after each invoked call - has to merge data from dispatched calls into callerOutput

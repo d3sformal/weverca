@@ -82,6 +82,40 @@ if($unknown=='PossibilityA'){
 }
 ".AssertVariable("Var").HasValues("init", "PossibilityA");
 
+        readonly static TestCase DynamicEqualsAssumption_CASE = @"
+if($unknown){
+    $Var='VarA';
+}else{
+    $Var='VarB';
+}
+
+if($unknown){
+    $Value='Value1';
+}else{
+    $Value='Value2';
+}
+
+if($$Var==$Value){
+    $OutputA=$VarA;
+    $OutputB=$VarB;
+}
+".AssertVariable("OutputA").HasValues("Value1","Value2")
+ .AssertVariable("OutputB").HasValues("Value1","Value2")
+ .SetNonDeterministic("VarA","VarB");
+
+        readonly static TestCase CallEqualsAssumption_CASE = @"
+if($unknown==strtolower(""TestValue"")){
+    $Output=$unknown;
+}
+".AssertVariable("Output").HasValues("testvalue");
+
+        readonly static TestCase ReverseCallEqualsAssumption_CASE = @"
+if(abs($unknown)==5){
+    $Output=$unknown;
+}
+
+".AssertVariable("Output").HasValues(5, -5);
+
 
         readonly static TestCase IndirectVarAssign_CASE = @"
 $Indirect='x';
@@ -301,6 +335,24 @@ foreach($arr as $value){
         public void EqualsAssumption()
         {
             AnalysisTestUtils.RunTestCase(EqualsAssumption_CASE);
+        }
+
+        [TestMethod]
+        public void DynamicEqualsAssumption()
+        {
+            AnalysisTestUtils.RunTestCase(DynamicEqualsAssumption_CASE);
+        }
+
+        [TestMethod]
+        public void CallEqualsAssumption()
+        {
+            AnalysisTestUtils.RunTestCase(CallEqualsAssumption_CASE);
+        }
+
+        [TestMethod]
+        public void ReverseCallEqualsAssumption()
+        {
+            AnalysisTestUtils.RunTestCase(ReverseCallEqualsAssumption_CASE);
         }
 
         [TestMethod]

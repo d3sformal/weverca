@@ -21,6 +21,11 @@ namespace Weverca.Analysis.Expressions
         private Stack<IStackValue> _valueStack = new Stack<IStackValue>();
 
         /// <summary>
+        /// Log of values evaluated for partials
+        /// </summary>
+        private EvaluationLog _log = new EvaluationLog();
+
+        /// <summary>
         /// Available expression evaluator
         /// </summary>
         private ExpressionEvaluatorBase _evaluator;
@@ -33,7 +38,7 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Controller available for current eval
         /// </summary>
-        private FlowController _flow;
+        internal FlowController CurrentFlow { get; private set; }
 
         #endregion
 
@@ -63,7 +68,8 @@ namespace Weverca.Analysis.Expressions
                 return;
             }
 
-            _flow = flow;
+            CurrentFlow = flow;
+            CurrentFlow.SetLog(_log);
             _evaluator.SetContext(flow);
             _functionResolver.SetContext(flow);
 
@@ -126,7 +132,22 @@ namespace Weverca.Analysis.Expressions
 
         private MemoryEntry popValue()
         {
-            return popRValue().ReadValue(_evaluator);
+            var rValue = popRValue();
+            var value = rValue.ReadValue(_evaluator);
+
+            tryLogValue(rValue, value);
+
+            return value;
+        }
+
+        private void tryLogValue(IStackValue stackValue,MemoryEntry value)
+        {
+            var lValue = stackValue as LValue;
+            if (lValue != null)
+            {
+                //LValues doesn't have logged result value
+                _log.AssociateValue(lValue.AssociatedPartial, value);
+            }
         }
 
         /// <summary>
@@ -169,6 +190,7 @@ namespace Weverca.Analysis.Expressions
         private void push(MemoryEntry value)
         {
             push(new MemoryEntryValue(value));
+            _log.AssociateValue(CurrentFlow.CurrentPartial, value);
         }
 
         /// <summary>
@@ -177,12 +199,24 @@ namespace Weverca.Analysis.Expressions
         /// <param name="variable">Pushed variable</param>
         private void push(VariableEntry variable)
         {
-            push(new VariableEntryValue(variable));
+            var associatedPartial = CurrentFlow.CurrentPartial;
+            push(new VariableEntryValue(associatedPartial, variable));
+            _log.AssociateVariable(associatedPartial, variable);
         }
 
         private void push(IStackValue value)
         {
             _valueStack.Push(value);
+        }
+
+        internal void OnComplete()
+        {
+            //we has to compute possible last variable/expression on stack
+            if (_valueStack.Count > 0)
+            {
+                var value = popValue();
+                push(value);
+            }
         }
 
         #endregion
@@ -261,7 +295,7 @@ namespace Weverca.Analysis.Expressions
             if (x.IsMemberOf != null)
             {
                 var objValue = popValue();
-                push(new FieldEntryValue(objValue, variableEntry));
+                push(new FieldEntryValue(x.IsMemberOf, objValue, variableEntry));
             }
             else
             {
@@ -275,10 +309,13 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitItemUse(ItemUse x)
         {
-            var itemHolder = popRValue().ReadIndex(_evaluator);
+            var item = popRValue();
+            var itemHolder = item.ReadIndex(_evaluator);
             var itemIndex = popValue();
 
-            push(new ArrayItem(itemHolder, itemIndex));
+            tryLogValue(item, itemHolder);
+
+            push(new ArrayItem(x, itemHolder, itemIndex));
         }
 
         public override void VisitAssignEx(AssignEx x)
@@ -318,12 +355,12 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var name = x.QualifiedName;
 
-            _flow.Arguments = arguments;
+            CurrentFlow.Arguments = arguments;
 
             if (x.IsMemberOf != null)
             {
                 var calledObject = popValue();
-                _flow.CalledObject = calledObject;
+                CurrentFlow.CalledObject = calledObject;
 
                 _functionResolver.MethodCall(calledObject, name, arguments);
             }
@@ -340,12 +377,12 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var name = popValue();
 
-            _flow.Arguments = arguments;
+            CurrentFlow.Arguments = arguments;
 
             if (x.IsMemberOf != null)
             {
                 var calledObject = popValue();
-                _flow.CalledObject = calledObject;
+                CurrentFlow.CalledObject = calledObject;
 
                 _functionResolver.IndirectMethodCall(calledObject, name, arguments);
             }
@@ -450,7 +487,7 @@ namespace Weverca.Analysis.Expressions
         {
             var possibleFiles = popValue();
 
-            _flow.FlowResolver.Include(_flow, possibleFiles);
+            CurrentFlow.FlowResolver.Include(CurrentFlow, possibleFiles);
         }
 
         public override void VisitForeachStmt(ForeachStmt x)
@@ -481,7 +518,7 @@ namespace Weverca.Analysis.Expressions
         /// <param name="nativeAnalyzer">Native analyzer</param>
         internal void VisitNative(NativeAnalyzer nativeAnalyzer)
         {
-            nativeAnalyzer.Method(_flow);
+            nativeAnalyzer.Method(CurrentFlow);
         }
     }
 }

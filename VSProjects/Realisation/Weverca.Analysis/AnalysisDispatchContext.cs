@@ -107,11 +107,12 @@ namespace Weverca.Analysis
             _currentPartialContext.MoveNextPartial();
             if (_currentPartialContext.IsComplete)
             {
+                CurrentWalker.OnComplete();
                 var completedProgramPoint = _currentPartialContext.Source;
 
                 if (completedProgramPoint.IsCondition)
                 {
-                    conditionCompleted(completedProgramPoint, CurrentWalker.PopAllValues());
+                    conditionCompleted(CurrentWalker.CurrentFlow);
                 }
                 else
                 {
@@ -192,15 +193,13 @@ namespace Weverca.Analysis
 
         /// <summary>
         /// Handler called when analysis of all partials in condition is completed
-        /// </summary>
-        /// <param name="conditionPoint">Program point of completed condition</param>
-        /// <param name="expressionParts">Values of expression parts in condition</param>
-        private void conditionCompleted(ProgramPoint conditionPoint, MemoryEntry[] expressionParts)
+        /// </summary>       
+        private void conditionCompleted(FlowController flow)
         {
-            if (_services.ConfirmAssumption(conditionPoint.OutSet, conditionPoint.Condition, expressionParts))
+            if (_services.ConfirmAssumption(flow, flow.ProgramPoint.Condition))
             {
                 //assumption is made
-                enqueueWorkDependencies(conditionPoint);
+                enqueueWorkDependencies(flow.ProgramPoint);
             }
         }
         #endregion

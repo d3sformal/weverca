@@ -29,10 +29,13 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="condition">Assumed condition</param>
         /// <param name="expressionParts">Evaluated values for condition parts</param>
         /// <returns><c>false</c> if condition cannot be ever satisfied, true otherwise.</returns>
-        public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, MemoryEntry[] expressionParts)
+        public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log)
         {
             //TODO: How to resolve not-bool conditions, like if (1) etc.?
             //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
+
+            //This change is cause because of new API for retrieving values - It provides more efficient way
+            var expressionParts = (from part in condition.Parts select log.GetValue(part.SourceElement)).ToArray();
 
             Debug.Assert(condition.Parts.Count() == expressionParts.Length);
 

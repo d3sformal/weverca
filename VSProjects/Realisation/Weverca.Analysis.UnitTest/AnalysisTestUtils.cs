@@ -219,9 +219,9 @@ namespace Weverca.Analysis.UnitTest
             return new TestCase(PhpCode, variableName, assertMessage, this);
         }
 
-        internal TestCase SetNonDeterministic(string variable)
+        internal TestCase SetNonDeterministic(params string[] variables)
         {
-            _nonDeterminiticVariables.Add(variable);
+            _nonDeterminiticVariables.UnionWith(variables);
             return this;
         }
 

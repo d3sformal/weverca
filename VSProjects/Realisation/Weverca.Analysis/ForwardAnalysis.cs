@@ -157,7 +157,7 @@ namespace Weverca.Analysis
             {
                 var currentContext = _dispatchStack.CurrentContext;
                 if (currentContext.IsComplete)
-                {
+                {                    
                     if (!_dispatchStack.CurrentLevel.ShiftToNextDispatch())
                     {
                         // we can't move to next context in current level
