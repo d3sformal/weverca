@@ -53,6 +53,7 @@
     <Compile Include="FlowResolverTests\EqualsValueVisitor.cs" />
     <Compile Include="FlowResolverTests\FlowResolverTests.cs" />
     <Compile Include="FlowResolverTests\TestCase.cs" />
+    <Compile Include="FlowResolverTests\TestCaseResult.cs" />
     <Compile Include="NativeFuntionTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NativeConstantTester.cs" />

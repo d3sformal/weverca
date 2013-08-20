@@ -118,12 +118,16 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         public void VisitFloatValue(FloatValue value)
         {
-            throw new NotImplementedException();
+            var expected = expectedValue as FloatValue;
+            Assert.IsNotNull(expectedValue);
+            Assert.AreEqual(expected.Value, value.Value);
         }
 
         public void VisitBooleanValue(BooleanValue value)
         {
-            throw new NotImplementedException();
+            var expected = expectedValue as BooleanValue;
+            Assert.IsNotNull(expectedValue);
+            Assert.AreEqual(expected.Value, value.Value);
         }
 
         public void VisitStringValue(StringValue value)
@@ -135,7 +139,9 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         public void VisitLongintValue(LongintValue value)
         {
-            throw new NotImplementedException();
+            var expected = expectedValue as LongintValue;
+            Assert.IsNotNull(expectedValue);
+            Assert.AreEqual(expected.Value, value.Value);
         }
 
         public void VisitAnyFloatValue(AnyFloatValue value)
@@ -145,7 +151,9 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         public void VisitIntegerValue(IntegerValue value)
         {
-            throw new NotImplementedException();
+            var expected = expectedValue as IntegerValue;
+            Assert.IsNotNull(expectedValue);
+            Assert.AreEqual(expected.Value, value.Value);
         }
 
         public void VisitGenericIntervalValue<T>(IntervalValue<T> value)

@@ -35,7 +35,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
 
             //This change is cause because of new API for retrieving values - It provides more efficient way
-            var expressionParts = (from part in condition.Parts select log.GetValue(part.SourceElement)).ToArray();
+            var expressionParts = condition.Parts.Select(a => log.GetValue(a.SourceElement)).ToArray();
 
             Debug.Assert(condition.Parts.Count() == expressionParts.Length);
 

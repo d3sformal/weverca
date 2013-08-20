@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.Analysis;
@@ -13,17 +12,26 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 {
     class TestCase
     {
+        #region Enum
+
         public enum ConditionResults { True, False, Unkwnown };
-        
-        AssumptionCondition conditions;
+
+        #endregion
+
+        #region Members
+
         List<MemoryEntry> conditionsEvaluations = new List<MemoryEntry>();
+        Expression[] expressions;
+        List<TestCaseResult> results = new List<TestCaseResult>();
 
-        Dictionary<string, List<Value>> results = new Dictionary<string, List<Value>>();
+        #endregion
 
-        public TestCase(ConditionForm conditionForm, Expression[] expressions, ConditionResults[] conditionResults)
+        #region Constructor
+
+        public TestCase(Expression[] expressions, ConditionResults[] conditionResults)
         {
-            conditions = new AssumptionCondition(conditionForm, expressions);
-            
+            this.expressions = expressions;
+
             foreach (var conditionResult in conditionResults)
             {
                 if (conditionResult == ConditionResults.True)
@@ -41,66 +49,55 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             }
         }
 
-        public void AddResult(string variableName, Value value)
+        #endregion
+
+        #region Methods
+
+        public TestCaseResult AddResult(ConditionForm conditionForm, bool assume)
         {
-            if (!results.ContainsKey(variableName))
+            var testCaseResult = new TestCaseResult(conditionForm, assume);
+            results.Add(testCaseResult);
+            return testCaseResult;
+        }
+
+        public void Run()
+        {
+            if (results.Count == 0)
             {
-                results.Add(variableName, new List<Value>());
-            }
-            results[variableName].Add(value);
-        }
-
-        public void Run(bool expectedAssume)
-        {
-            var snapshot = new MemoryModel.Snapshot();
-            snapshot.StartTransaction();
-            FlowOutputSet flowOutputSet = new FlowOutputSet(snapshot);
-
-            FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
-
-            //This change is because of new API for retrieving values
-            var log = new EvaluationLog();
-            var index=0;
-            foreach (var part in conditions.Parts) {
-                log.AssociateValue(part.SourceElement, conditionsEvaluations[index]);
+                throw new NotSupportedException("Could not run test with no result.");
             }
 
-            bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, log);
-
-            Assert.AreEqual(expectedAssume, assume);
-
-            if (assume)
+            foreach (var testResult in results)
             {
-                snapshot.CommitTransaction();
+                var conditions = new AssumptionCondition(testResult.ConditionForm, expressions);
 
-                ConfirmResults(flowOutputSet);
+                var snapshot = new MemoryModel.Snapshot();
+                snapshot.StartTransaction();
+                FlowOutputSet flowOutputSet = new FlowOutputSet(snapshot);
+
+                FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
+
+                //This change is because of new API for retrieving values
+                var log = new EvaluationLog();
+                var index = 0;
+                foreach (var part in conditions.Parts)
+                {
+                    log.AssociateValue(part.SourceElement, conditionsEvaluations[index]);
+                }
+
+                bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, log);
+
+                Assert.AreEqual(testResult.Assume, assume);
+
+                if (assume)
+                {
+                    snapshot.CommitTransaction();
+
+                    testResult.ConfirmResults(flowOutputSet);
+                }
             }
         }
 
-        void ConfirmResults(FlowOutputSet flowOutputSet)
-        {
-            foreach (var result in results)
-            {
-                var values = flowOutputSet.ReadValue(new VariableName(result.Key));
-
-                ConfirmValues(result.Value.ToArray(), values.PossibleValues.ToArray());
-            }
-        }
-
-        void ConfirmValues(Value[] expectedValues, Value[] values)
-        {
-            Assert.AreEqual(values.Length, expectedValues.Length);
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                ConfirmValue(expectedValues[i], values[i]);
-            }
-        }
-
-        void ConfirmValue(Value expectedValue, Value value)
-        {
-            var visitor = new EqualsValueVisitor(expectedValue);
-            value.Accept(visitor);
-        }
+        #endregion
     }
 }
