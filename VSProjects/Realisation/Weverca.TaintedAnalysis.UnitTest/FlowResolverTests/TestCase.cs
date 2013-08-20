@@ -20,9 +20,14 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         #region Constructor
 
-        public TestCase(Expression[] expressions)
+        public TestCase(params Expression[] expressions)
         {
             this.expressions = expressions;
+        }
+
+        public static TestCase Create(params Expression[] expressions)
+        {
+            return new TestCase(expressions);
         }
 
         #endregion
@@ -31,7 +36,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         public TestCaseResult AddResult(ConditionForm conditionForm, bool assume, params ConditionResults[] conditionResults)
         {
-            var testCaseResult = new TestCaseResult(conditionForm, assume, conditionResults);
+            var testCaseResult = new TestCaseResult(this, conditionForm, assume, conditionResults);
             results.Add(testCaseResult);
             return testCaseResult;
         }

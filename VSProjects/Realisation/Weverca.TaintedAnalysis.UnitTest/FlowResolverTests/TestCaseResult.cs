@@ -17,6 +17,8 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         Dictionary<string, List<Value>> results = new Dictionary<string, List<Value>>();
 
+        TestCase testCase;
+
         #endregion
 
         #region Properties
@@ -29,8 +31,10 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         #region Constructor
 
-        public TestCaseResult(ConditionForm conditionForm, bool assume, ConditionResults[] conditionResults)
+        public TestCaseResult(TestCase testCase, ConditionForm conditionForm, bool assume, ConditionResults[] conditionResults)
         {
+            this.testCase = testCase;
+            
             ConditionForm = conditionForm;
             Assume = assume;
 
@@ -55,6 +59,20 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         #endregion
 
         #region Methods
+
+        #region Helper methods for calling TestCase methods
+
+        public TestCaseResult AddResult(ConditionForm conditionForm, bool assume, params ConditionResults[] conditionResults)
+        {
+            return testCase.AddResult(conditionForm, assume, conditionResults);
+        }
+
+        public void Run()
+        {
+            testCase.Run();
+        }
+
+        #endregion
 
         public TestCaseResult AddResultValue(string variableName, Value value)
         {
