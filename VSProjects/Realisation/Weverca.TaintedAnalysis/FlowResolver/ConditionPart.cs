@@ -85,7 +85,8 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
             else if (ConditionResult == PossibleValues.Unknown)
             {
-                AssumeUnknown(); //assumeTrue?
+                // We don't know how the condition can be evaluted, so we assume, that it is true. Therefore it is needed to set up inner environment.
+                AssumeTrue();
             }
             else
             {
@@ -163,15 +164,43 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
-        void AssumeUnknown()
-        {
-            // only variables which are not set precisely not used in true parts will be evaluated.
-        }
-
         void AssumeFalse()
         {
-            // will be used only if the variable is not used in true or unknown parts. Possible values of the variable can be still infinit after few are eliminated.
-            // invert operation --> assume true
+            if (conditionPart.SourceElement is BinaryEx)
+            {
+                BinaryEx binaryExpression = conditionPart.SourceElement as BinaryEx;
+                //TODO: tady muze byt i AND, OR, ... a pak bude treba nastartovat cely proces od zacatku pro levou a pravou stranu zvlast... od new ConditionParts();
+                if (binaryExpression.PublicOperation == Operations.Equal)
+                {
+                    AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, conditionPart.GetType().Name));
+                }
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", conditionPart.SourceElement.GetType().Name));
+            }
+        }
+
+        void AssumeNotEquals(LangElement left, LangElement right)
+        {
+            if (right is DirectVarUse && !(left is DirectVarUse))
+            {
+                AssumeNotEquals(right, left);
+            }
+            else if (left is DirectVarUse)
+            {
+                var leftVar = (DirectVarUse)left;
+                //TODO: this can be done more accurate with negative set.
+                flowOutputSet.Assign(leftVar.VarName, flowOutputSet.AnyValue);
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+            }
         }
 
         void AssumeEquals(LangElement left, LangElement right)

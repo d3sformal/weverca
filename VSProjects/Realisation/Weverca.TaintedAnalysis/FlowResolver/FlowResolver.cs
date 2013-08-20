@@ -27,8 +27,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         /// <param name="outSet">Output set where condition will be assumed</param>
         /// <param name="condition">Assumed condition</param>
-        /// <param name="expressionParts">Evaluated values for condition parts</param>
-        /// <returns><c>false</c> if condition cannot be ever satisfied, true otherwise.</returns>
+        /// <param name="log"></param>
+        /// <returns>
+        ///   <c>false</c> if condition cannot be ever satisfied, true otherwise.
+        /// </returns>
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log)
         {
             //TODO: How to resolve not-bool conditions, like if (1) etc.?
@@ -36,7 +38,6 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
             //This change is cause because of new API for retrieving values - It provides more efficient way
             var expressionParts = condition.Parts.Select(a => log.GetValue(a.SourceElement)).ToArray();
-
             Debug.Assert(condition.Parts.Count() == expressionParts.Length);
 
             ConditionParts conditionParts = new ConditionParts(condition, expressionParts, outSet);

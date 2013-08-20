@@ -9,6 +9,8 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 {
+    enum ConditionResults { True, False, Unkwnown };
+
     class TestCaseResult
     {
         #region Members
@@ -21,15 +23,33 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         public ConditionForm ConditionForm { get; private set; }
         public bool Assume { get; private set; }
+        public List<MemoryEntry> ConditionsEvaluations { get; private set; }
 
         #endregion
 
         #region Constructor
 
-        public TestCaseResult(ConditionForm conditionForm, bool assume)
+        public TestCaseResult(ConditionForm conditionForm, bool assume, ConditionResults[] conditionResults)
         {
             ConditionForm = conditionForm;
             Assume = assume;
+
+            ConditionsEvaluations = new List<MemoryEntry>();
+            foreach (var conditionResult in conditionResults)
+            {
+                if (conditionResult == ConditionResults.True)
+                {
+                    ConditionsEvaluations.Add(new MemoryEntry(new BooleanValue(true)));
+                }
+                else if (conditionResult == ConditionResults.False)
+                {
+                    ConditionsEvaluations.Add(new MemoryEntry(new BooleanValue(false)));
+                }
+                else if (conditionResult == ConditionResults.Unkwnown)
+                {
+                    ConditionsEvaluations.Add(new MemoryEntry(new BooleanValue(true), new BooleanValue(false)));
+                }
+            }
         }
 
         #endregion

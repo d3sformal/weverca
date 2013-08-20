@@ -5,22 +5,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core.AST;
 
 using Weverca.Analysis;
-using Weverca.Analysis.Memory;
 using MemoryModel = Weverca.MemoryModels.MemoryModel;
 
 namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 {
     class TestCase
     {
-        #region Enum
-
-        public enum ConditionResults { True, False, Unkwnown };
-
-        #endregion
-
         #region Members
 
-        List<MemoryEntry> conditionsEvaluations = new List<MemoryEntry>();
         Expression[] expressions;
         List<TestCaseResult> results = new List<TestCaseResult>();
 
@@ -28,34 +20,18 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         #region Constructor
 
-        public TestCase(Expression[] expressions, ConditionResults[] conditionResults)
+        public TestCase(Expression[] expressions)
         {
             this.expressions = expressions;
-
-            foreach (var conditionResult in conditionResults)
-            {
-                if (conditionResult == ConditionResults.True)
-                {
-                    conditionsEvaluations.Add(new MemoryEntry(new BooleanValue(true)));
-                }
-                else if (conditionResult == ConditionResults.False)
-                {
-                    conditionsEvaluations.Add(new MemoryEntry(new BooleanValue(false)));
-                }
-                else if (conditionResult == ConditionResults.Unkwnown)
-                {
-                    conditionsEvaluations.Add(new MemoryEntry(new BooleanValue(true), new BooleanValue(false)));
-                }
-            }
         }
 
         #endregion
 
         #region Methods
 
-        public TestCaseResult AddResult(ConditionForm conditionForm, bool assume)
+        public TestCaseResult AddResult(ConditionForm conditionForm, bool assume, params ConditionResults[] conditionResults)
         {
-            var testCaseResult = new TestCaseResult(conditionForm, assume);
+            var testCaseResult = new TestCaseResult(conditionForm, assume, conditionResults);
             results.Add(testCaseResult);
             return testCaseResult;
         }
@@ -82,7 +58,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
                 var index = 0;
                 foreach (var part in conditions.Parts)
                 {
-                    log.AssociateValue(part.SourceElement, conditionsEvaluations[index]);
+                    log.AssociateValue(part.SourceElement, testResult.ConditionsEvaluations[index]);
                 }
 
                 bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, log);
