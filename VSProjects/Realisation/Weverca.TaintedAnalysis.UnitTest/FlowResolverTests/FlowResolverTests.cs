@@ -141,7 +141,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
                 new Tuple<Operations, Literal, Value, Value>(Operations.LessThan, LiteralFactory.Create(2L), new LongintIntervalValue(long.MinValue, 1), new LongintIntervalValue(2, long.MaxValue)),
                 new Tuple<Operations, Literal, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2L), new LongintIntervalValue(long.MinValue, 2), new LongintIntervalValue(3, long.MaxValue)),
                 
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2 + double.Epsilon, int.MaxValue), new FloatIntervalValue(double.MinValue, 2.2)),
+                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2)),
                 new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon)),
                 new Tuple<Operations, Literal, Value, Value>(Operations.LessThan, LiteralFactory.Create(2.2), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon), new FloatIntervalValue(2.2, double.MaxValue)),
                 new Tuple<Operations, Literal, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2.2), new FloatIntervalValue(double.MinValue, 2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue)),
@@ -164,9 +164,9 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
                 //flipped
                 TestCase.Create(new BinaryEx(test.Item1, test.Item2, new DirectVarUse(new Position(), new VariableName(variableName))))
-                    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue(variableName, test.Item4)
+                    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue(variableName, test.Item3)
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
-                    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue(variableName, test.Item3)
+                    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue(variableName, test.Item4)
                     .Run();
             }
         }

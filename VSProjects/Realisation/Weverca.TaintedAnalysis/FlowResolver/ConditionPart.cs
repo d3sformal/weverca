@@ -157,6 +157,22 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 {
                     AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
                 }
+                else if (binaryExpression.PublicOperation == Operations.GreaterThan)
+                {
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                }
+                else if (binaryExpression.PublicOperation == Operations.GreaterThanOrEqual)
+                {
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                }
+                else if (binaryExpression.PublicOperation == Operations.LessThan)
+                {
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                }
+                else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
+                {
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, conditionPart.GetType().Name));
@@ -181,6 +197,22 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 else if (binaryExpression.PublicOperation == Operations.NotEqual)
                 {
                     AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                }
+                else if (binaryExpression.PublicOperation == Operations.GreaterThan)
+                {
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                }
+                else if (binaryExpression.PublicOperation == Operations.GreaterThanOrEqual)
+                {
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                }
+                else if (binaryExpression.PublicOperation == Operations.LessThan)
+                {
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                }
+                else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
+                {
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
                 }
                 else
                 {
@@ -248,6 +280,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 else if (right is NullLiteral)
                 {
                     //TODO: how to create null?
+                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
                 }
                 else
                 {
@@ -260,6 +293,113 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        void AssumeGreaterThan(LangElement left, LangElement right, bool equal)
+        {
+            if (right is DirectVarUse && !(left is DirectVarUse))
+            {
+                AssumeGreaterThan(right, left, equal);
+            }
+            else if (left is DirectVarUse)
+            {
+                var leftVar = (DirectVarUse)left;
+                if (right is StringLiteral)
+                {
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.AnyStringValue);
+                }
+                else if (right is DoubleLiteral)
+                {
+                    var rigthValue = (DoubleLiteral)right;
+                    double bound = (double)rigthValue.Value;
+                    if (!equal)
+                    {
+                        bound += double.Epsilon;
+                    }
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.CreateFloatInterval(bound, double.MaxValue));
+                }
+                else if (right is IntLiteral)
+                {
+                    var rigthValue = (IntLiteral)right;
+                    int bound = (int)rigthValue.Value;
+                    if (!equal)
+                    {
+                        bound++;
+                    }
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.CreateIntegerInterval(bound, int.MaxValue));
+                }
+                else if (right is LongIntLiteral)
+                {
+                    var rigthValue = (LongIntLiteral)right;
+                    long bound = (long)rigthValue.Value;
+                    if (!equal)
+                    {
+                        bound++;
+                    }
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.CreateLongintInterval(bound, long.MaxValue));
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
+                }
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+            }
+        }
+
+        void AssumeLesserThan(LangElement left, LangElement right, bool equal)
+        {
+            if (right is DirectVarUse && !(left is DirectVarUse))
+            {
+                AssumeLesserThan(right, left, equal);
+            }
+            else if (left is DirectVarUse)
+            {
+                var leftVar = (DirectVarUse)left;
+                if (right is StringLiteral)
+                {
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.AnyStringValue);
+                }
+                else if (right is DoubleLiteral)
+                {
+                    var rigthValue = (DoubleLiteral)right;
+                    double bound = (double)rigthValue.Value;
+                    if (!equal)
+                    {
+                        bound -= double.Epsilon;
+                    }
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.CreateFloatInterval(double.MinValue, bound));
+                }
+                else if (right is IntLiteral)
+                {
+                    var rigthValue = (IntLiteral)right;
+                    int bound = (int)rigthValue.Value;
+                    if (!equal)
+                    {
+                        bound--;
+                    }
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.CreateIntegerInterval(int.MinValue, bound));
+                }
+                else if (right is LongIntLiteral)
+                {
+                    var rigthValue = (LongIntLiteral)right;
+                    long bound = (long)rigthValue.Value;
+                    if (!equal)
+                    {
+                        bound--;
+                    }
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.CreateLongintInterval(long.MinValue, bound));
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
+                }
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+            }
+        }
 
         #endregion
     }
