@@ -19,12 +19,12 @@ namespace Weverca.VirtualReferenceModel
         Dictionary<VariableName, VariableInfo> _oldVariables;
         Dictionary<VariableName, VariableInfo> _variables = new Dictionary<VariableName, VariableInfo>();
         Dictionary<VariableName, VariableInfo> _oldGlobals;
-        Dictionary<VariableName, VariableInfo> _globals= new Dictionary<VariableName, VariableInfo>();
+        Dictionary<VariableName, VariableInfo> _globals = new Dictionary<VariableName, VariableInfo>();
         Dictionary<VirtualReference, MemoryEntry> _oldData;
         Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
 
         bool _hasSemanticChange;
-        
+
         protected override void startTransaction()
         {
             _oldData = _data;
@@ -114,15 +114,6 @@ namespace Weverca.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
-        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
-        {
-            //TODO implement
-            if (thisObject != null)
-            {
-                assign(thisObjectStorage(), thisObject);
-            }            
-        }
-
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
             assign(targetVar, entry, false);
@@ -166,6 +157,21 @@ namespace Weverca.VirtualReferenceModel
             }
         }
 
+
+        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        {
+            //TODO implement
+            var input = callerContext as Snapshot;
+            extendVariables(input._globals, _globals);
+            extendData(input);
+
+            if (thisObject != null)
+            {
+                assign(thisObjectStorage(), thisObject);
+            }
+        }
+
+
         /// <summary>
         /// TODO this implementation is inefficient
         /// </summary>
@@ -177,7 +183,7 @@ namespace Weverca.VirtualReferenceModel
             foreach (Snapshot input in inputs)
             {
                 //merge info from extending inputs
-                extendVariables(input._variables,_variables);
+                extendVariables(input._variables, _variables);
                 extendVariables(input._globals, _globals);
                 extendData(input);
             }
@@ -251,10 +257,10 @@ namespace Weverca.VirtualReferenceModel
         {
             return readValue(sourceVar, false);
         }
-        
-        protected MemoryEntry readValue(VariableName sourceVar,bool asGlobal=false)
+
+        protected MemoryEntry readValue(VariableName sourceVar, bool asGlobal = false)
         {
-            var info = getInfo(sourceVar,asGlobal);
+            var info = getInfo(sourceVar, asGlobal);
 
             if (info == null)
             {
@@ -306,7 +312,7 @@ namespace Weverca.VirtualReferenceModel
             return entry.PossibleValues;
         }
 
-        private VariableInfo getOrCreate(VariableName name,bool asGlobal=false)
+        private VariableInfo getOrCreate(VariableName name, bool asGlobal = false)
         {
             VariableInfo result;
 
@@ -348,7 +354,7 @@ namespace Weverca.VirtualReferenceModel
             _data[reference] = entry;
         }
 
-        private VariableInfo getInfo(VariableName name,bool asGlobal=false)
+        private VariableInfo getInfo(VariableName name, bool asGlobal = false)
         {
             ReportSimpleHashSearch();
 
@@ -386,22 +392,26 @@ namespace Weverca.VirtualReferenceModel
 
             _hasSemanticChange = true;
         }
-        
+
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
             foreach (var variable in variables)
             {
-                var global=getOrCreate(variable, true);
+                var global = getOrCreate(variable, true);
                 fetch(variable, global);
             }
         }
 
+        private void fetchFromGlobalAll(params VariableName[] variables)
+        {
+            fetchFromGlobal(variables);
+        }
 
         protected override IEnumerable<VariableName> getGlobalVariables()
         {
             return _globals.Keys;
         }
-        
+
         private VariableName functionStorage(string functionName)
         {
             return new VariableName("$function:" + functionName);
@@ -411,13 +421,13 @@ namespace Weverca.VirtualReferenceModel
         {
             var storage = functionStorage(function.Declaration.Name.Value);
 
-            ReportMemoryEntryCreation();            
-            assign(storage, new MemoryEntry(function),true);
+            ReportMemoryEntryCreation();
+            assign(storage, new MemoryEntry(function), true);
         }
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
-            var storage = functionStorage(functionName.Name.Value);            
-            var entry = readValue(storage,true);
+            var storage = functionStorage(functionName.Name.Value);
+            var entry = readValue(storage, true);
 
             return from FunctionValue function in entry.PossibleValues select function;
         }
@@ -433,14 +443,14 @@ namespace Weverca.VirtualReferenceModel
 
             var entry = readValue(storage);
 
-            ReportMemoryEntryCreation();            
-            assign(storage, new MemoryEntry(declaration),true);
+            ReportMemoryEntryCreation();
+            assign(storage, new MemoryEntry(declaration), true);
         }
 
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             var storage = typeStorage(typeName.Name.Value);
-            var entry = readValue(storage,true);
+            var entry = readValue(storage, true);
 
             return from TypeValue type in entry.PossibleValues select type;
         }
@@ -449,7 +459,7 @@ namespace Weverca.VirtualReferenceModel
         protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
             var storage = getFieldStorage(value, index);
-            assign(storage, entry);
+            assign(storage, entry,true);
         }
 
         protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
@@ -461,20 +471,20 @@ namespace Weverca.VirtualReferenceModel
         protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
         {
             var storage = getFieldStorage(value, index);
-            return readValue(storage);
+            return readValue(storage,true);
         }
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             var info = getObjectInfoStorage(createdObject);
             //TODO set info
             ReportMemoryEntryCreation();
-            assign(info, new MemoryEntry(type));
+            assign(info, new MemoryEntry(type),true);
         }
 
         protected override IEnumerable<MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             var info = getObjectInfoStorage(objectValue);
-            var objInfo = readValue(info);
+            var objInfo = readValue(info,true);
             if (objInfo.PossibleValues.Count() != 1)
             {
                 throw new NotImplementedException();
@@ -492,8 +502,8 @@ namespace Weverca.VirtualReferenceModel
                 if (m.Name == methodName.Name)
                 {
                     yield return m;
-                }                
-            }            
+                }
+            }
         }
 
         private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)
@@ -512,28 +522,28 @@ namespace Weverca.VirtualReferenceModel
         #region Array operations
         protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
-            var storage = getIndexStorage(value, index);
-            assign(storage, entry);
+            var storage = getIndexStorage(value, index);            
+            assign(storage, entry,true);
         }
 
         protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
         {
-            var storage = getIndexStorage(value, index);
+            var storage = getIndexStorage(value, index);            
             assignAlias(storage, alias);
         }
 
         protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
         {
             var storage = getIndexStorage(value, index);
-            return readValue(storage);
+            return readValue(storage,true);
         }
 
         protected override void initializeArray(AssociativeArray createdArray)
         {
             //TODO initialize array
             var info = getArrayInfoStorage(createdArray);
-            ReportMemoryEntryCreation();
-            assign(info, new MemoryEntry());
+            ReportMemoryEntryCreation();            
+            assign(info, new MemoryEntry(),true);
         }
 
         private VariableName getIndexStorage(AssociativeArray arr, ContainerIndex index)
@@ -556,46 +566,52 @@ namespace Weverca.VirtualReferenceModel
 
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
-            var arrayPrefix=string.Format("$arr{0}[",iteratedArray.ArrayID);
-            foreach (var variable in _variables.Keys)
+            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.ArrayID);
+            var indexes = new List<ContainerIndex>();
+            foreach (var variable in _globals.Keys)
             {
                 var varName = variable.Value;
                 if (!varName.StartsWith(arrayPrefix))
                     continue;
 
-                var indexIdentifier=varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
+                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
 
-                yield return CreateIndex(indexIdentifier);
+                indexes.Add(CreateIndex(indexIdentifier));
             }
+
+            return indexes;
         }
         #endregion
 
-     
+
 
         protected override void setInfo(Value value, params InfoValue[] info)
         {
             var storage = infoStorage(value);
-            ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(info));
+            
+            ReportMemoryEntryCreation();            
+            assign(storage, new MemoryEntry(info),true);
         }
 
         protected override void setInfo(VariableName variable, params InfoValue[] info)
         {
             var storage = infoStorage(variable);
-            ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(info));
+            
+            ReportMemoryEntryCreation();            
+            assign(storage, new MemoryEntry(info),true);
         }
-        
+
         protected override InfoValue[] readInfo(Value value)
         {
             var storage = infoStorage(value);
-
+            
             return getInfoValues(storage);
         }
 
         protected override InfoValue[] readInfo(VariableName variable)
         {
             var storage = infoStorage(variable);
+            
 
             return getInfoValues(storage);
         }
@@ -613,8 +629,9 @@ namespace Weverca.VirtualReferenceModel
         }
 
         private InfoValue[] getInfoValues(VariableName storage)
-        {
-            var possibleValues = readValue(storage).PossibleValues;
+        {            
+            var possibleValues = readValue(storage,true).PossibleValues;
+
             var info = from value in possibleValues where value is InfoValue select value as InfoValue;
 
             return info.ToArray();
