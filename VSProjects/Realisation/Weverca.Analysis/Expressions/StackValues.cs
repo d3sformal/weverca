@@ -28,9 +28,11 @@ namespace Weverca.Analysis.Expressions
             throw new NotSupportedException("Cannot get alias on memory entry");
         }
 
-        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry InitializeIndexer(ExpressionEvaluatorBase evaluator)
         {
-            throw new NotImplementedException();
+            //There is no initialization on memory entry
+
+            return _entry;
         }
     }
 
@@ -56,7 +58,7 @@ namespace Weverca.Analysis.Expressions
             return evaluator.ResolveField(_objectValue, _fieldEntry);
         }
 
-        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry InitializeIndexer(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }
@@ -113,7 +115,7 @@ namespace Weverca.Analysis.Expressions
             return evaluator.ResolveVariable(_entry);
         }
 
-        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry InitializeIndexer(ExpressionEvaluatorBase evaluator)
         {
             return evaluator.ResolveIndexedVariable(_entry);
         }
@@ -167,7 +169,7 @@ namespace Weverca.Analysis.Expressions
             throw new NotImplementedException();
         }
 
-        public MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator)
+        public MemoryEntry InitializeIndexer(ExpressionEvaluatorBase evaluator)
         {
             throw new NotImplementedException();
         }

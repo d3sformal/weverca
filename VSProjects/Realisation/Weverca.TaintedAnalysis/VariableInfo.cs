@@ -175,5 +175,19 @@ namespace Weverca.TaintedAnalysis
         {
             return dirtyFlags[dirty];
         }
+
+        public override string ToString()
+        {
+            var result = new StringBuilder();
+            foreach (var flag in dirtyFlags)
+            {
+                result.AppendFormat("{0}:{1}, ", flag.Key, flag.Value);
+            }
+
+            result.Length-=2;
+            result.Append("");
+
+            return result.ToString();
+        }
     }
 }

@@ -310,7 +310,7 @@ namespace Weverca.Analysis.Expressions
         public override void VisitItemUse(ItemUse x)
         {
             var item = popRValue();
-            var itemHolder = item.ReadIndex(_evaluator);
+            var itemHolder = item.InitializeIndexer(_evaluator);
             var itemIndex = popValue();
 
             tryLogValue(item, itemHolder);
@@ -424,12 +424,21 @@ namespace Weverca.Analysis.Expressions
             var result = _evaluator.BinaryEx(leftOperand, x.PublicOperation, rightOperand);
             push(result);
         }
-
+        
         public override void VisitUnaryEx(UnaryEx x)
         {
             var operand = popValue();
 
             var result = _evaluator.UnaryEx(x.PublicOperation, operand);
+            push(result);
+        }
+
+        public override void VisitConcatEx(ConcatEx x)
+        {
+            var rightOperand = popValue();
+            var leftOperand = popValue();
+
+            var result = _evaluator.Concat(leftOperand, rightOperand);
             push(result);
         }
 

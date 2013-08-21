@@ -31,7 +31,7 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="evaluator">Evaluator used for reading value</param>
         /// <returns>Read values</returns>
-        MemoryEntry ReadIndex(ExpressionEvaluatorBase evaluator);
+        MemoryEntry InitializeIndexer(ExpressionEvaluatorBase evaluator);
 
         /// <summary>
         /// Read value as alias 

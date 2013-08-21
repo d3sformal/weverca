@@ -363,6 +363,11 @@ namespace Weverca.Analysis.UnitTest
             OutSet.FetchFromGlobal(constName);
             OutSet.Assign(constName, constantValue);
         }
+
+        public override MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>

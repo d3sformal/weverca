@@ -709,5 +709,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             UserDefinedConstantHandler.insertConstant(OutSet, new QualifiedName(new Name(x.Name.Value)), constantValue,false);
         }
+
+        public override MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

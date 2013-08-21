@@ -160,6 +160,14 @@ namespace Weverca.Analysis.Expressions
         /// <param name="valueVariable">Variable where values are stored</param>
         public abstract void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable);
 
+        /// <summary>
+        /// Process concatenation of given operands
+        /// </summary>
+        /// <param name="leftOperand">Left operand on concatenation</param>
+        /// <param name="rightOperand">Right operand on concatenation</param>
+        /// <returns>Concatenation of operands</returns>
+        public abstract MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand);
+
         #endregion
 
         #region Default implementation of simple routines
@@ -279,6 +287,8 @@ namespace Weverca.Analysis.Expressions
             return new MemoryEntry(new FunctionValue(null));
         }
 
+
+        
         #endregion
 
         /// <summary>
@@ -289,6 +299,7 @@ namespace Weverca.Analysis.Expressions
         {
             Flow = flow;
         }
+
 
 
     }
