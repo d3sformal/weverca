@@ -14,12 +14,6 @@ namespace Weverca.TaintedAnalysis.FlowResolver
     /// </summary>
     class FlowResolver : FlowResolverBase
     {
-        #region Members
-
-        private FlowOutputSet outSet;
-
-        #endregion
-
         #region FlowResolverBase overrides
 
         /// <summary>

@@ -153,6 +153,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 {
                     AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
                 }
+                else if (binaryExpression.PublicOperation == Operations.NotEqual)
+                {
+                    AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, conditionPart.GetType().Name));
@@ -173,6 +177,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
                     AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                }
+                else if (binaryExpression.PublicOperation == Operations.NotEqual)
+                {
+                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
                 }
                 else
                 {
