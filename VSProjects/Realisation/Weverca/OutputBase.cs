@@ -15,6 +15,11 @@ namespace Weverca
         /// </summary>
         static List<string> _commentPrefixes = new List<string>() { "===", "---" };
 
+        /// <summary>
+        /// Prefixes for hint texts
+        /// </summary>
+        static List<string> _hintPrefixes=new List<string>(){"#"};
+
         #region Template methods for implementors
 
         /// <summary>
@@ -28,6 +33,12 @@ namespace Weverca
         /// </summary>
         /// <param name="text">Info text</param>
         protected abstract void info(string text);
+
+        /// <summary>
+        /// Hint used as additional description to some info
+        /// </summary>
+        /// <param name="text">Hint text</param>
+        protected abstract void hint(string text);
 
         /// <summary>
         /// Comment used in section
@@ -131,9 +142,37 @@ namespace Weverca
         private void variableInfoLine(string variableLine)
         {
             var parts = variableLine.Split(new char[] { ':' }, 2);
-            variable(parts[0]);
+            variable(parts[0].Trim());
             delimiter(": ");
-            info(parts[1]);
+
+            var text = parts[1].Trim();
+
+            if (isHint(text))
+            {
+                hint(text);
+            }
+            else
+            {
+                info(text);
+            }            
+        }
+
+        /// <summary>
+        /// Determine that text is hint text
+        /// </summary>
+        /// <param name="text">Tested text</param>
+        /// <returns>True if text is hint, false otherwise</returns>
+        private bool isHint(string text)
+        {
+            foreach (var hintPrefix in _hintPrefixes)
+            {
+                if (text.StartsWith(hintPrefix))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

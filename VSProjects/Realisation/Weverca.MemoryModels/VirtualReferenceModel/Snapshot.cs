@@ -667,15 +667,23 @@ namespace Weverca.VirtualReferenceModel
             var variables = asGlobal ? _globals : _variables;
             foreach (var variable in variables.Keys)
             {
-                result.AppendFormat("{0}: {{", variable);
-
-                foreach (var value in readValue(variable, asGlobal).PossibleValues)
+                if (!asGlobal && _variables[variable].IsGlobal)
                 {
-                    result.AppendFormat("'{0}', ", value);
+                    result.AppendFormat("{0}: #Fetched from global scope",variable);
+                    result.AppendLine();
                 }
+                else
+                {
+                    result.AppendFormat("{0}: {{", variable);
 
-                result.Length -= 2;
-                result.AppendLine("}");
+                    foreach (var value in readValue(variable, asGlobal).PossibleValues)
+                    {
+                        result.AppendFormat("'{0}', ", value);
+                    }
+
+                    result.Length -= 2;
+                    result.AppendLine("}");
+                }
             }
         }
     }

@@ -12,6 +12,7 @@ namespace Weverca
 
         static readonly ConsoleColor Head = ConsoleColor.White;
         static readonly ConsoleColor Info = ConsoleColor.Gray;
+        static readonly ConsoleColor Hint = ConsoleColor.DarkCyan;
         static readonly ConsoleColor Variable = ConsoleColor.Yellow;
         static readonly ConsoleColor Delimiter = ConsoleColor.Red;
         static readonly ConsoleColor Comment = ConsoleColor.Green;
@@ -40,6 +41,11 @@ namespace Weverca
         protected override void info(string text)
         {
             print(Info, text);
+        }
+
+        protected override void hint(string text)
+        {
+            print(Hint, text);
         }
 
         protected override void comment(string text)
