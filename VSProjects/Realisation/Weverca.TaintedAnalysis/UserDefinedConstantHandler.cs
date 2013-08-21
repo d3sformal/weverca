@@ -23,7 +23,6 @@ namespace Weverca.TaintedAnalysis
         public static List<Value> getConstant(FlowOutputSet outset, QualifiedName name)
         {
             List<Value> result = new List<Value>();
-            UndefinedValue undefinedValue=outset.UndefinedValue;
             outset.FetchFromGlobal(new VariableName(".constants"));
             foreach (Value value in outset.ReadValue(new VariableName(".constants")).PossibleValues)
             {
@@ -33,7 +32,7 @@ namespace Weverca.TaintedAnalysis
                     //case insensitive constants
                     foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex("." + name.Name.LowercaseValue)).PossibleValues)
                     {
-                        if (!it.Equals(undefinedValue))
+                        if (!(it is UndefinedValue))
                         {
                             result.Add(it);
                         }
@@ -41,7 +40,7 @@ namespace Weverca.TaintedAnalysis
                     //case sensitive constant
                     foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex(name.Name.Value)).PossibleValues)
                     {
-                        if (!it.Equals(undefinedValue))
+                        if (!(it is UndefinedValue))
                         {
                             result.Add(it);
                         }
@@ -50,7 +49,7 @@ namespace Weverca.TaintedAnalysis
             }
             if (result.Count == 0)
             {
-                result.Add(undefinedValue);
+                result.Add(outset.UndefinedValue);
             }
             return result;
         }
