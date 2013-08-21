@@ -24,26 +24,29 @@ namespace Weverca.TaintedAnalysis
         {
             List<Value> result = new List<Value>();
             UndefinedValue undefinedValue=outset.UndefinedValue;
+            outset.FetchFromGlobal(new VariableName(".constants"));
             foreach (Value value in outset.ReadValue(new VariableName(".constants")).PossibleValues)
             {
-                AssociativeArray constArray = (AssociativeArray)value;
-                //case insensitive constants
-                foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex("." + name.Name.LowercaseValue)).PossibleValues)
+                if (value.GetType() == typeof(AssociativeArray))
                 {
-                    if(!it.Equals(undefinedValue))
+                    AssociativeArray constArray = (AssociativeArray)value;
+                    //case insensitive constants
+                    foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex("." + name.Name.LowercaseValue)).PossibleValues)
                     {
-                    result.Add(it);
+                        if (!it.Equals(undefinedValue))
+                        {
+                            result.Add(it);
+                        }
+                    }
+                    //case sensitive constant
+                    foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex(name.Name.Value)).PossibleValues)
+                    {
+                        if (!it.Equals(undefinedValue))
+                        {
+                            result.Add(it);
+                        }
                     }
                 }
-                //case sensitive constant
-                foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex(name.Name.Value)).PossibleValues)
-                {
-                    if(!it.Equals(undefinedValue))
-                    {
-                    result.Add(it);
-                    }
-                }
-
             }
             if (result.Count == 0)
             {
@@ -61,23 +64,26 @@ namespace Weverca.TaintedAnalysis
         /// <param name="caseInsensitive">determins if the constant is case sensitive of insensitive</param>
         public static void insertConstant(FlowOutputSet outset, QualifiedName name, MemoryEntry value, bool caseInsensitive = false)
         {
-
+            outset.FetchFromGlobal(new VariableName(".constants"));
             foreach (Value array in outset.ReadValue(new VariableName(".constants")).PossibleValues)
             {
-                AssociativeArray constArray = (AssociativeArray)array;
-                ContainerIndex index;
-                if (caseInsensitive == true)
+                if (array.GetType() == typeof(AssociativeArray))
                 {
-                    index=outset.CreateIndex("."+name.Name.LowercaseValue);
-                }
-                else
-                {
-                    index=outset.CreateIndex(name.Name.Value);
-                }
-                MemoryEntry entry = outset.GetIndex(constArray, index);
-                if (entry.PossibleValues.Count() == 0 || (entry.PossibleValues.Count() == 1 && entry.PossibleValues.ElementAt(0).Equals(outset.UndefinedValue)))
-                {
-                    outset.SetIndex(constArray, index, value);
+                    AssociativeArray constArray = (AssociativeArray)array;
+                    ContainerIndex index;
+                    if (caseInsensitive == true)
+                    {
+                        index = outset.CreateIndex("." + name.Name.LowercaseValue);
+                    }
+                    else
+                    {
+                        index = outset.CreateIndex(name.Name.Value);
+                    }
+                    MemoryEntry entry = outset.GetIndex(constArray, index);
+                    if (entry.PossibleValues.Count() == 0 || (entry.PossibleValues.Count() == 1 && entry.PossibleValues.ElementAt(0).Equals(outset.UndefinedValue)))
+                    {
+                        outset.SetIndex(constArray, index, value);
+                    }
                 }
             }
         }

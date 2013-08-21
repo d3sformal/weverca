@@ -515,7 +515,7 @@ namespace Weverca.TaintedAnalysis
                 $c=max(1,2,3,4);
                 $e=strstr('a',4,8);
                 $f=max(2,'aaa',$e);*/
-                const a=4;
+                define('a',4);
                 $a=a;
                
                 ";
@@ -604,7 +604,7 @@ namespace Weverca.TaintedAnalysis
             {
                 if (NativeFunctionAnalyzer.CanBeDirty(value))
                 {
-                    VariableInfoHandler.CopyFlags(flow.OutSet, arguments, value);
+                    ValueInfoHandler.CopyFlags(flow.OutSet, arguments, value);
                 }
             }
         }

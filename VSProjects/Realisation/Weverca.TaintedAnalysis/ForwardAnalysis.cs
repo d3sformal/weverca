@@ -40,16 +40,20 @@ namespace Weverca.TaintedAnalysis
         { 
             var post = new VariableName("_POST");
             var postValue = EntryInput.AnyArrayValue;
-            EntryInput.Assign(post, new MemoryEntry(postValue));
-            VariableInfoHandler.setDirty(EntryInput, postValue);
+            EntryInput.FetchFromGlobal(post);
+            EntryInput.Assign(post, new MemoryEntry(postValue));         
+            ValueInfoHandler.setDirty(EntryInput, postValue);
+
 
             var get = new VariableName("_GET");
             var getValue = EntryInput.AnyArrayValue;
+            EntryInput.FetchFromGlobal(get);
             EntryInput.Assign(post, new MemoryEntry(getValue));
-            VariableInfoHandler.setDirty(EntryInput, getValue);
+            ValueInfoHandler.setDirty(EntryInput, getValue);
 
             var contants = new VariableName(".constants");
             var constValue = EntryInput.CreateArray();
+            EntryInput.FetchFromGlobal(contants);
             EntryInput.Assign(contants, new MemoryEntry(constValue));
 
 
