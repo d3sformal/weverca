@@ -16,11 +16,13 @@ namespace Weverca.TaintedAnalysis
             IEnumerable<Value> previousWarnings = ReadWarnings(flowOutSet);
             List<Value> newEntry = new List<Value>(previousWarnings);
             newEntry.Add(flowOutSet.CreateInfo(warning));
+            flowOutSet.FetchFromGlobal(new VariableName(".analysisWarning"));
             flowOutSet.Assign(new VariableName(".analysisWarning"), new MemoryEntry(newEntry));
         }
 
         public static IEnumerable<Value> ReadWarnings(FlowOutputSet flowOutSet)
         {
+            flowOutSet.FetchFromGlobal(new VariableName(".analysisWarning"));
             var result = flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues;
             if ((result.Count() == 1) && (result.ElementAt(0).GetType() == typeof(UndefinedValue)))
             {
