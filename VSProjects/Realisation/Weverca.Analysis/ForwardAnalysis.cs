@@ -270,16 +270,12 @@ namespace Weverca.Analysis
         /// </summary>
         private void popCallStack()
         {
-            var callResult = _dispatchStack.CurrentLevel.GetResult();
+            var poppedContext = _dispatchStack.CurrentLevel;            
             _dispatchStack.Pop();
 
             if (!_dispatchStack.IsEmpty)
             {
-                mergeCallResult(_dispatchStack.CurrentContext, callResult);
-
-                // push return value into walker
-                var returnValue = getReturnValue(callResult);
-                _dispatchStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
+                mergeCallResult(_dispatchStack.CurrentContext, poppedContext);
             }
         }
 
@@ -288,11 +284,16 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="callerContext">Context of caller that invokes calls</param>
         /// <param name="callResults">Results of invoked calls</param>
-        private void mergeCallResult(AnalysisDispatchContext callerContext, AnalysisDispatchContext[] callResults)
+        private void mergeCallResult(AnalysisDispatchContext callerContext,DispatchLevel calledContext)
         {
+            var callResults = calledContext.GetResult();
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
+            
+            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(), calledContext.DispatchType);
 
-            _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(), callerContext.DispatchType);
+            // push return value into walker
+            var returnValue = getReturnValue(callResults);
+            _dispatchStack.CurrentContext.CurrentWalker.InsertReturnValue(returnValue);
         }
 
         /// <summary>

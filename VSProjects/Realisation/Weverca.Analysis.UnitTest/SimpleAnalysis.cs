@@ -736,7 +736,15 @@ namespace Weverca.Analysis.UnitTest
         public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs, DispatchType callType)
         {
             var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
-            callerOutput.MergeWithCallLevel(ends);
+            
+            if (callType == DispatchType.ParallelInclude)
+            {
+                callerOutput.Extend(ends);
+            }
+            else
+            {
+                callerOutput.MergeWithCallLevel(ends);
+            }
         }
 
         public override void Include(FlowController flow, MemoryEntry includeFile)

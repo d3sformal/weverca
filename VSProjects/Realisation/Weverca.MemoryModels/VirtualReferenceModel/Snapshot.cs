@@ -191,11 +191,10 @@ namespace Weverca.VirtualReferenceModel
 
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
-        {
-            //TODO this is dummy workaround
+        {            
             foreach (Snapshot callInput in callOutput)
             {
-                extendVariables(callInput._variables, _variables);
+                //Local variables are not extended
                 extendVariables(callInput._globals, _globals);
                 extendData(callInput);
             }
