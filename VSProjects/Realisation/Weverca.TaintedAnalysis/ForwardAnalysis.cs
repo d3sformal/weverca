@@ -44,7 +44,6 @@ namespace Weverca.TaintedAnalysis
             EntryInput.Assign(post, new MemoryEntry(postValue));         
             ValueInfoHandler.setDirty(EntryInput, postValue);
 
-
             var get = new VariableName("_GET");
             var getValue = EntryInput.AnyArrayValue;
             EntryInput.FetchFromGlobal(get);
@@ -55,6 +54,10 @@ namespace Weverca.TaintedAnalysis
             var constValue = EntryInput.CreateArray();
             EntryInput.FetchFromGlobal(contants);
             EntryInput.Assign(contants, new MemoryEntry(constValue));
+
+            var warnings = new VariableName(".analysisWarning");
+            EntryInput.FetchFromGlobal(warnings);
+            EntryInput.Assign(warnings, new MemoryEntry(EntryInput.UndefinedValue));
 
 
         }

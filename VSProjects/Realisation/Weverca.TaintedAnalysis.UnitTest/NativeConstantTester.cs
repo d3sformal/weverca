@@ -188,5 +188,56 @@ using Weverca.ControlFlowGraph;
             testType(result, typeof(UndefinedValue));
         }
 
+        string constDeclaration = @"
+            define('aaa',4);
+            $result=aaa;
+        ";
+
+        string constDeclaration2 = @"
+            define('aaa',4,false);
+            $result=aaa;
+        ";
+
+        string constDeclarationCaseInsensitive = @"
+            define('aaa',4,false);
+            $result=aAa;
+        ";
+
+        string constDeclarationCaseInsensitive2 = @"
+            define('aaa',4,true);
+            $result=aAa;
+        ";
+
+        [TestMethod]
+        public void ConstDeclaration()
+        {
+            var result = ResultTest(constDeclaration);
+            testType(result, typeof(IntegerValue));
+            testValue(result, 4);
+        }
+
+        [TestMethod]
+        public void ConstDeclaration2()
+        {
+            var result = ResultTest(constDeclaration2);
+            testType(result, typeof(IntegerValue));
+            testValue(result, 4);
+        }
+
+        [TestMethod]
+        public void constDeclarationCaseInsensitiveTest()
+        {
+            var result = ResultTest(constDeclarationCaseInsensitive);
+            testType(result, typeof(UndefinedValue));
+        }
+
+        [TestMethod]
+        public void constDeclarationCaseInsensitiveTest2()
+        {
+            var result = ResultTest(constDeclarationCaseInsensitive2);
+            testType(result, typeof(IntegerValue));
+            testValue(result, 4);
+        }
+
     }
 

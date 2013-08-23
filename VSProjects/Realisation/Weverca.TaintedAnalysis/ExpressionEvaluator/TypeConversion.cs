@@ -185,6 +185,19 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             return (value.GetType() == typeof(AssociativeArray) || value.GetType() == typeof(AnyArrayValue));
         }
+
+        public static bool CanBeDirty(Value value)
+        {
+            if (ValueTypeResolver.isBool(value) || ValueTypeResolver.isInt(value) || ValueTypeResolver.isFloat(value) || ValueTypeResolver.isLong(value))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
+
 
 }
