@@ -25,8 +25,16 @@ namespace Weverca
         /// <param name="args">TODO: Specification of arguments</param>
         static void Main(string[] args)
         {
+            if (args.Count() < 1)
+            {
+                Console.WriteLine("Missing argument");
+                Console.WriteLine(@"Example of usage: weverca.exe ..\..\..\..\..\PHP_sources\test_programs\testfile.php ");
+                Console.ReadKey();
+                return;
+            }
+            
             //TODO: Resolve entry file
-            var analyzedFile = PHP_SOURCES_DIR + @"test_programs\vulnerabilities\Simple_XSS.php";
+            var analyzedFile = args[0];
 
             //Process analysis
             var watch = System.Diagnostics.Stopwatch.StartNew();

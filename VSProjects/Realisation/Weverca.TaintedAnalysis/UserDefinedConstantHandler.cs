@@ -26,7 +26,7 @@ namespace Weverca.TaintedAnalysis
             outset.FetchFromGlobal(new VariableName(".constants"));
             foreach (Value value in outset.ReadValue(new VariableName(".constants")).PossibleValues)
             {
-                if (value.GetType() == typeof(AssociativeArray))
+                if (value is AssociativeArray)
                 {
                     AssociativeArray constArray = (AssociativeArray)value;
                     //case insensitive constants
@@ -66,7 +66,7 @@ namespace Weverca.TaintedAnalysis
             outset.FetchFromGlobal(new VariableName(".constants"));
             foreach (Value array in outset.ReadValue(new VariableName(".constants")).PossibleValues)
             {
-                if (array.GetType() == typeof(AssociativeArray))
+                if (array is AssociativeArray)
                 {
                     AssociativeArray constArray = (AssociativeArray)array;
                     ContainerIndex index;

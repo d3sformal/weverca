@@ -382,7 +382,7 @@ namespace Weverca.TaintedAnalysis
             bool argumentMatches = true;
             foreach (Value value in memoryEntry.PossibleValues)
             {
-                if (value.GetType() == typeof(AnyValue) || value.GetType() == typeof(UndefinedValue))
+                if (value is AnyValue || value is UndefinedValue)
                 {
                     continue;
                 }
@@ -433,14 +433,14 @@ namespace Weverca.TaintedAnalysis
                         break;
                     case "resource":
                     case "resouce":
-                        if (value.GetType() != typeof(AnyResourceValue))
+                        if (!(value is AnyResourceValue))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "callable":
                     case "callback":
-                        if(value.GetType()!=typeof(StringValue) && value.GetType()!=typeof(AnyStringValue) && value.GetType()!=typeof(FunctionValue))
+                        if(!ValueTypeResolver.isString(value) && !(value is FunctionValue))
                         {
                             argumentMatches = false;
                         }
@@ -448,7 +448,7 @@ namespace Weverca.TaintedAnalysis
                     case "void":
                         throw new Exception("Void is not a type of argument");
                     default:
-                        if (value.GetType() != typeof(ObjectValue) && value.GetType() != typeof(AnyObjectValue))
+                        if (!ValueTypeResolver.isObject(value))
                         {
                             argumentMatches = false;
                         }

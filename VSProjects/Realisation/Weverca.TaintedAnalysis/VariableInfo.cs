@@ -37,7 +37,7 @@ namespace Weverca.TaintedAnalysis
 
             foreach (var info in infos)
             {
-                if (info.GetType() == typeof(InfoValue<ValueInfo>))
+                if (info is InfoValue<ValueInfo>)
                 {
                     Array values = DirtyType.GetValues(typeof(DirtyType));
                     foreach (DirtyType val in values)
@@ -70,7 +70,7 @@ namespace Weverca.TaintedAnalysis
             bool result=false;
             foreach(InfoValue info in outSet.ReadInfo(value))
             {
-                if (info.GetType() == typeof(InfoValue<ValueInfo>))
+                if (info is InfoValue<ValueInfo>)
                 {
                     result |= ((InfoValue<ValueInfo>)info).Data.isDirty(dirty);
                 }
