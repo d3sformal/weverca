@@ -153,37 +153,37 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
     {
         public static bool isInt(Value value)
         {
-            return (value.GetType() == typeof(IntegerIntervalValue) || value.GetType() == typeof(IntegerValue) || value.GetType() == typeof(AnyIntegerValue));
+            return (value is IntegerIntervalValue || value is IntegerValue || value is AnyIntegerValue);
         }
 
         public static bool isLong(Value value)
         {
-            return (value.GetType() == typeof(LongintValue) || value.GetType() == typeof(AnyLongintValue) || value.GetType() == typeof(LongintIntervalValue));
+            return (value is LongintValue || value is AnyLongintValue || value is LongintIntervalValue);
         }
 
         public static bool isFloat(Value value)
         {
-            return (value.GetType() == typeof(FloatIntervalValue) || value.GetType() == typeof(FloatValue) || value.GetType() == typeof(AnyFloatValue));
+            return (value is FloatIntervalValue || value is FloatValue || value is AnyFloatValue);
         }
 
         public static bool isBool(Value value)
         {
-            return (value.GetType() == typeof(BooleanValue) || value.GetType() == typeof(AnyBooleanValue));
+            return (value is BooleanValue || value is AnyBooleanValue);
         }
 
         public static bool isString(Value value)
         {
-            return (value.GetType() == typeof(StringValue) || value.GetType() == typeof(AnyStringValue));
+            return (value is StringValue || value is AnyStringValue);
         }
 
         public static bool isObject(Value value)
         {
-            return (value.GetType() == typeof(ObjectValue) || value.GetType() == typeof(AnyObjectValue));
+            return (value is ObjectValue || value is AnyObjectValue);
         }
 
         public static bool isArray(Value value)
         {
-            return (value.GetType() == typeof(AssociativeArray) || value.GetType() == typeof(AnyArrayValue));
+            return (value is AssociativeArray || value is AnyArrayValue);
         }
 
         public static bool CanBeDirty(Value value)
