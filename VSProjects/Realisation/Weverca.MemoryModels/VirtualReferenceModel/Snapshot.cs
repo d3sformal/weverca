@@ -438,7 +438,7 @@ namespace Weverca.VirtualReferenceModel
 
         protected override void declareGlobal(TypeValue declaration)
         {
-            var storage = typeStorage(declaration.Declaration.Type.QualifiedName.Name.Value);
+            var storage = typeStorage(declaration.QualifiedName.Name.Value);
 
             var entry = readValue(storage);
 
@@ -489,7 +489,8 @@ namespace Weverca.VirtualReferenceModel
                 throw new NotImplementedException();
             }
 
-            var type = objInfo.PossibleValues.First() as TypeValue;
+            //TODO support for other type values
+            var type = objInfo.PossibleValues.First() as SourceTypeValue;
             foreach (var member in type.Declaration.Members)
             {
                 var m = member as MethodDecl;

@@ -688,7 +688,7 @@ namespace Weverca.Analysis.Memory
         {
             ++_statistics.DeclaredTypes;
 
-            var type = new TypeValue(declaration);
+            var type = new SourceTypeValue(declaration);
             declareGlobal(type);
         }
 

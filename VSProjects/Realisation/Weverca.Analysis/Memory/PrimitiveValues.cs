@@ -123,17 +123,5 @@ namespace Weverca.Analysis.Memory
 
      
 
-    public class TypeValue : Value
-    {
-        public readonly TypeDecl Declaration;
-        internal TypeValue(TypeDecl declaration)
-        {
-            Declaration = declaration;
-        }
 
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitTypeValue(this);
-        }
-    }
 }
