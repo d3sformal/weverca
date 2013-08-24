@@ -42,6 +42,7 @@ namespace Weverca.Analysis
         public NativeAnalyzer(NativeAnalyzerMethod method,LangElement invokingElement)
             :base(invokingElement.Position)
         {
+            InvokingElement = invokingElement;
             Method = method;
         }
 

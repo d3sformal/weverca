@@ -189,7 +189,7 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
-        protected override IEnumerable<PHP.Core.AST.MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             throw new NotImplementedException();
         }

@@ -125,6 +125,29 @@ namespace Weverca.Analysis.Memory
         FunctionValue CreateFunction(FunctionDecl declaration);
 
         /// <summary>
+        /// Create function value from given declaration
+        /// </summary>
+        /// <param name="declaration">Method declaration</param>
+        /// <returns>Created value</returns>
+        FunctionValue CreateFunction(MethodDecl declaration);
+
+        /// <summary>
+        /// Create function value from given declaration
+        /// </summary>
+        /// <param name="analyzer">Analyzer declaration</param>
+        /// <param name="name">Name of created analyzer</param>
+        /// <returns>Created value</returns>
+        FunctionValue CreateFunction(Name name,NativeAnalyzer analyzer);
+
+
+        /// <summary>
+        /// Create function value from given expression
+        /// </summary>
+        /// <param name="expression">Lambda function declaration</param>        
+        /// <returns>Created value</returns>
+        FunctionValue CreateFunction(LambdaFunctionExpr expression);
+
+        /// <summary>
         /// Create array empty array
         /// </summary>
         /// <returns>Created value</returns>

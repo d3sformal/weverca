@@ -10,6 +10,8 @@ using PHP.Core.Reflection;
 using Weverca.ControlFlowGraph;
 using Weverca.Analysis.Expressions;
 
+using Weverca.Analysis.Memory;
+
 namespace Weverca.Analysis
 {
 
@@ -145,20 +147,11 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="declaration">Declaration which program point graph is created</param>
         /// <returns>Created program point graph</returns>
-        public static ProgramPointGraph From(LangElement declaration)
+        public static ProgramPointGraph From(FunctionValue function)
         {
-            if (declaration is NativeAnalyzer)
-            {
-                return FromNative(declaration as NativeAnalyzer);
-            }
-            else if (declaration is MethodDecl)
-            {
-                return FromSource(declaration as MethodDecl);
-            }
-            else
-            {
-                return FromSource(declaration as FunctionDecl);
-            }
+            var builder = new FunctionProgramPointBuilder();
+            function.Accept(builder);
+            return builder.Output;
         }
 
         #endregion

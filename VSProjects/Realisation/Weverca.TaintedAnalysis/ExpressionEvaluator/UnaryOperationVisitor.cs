@@ -8,6 +8,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 {
+    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for unary operations)
     public class UnaryOperationVisitor : IValueVisitor
     {
         private ExpressionEvaluator evaluator;
@@ -560,5 +561,26 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
+
+
+        public void VisitSourceFunctionValue(SourceFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSourceMethodValue(SourceMethodValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

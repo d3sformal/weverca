@@ -124,6 +124,21 @@ namespace Weverca.Analysis
             return Snapshot.CreateFunction(declaration);
         }
 
+        public FunctionValue CreateFunction(MethodDecl declaration)
+        {
+            return Snapshot.CreateFunction(declaration);
+        }
+
+        public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
+        {
+            return Snapshot.CreateFunction(name,analyzer);
+        }
+
+        public FunctionValue CreateFunction(LambdaFunctionExpr expression)
+        {
+            return Snapshot.CreateFunction(expression);
+        }
+
         public AssociativeArray CreateArray()
         {
             return Snapshot.CreateArray();
@@ -268,6 +283,8 @@ namespace Weverca.Analysis
             return input.Snapshot;
         }
         #endregion
+
+
 
 
     }

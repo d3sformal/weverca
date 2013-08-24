@@ -11,27 +11,26 @@ namespace Weverca.TaintedAnalysis
 {
     public class AnalysisWarningHandler
     {
+        /// <summary>
+        /// Variable where warning values are stored
+        /// </summary>
+        private static readonly VariableName WARNING_STORAGE = new VariableName(".analysisWarning");
+
         public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning)
         {
-            IEnumerable<Value> previousWarnings = ReadWarnings(flowOutSet);
-            List<Value> newEntry = new List<Value>(previousWarnings);
+            var previousWarnings = ReadWarnings(flowOutSet);
+            var newEntry = new List<Value>(previousWarnings);
             newEntry.Add(flowOutSet.CreateInfo(warning));
-            flowOutSet.FetchFromGlobal(new VariableName(".analysisWarning"));
-            flowOutSet.Assign(new VariableName(".analysisWarning"), new MemoryEntry(newEntry));
+
+            flowOutSet.FetchFromGlobal(WARNING_STORAGE);
+            flowOutSet.Assign(WARNING_STORAGE, new MemoryEntry(newEntry));
         }
 
         public static IEnumerable<Value> ReadWarnings(FlowOutputSet flowOutSet)
         {
-            flowOutSet.FetchFromGlobal(new VariableName(".analysisWarning"));
-            var result = flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues;
-            if ((result.Count() == 1) && (result.ElementAt(0).GetType() == typeof(UndefinedValue)))
-            {
-                return new List<Value>();
-            }
-            else
-            {
-                return flowOutSet.ReadValue(new VariableName(".analysisWarning")).PossibleValues;
-            }
+            flowOutSet.FetchFromGlobal(WARNING_STORAGE);
+            var result = flowOutSet.ReadValue(WARNING_STORAGE).PossibleValues;
+            return from value in result where !(value is UndefinedValue) select value;           
         }
     }
 

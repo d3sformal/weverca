@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 namespace Weverca.Analysis.Memory
@@ -31,7 +32,7 @@ namespace Weverca.Analysis.Memory
         /// Strong typed value stored in PrimitiveValue
         /// </summary>
         public readonly T Value;
-        
+
         public override object RawValue { get { return Value; } }
 
         internal PrimitiveValue(T value)
@@ -51,7 +52,7 @@ namespace Weverca.Analysis.Memory
                 return true;
             }
 
-            var o=obj as PrimitiveValue<T>;
+            var o = obj as PrimitiveValue<T>;
             if (o == null)
             {
                 return false;
@@ -120,19 +121,7 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-    public class FunctionValue : Value
-    {
-        public readonly FunctionDecl Declaration;
-        internal FunctionValue(FunctionDecl declaration)
-        {
-            Declaration = declaration;
-        }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitFunctionValue(this);
-        }
-    }
+     
 
     public class TypeValue : Value
     {

@@ -417,11 +417,13 @@ namespace Weverca.Analysis.UnitTest
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
             var functionNames = getFunctionNames(name);
-            var functions = new HashSet<LangElement>();
+            var functions = new Dictionary<LangElement,FunctionValue>();
 
             foreach (var functionName in functionNames)
             {
-                functions.UnionWith(resolveFunction(functionName));
+                foreach(var fn in resolveFunction(functionName)){
+                    functions[fn.Key] = fn.Value;
+                }
             }
 
             setCallBranching(functions);
@@ -585,7 +587,7 @@ namespace Weverca.Analysis.UnitTest
             return new VariableName(".arg" + index);
         }
 
-        private void setCallBranching(HashSet<LangElement> functions)
+        private void setCallBranching(Dictionary<LangElement,FunctionValue> functions)
         {
             foreach (var branchKey in Flow.CallBranchingKeys)
             {
@@ -596,11 +598,11 @@ namespace Weverca.Analysis.UnitTest
                 }
             }
 
-            foreach (var function in functions)
+            foreach (var function in functions.Values)
             {
                 //Create graph for every function - NOTE: we can share pp graphs
                 var ppGraph = ProgramPointGraph.From(function);
-                Flow.AddCallBranch(function, ppGraph);
+                Flow.AddCallBranch(function.DeclaringElement, ppGraph);
             }
         }
 
@@ -620,43 +622,49 @@ namespace Weverca.Analysis.UnitTest
             return result.ToArray();
         }
 
-        private HashSet<LangElement> resolveFunction(QualifiedName name)
+        private Dictionary<LangElement,FunctionValue> resolveFunction(QualifiedName name)
         {
             NativeAnalyzerMethod analyzer;
-            var result = new HashSet<LangElement>();
+            var result = new Dictionary<LangElement,FunctionValue>();
 
             if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point graph
-                result.Add(new NativeAnalyzer(analyzer, Flow.CurrentPartial));
+                var function = OutSet.CreateFunction(name.Name,new NativeAnalyzer(analyzer, Flow.CurrentPartial));
+                result[function.DeclaringElement]=function;
             }
             else
             {
                 var functions = OutSet.ResolveFunction(name);
-
-                var declarations = from FunctionValue function in functions select function.Declaration;
-                result.UnionWith(declarations);
+                foreach (var function in functions)
+                {
+                    result[function.DeclaringElement] = function;
+                }
             }
 
             return result;
         }
 
-        private HashSet<LangElement> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        private Dictionary<LangElement,FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
         {
             NativeAnalyzerMethod analyzer;
-            var result = new HashSet<LangElement>();
+            var result = new Dictionary<LangElement,FunctionValue>();
 
             if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point graph
-                result.Add(new NativeAnalyzer(analyzer, Flow.CurrentPartial));
+                var function = OutSet.CreateFunction(methodName.Name,new NativeAnalyzer(analyzer, Flow.CurrentPartial));
+                result[function.DeclaringElement]=function;
             }
             else
             {
                 var thisObj = thisObject.GetSingle<ObjectValue>();
 
                 var functions = Flow.OutSet.ResolveMethod(thisObj, methodName);
-                result.UnionWith(functions);
+                foreach (var function in functions)
+                {
+                    result[function.DeclaringElement] = function;
+                }
             }
 
             return result;

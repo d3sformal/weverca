@@ -72,6 +72,8 @@
     <Compile Include="FlowInputSet.cs" />
     <Compile Include="FlowOutputSet.cs" />
     <Compile Include="ForwardAnalysis.cs" />
+    <Compile Include="FunctionProgramPointBuilder.cs" />
+    <Compile Include="Memory\FunctionValues.cs" />
     <Compile Include="Memory\SnapshotBase.cs" />
     <Compile Include="Memory\AbstractValueVisitor.cs" />
     <Compile Include="Memory\IntervalValues.cs" />

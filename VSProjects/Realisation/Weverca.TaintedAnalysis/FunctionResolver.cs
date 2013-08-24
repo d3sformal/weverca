@@ -50,11 +50,14 @@ namespace Weverca.TaintedAnalysis
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
             var functionNames = getFunctionNames(name);
-            var functions = new HashSet<LangElement>();
+            var functions = new Dictionary<LangElement, FunctionValue>();
 
             foreach (var functionName in functionNames)
             {
-                functions.UnionWith(resolveFunction(functionName));
+                foreach (var fn in resolveFunction(functionName))
+                {
+                    functions[fn.Key] = fn.Value;
+                }
             }
 
             setCallBranching(functions);
@@ -118,7 +121,7 @@ namespace Weverca.TaintedAnalysis
             return new VariableName(".arg" + index);
         }
 
-        private void setCallBranching(HashSet<LangElement> functions)
+        private void setCallBranching(Dictionary<LangElement, FunctionValue> functions)
         {
             foreach (var branchKey in Flow.CallBranchingKeys)
             {
@@ -129,11 +132,11 @@ namespace Weverca.TaintedAnalysis
                 }
             }
 
-            foreach (var function in functions)
+            foreach (var function in functions.Values)
             {
                 //Create graph for every function - NOTE: we can share pp graphs
                 var ppGraph = ProgramPointGraph.From(function);
-                Flow.AddCallBranch(function, ppGraph);
+                Flow.AddCallBranch(function.DeclaringElement, ppGraph);
             }
         }
 
@@ -153,40 +156,36 @@ namespace Weverca.TaintedAnalysis
             return result.ToArray();
         }
 
-        private HashSet<LangElement> resolveFunction(QualifiedName name)
+        private Dictionary<LangElement, FunctionValue> resolveFunction(QualifiedName name)
         {
-            //    NativeAnalyzerMethod analyzer;
-            var result = new HashSet<LangElement>();
-
-            /*if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
-            {
-                //we have native analyzer - create it's program point 
-                result.Add(analyzer);
-            }*/
+            var result = new Dictionary<LangElement, FunctionValue>();
+         
             if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
-                result.Add(new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name),Flow.CurrentPartial));
+                var function = OutSet.CreateFunction(name.Name, new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
+                result[function.DeclaringElement] = function;                
             }
             else
             {
                 var functions = OutSet.ResolveFunction(name);
 
-                var declarations = from FunctionValue function in functions select function.Declaration;
-                result.UnionWith(declarations);
+                foreach (var function in functions)
+                {
+                    result[function.DeclaringElement] = function;
+                }
             }
 
             return result;
         }
 
-        private HashSet<LangElement> resolveMethod(MemoryEntry thisObject, QualifiedName name)
+        private Dictionary<LangElement, FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName name)
         {
-            NativeAnalyzerMethod analyzer;
-
-            var result = new HashSet<LangElement>();
+            var result = new Dictionary<LangElement, FunctionValue>();
 
             if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
-                result.Add(new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
+                var function = OutSet.CreateFunction(name.Name, new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
+                result[function.DeclaringElement] = function;
             }
             else
             {

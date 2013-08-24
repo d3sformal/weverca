@@ -418,7 +418,7 @@ namespace Weverca.VirtualReferenceModel
 
         protected override void declareGlobal(FunctionValue function)
         {
-            var storage = functionStorage(function.Declaration.Name.Value);
+            var storage = functionStorage(function.Name.Value);
 
             ReportMemoryEntryCreation();
             assign(storage, new MemoryEntry(function), true);
@@ -480,7 +480,7 @@ namespace Weverca.VirtualReferenceModel
             assign(info, new MemoryEntry(type),true);
         }
 
-        protected override IEnumerable<MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             var info = getObjectInfoStorage(objectValue);
             var objInfo = readValue(info,true);
@@ -500,7 +500,7 @@ namespace Weverca.VirtualReferenceModel
 
                 if (m.Name == methodName.Name)
                 {
-                    yield return m;
+                    yield return CreateFunction(m);
                 }
             }
         }

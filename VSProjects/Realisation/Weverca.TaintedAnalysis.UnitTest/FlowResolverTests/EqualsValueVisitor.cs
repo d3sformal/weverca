@@ -5,6 +5,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 {
+    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
     class EqualsValueVisitor : IValueVisitor
     {
         Value expectedValue;
@@ -186,5 +187,26 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         }
 
         #endregion
+
+
+        public void VisitSourceFunctionValue(SourceFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSourceMethodValue(SourceMethodValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

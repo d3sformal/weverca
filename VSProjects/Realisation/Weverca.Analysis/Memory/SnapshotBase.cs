@@ -244,7 +244,7 @@ namespace Weverca.Analysis.Memory
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
 
-        protected abstract IEnumerable<MethodDecl> resolveMethod(ObjectValue objectValue, QualifiedName methodName);
+        protected abstract IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName);
         /// <summary>
         /// Resolves all possible types for given typeName
         /// NOTE:
@@ -451,8 +451,50 @@ namespace Weverca.Analysis.Memory
             checkCanUpdate();
 
             ++_statistics.CreatedFunctionValues;
-            return new FunctionValue(declaration);
+            return new SourceFunctionValue(declaration);
         }
+
+        /// <summary>
+        /// Create function value from given declaration
+        /// </summary>
+        /// <param name="declaration">Method declaration</param>
+        /// <returns>Created value</returns>
+        public FunctionValue CreateFunction(MethodDecl declaration)
+        {
+            checkCanUpdate();
+
+            ++_statistics.CreatedFunctionValues;
+            return new SourceMethodValue(declaration);
+        }
+
+        /// <summary>
+        /// Create function value from given declaration
+        /// </summary>
+        /// <param name="analyzer">Analyzer declaration</param>
+        /// <param name="name">Name of created analyzer</param>
+        /// <returns>Created value</returns>
+        public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
+        {
+            checkCanUpdate();
+
+            ++_statistics.CreatedFunctionValues;
+            return new NativeAnalyzerValue(name,analyzer);
+        }
+
+
+        /// <summary>
+        /// Create function value from given expression
+        /// </summary>
+        /// <param name="expression">Lambda function declaration</param>        
+        /// <returns>Created value</returns>
+        public FunctionValue CreateFunction(LambdaFunctionExpr expression)
+        {
+            checkCanUpdate();
+
+            ++_statistics.CreatedFunctionValues;
+            return new LambdaFunctionValue(expression);
+        }
+
 
         public ObjectValue CreateObject(TypeValue type)
         {
@@ -656,7 +698,7 @@ namespace Weverca.Analysis.Memory
             return resolveFunction(functionName);
         }
 
-        internal IEnumerable<MethodDecl> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        internal IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {            
             ++_statistics.MethodResolvings;
             return resolveMethod(objectValue,methodName);

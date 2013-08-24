@@ -283,8 +283,9 @@ namespace Weverca.Analysis.Expressions
 
         public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
         {
-            //TODO: All functions has to be wrapped to common object            
-            return new MemoryEntry(new FunctionValue(null));
+            //TODO: All functions has to be wrapped to common object         
+            
+            return new MemoryEntry(OutSet.CreateFunction(lambda));
         }
 
 

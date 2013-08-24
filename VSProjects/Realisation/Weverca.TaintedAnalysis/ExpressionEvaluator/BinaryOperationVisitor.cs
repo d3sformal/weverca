@@ -11,6 +11,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
     {
     }
 
+    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
     internal class LeftOperandBooleanValueVisitor : ILeftOperandVisitor
     {
         private BooleanValue leftOperand;
@@ -178,8 +179,30 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
+
+
+        public void VisitSourceFunctionValue(SourceFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSourceMethodValue(SourceMethodValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
+    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
     internal class LeftOperandIntegerValueVisitor : ILeftOperandVisitor
     {
         private IntegerValue leftOperand;
@@ -347,8 +370,30 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
+
+
+        public void VisitSourceFunctionValue(SourceFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSourceMethodValue(SourceMethodValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
+    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
     internal class LeftOperandFloatValueVisitor : ILeftOperandVisitor
     {
         private FloatValue leftOperand;
@@ -516,8 +561,30 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
+
+
+        public void VisitSourceFunctionValue(SourceFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSourceMethodValue(SourceMethodValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
+    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
     public class BinaryOperationVisitor : IValueVisitor
     {
         private ILeftOperandVisitor visitor;
@@ -707,5 +774,26 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         #endregion
+
+
+        public void VisitSourceFunctionValue(SourceFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitSourceMethodValue(SourceMethodValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

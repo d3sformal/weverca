@@ -54,7 +54,7 @@ namespace Weverca.Analysis
             return Snapshot.ResolveFunction(functionName);
         }
 
-        public IEnumerable<MethodDecl> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
+        public IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             return Snapshot.ResolveMethod(objectValue, methodName);
         }
