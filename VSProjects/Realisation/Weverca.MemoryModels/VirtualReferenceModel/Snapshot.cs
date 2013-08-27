@@ -8,7 +8,7 @@ using PHP.Core.AST;
 using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 
-namespace Weverca.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel
 {
 
     /// <summary>
@@ -489,21 +489,13 @@ namespace Weverca.VirtualReferenceModel
                 throw new NotImplementedException();
             }
 
-            //TODO support for other type values
-            var type = objInfo.PossibleValues.First() as SourceTypeValue;
-            foreach (var member in type.Declaration.Members)
+            foreach (var method in TypeMethodResolver.ResolveMethods(objInfo.PossibleValues.First() as TypeValue, this))
             {
-                var m = member as MethodDecl;
-                if (m == null)
+                if (method.Name.Value == methodName.Name.Value)
                 {
-                    continue;
+                    yield return method;
                 }
-
-                if (m.Name == methodName.Name)
-                {
-                    yield return CreateFunction(m);
-                }
-            }
+            }            
         }
 
         private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)

@@ -59,8 +59,6 @@ namespace Weverca.Analysis.Memory
 
         void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value);
         
-        void VisitTypeValue(TypeValue typeValue);
-
         void VisitFloatValue(FloatValue value);
 
         void VisitBooleanValue(BooleanValue value);
@@ -99,6 +97,17 @@ namespace Weverca.Analysis.Memory
         void VisitLambdaFunctionValue(LambdaFunctionValue value);
 
         #endregion
-        
+
+
+        #region Type values
+
+        void VisitTypeValue(TypeValue value);
+
+        void VisitSourceTypeValue(SourceTypeValue value);
+
+        void VisitNativeTypeValue(NativeTypeValue value);
+
+        #endregion
+
     }
 }

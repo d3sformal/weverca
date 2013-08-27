@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Collections.ObjectModel;
+
 using PHP.Core;
 
 namespace Weverca.Analysis
@@ -20,13 +22,19 @@ namespace Weverca.Analysis
         /// <summary>
         /// Native method analyzer
         /// </summary>
-        public readonly NativeAnalyzerMethod Method;        
+        public readonly NativeAnalyzerMethod Method;
+
+        public NativeMethodInfo(Name name, NativeAnalyzerMethod method)
+        {
+            Name = name;
+            Method = method;
+        }
     }
     
     /// <summary>
     /// Represent native type declaration
     /// </summary>
-    public abstract class NativeTypeDecl
+    public class NativeTypeDecl
     {
         /// <summary>
         /// Name of native type
@@ -38,16 +46,14 @@ namespace Weverca.Analysis
         /// </summary>
         public readonly QualifiedName? BaseClassName;
 
-        /// <summary>
-        /// Get all methods available for given type
-        /// </summary>
-        /// <returns>All available methods</returns>
-        protected abstract IEnumerable<NativeMethodInfo> getMethods();
 
-        public NativeTypeDecl(QualifiedName typeName, QualifiedName? baseClassName = null)
+        public readonly IEnumerable<NativeMethodInfo> Methods;
+
+        public NativeTypeDecl(QualifiedName typeName,IEnumerable<NativeMethodInfo> methods, QualifiedName? baseClassName = null)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
+            Methods = new ReadOnlyCollection<NativeMethodInfo>(new List<NativeMethodInfo>(methods));
         }
     }
 }

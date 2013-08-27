@@ -139,6 +139,16 @@ namespace Weverca.Analysis
             return Snapshot.CreateFunction(expression);
         }
 
+        public TypeValue CreateType(TypeDecl declaration)
+        {
+            return Snapshot.CreateType(declaration);
+        }
+
+        public TypeValue CreateType(NativeTypeDecl declaration)
+        {
+            return Snapshot.CreateType(declaration);
+        }
+
         public AssociativeArray CreateArray()
         {
             return Snapshot.CreateArray();
@@ -209,7 +219,7 @@ namespace Weverca.Analysis
             Snapshot.DeclareGlobal(declaration);
         }
 
-        internal void DeclareGlobal(TypeDecl declaration)
+        public void DeclareGlobal(TypeValue declaration)
         {
             Snapshot.DeclareGlobal(declaration);
         }
@@ -283,6 +293,9 @@ namespace Weverca.Analysis
             return input.Snapshot;
         }
         #endregion
+
+
+
 
 
 

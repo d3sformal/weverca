@@ -489,7 +489,13 @@ namespace Weverca.Analysis.Expressions
             var arguments = popArguments(x.CallSignature);
             var possibleObjects = _evaluator.CreateObject(x.ClassNameRef.GenericQualifiedName.QualifiedName);
 
-            push(possibleObjects);
+            possibleObjects=_functionResolver.InitializeObject(possibleObjects, arguments);
+
+            if (possibleObjects != null)
+            {
+                //otherwise new object is expected in return value as call extension
+                push(possibleObjects);
+            }
         }
 
         public override void VisitIncludingEx(IncludingEx x)

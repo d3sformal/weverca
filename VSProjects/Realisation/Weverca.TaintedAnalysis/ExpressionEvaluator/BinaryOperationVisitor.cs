@@ -200,6 +200,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             throw new NotImplementedException();
         }
+
+
+        public void VisitSourceTypeValue(SourceTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeTypeValue(NativeTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
@@ -391,6 +402,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             throw new NotImplementedException();
         }
+
+
+        public void VisitSourceTypeValue(SourceTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeTypeValue(NativeTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
@@ -579,6 +601,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public void VisitSourceTypeValue(SourceTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeTypeValue(NativeTypeValue value)
         {
             throw new NotImplementedException();
         }
@@ -792,6 +825,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         public void VisitLambdaFunctionValue(LambdaFunctionValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public void VisitSourceTypeValue(SourceTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeTypeValue(NativeTypeValue value)
         {
             throw new NotImplementedException();
         }

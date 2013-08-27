@@ -47,7 +47,7 @@ namespace Weverca.Analysis.UnitTest
 
         protected override SnapshotBase createSnapshot()
         {
-            return new VirtualReferenceModel.Snapshot();
+            return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
         }
         #endregion
 
@@ -304,7 +304,7 @@ namespace Weverca.Analysis.UnitTest
         private bool containsAnyValue(MemoryEntry entry)
         {
             //TODO Undefined value maybe is not correct to be treated as any value
-            return entry.PossibleValues.Any((val)=>val is AnyValue);
+            return entry.PossibleValues.Any((val) => val is AnyValue);
         }
 
         #endregion
@@ -323,13 +323,14 @@ namespace Weverca.Analysis.UnitTest
         {
             if (valueVariable.IsDirect)
             {
-                var values=new HashSet<Value>();
-                
-                var array=enumeree.PossibleValues.First() as AssociativeArray;
-                var indexes=OutSet.IterateArray(array);
+                var values = new HashSet<Value>();
 
-                foreach(var index in indexes){
-                    values.UnionWith(OutSet.GetIndex(array,index).PossibleValues);
+                var array = enumeree.PossibleValues.First() as AssociativeArray;
+                var indexes = OutSet.IterateArray(array);
+
+                foreach (var index in indexes)
+                {
+                    values.UnionWith(OutSet.GetIndex(array, index).PossibleValues);
                 }
 
                 OutSet.Assign(valueVariable.DirectName, new MemoryEntry(values));
@@ -348,8 +349,8 @@ namespace Weverca.Analysis.UnitTest
                     result = OutSet.CreateBool(false);
                     break;
                 default:
-                    var constantName=".constant_"+x.Name;
-                    var constantVar=new VariableName(constantName);
+                    var constantName = ".constant_" + x.Name;
+                    var constantVar = new VariableName(constantName);
                     OutSet.FetchFromGlobal(constantVar);
                     return OutSet.ReadValue(constantVar);
             }
@@ -359,7 +360,7 @@ namespace Weverca.Analysis.UnitTest
 
         public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
         {
-            var constName=new VariableName(".constant_"+x.Name);
+            var constName = new VariableName(".constant_" + x.Name);
             OutSet.FetchFromGlobal(constName);
             OutSet.Assign(constName, constantValue);
         }
@@ -386,8 +387,7 @@ namespace Weverca.Analysis.UnitTest
             {"strtoupper",_strtoupper},
             {"concat",_concat},
             {"define",_define},
-            {"abs",_abs},
-            {"__constructor",_constructor},
+            {"abs",_abs},            
         };
 
         internal SimpleFunctionResolver(EnvironmentInitializer initializer)
@@ -401,6 +401,25 @@ namespace Weverca.Analysis.UnitTest
         {
             var methods = resolveMethod(calledObject, name);
             setCallBranching(methods);
+        }
+
+        public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
+        {
+            Flow.Arguments = arguments;
+            Flow.CalledObject = newObject;
+
+            var ctorName = new QualifiedName(new Name("__construct"));
+            var ctors = resolveMethod(newObject, ctorName);
+
+            if (ctors.Count > 0)
+            {
+                setCallBranching(ctors);
+                //Object is returned via return value of call extension
+                return null;
+            }
+
+            //no constructor call
+            return newObject;
         }
 
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
@@ -417,11 +436,12 @@ namespace Weverca.Analysis.UnitTest
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
             var functionNames = getFunctionNames(name);
-            var functions = new Dictionary<LangElement,FunctionValue>();
+            var functions = new Dictionary<LangElement, FunctionValue>();
 
             foreach (var functionName in functionNames)
             {
-                foreach(var fn in resolveFunction(functionName)){
+                foreach (var fn in resolveFunction(functionName))
+                {
                     functions[fn.Key] = fn.Value;
                 }
             }
@@ -548,9 +568,9 @@ namespace Weverca.Analysis.UnitTest
 
             foreach (StringValue constName in arg0.PossibleValues)
             {
-                var constVar=new VariableName(".constant_"+constName.Value);
+                var constVar = new VariableName(".constant_" + constName.Value);
                 flow.OutSet.FetchFromGlobal(constVar);
-                flow.OutSet.Assign(constVar, new MemoryEntry(arg1.PossibleValues));               
+                flow.OutSet.Assign(constVar, new MemoryEntry(arg1.PossibleValues));
             }
         }
 
@@ -587,7 +607,7 @@ namespace Weverca.Analysis.UnitTest
             return new VariableName(".arg" + index);
         }
 
-        private void setCallBranching(Dictionary<LangElement,FunctionValue> functions)
+        private void setCallBranching(Dictionary<LangElement, FunctionValue> functions)
         {
             foreach (var branchKey in Flow.CallBranchingKeys)
             {
@@ -622,16 +642,16 @@ namespace Weverca.Analysis.UnitTest
             return result.ToArray();
         }
 
-        private Dictionary<LangElement,FunctionValue> resolveFunction(QualifiedName name)
+        private Dictionary<LangElement, FunctionValue> resolveFunction(QualifiedName name)
         {
             NativeAnalyzerMethod analyzer;
-            var result = new Dictionary<LangElement,FunctionValue>();
+            var result = new Dictionary<LangElement, FunctionValue>();
 
             if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point graph
-                var function = OutSet.CreateFunction(name.Name,new NativeAnalyzer(analyzer, Flow.CurrentPartial));
-                result[function.DeclaringElement]=function;
+                var function = OutSet.CreateFunction(name.Name, new NativeAnalyzer(analyzer, Flow.CurrentPartial));
+                result[function.DeclaringElement] = function;
             }
             else
             {
@@ -645,16 +665,16 @@ namespace Weverca.Analysis.UnitTest
             return result;
         }
 
-        private Dictionary<LangElement,FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        private Dictionary<LangElement, FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
         {
             NativeAnalyzerMethod analyzer;
-            var result = new Dictionary<LangElement,FunctionValue>();
+            var result = new Dictionary<LangElement, FunctionValue>();
 
             if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
             {
                 //we have native analyzer - create it's program point graph
-                var function = OutSet.CreateFunction(methodName.Name,new NativeAnalyzer(analyzer, Flow.CurrentPartial));
-                result[function.DeclaringElement]=function;
+                var function = OutSet.CreateFunction(methodName.Name, new NativeAnalyzer(analyzer, Flow.CurrentPartial));
+                result[function.DeclaringElement] = function;
             }
             else
             {
@@ -699,6 +719,8 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #endregion
+
+
     }
 
     /// <summary>
@@ -710,7 +732,7 @@ namespace Weverca.Analysis.UnitTest
 
         private FlowOutputSet _outSet;
         private EvaluationLog _log;
-        
+
         /// <summary>
         /// Represents method which is used for confirming assumption condition. Assumption can be declined - it means that we can prove, that condition CANNOT be ever satisfied.
         /// </summary>
@@ -744,7 +766,7 @@ namespace Weverca.Analysis.UnitTest
         public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs, DispatchType callType)
         {
             var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
-            
+
             if (callType == DispatchType.ParallelInclude)
             {
                 callerOutput.Extend(ends);
@@ -794,7 +816,7 @@ namespace Weverca.Analysis.UnitTest
 
             foreach (var evaluatedPart in conditionParts)
             {
-                var value=_log.GetValue(evaluatedPart.SourceElement);          
+                var value = _log.GetValue(evaluatedPart.SourceElement);
                 if (evalOnlyFalse(value))
                 {
                     return false;
@@ -874,8 +896,8 @@ namespace Weverca.Analysis.UnitTest
             VariableEntry leftVar;
             MemoryEntry value;
 
-            var call=left as DirectFcnCall;
-            if (call != null && call.QualifiedName.Name.Value=="abs")
+            var call = left as DirectFcnCall;
+            if (call != null && call.QualifiedName.Name.Value == "abs")
             {
                 var absParam = call.CallSignature.Parameters[0];
                 leftVar = _log.GetVariable(absParam.Expression);
@@ -886,20 +908,20 @@ namespace Weverca.Analysis.UnitTest
                 leftVar = _log.GetVariable(left);
                 value = _log.GetValue(right);
             }
-          
-            if (leftVar != null && value!=null)
+
+            if (leftVar != null && value != null)
             {
                 foreach (var possibleVar in leftVar.PossibleNames)
                 {
-                    _outSet.Assign(possibleVar,value);
+                    _outSet.Assign(possibleVar, value);
                 }
-             
+
             }
         }
 
         private MemoryEntry getReverse_abs(MemoryEntry entry)
         {
-            var values= new HashSet<Value>();
+            var values = new HashSet<Value>();
             foreach (IntegerValue value in entry.PossibleValues)
             {
                 values.Add(_outSet.CreateInt(value.Value));

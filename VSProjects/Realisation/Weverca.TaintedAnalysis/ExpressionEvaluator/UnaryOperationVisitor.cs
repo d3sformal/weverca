@@ -582,5 +582,16 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             throw new NotImplementedException();
         }
+
+
+        public void VisitSourceTypeValue(SourceTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitNativeTypeValue(NativeTypeValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

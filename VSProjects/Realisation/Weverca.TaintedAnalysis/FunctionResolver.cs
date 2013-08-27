@@ -219,5 +219,10 @@ namespace Weverca.TaintedAnalysis
         }
 
         #endregion
+
+        public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

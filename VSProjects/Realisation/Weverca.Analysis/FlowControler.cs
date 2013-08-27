@@ -53,6 +53,7 @@ namespace Weverca.Analysis
         ///     Default arguments are set by framework (you can override them)
         /// </summary>
         public MemoryEntry[] Arguments { get; set; }
+                
 
         /// <summary>
         /// Get/Set this object for call branches
@@ -60,6 +61,7 @@ namespace Weverca.Analysis
         ///     Default called object is set by framework (you can override it)
         /// </summary>
         public MemoryEntry CalledObject { get; set; }
+                
         
         /// <summary>
         /// Create flow controller for given input and output set

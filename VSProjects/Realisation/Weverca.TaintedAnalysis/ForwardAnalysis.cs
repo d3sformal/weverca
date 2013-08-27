@@ -31,7 +31,7 @@ namespace Weverca.TaintedAnalysis
 
         protected override SnapshotBase createSnapshot()
         {
-            return new VirtualReferenceModel.Snapshot();
+            return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
         }
 
         #endregion

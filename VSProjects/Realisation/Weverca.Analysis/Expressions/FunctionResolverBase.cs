@@ -51,7 +51,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="declaration">Declared type</param>
         public virtual void DeclareGlobal(TypeDecl declaration)
         {
-            OutSet.DeclareGlobal(declaration);
+            var type = OutSet.CreateType(declaration);
+            OutSet.DeclareGlobal(type);
         }
 
         /// <summary>
@@ -81,6 +82,13 @@ namespace Weverca.Analysis.Expressions
         /// <param name="declaration">Function declaration</param>
         /// <param name="arguments">Call arguments</param>
         public abstract void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments);
+
+        /// <summary>
+        /// Is called when new object is created
+        /// </summary>
+        /// <param name="newObject"></param>
+        /// <param name="arguments"></param>
+        public abstract MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments);
         
         /// <summary>
         /// Builds program point extension for call of given name and arguments via flow controller
@@ -124,5 +132,6 @@ namespace Weverca.Analysis.Expressions
         {
             Flow = flow;
         }
+
     }
 }

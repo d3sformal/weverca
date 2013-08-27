@@ -157,7 +157,7 @@ namespace Weverca.Analysis
             {
                 var currentContext = _dispatchStack.CurrentContext;
                 if (currentContext.IsComplete)
-                {                    
+                {
                     if (!_dispatchStack.CurrentLevel.ShiftToNextDispatch())
                     {
                         // we can't move to next context in current level
@@ -270,7 +270,7 @@ namespace Weverca.Analysis
         /// </summary>
         private void popCallStack()
         {
-            var poppedContext = _dispatchStack.CurrentLevel;            
+            var poppedContext = _dispatchStack.CurrentLevel;
             _dispatchStack.Pop();
 
             if (!_dispatchStack.IsEmpty)
@@ -284,11 +284,11 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="callerContext">Context of caller that invokes calls</param>
         /// <param name="callResults">Results of invoked calls</param>
-        private void mergeCallResult(AnalysisDispatchContext callerContext,DispatchLevel calledContext)
+        private void mergeCallResult(AnalysisDispatchContext callerContext, DispatchLevel calledContext)
         {
             var callResults = calledContext.GetResult();
             var callPPGraphs = from callResult in callResults select callResult.ProgramPointGraph;
-            
+
             _flowResolver.CallDispatchMerge(callerContext.CurrentOutputSet, callPPGraphs.ToArray(), calledContext.DispatchType);
 
             // push return value into walker

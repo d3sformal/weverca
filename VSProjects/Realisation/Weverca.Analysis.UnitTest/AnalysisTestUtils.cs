@@ -202,6 +202,7 @@ namespace Weverca.Analysis.UnitTest
 
 
         private readonly List<AssertRunner> _asserts = new List<AssertRunner>();
+        private readonly List<EnvironmentInitializer> _initializers = new List<EnvironmentInitializer>();
 
         private readonly Dictionary<string, string> _includedFiles = new Dictionary<string, string>();
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
@@ -228,6 +229,16 @@ namespace Weverca.Analysis.UnitTest
         internal TestCase Include(string fileName, string fileCode)
         {
             _includedFiles.Add(fileName, fileCode);
+            return this;
+        }
+
+        internal TestCase AddType(NativeTypeDecl typeDeclaration)
+        {
+            _initializers.Add((outSet) =>
+            {
+                var type=outSet.CreateType(typeDeclaration);
+                outSet.DeclareGlobal(type);
+            });
             return this;
         }
 
@@ -277,6 +288,11 @@ namespace Weverca.Analysis.UnitTest
             foreach (var nonDeterministic in _nonDeterminiticVariables)
             {
                 outSet.Assign(new VariableName(nonDeterministic), new MemoryEntry(outSet.AnyValue));
+            }
+
+            foreach (var initializer in _initializers)
+            {
+                initializer(outSet);
             }
 
             if (PreviousTest != null)

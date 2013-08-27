@@ -33,7 +33,7 @@ namespace Weverca.Analysis.Memory
 
         public override void Accept(IValueVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitNativeTypeValue(this);
         }
     }
 
@@ -48,7 +48,7 @@ namespace Weverca.Analysis.Memory
 
         public override void Accept(IValueVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitSourceTypeValue(this);
         }
     }
 }

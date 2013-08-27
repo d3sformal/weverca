@@ -158,11 +158,7 @@ namespace Weverca.Analysis.Memory
         {
             VisitGenericPrimitiveValue(value);
         }
-              
-        public virtual void VisitTypeValue(TypeValue typeValue)
-        {
-            VisitValue(typeValue);
-        }
+
 
         #endregion
 
@@ -219,6 +215,23 @@ namespace Weverca.Analysis.Memory
 
         #endregion
 
+        #region Type values
 
+        public virtual void VisitTypeValue(TypeValue typeValue)
+        {
+            VisitValue(typeValue);
+        }
+
+        public virtual void VisitSourceTypeValue(SourceTypeValue value)
+        {
+            VisitTypeValue(value);
+        }
+
+        public virtual void VisitNativeTypeValue(NativeTypeValue value)
+        {
+            VisitTypeValue(value);
+        }
+
+        #endregion
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 using Weverca.Analysis.Memory;
 
-namespace Weverca.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel
 {
     class ReferenceAlias: AliasValue
     {

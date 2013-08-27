@@ -51,6 +51,7 @@ namespace Weverca.Analysis
         /// Type of dispatch level
         /// </summary>
         public readonly DispatchType DispatchType;
+        
 
         /// <summary>
         /// Current analysis call context 

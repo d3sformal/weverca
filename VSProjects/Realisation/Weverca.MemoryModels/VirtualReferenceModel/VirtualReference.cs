@@ -5,7 +5,7 @@ using System.Text;
 
 using PHP.Core;
 
-namespace Weverca.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel
 {
     /// <summary>
     /// Hash and equals according to originatedVariable - needed for merging two branches with same variable names

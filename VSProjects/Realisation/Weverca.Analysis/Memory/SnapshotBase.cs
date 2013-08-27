@@ -495,6 +495,25 @@ namespace Weverca.Analysis.Memory
             return new LambdaFunctionValue(expression);
         }
 
+        public TypeValue CreateType(TypeDecl declaration)
+        {
+            checkCanUpdate();
+
+            var type=new SourceTypeValue(declaration);
+            ++_statistics.CreatedSourceTypeValues;
+
+            return type;    
+        }
+
+        public TypeValue CreateType(NativeTypeDecl declaration)
+        {
+            checkCanUpdate();
+
+            var type = new NativeTypeValue(declaration);
+            ++_statistics.CreatedNativeTypeValues;
+
+            return type;    
+        }
 
         public ObjectValue CreateObject(TypeValue type)
         {
@@ -684,11 +703,9 @@ namespace Weverca.Analysis.Memory
             declareGlobal(function);
         }
 
-        internal void DeclareGlobal(TypeDecl declaration)
+        public void DeclareGlobal(TypeValue type)
         {
             ++_statistics.DeclaredTypes;
-
-            var type = new SourceTypeValue(declaration);
             declareGlobal(type);
         }
 
@@ -744,6 +761,9 @@ namespace Weverca.Analysis.Memory
         #endregion
 
 
- 
+
+
+
+   
     }
 }

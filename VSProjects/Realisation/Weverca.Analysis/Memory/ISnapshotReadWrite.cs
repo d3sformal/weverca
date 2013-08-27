@@ -139,6 +139,19 @@ namespace Weverca.Analysis.Memory
         /// <returns>Created value</returns>
         FunctionValue CreateFunction(Name name,NativeAnalyzer analyzer);
 
+        /// <summary>
+        /// Create type value from given declaration
+        /// </summary>
+        /// <param name="declaration">Type declaration from source code</param>
+        /// <returns>Created value</returns>
+        TypeValue CreateType(TypeDecl declaration);
+
+        /// <summary>
+        /// Create type value from given declaration
+        /// </summary>
+        /// <param name="declaration">Native type declaration</param>
+        /// <returns>Created value</returns>
+        TypeValue CreateType(NativeTypeDecl declaration);        
 
         /// <summary>
         /// Create function value from given expression
@@ -243,6 +256,12 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="declaration">Function declaration</param>
         void DeclareGlobal(FunctionDecl declaration);
+
+        /// <summary>
+        /// Declare type into global scope
+        /// </summary>
+        /// <param name="type">Declared type</param>
+        void DeclareGlobal(TypeValue type);
 
         /// <summary>
         /// Fetch variables from global context into current context

@@ -36,6 +36,10 @@ namespace Weverca
             //TODO: Resolve entry file
             var analyzedFile = args[0];
 
+            //TODO: this is for time consumption analyzing only
+            //Analyze twice - because of omitting .NET initialization we get better analysis time
+            Analyzer.Run(analyzedFile);
+
             //Process analysis
             var watch = System.Diagnostics.Stopwatch.StartNew();
             var ppGraph = Analyzer.Run(analyzedFile);

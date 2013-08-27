@@ -274,6 +274,14 @@ foreach($arr as $value){
     }
 }
 ".AssertVariable("test").HasValues("val1", "val2", "val3");
+        
+readonly static TestCase NativeObjectUsage_CASE = @"
+    $obj=new NativeType('TestValue');
+    $value=$obj->GetValue();
+".AssertVariable("value").HasValues("TestValue") 
+ .AddType(SimpleNativeType.CreateType());
+
+
 
         [TestMethod]
         public void BranchMerge()
@@ -438,6 +446,12 @@ foreach($arr as $value){
         public void ForeachIteration()
         {
             AnalysisTestUtils.RunTestCase(ForeachIteration_CASE);
+        }
+
+        [TestMethod]
+        public void NativeObjectUsage()
+        {
+            AnalysisTestUtils.RunTestCase(NativeObjectUsage_CASE);
         }
     }
 }
