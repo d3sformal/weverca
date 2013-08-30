@@ -271,6 +271,16 @@ namespace Weverca.Analysis.Expressions
             _evaluator.ConstantDeclaration(x, constantValue);
         }
 
+
+        public override void VisitGlobalStmt(GlobalStmt x)
+        {
+            var entries = new VariableEntry[x.VarList.Count];
+            for (int i = 0; i < entries.Length; ++i)
+            {
+                entries[entries.Length-i-1] = popLValue().GetVariableEntry();
+            }
+            _evaluator.GlobalStatement(entries);
+        }
         #endregion
 
         #region Variable visiting

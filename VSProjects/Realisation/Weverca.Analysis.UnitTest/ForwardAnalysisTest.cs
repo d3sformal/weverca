@@ -279,8 +279,24 @@ readonly static TestCase NativeObjectUsage_CASE = @"
     $obj=new NativeType('TestValue');
     $value=$obj->GetValue();
 ".AssertVariable("value").HasValues("TestValue") 
- .AddType(SimpleNativeType.CreateType());
+ .DeclareType(SimpleNativeType.CreateType());
 
+
+readonly static TestCase GlobalStatement_CASE = @"
+
+function setGlobal(){
+    global $a;
+    $a='ValueA';    
+}
+
+function setLocal(){
+    $a='LocalValueA';
+}
+
+setGlobal();
+setLocal();
+
+".AssertVariable("a").HasValues("ValueA");
 
 
         [TestMethod]
@@ -452,6 +468,12 @@ readonly static TestCase NativeObjectUsage_CASE = @"
         public void NativeObjectUsage()
         {
             AnalysisTestUtils.RunTestCase(NativeObjectUsage_CASE);
+        }
+
+        [TestMethod]
+        public void Gl()
+        {
+            AnalysisTestUtils.RunTestCase(GlobalStatement_CASE);
         }
     }
 }

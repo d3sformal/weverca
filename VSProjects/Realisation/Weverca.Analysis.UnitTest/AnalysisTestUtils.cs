@@ -232,7 +232,7 @@ namespace Weverca.Analysis.UnitTest
             return this;
         }
 
-        internal TestCase AddType(NativeTypeDecl typeDeclaration)
+        internal TestCase DeclareType(NativeTypeDecl typeDeclaration)
         {
             _initializers.Add((outSet) =>
             {

@@ -16,13 +16,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// Variable that cause creating this reference
         /// </summary>
         internal readonly VariableName OriginatedVariable;
+
+        internal readonly bool IsGlobal;
         /// <summary>
         /// Create virtual reference according to originatedVariable
         /// </summary>
         /// <param name="originatedVariable">Variable determining reference target</param>
-        internal VirtualReference(VariableName originatedVariable)
+        internal VirtualReference(VariableName originatedVariable,bool isGlobal)
         {
             OriginatedVariable = originatedVariable;
+            IsGlobal = isGlobal;
         }
 
         public override int GetHashCode()
@@ -46,7 +49,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
 
 
-            return o.OriginatedVariable == this.OriginatedVariable;
+            return o.OriginatedVariable == this.OriginatedVariable && o.IsGlobal == this.IsGlobal;
         }
     }
 }

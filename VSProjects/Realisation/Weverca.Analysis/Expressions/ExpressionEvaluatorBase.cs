@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -283,11 +284,16 @@ namespace Weverca.Analysis.Expressions
 
         public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
         {
-            //TODO: All functions has to be wrapped to common object         
-            
             return new MemoryEntry(OutSet.CreateFunction(lambda));
         }
 
+        public virtual void GlobalStatement(IEnumerable<VariableEntry> variables)
+        {
+            foreach (var variable in variables)
+            {
+                OutSet.FetchFromGlobal(variable.PossibleNames);
+            }            
+        }
 
         
         #endregion
@@ -300,6 +306,8 @@ namespace Weverca.Analysis.Expressions
         {
             Flow = flow;
         }
+
+
 
 
 
