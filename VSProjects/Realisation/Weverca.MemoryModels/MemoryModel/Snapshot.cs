@@ -72,41 +72,32 @@ namespace Weverca.MemoryModels.MemoryModel
 
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
-            throw new NotImplementedException();
-            /*ObjectDescriptor descriptor = new ObjectDescriptor(type.Declaration);
-            objects[createdObject] = descriptor;*/
+            ObjectDescriptor descriptor = new ObjectDescriptor(type, this);
+            objects[createdObject] = descriptor;
         }
 
         protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
         {
-            throw new NotImplementedException();
-            /*ObjectDescriptor descriptor = objects[value];
-
-            MemoryIndex memoryIndex = getFieldOrUnknown(descriptor, index);
-            return getMemoryEntry(memoryIndex);*/
+            MemoryIndex fieldIndex = getFieldOrUnknown(value, index);
+            return getMemoryEntry(fieldIndex);
         }
 
         protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
-            throw new NotImplementedException();
-            /*ObjectDescriptor descriptor = objects[value];
-
-            MemoryIndex memoryIndex = getOrCreateField(descriptor, index);
-            assignMemoryEntry(memoryIndex, entry);*/
+            MemoryIndex fieldIndex = getOrCreateField(value, index);
+            assignMemoryEntry(fieldIndex, entry);
         }
 
         protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
         {
-            throw new NotImplementedException();
-            /*MemoryAlias memoryAlias = alias as MemoryAlias;
+            MemoryIndex fieldIndex = getOrCreateField(value, index);
+            assignMemoryAlias(fieldIndex, alias);
+        }
 
-            if (memoryAlias != null)
-            {
-                ObjectDescriptor descriptor = objects[value];
-
-                MemoryIndex memoryIndex = getOrCreateField(descriptor, index);
-                assignMemoryAlias(memoryIndex, memoryAlias);
-            }*/
+        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
+        {
+            ObjectDescriptor descriptor = objects[iteratedObject];
+            return descriptor.Fields.Keys;
         }
 
         #endregion
@@ -115,7 +106,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         protected override void initializeArray(AssociativeArray createdArray)
         {
-            ArrayDescriptor descriptor = new ArrayDescriptor(this);
+            ArrayDescriptor descriptor = new ArrayDescriptor();
             arrays[createdArray] = descriptor;
         }
 
@@ -135,6 +126,12 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             MemoryIndex fieldIndex = getOrCreateIndex(value, index);
             assignMemoryAlias(fieldIndex, alias);
+        }
+
+        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
+        {
+            ArrayDescriptor array = arrays[iteratedArray];
+            return array.Indexes.Keys;
         }
 
         #endregion
@@ -333,7 +330,7 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             ArrayDescriptor descriptor = arrays[value];
             MemoryIndex index = new MemoryIndex();
-            MemoryInfo info = new IndexMemoryInfo(index, value);
+            MemoryInfo info = new MemoryInfo(index);
             MemoryEntry entry = emptyEntry;
 
             memoryInfos[index] = info;
@@ -358,6 +355,55 @@ namespace Weverca.MemoryModels.MemoryModel
             {
                 return undefinedVariable;
             }
+        }
+
+        #endregion
+
+        #region Object Fields
+
+        private MemoryIndex getFieldOrUnknown(ObjectValue value, ContainerIndex containerIndex)
+        {
+            ObjectDescriptor descriptor = objects[value];
+            MemoryIndex index;
+            if (descriptor.Fields.TryGetValue(containerIndex, out index))
+            {
+                return index;
+            }
+            else
+            {
+                return undefinedVariable;
+            }
+        }
+
+        private MemoryIndex getOrCreateField(ObjectValue value, ContainerIndex containerIndex)
+        {
+            ObjectDescriptor descriptor = objects[value];
+            MemoryIndex index;
+            if (descriptor.Fields.TryGetValue(containerIndex, out index))
+            {
+                return index;
+            }
+            else
+            {
+                return createField(value, containerIndex);
+            }
+        }
+
+        private MemoryIndex createField(ObjectValue value, ContainerIndex containerIndex)
+        {
+            ObjectDescriptor descriptor = objects[value];
+            MemoryIndex index = new MemoryIndex();
+            MemoryInfo info = new MemoryInfo(index);
+            MemoryEntry entry = emptyEntry;
+
+            memoryInfos[index] = info;
+            memoryEntries[index] = entry;
+
+            objects[value] = descriptor.Builder()
+                .add(containerIndex, index)
+                .Build();
+
+            return index;
         }
 
         #endregion
@@ -387,14 +433,53 @@ namespace Weverca.MemoryModels.MemoryModel
             }
         }
 
+        /// <summary>
+        /// Assigns reference of object into the selected index
+        /// </summary>
+        /// <param name="targetIndex"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         internal ObjectValue AssignObjectValue(MemoryIndex targetIndex, ObjectValue value)
         {
-            throw new NotImplementedException();
+            ObjectDescriptor oldDescriptor = objects[value];
+
+            ObjectDescriptor newDescriptor = oldDescriptor.Builder()
+                .addMustReference(targetIndex)
+                .Build();
+
+            objects[value] = newDescriptor;
+            return value;
         }
 
-        internal AssociativeArray AssignArrayValue(MemoryIndex targetIndex, AssociativeArray value)
+        /// <summary>
+        /// Provides deep copy of given array and stores it in the selected index
+        /// </summary>
+        /// <param name="targetIndex"></param>
+        /// <param name="sourceValue"></param>
+        /// <returns></returns>
+        internal AssociativeArray AssignArrayValue(MemoryIndex targetIndex, AssociativeArray sourceValue)
         {
-            throw new NotImplementedException();
+            ArrayDescriptor sourceDescriptor = arrays[sourceValue];
+
+            AssociativeArray targetValue = CreateArray();
+            ArrayDescriptorBuilder descriptorBuilder = arrays[targetValue].Builder();
+            
+            foreach (var sourceContent in sourceDescriptor.Indexes)
+            {
+                MemoryIndex index = createIndex(targetValue, sourceContent.Key);
+                descriptorBuilder.add(sourceContent.Key, index);
+
+                MemoryEntry sourceEntry = getMemoryEntry(sourceContent.Value);
+                ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, index);
+                visitor.VisitMemoryEntry(sourceEntry);
+
+                memoryEntries[index] = visitor.GetCopiedEntry();
+            }
+
+            descriptorBuilder.SetParentVariable(targetIndex);
+            arrays[targetValue] = descriptorBuilder.Build();
+
+            return targetValue;
         }
 
         internal void WeakAssignMemoryEntry(MemoryIndex alias, MemoryEntry entry)
@@ -483,48 +568,5 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #endregion
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

@@ -39,13 +39,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MemoryModel\ArrayDescriptor.cs" />
-    <Compile Include="MemoryModel\DestroyemoryEntryVisitor.cs" />
-    <Compile Include="MemoryModel\IndexMemoryInfo.cs" />
+    <Compile Include="MemoryModel\Structures\ArrayDescriptor.cs" />
+    <Compile Include="MemoryModel\ValueVisitors\DestroyemoryEntryVisitor.cs" />
     <Compile Include="MemoryModel\MemoryAlias.cs" />
     <Compile Include="MemoryModel\MemoryIndex.cs" />
     <Compile Include="MemoryModel\MemoryInfo.cs" />
-    <Compile Include="MemoryModel\ObjectDescriptor.cs" />
+    <Compile Include="MemoryModel\Structures\ObjectDescriptor.cs" />
     <Compile Include="MemoryModel\Snapshot.cs" />
     <Compile Include="MemoryModel\ValueVisitors\AssignValueVisitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
