@@ -30,7 +30,7 @@ namespace Weverca.TaintedAnalysis
         {
             flowOutSet.FetchFromGlobal(WARNING_STORAGE);
             var result = flowOutSet.ReadValue(WARNING_STORAGE).PossibleValues;
-            return from value in result where !(value is UndefinedValue) select value;           
+            return from value in result where !(value is UndefinedValue) select value;
         }
     }
 
@@ -64,6 +64,7 @@ namespace Weverca.TaintedAnalysis
         WRONG_NUMBER_OF_ARGUMENTS,
         WRONG_ARGUMENTS_TYPE,
         PROPERTY_OF_NON_OBJECT_VARIABLE,
+        METHOD_CALL_ON_NON_OBJECT_VARIABLE,
         UNDEFINED_VALUE,
     }
 }
