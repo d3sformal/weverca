@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -14,49 +13,61 @@ namespace Weverca.TaintedAnalysis
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
-    class FunctionResolver : FunctionResolverBase
+    public class FunctionResolver : FunctionResolverBase
     {
-        private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance(); 
-        
-        
-        /// <summary>
-        /// Table of native analyzers
-        /// </summary>
-       
+        private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
 
-        internal FunctionResolver()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
+        /// </summary>
+        public FunctionResolver()
         {
         }
 
-        #region Call processing
+        #region FunctionResolverBase overrides
 
         public override void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
-            var methods = resolveMethod(calledObject, name);
+            var objectValues = resolveObjectsForMember(calledObject);
+            var methods = resolveMethod(objectValues, name, arguments);
             setCallBranching(methods);
         }
 
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
-            var functions = resolveFunction(name);
+            var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
         }
 
         public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
-            throw new NotImplementedException();
+            var methods = new Dictionary<LangElement, FunctionValue>();
+            var methodNames = getSubroutineNames(name);
+            var objectValues = resolveObjectsForMember(calledObject);
+
+            foreach (var functionName in methodNames)
+            {
+                var resolvedMethods = resolveMethod(objectValues, functionName, arguments);
+                foreach (var resolvedMethod in resolvedMethods)
+                {
+                    methods[resolvedMethod.Key] = resolvedMethod.Value;
+                }
+            }
+
+            setCallBranching(methods);
         }
 
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
-            var functionNames = getFunctionNames(name);
             var functions = new Dictionary<LangElement, FunctionValue>();
+            var functionNames = getSubroutineNames(name);
 
             foreach (var functionName in functionNames)
             {
-                foreach (var fn in resolveFunction(functionName))
+                var resolvedFunctions = resolveFunction(functionName, arguments);
+                foreach (var resolvedFunction in resolvedFunctions)
                 {
-                    functions[fn.Key] = fn.Value;
+                    functions[resolvedFunction.Key] = resolvedFunction.Value;
                 }
             }
 
@@ -64,27 +75,55 @@ namespace Weverca.TaintedAnalysis
         }
 
         /// <summary>
-        /// Initialize call into callInput. 
-        /// 
-        /// NOTE: 
+        /// Initialize call into callInput.
+        /// NOTE:
         ///     arguments has to be initialized
         ///     sharing program point graphs is possible
         /// </summary>
-        /// <returns></returns>
+        /// <param name="callInput"></param>
+        /// <param name="declaration"></param>
+        /// <param name="arguments"></param>
         public override void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
         {
             var method = declaration as MethodDecl;
             var hasNamedSignature = method != null;
+
             if (hasNamedSignature)
             {
-                //we have names for passed arguments
+                // We have names for passed arguments
                 setNamedArguments(callInput, arguments, method.Signature);
             }
             else
             {
-                //there are no names - use numbered arguments
+                // There are no names - use numbered arguments
                 setOrderedArguments(callInput, arguments);
             }
+        }
+
+        public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
+        {
+            Flow.CalledObject = newObject;
+            Flow.Arguments = arguments;
+
+            var constructorName = new QualifiedName(new Name("__construct"));
+            var objectValues = new List<ObjectValue>();
+
+            foreach (var value in newObject.PossibleValues)
+            {
+                Debug.Assert(value is ObjectValue, "All objects are creating now");
+                objectValues.Add(value as ObjectValue);
+            }
+
+            var constructors = resolveMethod(objectValues, constructorName, arguments);
+            if (constructors.Count > 0)
+            {
+                setCallBranching(constructors);
+                // Object is returned via return value of call extension
+                return null;
+            }
+
+            // No constructor call
+            return newObject;
         }
 
         /// <summary>
@@ -94,15 +133,39 @@ namespace Weverca.TaintedAnalysis
         /// <returns>Resolved return value</returns>
         public override MemoryEntry ResolveReturnValue(ProgramPointGraph[] calls)
         {
-            var possibleMemoryEntries = from call in calls select call.End.OutSet.ReadValue(call.End.OutSet.ReturnValue).PossibleValues;
-            var flattenValues = possibleMemoryEntries.SelectMany((i) => i);
+            if (calls.Length == 1)
+            {
+                var outSet = calls[0].End.OutSet;
+                return outSet.ReadValue(outSet.ReturnValue);
+            }
+            else
+            {
+                Debug.Assert(calls.Length > 0, "There must be at least one call");
 
-            return new MemoryEntry(flattenValues.ToArray());
+                var entries = new List<MemoryEntry>(calls.Length);
+                foreach (var call in calls)
+                {
+                    var outSet = call.End.OutSet;
+                    entries.Add(outSet.ReadValue(outSet.ReturnValue));
+                }
+
+                return MemoryEntry.Merge(entries);
+            }
         }
 
         #endregion
 
         #region Private helpers
+
+        private void setWarning(string message)
+        {
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+        }
+
+        private void setWarning(string message, AnalysisWarningCause cause)
+        {
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+        }
 
         /// <summary>
         /// Get storage for argument at given index
@@ -127,14 +190,14 @@ namespace Weverca.TaintedAnalysis
             {
                 if (!functions.Remove(branchKey))
                 {
-                    //this call is now not resolved as possible call branch
+                    // Now this call is not resolved as possible call branch
                     Flow.RemoveCallBranch(branchKey);
                 }
             }
 
             foreach (var function in functions.Values)
             {
-                //Create graph for every function - NOTE: we can share pp graphs
+                // Create graph for every function - NOTE: We can share pp graphs
                 var ppGraph = ProgramPointGraph.From(function);
                 Flow.AddCallBranch(function.DeclaringElement, ppGraph);
             }
@@ -145,25 +208,40 @@ namespace Weverca.TaintedAnalysis
         /// </summary>
         /// <param name="functionName"></param>
         /// <returns></returns>
-        private QualifiedName[] getFunctionNames(MemoryEntry functionName)
+        private List<QualifiedName> getSubroutineNames(MemoryEntry functionName)
         {
-            var result = new List<QualifiedName>();
-            foreach (StringValue stringName in functionName.PossibleValues)
+            var names = new HashSet<string>();
+            foreach (var possibleValue in functionName.PossibleValues)
             {
-                result.Add(new QualifiedName(new Name(stringName.Value)));
+                var stringValue = possibleValue as StringValue;
+                // TODO: Other values convert to string
+                if (stringValue == null)
+                {
+                    continue;
+                }
+
+                names.Add(stringValue.Value);
             }
 
-            return result.ToArray();
+            var qualifiedNames = new List<QualifiedName>(names.Count);
+            foreach (var name in names)
+            {
+                qualifiedNames.Add(new QualifiedName(new Name(name)));
+            }
+
+            return qualifiedNames;
         }
 
-        private Dictionary<LangElement, FunctionValue> resolveFunction(QualifiedName name)
+        private Dictionary<LangElement, FunctionValue> resolveFunction(QualifiedName name, MemoryEntry[] arguments)
         {
             var result = new Dictionary<LangElement, FunctionValue>();
-         
+
             if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
-                var function = OutSet.CreateFunction(name.Name, new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
-                result[function.DeclaringElement] = function;                
+                var function = OutSet.CreateFunction(name.Name,
+                    new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
+                // TODO: Check whether the number of arguments match.
+                result[function.DeclaringElement] = function;
             }
             else
             {
@@ -171,6 +249,7 @@ namespace Weverca.TaintedAnalysis
 
                 foreach (var function in functions)
                 {
+                    // TODO: Check whether the number of arguments match.
                     result[function.DeclaringElement] = function;
                 }
             }
@@ -178,24 +257,75 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
-        private Dictionary<LangElement, FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName name)
+        private Dictionary<LangElement, FunctionValue> resolveMethod(IEnumerable<ObjectValue> objects, QualifiedName name, MemoryEntry[] arguments)
         {
             var result = new Dictionary<LangElement, FunctionValue>();
 
-            if (nativeFunctionAnalyzer.existNativeFunction(name))
+            foreach (var objectValue in objects)
             {
-                var function = OutSet.CreateFunction(name.Name, new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
-                result[function.DeclaringElement] = function;
-            }
-            else
-            {
-                throw new NotImplementedException();
+                var functions = OutSet.ResolveMethod(objectValue, name);
+                foreach (var function in functions)
+                {
+                    // TODO: Check whether the number of arguments match.
+                    result[function.DeclaringElement] = function;
+                }
             }
 
             return result;
         }
 
-        private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
+        private List<ObjectValue> resolveObjectsForMember(MemoryEntry entry)
+        {
+            var isPossibleNonObject = false;
+            var objectValues = resolveObjectsForMember(entry, out isPossibleNonObject);
+
+            if (isPossibleNonObject)
+            {
+                if (objectValues.Count >= 1)
+                {
+                    // TODO: This must be fatal error
+                    setWarning("Possible call to a member function on a non-object",
+                        AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
+                }
+                else
+                {
+                    // TODO: This must be fatal error
+                    setWarning("Call to a member function on a non-object",
+                        AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
+                }
+            }
+
+            return objectValues;
+        }
+
+        private static List<ObjectValue> resolveObjectsForMember(MemoryEntry entry, out bool isPossibleNonObject)
+        {
+            var objectValues = new List<ObjectValue>();
+            isPossibleNonObject = false;
+
+            foreach (var variableValue in entry.PossibleValues)
+            {
+                // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
+                // The problem is that we do not know the name of variable and we cannot detect it.
+
+                var objectInstance = variableValue as ObjectValue;
+                if (objectInstance != null)
+                {
+                    objectValues.Add(objectInstance);
+                }
+                else
+                {
+                    if (!isPossibleNonObject)
+                    {
+                        isPossibleNonObject = true;
+                    }
+                }
+            }
+
+            return objectValues;
+        }
+
+        private static void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
             for (int i = 0; i < signature.FormalParams.Count; ++i)
             {
@@ -205,7 +335,7 @@ namespace Weverca.TaintedAnalysis
             }
         }
 
-        private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
+        private static void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
         {
             var argCount = callInput.CreateInt(arguments.Length);
             callInput.Assign(new VariableName(".argument_count"), argCount);
@@ -219,10 +349,5 @@ namespace Weverca.TaintedAnalysis
         }
 
         #endregion
-
-        public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
