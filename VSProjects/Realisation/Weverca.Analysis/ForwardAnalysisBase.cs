@@ -135,7 +135,7 @@ namespace Weverca.Analysis
             checkAlreadyAnalysed();
             EntryInput.CommitTransaction();
 
-            ProgramPointGraph = new ProgramPointGraph(EntryCFG.start);
+            ProgramPointGraph = new ProgramPointGraph(EntryCFG.start,null);
 
             // create analysis entry point from given graph
             var entryDispatch = new DispatchInfo(ProgramPointGraph, EntryInput);

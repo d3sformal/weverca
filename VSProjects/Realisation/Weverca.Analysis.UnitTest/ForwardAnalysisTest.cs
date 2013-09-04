@@ -471,7 +471,7 @@ setLocal();
         }
 
         [TestMethod]
-        public void Gl()
+        public void GlobalStatement()
         {
             AnalysisTestUtils.RunTestCase(GlobalStatement_CASE);
         }

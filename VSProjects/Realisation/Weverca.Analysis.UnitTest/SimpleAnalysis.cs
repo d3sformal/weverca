@@ -460,12 +460,14 @@ namespace Weverca.Analysis.UnitTest
         public override void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
         {
             _environmentInitializer(callInput);
-            var method = declaration as MethodDecl;
-            var hasNamedSignature = method != null;
+
+            var signature = getSignature(declaration);
+            var hasNamedSignature = signature.HasValue;
+
             if (hasNamedSignature)
             {
                 //we have names for passed arguments
-                setNamedArguments(callInput, arguments, method.Signature);
+                setNamedArguments(callInput, arguments, signature.Value);
             }
             else
             {
@@ -590,6 +592,8 @@ namespace Weverca.Analysis.UnitTest
 
         #region Private helpers
 
+
+
         /// <summary>
         /// Get storage for argument at given index
         /// NOTE:
@@ -605,6 +609,23 @@ namespace Weverca.Analysis.UnitTest
             }
 
             return new VariableName(".arg" + index);
+        }
+
+        private Signature? getSignature(LangElement declaration)
+        {
+            //TODO resolving via visitor might be better
+            if (declaration is MethodDecl)
+            {
+                return (declaration as MethodDecl).Signature;
+            }
+
+            if (declaration is FunctionDecl)
+            {
+                return (declaration as FunctionDecl).Signature;
+            }
+
+
+            return null;
         }
 
         private void setCallBranching(Dictionary<LangElement, FunctionValue> functions)
@@ -798,7 +819,7 @@ namespace Weverca.Analysis.UnitTest
             {
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
-                var ppGraph = new ProgramPointGraph(cfg.start);
+                var ppGraph = new ProgramPointGraph(cfg.start,null);
                 flow.AddIncludeBranch(file, ppGraph);
             }
         }

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Weverca
+namespace Weverca.Output
 {
     class ConsoleOutput : OutputBase
     {
-        #region Output color settings
+        #region Output settings
 
         static readonly ConsoleColor Head = ConsoleColor.White;
         static readonly ConsoleColor Info = ConsoleColor.Gray;
@@ -16,6 +16,8 @@ namespace Weverca
         static readonly ConsoleColor Variable = ConsoleColor.Yellow;
         static readonly ConsoleColor Delimiter = ConsoleColor.Red;
         static readonly ConsoleColor Comment = ConsoleColor.Green;
+        static readonly int indentationLength = 4;
+
 
         #endregion
 
@@ -30,7 +32,7 @@ namespace Weverca
 
         protected override void setIndentation(int level)
         {
-            prefix = "".PadLeft(level * 2, ' ');
+            prefix = "".PadLeft(level * indentationLength, ' ');
         }
 
         protected override void head(string text)

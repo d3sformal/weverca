@@ -47,6 +47,11 @@ namespace Weverca.Analysis
         #region Public fields
 
         /// <summary>
+        /// Object that is source for program point graph (Function declaration, GlobalCode,...)
+        /// </summary>
+        public readonly LangElement SourceObject;
+
+        /// <summary>
         /// All program points defined in program point graph
         /// </summary>
         public IEnumerable<ProgramPoint> Points { get { return _points.Values; } }
@@ -78,8 +83,10 @@ namespace Weverca.Analysis
         /// Create program point graph from source begining by entryPoint
         /// </summary>
         /// <param name="entryPoint">Entry point into source (all feasible basic blocks will be included in program point graph)</param>
-        public ProgramPointGraph(BasicBlock entryPoint)
+        /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
+        public ProgramPointGraph(BasicBlock entryPoint,LangElement sourceObject)
         {
+            SourceObject = sourceObject;
             Start = getEmpty(entryPoint);
             addChild(Start, entryPoint);
 
@@ -115,7 +122,7 @@ namespace Weverca.Analysis
         {
             var basicBlock = new BasicBlock();
             basicBlock.AddElement(analyzer);
-            return new ProgramPointGraph(basicBlock);
+            return new ProgramPointGraph(basicBlock,analyzer);
         }
 
         /// <summary>
@@ -127,7 +134,7 @@ namespace Weverca.Analysis
         {
             var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
 
-            return new ProgramPointGraph(cfg.start);
+            return new ProgramPointGraph(cfg.start,declaration);
         }
 
         /// <summary>
@@ -139,7 +146,7 @@ namespace Weverca.Analysis
         {
             var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
 
-            return new ProgramPointGraph(cfg.start);
+            return new ProgramPointGraph(cfg.start,declaration);
         }
 
         /// <summary>

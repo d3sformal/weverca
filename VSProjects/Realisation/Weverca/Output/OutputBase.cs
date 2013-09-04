@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Weverca.Analysis;
 
-namespace Weverca
+namespace Weverca.Output
 {
     abstract class OutputBase
     {
@@ -19,6 +19,11 @@ namespace Weverca
         /// Prefixes for hint texts
         /// </summary>
         static List<string> _hintPrefixes=new List<string>(){"#"};
+
+        /// <summary>
+        /// Current level of indentation
+        /// </summary>
+        private int _indentationLevel = 0;
 
         #region Template methods for implementors
 
@@ -72,17 +77,40 @@ namespace Weverca
         #endregion
 
         #region Output API
+
+        /// <summary>
+        /// Increase indentation level for next output
+        /// </summary>
+        internal void Indent()
+        {
+            ++_indentationLevel;
+            setIndentation(_indentationLevel);
+        }
+
+        /// <summary>
+        /// Decreates indentation level for next output
+        /// </summary>
+        internal void Dedent()
+        {
+            if (_indentationLevel == 0)
+            {
+                throw new NotSupportedException("Cannot dedent to negative");
+            }
+
+            --_indentationLevel;
+            setIndentation(_indentationLevel);
+        }
+
         /// <summary>
         /// Print representative info for given program point.
         /// </summary>
         /// <param name="pointCaption">Caption which specifies program point</param>
         /// <param name="point">Program point which info is printed</param>
         internal void ProgramPointInfo(string pointCaption, ProgramPoint point)
-        {
-            setIndentation(0);
+        {            
             headline("PROGRAM POINT: " + pointCaption);
 
-            setIndentation(1);
+            Indent();
             foreach (var infoLine in lineSplit(point.OutSet.Representation))
             {
                 if (isCommentLine(infoLine))
@@ -96,6 +124,7 @@ namespace Weverca
 
                 line();
             }
+            Dedent();
         }
 
         /// <summary>

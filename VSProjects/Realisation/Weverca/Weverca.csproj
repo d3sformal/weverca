@@ -42,8 +42,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
-    <Compile Include="ConsoleOutput.cs" />
-    <Compile Include="OutputBase.cs" />
+    <Compile Include="GraphWalking\CallGraphPrinter.cs" />
+    <Compile Include="GraphWalking\CallNameResolver.cs" />
+    <Compile Include="GraphWalking\CallStack.cs" />
+    <Compile Include="GraphWalking\ReadonlyCallStack.cs" />
+    <Compile Include="Output\ConsoleOutput.cs" />
+    <Compile Include="GraphWalking\GraphWalkerBase.cs" />
+    <Compile Include="Output\OutputBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

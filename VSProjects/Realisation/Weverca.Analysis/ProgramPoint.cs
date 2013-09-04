@@ -250,7 +250,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="partial">Partial which extensions are searched</param>
         /// <returns>Found extensions</returns>
-        internal PartialExtension<string> GetIncludeExtension(LangElement partial)
+        public PartialExtension<string> GetIncludeExtension(LangElement partial)
         {
             PartialExtension<string> result;
             _containedIncludeExtensions.TryGetValue(partial, out result);

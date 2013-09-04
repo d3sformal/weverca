@@ -85,17 +85,17 @@ namespace Weverca.TaintedAnalysis
         /// <param name="arguments"></param>
         public override void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
         {
-            var method = declaration as MethodDecl;
-            var hasNamedSignature = method != null;
+            var signature = getSignature(declaration);
+            var hasNamedSignature = signature.HasValue;
 
             if (hasNamedSignature)
             {
-                // We have names for passed arguments
-                setNamedArguments(callInput, arguments, method.Signature);
+                //we have names for passed arguments
+                setNamedArguments(callInput, arguments, signature.Value);
             }
             else
             {
-                // There are no names - use numbered arguments
+                //there are no names - use numbered arguments
                 setOrderedArguments(callInput, arguments);
             }
         }
@@ -183,6 +183,24 @@ namespace Weverca.TaintedAnalysis
 
             return new VariableName(".arg" + index);
         }
+
+        private Signature? getSignature(LangElement declaration)
+        {
+            //TODO resolving via visitor might be better
+            if (declaration is MethodDecl)
+            {
+                return (declaration as MethodDecl).Signature;
+            }
+
+            if (declaration is FunctionDecl)
+            {
+                return (declaration as FunctionDecl).Signature;
+            }
+
+
+            return null;
+        }
+
 
         private void setCallBranching(Dictionary<LangElement, FunctionValue> functions)
         {

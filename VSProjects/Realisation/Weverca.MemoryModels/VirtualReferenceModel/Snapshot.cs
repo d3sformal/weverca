@@ -433,7 +433,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableName functionStorage(string functionName)
         {
-            return new VariableName("$function:" + functionName);
+            return new VariableName("$function-" + functionName);
         }
 
         protected override void declareGlobal(FunctionValue function)

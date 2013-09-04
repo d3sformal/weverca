@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Weverca.Output;
+
 namespace Weverca
 {
     class Program
@@ -47,9 +49,10 @@ namespace Weverca
 
             //Build output
             var console = new ConsoleOutput();
+            var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
             console.CommentLine(string.Format("Analysis completed in: {0}ms\n",watch.ElapsedMilliseconds));
-            console.ProgramPointInfo("Start", ppGraph.Start);
-            console.ProgramPointInfo("End", ppGraph.End);
+
+            graphWalker.Run(console);            
                         
             Console.ReadKey();
         }
