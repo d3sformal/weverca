@@ -15,23 +15,12 @@ namespace Weverca.Analysis.Memory
     /// </summary>
     public sealed class ObjectValue : Value
     {
-        private static int _objectID;
-
-        /// <summary>
-        /// Global unique ID for object.
-        /// NOTE:        
-        ///     * It's OK to use ObjectValue as hash itself
-        ///     * ObjectID is meant to be helper for object naming
-        /// </summary>
-        public readonly int ObjectID;
+     
         /// <summary>
         /// Prevent creating arrays from outside
-        /// NOTE:
-        ///     * IS NOT THREAD SAFE
         /// </summary>
         internal ObjectValue()
         {
-            ObjectID = ++_objectID;
         }
 
         public override void Accept(IValueVisitor visitor)
@@ -47,23 +36,12 @@ namespace Weverca.Analysis.Memory
     /// </summary>
     public sealed class AssociativeArray : Value
     {
-        private static int _arrayID;
-
+        
         /// <summary>
-        /// Global unique ID for array.
-        /// NOTE:
-        ///     * It's OK to use array as hash itself
-        ///     * ArrayID is meant to be helper for array naming
-        /// </summary>
-        public readonly int ArrayID;
-        /// <summary>
-        /// Prevent creating arrays from outside
-        /// NOTE:
-        ///     * IS NOT THREAD SAFE
+        /// Prevent creating arrays from outside        
         /// </summary>
         internal AssociativeArray()
         {
-            ArrayID = ++_arrayID;
         }
 
         public override void Accept(IValueVisitor visitor)

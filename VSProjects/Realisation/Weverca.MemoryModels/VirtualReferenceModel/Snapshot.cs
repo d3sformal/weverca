@@ -520,13 +520,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)
         {
-            var name = string.Format("$obj{0}->{1}", obj.ObjectID, field.Identifier);
+            var name = string.Format("$obj{0}->{1}", obj.UID, field.Identifier);
             return new VariableName(name);
         }
 
         private VariableName getObjectInfoStorage(ObjectValue obj)
         {
-            var name = string.Format("$obj{0}#info", obj.ObjectID);
+            var name = string.Format("$obj{0}#info", obj.UID);
             return new VariableName(name);
         }
         #endregion
@@ -560,7 +560,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableName getIndexStorage(AssociativeArray arr, ContainerIndex index)
         {
-            var name = string.Format("$arr{0}[{1}]", arr.ArrayID, index.Identifier);
+            var name = string.Format("$arr{0}[{1}]", arr.UID, index.Identifier);
             return new VariableName(name);
         }
 
@@ -571,14 +571,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableName getArrayInfoStorage(AssociativeArray arr)
         {
-            var name = string.Format("$arr{0}#info", arr.ArrayID);
+            var name = string.Format("$arr{0}#info", arr.UID);
             return new VariableName(name);
         }
 
 
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
-            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.ArrayID);
+            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
             var indexes = new List<ContainerIndex>();
             foreach (var variable in _globals.Keys)
             {
