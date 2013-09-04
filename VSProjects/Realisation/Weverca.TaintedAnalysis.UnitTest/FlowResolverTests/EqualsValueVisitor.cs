@@ -5,16 +5,16 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 {
-    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
-    class EqualsValueVisitor : IValueVisitor
+    // TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
+    internal class EqualsValueVisitor : IValueVisitor
     {
-        Value expectedValue;
+        private Value expectedValue;
 
         public EqualsValueVisitor(Value expectedValue)
         {
             this.expectedValue = expectedValue;
         }
-        
+
         #region IValueVisitor Members
 
         public void VisitValue(Value value)
@@ -48,6 +48,16 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         }
 
         public void VisitUndefinedValue(UndefinedValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public virtual void VisitResourceValue(ResourceValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAnyPrimitiveValue(AnyPrimitiveValue value)
         {
             throw new NotImplementedException();
         }
@@ -158,6 +168,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         }
 
         public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+            where T : IComparable, IComparable<T>, IEquatable<T>
         {
             throw new NotImplementedException();
         }
@@ -186,9 +197,6 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             Assert.AreEqual(expected.End, value.End);
         }
 
-        #endregion
-
-
         public void VisitSourceFunctionValue(SourceFunctionValue value)
         {
             throw new NotImplementedException();
@@ -209,7 +217,6 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             throw new NotImplementedException();
         }
 
-
         public void VisitSourceTypeValue(SourceTypeValue value)
         {
             throw new NotImplementedException();
@@ -219,5 +226,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         {
             throw new NotImplementedException();
         }
+
+        #endregion
     }
 }

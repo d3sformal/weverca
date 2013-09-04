@@ -1,22 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Weverca.Analysis;
 using PHP.Core;
+
+using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 using Weverca.Parsers;
-using Weverca.TaintedAnalysis;
 
-using PHP.Core.Parsers;
-using Weverca.ControlFlowGraph;
-
-
-
-
+namespace Weverca.TaintedAnalysis.UnitTest
+{
     [TestClass]
     public class NativeConstantTester
     {
@@ -28,7 +22,7 @@ using Weverca.ControlFlowGraph;
 
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
-            var cfg = new ControlFlowGraph(parser.Ast);
+            var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
 
             var analysis = new ForwardAnalysis(cfg);
             analysis.Analyse();
@@ -41,39 +35,39 @@ using Weverca.ControlFlowGraph;
             return Analyze(code).ReadValue(new VariableName("result")).PossibleValues.ElementAt(0);
         }
 
-        string nativeConstantTrue = @"
+        private string nativeConstantTrue = @"
             $result=true;
         ";
 
-        string nativeConstantFalse = @"
+        private string nativeConstantFalse = @"
             $result=false;
         ";
 
-        string nativeConstantInt1 = @"
+        private string nativeConstantInt1 = @"
             $result=E_USER_ERROR;
         ";
 
-        string nativeConstantInt2 = @"
+        private string nativeConstantInt2 = @"
             $result=e_PaRsE;
         ";
 
-        string nativeConstantString1 = @"
+        private string nativeConstantString1 = @"
             $result=DATE_COOKIE;
         ";
 
-        string nativeConstantString2 = @"
+        private string nativeConstantString2 = @"
             $result=DATE_W3C;
         ";
 
-        string nativeConstantFloat1 = @"
+        private string nativeConstantFloat1 = @"
             $result=M_E;
         ";
 
-        string nativeConstantFloat2 = @"
+        private string nativeConstantFloat2 = @"
             $result=INF;
         ";
 
-        string nativeConstantResource = @"
+        private string nativeConstantResource = @"
             $result=STDIN;
         ";
 
@@ -82,17 +76,17 @@ using Weverca.ControlFlowGraph;
             Assert.AreEqual(value.GetType(), type);
         }
 
-        public void testValue<T>(Value value,T compareValue)
+        public void testValue<T>(Value value, T compareValue)
+            where T : IComparable, IComparable<T>, IEquatable<T>
         {
             PrimitiveValue<T> val = (PrimitiveValue<T>)value;
             Assert.IsTrue(val.Value.Equals(compareValue));
         }
 
-
         [TestMethod]
         public void NativeConstantTrue()
         {
-            var result=ResultTest(nativeConstantTrue);
+            var result = ResultTest(nativeConstantTrue);
             testType(result, typeof(BooleanValue));
             testValue(result, true);
         }
@@ -135,7 +129,6 @@ using Weverca.ControlFlowGraph;
             var result = ResultTest(nativeConstantString2);
             testType(result, typeof(StringValue));
             testValue(result, @"Y-m-d\TH:i:sP");
-
         }
 
         [TestMethod]
@@ -152,7 +145,6 @@ using Weverca.ControlFlowGraph;
             var result = ResultTest(nativeConstantFloat2);
             testType(result, typeof(FloatValue));
             testValue(result, double.PositiveInfinity);
-
         }
 
         [TestMethod]
@@ -160,15 +152,14 @@ using Weverca.ControlFlowGraph;
         {
             var result = ResultTest(nativeConstantResource);
             testType(result, typeof(AnyResourceValue));
-
         }
 
-        string globalConstDeclaration= @"
+        private string globalConstDeclaration = @"
             const a=0;
             $result=a;
         ";
 
-        string globalConstDeclarationCaseInsensitive = @"
+        private string globalConstDeclarationCaseInsensitive = @"
             const aAa=4;
             $result=aaa;
         ";
@@ -188,22 +179,22 @@ using Weverca.ControlFlowGraph;
             testType(result, typeof(UndefinedValue));
         }
 
-        string constDeclaration = @"
+        private string constDeclaration = @"
             define('aaa',4);
             $result=aaa;
         ";
 
-        string constDeclaration2 = @"
+        private string constDeclaration2 = @"
             define('aaa',4,false);
             $result=aaa;
         ";
 
-        string constDeclarationCaseInsensitive = @"
+        private string constDeclarationCaseInsensitive = @"
             define('aaa',4,false);
             $result=aAa;
         ";
 
-        string constDeclarationCaseInsensitive2 = @"
+        private string constDeclarationCaseInsensitive2 = @"
             define('aaa',4,true);
             $result=aAa;
         ";
@@ -225,19 +216,18 @@ using Weverca.ControlFlowGraph;
         }
 
         [TestMethod]
-        public void constDeclarationCaseInsensitiveTest()
+        public void ConstDeclarationCaseInsensitiveTest()
         {
             var result = ResultTest(constDeclarationCaseInsensitive);
             testType(result, typeof(UndefinedValue));
         }
 
         [TestMethod]
-        public void constDeclarationCaseInsensitiveTest2()
+        public void ConstDeclarationCaseInsensitiveTest2()
         {
             var result = ResultTest(constDeclarationCaseInsensitive2);
             testType(result, typeof(IntegerValue));
             testValue(result, 4);
         }
-
     }
-
+}

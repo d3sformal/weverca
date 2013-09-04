@@ -8,8 +8,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 {
-    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for unary operations)
-    public class UnaryOperationVisitor : IValueVisitor
+    public class UnaryOperationVisitor : AbstractValueVisitor
     {
         private ExpressionEvaluator evaluator;
         private Operations operation;
@@ -40,7 +39,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #region IValueVisitor Members
 
-        public void VisitValue(Value value)
+        public override void VisitValue(Value value)
         {
             switch (operation)
             {
@@ -66,7 +65,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitObjectValue(ObjectValue value)
+        public override void VisitObjectValue(ObjectValue value)
         {
             switch (operation)
             {
@@ -113,7 +112,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitAssociativeArray(AssociativeArray value)
+        public override void VisitAssociativeArray(AssociativeArray value)
         {
             switch (operation)
             {
@@ -168,22 +167,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitSpecialValue(SpecialValue value)
-        {
-            VisitValue(value);
-        }
-
-        public void VisitAliasValue(AliasValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyValue(AnyValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitUndefinedValue(UndefinedValue value)
+        public override void VisitUndefinedValue(UndefinedValue value)
         {
             switch (operation)
             {
@@ -239,77 +223,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitAnyStringValue(AnyStringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue<T>(InfoValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitPrimitiveValue(PrimitiveValue value)
-        {
-            VisitValue(value);
-        }
-
-        public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
-        {
-            VisitPrimitiveValue(value);
-        }
-
-        public void VisitFunctionValue(FunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTypeValue(TypeValue typeValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFloatValue(FloatValue value)
+        public override void VisitFloatValue(FloatValue value)
         {
             switch (operation)
             {
@@ -364,7 +278,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitBooleanValue(BooleanValue value)
+        public override void VisitBooleanValue(BooleanValue value)
         {
             switch (operation)
             {
@@ -413,7 +327,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitStringValue(StringValue value)
+        public override void VisitStringValue(StringValue value)
         {
             switch (operation)
             {
@@ -470,12 +384,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void VisitIntegerValue(IntegerValue value)
+        public override void VisitIntegerValue(IntegerValue value)
         {
             switch (operation)
             {
@@ -540,58 +449,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-        {
-            VisitValue(value);
-        }
-
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
-            VisitGenericIntervalValue<int>(value);
-        }
-
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
-        {
-            VisitGenericIntervalValue<double>(value);
-        }
-
         #endregion
-
-
-        public void VisitSourceFunctionValue(SourceFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSourceMethodValue(SourceMethodValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void VisitSourceTypeValue(SourceTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeTypeValue(NativeTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

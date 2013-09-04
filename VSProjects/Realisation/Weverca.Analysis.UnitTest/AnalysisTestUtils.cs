@@ -1,22 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
 
-using Weverca.Parsers;
 using Weverca.Analysis.Memory;
+using Weverca.Parsers;
 
 namespace Weverca.Analysis.UnitTest
 {
-    static class AnalysisTestUtils
+    internal static class AnalysisTestUtils
     {
-
         /// <summary>
         /// Initializer which sets environment for tests before analyzing
         /// </summary>
@@ -46,7 +42,7 @@ namespace Weverca.Analysis.UnitTest
             return cfg;
         }
 
-        static internal void CopyInfo(FlowOutputSet outSet,MemoryEntry source, MemoryEntry target)
+        static internal void CopyInfo(FlowOutputSet outSet, MemoryEntry source, MemoryEntry target)
         {
             var infos = new HashSet<InfoValue>();
 
@@ -66,7 +62,8 @@ namespace Weverca.Analysis.UnitTest
         /// <summary>
         /// Test that possible values of given info contains all given values.
         /// </summary>
-        /// <param name="info"></param>
+        /// <param name="varName"></param>
+        /// <param name="infos"></param>
         /// <param name="values"></param>
         /// <returns></returns>
         static internal bool TestValues(string varName, IEnumerable<ValueInfo> infos, params string[] values)
@@ -133,13 +130,13 @@ namespace Weverca.Analysis.UnitTest
         }
 
         static internal void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
+            where T : IComparable, IComparable<T>, IEquatable<T>
         {
             var entry = outset.ReadValue(new VariableName(variableName));
 
             var actualValues = (from PrimitiveValue<T> value in entry.PossibleValues select value.Value).ToArray();
 
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
-
         }
 
         static internal TestCase AssertVariable(this string test_CODE, string variableName, string assertMessage = null, string nonDeterministic = "unknown")
@@ -164,7 +161,7 @@ namespace Weverca.Analysis.UnitTest
             var entry = outSet.ReadValue(new VariableName(variableName));
             foreach (var value in entry.PossibleValues)
             {
-                var infoValues=outSet.ReadInfo(value);
+                var infoValues = outSet.ReadInfo(value);
                 foreach (InfoValue<SimpleInfo> info in infoValues)
                 {
                     if (!info.Data.XssSanitized)
@@ -192,14 +189,13 @@ namespace Weverca.Analysis.UnitTest
 
     delegate void AssertRunner(FlowOutputSet output);
 
-    class TestCase
+    internal class TestCase
     {
         internal readonly string PhpCode;
         internal readonly string AssertMessage;
         internal readonly string VariableName;
 
         internal readonly TestCase PreviousTest;
-
 
         private readonly List<AssertRunner> _asserts = new List<AssertRunner>();
         private readonly List<EnvironmentInitializer> _initializers = new List<EnvironmentInitializer>();
@@ -236,14 +232,16 @@ namespace Weverca.Analysis.UnitTest
         {
             _initializers.Add((outSet) =>
             {
-                var type=outSet.CreateType(typeDeclaration);
+                var type = outSet.CreateType(typeDeclaration);
                 outSet.DeclareGlobal(type);
             });
             return this;
         }
 
         #region Assert providers
+
         internal TestCase HasValues<T>(params T[] expectedValues)
+            where T : IComparable, IComparable<T>, IEquatable<T>
         {
             _asserts.Add((output) =>
             {
@@ -251,6 +249,7 @@ namespace Weverca.Analysis.UnitTest
             });
             return this;
         }
+
         internal TestCase IsXSSDirty()
         {
             _asserts.Add((output) =>
@@ -268,6 +267,7 @@ namespace Weverca.Analysis.UnitTest
             });
             return this;
         }
+
         #endregion
 
         internal void Assert(FlowOutputSet outSet)

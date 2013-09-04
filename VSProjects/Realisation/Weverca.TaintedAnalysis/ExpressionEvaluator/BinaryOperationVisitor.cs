@@ -7,12 +7,11 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 {
-    internal interface ILeftOperandVisitor : IValueVisitor
+    internal abstract class LeftOperandVisitor : AbstractValueVisitor
     {
     }
 
-    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
-    internal class LeftOperandBooleanValueVisitor : ILeftOperandVisitor
+    internal class LeftOperandBooleanValueVisitor : LeftOperandVisitor
     {
         private BooleanValue leftOperand;
         private BinaryOperationVisitor visitor;
@@ -25,196 +24,33 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #region IValueVisitor Members
 
-        public void VisitValue(Value value)
+        public override void VisitValue(Value value)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitObjectValue(ObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAssociativeArray(AssociativeArray value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSpecialValue(SpecialValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAliasValue(AliasValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyValue(AnyValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitUndefinedValue(UndefinedValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyStringValue(AnyStringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue<T>(InfoValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitPrimitiveValue(PrimitiveValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFunctionValue(FunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTypeValue(TypeValue typeValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFloatValue(FloatValue value)
+        public override void VisitFloatValue(FloatValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
         }
 
-        public void VisitBooleanValue(BooleanValue value)
+        public override void VisitBooleanValue(BooleanValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
         }
 
-        public void VisitStringValue(StringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntegerValue(IntegerValue value)
+        public override void VisitIntegerValue(IntegerValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
-        }
-
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
-
-
-        public void VisitSourceFunctionValue(SourceFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSourceMethodValue(SourceMethodValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void VisitSourceTypeValue(SourceTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeTypeValue(NativeTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
-    internal class LeftOperandIntegerValueVisitor : ILeftOperandVisitor
+    internal class LeftOperandIntegerValueVisitor : LeftOperandVisitor
     {
         private IntegerValue leftOperand;
         private BinaryOperationVisitor visitor;
@@ -227,196 +63,33 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #region IValueVisitor Members
 
-        public void VisitValue(Value value)
+        public override void VisitValue(Value value)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitObjectValue(ObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAssociativeArray(AssociativeArray value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSpecialValue(SpecialValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAliasValue(AliasValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyValue(AnyValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitUndefinedValue(UndefinedValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyStringValue(AnyStringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue<T>(InfoValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitPrimitiveValue(PrimitiveValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFunctionValue(FunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTypeValue(TypeValue typeValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFloatValue(FloatValue value)
+        public override void VisitFloatValue(FloatValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
         }
 
-        public void VisitBooleanValue(BooleanValue value)
+        public override void VisitBooleanValue(BooleanValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
         }
 
-        public void VisitStringValue(StringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void VisitIntegerValue(IntegerValue value)
+        public override void VisitIntegerValue(IntegerValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
-        }
-
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
-
-
-        public void VisitSourceFunctionValue(SourceFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSourceMethodValue(SourceMethodValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void VisitSourceTypeValue(SourceTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeTypeValue(NativeTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
-    internal class LeftOperandFloatValueVisitor : ILeftOperandVisitor
+    internal class LeftOperandFloatValueVisitor : LeftOperandVisitor
     {
         private FloatValue leftOperand;
         private BinaryOperationVisitor visitor;
@@ -429,198 +102,35 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #region IValueVisitor Members
 
-        public void VisitValue(Value value)
+        public override void VisitValue(Value value)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitObjectValue(ObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAssociativeArray(AssociativeArray value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSpecialValue(SpecialValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAliasValue(AliasValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyValue(AnyValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitUndefinedValue(UndefinedValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyStringValue(AnyStringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue<T>(InfoValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitPrimitiveValue(PrimitiveValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFunctionValue(FunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTypeValue(TypeValue typeValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFloatValue(FloatValue value)
+        public override void VisitFloatValue(FloatValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
         }
 
-        public void VisitBooleanValue(BooleanValue value)
+        public override void VisitBooleanValue(BooleanValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
         }
 
-        public void VisitStringValue(StringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntegerValue(IntegerValue value)
+        public override void VisitIntegerValue(IntegerValue value)
         {
             visitor.Result = BinaryOperations.BinaryOperation(visitor.Evaluator,
                 leftOperand, visitor.Operation, value);
-        }
-
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
-
-
-        public void VisitSourceFunctionValue(SourceFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSourceMethodValue(SourceMethodValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void VisitSourceTypeValue(SourceTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeTypeValue(NativeTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
     }
 
-    //TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
-    public class BinaryOperationVisitor : IValueVisitor
+    public class BinaryOperationVisitor : AbstractValueVisitor
     {
-        private ILeftOperandVisitor visitor;
+        private LeftOperandVisitor visitor;
 
         public BinaryOperationVisitor(ExpressionEvaluator expressionEvaluator)
         {
@@ -656,188 +166,26 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #region IValueVisitor Members
 
-        public void VisitValue(Value value)
+        public override void VisitValue(Value value)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitObjectValue(ObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAssociativeArray(AssociativeArray value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSpecialValue(SpecialValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAliasValue(AliasValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyValue(AnyValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitUndefinedValue(UndefinedValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyStringValue(AnyStringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue<T>(InfoValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitPrimitiveValue(PrimitiveValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFunctionValue(FunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTypeValue(TypeValue typeValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFloatValue(FloatValue value)
+        public override void VisitFloatValue(FloatValue value)
         {
             visitor = new LeftOperandFloatValueVisitor(value, this);
         }
 
-        public void VisitBooleanValue(BooleanValue value)
+        public override void VisitBooleanValue(BooleanValue value)
         {
             visitor = new LeftOperandBooleanValueVisitor(value, this);
         }
 
-        public void VisitStringValue(StringValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void VisitIntegerValue(IntegerValue value)
+        public override void VisitIntegerValue(IntegerValue value)
         {
             visitor = new LeftOperandIntegerValueVisitor(value, this);
         }
 
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
-
-
-        public void VisitSourceFunctionValue(SourceFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSourceMethodValue(SourceMethodValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public void VisitSourceTypeValue(SourceTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeTypeValue(NativeTypeValue value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

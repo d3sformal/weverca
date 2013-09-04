@@ -1,29 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Weverca.Analysis.Memory
 {
     /// <summary>
     /// Base class for value visitor.
-    /// AbstractValueVisitor has to implement all methods from IValueVisitor interface that every visit method calls visit method for object's supertype. Las't method in hierarchy is abstract.
-    /// Allows that visitor implementations doesn't have to implement all methods this methods.
+    /// <see cref="AbstractValueVisitor" /> has to implement all methods from <see cref="IValueVisitor" />
+    /// interface. Every visit method calls visit method for object's supertype. Last method in the hierarchy
+    /// is abstract. Allows that visitor implementations does not have to implement all methods.
     /// NOTE:
     ///     * Simplifies visitor implementations.
     ///     * Provides functionality for adding new visit methods into IValueVisitor.
-    ///     * For implementors - implement VisitValue method and then just methods you need.
+    ///     * For implementers - implement VisitValue method and then just methods you need.
     /// </summary>
     public abstract class AbstractValueVisitor : IValueVisitor
     {
-
         public abstract void VisitValue(Value value);
 
         /// <summary>
         /// For all values in the memory entry calls their accept functions.
         /// </summary>
-        /// <param name="entry">Memory entry to visit.</param>
+        /// <param name="entry">Memory entry to visit</param>
         public void VisitMemoryEntry(MemoryEntry entry)
         {
             foreach (Value value in entry.PossibleValues)
@@ -31,7 +27,6 @@ namespace Weverca.Analysis.Memory
                 value.Accept(this);
             }
         }
-
 
         #region Structured Value
 
@@ -69,56 +64,65 @@ namespace Weverca.Analysis.Memory
             VisitSpecialValue(value);
         }
 
-        public void VisitAnyStringValue(AnyStringValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            VisitAnyValue(value);
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
+        public virtual void VisitResourceValue(ResourceValue value)
         {
             VisitSpecialValue(value);
         }
 
-        public void VisitInfoValue<T>(InfoValue<T> value)
+        public virtual void VisitAnyPrimitiveValue(AnyPrimitiveValue value)
+        {
+            VisitAnyValue(value);
+        }
+
+        public virtual void VisitAnyStringValue(AnyStringValue value)
+        {
+            VisitAnyPrimitiveValue(value);
+        }
+
+        public virtual void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            VisitAnyPrimitiveValue(value);
+        }
+
+        public virtual void VisitAnyIntegerValue(AnyIntegerValue value)
+        {
+            VisitAnyPrimitiveValue(value);
+        }
+
+        public virtual void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            VisitAnyPrimitiveValue(value);
+        }
+
+        public virtual void VisitAnyLongintValue(AnyLongintValue value)
+        {
+            VisitAnyPrimitiveValue(value);
+        }
+
+        public virtual void VisitAnyObjectValue(AnyObjectValue value)
+        {
+            VisitAnyValue(value);
+        }
+
+        public virtual void VisitAnyArrayValue(AnyArrayValue value)
+        {
+            VisitAnyValue(value);
+        }
+
+        public virtual void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            VisitAnyValue(value);
+        }
+
+        public virtual void VisitInfoValue(InfoValue value)
+        {
+            VisitSpecialValue(value);
+        }
+
+        public virtual void VisitInfoValue<T>(InfoValue<T> value)
         {
             VisitInfoValue(value);
         }
-
 
         #endregion
 
@@ -159,12 +163,12 @@ namespace Weverca.Analysis.Memory
             VisitGenericPrimitiveValue(value);
         }
 
-
         #endregion
 
         #region Interval Values
 
         public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+            where T : IComparable, IComparable<T>, IEquatable<T>
         {
             VisitValue(value);
         }
@@ -197,7 +201,7 @@ namespace Weverca.Analysis.Memory
         {
             VisitFunctionValue(value);
         }
-        
+
         public virtual void VisitSourceMethodValue(SourceMethodValue value)
         {
             VisitFunctionValue(value);
@@ -211,7 +215,7 @@ namespace Weverca.Analysis.Memory
         public virtual void VisitLambdaFunctionValue(LambdaFunctionValue value)
         {
             VisitFunctionValue(value);
-        }       
+        }
 
         #endregion
 

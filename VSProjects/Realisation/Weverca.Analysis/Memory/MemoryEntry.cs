@@ -1,15 +1,13 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Weverca.Analysis.Memory
 {
     /// <summary>
-    /// Memory entry represents multiple possiblities that for example single variable can have
+    /// Memory entry represents multiple possibilities that for example single variable can have
     /// NOTE:
-    ///     * Is immutable    
+    ///     * Is immutable
     /// </summary>
     public class MemoryEntry
     {
@@ -19,61 +17,71 @@ namespace Weverca.Analysis.Memory
         public readonly IEnumerable<Value> PossibleValues;
 
         /// <summary>
-        /// Create memory entry from given values.
-        /// NOTE:
-        ///     * Values has to be distinct
+        /// Count of possible values in current memory entry
         /// </summary>
-        /// <param name="values">Possible values for created memory entry</param>
-        public MemoryEntry(params Value[] values):
-            this((Value[])values.Clone(),false)
-        {            
-        }
+        public readonly int Count;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="MemoryEntry" /> class.
         /// Create memory entry from given values.
         /// NOTE:
         ///     * Values has to be distinct
         /// </summary>
         /// <param name="values">Possible values for created memory entry</param>
-        public MemoryEntry(IEnumerable<Value> values):
-            this(new List<Value>(values).ToArray(),false)
+        public MemoryEntry(params Value[] values) :
+            this(values.Clone() as Value[], false)
         {
         }
 
         /// <summary>
-        /// Is used for avoiding of copy on internall structures 
+        /// Initializes a new instance of the <see cref="MemoryEntry" /> class.
+        /// Create memory entry from given values.
+        /// NOTE:
+        ///     * Values has to be distinct
+        /// </summary>
+        /// <param name="values">Possible values for created memory entry</param>
+        public MemoryEntry(IEnumerable<Value> values) :
+            this(new List<Value>(values).ToArray(), false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MemoryEntry" /> class.
+        /// Is used for avoiding of copy on internal structures
         /// </summary>
         /// <param name="values">Values that will be passed into memory entry - no copy is proceeded</param>
         /// <param name="copy">Determine that copy has to be created for values</param>
-        private MemoryEntry(Value[] values,bool copy)
+        private MemoryEntry(Value[] values, bool copy)
         {
             if (copy)
             {
-                var copiedValues= new List<Value>();
+                var copiedValues = new List<Value>();
                 copiedValues.AddRange(values);
                 values = copiedValues.ToArray();
             }
+
             PossibleValues = new ReadOnlyCollection<Value>(values);
+            Count = values.Length;
         }
 
         /// <summary>
         /// Shallow memory entries merge
-        /// Distincity is reached by Equals and GetHashCode comparison.
+        /// Distinction is reached by Equals and GetHashCode comparison.
         /// </summary>
         /// <param name="entries">Memory entries to be merged</param>
-        /// <returns>Memory entry containing disctinct values from all entries</returns>
+        /// <returns>Memory entry containing distinct values from all entries</returns>
         public static MemoryEntry Merge(params MemoryEntry[] entries)
         {
-            return Merge((IEnumerable<MemoryEntry>)entries);
+            return Merge(entries as IEnumerable<MemoryEntry>);
         }
 
         /// <summary>
         /// Shallow memory entries merge
         /// NOTE:
-        ///    * Distincity is reached by Equals and GetHashCode comparison of enumerated values.
+        ///    * Distinction is reached by Equals and GetHashCode comparison of enumerated values.
         /// </summary>
         /// <param name="entries">Memory entries to be merged</param>
-        /// <returns>Memory entry containing disctinct values from all entries</returns>
+        /// <returns>Memory entry containing distinct values from all entries</returns>
         public static MemoryEntry Merge(IEnumerable<MemoryEntry> entries)
         {
             var values = new HashSet<Value>();
@@ -86,6 +94,13 @@ namespace Weverca.Analysis.Memory
             return new MemoryEntry(values);
         }
 
+        /// <summary>
+        /// Determines whether the specified object is equal to the current memory entry.
+        /// </summary>
+        /// <param name="obj">The object to compare with the current memory entry</param>
+        /// <returns>
+        /// <c>true</c> if the specified object is equal to the current memory entry, otherwise <c>false</c>
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (base.Equals(obj))
@@ -103,20 +118,29 @@ namespace Weverca.Analysis.Memory
             return hasSameValues(o.PossibleValues, this.PossibleValues);
         }
 
+        /// <summary>
+        /// Returns the hash code calculated from all possible values in current memory entry.
+        /// </summary>
+        /// <returns>A hash code for the current memory entry</returns>
         public override int GetHashCode()
         {
-            int hashCode = 0;
-            foreach (var val in PossibleValues)
+            var hashCode = 0;
+            foreach (var value in PossibleValues)
             {
-                hashCode += val.GetHashCode();
+                hashCode += value.GetHashCode();
             }
 
             return hashCode;
         }
 
+        /// <summary>
+        /// Returns a string consisting of string representations of every possible value
+        /// in current memory entry.
+        /// </summary>
+        /// <returns>A string that represents the current memory entry</returns>
         public override string ToString()
         {
-            StringBuilder result = new StringBuilder();
+            var result = new StringBuilder();
 
             result.Append("Values: ");
             foreach (var value in PossibleValues)
@@ -130,11 +154,12 @@ namespace Weverca.Analysis.Memory
         }
 
         /// <summary>
-        /// Determine that first and second enumeration contains same values (according to their equals and hashcode)
+        /// Determines whether the first and second enumeration contain same values
+        /// (according to their equals and hash code)
         /// </summary>
         /// <param name="values1">First values enumeration</param>
         /// <param name="values2">Second values enumeration</param>
-        /// <returns>True if values are same (in any order), false otherwise</returns>
+        /// <returns><c>true</c> if values are same (in any order), <c>false</c> otherwise</returns>
         private bool hasSameValues(IEnumerable<Value> values1, IEnumerable<Value> values2)
         {
             var set1 = new HashSet<Value>(values1);
@@ -150,6 +175,5 @@ namespace Weverca.Analysis.Memory
 
             return set1.Count == values2Cn;
         }
-
     }
 }

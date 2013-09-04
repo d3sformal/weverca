@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-
-namespace Weverca.Analysis.Memory
+﻿namespace Weverca.Analysis.Memory
 {
-
     /// <summary>
-    /// Represent special kind of value. For example these values can express some non-determinism.    
+    /// Represent special kind of value. For example these values can express some non-determinism.
     /// </summary>
     public class SpecialValue : Value
     {
@@ -56,7 +49,27 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-    public class AnyStringValue : AnyValue
+    public class ResourceValue : SpecialValue
+    {
+        internal ResourceValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitResourceValue(this);
+        }
+    }
+
+    public abstract class AnyPrimitiveValue : AnyValue
+    {
+        internal AnyPrimitiveValue() { }
+
+        public override void Accept(IValueVisitor visitor)
+        {
+            visitor.VisitAnyPrimitiveValue(this);
+        }
+    }
+
+    public class AnyStringValue : AnyPrimitiveValue
     {
         internal AnyStringValue() { }
 
@@ -66,7 +79,7 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-    public class AnyIntegerValue : AnyValue
+    public class AnyIntegerValue : AnyPrimitiveValue
     {
         internal AnyIntegerValue() { }
 
@@ -76,7 +89,7 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-    public class AnyLongintValue : AnyValue
+    public class AnyLongintValue : AnyPrimitiveValue
     {
         internal AnyLongintValue() { }
 
@@ -86,7 +99,7 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-    public class AnyFloatValue : AnyValue
+    public class AnyFloatValue : AnyPrimitiveValue
     {
         internal AnyFloatValue() { }
 
@@ -96,7 +109,7 @@ namespace Weverca.Analysis.Memory
         }
     }
 
-    public class AnyBooleanValue : AnyValue
+    public class AnyBooleanValue : AnyPrimitiveValue
     {
         internal AnyBooleanValue() { }
 
@@ -135,7 +148,7 @@ namespace Weverca.Analysis.Memory
             visitor.VisitAnyResourceValue(this);
         }
     }
-    
+
     public abstract class InfoValue : SpecialValue
     {
         public readonly object RawData;
@@ -160,8 +173,9 @@ namespace Weverca.Analysis.Memory
             var o = obj as InfoValue;
             if (o == null)
             {
-                return false;   
+                return false;
             }
+
             return o.RawData.Equals(RawData);
         }
     }
@@ -176,7 +190,8 @@ namespace Weverca.Analysis.Memory
     {
         public readonly T Data;
 
-        internal InfoValue(T data):base(data)
+        internal InfoValue(T data)
+            : base(data)
         {
             Data = data;
         }
@@ -186,11 +201,9 @@ namespace Weverca.Analysis.Memory
             visitor.VisitInfoValue<T>(this);
         }
 
-
         public override string ToString()
         {
             return Data.ToString();
         }
     }
-
 }
