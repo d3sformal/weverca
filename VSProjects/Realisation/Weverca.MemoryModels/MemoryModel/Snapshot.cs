@@ -72,7 +72,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
-            ObjectDescriptor descriptor = new ObjectDescriptor(type, this);
+            ObjectDescriptor descriptor = new ObjectDescriptor(type);
             objects[createdObject] = descriptor;
         }
 
@@ -418,18 +418,21 @@ namespace Weverca.MemoryModels.MemoryModel
         private void assignMemoryEntry(MemoryIndex index, MemoryEntry entry)
         {
             MemoryInfo info = getMemoryInfo(index);
+            MemoryEntry oldMemoryEntry = getMemoryEntry(index);
 
-            ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, index);
-            visitor.VisitMemoryEntry(entry);
-            MemoryEntry copiedEntry = visitor.GetCopiedEntry();
-
-            info.PostAssign(this, entry);
-            destroyMemoryEntry(index);
-            
-            MemoryEntry newEntry = visitor.GetCopiedEntry();
-            foreach (MemoryIndex aliasIndex in info.MustAliasses)
+            if (oldMemoryEntry != entry)
             {
-                memoryEntries[aliasIndex] = newEntry;
+                ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, index);
+                visitor.VisitMemoryEntry(entry);
+    
+                info.PostAssign(this, entry);
+                destroyMemoryEntry(index);
+            
+                MemoryEntry newEntry = visitor.GetCopiedEntry();
+                foreach (MemoryIndex aliasIndex in info.MustAliasses)
+                {
+                    memoryEntries[aliasIndex] = newEntry;
+                }
             }
         }
 
@@ -442,12 +445,16 @@ namespace Weverca.MemoryModels.MemoryModel
         internal ObjectValue AssignObjectValue(MemoryIndex targetIndex, ObjectValue value)
         {
             ObjectDescriptor oldDescriptor = objects[value];
+            MemoryInfo targetInfo = getMemoryInfo(targetIndex);
 
-            ObjectDescriptor newDescriptor = oldDescriptor.Builder()
-                .addMustReference(targetIndex)
-                .Build();
+            //Creates new MUST reference with all MUST objects
+            var newDescriptorBuilder = oldDescriptor.Builder();
+            foreach (MemoryIndex aliasIndex in targetInfo.MustAliasses)
+            {
+                newDescriptorBuilder.addMustReference(aliasIndex);
+            }
 
-            objects[value] = newDescriptor;
+            objects[value] = newDescriptorBuilder.Build();
             return value;
         }
 
@@ -464,19 +471,66 @@ namespace Weverca.MemoryModels.MemoryModel
             AssociativeArray targetValue = CreateArray();
             ArrayDescriptorBuilder descriptorBuilder = arrays[targetValue].Builder();
             
+            //Copy all indexes
             foreach (var sourceContent in sourceDescriptor.Indexes)
             {
-                MemoryIndex index = createIndex(targetValue, sourceContent.Key);
-                descriptorBuilder.add(sourceContent.Key, index);
+                //Creates new index
+                MemoryIndex newIndex = createIndex(targetValue, sourceContent.Key);
+                descriptorBuilder.add(sourceContent.Key, newIndex);
 
-                MemoryEntry sourceEntry = getMemoryEntry(sourceContent.Value);
-                ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, index);
-                visitor.VisitMemoryEntry(sourceEntry);
+                MemoryInfo sourceInfo = getMemoryInfo(sourceContent.Value);
+                if (sourceInfo.MustAliasses.Count == 1)
+                {
+                    //If tehere is no MUST alias just provides deep copy
+                    MemoryEntry sourceEntry = getMemoryEntry(sourceContent.Value);
+                    ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, newIndex);
+                    visitor.VisitMemoryEntry(sourceEntry);
 
-                memoryEntries[index] = visitor.GetCopiedEntry();
+                    memoryEntries[newIndex] = visitor.GetCopiedEntry();
+                }
+                else
+                {
+                    //If there is some MUST alias in source - create alias reference
+                    memoryEntries[newIndex] = getMemoryEntry(sourceContent.Value);
+
+                    MemoryInfo newInfo = sourceInfo
+                        .Builder()
+                        .AddMustAlias(newIndex)
+                        .Build();
+
+                    foreach (MemoryIndex aliasIndex in newInfo.MustAliasses)
+                    {
+                        memoryInfos[aliasIndex] = newInfo;
+                    }
+                }
+
+                //Add new index into MAY alias structure
+                foreach (MemoryIndex aliasIndex in sourceInfo.MayAliasses)
+                {
+                    memoryInfos[aliasIndex] = getMemoryInfo(aliasIndex)
+                        .Builder()
+                        .AddMayAlias(newIndex)
+                        .Build();
+                }
+
+                if (sourceInfo.MayAliasses.Count > 0 && sourceInfo.MustAliasses.Count == 1)
+                {
+                    //There is some MAY an no MUST alias - create MAY alias between source and new index
+                    //Add new to source info
+                    memoryInfos[sourceContent.Value] = sourceInfo
+                        .Builder()
+                        .AddMayAlias(newIndex)
+                        .Build();
+
+                    //Add source to new info
+                    memoryInfos[newIndex] = memoryInfos[sourceContent.Value]
+                        .Builder()
+                        .AddMayAlias(sourceContent.Value)
+                        .Build();
+                }
             }
 
-            descriptorBuilder.SetParentVariable(targetIndex);
+            descriptorBuilder.AddParentVariable(targetIndex);
             arrays[targetValue] = descriptorBuilder.Build();
 
             return targetValue;
@@ -487,6 +541,57 @@ namespace Weverca.MemoryModels.MemoryModel
             throw new NotImplementedException();
         }
 
+
+
+
+        #endregion
+
+        #region Destroy
+
+        /// <summary>
+        /// Kills memory on given index - removes from alias structure and destroy its memory entry if is not used
+        /// </summary>
+        /// <param name="index"></param>
+        private void destroyMemoryIndex(MemoryIndex index)
+        {
+            MemoryInfo info = getMemoryInfo(index)
+                .Builder()
+                .RemoveMustAlias(index)
+                .Build();
+
+            //Rremove myself from MAY aliases
+            foreach (MemoryIndex aliasIndex in info.MayAliasses)
+            {
+                MemoryInfo aliasInfo = getMemoryInfo(aliasIndex)
+                    .Builder()
+                    .RemoveMayAlias(index)
+                    .Build();
+
+                memoryInfos[aliasIndex] = aliasInfo;
+            }
+
+            if (info.MustAliasses.Count > 0)
+            {
+                //If there are some MUST aliases - just update infos
+                foreach (MemoryIndex aliasIndex in info.MustAliasses)
+                {
+                    memoryInfos[aliasIndex] = info;
+                }
+            }
+            else
+            {
+                //If there is not MUST alias - unlink
+                destroyMemoryEntry(index);
+            }
+
+            memoryInfos.Remove(index);
+            memoryEntries.Remove(index);
+        }
+
+        /// <summary>
+        /// Kills all values which is sored in given memory entry
+        /// </summary>
+        /// <param name="index"></param>
         private void destroyMemoryEntry(MemoryIndex index)
         {
             MemoryEntry entry = getMemoryEntry(index);
@@ -495,11 +600,72 @@ namespace Weverca.MemoryModels.MemoryModel
             visitor.VisitMemoryEntry(entry);
         }
 
+        /// <summary>
+        /// Kills array value - destroys all array indexes
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="value"></param>
+        internal void DestroyArrayValue(MemoryIndex index, AssociativeArray value)
+        {
+            ArrayDescriptor descriptor = arrays[value];
+
+            foreach (var content in descriptor.Indexes)
+            {
+                destroyMemoryIndex(content.Value);
+            }
+
+            arrays.Remove(value);
+        }
+
+        /// <summary>
+        /// Kills object value reference - removes from alias reference structure and destroy all fields if is not used
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="value"></param>
+        internal void DestroyObjectValue(MemoryIndex index, ObjectValue value)
+        {
+            ObjectDescriptor descriptor = objects[value]
+                .Builder()
+                .removeMustReference(index)
+                .Build();
+
+            //Removes object from alias references
+            foreach (ObjectValue aliasValue in descriptor.MayReferences)
+            {
+                ObjectDescriptor aliasDescriptor = objects[aliasValue]
+                    .Builder()
+                    .removeMayReference(value)
+                    .Build();
+
+                objects[aliasValue] = aliasDescriptor;
+            }
+
+            if (descriptor.MustReferences.Count == 0)
+            {
+                //There is no more reference
+                foreach (var content in descriptor.Fields)
+                {
+                    destroyMemoryIndex(content.Value);
+                }
+
+                objects.Remove(value);
+            }
+            else
+            {
+                //Just update value descriptor
+                objects[value] = descriptor;
+            }
+        }
 
         #endregion
 
         #region Alias
 
+        /// <summary>
+        /// Assigns the memory alias.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="alias">The alias.</param>
         private void assignMemoryAlias(MemoryIndex index, AliasValue alias)
         {
             MemoryAlias memoryAlias = alias as MemoryAlias;
@@ -511,28 +677,45 @@ namespace Weverca.MemoryModels.MemoryModel
             MemoryInfo variableInfo = getMemoryInfo(index);
             MemoryInfo aliasGoupInfo = getMemoryInfo(memoryAlias.Index);
 
+            //Is there alias between index and alias index?
             if (memoryAlias.Index != index && variableInfo != aliasGoupInfo)
             {
+                //Destroys aliases
                 clearMustAliases(index);
                 clearMayAliases(index);
 
                 destroyMemoryEntry(index);
 
+                //Indexes conected in MUST alias relation shares memory space - INFO and ENTRY
+
+                //Memory info update
                 MemoryInfo newGroupInfo = aliasGoupInfo.Builder()
                     .AddMustAlias(index)
                     .Build();
 
+                memoryInfos[index] = newGroupInfo;
                 foreach (MemoryIndex aliasIndex in newGroupInfo.MustAliasses)
                 {
                     memoryInfos[aliasIndex] = newGroupInfo;
                 }
 
-                memoryInfos[index] = newGroupInfo;
+                //Shared memory entry
+                MemoryEntry entry = getMemoryEntry(memoryAlias.Index);
+                memoryEntries[index] = entry;
+                ValueVisitors.AssignedAliasVisitor visitor = new ValueVisitors.AssignedAliasVisitor(this, index);
+                visitor.VisitMemoryEntry(entry);
 
-                MemoryEntry aliasGroupEntry = getMemoryEntry(memoryAlias.Index);
-                memoryEntries[index] = aliasGroupEntry;
+                //Update MAY aliases
+                foreach (MemoryIndex aliasIndex in newGroupInfo.MayAliasses)
+                {
+                    memoryInfos[aliasIndex] = getMemoryInfo(aliasIndex)
+                        .Builder()
+                        .AddMayAlias(index)
+                        .Build();
+                }
             }
         }
+
 
         private void clearMayAliases(MemoryIndex index)
         {
@@ -544,12 +727,17 @@ namespace Weverca.MemoryModels.MemoryModel
             }
         }
 
+        /// <summary>
+        /// Clears the must aliases.
+        /// </summary>
+        /// <param name="index">The index.</param>
         private void clearMustAliases(MemoryIndex index)
         {
             MemoryInfo oldvariableInfo = getMemoryInfo(index);
 
             if (oldvariableInfo.MustAliasses.Count > 1)
             {
+                //Removes from MUST group info
                 MemoryInfo newVariableInfo = oldvariableInfo.Builder()
                     .RemoveMustAlias(index)
                     .Build();
@@ -562,11 +750,47 @@ namespace Weverca.MemoryModels.MemoryModel
                     }
                 }
 
+                //Removes from entry
+                MemoryEntry entry = getMemoryEntry(index);
+                ValueVisitors.RemoveAliasVisitor visitor = new ValueVisitors.RemoveAliasVisitor(this, index);
+                visitor.VisitMemoryEntry(entry);
+
                 memoryEntries[index] = emptyEntry;
             }
         }
 
-        #endregion
+        internal void AliasAssignedObjectValue(MemoryIndex index, ObjectValue value)
+        {
+            objects[value] = objects[value]
+                .Builder()
+                .addMustReference(index)
+                .Build();
+        }
 
+        internal void AliasAssignedArrayValue(MemoryIndex index, AssociativeArray value)
+        {
+            arrays[value] = arrays[value]
+                .Builder()
+                .AddParentVariable(index)
+                .Build();
+        }
+
+        internal void AliasRemovedArrayValue(MemoryIndex index, AssociativeArray value)
+        {
+            arrays[value] = arrays[value]
+                .Builder()
+                .RemoveParentVariable(index)
+                .Build();
+        }
+
+        internal void AliasRemovedObjectValue(MemoryIndex index, ObjectValue value)
+        {
+            objects[value] = objects[value]
+                .Builder()
+                .removeMustReference(index)
+                .Build();
+        }
+
+        #endregion
     }
 }

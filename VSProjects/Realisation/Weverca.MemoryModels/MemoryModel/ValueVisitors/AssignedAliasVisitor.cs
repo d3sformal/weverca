@@ -2,35 +2,31 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 using Weverca.Analysis.Memory;
 
 namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
 {
     /// <summary>
-    /// Destroys given selected entry
-    /// For array and object values is called snapsot method which provides delete of structure values
+    /// For object and array values calls method which adds new member of alias structure to the descriptor of value
     /// </summary>
-    class DestroyemoryEntryVisitor : AbstractValueVisitor
+    class AssignedAliasVisitor : AbstractValueVisitor
     {
         private Snapshot snapshot;
         private MemoryIndex index;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DestroyemoryEntryVisitor"/> class.
+        /// Initializes a new instance of the <see cref="AssignedAliasVisitor"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="index">The index.</param>
-        public DestroyemoryEntryVisitor(Snapshot snapshot, MemoryIndex index)
+        public AssignedAliasVisitor(Snapshot snapshot, MemoryIndex index)
         {
             this.snapshot = snapshot;
             this.index = index;
         }
 
-        /// <summary>
-        /// Visits the value.
-        /// </summary>
-        /// <param name="value">The value.</param>
         public override void VisitValue(Value value)
         {
         }
@@ -41,7 +37,7 @@ namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
         /// <param name="value">The value.</param>
         public override void VisitAssociativeArray(AssociativeArray value)
         {
-            snapshot.DestroyArrayValue(index, value);
+            snapshot.AliasAssignedArrayValue(index, value);
         }
 
         /// <summary>
@@ -50,7 +46,7 @@ namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
         /// <param name="value">The value.</param>
         public override void VisitObjectValue(ObjectValue value)
         {
-            snapshot.DestroyObjectValue(index, value);
+            snapshot.AliasAssignedObjectValue(index, value);
         }
     }
 }

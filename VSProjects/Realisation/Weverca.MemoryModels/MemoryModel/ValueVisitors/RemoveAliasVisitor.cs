@@ -2,26 +2,27 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 using Weverca.Analysis.Memory;
 
 namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
 {
     /// <summary>
-    /// Destroys given selected entry
-    /// For array and object values is called snapsot method which provides delete of structure values
+    /// Removes given selected entry
+    /// For array and object values is called snapsot methods which removes structure values
     /// </summary>
-    class DestroyemoryEntryVisitor : AbstractValueVisitor
+    class RemoveAliasVisitor : AbstractValueVisitor
     {
         private Snapshot snapshot;
         private MemoryIndex index;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DestroyemoryEntryVisitor"/> class.
+        /// Initializes a new instance of the <see cref="RemoveAliasVisitor"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="index">The index.</param>
-        public DestroyemoryEntryVisitor(Snapshot snapshot, MemoryIndex index)
+        public RemoveAliasVisitor(Snapshot snapshot, MemoryIndex index)
         {
             this.snapshot = snapshot;
             this.index = index;
@@ -41,7 +42,7 @@ namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
         /// <param name="value">The value.</param>
         public override void VisitAssociativeArray(AssociativeArray value)
         {
-            snapshot.DestroyArrayValue(index, value);
+            snapshot.AliasRemovedArrayValue(index, value);
         }
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace Weverca.MemoryModels.MemoryModel.ValueVisitors
         /// <param name="value">The value.</param>
         public override void VisitObjectValue(ObjectValue value)
         {
-            snapshot.DestroyObjectValue(index, value);
+            snapshot.AliasRemovedObjectValue(index, value);
         }
     }
 }
