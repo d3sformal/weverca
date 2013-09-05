@@ -424,8 +424,7 @@ namespace Weverca.MemoryModels.MemoryModel
             {
                 ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, index);
                 visitor.VisitMemoryEntry(entry);
-    
-                info.PostAssign(this, entry);
+   
                 destroyMemoryEntry(index);
             
                 MemoryEntry newEntry = visitor.GetCopiedEntry();
