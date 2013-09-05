@@ -270,8 +270,15 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.BitXor:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
-                    var intValue = TypeConversion.ToInteger(evaluator.OutSet, rightOperand);
-                    return BinaryOperation(evaluator, leftOperand, operation, intValue);
+                    IntegerValue convertedValue;
+                    if (TypeConversion.TryConvertToInteger(evaluator.OutSet, rightOperand, out convertedValue))
+                    {
+                        return BinaryOperation(evaluator, leftOperand, operation, convertedValue);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
                 case Operations.And:
                     return evaluator.OutSet.CreateBool((leftOperand.Value != 0) && (rightOperand.Value != 0.0));
                 case Operations.Or:
@@ -328,8 +335,15 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.BitXor:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
-                    var intValue = TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
-                    return BinaryOperation(evaluator, intValue, operation, rightOperand);
+                    IntegerValue convertedValue;
+                    if (TypeConversion.TryConvertToInteger(evaluator.OutSet, leftOperand, out convertedValue))
+                    {
+                        return BinaryOperation(evaluator, convertedValue, operation, rightOperand);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException();
+                    }
                 case Operations.And:
                     return evaluator.OutSet.CreateBool((leftOperand.Value != 0.0) && (rightOperand.Value != 0));
                 case Operations.Or:
@@ -382,8 +396,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         return evaluator.OutSet.CreateBool(false);
                     }
                 case Operations.Mod:
-                    var dividend = TypeConversion.ToInteger(evaluator.OutSet, leftOperand);
-                    var divisor = TypeConversion.ToInteger(evaluator.OutSet, rightOperand);
+                    IntegerValue dividend;
+                    if (!TypeConversion.TryConvertToInteger(evaluator.OutSet, leftOperand, out dividend))
+                    {
+                        throw new NotImplementedException();
+                    }
+                    IntegerValue divisor;
+                    if (!TypeConversion.TryConvertToInteger(evaluator.OutSet, rightOperand, out divisor))
+                    {
+                        throw new NotImplementedException();
+                    }
+
                     if (divisor.Value != 0)
                     {
                         // Value has the same sign as dividend

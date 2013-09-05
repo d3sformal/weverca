@@ -1,7 +1,9 @@
-﻿using Weverca.Analysis;
+﻿using PHP.Core;
+
+using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
-using PHP.Core;
+
 namespace Weverca.TaintedAnalysis
 {
     public class ForwardAnalysis : ForwardAnalysisBase
@@ -37,11 +39,11 @@ namespace Weverca.TaintedAnalysis
         #endregion
 
         protected void GlobalsInitializer()
-        { 
+        {
             var post = new VariableName("_POST");
             var postValue = EntryInput.AnyArrayValue;
             EntryInput.FetchFromGlobal(post);
-            EntryInput.Assign(post, new MemoryEntry(postValue));         
+            EntryInput.Assign(post, new MemoryEntry(postValue));
             ValueInfoHandler.setDirty(EntryInput, postValue);
 
             var get = new VariableName("_GET");
@@ -59,7 +61,11 @@ namespace Weverca.TaintedAnalysis
             EntryInput.FetchFromGlobal(warnings);
             EntryInput.Assign(warnings, new MemoryEntry(EntryInput.UndefinedValue));
 
-
+            // TODO: It will be replaced by global types mechanism
+            var standardClassDeclaration = new NativeTypeDecl(
+                new QualifiedName(new Name("stdClass")), new NativeMethodInfo[0]);
+            var standardClass = EntryInput.CreateType(standardClassDeclaration);
+            EntryInput.DeclareGlobal(standardClass);
         }
     }
 }

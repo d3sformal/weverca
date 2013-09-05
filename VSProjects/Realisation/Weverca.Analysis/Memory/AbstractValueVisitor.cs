@@ -167,23 +167,23 @@ namespace Weverca.Analysis.Memory
 
         #region Interval Values
 
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+        public virtual void VisitGenericIntervalValue<T>(IntervalValue<T> value)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             VisitValue(value);
         }
 
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        public virtual void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
             VisitGenericIntervalValue(value);
         }
 
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
+        public virtual void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             VisitGenericIntervalValue(value);
         }
 
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
+        public virtual void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             VisitGenericIntervalValue(value);
         }
