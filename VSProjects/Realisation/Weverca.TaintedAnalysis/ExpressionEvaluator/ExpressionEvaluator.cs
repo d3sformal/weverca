@@ -595,6 +595,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     OutSet.Assign(name, newEntry);
                     entries.Add(newEntry);
                 }
+                else
+                {
+                    entries.Add(entry);
+                }
             }
 
             return MemoryEntry.Merge(entries);
