@@ -50,7 +50,10 @@ namespace Weverca.TaintedAnalysis
             if (result.Count == 0)
             {
                 result.Add(outset.UndefinedValue);
+                //result.Add(outset.CreateString(name.ToString()));
+                //TODO warning
             }
+            //replace undefined values with name.ToString()
             return result;
         }
 
@@ -81,6 +84,8 @@ namespace Weverca.TaintedAnalysis
                     MemoryEntry entry = outset.GetIndex(constArray, index);
                     if (entry.PossibleValues.Count() == 0 || (entry.PossibleValues.Count() == 1 && entry.PossibleValues.ElementAt(0).Equals(outset.UndefinedValue)))
                     {
+
+                        //replace undefined values with string ""
                         outset.SetIndex(constArray, index, value);
                     }
                 }
