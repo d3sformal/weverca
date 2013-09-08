@@ -626,7 +626,18 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
             else
             {
-                values = UserDefinedConstantHandler.getConstant(OutSet, name);
+                List<Value> result = UserDefinedConstantHandler.getConstant(OutSet, name);
+                foreach (var value in result)
+                {
+                    if (value is UndefinedValue)
+                    {
+                        values.Add(OutSet.CreateString(name.Name.Value));
+                    }
+                    else
+                    {
+                        values.Add(value);
+                    }
+                }
             }
 
             return new MemoryEntry(values);

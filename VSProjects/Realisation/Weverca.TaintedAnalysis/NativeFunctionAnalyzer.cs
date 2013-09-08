@@ -170,6 +170,10 @@ namespace Weverca.TaintedAnalysis
             QualifiedName defineName = new QualifiedName(new Name("define"));
             AnalyzerClass analyzer = new AnalyzerClass(allNativeFunctions[defineName]);
             wevercaImplementedFunctions.Add(defineName, new NativeAnalyzerMethod(analyzer._define));
+
+            QualifiedName constantName = new QualifiedName(new Name("constant"));
+            AnalyzerClass constantAnalyzer = new AnalyzerClass(allNativeFunctions[constantName]);
+            wevercaImplementedFunctions.Add(constantName, new NativeAnalyzerMethod(constantAnalyzer._constant));
         }
 
         static public NativeFunctionAnalyzer CreateInstance()
@@ -239,9 +243,7 @@ namespace Weverca.TaintedAnalysis
             return null;
         }
 
-
-
-        static public void checkFunctionsArguments(List<NativeFunction> nativeFunctions,FlowController flow)
+        static public bool checkArgumentsCount(List<NativeFunction> nativeFunctions,FlowController flow)
         {
             //check number of arduments
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
@@ -329,20 +331,27 @@ namespace Weverca.TaintedAnalysis
                 {
                     s = "s";
                 }
-                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function "+nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter"+s+" given.", flow.CurrentPartial,AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
-                return;
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function " + nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter" + s + " given.", flow.CurrentPartial, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+                return false;
             }
+            else 
+            {
+                return true;
+            }
+       }
 
+        public static void checkArgumentTypes(List<NativeFunction> nativeFunctions, FlowController flow)
+        {
             List<List<AnalysisWarning>> warningsList = new List<List<AnalysisWarning>>();
-
-
+            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
             foreach (var nativeFunction in nativeFunctions)
             {
-                
+
                 if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
                 {
                     warningsList.Add(new List<AnalysisWarning>());
-                    int functionArgumentNumber=0;
+                    int functionArgumentNumber = 0;
                     for (int i = 0; i < argumentCount; i++)
                     {
                         MemoryEntry arg = flow.InSet.ReadValue(argument(i));
@@ -354,7 +363,7 @@ namespace Weverca.TaintedAnalysis
                         //incremeneting functionArgumentNumber
                         if (nativeFunction.Arguments.ElementAt(functionArgumentNumber).Dots == false)
                         {
-                            functionArgumentNumber++;               
+                            functionArgumentNumber++;
                         }
                     }
                 }
@@ -374,8 +383,7 @@ namespace Weverca.TaintedAnalysis
             {
                 AnalysisWarningHandler.SetWarning(flow.OutSet, warning);
             }
-       }
-
+        }
 
         private static void checkArgument(FlowController flow,MemoryEntry memoryEntry, NativeFunctionArgument argument,int argumentNumber,string functionName, List<AnalysisWarning> warnings)
         {
@@ -517,7 +525,10 @@ namespace Weverca.TaintedAnalysis
 
         public void analyze(FlowController flow)
         {
-            NativeFunctionAnalyzer.checkFunctionsArguments(nativeFunctions, flow);
+            if (NativeFunctionAnalyzer.checkArgumentsCount(nativeFunctions, flow))
+            {
+                NativeFunctionAnalyzer.checkArgumentTypes(nativeFunctions, flow);
+            }
             //return value
 
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
@@ -562,7 +573,7 @@ namespace Weverca.TaintedAnalysis
         public void _define(FlowController flow)
         {
             
-            NativeFunctionAnalyzer.checkFunctionsArguments(nativeFunctions, flow);
+            NativeFunctionAnalyzer.checkArgumentsCount(nativeFunctions, flow);
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
 
@@ -660,6 +671,39 @@ namespace Weverca.TaintedAnalysis
             {
                 possibleValues.Add(flow.OutSet.CreateBool(false));
             }
+            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues));
         }
+
+        //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
+        public void _constant(FlowController flow)
+        {
+            if (NativeFunctionAnalyzer.checkArgumentsCount(nativeFunctions, flow))
+            {
+                foreach (var arg0 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(0)).PossibleValues)
+                {
+                    UnaryOperationVisitor unaryVisitor = new UnaryOperationVisitor(new ExpressionEvaluator.ExpressionEvaluator());
+                    Value arg0Retyped = unaryVisitor.Evaluate(Operations.StringCast, arg0);
+                    List<Value> values = new List<Value>();
+                    NativeConstantAnalyzer constantAnalyzer = NativeConstantAnalyzer.Create(flow.OutSet);
+                    QualifiedName name = new QualifiedName(new Name((arg0Retyped as StringValue).Value));
+
+                    if (constantAnalyzer.ExistContant(name))
+                    {
+                        values.Add(constantAnalyzer.GetConstantValue(name));
+                    }
+                    else
+                    {
+                        values = UserDefinedConstantHandler.getConstant(flow.OutSet, name);
+                    }
+
+                    flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(values));
+                }
+            }
+            else 
+            {
+                flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.UndefinedValue));
+            }
+        }
+
     }
 }

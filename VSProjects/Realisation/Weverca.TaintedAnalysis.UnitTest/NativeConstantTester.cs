@@ -176,7 +176,8 @@ namespace Weverca.TaintedAnalysis.UnitTest
         public void GlobalConstDeclarationCaseInsensitive()
         {
             var result = ResultTest(globalConstDeclarationCaseInsensitive);
-            testType(result, typeof(UndefinedValue));
+            testType(result, typeof(StringValue));
+            testValue(result, "aaa");       
         }
 
         private string constDeclaration = @"
@@ -219,7 +220,8 @@ namespace Weverca.TaintedAnalysis.UnitTest
         public void ConstDeclarationCaseInsensitiveTest()
         {
             var result = ResultTest(constDeclarationCaseInsensitive);
-            testType(result, typeof(UndefinedValue));
+            testType(result, typeof(StringValue));
+            testValue(result, "aAa");
         }
 
         [TestMethod]
@@ -229,5 +231,19 @@ namespace Weverca.TaintedAnalysis.UnitTest
             testType(result, typeof(IntegerValue));
             testValue(result, 4);
         }
+
+        private string constDeclarationConstantMethod = @"
+            const a=4;
+            $result=constant('a');
+        ";
+
+        [TestMethod]
+        public void ConstDeclarationConstantMethod()
+        {
+            var result = ResultTest(constDeclarationConstantMethod);
+            testType(result, typeof(IntegerValue));
+            testValue(result, 4);
+        }
+
     }
 }

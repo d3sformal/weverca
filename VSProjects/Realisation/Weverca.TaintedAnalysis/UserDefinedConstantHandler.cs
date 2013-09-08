@@ -50,10 +50,11 @@ namespace Weverca.TaintedAnalysis
             if (result.Count == 0)
             {
                 result.Add(outset.UndefinedValue);
-                //result.Add(outset.CreateString(name.ToString()));
-                //TODO warning
+                
             }
-            //replace undefined values with name.ToString()
+
+          
+
             return result;
         }
 
