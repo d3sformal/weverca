@@ -168,11 +168,11 @@ namespace Weverca.TaintedAnalysis
             
 
             QualifiedName defineName = new QualifiedName(new Name("define"));
-            AnalyzerClass analyzer = new AnalyzerClass(allNativeFunctions[defineName]);
+            FunctionAnalyzerHelper analyzer = new FunctionAnalyzerHelper(allNativeFunctions[defineName]);
             wevercaImplementedFunctions.Add(defineName, new NativeAnalyzerMethod(analyzer._define));
 
             QualifiedName constantName = new QualifiedName(new Name("constant"));
-            AnalyzerClass constantAnalyzer = new AnalyzerClass(allNativeFunctions[constantName]);
+            FunctionAnalyzerHelper constantAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[constantName]);
             wevercaImplementedFunctions.Add(constantName, new NativeAnalyzerMethod(constantAnalyzer._constant));
         }
 
@@ -233,7 +233,7 @@ namespace Weverca.TaintedAnalysis
             {
                 if (allNativeFunctions[name][0].Analyzer == null)
                 {
-                    AnalyzerClass analyzer = new AnalyzerClass(allNativeFunctions[name]);
+                    FunctionAnalyzerHelper analyzer = new FunctionAnalyzerHelper(allNativeFunctions[name]);
                     allNativeFunctions[name][0].Analyzer = new NativeAnalyzerMethod(analyzer.analyze);
                 }
                 return allNativeFunctions[name][0].Analyzer;
@@ -515,10 +515,10 @@ namespace Weverca.TaintedAnalysis
        
     }
 
-    class AnalyzerClass
+    class FunctionAnalyzerHelper
     {
         List<NativeFunction> nativeFunctions;
-        public AnalyzerClass(List<NativeFunction> nativeFunctions)
+        public FunctionAnalyzerHelper(List<NativeFunction> nativeFunctions)
         {
             this.nativeFunctions = nativeFunctions;
         }

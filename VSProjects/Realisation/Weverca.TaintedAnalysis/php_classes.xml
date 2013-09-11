@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <classes>
+  <class name="stdClass" isFinal="false">
+    <field name="scalar" type="mixed" visibility="public" isStatic="false" isConst="false" />
+  </class>
 	<class name="AMQPChannel" isFinal="false">
 		<method static="false" final="false" visibility="public" name="commitTransaction" returnType="void"/>
 		<method static="false" final="false" visibility="public" name="__construct" returnType="none">

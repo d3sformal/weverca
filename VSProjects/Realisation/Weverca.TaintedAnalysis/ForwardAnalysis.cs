@@ -1,5 +1,5 @@
-﻿using PHP.Core;
-
+﻿using System.Collections.Generic;
+using PHP.Core;
 using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
@@ -61,11 +61,20 @@ namespace Weverca.TaintedAnalysis
             EntryInput.FetchFromGlobal(warnings);
             EntryInput.Assign(warnings, new MemoryEntry(EntryInput.UndefinedValue));
 
+            /*
+            NativeObjectAnalyzer nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance();
+
+            foreach (var obj in nativeObjectAnalyzer.nativeObjects.Values)
+            {
+                var standardClass = EntryInput.CreateType(obj);
+                EntryInput.DeclareGlobal(standardClass);
+            }*/
+ 
             // TODO: It will be replaced by global types mechanism
-            var standardClassDeclaration = new NativeTypeDecl(
-                new QualifiedName(new Name("stdClass")), new NativeMethodInfo[0]);
-            var standardClass = EntryInput.CreateType(standardClassDeclaration);
-            EntryInput.DeclareGlobal(standardClass);
+              var standardClassDeclaration = new NativeTypeDecl(
+                  new QualifiedName(new Name("stdClass")), new NativeMethodInfo[0], new Dictionary<string, Value>(), new Dictionary<string, NativeFieldInfo>());
+              var standardClass = EntryInput.CreateType(standardClassDeclaration);
+              EntryInput.DeclareGlobal(standardClass);
         }
     }
 }

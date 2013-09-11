@@ -725,5 +725,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 || ValueTypeResolver.isFloat(value)
                 || ValueTypeResolver.isLong(value));
         }
+
+        public static bool isUnknown(Value value)
+        {
+            if (value is UndefinedValue || value is AnyValue || value is FloatIntervalValue || value is IntegerIntervalValue || value is LongintIntervalValue)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

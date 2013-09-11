@@ -7,13 +7,41 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 
 using PHP.Core;
+using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis
 {
+
+    public enum Visibility
+    {
+        PRIVATE, PUBLIC, PROTECTED
+    }
+
+    public class NativeFieldInfo
+    {
+
+        public readonly bool IsStatic;
+
+        public readonly Name Name;
+
+        public readonly Visibility Visibility;
+
+        public readonly string Type;
+
+        public NativeFieldInfo(Name name, string type, Visibility visibility, bool isStatic)
+        {
+            Name = name;
+            Type = type;
+            Visibility = visibility;
+            IsStatic = isStatic;
+        }
+    }
+
     /// <summary>
     /// Represent info stored for native method
     /// </summary>
-    public class NativeMethodInfo{
+    public class NativeMethodInfo
+    {
         /// <summary>
         /// Name of native method
         /// </summary>
@@ -24,13 +52,19 @@ namespace Weverca.Analysis
         /// </summary>
         public readonly NativeAnalyzerMethod Method;
 
-        public NativeMethodInfo(Name name, NativeAnalyzerMethod method)
+        public readonly bool IsStatic;
+
+        public readonly bool IsFinal;
+
+        public NativeMethodInfo(Name name, NativeAnalyzerMethod method, bool isFinal = false, bool isStatic = false)
         {
             Name = name;
             Method = method;
+            IsFinal = isFinal;
+            isStatic = IsStatic;
         }
     }
-    
+
     /// <summary>
     /// Represent native type declaration
     /// </summary>
@@ -46,14 +80,22 @@ namespace Weverca.Analysis
         /// </summary>
         public readonly QualifiedName? BaseClassName;
 
+        public readonly Dictionary<string, NativeFieldInfo> Fields;
+
+        public readonly Dictionary<string, Value> Constants;
 
         public readonly IEnumerable<NativeMethodInfo> Methods;
 
-        public NativeTypeDecl(QualifiedName typeName,IEnumerable<NativeMethodInfo> methods, QualifiedName? baseClassName = null)
+        public readonly bool IsFinal;
+
+        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, Dictionary<string, Value> constants, Dictionary<string, NativeFieldInfo> fields, QualifiedName? baseClassName = null,bool isFinal=false)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
             Methods = new ReadOnlyCollection<NativeMethodInfo>(new List<NativeMethodInfo>(methods));
+            Constants = constants;
+            Fields = fields;
+            IsFinal = isFinal;
         }
     }
 }

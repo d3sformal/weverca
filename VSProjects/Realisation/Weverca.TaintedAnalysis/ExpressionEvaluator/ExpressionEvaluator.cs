@@ -734,5 +734,24 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
             return indexes;
         }
+
+        
+        public override MemoryEntry CreateObject(QualifiedName typeName)
+        {
+            //TODO call constructors, report errors on non existing objects
+
+            var declarations = OutSet.ResolveType(typeName);
+
+            var result = new List<ObjectValue>();
+            foreach (var declaration in declarations)
+            {
+                result.Add(OutSet.CreateObject(declaration));
+            }
+
+            return new MemoryEntry(result.ToArray());
+        }
+
+
+
     }
 }
