@@ -40,15 +40,15 @@ namespace Weverca.TaintedAnalysis
 
         private Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
 
-        public static NativeObjectAnalyzer GetInstance()
+        public static NativeObjectAnalyzer GetInstance(FlowOutputSet outSet)
         {
             if (instance == null)
             {
-                instance = new NativeObjectAnalyzer();
+                instance = new NativeObjectAnalyzer(outSet);
             }
             return instance;
         }
-        private NativeObjectAnalyzer()
+        private NativeObjectAnalyzer(FlowOutputSet outSet)
         {
             XmlReader reader = XmlReader.Create(new StreamReader("php_classes.xml"));
             nativeObjects = new Dictionary<QualifiedName, NativeTypeDecl>();
@@ -113,8 +113,36 @@ namespace Weverca.TaintedAnalysis
                                 }
                                 else 
                                 {
+                                    string value = reader.GetAttribute("value");
                                     //resolve constant
-                                    currentClass.Constants[fieldName] = null;
+                                    switch (fieldType)
+                                    {
+                                        case "int":
+                                        case "integer":
+                                            try
+                                            {
+                                                currentClass.Constants[fieldName] = outSet.CreateInt(int.Parse(value));
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                currentClass.Constants[fieldName] = outSet.CreateDouble(double.Parse(value));
+                                            }
+                                            break;
+                                        case "string":
+                                            currentClass.Constants[fieldName] = outSet.CreateString(value);
+                                            break;
+                                        case "boolean":
+                                            currentClass.Constants[fieldName] = outSet.CreateBool(bool.Parse(value));
+                                            break;
+                                        case "float":
+                                            currentClass.Constants[fieldName] = outSet.CreateDouble(double.Parse(value));
+                                            break;
+                                        case "NULL":
+                                            currentClass.Constants[fieldName] = outSet.UndefinedValue;
+                                            break;
+                                        default:
+                                            break;
+                                    }
                                 }
                                 break;
                             case "method":
