@@ -49,7 +49,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         public void VisitUndefinedValue(UndefinedValue value)
         {
-            throw new NotImplementedException();
+            Assert.IsNotNull(expectedValue as UndefinedValue);
         }
 
         public virtual void VisitResourceValue(ResourceValue value)

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using PHP.Core.AST;
 using Weverca.Analysis;
@@ -75,6 +77,13 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         {
             this.flowOutputSet = flowOutputSet;
 
+            var variables = GetVariables();
+            if (variables.Count() == 0)
+            {
+                //There is nothing to assume becouse there is no variable used in the expression.
+                return;
+            }
+
             if (ConditionResult == PossibleValues.OnlyTrue)
             {
                 AssumeTrue();
@@ -97,6 +106,14 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         #endregion
 
         #region Private Methods
+
+        IEnumerable<VariableUse> GetVariables()
+        {
+            VariableVisitor visitor = new VariableVisitor();
+            conditionPart.SourceElement.VisitMe(visitor);
+
+            return visitor.Variables;
+        }
 
         /// <summary>
         /// Gets the condition result.
@@ -173,6 +190,19 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 {
                     AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
                 }
+                else if (binaryExpression.PublicOperation == Operations.Add ||
+                        binaryExpression.PublicOperation == Operations.Sub ||
+                        binaryExpression.PublicOperation == Operations.Mul ||
+                        binaryExpression.PublicOperation == Operations.Div ||
+                        binaryExpression.PublicOperation == Operations.BitAnd ||
+                        binaryExpression.PublicOperation == Operations.BitOr ||
+                        binaryExpression.PublicOperation == Operations.BitXor ||
+                        binaryExpression.PublicOperation == Operations.Mod ||
+                        binaryExpression.PublicOperation == Operations.ShiftLeft ||
+                        binaryExpression.PublicOperation == Operations.ShiftRight)
+                {
+                    // nothing to evaluate
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, conditionPart.GetType().Name));
@@ -213,6 +243,19 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
                 {
                     AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                }
+                else if (binaryExpression.PublicOperation == Operations.Add ||
+                        binaryExpression.PublicOperation == Operations.Sub ||
+                        binaryExpression.PublicOperation == Operations.Mul ||
+                        binaryExpression.PublicOperation == Operations.Div ||
+                        binaryExpression.PublicOperation == Operations.BitAnd ||
+                        binaryExpression.PublicOperation == Operations.BitOr ||
+                        binaryExpression.PublicOperation == Operations.BitXor ||
+                        binaryExpression.PublicOperation == Operations.Mod ||
+                        binaryExpression.PublicOperation == Operations.ShiftLeft ||
+                        binaryExpression.PublicOperation == Operations.ShiftRight)
+                {
+                    // nothing to evaluate
                 }
                 else
                 {
@@ -279,8 +322,8 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 }
                 else if (right is NullLiteral)
                 {
-                    //TODO: how to create null?
-                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
+                    //TODO: Is that proper null?
+                    flowOutputSet.Assign(leftVar.VarName, flowOutputSet.UndefinedValue);
                 }
                 else
                 {

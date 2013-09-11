@@ -73,15 +73,15 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         [TestMethod]
         public void DirectVarEqualsNull()
         {
-            Assert.Fail();
+            //Assert.Fail();
             
             //TODO: "NullValue"
             
-            //TestCase.Create(new BinaryEx(Operations.Equal, new DirectVarUse(new Position(), new VariableName("a")), new NullLiteral(new Position())))
-            //    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new value)
-            //    .AddResult(ConditionForm.None, false, ConditionResults.True)
-            //    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", new AnyValue())
-            //    .Run();
+            TestCase.Create(new BinaryEx(Operations.Equal, new DirectVarUse(new Position(), new VariableName("a")), new NullLiteral(new Position())))
+                .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new UndefinedValue())
+                .AddResult(ConditionForm.None, false, ConditionResults.True)
+                .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", new AnyValue())
+                .Run();
         }
 
         [TestMethod]
