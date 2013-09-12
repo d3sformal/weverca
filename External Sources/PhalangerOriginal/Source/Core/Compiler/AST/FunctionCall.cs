@@ -923,7 +923,7 @@ namespace PHP.Core.AST
 	public sealed class IndirectFcnCall : FunctionCall
 	{
 		internal override Operations Operation { get { return Operations.IndirectCall; } }
-
+        public Expression PublicNameExpr { get { return NameExpr; } }
 		internal Expression/*!*/ NameExpr { get { return nameExpr; } }
 		private Expression/*!*/ nameExpr;
 
