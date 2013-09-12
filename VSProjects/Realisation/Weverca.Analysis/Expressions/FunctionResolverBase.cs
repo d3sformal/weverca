@@ -40,7 +40,7 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="programPointGraphs">Program point graphs from call dispatch</param>
         /// <returns>Resolved return value</returns>
-        public abstract MemoryEntry ResolveReturnValue(ProgramPointGraph[] programPointGraphs);
+        public abstract MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> programPointGraphs);
 
 
         #region Default implementations of simple routines
@@ -79,9 +79,9 @@ namespace Weverca.Analysis.Expressions
         /// Initialization of call of function with given declaration and arguments
         /// </summary>
         /// <param name="callInput">Input of initialized call</param>
-        /// <param name="declaration">Function declaration</param>
+        /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
-        public abstract void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments);
+        public abstract void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments);
 
         /// <summary>
         /// Is called when new object is created

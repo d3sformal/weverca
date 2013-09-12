@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Collections.Generic;
 
 using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
@@ -44,7 +45,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
         /// <param name="dispatchType">Type of merged call</param>
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs, DispatchType dispatchType)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput,IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs, ExtensionType dispatchType)
         {
             var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet as ISnapshotReadonly).ToArray();
             callerOutput.MergeWithCallLevel(ends);

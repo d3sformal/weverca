@@ -28,7 +28,7 @@ namespace Weverca.Analysis.Expressions
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
         /// <param name="dispatchType">Type of merged call</param>
-        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs,DispatchType dispatchType);
+        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs,ExtensionType dispatchType);
 
         /// <summary>
         /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)
@@ -41,10 +41,9 @@ namespace Weverca.Analysis.Expressions
         /// Handler called before programPoint analysis starts 
         /// </summary>
         /// <param name="programPoint">Analyzed program point</param>   
-        public virtual void FlowThrough(ProgramPoint programPoint)
+        public virtual void FlowThrough(ProgramPointBase programPoint)
         {
             //By default there is nothing to do           
         }
-
     }
 }

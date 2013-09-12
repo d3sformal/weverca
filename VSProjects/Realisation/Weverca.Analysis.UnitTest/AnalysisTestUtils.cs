@@ -202,6 +202,7 @@ namespace Weverca.Analysis.UnitTest
 
         private readonly Dictionary<string, string> _includedFiles = new Dictionary<string, string>();
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
+        private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
         internal TestCase(string phpCode, string variableName, string assertMessage, TestCase previousTest = null)
         {
@@ -226,6 +227,17 @@ namespace Weverca.Analysis.UnitTest
         {
             _includedFiles.Add(fileName, fileCode);
             return this;
+        }
+
+        /// <summary>
+        /// Set function which PPGraph will be shared accross all calls
+        /// </summary>
+        /// <param name="sharedFunctionName">Name of shared function</param>
+        /// <returns></returns>
+        internal TestCase ShareFunctionGraph(string sharedFunctionName)
+        {
+            _sharedFunctions.Add(sharedFunctionName);
+            return this; ;
         }
 
         internal TestCase DeclareType(NativeTypeDecl typeDeclaration)
@@ -308,10 +320,17 @@ namespace Weverca.Analysis.UnitTest
                 analysis.SetInclude(include.Key, include.Value);
             }
 
+            foreach (var share in _sharedFunctions)
+            {
+                analysis.SetFunctionShare(share);
+            }
+
             if (PreviousTest != null)
             {
                 PreviousTest.IncludeInitializer(analysis);
             }
         }
+
+  
     }
 }

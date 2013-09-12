@@ -13,7 +13,7 @@ namespace Weverca.Analysis.Expressions
     /// <summary>
     /// Base for stack value used for partial evaluation of statements
     /// </summary>
-    interface IStackValue
+    public interface IStackValue
     {
     }
 
@@ -38,9 +38,7 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         /// <param name="evaluator">Evaluator used for reading value</param>
         /// <returns>Read alias</returns>
-        IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator);
-
-        
+        IEnumerable<AliasValue> ReadAlias(ExpressionEvaluatorBase evaluator);        
     }
 
     interface LValue:IStackValue

@@ -299,6 +299,25 @@ setLocal();
 ".AssertVariable("a").HasValues("ValueA");
 
 
+readonly static TestCase SharedFunction_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+if($unknown){
+    $resultA=sharedFn('ValueA');
+}else{
+    $resultB=sharedFn('ValueB');
+}
+
+"
+ .AssertVariable("resultA").HasValues("ValueA", "ValueB")
+ .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+ .ShareFunctionGraph("sharedFn")
+ ;
+
+
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -414,8 +433,7 @@ setLocal();
         {
             AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
         }
-
-
+        
         [TestMethod]
         public void DynamicIncludeMerge()
         {
@@ -474,6 +492,12 @@ setLocal();
         public void GlobalStatement()
         {
             AnalysisTestUtils.RunTestCase(GlobalStatement_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunction()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunction_CASE);
         }
     }
 }

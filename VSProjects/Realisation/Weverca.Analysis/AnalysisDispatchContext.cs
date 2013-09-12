@@ -16,7 +16,7 @@ namespace Weverca.Analysis
     ///     * Uses worklist algorithm for serving statements.
     ///     * Dispatch can be caused because of call, include,...
     /// </summary>    
-    class AnalysisDispatchContext
+  /*  class AnalysisDispatchContext
     {
         #region Worklist algorithm output API
 
@@ -50,7 +50,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Get currently processed program point
         /// </summary>
-        internal ProgramPoint CurrentProgramPoint { get { return _currentPartialContext.Source; } }
+        internal ProgramPointBase CurrentProgramPoint { get { return _currentPartialContext.Source; } }
 
         /// <summary>
         /// Current partial walker including partial stack - is recycled between statements
@@ -72,7 +72,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Items that has to be processed.
         /// </summary>
-        Queue<ProgramPoint> _worklist = new Queue<ProgramPoint>();
+        Queue<ProgramPointBase> _worklist = new Queue<ProgramPointBase>();
 
         /// <summary>
         /// Partial context of current partial
@@ -147,11 +147,11 @@ namespace Weverca.Analysis
         /// Enqueue depencencies of given point into worklist
         /// </summary>
         /// <param name="point">Resolved program point</param>
-        private void enqueueWorkDependencies(ProgramPoint point)
+        private void enqueueWorkDependencies(ProgramPointBase point)
         {
             if (point.OutSet.HasChanges)
             {
-                foreach (var child in point.Children)
+                foreach (var child in point.FlowChildren)
                 {
                     enqueueWork(child);
                 }
@@ -163,7 +163,7 @@ namespace Weverca.Analysis
         /// Enqueue given work as program point to worklist (if is not present yet)
         /// </summary>
         /// <param name="work">Enqueued program point</param>
-        private void enqueueWork(ProgramPoint work)
+        private void enqueueWork(ProgramPointBase work)
         {
             if (_worklist.Contains(work))
             {
@@ -180,7 +180,7 @@ namespace Weverca.Analysis
         /// Handler called when analysis of all partials in statement is completed
         /// </summary>
         /// <param name="statement">Program point of completed statement</param>
-        private void statementCompleted(ProgramPoint statement)
+        private void statementCompleted(ProgramPointBase statement)
         {
             if (!statement.OutSet.HasChanges)
             {
@@ -210,7 +210,7 @@ namespace Weverca.Analysis
         /// Initialize program point after dequeing from worklist
         /// </summary>
         /// <param name="point">Program point that will be initialized</param>
-        private void initWork(ProgramPoint point)
+        private void initWork(ProgramPointBase point)
         {
             var inputs = collectInputs(point);
 
@@ -229,7 +229,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="point">Program point, which input will be set</param>
         /// <param name="inputs">Inputs available for program point</param>
-        private void setInputs(ProgramPoint point, IEnumerable<FlowInputSet> inputs)
+        private void setInputs(ProgramPointBase point, IEnumerable<FlowInputSet> inputs)
         {
             ensureInitialized(point);
 
@@ -245,7 +245,7 @@ namespace Weverca.Analysis
         /// Initialize program point if needed
         /// </summary>
         /// <param name="point">Program point to be initialized</param>
-        private void ensureInitialized(ProgramPoint point)
+        private void ensureInitialized(ProgramPointBase point)
         {
             if (!point.IsInitialized)
             {
@@ -258,9 +258,9 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="point">Program point which inputs are returned</param>
         /// <returns>Collected inputs</returns>
-        private IEnumerable<FlowInputSet> collectInputs(ProgramPoint point)
+        private IEnumerable<FlowInputSet> collectInputs(ProgramPointBase point)
         {
-            return from parent in point.Parents where parent.OutSet != null select parent.OutSet;
+            return from parent in point.FlowParents where parent.OutSet != null select parent.OutSet;
         }
                
         /// <summary>
@@ -288,5 +288,5 @@ namespace Weverca.Analysis
             ppGraph.Start.OutSet.CommitTransaction();
         }
         #endregion
-    }
+    }*/
 }

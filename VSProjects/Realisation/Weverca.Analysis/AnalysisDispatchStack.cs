@@ -9,7 +9,7 @@ namespace Weverca.Analysis
     /// Handle dispatch stack for forward flow analysis.    
     /// Dispatch can be caused by call, include,...
     /// </summary>    
-    class AnalysisDispatchStack
+  /*  class AnalysisDispatchStack
     {
         #region Private members
         /// <summary>
@@ -62,5 +62,5 @@ namespace Weverca.Analysis
 
             _callStack.Pop();
         }
-    }
+    }*/
 }

@@ -16,39 +16,96 @@ namespace Weverca.Analysis
     /// </summary>
     public class EvaluationLog
     {
+        //=========This is obsolete===========
         #region Partial associations members
-        /// <summary>
-        /// Value associations for partials
-        /// </summary>
-        private Dictionary<LangElement, MemoryEntry> _partialValues = new Dictionary<LangElement, MemoryEntry>();
 
-        /// <summary>
-        /// Variable associations for partials
-        /// </summary>
-        private Dictionary<LangElement, VariableEntry> _partialVariables = new Dictionary<LangElement, VariableEntry>();
-        #endregion
-        
         #region Internal methods for associating partials
         /// <summary>
         /// Associate value for given partial. The value was computed for given partial.
+        /// <remarks>This is only workaround because of old "API" back compatibility</remarks>
         /// </summary>
         /// <param name="partial">Partial which value is associated</param>
         /// <param name="value">Associated value</param>
         internal void AssociateValue(LangElement partial, MemoryEntry value)
         {
-            _partialValues[partial] = value;
+            var point = new MemoryEntryPoint(partial, value);
+            associatePoint(point);
         }
 
         /// <summary>
         /// Associate variable for given partial. The variable was computed for given partial.
+        /// <remarks>This is only workaround because of old "API" back compatibility</remarks>
         /// </summary>
         /// <param name="partial">Partial which variable is associated</param>
         /// <param name="value">Associated variable</param>
         internal void AssociateVariable(LangElement partial, VariableEntry variable)
         {
-            _partialVariables[partial] = variable;
+            var point = new VariablePoint(partial, variable);
+            associatePoint(point);
         }
         #endregion
+
+        #endregion
+
+        [Obsolete("Use constructor with specified expression parts. It doesn't need explicit value association")]
+        internal EvaluationLog()
+        {
+        }
+        //====================================
+
+
+        Dictionary<LangElement, VariableBased> _lValues = new Dictionary<LangElement, VariableBased>();
+
+        Dictionary<LangElement, RValuePoint> _rValues = new Dictionary<LangElement, RValuePoint>();
+
+        Dictionary<LangElement, ProgramPointBase> _points = new Dictionary<LangElement, ProgramPointBase>();
+
+        /// <summary>
+        /// Expects expression parts that are already not connected into PPG !!!
+        /// </summary>
+        /// <param name="expressionParts">Parts of condition expression</param>
+        internal EvaluationLog(IEnumerable<ProgramPointBase> expressionParts)
+        {
+            foreach (var part in expressionParts)
+            {
+                associatePointHierarchy(part);
+            }
+        }
+
+        private void associatePointHierarchy(ProgramPointBase part)
+        {
+            var toAssociate = new Queue<ProgramPointBase>();
+            toAssociate.Enqueue(part);
+
+            while (toAssociate.Count > 0)
+            {
+                var point = toAssociate.Dequeue();
+                if (point.Partial != null)
+                {
+                    associatePoint(point);
+                }
+
+                foreach (var parent in point.FlowParents)
+                {
+                    toAssociate.Enqueue(parent);
+                }
+            }
+        }
+
+        private void associatePoint(ProgramPointBase point)
+        {
+            var partial = point.Partial;
+            _points.Add(partial, point);
+
+            var lValue = point as VariableBased;
+            if (lValue != null)
+                _lValues.Add(partial, lValue);
+
+            var rValue = point as RValuePoint;
+            if (rValue != null)
+                _rValues.Add(partial, rValue);
+        }
+
 
         #region Public methods for retrieving associations for partials
         /// <summary>
@@ -58,9 +115,13 @@ namespace Weverca.Analysis
         /// <returns>Associated value, or null if there is no associated value</returns>
         public MemoryEntry GetValue(LangElement partial)
         {
-            MemoryEntry result;
-            _partialValues.TryGetValue(partial, out result);
-            return result;
+            RValuePoint rValue;
+            if (_rValues.TryGetValue(partial, out rValue))
+            {
+                return rValue.Value;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -70,9 +131,24 @@ namespace Weverca.Analysis
         /// <returns>Associated variable, or null if there is no associated variable</returns>
         public VariableEntry GetVariable(LangElement partial)
         {
-            VariableEntry result;
-            _partialVariables.TryGetValue(partial,out result);
-            return result;
+            VariableBased varLike;
+            if (_lValues.TryGetValue(partial, out varLike))
+            {
+                return varLike.VariableEntry;
+            }
+
+            ProgramPointBase point;
+            if (_points.TryGetValue(partial, out point))
+            {
+                var lValue = point as LValue;
+
+                if (lValue != null)
+                {
+                    throw new NotSupportedException("Requested point allows assigning, but not directly via variable - request for API change");
+                }
+            }
+
+            return null;
         }
         #endregion
     }

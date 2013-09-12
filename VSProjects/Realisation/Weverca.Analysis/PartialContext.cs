@@ -15,14 +15,14 @@ namespace Weverca.Analysis
     /// NOTE:
     ///     All condition parts are processed together as one postfix expression
     /// </summary>
-    class PartialContext
+  /*  class PartialContext
     {
 
         #region Private members
         /// <summary>
         /// Current programpoint source
         /// </summary>
-        private readonly ProgramPoint _source;
+        private readonly ProgramPointBase _source;
         /// <summary>
         /// Enumerator for keeping current postfix in condition
         /// </summary>
@@ -37,7 +37,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Program point which partials are analyzed
         /// </summary>
-        internal ProgramPoint Source { get { return _source; } }
+        internal ProgramPointBase Source { get { return _source; } }
 
         /// <summary>
         /// Current part of postfix expression
@@ -69,7 +69,7 @@ namespace Weverca.Analysis
         /// Create partial context for given source program point
         /// </summary>
         /// <param name="source">Program point which statement/condition creates partial context</param>
-        internal PartialContext(ProgramPoint source)
+        internal PartialContext(ProgramPointBase source)
         {
             _source = source;            
 
@@ -159,5 +159,5 @@ namespace Weverca.Analysis
         }
 
         
-    }
+    }*/
 }

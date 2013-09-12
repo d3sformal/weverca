@@ -52,15 +52,14 @@ namespace Weverca.Analysis
         /// <param name="visitor">Visitor</param>
         public override void VisitMe(TreeVisitor visitor)
         {
-            var partialWorker = visitor as Expressions.PartialWalker;
+            var expander = visitor as Expressions.ElementExpander;
 
-            if (partialWorker == null)
+            if (expander == null)
             {
-                return;
             }
             else
             {
-                partialWorker.VisitNative(this);
+                expander.VisitNative(this);
             }
         }
     }

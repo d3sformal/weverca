@@ -34,7 +34,7 @@ namespace Weverca.GraphWalking
             Output.Indent();
         }
 
-        protected override void onWalkPoint(ProgramPoint point)
+        protected override void onWalkPoint(ProgramPointBase point)
         {
             //only print start and end point of call
         }

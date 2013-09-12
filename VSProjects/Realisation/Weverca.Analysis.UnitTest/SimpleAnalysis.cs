@@ -20,12 +20,16 @@ namespace Weverca.Analysis.UnitTest
     {
         private readonly EnvironmentInitializer _initializer;
 
-        private readonly SimpleFlowResolver _flowResolver = new SimpleFlowResolver();
+        private readonly SimpleFlowResolver _flowResolver;
+
+        private readonly SimpleFunctionResolver _functionResolver;
 
         public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, EnvironmentInitializer initializer)
             : base(entryCFG)
         {
             _initializer = initializer;
+            _flowResolver = new SimpleFlowResolver();
+            _functionResolver=new SimpleFunctionResolver(_initializer);
         }
 
         #region Resolvers that are used during analysis
@@ -42,7 +46,7 @@ namespace Weverca.Analysis.UnitTest
 
         protected override FunctionResolverBase createFunctionResolver()
         {
-            return new SimpleFunctionResolver(_initializer);
+            return _functionResolver;
         }
 
         protected override SnapshotBase createSnapshot()
@@ -56,6 +60,11 @@ namespace Weverca.Analysis.UnitTest
         internal void SetInclude(string fileName, string fileCode)
         {
             _flowResolver.SetInclude(fileName, fileCode);
+        }
+
+        internal void SetFunctionShare(string functionName)
+        {
+            _functionResolver.SetFunctionShare(functionName);
         }
 
         #endregion
@@ -390,9 +399,18 @@ namespace Weverca.Analysis.UnitTest
             {"abs",_abs},            
         };
 
+        private readonly Dictionary<string, ProgramPointGraph> _sharedPpGraphs = new Dictionary<string, ProgramPointGraph>();
+
+        private readonly HashSet<string> _sharedFunctionNames = new HashSet<string>();
+
         internal SimpleFunctionResolver(EnvironmentInitializer initializer)
         {
             _environmentInitializer = initializer;
+        }
+        
+        internal void SetFunctionShare(string functionName)
+        {
+            _sharedFunctionNames.Add(functionName);
         }
 
         #region Call processing
@@ -436,7 +454,7 @@ namespace Weverca.Analysis.UnitTest
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
             var functionNames = getFunctionNames(name);
-            var functions = new Dictionary<LangElement, FunctionValue>();
+            var functions = new Dictionary<object, FunctionValue>();
 
             foreach (var functionName in functionNames)
             {
@@ -457,10 +475,11 @@ namespace Weverca.Analysis.UnitTest
         ///     sharing program point graphs is possible
         /// </summary>
         /// <returns></returns>
-        public override void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
+        public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
             _environmentInitializer(callInput);
 
+            var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
 
@@ -481,7 +500,7 @@ namespace Weverca.Analysis.UnitTest
         /// </summary>
         /// <param name="calls">All calls on dispatch level, which return value is resolved</param>
         /// <returns>Resolved return value</returns>
-        public override MemoryEntry ResolveReturnValue(ProgramPointGraph[] calls)
+        public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> calls)
         {
             var possibleMemoryEntries = from call in calls select call.End.OutSet.ReadValue(call.End.OutSet.ReturnValue).PossibleValues;
             var flattenValues = possibleMemoryEntries.SelectMany((i) => i);
@@ -628,23 +647,46 @@ namespace Weverca.Analysis.UnitTest
             return null;
         }
 
-        private void setCallBranching(Dictionary<LangElement, FunctionValue> functions)
+        private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
-            foreach (var branchKey in Flow.CallBranchingKeys)
+            foreach (var branchKey in Flow.ExtensionKeys)
             {
                 if (!functions.Remove(branchKey))
                 {
-                    //this call is now not resolved as possible call branch
-                    Flow.RemoveCallBranch(branchKey);
+                    // Now this call is not resolved as possible call branch
+                    Flow.RemoveExtension(branchKey);
                 }
             }
 
             foreach (var function in functions.Values)
             {
-                //Create graph for every function - NOTE: we can share pp graphs
-                var ppGraph = ProgramPointGraph.From(function);
-                Flow.AddCallBranch(function.DeclaringElement, ppGraph);
+                // Create graph for every function - NOTE: We can share pp graphs
+                addCallBranch(function);
             }
+        }
+
+        private void addCallBranch(FunctionValue function)
+        {
+            var functionName = function.Name.Value;
+            ProgramPointGraph functionGraph;
+            if (_sharedFunctionNames.Contains(functionName))
+            {
+                //set graph sharing for this function
+                if (!_sharedPpGraphs.ContainsKey(functionName))
+                {
+                    //create single graph instance
+                    _sharedPpGraphs[functionName] = ProgramPointGraph.From(function);
+                }
+
+                //get shared instance of program point graph
+                functionGraph = _sharedPpGraphs[functionName];
+            }
+            else
+            {
+                functionGraph = ProgramPointGraph.From(function);
+            }
+
+            Flow.AddExtension(function.DeclaringElement, functionGraph);
         }
 
         /// <summary>
@@ -663,10 +705,10 @@ namespace Weverca.Analysis.UnitTest
             return result.ToArray();
         }
 
-        private Dictionary<LangElement, FunctionValue> resolveFunction(QualifiedName name)
+        private Dictionary<object, FunctionValue> resolveFunction(QualifiedName name)
         {
             NativeAnalyzerMethod analyzer;
-            var result = new Dictionary<LangElement, FunctionValue>();
+            var result = new Dictionary<object, FunctionValue>();
 
             if (_nativeAnalyzers.TryGetValue(name.Name.Value, out analyzer))
             {
@@ -686,10 +728,10 @@ namespace Weverca.Analysis.UnitTest
             return result;
         }
 
-        private Dictionary<LangElement, FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        private Dictionary<object, FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
         {
             NativeAnalyzerMethod analyzer;
-            var result = new Dictionary<LangElement, FunctionValue>();
+            var result = new Dictionary<object, FunctionValue>();
 
             if (_nativeAnalyzers.TryGetValue(methodName.Name.Value, out analyzer))
             {
@@ -740,8 +782,6 @@ namespace Weverca.Analysis.UnitTest
         }
 
         #endregion
-
-
     }
 
     /// <summary>
@@ -784,11 +824,11 @@ namespace Weverca.Analysis.UnitTest
             return willAssume;
         }
 
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, ProgramPointGraph[] dispatchedProgramPointGraphs, DispatchType callType)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs, ExtensionType callType)
         {
             var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
 
-            if (callType == DispatchType.ParallelInclude)
+            if (callType == ExtensionType.ParallelInclude)
             {
                 callerOutput.Extend(ends);
             }
@@ -800,18 +840,19 @@ namespace Weverca.Analysis.UnitTest
 
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
+            flow.ExtensionType(ExtensionType.ParallelInclude);
             var files = new HashSet<string>();
             foreach (StringValue possibleFile in includeFile.PossibleValues)
             {
                 files.Add(possibleFile.Value);
             }
 
-            foreach (var branchKey in flow.IncludeBranchingKeys)
+            foreach (var branchKey in flow.ExtensionKeys)
             {
-                if (!files.Remove(branchKey))
+                if (!files.Remove(branchKey as string))
                 {
                     //this include is now not resolved as possible include branch
-                    flow.RemoveIncludeBranch(branchKey);
+                    flow.RemoveExtension(branchKey);
                 }
             }
 
@@ -820,7 +861,7 @@ namespace Weverca.Analysis.UnitTest
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
                 var ppGraph = new ProgramPointGraph(cfg.start,null);
-                flow.AddIncludeBranch(file, ppGraph);
+                flow.AddExtension(file, ppGraph);
             }
         }
 

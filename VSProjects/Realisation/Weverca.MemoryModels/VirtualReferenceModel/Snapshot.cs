@@ -699,8 +699,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 else
                 {
                     result.AppendFormat("{0}: {{", variable);
+                    var entry= readValue(variable, asGlobal);
 
-                    foreach (var value in readValue(variable, asGlobal).PossibleValues)
+                    foreach (var value in entry.PossibleValues)
                     {
                         result.AppendFormat("'{0}', ", value);
                     }

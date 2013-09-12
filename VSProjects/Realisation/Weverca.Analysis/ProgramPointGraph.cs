@@ -15,16 +15,25 @@ using Weverca.Analysis.Memory;
 namespace Weverca.Analysis
 {
 
-    delegate ProgramPoint ProgramPointCreator();
+    delegate ProgramPointBase ProgramPointCreator();
 
     public class ProgramPointGraph
     {
         #region Private fields
 
+
+        private readonly HashSet<ProgramPointBase> _points = new HashSet<ProgramPointBase>();
+
         /// <summary>
-        /// Program points according to their defining objects (conditions, statements,..)
+        /// End points of statement resolved from LangElement
         /// </summary>
-        private readonly Dictionary<object, ProgramPoint> _points = new Dictionary<object, ProgramPoint>();
+        private readonly Dictionary<LangElement, ProgramPointBase> _statementEnds = new Dictionary<LangElement, ProgramPointBase>();
+
+        private readonly Dictionary<object, ProgramPointBase> _chainStarts = new Dictionary<object, ProgramPointBase>();
+
+        private readonly Dictionary<AssumptionCondition, ProgramPointBase> _conditionStarts = new Dictionary<AssumptionCondition, ProgramPointBase>();
+
+        private readonly Dictionary<AssumptionCondition, ProgramPointBase> _conditionEnds = new Dictionary<AssumptionCondition, ProgramPointBase>();
 
         /// <summary>
         /// Partial call extensions where program point graph is included
@@ -54,26 +63,16 @@ namespace Weverca.Analysis
         /// <summary>
         /// All program points defined in program point graph
         /// </summary>
-        public IEnumerable<ProgramPoint> Points { get { return _points.Values; } }
-
-        /// <summary>
-        /// Partial call extensions where program point graph is included
-        /// </summary>
-        public IEnumerable<PartialExtension<LangElement>> ContainingCallExtensions { get { return _containingCallExtensions; } }
-
-        /// <summary>
-        /// Partial include extensions where program point graph is included
-        /// </summary>
-        public IEnumerable<PartialExtension<string>> ContainingIncludeExtensions { get { return _containingIncludeExtensions; } }
+        public IEnumerable<ProgramPointBase> Points { get { return _points; } }
 
         /// <summary>
         /// Input program point into program point graph
         /// </summary>
-        public readonly ProgramPoint Start;
+        public readonly ProgramPointBase Start;
         /// <summary>
         /// Output program point from program point graph
         /// </summary>
-        public readonly ProgramPoint End;
+        public readonly ProgramPointBase End;
 
         #endregion
 
@@ -84,16 +83,16 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="entryPoint">Entry point into source (all feasible basic blocks will be included in program point graph)</param>
         /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
-        public ProgramPointGraph(BasicBlock entryPoint,LangElement sourceObject)
+        public ProgramPointGraph(BasicBlock entryPoint, LangElement sourceObject)
         {
             SourceObject = sourceObject;
             Start = getEmpty(entryPoint);
             addChild(Start, entryPoint);
 
-            var endPoints = new List<ProgramPoint>();
-            foreach (var point in _points.Values)
+            var endPoints = new List<ProgramPointBase>();
+            foreach (var point in _points)
             {
-                if (point.Children.Any())
+                if (point.FlowChildren.Any())
                     continue;
 
                 endPoints.Add(point);
@@ -109,7 +108,7 @@ namespace Weverca.Analysis
             End = getEmpty(Start);
             foreach (var endPoint in endPoints)
             {
-                endPoint.AddChild(End);
+                endPoint.AddFlowChild(End);
             }
         }
 
@@ -122,7 +121,7 @@ namespace Weverca.Analysis
         {
             var basicBlock = new BasicBlock();
             basicBlock.AddElement(analyzer);
-            return new ProgramPointGraph(basicBlock,analyzer);
+            return new ProgramPointGraph(basicBlock, analyzer);
         }
 
         /// <summary>
@@ -134,7 +133,7 @@ namespace Weverca.Analysis
         {
             var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
 
-            return new ProgramPointGraph(cfg.start,declaration);
+            return new ProgramPointGraph(cfg.start, declaration);
         }
 
         /// <summary>
@@ -146,7 +145,7 @@ namespace Weverca.Analysis
         {
             var cfg = new ControlFlowGraph.ControlFlowGraph(declaration);
 
-            return new ProgramPointGraph(cfg.start,declaration);
+            return new ProgramPointGraph(cfg.start, declaration);
         }
 
         /// <summary>
@@ -211,7 +210,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="parent">Parent which child will be added</param>
         /// <param name="block">Block which first statement generates child</param>
-        private void addChild(ProgramPoint parent, BasicBlock block)
+        private void addChild(ProgramPointBase parent, BasicBlock block)
         {
             //Check that given basic block is not already processed
             if (_processedBlocks.Contains(block))
@@ -227,16 +226,17 @@ namespace Weverca.Analysis
             foreach (var stmt in block.Statements)
             {
                 //create chain of program points
-                var child = getStatement(stmt, block);
-                current.AddChild(child);
-                current = child;
+                var child = getStatementStart(stmt, block);
+                current.AddFlowChild(child);
+                current = getStatementEnd(stmt, block);
             }
 
             foreach (var edge in block.OutgoingEdges)
             {
-                var condition = getCondition(edge.Condition, block);
+                var condition = getConditionEnd(edge.Condition, block);
                 addChild(condition, edge.To);
-                current.AddChild(condition);
+                var conditionStart = getConditionStart(edge.Condition, block);
+                current.AddFlowChild(conditionStart);
             }
 
             if (block.DefaultBranch != null)
@@ -245,9 +245,10 @@ namespace Weverca.Analysis
 
                 if (conditionExpressions.Any())
                 {
-                    var defaultPoint = getDefaultBranch(conditionExpressions, block);
+                    var defaultPoint = getDefaultBranchEnd(conditionExpressions, block);
                     addChild(defaultPoint, block.DefaultBranch.To);
-                    current.AddChild(defaultPoint);
+                    var conditionStart = getDefaultBranchStart(conditionExpressions, block);
+                    current.AddFlowChild(conditionStart);
                 }
                 else
                 {
@@ -257,7 +258,7 @@ namespace Weverca.Analysis
             }
         }
 
-        private void fillWithBlockEntry(ProgramPoint point, BasicBlock block, HashSet<BasicBlock> fillingBlocks=null)
+        private void fillWithBlockEntry(ProgramPointBase point, BasicBlock block, HashSet<BasicBlock> fillingBlocks = null)
         {
             if (fillingBlocks == null)
             {
@@ -267,15 +268,15 @@ namespace Weverca.Analysis
             if (!fillingBlocks.Add(block))
             {
                 //empty cycle
-                point.AddChild(point);                
+                point.AddFlowChild(point);
                 return;
             }
 
             //parent has to point to first statement of block
             if (block.Statements.Count > 0)
             {
-                var entryPoint = getStatement(block.Statements[0], block);
-                point.AddChild(entryPoint);
+                var entryPoint = getStatementStart(block.Statements[0], block);
+                point.AddFlowChild(entryPoint);
                 return;
             }
             else
@@ -284,7 +285,7 @@ namespace Weverca.Analysis
                 foreach (var edge in block.OutgoingEdges)
                 {
                     //every outgoing edge is child of point, because of empty block body
-                    point.AddChild(getCondition(edge.Condition, block));
+                    point.AddFlowChild(getConditionStart(edge.Condition, block));
                     conditionExpressions.Add(edge.Condition);
                 }
 
@@ -300,16 +301,16 @@ namespace Weverca.Analysis
                     {
                         //TODO Are there cases, where point wont get to EndPoint ?
                     }
-                    
+
                 }
                 else
                 {
                     //there is program point on default branch
-                    var defaultPoint = getDefaultBranch(conditionExpressions, block);
-                    point.AddChild(defaultPoint);
+                    var defaultPoint = getDefaultBranchStart(conditionExpressions, block);
+                    point.AddFlowChild(defaultPoint);
                 }
             }
-            
+
         }
 
         /// <summary>
@@ -318,10 +319,22 @@ namespace Weverca.Analysis
         /// <param name="expressions">Expressions for created ConditionForm.SomeNot condition</param>
         /// <param name="outerBlock">Block where expressions are located</param>
         /// <returns>Indexed program point</returns>
-        private ProgramPoint getDefaultBranch(IEnumerable<Expression> expressions, BasicBlock outerBlock)
+        private ProgramPointBase getDefaultBranchStart(IEnumerable<Expression> expressions, BasicBlock outerBlock)
         {
             var assumption = new AssumptionCondition(ConditionForm.SomeNot, expressions.ToArray());
-            return getCondition(assumption, outerBlock);
+            return getConditionStart(assumption, outerBlock);
+        }
+
+        /// <summary>
+        /// Get program point indexed by default branch of given expressions. If there is no such a point, new is created.
+        /// </summary>
+        /// <param name="expressions">Expressions for created ConditionForm.SomeNot condition</param>
+        /// <param name="outerBlock">Block where expressions are located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPointBase getDefaultBranchEnd(IEnumerable<Expression> expressions, BasicBlock outerBlock)
+        {
+            var assumption = new AssumptionCondition(ConditionForm.SomeNot, expressions.ToArray());
+            return getConditionEnd(assumption, outerBlock);
         }
 
         /// <summary>
@@ -330,9 +343,44 @@ namespace Weverca.Analysis
         /// <param name="statement">Index of program point</param>
         /// <param name="outerBlock">Block where statement is located</param>
         /// <returns>Indexed program point</returns>
-        private ProgramPoint getStatement(LangElement statement, BasicBlock outerBlock)
+        private ProgramPointBase getStatementEnd(LangElement statement, BasicBlock outerBlock)
         {
-            return getPoint(statement, () => new ProgramPoint(statement, outerBlock));
+            prepareStatement(statement, outerBlock);
+            return _statementEnds[statement];
+        }
+
+        /// <summary>
+        /// Get program point indexed by statement. If there is no such a point, new is created.
+        /// </summary>
+        /// <param name="statement">Index of program point</param>
+        /// <param name="outerBlock">Block where statement is located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPointBase getStatementStart(LangElement statement, BasicBlock outerBlock)
+        {
+            return prepareStatement(statement, outerBlock);
+        }
+
+
+        private ProgramPointBase prepareStatement(LangElement statement, BasicBlock outerBlock)
+        {
+            return getPoint(statement, () =>
+            {
+                var statementStart = ElementExpander.ExpandStatement(statement, onPointCreated);
+                var statementEnd = findChainEnd(statementStart);
+                _statementEnds.Add(statement, statementEnd);
+
+                return statementStart;
+            });
+        }
+
+        private ProgramPointBase findChainEnd(ProgramPointBase point)
+        {
+            while (point.FlowChildren.Any())
+            {
+                point = point.FlowChildren.First();
+            }
+
+            return point;
         }
 
         /// <summary>
@@ -341,11 +389,26 @@ namespace Weverca.Analysis
         /// <param name="expression">Expression for created condition</param>
         /// <param name="outerBlock">Block where expression is located</param>
         /// <returns>Indexed program point</returns>
-        private ProgramPoint getCondition(Expression expression, BasicBlock outerBlock)
+        private ProgramPointBase getConditionStart(Expression expression, BasicBlock outerBlock)
         {
             var assumption = new AssumptionCondition(ConditionForm.All, expression);
-            return getCondition(assumption, outerBlock);
+            return getConditionStart(assumption, outerBlock);
         }
+
+
+        /// <summary>
+        /// Get program point indexed by ConditionForm.All condition, created from given expression. If there is no such point, new is created.
+        /// </summary>
+        /// <param name="expression">Expression for created condition</param>
+        /// <param name="outerBlock">Block where expression is located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPointBase getConditionEnd(Expression expression, BasicBlock outerBlock)
+        {
+            var assumption = new AssumptionCondition(ConditionForm.All, expression);
+            return getConditionEnd(assumption, outerBlock);
+        }
+
+
 
         /// <summary>
         /// Get program point indexed by condition. If there is no such point, new is created.
@@ -353,9 +416,36 @@ namespace Weverca.Analysis
         /// <param name="condition">Index of program point</param>
         /// <param name="outerBlock">Block where condition is located</param>
         /// <returns>Indexed program point</returns>
-        private ProgramPoint getCondition(AssumptionCondition condition, BasicBlock outerBlock)
+        private ProgramPointBase getConditionStart(AssumptionCondition condition, BasicBlock outerBlock)
         {
-            return getPoint(condition, () => new ProgramPoint(condition, outerBlock));
+            prepareCondition(condition, outerBlock);
+            return _conditionStarts[condition];
+        }
+
+
+        /// <summary>
+        /// Get program point indexed by condition. If there is no such point, new is created.
+        /// </summary>
+        /// <param name="condition">Index of program point</param>
+        /// <param name="outerBlock">Block where condition is located</param>
+        /// <returns>Indexed program point</returns>
+        private ProgramPointBase getConditionEnd(AssumptionCondition condition, BasicBlock outerBlock)
+        {
+            prepareCondition(condition, outerBlock);
+            return _conditionEnds[condition];
+        }
+
+        private void prepareCondition(AssumptionCondition condition, BasicBlock outerBlock)
+        {
+            getPoint(condition, () =>
+            {
+                var conditionStart = ElementExpander.ExpandCondition(condition, onPointCreated);
+                var conditionEnd = findChainEnd(conditionStart);
+                _conditionEnds.Add(condition, conditionEnd);
+                _conditionStarts.Add(condition, conditionStart);
+
+                return conditionStart;
+            });
         }
 
         /// <summary>
@@ -363,9 +453,13 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="key">Key of created program point</param>
         /// <returns>Program point indexed by key</returns>
-        private ProgramPoint getEmpty(object key)
+        private ProgramPointBase getEmpty(object key)
         {
-            return getPoint(key, () => new ProgramPoint());
+            return getPoint(key, () => {
+                var result = new EmptyProgramPoint();
+                onPointCreated(key, result);
+                return result;
+            });
         }
 
         /// <summary>
@@ -374,17 +468,24 @@ namespace Weverca.Analysis
         /// <param name="key">Index of program point</param>
         /// <param name="creator">Creator of program point</param>
         /// <returns>Program point indexed by key</returns>
-        private ProgramPoint getPoint(object key, ProgramPointCreator creator)
+        private ProgramPointBase getPoint(object key, ProgramPointCreator creator)
         {
-            ProgramPoint result;
+            ProgramPointBase result;
 
-            if (!_points.TryGetValue(key, out result))
+            if (!_chainStarts.TryGetValue(key, out result))
             {
                 result = creator();
-                _points.Add(key, result);
+
+                _chainStarts[key] = result; 
             }
             return result;
         }
         #endregion
+
+
+        private void onPointCreated(object key, ProgramPointBase point)
+        {
+            _points.Add(point);
+        }
     }
 }

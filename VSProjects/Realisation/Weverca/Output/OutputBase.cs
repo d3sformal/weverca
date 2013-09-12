@@ -106,7 +106,7 @@ namespace Weverca.Output
         /// </summary>
         /// <param name="pointCaption">Caption which specifies program point</param>
         /// <param name="point">Program point which info is printed</param>
-        internal void ProgramPointInfo(string pointCaption, ProgramPoint point)
+        internal void ProgramPointInfo(string pointCaption, ProgramPointBase point)
         {            
             headline("PROGRAM POINT: " + pointCaption);
 

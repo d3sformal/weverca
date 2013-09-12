@@ -10,7 +10,7 @@ namespace Weverca.Analysis.Expressions
     /// <summary>
     /// Postfix representation of LangElement
     /// </summary>
-    public class Postfix
+    public class Postfix:IEnumerable<LangElement>
     {
         private List<LangElement> _elements = new List<LangElement>();
 
@@ -52,6 +52,16 @@ namespace Weverca.Analysis.Expressions
         internal void Append(LangElement element)
         {
             _elements.Add(element);
+        }
+
+        public IEnumerator<LangElement> GetEnumerator()
+        {
+            return _elements.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return _elements.GetEnumerator();
         }
     }
 }

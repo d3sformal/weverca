@@ -20,7 +20,7 @@ namespace Weverca.GraphWalking
         /// Entry program point graph, where walking starts
         /// </summary>
         readonly ProgramPointGraph _entryGraph;
-        
+
         /// <summary>
         /// Callstack holding info about current stack trace
         /// </summary>
@@ -50,7 +50,7 @@ namespace Weverca.GraphWalking
         /// <remarks>Every program point is processed only once at on call level</remarks>
         /// </summary>
         /// <param name="point">Processed program point</param>
-        protected abstract void onWalkPoint(ProgramPoint point);
+        protected abstract void onWalkPoint(ProgramPointBase point);
 
         /// <summary>
         /// Method handler called before call is poped from stack
@@ -98,8 +98,8 @@ namespace Weverca.GraphWalking
         {
             pushCall(callPpGraph);
 
-            var visitedPoints = new HashSet<ProgramPoint>();
-            var pointsToVisit = new Queue<ProgramPoint>();
+            var visitedPoints = new HashSet<ProgramPointBase>();
+            var pointsToVisit = new Queue<ProgramPointBase>();
             visitPoint(callPpGraph.Start, pointsToVisit, visitedPoints);
 
             while (pointsToVisit.Count > 0)
@@ -107,24 +107,27 @@ namespace Weverca.GraphWalking
                 var point = pointsToVisit.Dequeue();
                 onWalkPoint(point);
 
+                throw new NotImplementedException();
                 //walk all call extensions
-                foreach (var call in point.ContainedCallExtensions)
-                {
-                    foreach (var branch in call.Branches)
-                    {
-                        walkCall(branch);
-                    }
-                }
+                /*       foreach (var call in point.ContainedCallExtensions)
+                       {
+                           foreach (var branch in call.Branches)
+                           {
+                               walkCall(branch);
+                           }
+                       }
                 
-                foreach (var include in point.ContainedIncludeExtensions)
-                {
-                    foreach (var branch in include.Branches)
-                    {
-                        visitPoint(branch.Start, pointsToVisit, visitedPoints);
-                    }
-                }
+                       foreach (var include in point.ContainedIncludeExtensions)
+                       {
+                           foreach (var branch in include.Branches)
+                           {
+                               visitPoint(branch.Start, pointsToVisit, visitedPoints);
+                           }
+                       }*/
 
-                foreach (var child in point.Children)
+
+
+                foreach (var child in point.FlowChildren)
                 {
                     visitPoint(child, pointsToVisit, visitedPoints);
                 }
@@ -132,14 +135,14 @@ namespace Weverca.GraphWalking
 
             popCall();
         }
-        
+
         /// <summary>
         /// Enqueue point to pointsToVisit if it already hasn't been visited
         /// </summary>
         /// <param name="point">Point to be visited</param>
         /// <param name="pointsToVisit">Storage of points that will be visited</param>
         /// <param name="visitedPoints">Already visited points</param>
-        private void visitPoint(ProgramPoint point, Queue<ProgramPoint> pointsToVisit, HashSet<ProgramPoint> visitedPoints)
+        private void visitPoint(ProgramPointBase point, Queue<ProgramPointBase> pointsToVisit, HashSet<ProgramPointBase> visitedPoints)
         {
             if (!visitedPoints.Add(point))
             {

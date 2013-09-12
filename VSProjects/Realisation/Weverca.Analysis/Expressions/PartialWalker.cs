@@ -8,7 +8,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.Expressions
 {
-    /// <summary>
+   /* /// <summary>
     /// Partial walker is used for postfix evaluation of Postfix expressions/statements
     /// </summary>
     internal class PartialWalker : TreeVisitor
@@ -260,6 +260,10 @@ namespace Weverca.Analysis.Expressions
             push(_evaluator.NullLiteral(x));
         }
 
+        #endregion
+
+        #region Global visiting
+
         public override void VisitGlobalConstUse(GlobalConstUse x)
         {
             push(_evaluator.Constant(x));
@@ -281,6 +285,7 @@ namespace Weverca.Analysis.Expressions
             }
             _evaluator.GlobalStatement(entries);
         }
+
         #endregion
 
         #region Variable visiting
@@ -545,5 +550,5 @@ namespace Weverca.Analysis.Expressions
         {
             nativeAnalyzer.Method(CurrentFlow);
         }
-    }
+    }*/
 }

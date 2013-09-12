@@ -18,22 +18,22 @@ namespace Weverca.Analysis
         /// <summary>
         /// Available services obtained from analysis
         /// </summary>
-        private readonly AnalysisServices _services;
+        internal readonly AnalysisServices Services;
 
         /// <summary>
         /// Flow resolver from analysis services
         /// </summary>
-        internal FlowResolverBase FlowResolver { get { return _services.FlowResolver; } }        
+        internal FlowResolverBase FlowResolver { get { return Services.FlowResolver; } }        
 
         /// <summary>
         /// Currently analyzed program point
         /// </summary>
-        public readonly ProgramPoint ProgramPoint;
+        public readonly ProgramPointBase ProgramPoint;
 
         /// <summary>
         /// Currently analyzed partial (elementary part of analyzed statement)
         /// </summary>
-        public readonly LangElement CurrentPartial;
+        public LangElement CurrentPartial { get { return ProgramPoint.Partial; } }
 
         public EvaluationLog Log { get; private set; }
 
@@ -53,7 +53,9 @@ namespace Weverca.Analysis
         ///     Default arguments are set by framework (you can override them)
         /// </summary>
         public MemoryEntry[] Arguments { get; set; }
-                
+
+
+        public IEnumerable<object> ExtensionKeys { get { return ProgramPoint.Extension.Keys; } }
 
         /// <summary>
         /// Get/Set this object for call branches
@@ -66,133 +68,12 @@ namespace Weverca.Analysis
         /// <summary>
         /// Create flow controller for given input and output set
         /// </summary>
-        internal FlowController(AnalysisServices services,ProgramPoint programPoint, LangElement currentPartial)
+        internal FlowController(AnalysisServices services,ProgramPointBase programPoint)
         {
-            _services = services;
+            Services = services;
             ProgramPoint = programPoint;
-            CurrentPartial = currentPartial;
         }
-
-        #region Call extension handling
-
-        /// <summary>
-        /// Determine that current partial has any call extension in program point graph
-        /// </summary>
-        public bool HasCallExtension{get{return CurrentCallExtension != null && !CurrentCallExtension.IsEmpty;}}
-
-        /// <summary>
-        /// Get call extension for current partial
-        /// </summary>
-        public PartialExtension<LangElement> CurrentCallExtension
-        {
-            get
-            {
-                if (CurrentPartial == null)
-                {
-                    return null;
-                }
-                return ProgramPoint.GetCallExtension(CurrentPartial);
-            }
-        }
-
-        /// <summary>
-        /// Get keys for current call extensions
-        /// </summary>
-        public IEnumerable<LangElement> CallBranchingKeys
-        {
-            get
-            {
-                if (CurrentCallExtension == null)
-                {
-                    return new LangElement[0];
-                }
-
-                return CurrentCallExtension.BranchingKeys;
-            }
-        }
-
-        /// <summary>
-        /// Add call branch into current partial extension according to given branchKey
-        /// </summary>
-        /// <param name="branchKey">Key of call branch</param>
-        /// <param name="branchGraph">Graph of call branch</param>
-        public void AddCallBranch(LangElement branchKey, ProgramPointGraph branchGraph)
-        {
-            var input = _services.CreateEmptySet();
-            ProgramPoint.AddCallBranch(CurrentPartial, branchKey, branchGraph,input);
-        }
-
-        /// <summary>
-        /// Remove call branch from current partial extension indexed by given branchKey
-        /// </summary>
-        /// <param name="branchKey">Key of removed call branch</param>
-        public void RemoveCallBranch(LangElement branchKey)
-        {
-            ProgramPoint.RemoveCallBranch(CurrentPartial, branchKey);
-        }
-
-        #endregion
-
-        #region Include extension handling
-
-        /// <summary>
-        /// Determine that current partial has any include extension in program point graph
-        /// </summary>
-        public bool HasIncludeExtension { get { return CurrentIncludeExtension != null && !CurrentIncludeExtension.IsEmpty; } }
-
-        /// <summary>
-        /// Get include extension for current partial
-        /// </summary>
-        public PartialExtension<string> CurrentIncludeExtension
-        {
-            get
-            {
-                if (CurrentPartial == null)
-                {
-                    return null;
-                }
-                return ProgramPoint.GetIncludeExtension(CurrentPartial);
-            }
-        }
-
-        /// <summary>
-        /// Get keys for current include extensions
-        /// </summary>
-        public IEnumerable<string> IncludeBranchingKeys
-        {
-            get
-            {
-                if (CurrentIncludeExtension == null)
-                {
-                    return new string[0];
-                }
-
-                return CurrentIncludeExtension.BranchingKeys;
-            }
-        }
-
-        /// <summary>
-        /// Add include branch into current partial extension according to given branchKey
-        /// </summary>
-        /// <param name="branchKey">Key of include branch</param>
-        /// <param name="branchGraph">Graph of include branch</param>
-        public void AddIncludeBranch(string branchKey, ProgramPointGraph branchGraph)
-        {
-            var input = _services.CreateEmptySet();
-            ProgramPoint.AddIncludeBranch(CurrentPartial, branchKey, branchGraph, input);
-        }
-
-        /// <summary>
-        /// Remove include branch from current partial extension indexed by given branchKey
-        /// </summary>
-        /// <param name="branchKey">Key of removed include branch</param>
-        public void RemoveIncludeBranch(string branchKey)
-        {
-            ProgramPoint.RemoveIncludeBranch(CurrentPartial,branchKey);
-        }
-
-        #endregion
-
+              
         /// <summary>
         /// Set evaluation log for use by resolvers
         /// </summary>
@@ -202,5 +83,20 @@ namespace Weverca.Analysis
             Log = log;
         }
 
+
+        public void RemoveExtension(object branchKey)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddExtension(object langElement, ProgramPointGraph ppGraph)
+        {
+            ProgramPoint.Extension.Add(langElement, ppGraph);
+        }
+
+        public void ExtensionType(ExtensionType extensionType)
+        {
+            ProgramPoint.Extension.Type = extensionType;
+        }
     }
 }

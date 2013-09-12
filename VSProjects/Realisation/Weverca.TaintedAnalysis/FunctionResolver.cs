@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using System.Linq;
+
 using PHP.Core;
 using PHP.Core.AST;
 
@@ -41,7 +43,7 @@ namespace Weverca.TaintedAnalysis
 
         public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
-            var methods = new Dictionary<LangElement, FunctionValue>();
+            var methods = new Dictionary<object, FunctionValue>();
             var methodNames = getSubroutineNames(name);
             var objectValues = resolveObjectsForMember(calledObject);
 
@@ -59,7 +61,7 @@ namespace Weverca.TaintedAnalysis
 
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
-            var functions = new Dictionary<LangElement, FunctionValue>();
+            var functions = new Dictionary<object, FunctionValue>();
             var functionNames = getSubroutineNames(name);
 
             foreach (var functionName in functionNames)
@@ -83,8 +85,9 @@ namespace Weverca.TaintedAnalysis
         /// <param name="callInput"></param>
         /// <param name="declaration"></param>
         /// <param name="arguments"></param>
-        public override void InitializeCall(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
+        public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
+            var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
 
@@ -131,8 +134,10 @@ namespace Weverca.TaintedAnalysis
         /// </summary>
         /// <param name="calls">All calls on dispatch level, which return value is resolved</param>
         /// <returns>Resolved return value</returns>
-        public override MemoryEntry ResolveReturnValue(ProgramPointGraph[] calls)
+        public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> callGraphs)
         {
+            var calls = callGraphs.ToArray();
+
             if (calls.Length == 1)
             {
                 var outSet = calls[0].End.OutSet;
@@ -202,14 +207,14 @@ namespace Weverca.TaintedAnalysis
         }
 
 
-        private void setCallBranching(Dictionary<LangElement, FunctionValue> functions)
+        private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
-            foreach (var branchKey in Flow.CallBranchingKeys)
+            foreach (var branchKey in Flow.ExtensionKeys)
             {
                 if (!functions.Remove(branchKey))
                 {
                     // Now this call is not resolved as possible call branch
-                    Flow.RemoveCallBranch(branchKey);
+                    Flow.RemoveExtension(branchKey);
                 }
             }
 
@@ -217,7 +222,7 @@ namespace Weverca.TaintedAnalysis
             {
                 // Create graph for every function - NOTE: We can share pp graphs
                 var ppGraph = ProgramPointGraph.From(function);
-                Flow.AddCallBranch(function.DeclaringElement, ppGraph);
+                Flow.AddExtension(function.DeclaringElement, ppGraph);
             }
         }
 
@@ -250,9 +255,9 @@ namespace Weverca.TaintedAnalysis
             return qualifiedNames;
         }
 
-        private Dictionary<LangElement, FunctionValue> resolveFunction(QualifiedName name, MemoryEntry[] arguments)
+        private Dictionary<object, FunctionValue> resolveFunction(QualifiedName name, MemoryEntry[] arguments)
         {
-            var result = new Dictionary<LangElement, FunctionValue>();
+            var result = new Dictionary<object, FunctionValue>();
 
             if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
@@ -275,9 +280,9 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
-        private Dictionary<LangElement, FunctionValue> resolveMethod(IEnumerable<ObjectValue> objects, QualifiedName name, MemoryEntry[] arguments)
+        private Dictionary<object, FunctionValue> resolveMethod(IEnumerable<ObjectValue> objects, QualifiedName name, MemoryEntry[] arguments)
         {
-            var result = new Dictionary<LangElement, FunctionValue>();
+            var result = new Dictionary<object, FunctionValue>();
 
             foreach (var objectValue in objects)
             {
