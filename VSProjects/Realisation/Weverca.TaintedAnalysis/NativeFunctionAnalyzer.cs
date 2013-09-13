@@ -39,9 +39,9 @@ namespace Weverca.TaintedAnalysis
     public class NativeFunction 
     {
         public NativeAnalyzerMethod Analyzer { get; set; }
-        public QualifiedName Name { get; private set; }
-        public List<NativeFunctionArgument> Arguments { get; private set; }
-        public string ReturnType { get; private set; }
+        public QualifiedName Name { get; protected set; }
+        public List<NativeFunctionArgument> Arguments { get; protected set; }
+        public string ReturnType { get; protected set; }
         public int MinArgumentCount = -1;
         public int MaxArgumentCount = -1;
         public NativeFunction( QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
@@ -51,6 +51,8 @@ namespace Weverca.TaintedAnalysis
             this.ReturnType = returnType;
             this.Analyzer = null;
         }
+        public NativeFunction()
+        { }
     }
     
     //TODO informacie o objektoch kvoli implementacii is_subclass, ktora je potreba pri exceptions
@@ -517,7 +519,7 @@ namespace Weverca.TaintedAnalysis
 
     class FunctionAnalyzerHelper
     {
-        List<NativeFunction> nativeFunctions;
+        private List<NativeFunction> nativeFunctions;
         public FunctionAnalyzerHelper(List<NativeFunction> nativeFunctions)
         {
             this.nativeFunctions = nativeFunctions;

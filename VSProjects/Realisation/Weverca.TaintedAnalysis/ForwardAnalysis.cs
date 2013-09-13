@@ -63,18 +63,11 @@ namespace Weverca.TaintedAnalysis
 
 
             NativeObjectAnalyzer nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
-            /*
             foreach (var obj in nativeObjectAnalyzer.nativeObjects.Values)
             {
                 var standardClass = EntryInput.CreateType(obj);
                 EntryInput.DeclareGlobal(standardClass);
-            }*/
- 
-            // TODO: It will be replaced by global types mechanism
-              var standardClassDeclaration = new NativeTypeDecl(
-                  new QualifiedName(new Name("stdClass")), new NativeMethodInfo[0], new Dictionary<string, Value>(), new Dictionary<string, NativeFieldInfo>());
-              var standardClass = EntryInput.CreateType(standardClassDeclaration);
-              EntryInput.DeclareGlobal(standardClass);
+            }
         }
     }
 }

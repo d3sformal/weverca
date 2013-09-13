@@ -11,6 +11,24 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis
 {
+    public class NativeMethod : NativeFunction
+    {
+        public bool IsStatic;
+
+        public bool IsFinal;
+        public NativeMethod() { 
+            
+        }
+        public NativeMethod(QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
+        {
+            this.Name = name;
+            this.Arguments = arguments;
+            this.ReturnType = returnType;
+            this.Analyzer = null;
+        }
+    }
+
+
     public class MutableNativeTypeDecl
     {
         /// <summary>
@@ -26,19 +44,41 @@ namespace Weverca.TaintedAnalysis
         public Dictionary<string, NativeFieldInfo> Fields;
 
         public Dictionary<string, Value> Constants;
-        
-        public IEnumerable<NativeMethodInfo> Methods;
+
+        public IEnumerable<NativeMethod> Methods;
+
+       
 
         public bool IsFinal;
+
+        public NativeTypeDecl ConvertToMuttable(NativeObjectAnalyzer analyzer)
+        {
+            List<NativeMethodInfo> nativeMethodsInfo=new List<NativeMethodInfo>();
+            foreach (var method in Methods)
+            {
+                if (analyzer.WevercaImplementedMethods.ContainsKey(QualifiedName + "." + method))
+                {
+                    nativeMethodsInfo.Add(analyzer.WevercaImplementedMethods[QualifiedName + "." + method]);
+                }
+                else
+                {
+                    NativeObjectsAnalyzerHelper helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
+                    nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, helper.Analyze, method.IsFinal, method.IsStatic));
+                }
+            }
+            return new NativeTypeDecl(QualifiedName, nativeMethodsInfo, Constants, Fields, BaseClassName, IsFinal);
+        }
     }
 
-    class NativeObjectAnalyzer
+    public class NativeObjectAnalyzer
     {
         private static NativeObjectAnalyzer instance=null;
 
         public Dictionary<QualifiedName,NativeTypeDecl> nativeObjects;
 
         private Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
+
+        public Dictionary<string, NativeMethodInfo> WevercaImplementedMethods = new Dictionary<string, NativeMethodInfo>();
 
         public static NativeObjectAnalyzer GetInstance(FlowOutputSet outSet)
         {
@@ -50,12 +90,17 @@ namespace Weverca.TaintedAnalysis
         }
         private NativeObjectAnalyzer(FlowOutputSet outSet)
         {
+
             XmlReader reader = XmlReader.Create(new StreamReader("php_classes.xml"));
             nativeObjects = new Dictionary<QualifiedName, NativeTypeDecl>();
             mutableNativeObjects = new Dictionary<QualifiedName, MutableNativeTypeDecl>();
 
-            MutableNativeTypeDecl currentClass=null;
+            HashSet<string> fieldTypes = new HashSet<string>();
+            HashSet<string> methodTypes = new HashSet<string>();
+            HashSet<string> returnTypes = new HashSet<string>();
 
+            MutableNativeTypeDecl currentClass=null;
+            NativeMethod currentMethod = null;
             while (reader.Read())
             {
                 switch (reader.NodeType)
@@ -77,7 +122,7 @@ namespace Weverca.TaintedAnalysis
                                 currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
                                 currentClass.Fields = new Dictionary<string, NativeFieldInfo>();
                                 currentClass.Constants = new Dictionary<string, Value>();
-                                currentClass.Methods = new List<NativeMethodInfo>();
+                                currentClass.Methods = new List<NativeMethod>();
                                 if (reader.GetAttribute("extends")!=null)
                                 {
                                     currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("extends")));
@@ -89,11 +134,12 @@ namespace Weverca.TaintedAnalysis
                                 string fieldIsStatic = reader.GetAttribute("isStatic");
                                 string fieldIsConst = reader.GetAttribute("isConst");
                                 string fieldType = reader.GetAttribute("type");
+                                fieldTypes.Add(fieldType);
                                 if (fieldIsConst == "false")
                                 {
-                                    bool isStatic = fieldIsStatic == "true" ? true : false;
+
                                     Visibility visiblity;
-                                    switch (fieldVisibility) 
+                                    switch (fieldVisibility)
                                     {
                                         case "public":
                                             visiblity = Visibility.PUBLIC;
@@ -108,10 +154,9 @@ namespace Weverca.TaintedAnalysis
                                             visiblity = Visibility.PUBLIC;
                                             break;
                                     }
-
-                                    currentClass.Fields[fieldName] = new NativeFieldInfo(new Name(fieldName), fieldType, visiblity, isStatic);
+                                    currentClass.Fields[fieldName] = new NativeFieldInfo(new Name(fieldName), fieldType, visiblity,bool.Parse(fieldIsStatic));
                                 }
-                                else 
+                                else
                                 {
                                     string value = reader.GetAttribute("value");
                                     //resolve constant
@@ -146,8 +191,14 @@ namespace Weverca.TaintedAnalysis
                                 }
                                 break;
                             case "method":
+                                currentMethod = new NativeMethod(new QualifiedName(new Name(reader.GetAttribute("name"))), reader.GetAttribute("returnType"), new List<NativeFunctionArgument>());
+                                currentMethod.IsFinal= bool.Parse(reader.GetAttribute("final"));
+                                currentMethod.IsStatic = bool.Parse(reader.GetAttribute("static"));
+                                returnTypes.Add(reader.GetAttribute("returnType"));
                                 break;
                             case "arg":
+                                currentMethod.Arguments.Add(new NativeFunctionArgument(reader.GetAttribute("type"), bool.Parse(reader.GetAttribute("optional")), bool.Parse(reader.GetAttribute("byReference")), bool.Parse(reader.GetAttribute("dots"))));
+                                methodTypes.Add(reader.GetAttribute("type"));
                                 break;
                         }
                        
@@ -171,6 +222,77 @@ namespace Weverca.TaintedAnalysis
                         break;
                 }
             }
+            /*
+            check if every ancestor exist 
+             */
+            foreach (var nativeObject in mutableNativeObjects.Values)
+            {
+                if (nativeObject.QualifiedName != null)
+                {
+                    if (!mutableNativeObjects.ContainsKey(nativeObject.QualifiedName))
+                    {
+                        throw new Exception();
+                    }
+                }
+            }
+
+            //generate result
+            foreach (var nativeObject in mutableNativeObjects.Values)
+            {
+                nativeObjects[nativeObject.QualifiedName] = nativeObject.ConvertToMuttable(this);
+            }
+
+           /*  Console.WriteLine("arg types");
+              Console.WriteLine();
+              var it = methodTypes.GetEnumerator();
+              while (it.MoveNext())
+              {
+                  Console.WriteLine(it.Current);
+
+              }
+              Console.WriteLine();
+            Console.WriteLine("field types");
+            Console.WriteLine();*/
+            /* var it = fieldTypes.GetEnumerator();
+            while (it.MoveNext())
+            {
+                Console.WriteLine(it.Current);
+
+            }
+            Console.WriteLine();
+            */
+            /*
+            Console.WriteLine("return types");
+            Console.WriteLine();
+            var it = returnTypes.GetEnumerator();
+            while (it.MoveNext())
+            {
+                Console.WriteLine(it.Current);
+
+            }*/
+            
+        }
+    }
+
+    class NativeObjectsAnalyzerHelper
+    {
+        private NativeMethod Method;
+
+        private QualifiedName ObjectName;
+
+        public NativeObjectsAnalyzerHelper(NativeMethod method, QualifiedName objectName)
+        {
+            Method = method;
+            ObjectName = objectName;
+        }
+
+        public void Analyze(FlowController flow)
+        {
+            if (NativeFunctionAnalyzer.checkArgumentsCount((new NativeFunction[1] { Method }).ToList(), flow))
+            {
+                NativeFunctionAnalyzer.checkArgumentTypes((new NativeFunction[1] { Method }).ToList(), flow);
+            }
+
         }
     }
 }

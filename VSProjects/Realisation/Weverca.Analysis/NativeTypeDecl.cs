@@ -20,20 +20,20 @@ namespace Weverca.Analysis
     public class NativeFieldInfo
     {
 
-        public readonly bool IsStatic;
-
         public readonly Name Name;
 
         public readonly Visibility Visibility;
 
         public readonly string Type;
 
-        public NativeFieldInfo(Name name, string type, Visibility visibility, bool isStatic)
+        public readonly bool isStatic;
+
+        public NativeFieldInfo(Name name, string type, Visibility visibility, bool IsStatic)
         {
             Name = name;
             Type = type;
             Visibility = visibility;
-            IsStatic = isStatic;
+            IsStatic=isStatic;
         }
     }
 
