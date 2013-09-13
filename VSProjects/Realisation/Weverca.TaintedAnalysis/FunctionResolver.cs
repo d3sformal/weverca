@@ -120,12 +120,9 @@ namespace Weverca.TaintedAnalysis
             var constructors = resolveMethod(objectValues, constructorName, arguments);
             if (constructors.Count > 0)
             {
-                setCallBranching(constructors);
-                // Object is returned via return value of call extension
-                return null;
+                setCallBranching(constructors);         
             }
 
-            // No constructor call
             return newObject;
         }
 

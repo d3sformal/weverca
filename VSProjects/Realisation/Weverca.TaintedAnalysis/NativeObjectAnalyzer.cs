@@ -123,7 +123,7 @@ namespace Weverca.TaintedAnalysis
                                             {
                                                 currentClass.Constants[fieldName] = outSet.CreateInt(int.Parse(value));
                                             }
-                                            catch (Exception e)
+                                            catch (Exception)
                                             {
                                                 currentClass.Constants[fieldName] = outSet.CreateDouble(double.Parse(value));
                                             }

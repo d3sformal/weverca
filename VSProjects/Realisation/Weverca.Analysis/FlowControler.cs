@@ -54,7 +54,9 @@ namespace Weverca.Analysis
         /// </summary>
         public MemoryEntry[] Arguments { get; set; }
 
-
+        /// <summary>
+        /// Keys associated with connected extension branches
+        /// </summary>
         public IEnumerable<object> ExtensionKeys { get { return ProgramPoint.Extension.Keys; } }
 
         /// <summary>
@@ -86,15 +88,15 @@ namespace Weverca.Analysis
 
         public void RemoveExtension(object branchKey)
         {
-            throw new NotImplementedException();
+            ProgramPoint.Extension.Remove(branchKey);
         }
 
-        public void AddExtension(object langElement, ProgramPointGraph ppGraph)
+        public void AddExtension(object branchKey, ProgramPointGraph ppGraph)
         {
-            ProgramPoint.Extension.Add(langElement, ppGraph);
+            ProgramPoint.Extension.Add(branchKey, ppGraph);
         }
 
-        public void ExtensionType(ExtensionType extensionType)
+        public void SetExtensionType(ExtensionType extensionType)
         {
             ProgramPoint.Extension.Type = extensionType;
         }

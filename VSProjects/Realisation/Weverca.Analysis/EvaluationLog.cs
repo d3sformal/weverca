@@ -9,6 +9,8 @@ using PHP.Core.AST;
 using Weverca.Analysis.Memory;
 using Weverca.Analysis.Expressions;
 
+using Weverca.Analysis.ProgramPoints;
+
 namespace Weverca.Analysis
 {
     /// <summary>
@@ -28,7 +30,7 @@ namespace Weverca.Analysis
         /// <param name="value">Associated value</param>
         internal void AssociateValue(LangElement partial, MemoryEntry value)
         {
-            var point = new MemoryEntryPoint(partial, value);
+            var point = new TestMemoryEntryPoint(partial, value);
             associatePoint(point);
         }
 
@@ -40,7 +42,7 @@ namespace Weverca.Analysis
         /// <param name="value">Associated variable</param>
         internal void AssociateVariable(LangElement partial, VariableEntry variable)
         {
-            var point = new VariablePoint(partial, variable);
+            var point = new TestVariablePoint(partial, variable);
             associatePoint(point);
         }
         #endregion
@@ -140,7 +142,7 @@ namespace Weverca.Analysis
             ProgramPointBase point;
             if (_points.TryGetValue(partial, out point))
             {
-                var lValue = point as LValue;
+                var lValue = point as LValuePoint;
 
                 if (lValue != null)
                 {

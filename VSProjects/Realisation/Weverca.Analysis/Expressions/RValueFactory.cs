@@ -8,29 +8,49 @@ using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.Analysis.Memory;
+using Weverca.Analysis.ProgramPoints;
 
 namespace Weverca.Analysis.Expressions
 {
-    class RValueCreator : TreeVisitor
+    /// <summary>
+    /// Creates RValue points (created values has stack edges connected, but no flow edges)
+    /// <remarks>RValuePoint provides MemoryEntry as result</remarks>
+    /// </summary>
+    class RValueFactory : TreeVisitor
     {
+        /// <summary>
+        /// Here is stored result of CreateValue operation
+        /// </summary>
         private RValuePoint _resultPoint;
 
+        /// <summary>
+        /// Expander is used for creating sub values
+        /// </summary>
         private readonly ElementExpander _valueCreator;
 
-        internal RValueCreator(ElementExpander valueCreator)
+        internal RValueFactory(ElementExpander valueCreator)
         {
             _valueCreator = valueCreator;
         }
 
+        /// <summary>
+        /// Create RValue point from given element
+        /// </summary>
+        /// <param name="el">Element from which RValue point will be created</param>
+        /// <returns>Created RValue</returns>
         internal RValuePoint CreateValue(LangElement el)
         {
+            //empty current result, because of avoiding incorrect use
             _resultPoint = null;
+
             el.VisitMe(this);
+            //assert that result has been set
             Debug.Assert(_resultPoint != null);
 
+            //empty result because of incorrect use
             var result = _resultPoint;
             _resultPoint = null;
-
+            
             return result;
         }
 
@@ -45,15 +65,41 @@ namespace Weverca.Analysis.Expressions
             Result(new ConstantProgramPoint(e, provider));
         }
 
+        /// <summary>
+        /// Set given RValue as CreateValue result
+        /// </summary>
+        /// <param name="value">Result value</param>
         private void Result(RValuePoint value)
         {
             Debug.Assert(_resultPoint == null, "Value has to be null - someone doesn't read it's value");
             _resultPoint = value;
         }
 
+        /// <summary>
+        /// Create RValue from given element
+        /// </summary>
+        /// <param name="el">Element which value will be created</param>
+        /// <returns>Created value</returns>
         private RValuePoint CreateRValue(LangElement el)
         {
             return _valueCreator.CreateRValue(el);
+        }
+
+        /// <summary>
+        /// Create argument rvalues according to given signature
+        /// </summary>
+        /// <param name="signature">Signature whicha arguments will be created</param>
+        /// <returns>Created arguments</returns>
+        private RValuePoint[] CreateArguments(CallSignature signature)
+        {
+            var args = new List<RValuePoint>();
+            foreach (var param in signature.Parameters)
+            {
+                var value = CreateRValue(param.Expression);
+                args.Add(value);
+            }
+
+            return args.ToArray();
         }
 
         #endregion
@@ -102,7 +148,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitBinaryStringLiteral(BinaryStringLiteral x)
         {
-            throw new NotImplementedException("what is binary string literal ?");
+            throw new NotImplementedException("TODO: what is binary string literal ?");
         }
 
         public override void VisitNullLiteral(NullLiteral x)
@@ -122,16 +168,28 @@ namespace Weverca.Analysis.Expressions
         #endregion
 
         #region Variable visiting
+
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            Result(new RVariablePoint(x));
+            RValuePoint thisObj = null;
+            if (x.IsMemberOf != null)
+            {
+                thisObj = CreateRValue(x.IsMemberOf);
+            }
+
+            Result(new RVariablePoint(x, thisObj));
         }
 
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
-            var name = CreateRValue(x.VarNameEx);
+            RValuePoint thisObj = null;
+            if (x.IsMemberOf != null)
+            {
+                thisObj = CreateRValue(x.IsMemberOf);
+            }
 
-            Result(new RIndirectVariablePoint(x, name));
+            var name = CreateRValue(x.VarNameEx);
+            Result(new RIndirectVariablePoint(x, name, thisObj));
         }
 
         #endregion
@@ -159,21 +217,20 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-            var arguments = getArguments(x.CallSignature);
+            var arguments = CreateArguments(x.CallSignature);
 
+            RValuePoint baseObj = null;
             if (x.IsMemberOf != null)
             {
-                throw new NotImplementedException();
+                baseObj = CreateRValue(x.IsMemberOf);
             }
-            else
-            {
-                Result(new FunctionCallPoint(x, arguments));
-            }
+
+            Result(new FunctionCallPoint(x, baseObj, arguments));
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
         {
-            var arguments = getArguments(x.CallSignature);
+            var arguments = CreateArguments(x.CallSignature);
             var name = CreateRValue(x.PublicNameExpr);
 
             Result(new IndirectFunctionCallPoint(x, name, arguments));
@@ -183,12 +240,18 @@ namespace Weverca.Analysis.Expressions
         {
             var possibleFiles = CreateRValue(x.Target);
 
-            Result(new IncludePoint(x, possibleFiles));
+            Result(new IncludingExPoint(x, possibleFiles));
         }
 
         public override void VisitLambdaFunctionExpr(LambdaFunctionExpr x)
         {
-            visitConstantNularyElement(x,(e)=>e.CreateLambda(x));
+            visitConstantNularyElement(x, (e) => e.CreateLambda(x));
+        }
+
+        public override void VisitNewEx(NewEx x)
+        {
+            var arguments = CreateArguments(x.CallSignature);
+            Result(new NewExPoint(x, arguments));
         }
 
         #endregion
@@ -208,7 +271,6 @@ namespace Weverca.Analysis.Expressions
             Result(new RItemUsePoint(x, array, index));
 
         }
-
 
         public override void VisitArrayEx(ArrayEx x)
         {
@@ -242,8 +304,6 @@ namespace Weverca.Analysis.Expressions
                     }
                 }
 
-
-
                 operands.AddLast(new KeyValuePair<RValuePoint, RValuePoint>(index, value));
             }
 
@@ -251,16 +311,6 @@ namespace Weverca.Analysis.Expressions
         }
         #endregion
 
-        private RValuePoint[] getArguments(CallSignature signature)
-        {
-            var args = new List<RValuePoint>();
-            foreach (var param in signature.Parameters)
-            {
-                var value = CreateRValue(param.Expression);
-                args.Add(value);
-            }
 
-            return args.ToArray();
-        }
     }
 }

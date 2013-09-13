@@ -12,11 +12,16 @@ using Weverca.Analysis.Expressions;
 
 using Weverca.Analysis.Memory;
 
+using Weverca.Analysis.ProgramPoints;
+
 namespace Weverca.Analysis
 {
 
     delegate ProgramPointBase ProgramPointCreator();
 
+    /// <summary>
+    /// TODO it needs to be refactored, because of extended program point changes
+    /// </summary>
     public class ProgramPointGraph
     {
         #region Private fields
@@ -34,16 +39,6 @@ namespace Weverca.Analysis
         private readonly Dictionary<AssumptionCondition, ProgramPointBase> _conditionStarts = new Dictionary<AssumptionCondition, ProgramPointBase>();
 
         private readonly Dictionary<AssumptionCondition, ProgramPointBase> _conditionEnds = new Dictionary<AssumptionCondition, ProgramPointBase>();
-
-        /// <summary>
-        /// Partial call extensions where program point graph is included
-        /// </summary>
-        private readonly HashSet<PartialExtension<LangElement>> _containingCallExtensions = new HashSet<PartialExtension<LangElement>>();
-
-        /// <summary>
-        /// Partial include extensions where program point graph is included
-        /// </summary>
-        private readonly HashSet<PartialExtension<string>> _containingIncludeExtensions = new HashSet<PartialExtension<string>>();
 
         /// <summary>
         /// Set of processed blocks - is used for avoiding cycling at graph building
@@ -162,47 +157,7 @@ namespace Weverca.Analysis
 
         #endregion
 
-        #region Containing extensions handling
-
-        /// <summary>
-        /// Add call extension which contains this program point graph
-        /// </summary>
-        /// <param name="extension">Extension which contains this program point graph</param>
-        internal void AddContainingCallExtension(PartialExtension<LangElement> extension)
-        {
-            _containingCallExtensions.Add(extension);
-        }
-
-        /// <summary>
-        /// Remove call extension which doesn't contains this program point graph yet
-        /// </summary>
-        /// <param name="extension">Removed extension</param>
-        internal void RemoveContainingCallExtension(PartialExtension<LangElement> extension)
-        {
-            _containingCallExtensions.Remove(extension);
-        }
-
-        /// <summary>
-        /// Add include extension which contains this program point graph
-        /// </summary>
-        /// <param name="extension">Extension which contains this program point graph</param>
-        internal void AddContainingIncludeExtension(PartialExtension<string> extension)
-        {
-            _containingIncludeExtensions.Add(extension);
-        }
-
-        /// <summary>
-        /// Remove include extension which doesn't contains this program point graph yet
-        /// </summary>
-        /// <param name="extension">Removed extension</param>
-        internal void RemoveContainingIncludeExtension(PartialExtension<string> extension)
-        {
-            _containingIncludeExtensions.Remove(extension);
-        }
-
-        #endregion
-
-
+        
         #region Program point graph building
 
         /// <summary>

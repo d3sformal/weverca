@@ -107,34 +107,43 @@ namespace Weverca.GraphWalking
                 var point = pointsToVisit.Dequeue();
                 onWalkPoint(point);
 
-                throw new NotImplementedException();
-                //walk all call extensions
-                /*       foreach (var call in point.ContainedCallExtensions)
-                       {
-                           foreach (var branch in call.Branches)
-                           {
-                               walkCall(branch);
-                           }
-                       }
-                
-                       foreach (var include in point.ContainedIncludeExtensions)
-                       {
-                           foreach (var branch in include.Branches)
-                           {
-                               visitPoint(branch.Start, pointsToVisit, visitedPoints);
-                           }
-                       }*/
 
-
-
-                foreach (var child in point.FlowChildren)
+                if (point.Extension.IsConnected)
                 {
-                    visitPoint(child, pointsToVisit, visitedPoints);
+                    walkExtension(point.Extension,pointsToVisit,visitedPoints);
+                }
+                else
+                {
+                    //walk flow children
+                    foreach (var child in point.FlowChildren)
+                    {
+                        visitPoint(child, pointsToVisit, visitedPoints);
+                    }
                 }
             }
 
             popCall();
         }
+
+        private void walkExtension(FlowExtension extension, Queue<ProgramPointBase> pointsToVisit, HashSet<ProgramPointBase> visitedPoints)
+        {
+            foreach (var branch in extension.Branches)
+            {
+                switch (extension.Type)
+                {
+                    case ExtensionType.ParallelCall:
+                        walkCall(branch);
+                        break;
+                    case ExtensionType.ParallelInclude:
+                        visitPoint(branch.Start, pointsToVisit, visitedPoints);
+                        break;
+                    default:
+                        throw new NotImplementedException("Walking of this extension type is not implemented yet");
+                }
+            }
+        }
+
+        
 
         /// <summary>
         /// Enqueue point to pointsToVisit if it already hasn't been visited

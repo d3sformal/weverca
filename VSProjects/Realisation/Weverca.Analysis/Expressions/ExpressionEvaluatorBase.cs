@@ -169,6 +169,13 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Concatenation of operands</returns>
         public abstract MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand);
 
+        /// <summary>
+        /// Process echo statement with given values
+        /// </summary>
+        /// <param name="echo"></param>
+        /// <param name="values"></param>
+        public abstract void Echo(EchoStmt echo, MemoryEntry[] values);
+
         #endregion
 
         #region Default implementation of simple routines
@@ -296,6 +303,7 @@ namespace Weverca.Analysis.Expressions
         }
 
         
+        
         #endregion
 
         /// <summary>
@@ -311,5 +319,7 @@ namespace Weverca.Analysis.Expressions
 
 
 
+
+     
     }
 }

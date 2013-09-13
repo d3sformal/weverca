@@ -39,12 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AliasValueCreator.cs" />
-    <Compile Include="AnalysisDispatchStack.cs" />
-    <Compile Include="AnalysisDispatchContext.cs" />
+    <Compile Include="Expressions\AliasValueFactory.cs" />
     <Compile Include="AnalysisServices.cs" />
     <Compile Include="BackwardAnalysisBase.cs" />
-    <Compile Include="DispatchInfo.cs" />
     <Compile Include="FlowExtension.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
@@ -60,8 +57,7 @@
     <Compile Include="Expressions\Converter.cs" />
     <Compile Include="Deprecated\ExpressionEvaluator.cs" />
     <Compile Include="Expressions\ExpressionEvaluatorBase.cs" />
-    <Compile Include="Expressions\IStackValue.cs" />
-    <Compile Include="Expressions\LValueCreator.cs" />
+    <Compile Include="Expressions\LValueFactory.cs" />
     <Compile Include="Expressions\PostfixExpression.cs" />
     <Compile Include="Deprecated\StatementWalker.cs" />
     <Compile Include="Deprecated\FlowControler.cs" />
@@ -69,9 +65,7 @@
     <Compile Include="Deprecated\FlowOutputSet.cs" />
     <Compile Include="Deprecated\ForwardAnalysis.cs" />
     <Compile Include="Deprecated\ForwardAnalysisAbstract.cs" />
-    <Compile Include="Expressions\PartialWalker.cs" />
-    <Compile Include="Expressions\RValueCreator.cs" />
-    <Compile Include="Expressions\StackValues.cs" />
+    <Compile Include="Expressions\RValueFactory.cs" />
     <Compile Include="Expressions\ElementExpander.cs" />
     <Compile Include="FlowControler.cs" />
     <Compile Include="FlowInputSet.cs" />
@@ -98,11 +92,21 @@
     <Compile Include="Memory\IValueVisitor.cs" />
     <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="NativeTypeDecl.cs" />
-    <Compile Include="PartialContext.cs" />
-    <Compile Include="Expressions\PartialExtension.cs" />
     <Compile Include="ProgramPointBase.cs" />
     <Compile Include="ProgramPointGraph.cs" />
-    <Compile Include="ProgramPoints.cs" />
+    <Compile Include="ProgramPoints\AbstractPoints.cs" />
+    <Compile Include="ProgramPoints\AliasPoints.cs" />
+    <Compile Include="ProgramPoints\AssignPoints.cs" />
+    <Compile Include="ProgramPoints\ConstantProgramPoint.cs" />
+    <Compile Include="ProgramPoints\DeclarationPoints.cs" />
+    <Compile Include="ProgramPoints\EmptyProgramPoint.cs" />
+    <Compile Include="ProgramPoints\ExpressionPoints.cs" />
+    <Compile Include="ProgramPoints\CallPoints.cs" />
+    <Compile Include="ProgramPoints\ItemUsings.cs" />
+    <Compile Include="ProgramPoints\VariablePoints.cs" />
+    <Compile Include="ProgramPoints\SpecialPoints.cs" />
+    <Compile Include="ProgramPoints\StatementPoints.cs" />
+    <Compile Include="ProgramPoints\TestPoints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VariableEntry.cs" />
   </ItemGroup>

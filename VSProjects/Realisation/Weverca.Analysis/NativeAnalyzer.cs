@@ -18,7 +18,6 @@ namespace Weverca.Analysis
     /// <param name="flow">Flow controller available for method</param>
     public delegate void NativeAnalyzerMethod(FlowController flow);
 
-
     /// <summary>
     /// Lang element used for storing native analyzers in ProgramPointGraphs
     /// </summary>

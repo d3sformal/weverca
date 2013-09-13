@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using Weverca.Analysis.ProgramPoints;
+
 namespace Weverca.Analysis
 {
     /// <summary>
@@ -66,6 +68,17 @@ namespace Weverca.Analysis
             //connect ppGraph into current graph
             Owner.AddFlowChild(ppGraph.Start);
             ppGraph.End.AddFlowChild(Sink);
+        }
+
+        internal void Remove(object key)
+        {
+            if (!IsConnected)
+            {
+                //nothing to remove
+                return;
+            }
+
+            throw new NotImplementedException("Check for disconnection");
         }
 
         private void connect()

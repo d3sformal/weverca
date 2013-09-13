@@ -28,8 +28,14 @@ namespace Weverca.Analysis
         /// </summary>
         internal readonly FlowResolverBase FlowResolver;
 
+        /// <summary>
+        /// Available expression evaluator obtained from analysis
+        /// </summary>
         internal readonly ExpressionEvaluatorBase Evaluator;
 
+        /// <summary>
+        /// Available function resolver obtained from analysis
+        /// </summary>
         internal readonly FunctionResolverBase FunctionResolver;
 
         /// <summary>
@@ -61,6 +67,10 @@ namespace Weverca.Analysis
             _workListQueue.Enqueue(programPoint);
         }
 
+        /// <summary>
+        /// Set services for all points in given graph
+        /// </summary>
+        /// <param name="ppGraph">Graph which program points will be set</param>
         internal void SetServices(ProgramPointGraph ppGraph)
         {
             foreach (var point in ppGraph.Points)
@@ -69,6 +79,10 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <summary>
+        /// Unset services for all points in given graph
+        /// </summary>
+        /// <param name="ppGraph">Graph which program points will be unset</param>
         internal void UnSetServices(ProgramPointGraph ppGraph)
         {
             foreach (var point in ppGraph.Points)

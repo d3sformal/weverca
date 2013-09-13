@@ -9,6 +9,7 @@ using PHP.Core.AST;
 using PHP.Core.Parsers;
 
 using Weverca.Analysis.Memory;
+using Weverca.Analysis.ProgramPoints;
 
 namespace Weverca.Analysis.Expressions
 {
@@ -28,11 +29,11 @@ namespace Weverca.Analysis.Expressions
         /// </summary>
         private readonly Dictionary<LangElement, ProgramPointBase> _programPoints = new Dictionary<LangElement, ProgramPointBase>();
 
-        private readonly LValueCreator _lValueCreator;
+        private readonly LValueFactory _lValueCreator;
 
-        private readonly RValueCreator _rValueCreator;
+        private readonly RValueFactory _rValueCreator;
 
-        private readonly AliasValueCreator _aliasValueCreator;
+        private readonly AliasValueFactory _aliasValueCreator;
 
         private static readonly Type[] FlowOmittedElements = new Type[]{
             typeof(ActualParam),typeof(FormalParam)
@@ -40,9 +41,9 @@ namespace Weverca.Analysis.Expressions
 
         private ElementExpander()
         {
-            _lValueCreator = new LValueCreator(this);
-            _rValueCreator = new RValueCreator(this);
-            _aliasValueCreator = new AliasValueCreator(this);
+            _lValueCreator = new LValueFactory(this);
+            _rValueCreator = new RValueFactory(this);
+            _aliasValueCreator = new AliasValueFactory(this);
         }
 
         private void Expand(LangElement statement)
@@ -297,12 +298,12 @@ namespace Weverca.Analysis.Expressions
         public override void VisitJumpStmt(JumpStmt x)
         {
             var expression = CreateRValue(x.Expression);
-            Result(new JumpPoint(expression, x));
+            Result(new JumpStmtPoint(expression, x));
         }
 
         public override void VisitTypeDecl(TypeDecl x)
         {
-            throw new NotImplementedException();
+            Result(new TypeDeclPoint(x));
         }
 
         public override void VisitNewEx(NewEx x)
@@ -333,13 +334,19 @@ namespace Weverca.Analysis.Expressions
                 valueVar = CreateLValue(x.ValueVariable.Variable) as VariableBased;
             }
 
-            Result(new ForeachPoint(x, enumeree, keyVar, valueVar));
+            Result(new ForeachStmtPoint(x, enumeree, keyVar, valueVar));
         }
 
 
         public override void VisitEchoStmt(EchoStmt x)
         {
-            throw new NotImplementedException();
+            var parameters = new List<RValuePoint>();
+            foreach (var param in x.Parameters)
+            {
+                parameters.Add(CreateRValue(param));
+            }
+
+            Result(new EchoStmtPoint(x,parameters.ToArray()));
         }
 
         #endregion

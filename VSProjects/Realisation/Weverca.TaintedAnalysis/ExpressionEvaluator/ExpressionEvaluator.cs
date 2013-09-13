@@ -753,5 +753,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
 
 
+
+        public override void Echo(EchoStmt echo, MemoryEntry[] values)
+        {
+//            throw new NotImplementedException();
+        }
     }
 }

@@ -378,6 +378,11 @@ namespace Weverca.Analysis.UnitTest
         {
             throw new NotImplementedException();
         }
+
+        public override void Echo(EchoStmt echo, MemoryEntry[] values)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -429,14 +434,10 @@ namespace Weverca.Analysis.UnitTest
             var ctorName = new QualifiedName(new Name("__construct"));
             var ctors = resolveMethod(newObject, ctorName);
 
-            if (ctors.Count > 0)
-            {
+            if (ctors.Count > 0){
                 setCallBranching(ctors);
-                //Object is returned via return value of call extension
-                return null;
             }
 
-            //no constructor call
             return newObject;
         }
 
@@ -840,7 +841,7 @@ namespace Weverca.Analysis.UnitTest
 
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
-            flow.ExtensionType(ExtensionType.ParallelInclude);
+            flow.SetExtensionType(ExtensionType.ParallelInclude);
             var files = new HashSet<string>();
             foreach (StringValue possibleFile in includeFile.PossibleValues)
             {
