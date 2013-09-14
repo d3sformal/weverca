@@ -27,16 +27,16 @@ namespace Weverca.TaintedAnalysis
         public bool ByReference { get; private set; }
         public bool Optional { get; private set; }
         public bool Dots { get; private set; }
-        public NativeFunctionArgument(string type,  bool optional,bool byReference,bool dots)
+        public NativeFunctionArgument(string type, bool optional, bool byReference, bool dots)
         {
-            this.Type=type;
-            this.ByReference=byReference;
-            this.Optional=optional;
+            this.Type = type;
+            this.ByReference = byReference;
+            this.Optional = optional;
             this.Dots = dots;
         }
     }
 
-    public class NativeFunction 
+    public class NativeFunction
     {
         public NativeAnalyzerMethod Analyzer { get; set; }
         public QualifiedName Name { get; protected set; }
@@ -44,7 +44,7 @@ namespace Weverca.TaintedAnalysis
         public string ReturnType { get; protected set; }
         public int MinArgumentCount = -1;
         public int MaxArgumentCount = -1;
-        public NativeFunction( QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
+        public NativeFunction(QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
         {
             this.Name = name;
             this.Arguments = arguments;
@@ -54,7 +54,7 @@ namespace Weverca.TaintedAnalysis
         public NativeFunction()
         { }
     }
-    
+
     //TODO informacie o objektoch kvoli implementacii is_subclass, ktora je potreba pri exceptions
 
     public class NativeFunctionAnalyzer
@@ -64,8 +64,8 @@ namespace Weverca.TaintedAnalysis
         private Dictionary<QualifiedName, NativeAnalyzerMethod> wevercaImplementedFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
         private HashSet<string> types = new HashSet<string>();
         private HashSet<string> returnTypes = new HashSet<string>();
-        private static NativeFunctionAnalyzer instance=null;
-        
+        private static NativeFunctionAnalyzer instance = null;
+
         private NativeFunctionAnalyzer()
         {
 
@@ -167,7 +167,7 @@ namespace Weverca.TaintedAnalysis
                     }
                 }
             }*/
-            
+
 
             QualifiedName defineName = new QualifiedName(new Name("define"));
             FunctionAnalyzerHelper analyzer = new FunctionAnalyzerHelper(allNativeFunctions[defineName]);
@@ -187,7 +187,7 @@ namespace Weverca.TaintedAnalysis
             instance = new NativeFunctionAnalyzer();
             return instance;
         }
-        
+
         /// <summary>
         /// Tells if the two intervals intersects.
         /// </summary>
@@ -218,11 +218,11 @@ namespace Weverca.TaintedAnalysis
         }
         public NativeAnalyzerMethod getNativeAnalyzer(QualifiedName name)
         {
-            if(!existNativeFunction(name))
+            if (!existNativeFunction(name))
             {
                 return null;
             }
-            
+
             if (wevercaImplementedFunctions.Keys.Contains(name))
             {
                 return wevercaImplementedFunctions[name];
@@ -239,13 +239,13 @@ namespace Weverca.TaintedAnalysis
                     allNativeFunctions[name][0].Analyzer = new NativeAnalyzerMethod(analyzer.analyze);
                 }
                 return allNativeFunctions[name][0].Analyzer;
-                
+
             }
             //doesnt exist
             return null;
         }
 
-        static public bool checkArgumentsCount(List<NativeFunction> nativeFunctions,FlowController flow)
+        static public bool checkArgumentsCount(List<NativeFunction> nativeFunctions, FlowController flow)
         {
             //check number of arduments
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
@@ -276,20 +276,20 @@ namespace Weverca.TaintedAnalysis
                     }
                     //Console.WriteLine("Name: {0},Min: {1}, Max: {2}", nativeFuntion.Name,nativeFuntion.MinArgumentCount, nativeFuntion.MaxArgumentCount);
                 }
-                
-            }
-            
 
-            string numberOfArgumentMessage="";
+            }
+
+
+            string numberOfArgumentMessage = "";
 
             bool argumentCountMatches = false;
             foreach (var nativeFunction in nativeFunctions)
             {
-                if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount) 
+                if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
                 {
                     argumentCountMatches = true;
                 }
-                
+
                 if (numberOfArgumentMessage != "")
                 {
                     numberOfArgumentMessage += " or";
@@ -301,7 +301,7 @@ namespace Weverca.TaintedAnalysis
                     {
                         numberOfArgumentMessage += " at least " + nativeFunction.MinArgumentCount + " parameter";
                     }
-                    else 
+                    else
                     {
                         numberOfArgumentMessage += " at least " + nativeFunction.MinArgumentCount + " parameters";
                     }
@@ -319,9 +319,9 @@ namespace Weverca.TaintedAnalysis
                             numberOfArgumentMessage += " " + nativeFunction.MinArgumentCount + " parameters";
                         }
                     }
-                    else 
+                    else
                     {
-                        numberOfArgumentMessage += " " + nativeFunction.MinArgumentCount + "-" + nativeFunction.MaxArgumentCount + " parameters";                  
+                        numberOfArgumentMessage += " " + nativeFunction.MinArgumentCount + "-" + nativeFunction.MaxArgumentCount + " parameters";
                     }
                 }
             }
@@ -336,11 +336,11 @@ namespace Weverca.TaintedAnalysis
                 AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function " + nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter" + s + " given.", flow.CurrentPartial, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
                 return false;
             }
-            else 
+            else
             {
                 return true;
             }
-       }
+        }
 
         public static void checkArgumentTypes(List<NativeFunction> nativeFunctions, FlowController flow)
         {
@@ -387,7 +387,7 @@ namespace Weverca.TaintedAnalysis
             }
         }
 
-        private static void checkArgument(FlowController flow,MemoryEntry memoryEntry, NativeFunctionArgument argument,int argumentNumber,string functionName, List<AnalysisWarning> warnings)
+        private static void checkArgument(FlowController flow, MemoryEntry memoryEntry, NativeFunctionArgument argument, int argumentNumber, string functionName, List<AnalysisWarning> warnings)
         {
             bool argumentMatches = true;
             foreach (Value value in memoryEntry.PossibleValues)
@@ -399,7 +399,7 @@ namespace Weverca.TaintedAnalysis
 
                 switch (argument.Type)
                 {
-                    case "mixed":                  
+                    case "mixed":
                         break;
                     case "int":
                     case "integer":
@@ -423,20 +423,20 @@ namespace Weverca.TaintedAnalysis
                         }
                         break;
                     case "array":
-                        if(!ValueTypeResolver.isArray(value))
+                        if (!ValueTypeResolver.isArray(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "object":
-                        if(!ValueTypeResolver.isObject(value))
+                        if (!ValueTypeResolver.isObject(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "bool":
                     case "boolean":
-                        if(!ValueTypeResolver.isBool(value))
+                        if (!ValueTypeResolver.isBool(value))
                         {
                             argumentMatches = false;
                         }
@@ -450,7 +450,7 @@ namespace Weverca.TaintedAnalysis
                         break;
                     case "callable":
                     case "callback":
-                        if(!ValueTypeResolver.isString(value) && !(value is FunctionValue))
+                        if (!ValueTypeResolver.isString(value) && !(value is FunctionValue))
                         {
                             argumentMatches = false;
                         }
@@ -471,38 +471,105 @@ namespace Weverca.TaintedAnalysis
             }
         }
 
-        public static Value getReturnValue(NativeFunction function,FlowController flow)
+        public static MemoryEntry getReturnValue(string type, FlowController flow)
         {
             var outset = flow.OutSet;
-            switch(function.ReturnType)
+            List<Value> res = new List<Value>();
+            switch (type)
             {
                 case "number":
-                    return outset.AnyIntegerValue;
+                    res.Add(outset.AnyIntegerValue);
+                    break;
                 case "float":
-                    return outset.AnyFloatValue;
+                case "double":
+                    res.Add(outset.AnyFloatValue);
+                    break;
                 case "int":
                 case "integer":
-                    return outset.AnyIntegerValue;
+                    res.Add(outset.AnyIntegerValue);
+                    break;
+                case "long":
+                    res.Add(outset.AnyLongintValue);
+                    break;
                 case "string":
-                    return outset.AnyStringValue;
+                    res.Add(outset.AnyStringValue);
+                    break;
                 case "array":
-                    return outset.AnyArrayValue;
+                    res.Add(outset.AnyArrayValue);
+                    break;
                 case "void":
-                    return outset.UndefinedValue;
+                case "none":
+                    res.Add(outset.UndefinedValue);
+                    break;
                 case "boolean":
                 case "bool":
-                    return outset.AnyBooleanValue;
+                    res.Add(outset.AnyBooleanValue);
+                    break;
                 case "object":
-                    return outset.AnyObjectValue;
+                    res.Add(outset.AnyObjectValue);
+                    break;
                 case "mixed":
-                    return outset.AnyValue;
+                case "any":
+                case "ReturnType":
+                    res.Add(outset.AnyValue);
+                    break;
+                case "NULL":
+                    res.Add(outset.UndefinedValue);
+                    break;
                 case "resource":
-                    return outset.AnyResourceValue;
+                    res.Add(outset.AnyResourceValue);
+                    break;
                 case "callable":
-                    return outset.AnyStringValue;
+                    res.Add(outset.AnyStringValue);
+                    break;
+                case "bool|string":
+                    res.Add(outset.AnyStringValue);
+                    res.Add(outset.AnyBooleanValue);
+                    break;
+                case "string|array":
+                    res.Add(outset.AnyStringValue);
+                    res.Add(outset.AnyArrayValue);
+                    break;
+                case "bool|array":
+                    res.Add(outset.AnyStringValue);
+                    res.Add(outset.AnyArrayValue);
+                    break;
                 default:
-                    return outset.AnyObjectValue;
+                    res.Add(resolveObject(flow, type));
+                    break;
             }
+
+            return new MemoryEntry(res);
+        }
+
+        private static Value resolveObject(FlowController flow, string type)
+        {
+            var objectAnalyzer = NativeObjectAnalyzer.GetInstance(flow);
+            QualifiedName typeName = new QualifiedName(new Name(type));
+            if (objectAnalyzer.ExistClass(typeName))
+            {
+                NativeTypeDecl decl = objectAnalyzer.GetClass(typeName);
+
+                var fields = objectAnalyzer.GetClass(typeName).Fields;
+                ObjectValue value = flow.OutSet.CreateObject(flow.OutSet.CreateType(decl));
+                if (value is ObjectValue)
+                {
+                    var obj = (value as ObjectValue);
+                    foreach (NativeFieldInfo field in fields.Values)
+                    {
+                        if (field.isStatic == false)
+                        {
+                            flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), (NativeFunctionAnalyzer.getReturnValue(field.Type, flow)));
+                        }
+                    }
+                }
+                return value;
+            }
+            else
+            {
+                return flow.OutSet.AnyObjectValue;
+            }
+
         }
 
         internal static VariableName argument(int index)
@@ -514,7 +581,7 @@ namespace Weverca.TaintedAnalysis
             return new VariableName(".arg" + index);
         }
 
-       
+
     }
 
     class FunctionAnalyzerHelper
@@ -535,13 +602,16 @@ namespace Weverca.TaintedAnalysis
 
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
-            
+
             var possibleValues = new List<Value>();
             foreach (var nativeFunction in nativeFunctions)
             {
                 if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
                 {
-                    possibleValues.Add(NativeFunctionAnalyzer.getReturnValue(nativeFunction, flow));
+                    foreach (var value in NativeFunctionAnalyzer.getReturnValue(nativeFunction.ReturnType, flow).PossibleValues)
+                    {
+                        possibleValues.Add(value);
+                    }
                 }
             }
 
@@ -549,12 +619,15 @@ namespace Weverca.TaintedAnalysis
             {
                 foreach (var nativeFunction in nativeFunctions)
                 {
-                    possibleValues.Add(NativeFunctionAnalyzer.getReturnValue(nativeFunction, flow));
+                    foreach (var value in NativeFunctionAnalyzer.getReturnValue(nativeFunction.ReturnType, flow).PossibleValues)
+                    {
+                        possibleValues.Add(value);
+                    }
                 }
             }
 
             List<MemoryEntry> arguments = new List<MemoryEntry>();
-            for(int i=0;i<argumentCount;i++)
+            for (int i = 0; i < argumentCount; i++)
             {
                 arguments.Add(flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(i)));
             }
@@ -574,7 +647,7 @@ namespace Weverca.TaintedAnalysis
         //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
         public void _define(FlowController flow)
         {
-            
+
             NativeFunctionAnalyzer.checkArgumentsCount(nativeFunctions, flow);
             MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
@@ -585,17 +658,17 @@ namespace Weverca.TaintedAnalysis
             bool canBeFalse = false;
             if (nativeFunction.MinArgumentCount <= argumentCount && nativeFunction.MaxArgumentCount >= argumentCount)
             {
-                bool canBeCaseSensitive=false, canBeCaseInsensitive=false;
+                bool canBeCaseSensitive = false, canBeCaseInsensitive = false;
                 if (argumentCount == 2)
                 {
                     canBeCaseSensitive = true;
                 }
-                else 
+                else
                 {
                     foreach (var arg2 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(2)).PossibleValues)
                     {
                         UnaryOperationVisitor unaryVisitor = new UnaryOperationVisitor(new ExpressionEvaluator.ExpressionEvaluator());
-                        Value result=unaryVisitor.Evaluate(Operations.BoolCast, arg2);
+                        Value result = unaryVisitor.Evaluate(Operations.BoolCast, arg2);
                         if (result is UndefinedValue)
                         {
                             canBeCaseSensitive = true;
@@ -607,13 +680,13 @@ namespace Weverca.TaintedAnalysis
                             {
                                 canBeCaseInsensitive = true;
                             }
-                            else 
+                            else
                             {
                                 canBeCaseSensitive = true;
                             }
 
                         }
-                        else 
+                        else
                         {
                             canBeCaseSensitive = true;
                             canBeCaseInsensitive = true;
@@ -623,7 +696,7 @@ namespace Weverca.TaintedAnalysis
                 }
                 foreach (var arg0 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(0)).PossibleValues)
                 {
-                    
+
                     UnaryOperationVisitor unaryVisitor = new UnaryOperationVisitor(new ExpressionEvaluator.ExpressionEvaluator());
                     Value arg0Retyped = unaryVisitor.Evaluate(Operations.StringCast, arg0);
                     string constantName = "";
@@ -632,23 +705,23 @@ namespace Weverca.TaintedAnalysis
                         canBeFalse = true;
                         continue;
                     }
-                    else 
+                    else
                     {
                         constantName = (arg0Retyped as StringValue).Value;
                     }
 
-                    QualifiedName qConstantName=new QualifiedName(new Name(constantName));
-                    List<Value> result=new List<Value>();
+                    QualifiedName qConstantName = new QualifiedName(new Name(constantName));
+                    List<Value> result = new List<Value>();
                     foreach (var arg1 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(1)).PossibleValues)
                     {
                         if (ValueTypeResolver.isArray(arg1) || ValueTypeResolver.isObject(arg1))
                         {
                             canBeFalse = true;
                         }
-                        else 
+                        else
                         {
                             result.Add(arg1);
-                            canBeTrue = true;    
+                            canBeTrue = true;
                         }
                     }
                     if (canBeCaseSensitive)
@@ -669,7 +742,7 @@ namespace Weverca.TaintedAnalysis
                     possibleValues.Add(flow.OutSet.CreateBool(false));
                 }
             }
-            else 
+            else
             {
                 possibleValues.Add(flow.OutSet.CreateBool(false));
             }
@@ -701,7 +774,7 @@ namespace Weverca.TaintedAnalysis
                     flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(values));
                 }
             }
-            else 
+            else
             {
                 flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.UndefinedValue));
             }

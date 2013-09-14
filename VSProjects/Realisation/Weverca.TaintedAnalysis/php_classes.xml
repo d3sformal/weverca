@@ -1080,7 +1080,6 @@
       <arg type="callable" optional="false" byReference="false" dots="false"/>
     </method>
     <method static="false" final="false" visibility="public" name="accept" returnType="string"/>
-    <method static="false" final="false" visibility="public" name="bool" returnType="abstract"/>
   </class>
   <class name="chdb" isFinal="false">
     <method static="false" final="false" visibility="public" name="__construct" returnType="none">
@@ -1333,19 +1332,6 @@
     <method static="false" final="false" visibility="public" name="sub" returnType="DateTimeImmutable">
       <arg type="DateInterval" optional="false" byReference="false" dots="false"/>
     </method>
-    <method static="false" final="false" visibility="public" name="diff" returnType="DateInterval">
-      <arg type="DateTimeInterface" optional="false" byReference="false" dots="false"/>
-      <arg type="bool" optional="true" byReference="false" dots="false" value="false"/>
-    </method>
-    <method static="false" final="false" visibility="public" name="format" returnType="string">
-      <arg type="string" optional="false" byReference="false" dots="false"/>
-    </method>
-    <method static="false" final="false" visibility="public" name="getOffset" returnType="int"/>
-    <method static="false" final="false" visibility="public" name="getTimestamp" returnType="int"/>
-    <method static="false" final="false" visibility="public" name="getTimezone" returnType="DateTimeZone"/>
-    <method static="false" final="false" visibility="public" name="__wakeup" returnType="none"/>
-  </class>
-  <class name="DateTimeInterface" isFinal="false">
     <method static="false" final="false" visibility="public" name="diff" returnType="DateInterval">
       <arg type="DateTimeInterface" optional="false" byReference="false" dots="false"/>
       <arg type="bool" optional="true" byReference="false" dots="false" value="false"/>
@@ -2922,7 +2908,7 @@
     </method>
   </class>
   <class name="FilterIterator" isFinal="false" baseClass="IteratorIterator" implements="OuterIterator,">
-    <method static="false" final="false" visibility="public" name="bool" returnType="abstract"/>
+    <method static="false" final="false" visibility="public" name="accept" returnType="bool"/>
     <method static="false" final="false" visibility="public" name="__construct" returnType="none">
       <arg type="Iterator" optional="false" byReference="false" dots="false"/>
     </method>
@@ -9082,7 +9068,6 @@
     </method>
     <method static="false" final="false" visibility="public" name="getChildren" returnType="void"/>
     <method static="false" final="false" visibility="public" name="hasChildren" returnType="void"/>
-    <method static="false" final="false" visibility="public" name="bool" returnType="abstract"/>
   </class>
   <interface name="RecursiveIterator" isFinal="false" baseClass="Iterator">
     <method static="false" final="false" visibility="public" name="getChildren" returnType="RecursiveIterator"/>
@@ -9520,7 +9505,6 @@
     <method static="false" final="false" visibility="public" name="setPregFlags" returnType="void">
       <arg type="int" optional="false" byReference="false" dots="false"/>
     </method>
-    <method static="false" final="false" visibility="public" name="bool" returnType="abstract"/>
   </class>
   <class name="ResourceBundle" isFinal="false">
     <method static="false" final="false" visibility="public" name="__construct" returnType="none">

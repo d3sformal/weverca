@@ -349,7 +349,7 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void FunctionResult7()
         {
-            Assert.AreEqual(ResultTest(functionResult7).GetType(), typeof(AnyObjectValue));
+            Assert.AreEqual(ResultTest(functionResult7).GetType(), typeof(ObjectValue));
         }
 
         [TestMethod]

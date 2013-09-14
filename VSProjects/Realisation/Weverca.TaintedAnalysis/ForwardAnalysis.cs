@@ -60,14 +60,6 @@ namespace Weverca.TaintedAnalysis
             var warnings = new VariableName(".analysisWarning");
             EntryInput.FetchFromGlobal(warnings);
             EntryInput.Assign(warnings, new MemoryEntry(EntryInput.UndefinedValue));
-
-
-            NativeObjectAnalyzer nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
-            foreach (var obj in nativeObjectAnalyzer.nativeObjects.Values)
-            {
-                var standardClass = EntryInput.CreateType(obj);
-                EntryInput.DeclareGlobal(standardClass);
-            }
         }
     }
 }

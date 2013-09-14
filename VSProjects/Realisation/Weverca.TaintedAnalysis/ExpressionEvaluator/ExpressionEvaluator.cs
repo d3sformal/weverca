@@ -739,20 +739,24 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public override MemoryEntry CreateObject(QualifiedName typeName)
         {
             //TODO call constructors, report errors on non existing objects
-
-            var declarations = OutSet.ResolveType(typeName);
-
+            
             var result = new List<ObjectValue>();
-            foreach (var declaration in declarations)
+            
+            NativeObjectAnalyzer classes = NativeObjectAnalyzer.GetInstance(Flow);
+            if (classes.ExistClass(typeName))
             {
-                result.Add(OutSet.CreateObject(declaration));
+                result.Add(OutSet.CreateObject(OutSet.CreateType(classes.GetClass(typeName))));    
             }
-
+            else
+            {
+                var declarations = OutSet.ResolveType(typeName);  
+                foreach (var declaration in declarations)
+                {
+                    result.Add(OutSet.CreateObject(declaration));
+                }
+            }
             return new MemoryEntry(result.ToArray());
         }
-
-
-
 
         public override void Echo(EchoStmt echo, MemoryEntry[] values)
         {

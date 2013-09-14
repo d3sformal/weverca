@@ -698,17 +698,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 }
                 else
                 {
+                    result.AppendFormat("{0}: {{", variable);
 
                     var entry = readValue(variable, asGlobal);
-
-                    if (entry.PossibleValues.Count() == 1 && entry.PossibleValues.First() is NativeTypeValue)
-                    {
-                        //dont write native types on output
-                        //output is then too messy
-                    }
-                    else
-                    {
-                        result.AppendFormat("{0}: {{", variable);
                         foreach (var value in entry.PossibleValues)
                         {
                             result.AppendFormat("'{0}', ", value);
@@ -716,7 +708,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
                         result.Length -= 2;
                         result.AppendLine("}");
-                    }
+                    
                 }
             }
         }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using PHP.Core.AST;
+using Weverca.Analysis;
 
 namespace Weverca.GraphWalking
 {
@@ -27,9 +28,15 @@ namespace Weverca.GraphWalking
             var visitor = new NameResolver();
             element.VisitMe(visitor);
 
+            if (element is NativeAnalyzer)
+            {
+                visitor._name = ((StringLiteral)((element as NativeAnalyzer).InvokingElement)).Value.ToString();
+            }
+
             if (visitor._name == null)
             {
                 throw new NotImplementedException("Method for resolving given element hasn't been implemented yet");
+                
             }
 
             return visitor._name;
