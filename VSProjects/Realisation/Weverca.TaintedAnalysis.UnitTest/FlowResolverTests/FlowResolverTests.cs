@@ -167,5 +167,61 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
                     .Run();
             }
         }
+
+        [TestMethod]
+        public void ComposedNonequelityExpressions()
+        {
+            // a > 5 && a < 10
+            // a > 5 || a == "ahoj"
+        }
+
+        [TestMethod]
+        public void MultiVariableNonequelityExpressions()
+        {
+            // a > b
+            // a > 5 && b < 7
+        }
+
+        [TestMethod]
+        public void FunctionCallExpressions()
+        {
+            // if(a = fnc(...))
+            // if (isSet(a))
+        }
+
+        [TestMethod]
+        public void AssumeUnary()
+        {
+            // if !(...)
+            //TODO: run all tests with negation
+            string variableName = "a";
+            foreach (var test in equalTests)
+            {
+                TestCase.Create(new UnaryEx(Operations.LogicNegation, new BinaryEx(Operations.Equal, new DirectVarUse(new Position(), new VariableName(variableName)), test.Item1)))
+                        .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new AnyValue())
+                        .AddResult(ConditionForm.None, false, ConditionResults.True)
+                        .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", test.Item2)
+                        .Run();
+            }
+        }
+
+        [TestMethod]
+        public void AdvancedArithmeticsExpressions()
+        {
+            // a + 3 < 12
+            // if (a + 5 < b)
+            // if (a + b < 12)
+            // a * a > 5
+            // a.b == "ahoj"
+        }
+
+        [TestMethod]
+        public void IndirectVariableUseExpressions()
+        {
+            // $a[1]
+            // $a[$b]
+            // $a->b
+            // $a::b
+        }
     }
 }

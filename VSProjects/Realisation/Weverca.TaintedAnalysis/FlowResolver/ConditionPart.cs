@@ -86,16 +86,16 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
             if (ConditionResult == PossibleValues.OnlyTrue)
             {
-                AssumeTrue();
+                AssumeTrue(conditionPart.SourceElement);
             }
             else if (ConditionResult == PossibleValues.OnlyFalse)
             {
-                AssumeFalse();
+                AssumeFalse(conditionPart.SourceElement);
             }
             else if (ConditionResult == PossibleValues.Unknown)
             {
                 // We don't know how the condition can be evaluted, so we assume, that it is true. Therefore it is needed to set up inner environment.
-                AssumeTrue();
+                AssumeTrue(conditionPart.SourceElement);
             }
             else
             {
@@ -160,11 +160,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
-        void AssumeTrue()
+        void AssumeTrue(LangElement langElement)
         {
-            if (conditionPart.SourceElement is BinaryEx)
+            if (langElement is BinaryEx)
             {
-                BinaryEx binaryExpression = conditionPart.SourceElement as BinaryEx;
+                BinaryEx binaryExpression = (BinaryEx)langElement;
                 //TODO: tady muze byt i AND, OR, ... a pak bude treba nastartovat cely proces od zacatku pro levou a pravou stranu zvlast... od new ConditionParts();
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
@@ -205,20 +205,32 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 }
                 else
                 {
-                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, conditionPart.GetType().Name));
+                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, langElement.GetType().Name));
+                }
+            }
+            else if (langElement is UnaryEx)
+            {
+                UnaryEx unaryExpression = (UnaryEx)langElement;
+                if (unaryExpression.PublicOperation == Operations.LogicNegation)
+                {
+                    AssumeFalse(unaryExpression.Expr);
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", unaryExpression.PublicOperation, langElement.GetType().Name));
                 }
             }
             else
             {
-                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", conditionPart.SourceElement.GetType().Name));
+                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", langElement.GetType().Name));
             }
         }
 
-        void AssumeFalse()
+        void AssumeFalse(LangElement langElement)
         {
-            if (conditionPart.SourceElement is BinaryEx)
+            if (langElement is BinaryEx)
             {
-                BinaryEx binaryExpression = conditionPart.SourceElement as BinaryEx;
+                BinaryEx binaryExpression = (BinaryEx)langElement;
                 //TODO: tady muze byt i AND, OR, ... a pak bude treba nastartovat cely proces od zacatku pro levou a pravou stranu zvlast... od new ConditionParts();
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
@@ -259,12 +271,24 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 }
                 else
                 {
-                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, conditionPart.GetType().Name));
+                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, langElement.GetType().Name));
+                }
+            }
+            else if (langElement is UnaryEx)
+            {
+                UnaryEx unaryExpression = (UnaryEx)langElement;
+                if (unaryExpression.PublicOperation == Operations.LogicNegation)
+                {
+                    AssumeTrue(unaryExpression.Expr);
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", unaryExpression.PublicOperation, langElement.GetType().Name));
                 }
             }
             else
             {
-                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", conditionPart.SourceElement.GetType().Name));
+                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", langElement.GetType().Name));
             }
         }
 
