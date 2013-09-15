@@ -50,7 +50,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
             foreach (var testResult in results)
             {
-                var conditions = new AssumptionCondition(testResult.ConditionForm, expressions);
+                AssumptionCondition conditions = new AssumptionCondition(testResult.ConditionForm, expressions);
 
                 var snapshot = new MemoryModel.Snapshot();
                 snapshot.StartTransaction();
@@ -59,8 +59,8 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
                 FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
 
                 //This change is because of new API for retrieving values
-                var log = new EvaluationLog();
-                var index = 0;
+                EvaluationLog log = new EvaluationLog();
+                int index = 0;
                 foreach (var part in conditions.Parts)
                 {
                     log.AssociateValue(part.SourceElement, testResult.ConditionsEvaluations[index]);

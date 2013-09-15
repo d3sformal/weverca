@@ -31,11 +31,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             //TODO: How to resolve not-bool conditions, like if (1) etc.?
             //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
 
-            //This change is cause because of new API for retrieving values - It provides more efficient way
-            var expressionParts = condition.Parts.Select(a => log.GetValue(a.SourceElement)).ToArray();
-            Debug.Assert(condition.Parts.Count() == expressionParts.Length);
-
-            ConditionParts conditionParts = new ConditionParts(condition, expressionParts, outSet);
+            ConditionParts conditionParts = new ConditionParts(condition.Form, outSet, log, condition.Parts);
             return conditionParts.MakeAssumption();
         }
 

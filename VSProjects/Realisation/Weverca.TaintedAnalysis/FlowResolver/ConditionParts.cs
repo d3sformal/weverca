@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
+using PHP.Core.AST;
 using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.Analysis.Expressions;
 
 namespace Weverca.TaintedAnalysis.FlowResolver
 {
@@ -28,7 +28,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <summary>
         /// Gets the count of the parts which are evaluated as <c>true</c>.
         /// </summary>
-        public int TruePartsCount
+        int TruePartsCount
         {
             get { return conditionParts.Where(c => c.ConditionResult == ConditionPart.PossibleValues.OnlyTrue).Count(); }
         }
@@ -36,7 +36,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <summary>
         /// Gets the count of the parts which are evaluated as <c>false</c>.
         /// </summary>
-        public int FalsePartsCount
+        int FalsePartsCount
         {
             get { return conditionParts.Where(c => c.ConditionResult == ConditionPart.PossibleValues.OnlyFalse).Count(); }
         }
@@ -44,7 +44,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <summary>
         /// Gets the count of the parts which can't be evaluated.
         /// </summary>
-        public int UnknownPartsCount
+        int UnknownPartsCount
         {
             get { return conditionParts.Where(c => c.ConditionResult == ConditionPart.PossibleValues.Unknown).Count(); }
         }
@@ -56,23 +56,36 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <summary>
         /// Initializes a new instance of the <see cref="ConditionParts"/> class.
         /// </summary>
-        /// <param name="condition">The assumed condition.</param>
-        /// <param name="expressionParts">Evaluated values for condition parts.</param>
+        /// <param name="conditionForm">The condition form.</param>
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
-        /// <remarks>Condition parts count should be aqual to expression parts count.</remarks>
-        public ConditionParts(AssumptionCondition condition, IList<MemoryEntry> expressionParts, FlowOutputSet flowOutputSet)
+        /// <param name="log">The log of evaluation of the conditions' parts.</param>
+        /// <param name="langElements">The elements of the condition.</param>
+        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, params LangElement[] langElements)
+            : this(conditionForm, flowOutputSet, langElements.Select(a => new ConditionPart(a, log)))
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConditionParts" /> class.
+        /// </summary>
+        /// <param name="conditionForm">The condition form.</param>
+        /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
+        /// <param name="log">The log of evaluation of the conditions' parts.</param>
+        /// <param name="conditionParts">The elements of the condition.</param>
+        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
+            : this(conditionForm, flowOutputSet, log, conditionParts.Select(a => a.SourceElement).ToArray())
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConditionParts" /> class.
+        /// </summary>
+        /// <param name="conditionForm">The condition form.</param>
+        /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
+        /// <param name="conditionParts">The elements of the condition.</param>
+        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, IEnumerable<ConditionPart> conditionParts)
         {
-            Debug.Assert(condition.Parts.Count() == expressionParts.Count);
-
             this.flowOutputSet = flowOutputSet;
-            conditionForm = condition.Form;
-
-            var parts = condition.Parts.ToArray();
-            for (int i = 0; i < parts.Length; i++)
-            {
-                ConditionPart part = new ConditionPart(parts[i], expressionParts[i]);
-                conditionParts.Add(part);
-            }
+            this.conditionForm = conditionForm;
+            this.conditionParts.AddRange(conditionParts);
         }
 
         #endregion

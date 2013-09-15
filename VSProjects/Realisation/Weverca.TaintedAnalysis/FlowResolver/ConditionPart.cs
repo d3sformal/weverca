@@ -4,7 +4,6 @@ using System.Linq;
 
 using PHP.Core.AST;
 using Weverca.Analysis;
-using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.FlowResolver
@@ -41,14 +40,15 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
         #region Members
 
-        Postfix conditionPart;
+        LangElement conditionPart;
         MemoryEntry evaluatedPart;
 
         FlowOutputSet flowOutputSet;
+        EvaluationLog log;
 
         #endregion
 
-        #region Members
+        #region Properties
 
         public PossibleValues ConditionResult { get; private set; }
 
@@ -57,14 +57,15 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConditionPart"/> class.
+        /// Initializes a new instance of the <see cref="ConditionPart" /> class.
         /// </summary>
         /// <param name="conditionPart">The definition of the part of the condition.</param>
-        /// <param name="evaluatedPart">The evaluated part of the condition.</param>
-        public ConditionPart(Postfix conditionPart, MemoryEntry evaluatedPart)
+        /// <param name="log">The log of evaluation of the conditions' parts.</param>
+        public ConditionPart(LangElement conditionPart, EvaluationLog log)
         {
             this.conditionPart = conditionPart;
-            this.evaluatedPart = evaluatedPart;
+            this.evaluatedPart = log.GetValue(conditionPart);
+            this.log = log;
 
             ConditionResult = GetConditionResult();
         }
@@ -86,16 +87,16 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
             if (ConditionResult == PossibleValues.OnlyTrue)
             {
-                AssumeTrue(conditionPart.SourceElement);
+                AssumeTrue(conditionPart);
             }
             else if (ConditionResult == PossibleValues.OnlyFalse)
             {
-                AssumeFalse(conditionPart.SourceElement);
+                AssumeFalse(conditionPart);
             }
             else if (ConditionResult == PossibleValues.Unknown)
             {
                 // We don't know how the condition can be evaluted, so we assume, that it is true. Therefore it is needed to set up inner environment.
-                AssumeTrue(conditionPart.SourceElement);
+                AssumeTrue(conditionPart);
             }
             else
             {
@@ -110,7 +111,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         IEnumerable<VariableUse> GetVariables()
         {
             VariableVisitor visitor = new VariableVisitor();
-            conditionPart.SourceElement.VisitMe(visitor);
+            conditionPart.VisitMe(visitor);
 
             return visitor.Variables;
         }
@@ -190,18 +191,15 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 {
                     AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
                 }
-                else if (binaryExpression.PublicOperation == Operations.Add ||
-                        binaryExpression.PublicOperation == Operations.Sub ||
-                        binaryExpression.PublicOperation == Operations.Mul ||
-                        binaryExpression.PublicOperation == Operations.Div ||
-                        binaryExpression.PublicOperation == Operations.BitAnd ||
-                        binaryExpression.PublicOperation == Operations.BitOr ||
-                        binaryExpression.PublicOperation == Operations.BitXor ||
-                        binaryExpression.PublicOperation == Operations.Mod ||
-                        binaryExpression.PublicOperation == Operations.ShiftLeft ||
-                        binaryExpression.PublicOperation == Operations.ShiftRight)
+                else if (binaryExpression.PublicOperation == Operations.And)
                 {
-                    // nothing to evaluate
+                    ConditionParts condition = new ConditionParts(ConditionForm.All, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    condition.MakeAssumption();
+                }
+                else if (binaryExpression.PublicOperation == Operations.Or)
+                {
+                    ConditionParts condition = new ConditionParts(ConditionForm.Some, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    condition.MakeAssumption();
                 }
                 else
                 {
@@ -256,18 +254,17 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 {
                     AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
                 }
-                else if (binaryExpression.PublicOperation == Operations.Add ||
-                        binaryExpression.PublicOperation == Operations.Sub ||
-                        binaryExpression.PublicOperation == Operations.Mul ||
-                        binaryExpression.PublicOperation == Operations.Div ||
-                        binaryExpression.PublicOperation == Operations.BitAnd ||
-                        binaryExpression.PublicOperation == Operations.BitOr ||
-                        binaryExpression.PublicOperation == Operations.BitXor ||
-                        binaryExpression.PublicOperation == Operations.Mod ||
-                        binaryExpression.PublicOperation == Operations.ShiftLeft ||
-                        binaryExpression.PublicOperation == Operations.ShiftRight)
+                else if (binaryExpression.PublicOperation == Operations.And)
                 {
-                    // nothing to evaluate
+                    // !(a AND b) --> !a OR !b
+                    ConditionParts condition = new ConditionParts(ConditionForm.SomeNot, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    condition.MakeAssumption();
+                }
+                else if (binaryExpression.PublicOperation == Operations.Or)
+                {
+                    // !(a OR b) --> !a AND !b
+                    ConditionParts condition = new ConditionParts(ConditionForm.None, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    condition.MakeAssumption();
                 }
                 else
                 {
