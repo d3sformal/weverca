@@ -88,7 +88,9 @@ namespace Weverca.Analysis
 
         public readonly bool IsFinal;
 
-        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, Dictionary<string, Value> constants, Dictionary<string, NativeFieldInfo> fields, QualifiedName? baseClassName = null,bool isFinal=false)
+        public readonly bool IsInterface;
+
+        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, Dictionary<string, Value> constants, Dictionary<string, NativeFieldInfo> fields, QualifiedName? baseClassName ,bool isFinal,bool isInteface)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
@@ -96,6 +98,7 @@ namespace Weverca.Analysis
             Constants = constants;
             Fields = fields;
             IsFinal = isFinal;
+            IsInterface = isInteface;
         }
     }
 }

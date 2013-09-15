@@ -13503,4 +13503,21 @@
       <arg type="string" optional="false" byReference="false" dots="false"/>
     </method>
   </class>
+  <interface name="DateTimeInterface" isFinal="false" >
+    <method static="false" final="false" visibility="public" name="diff" returnType="DateInterval">
+      <arg type="DateTimeInterface" optional="false" byReference="false" dots="false"  />
+      <arg type="bool" optional="true" byReference="false" dots="false" value="false"  />
+    </method>
+    <method static="false" final="false" visibility="public" name="format" returnType="string">
+      <arg type="string" optional="false" byReference="false" dots="false"  />
+    </method>
+    <method static="false" final="false" visibility="public" name="getOffset" returnType="int">
+    </method>
+    <method static="false" final="false" visibility="public" name="getTimestamp" returnType="int">
+    </method>
+    <method static="false" final="false" visibility="public" name="getTimezone" returnType="DateTimeZone">
+    </method>
+    <method static="false" final="false" visibility="public" name="__wakeup" returnType="none">
+    </method>
+  </interface>
 </classes>

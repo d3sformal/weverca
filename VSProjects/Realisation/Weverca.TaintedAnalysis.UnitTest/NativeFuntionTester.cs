@@ -21,44 +21,6 @@ namespace Weverca.TaintedAnalysis.UnitTest
     [TestClass]
     public class NativeFuntionTester
     {
-        public FlowOutputSet Analyze(string code)
-        {
-            var fileName = "./cfg_test.php";
-            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            code = "<?php \n" + code + "?>";
-
-            var parser = new SyntaxParser(sourceFile, code);
-            parser.Parse();
-            var cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
-
-            var analysis = new ForwardAnalysis(cfg);
-            analysis.Analyse();
-
-            return analysis.ProgramPointGraph.End.OutSet;
-        }
-
-        public bool ContainsWarning(FlowOutputSet outset, AnalysisWarningCause cause)
-        {
-            IEnumerable<Value> warnings=AnalysisWarningHandler.ReadWarnings(outset);
-            foreach (var value in warnings)
-            {
-                InfoValue<AnalysisWarning> infoValue = (InfoValue<AnalysisWarning>) value;
-                if (infoValue.Data.Cause == cause)
-                    return true;
-            }
-            return false;
-        }
-
-        public bool ArgumentWarningTest(string code,AnalysisWarningCause cause)
-        {
-            return ContainsWarning(Analyze(code), cause);
-        }
-
-        public Value ResultTest(string code)
-        {
-            return Analyze(code).ReadValue(new VariableName("result")).PossibleValues.ElementAt(0);
-        }
-
         string wrongArgumentcount1 = @"
             min();
         ";
@@ -78,25 +40,25 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void WrongArgumentCount1()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void WrongArgumentCount2()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void WrongArgumentCount3()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void WrongArgumentCount4()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         string correctArgumentcount1 = @"
@@ -118,25 +80,25 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void CorrectArgumentCount1()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentcount1, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void CorrectArgumentCount2()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentcount2, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void CorrectArgumentCount3()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentcount3, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         [TestMethod]
         public void CorrectArgumentCount4()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentcount4, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
         }
 
         string correctArgumentType1 = @"
@@ -184,48 +146,48 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void CorrectArgumentType1()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType1, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType1, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void CorrectArgumentType2()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType2, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType2, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void CorrectArgumentType3()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType3, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType3, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void CorrectArgumentType4()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType4, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType4, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void CorrectArgumentType5()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType5, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType5, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void CorrectArgumentType6()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType6, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType6, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void CorrectArgumentType7()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType7, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType7, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         public void CorrectArgumentType8()
         {
-            Assert.IsFalse(ArgumentWarningTest(correctArgumentType8, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsFalse(TestUtils.ArgumentWarningTest(correctArgumentType8, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         string wrongArgumentType1 = @"
@@ -251,31 +213,31 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void WrongArgumentType1()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType1, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentType1, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void WrongArgumentType2()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType2, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentType2, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void WrongArgumentType3()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType3, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentType3, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void WrongArgumentType4()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType4, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentType4, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         [TestMethod]
         public void WrongArgumentType5()
         {
-            Assert.IsTrue(ArgumentWarningTest(wrongArgumentType5, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+            Assert.IsTrue(TestUtils.ArgumentWarningTest(wrongArgumentType5, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
         }
 
         string functionResult1 = @"
@@ -313,49 +275,49 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void FunctionResult1()
         {
-            Assert.AreEqual(ResultTest(functionResult1).GetType(), typeof(AnyStringValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult1).GetType(), typeof(AnyStringValue));
         }
 
         [TestMethod]
         public void FunctionResult2()
         {
-            Assert.AreEqual(ResultTest(functionResult2).GetType(), typeof(AnyFloatValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult2).GetType(), typeof(AnyFloatValue));
         }
 
         [TestMethod]
         public void FunctionResult3()
         {
-            Assert.AreEqual(ResultTest(functionResult3).GetType(), typeof(AnyIntegerValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult3).GetType(), typeof(AnyIntegerValue));
         }
 
         [TestMethod]
         public void FunctionResult4()
         {
-            Assert.AreEqual(ResultTest(functionResult4).GetType(), typeof(AnyArrayValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult4).GetType(), typeof(AnyArrayValue));
         }
 
         [TestMethod]
         public void FunctionResult5()
         {
-            Assert.AreEqual(ResultTest(functionResult5).GetType(), typeof(AnyBooleanValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult5).GetType(), typeof(AnyBooleanValue));
         }
 
         [TestMethod]
         public void FunctionResult6()
         {
-            Assert.AreEqual(ResultTest(functionResult6).GetType(), typeof(AnyResourceValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult6).GetType(), typeof(AnyResourceValue));
         }
 
         [TestMethod]
         public void FunctionResult7()
         {
-            Assert.AreEqual(ResultTest(functionResult7).GetType(), typeof(ObjectValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult7).GetType(), typeof(ObjectValue));
         }
 
         [TestMethod]
         public void FunctionResult8()
         {
-            Assert.AreEqual(ResultTest(functionResult8).GetType(), typeof(AnyValue));
+            Assert.AreEqual(TestUtils.ResultTest(functionResult8).GetType(), typeof(AnyValue));
         }
 
     }

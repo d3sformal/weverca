@@ -14,26 +14,6 @@ namespace Weverca.TaintedAnalysis.UnitTest
     [TestClass]
     public class NativeConstantTester
     {
-        public FlowOutputSet Analyze(string code)
-        {
-            var fileName = "./cfg_test.php";
-            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            code = "<?php \n" + code + "?>";
-
-            var parser = new SyntaxParser(sourceFile, code);
-            parser.Parse();
-            var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
-
-            var analysis = new ForwardAnalysis(cfg);
-            analysis.Analyse();
-
-            return analysis.ProgramPointGraph.End.OutSet;
-        }
-
-        public Value ResultTest(string code)
-        {
-            return Analyze(code).ReadValue(new VariableName("result")).PossibleValues.ElementAt(0);
-        }
 
         private string nativeConstantTrue = @"
             $result=true;
@@ -71,87 +51,77 @@ namespace Weverca.TaintedAnalysis.UnitTest
             $result=STDIN;
         ";
 
-        public void testType<T>(Value value, T type)
-        {
-            Assert.AreEqual(value.GetType(), type);
-        }
-
-        public void testValue<T>(Value value, T compareValue)
-            where T : IComparable, IComparable<T>, IEquatable<T>
-        {
-            PrimitiveValue<T> val = (PrimitiveValue<T>)value;
-            Assert.IsTrue(val.Value.Equals(compareValue));
-        }
+       
 
         [TestMethod]
         public void NativeConstantTrue()
         {
-            var result = ResultTest(nativeConstantTrue);
-            testType(result, typeof(BooleanValue));
-            testValue(result, true);
+            var result = TestUtils.ResultTest(nativeConstantTrue);
+            TestUtils.testType(result, typeof(BooleanValue));
+            TestUtils.testValue(result, true);
         }
 
         [TestMethod]
         public void NativeConstantFalse()
         {
-            var result = ResultTest(nativeConstantFalse);
-            testType(result, typeof(BooleanValue));
-            testValue(result, false);
+            var result = TestUtils.ResultTest(nativeConstantFalse);
+            TestUtils.testType(result, typeof(BooleanValue));
+            TestUtils.testValue(result, false);
         }
 
         [TestMethod]
         public void NativeConstantInt1()
         {
-            var result = ResultTest(nativeConstantInt1);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 256);
+            var result = TestUtils.ResultTest(nativeConstantInt1);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 256);
         }
 
         [TestMethod]
         public void NativeConstantInt2()
         {
-            var result = ResultTest(nativeConstantInt2);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 4);
+            var result = TestUtils.ResultTest(nativeConstantInt2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
         }
 
         [TestMethod]
         public void NativeConstantString1()
         {
-            var result = ResultTest(nativeConstantString1);
-            testType(result, typeof(StringValue));
-            testValue(result, "l, d-M-y H:i:s T");
+            var result = TestUtils.ResultTest(nativeConstantString1);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "l, d-M-y H:i:s T");
         }
 
         [TestMethod]
         public void NativeConstantString2()
         {
-            var result = ResultTest(nativeConstantString2);
-            testType(result, typeof(StringValue));
-            testValue(result, @"Y-m-d\TH:i:sP");
+            var result = TestUtils.ResultTest(nativeConstantString2);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, @"Y-m-d\TH:i:sP");
         }
 
         [TestMethod]
         public void NativeConstantFloat1()
         {
-            var result = ResultTest(nativeConstantFloat1);
-            testType(result, typeof(FloatValue));
-            testValue(result, 2.718281828459);
+            var result = TestUtils.ResultTest(nativeConstantFloat1);
+            TestUtils.testType(result, typeof(FloatValue));
+            TestUtils.testValue(result, 2.718281828459);
         }
 
         [TestMethod]
         public void NativeConstantFloat2()
         {
-            var result = ResultTest(nativeConstantFloat2);
-            testType(result, typeof(FloatValue));
-            testValue(result, double.PositiveInfinity);
+            var result = TestUtils.ResultTest(nativeConstantFloat2);
+            TestUtils.testType(result, typeof(FloatValue));
+            TestUtils.testValue(result, double.PositiveInfinity);
         }
 
         [TestMethod]
         public void NativeConstantResource()
         {
-            var result = ResultTest(nativeConstantResource);
-            testType(result, typeof(AnyResourceValue));
+            var result = TestUtils.ResultTest(nativeConstantResource);
+            TestUtils.testType(result, typeof(AnyResourceValue));
         }
 
         private string globalConstDeclaration = @"
@@ -167,17 +137,17 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void GlobalConstDeclaration()
         {
-            var result = ResultTest(globalConstDeclaration);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 0);
+            var result = TestUtils.ResultTest(globalConstDeclaration);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 0);
         }
 
         [TestMethod]
         public void GlobalConstDeclarationCaseInsensitive()
         {
-            var result = ResultTest(globalConstDeclarationCaseInsensitive);
-            testType(result, typeof(StringValue));
-            testValue(result, "aaa");       
+            var result = TestUtils.ResultTest(globalConstDeclarationCaseInsensitive);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "aaa");       
         }
 
         private string constDeclaration = @"
@@ -203,33 +173,33 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void ConstDeclaration()
         {
-            var result = ResultTest(constDeclaration);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 4);
+            var result = TestUtils.ResultTest(constDeclaration);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
         }
 
         [TestMethod]
         public void ConstDeclaration2()
         {
-            var result = ResultTest(constDeclaration2);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 4);
+            var result = TestUtils.ResultTest(constDeclaration2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
         }
 
         [TestMethod]
         public void ConstDeclarationCaseInsensitiveTest()
         {
-            var result = ResultTest(constDeclarationCaseInsensitive);
-            testType(result, typeof(StringValue));
-            testValue(result, "aAa");
+            var result = TestUtils.ResultTest(constDeclarationCaseInsensitive);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "aAa");
         }
 
         [TestMethod]
         public void ConstDeclarationCaseInsensitiveTest2()
         {
-            var result = ResultTest(constDeclarationCaseInsensitive2);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 4);
+            var result = TestUtils.ResultTest(constDeclarationCaseInsensitive2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
         }
 
         private string constDeclarationConstantMethod = @"
@@ -240,9 +210,9 @@ namespace Weverca.TaintedAnalysis.UnitTest
         [TestMethod]
         public void ConstDeclarationConstantMethod()
         {
-            var result = ResultTest(constDeclarationConstantMethod);
-            testType(result, typeof(IntegerValue));
-            testValue(result, 4);
+            var result = TestUtils.ResultTest(constDeclarationConstantMethod);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
         }
 
     }

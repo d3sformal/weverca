@@ -48,7 +48,7 @@ namespace Weverca.TaintedAnalysis
 
         public List<NativeMethod> Methods;
 
-
+        public bool IsInterFace;
 
         public bool IsFinal;
 
@@ -56,6 +56,7 @@ namespace Weverca.TaintedAnalysis
         {
             List<NativeMethodInfo> nativeMethodsInfo = new List<NativeMethodInfo>();
             bool containsConstructor = false;
+            HashSet<QualifiedName> allreadyDeclaredMethods = new HashSet<QualifiedName>();
             foreach (var method in Methods)
             {
                 if (WevercaImplementedMethods.ContainsKey(QualifiedName + "." + method))
@@ -73,13 +74,56 @@ namespace Weverca.TaintedAnalysis
                     else
                     {
                         nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, helper.Analyze, method.IsFinal, method.IsStatic));
+                        allreadyDeclaredMethods.Add(method.Name);
                     }
                 }
+            }
+            var baseclassName = BaseClassName;
+            while (baseclassName != null)
+            {
+                MutableNativeTypeDecl baseClass = analyzer.mutableNativeObjects[baseclassName.Value];
+                foreach (var method in baseClass.Methods)
+                {
+                    NativeObjectsAnalyzerHelper helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
+                    if (method.Name.Name.Value.ToLower() == "__construct" && containsConstructor == false)
+                    {
+                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, helper.Construct, method.IsFinal, method.IsStatic));
+                        containsConstructor = true;
+                    }
+                    else
+                    {
+                        var newMethod = new NativeMethodInfo(method.Name.Name, helper.Analyze, method.IsFinal, method.IsStatic);
+                        if (!allreadyDeclaredMethods.Contains(method.Name))
+                        {
+                            nativeMethodsInfo.Add(newMethod);
+                            allreadyDeclaredMethods.Add(method.Name);
+                        }
+                    }
+                }
+                foreach (var field in baseClass.Fields)
+                {
+                    if (!Fields.ContainsKey(field.Key))
+                    {
+                        Fields.Add(field.Key, field.Value);
+                    }
+                }
+
+                foreach (var constant in baseClass.Constants)
+                {
+                    if (!Constants.ContainsKey(constant.Key))
+                    {
+                        Constants.Add(constant.Key, constant.Value);
+                    }
+                }
+
+                baseclassName = baseClass.BaseClassName;
+
+
             }
             /* if (containsConstructor == false)
                  Console.WriteLine(QualifiedName);
             */
-            return new NativeTypeDecl(QualifiedName, nativeMethodsInfo, Constants, Fields, BaseClassName, IsFinal);
+            return new NativeTypeDecl(QualifiedName, nativeMethodsInfo, Constants, Fields, BaseClassName, IsFinal, IsInterFace);
         }
     }
 
@@ -89,7 +133,7 @@ namespace Weverca.TaintedAnalysis
 
         private Dictionary<QualifiedName, NativeTypeDecl> nativeObjects;
 
-        private Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
+        public Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
 
         private Dictionary<string, NativeMethodInfo> WevercaImplementedMethods = new Dictionary<string, NativeMethodInfo>();
 
@@ -97,43 +141,43 @@ namespace Weverca.TaintedAnalysis
         private HashSet<string> methodTypes = new HashSet<string>();
         private HashSet<string> returnTypes = new HashSet<string>();
 
-       /* private static bool once = false;
-        private void checkTypes(FlowController flow)
-        {
-            once = true;
-              Console.WriteLine("arg types");
-                      Console.WriteLine();
-                      var it = methodTypes.GetEnumerator();
-                      while (it.MoveNext())
-                      {
-                          Console.WriteLine(it.Current);
+        /* private static bool once = false;
+         private void checkTypes(FlowController flow)
+         {
+             once = true;
+               Console.WriteLine("arg types");
+                       Console.WriteLine();
+                       var it = methodTypes.GetEnumerator();
+                       while (it.MoveNext())
+                       {
+                           Console.WriteLine(it.Current);
 
-                      }
-                      Console.WriteLine();
-             Console.WriteLine("field types");
-            Console.WriteLine();
-             var it = fieldTypes.GetEnumerator();
-            while (it.MoveNext())
-            {
-                Console.WriteLine(it.Current);
+                       }
+                       Console.WriteLine();
+              Console.WriteLine("field types");
+             Console.WriteLine();
+              var it = fieldTypes.GetEnumerator();
+             while (it.MoveNext())
+             {
+                 Console.WriteLine(it.Current);
 
-            }
-            Console.WriteLine();
+             }
+             Console.WriteLine();
             
 
-            Console.WriteLine("return types");
-            Console.WriteLine();
-            var it = returnTypes.GetEnumerator();
-            while (it.MoveNext())
-            {
-                //Console.WriteLine(it.Current);
-                if (NativeFunctionAnalyzer.getReturnValue(it.Current, flow) == null)
-                {
-                    Console.WriteLine(it.Current.ToString());
-                }
-            }
-            Console.WriteLine("done");
-        }*/
+             Console.WriteLine("return types");
+             Console.WriteLine();
+             var it = returnTypes.GetEnumerator();
+             while (it.MoveNext())
+             {
+                 //Console.WriteLine(it.Current);
+                 if (NativeFunctionAnalyzer.getReturnValue(it.Current, flow) == null)
+                 {
+                     Console.WriteLine(it.Current.ToString());
+                 }
+             }
+             Console.WriteLine("done");
+         }*/
 
 
         public static NativeObjectAnalyzer GetInstance(FlowController flow)
@@ -163,6 +207,7 @@ namespace Weverca.TaintedAnalysis
                         switch (reader.Name)
                         {
                             case "class":
+                            case "interface":
                                 currentClass = new MutableNativeTypeDecl();
                                 string classFinal = reader.GetAttribute("isFinal");
                                 if (classFinal == "true")
@@ -177,10 +222,20 @@ namespace Weverca.TaintedAnalysis
                                 currentClass.Fields = new Dictionary<string, NativeFieldInfo>();
                                 currentClass.Constants = new Dictionary<string, Value>();
                                 currentClass.Methods = new List<NativeMethod>();
-                                if (reader.GetAttribute("extends") != null)
+                                if (reader.GetAttribute("baseClass") != null)
                                 {
-                                    currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("extends")));
+                                    currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("baseClass")));
                                 }
+
+                                mutableNativeObjects[currentClass.QualifiedName] = currentClass;
+                                if (reader.Name == "class")
+                                {
+                                    currentClass.IsInterFace = false;
+                                }
+                                else
+                                {
+                                    currentClass.IsInterFace = true;
+                                } 
                                 break;
                             case "field":
                                 string fieldName = reader.GetAttribute("name");
@@ -266,12 +321,7 @@ namespace Weverca.TaintedAnalysis
                     case XmlNodeType.Comment:
                         break;
                     case XmlNodeType.EndElement:
-                        switch (reader.Name)
-                        {
-                            case "class":
-                                mutableNativeObjects[currentClass.QualifiedName] = currentClass;
-                                break;
-                        }
+
                         break;
                 }
             }
@@ -329,8 +379,44 @@ namespace Weverca.TaintedAnalysis
                 NativeFunctionAnalyzer.checkArgumentTypes((new NativeFunction[1] { Method }).ToList(), flow);
             }
 
-            //return result
-            MemoryEntry functionResult = NativeFunctionAnalyzer.getReturnValue(Method.ReturnType,flow);
+            var nativeClass = NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
+            var fields = nativeClass.Fields;
+
+            MemoryEntry functionResult = NativeFunctionAnalyzer.getReturnValue(Method.ReturnType, flow);
+            List<MemoryEntry> arguments = getArguments(flow);
+            List<MemoryEntry> allFieldsEntries = new List<MemoryEntry>();
+
+            foreach (var value in flow.OutSet.ReadValue(new VariableName("this")).PossibleValues)
+            {
+                if (value is ObjectValue)
+                {
+                    List<MemoryEntry> fieldsEntries = new List<MemoryEntry>();
+                    var obj = (value as ObjectValue);
+                    foreach (NativeFieldInfo field in fields.Values)
+                    {
+                        var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
+                        allFieldsEntries.Add(fieldEntry);
+                        fieldsEntries.Add(fieldEntry);
+                    }
+                    fieldsEntries.Add(new MemoryEntry(value));
+                    fieldsEntries.AddRange(arguments);
+                    foreach (NativeFieldInfo field in fields.Values)
+                    {
+                        var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
+                        MemoryEntry newfieldValues = NativeFunctionAnalyzer.getReturnValue(field.Type, flow);
+                        ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, newfieldValues);
+                        flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), addToEntry(fieldEntry, newfieldValues.PossibleValues));
+                    }
+                    ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, value);
+                }
+                else if (value is AnyObjectValue)
+                {
+                    ValueInfoHandler.CopyFlags(flow.OutSet, arguments, value);
+
+                }
+            }
+            allFieldsEntries.AddRange(arguments);
+            ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, functionResult);
             flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
         }
 
@@ -345,10 +431,13 @@ namespace Weverca.TaintedAnalysis
 
         }
 
+
         public void initObject(FlowController flow)
         {
-            var  nativeClass=NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
+            var nativeClass = NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
             var fields = nativeClass.Fields;
+
+            List<Value> createdFields = new List<Value>();
             foreach (var value in flow.OutSet.ReadValue(new VariableName("this")).PossibleValues)
             {
                 if (value is ObjectValue)
@@ -358,11 +447,42 @@ namespace Weverca.TaintedAnalysis
                     {
                         if (field.isStatic == false)
                         {
-                            flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), (NativeFunctionAnalyzer.getReturnValue(field.Type, flow)));
+                            MemoryEntry fieldValues = NativeFunctionAnalyzer.getReturnValue(field.Type, flow);
+                            createdFields.AddRange(fieldValues.PossibleValues);
+                            flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), fieldValues);
                         }
                     }
+                    createdFields.Add(value);
+                }
+                else if (value is AnyObjectValue)
+                {
+                    ValueInfoHandler.CopyFlags(flow.OutSet, getArguments(flow), value);
                 }
             }
+            ValueInfoHandler.CopyFlags(flow.OutSet, getArguments(flow), new MemoryEntry(createdFields));
+        }
+
+        private List<MemoryEntry> getArguments(FlowController flow)
+        {
+            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+            List<MemoryEntry> arguments = new List<MemoryEntry>();
+            for (int i = 0; i < argumentCount; i++)
+            {
+                arguments.Add(flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(i)));
+            }
+            return arguments;
+        }
+
+        private MemoryEntry addToEntry(MemoryEntry entry, IEnumerable<Value> newValues)
+        {
+            List<Value> resList = new List<Value>();
+            resList.AddRange(entry.PossibleValues);
+            foreach (var value in newValues)
+            {
+                resList.Add(value);
+            }
+            return new MemoryEntry(resList);
         }
     }
 }

@@ -62,7 +62,7 @@ namespace Weverca.Analysis.Memory
 
         public override string ToString()
         {
-            return string.Format("'{0}', Type: {1}", Value, typeof(T).Name);
+            return string.Format("'{0}' Type: {1}", Value, typeof(T).Name);
         }
 
         public override void Accept(IValueVisitor visitor)

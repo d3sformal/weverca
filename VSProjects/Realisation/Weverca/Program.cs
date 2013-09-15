@@ -52,8 +52,8 @@ namespace Weverca
             var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
             console.CommentLine(string.Format("Analysis completed in: {0}ms\n",watch.ElapsedMilliseconds));
 
-            graphWalker.Run(console);            
-                        
+            graphWalker.Run(console);
+            console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
             Console.ReadKey();
         }
     }

@@ -22,7 +22,7 @@ namespace Weverca.Analysis.UnitTest
 
             };
 
-            var declaration = new NativeTypeDecl(new QualifiedName(new Name("NativeType")), methods, new Dictionary<string,Value>(), new Dictionary<string, NativeFieldInfo>());
+            var declaration = new NativeTypeDecl(new QualifiedName(new Name("NativeType")), methods, new Dictionary<string,Value>(), new Dictionary<string, NativeFieldInfo>(),null,false,false);
             return declaration;
         }
 
