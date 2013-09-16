@@ -30,7 +30,20 @@ namespace Weverca.GraphWalking
 
             if (element is NativeAnalyzer)
             {
-                visitor._name = ((StringLiteral)((element as NativeAnalyzer).InvokingElement)).Value.ToString();
+                var invokingElement = (element as NativeAnalyzer).InvokingElement;
+                if (invokingElement is StringLiteral)
+                {
+                    visitor._name = (invokingElement as StringLiteral).Value.ToString();
+                }
+                else if (invokingElement is DirectFcnCall)
+                {
+                    visitor._name = (invokingElement as DirectFcnCall).QualifiedName.Name.ToString();
+                }
+                else 
+                {
+                    visitor._name = (element as NativeAnalyzer).InvokingElement.ToString();
+                }
+                
             }
 
             if (visitor._name == null)

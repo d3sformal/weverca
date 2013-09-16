@@ -371,12 +371,12 @@ namespace Weverca.TaintedAnalysis
             Method = method;
             ObjectName = objectName;
         }
-
+        //TODO zbytocne nedavat hodnoty ktore tam uz su
         public void Analyze(FlowController flow)
         {
-            if (NativeFunctionAnalyzer.checkArgumentsCount((new NativeFunction[1] { Method }).ToList(), flow))
+            if (NativeFunctionAnalyzer.checkArgumentsCount(flow, Method))
             {
-                NativeFunctionAnalyzer.checkArgumentTypes((new NativeFunction[1] { Method }).ToList(), flow);
+                NativeFunctionAnalyzer.checkArgumentTypes(flow,Method);
             }
 
             var nativeClass = NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
@@ -418,13 +418,15 @@ namespace Weverca.TaintedAnalysis
             allFieldsEntries.AddRange(arguments);
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, functionResult);
             flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
+            List<Value> assigned_aliases=NativeFunctionAnalyzer.ResolveAliasArguments(flow, (new NativeFunction[1] { Method }).ToList());
+            ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, new MemoryEntry(assigned_aliases));
         }
 
         public void Construct(FlowController flow)
         {
-            if (NativeFunctionAnalyzer.checkArgumentsCount((new NativeFunction[1] { Method }).ToList(), flow))
+            if (NativeFunctionAnalyzer.checkArgumentsCount(flow,Method))
             {
-                NativeFunctionAnalyzer.checkArgumentTypes((new NativeFunction[1] { Method }).ToList(), flow);
+                NativeFunctionAnalyzer.checkArgumentTypes(flow,Method );
             }
 
             initObject(flow);
