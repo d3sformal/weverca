@@ -36,7 +36,7 @@ namespace Weverca.Analysis.Expressions
         private readonly AliasValueFactory _aliasValueCreator;
 
         private static readonly Type[] FlowOmittedElements = new Type[]{
-            typeof(ActualParam),typeof(FormalParam)
+            typeof(ActualParam),typeof(FormalParam),typeof(DirectTypeRef)
         };
 
         private ElementExpander()

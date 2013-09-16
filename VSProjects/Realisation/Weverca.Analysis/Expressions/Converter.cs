@@ -155,6 +155,17 @@ namespace Weverca.Analysis.Expressions
             }
         }
 
+        public override void VisitNewEx(NewEx x)
+        {
+            //force traversing
+            VisitElement(x.ClassNameRef);
+
+            foreach (var param in x.CallSignature.Parameters)
+            {
+                VisitElement(param);
+            }
+        }
+
         #endregion
     }
 }

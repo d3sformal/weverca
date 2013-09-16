@@ -172,12 +172,6 @@ namespace Weverca.Analysis.Memory
         /// <param name="type">Desired type of created object</param>
         ObjectValue CreateObject(TypeValue type);
 
-        /// <summary>
-        /// Create alias for given variable
-        /// </summary>
-        /// <param name="sourceVar">Variable which alias will be created</param>
-        /// <returns>Created alias</returns>
-        AliasValue CreateAlias(VariableName sourceVar);
         #endregion
 
 

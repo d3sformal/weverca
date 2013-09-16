@@ -633,8 +633,6 @@ namespace Weverca.Analysis.Memory
 
         public AliasValue CreateAlias(VariableName sourceVar)
         {
-            checkCanUpdate();
-
             var result = createAlias(sourceVar);
             ++_statistics.CreatedAliasValues;
             return result;

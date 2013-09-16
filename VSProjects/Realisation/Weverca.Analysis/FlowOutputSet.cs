@@ -173,12 +173,7 @@ namespace Weverca.Analysis
         {
             return Snapshot.CreateFloatInterval(start, end);
         }
-
-        public AliasValue CreateAlias(VariableName sourceVar)
-        {
-            return Snapshot.CreateAlias(sourceVar);
-        }
-        
+                
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return Snapshot.CreateInfo(data);

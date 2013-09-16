@@ -289,6 +289,26 @@ namespace Weverca.Analysis.Expressions
             return new MemoryEntry(result.ToArray());
         }
 
+        internal MemoryEntry IndirectCreateObject(MemoryEntry memoryEntry)
+        {
+            var declarations = new HashSet<TypeValue>();
+
+            foreach (StringValue name in memoryEntry.PossibleValues)
+            {
+                var qualifiedName = new QualifiedName(new Name(name.Value));
+                declarations.UnionWith(OutSet.ResolveType(qualifiedName));
+            }
+
+
+            var result = new List<ObjectValue>();
+            foreach (var declaration in declarations)
+            {
+                result.Add(OutSet.CreateObject(declaration));
+            }
+
+            return new MemoryEntry(result.ToArray());
+        }
+
         public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
         {
             return new MemoryEntry(OutSet.CreateFunction(lambda));
@@ -299,11 +319,11 @@ namespace Weverca.Analysis.Expressions
             foreach (var variable in variables)
             {
                 OutSet.FetchFromGlobal(variable.PossibleNames);
-            }            
+            }
         }
 
-        
-        
+
+
         #endregion
 
         /// <summary>
@@ -320,6 +340,5 @@ namespace Weverca.Analysis.Expressions
 
 
 
-     
     }
 }

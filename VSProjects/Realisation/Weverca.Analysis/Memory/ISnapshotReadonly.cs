@@ -72,6 +72,13 @@ namespace Weverca.Analysis.Memory
         ContainerIndex CreateIndex(string identifier);
 
         /// <summary>
+        /// Create alias for given variable
+        /// </summary>
+        /// <param name="sourceVar">Variable which alias will be created</param>
+        /// <returns>Created alias</returns>
+        AliasValue CreateAlias(VariableName sourceVar);
+
+        /// <summary>
         /// Resolves all possible functions for given functionName
         /// NOTE:
         ///     Multiple declarations for single functionName can happen for example because of branch merging

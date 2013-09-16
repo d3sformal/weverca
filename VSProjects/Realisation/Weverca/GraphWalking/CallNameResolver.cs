@@ -36,12 +36,10 @@ namespace Weverca.GraphWalking
             if (visitor._name == null)
             {
                 throw new NotImplementedException("Method for resolving given element hasn't been implemented yet");
-                
             }
 
             return visitor._name;
         }
-
 
         public override void VisitMethodDecl(MethodDecl x)
         {

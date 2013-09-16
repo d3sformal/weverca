@@ -135,7 +135,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             {
                 case 0:
                     //reserve new virtual reference
-                    var allocatedReference = new VirtualReference(targetVar,info.IsGlobal);
+                    var allocatedReference = new VirtualReference(targetVar, info.IsGlobal);
                     info.References.Add(allocatedReference);
 
                     setEntry(allocatedReference, entry);
@@ -173,7 +173,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var input = callerContext as Snapshot;
             extendVariables(input._globals, _globals, false);
-            extendData(input);
+            extendData(input,true);
 
             if (thisObject != null)
             {
@@ -190,29 +190,34 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             _data = new Dictionary<VirtualReference, MemoryEntry>();
             _locals = new Dictionary<VariableName, VariableInfo>();
+
+            var isFirst = true;
             foreach (Snapshot input in inputs)
             {
                 //merge info from extending inputs
                 extendVariables(input._globals, _globals, false);
                 extendVariables(input._locals, _locals, true);
-                extendData(input);
+                extendData(input,isFirst);
 
                 _isGlobalScope &= input._isGlobalScope;
+                isFirst = false;
             }
         }
 
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
         {
+            var isFirst = true;
             foreach (Snapshot callInput in callOutput)
             {
                 //Local variables are not extended
                 extendVariables(callInput._globals, _globals, false);
-                extendData(callInput);
+                extendData(callInput, isFirst);
+                isFirst = false;
             }
         }
 
-        private void extendData(Snapshot input)
+        private void extendData(Snapshot input, bool directExtend)
         {
             foreach (var dataPair in input._data)
             {
@@ -232,7 +237,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     {
                         //merge two memory entries
                         ReportMemoryEntryMerge();
-                        _data[dataPair.Key] = MemoryEntry.Merge(oldEntry, dataPair.Value);
+                        if (directExtend)
+                        {
+                            _data[dataPair.Key] = dataPair.Value;
+                        }
+                        else
+                        {
+                            _data[dataPair.Key] = MemoryEntry.Merge(oldEntry, dataPair.Value);
+                        }
                     }
                 }
             }
@@ -701,14 +713,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     result.AppendFormat("{0}: {{", variable);
 
                     var entry = readValue(variable, asGlobal);
-                        foreach (var value in entry.PossibleValues)
-                        {
-                            result.AppendFormat("'{0}', ", value);
-                        }
+                    foreach (var value in entry.PossibleValues)
+                    {
+                        result.AppendFormat("'{0}', ", value);
+                    }
 
-                        result.Length -= 2;
-                        result.AppendLine("}");
-                    
+                    result.Length -= 2;
+                    result.AppendLine("}");
+
                 }
             }
         }

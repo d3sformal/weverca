@@ -48,6 +48,11 @@ namespace Weverca.Analysis
         {
             return Snapshot.CreateIndex(identifier);
         }
+
+        public AliasValue CreateAlias(VariableName sourceVar)
+        {
+            return Snapshot.CreateAlias(sourceVar);
+        }
         
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {

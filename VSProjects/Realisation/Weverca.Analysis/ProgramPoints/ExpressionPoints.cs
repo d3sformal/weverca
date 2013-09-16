@@ -76,7 +76,7 @@ namespace Weverca.Analysis.ProgramPoints
     /// <summary>
     /// Include expression representation
     /// </summary>
-    public class IncludingExPoint : RValuePoint
+    public class IncludingExPoint : RCallPoint
     {
         public readonly IncludingEx Include;
 
@@ -87,20 +87,9 @@ namespace Weverca.Analysis.ProgramPoints
 
         public override LangElement Partial { get { return Include; } }
 
-        public override MemoryEntry Value
-        {
-            get
-            {
-                //include can contain return value - we obtain it from extension sink
-                return Extension.Sink.Value;
-            }
-            protected set
-            {
-                throw new NotSupportedException("Cannot set value of call node");
-            }
-        }
 
         internal IncludingExPoint(IncludingEx include, RValuePoint includePath)
+            : base(null, new RValuePoint[] { includePath })
         {
             NeedsFlowResolver = true;
 
@@ -110,6 +99,7 @@ namespace Weverca.Analysis.ProgramPoints
 
         protected override void flowThrough()
         {
+            PrepareArguments();
             Flow.FlowResolver.Include(Flow, IncludePath.Value);
         }
     }
@@ -156,37 +146,40 @@ namespace Weverca.Analysis.ProgramPoints
     /// <summary>
     /// New object expression representation
     /// </summary>
-    public class NewExPoint : RValuePoint
+    public class NewExPoint : RCallPoint
     {
-        /// <summary>
-        /// Arguments specified for new expression call
-        /// </summary>
-        private readonly RValuePoint[] _arguments;
-
         public readonly NewEx NewEx;
 
-        /// <summary>
-        /// Arguments specified for new expression call
-        /// </summary>
-        public IEnumerable<RValuePoint> Arguments { get { return _arguments; } }
+        public readonly RValuePoint Name;
 
         public override LangElement Partial { get { return NewEx; } }
 
-        internal NewExPoint(NewEx newEx, RValuePoint[] arguments)
+        public override MemoryEntry Value { get; protected set; }
+
+        internal NewExPoint(NewEx newEx,RValuePoint name, RValuePoint[] arguments)
+            : base(null, arguments)
         {
             NeedsFunctionResolver = true;
             NeedsExpressionEvaluator = true;
+            Name = name;
 
             NewEx = newEx;
-            _arguments = arguments;
         }
 
         protected override void flowThrough()
         {
-            FunctionCallPoint.PrepareArguments(null, _arguments, Flow);
+            PrepareArguments();
+
 
             //Create object according to class name
-            Value = Services.Evaluator.CreateObject(NewEx.ClassNameRef.GenericQualifiedName.QualifiedName);
+            if (Name == null)
+            {
+                Value = Services.Evaluator.CreateObject(NewEx.ClassNameRef.GenericQualifiedName.QualifiedName);
+            }
+            else
+            {
+                Value = Services.Evaluator.IndirectCreateObject(Name.Value);
+            }
 
             //initialize created object
             Value = Services.FunctionResolver.InitializeObject(Value, Flow.Arguments);

@@ -50,7 +50,7 @@ namespace Weverca.Analysis.Expressions
             //empty result because of incorrect use
             var result = _resultPoint;
             _resultPoint = null;
-            
+
             return result;
         }
 
@@ -192,6 +192,12 @@ namespace Weverca.Analysis.Expressions
             Result(new RIndirectVariablePoint(x, name, thisObj));
         }
 
+        public override void VisitIndirectTypeRef(IndirectTypeRef x)
+        {
+            var variable = CreateRValue(x.ClassNameVar);
+            Result(variable);
+        }
+
         #endregion
 
         #region Expression visiting
@@ -219,13 +225,13 @@ namespace Weverca.Analysis.Expressions
         {
             var arguments = CreateArguments(x.CallSignature);
 
-            RValuePoint baseObj = null;
+            RValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
-                baseObj = CreateRValue(x.IsMemberOf);
+                thisObj = CreateRValue(x.IsMemberOf);
             }
 
-            Result(new FunctionCallPoint(x, baseObj, arguments));
+            Result(new FunctionCallPoint(x, thisObj, arguments));
         }
 
         public override void VisitIndirectFcnCall(IndirectFcnCall x)
@@ -233,12 +239,19 @@ namespace Weverca.Analysis.Expressions
             var arguments = CreateArguments(x.CallSignature);
             var name = CreateRValue(x.PublicNameExpr);
 
-            Result(new IndirectFunctionCallPoint(x, name, arguments));
+            RValuePoint thisObj = null;
+            if (x.IsMemberOf != null)
+            {
+                thisObj = CreateRValue(x.IsMemberOf);
+            }
+
+            Result(new IndirectFunctionCallPoint(x, name, thisObj, arguments));
         }
 
         public override void VisitIncludingEx(IncludingEx x)
         {
             var possibleFiles = CreateRValue(x.Target);
+
 
             Result(new IncludingExPoint(x, possibleFiles));
         }
@@ -251,7 +264,15 @@ namespace Weverca.Analysis.Expressions
         public override void VisitNewEx(NewEx x)
         {
             var arguments = CreateArguments(x.CallSignature);
-            Result(new NewExPoint(x, arguments));
+
+            RValuePoint name=null;
+            if (!(x.ClassNameRef is DirectTypeRef))
+            {
+                name = CreateRValue(x.ClassNameRef);
+            }
+
+
+            Result(new NewExPoint(x, name, arguments));
         }
 
         #endregion

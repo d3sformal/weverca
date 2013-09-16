@@ -37,7 +37,7 @@ $call_result=concat('A','B');
         readonly static TestCase NativeCallProcessingNestedCalls_CASE = @"
 $call_result=concat(strtolower('Ab'),strtoupper('Cd'));
 ".AssertVariable("call_result").HasValues("abCD");
-        
+
         readonly static TestCase IndirectCall_CASE = @"
 $call_name='strtolower';
 $call_result=$call_name('TEST');
@@ -99,9 +99,9 @@ if($$Var==$Value){
     $OutputA=$VarA;
     $OutputB=$VarB;
 }
-".AssertVariable("OutputA").HasValues("Value1","Value2")
- .AssertVariable("OutputB").HasValues("Value1","Value2")
- .SetNonDeterministic("VarA","VarB");
+".AssertVariable("OutputA").HasValues("Value1", "Value2")
+ .AssertVariable("OutputB").HasValues("Value1", "Value2")
+ .SetNonDeterministic("VarA", "VarB");
 
         readonly static TestCase CallEqualsAssumption_CASE = @"
 if($unknown==strtolower(""TestValue"")){
@@ -217,7 +217,7 @@ include $file;
 $IncludeResult=(include 'test.php');
 
 ".AssertVariable("IncludeResult").HasValues("IncludedReturn")
- .Include("test.php",@"
+ .Include("test.php", @"
     return 'IncludedReturn';
 ");
 
@@ -232,7 +232,7 @@ $x=$_POST['dirty'];
 $x='sanitized';
 ".AssertVariable("x").IsXSSClean();
 
-        readonly static TestCase XSSPossibleDirty_CASE= @"
+        readonly static TestCase XSSPossibleDirty_CASE = @"
 $x=$_POST['dirty'];
 if($unknown){
     $x='sanitized';
@@ -263,7 +263,7 @@ if($unknown){
 }
 ".AssertVariable("x").HasValues(true, false);
 
-readonly static TestCase ForeachIteration_CASE = @"
+        readonly static TestCase ForeachIteration_CASE = @"
 $arr[0]='val1';
 $arr[1]='val2';
 $arr[2]='val3';
@@ -274,15 +274,15 @@ foreach($arr as $value){
     }
 }
 ".AssertVariable("test").HasValues("val1", "val2", "val3");
-        
-readonly static TestCase NativeObjectUsage_CASE = @"
+
+        readonly static TestCase NativeObjectUsage_CASE = @"
     $obj=new NativeType('TestValue');
     $value=$obj->GetValue();
-".AssertVariable("value").HasValues("TestValue") 
- .DeclareType(SimpleNativeType.CreateType());
+".AssertVariable("value").HasValues("TestValue")
+         .DeclareType(SimpleNativeType.CreateType());
 
 
-readonly static TestCase GlobalStatement_CASE = @"
+        readonly static TestCase GlobalStatement_CASE = @"
 
 function setGlobal(){
     global $a;
@@ -299,7 +299,7 @@ setLocal();
 ".AssertVariable("a").HasValues("ValueA");
 
 
-readonly static TestCase SharedFunction_CASE = @"
+        readonly static TestCase SharedFunction_CASE = @"
 function sharedFn($arg){
     return $arg;
 }
@@ -311,10 +311,33 @@ if($unknown){
 }
 
 "
- .AssertVariable("resultA").HasValues("ValueA", "ValueB")
- .AssertVariable("resultB").HasValues("ValueA", "ValueB")
- .ShareFunctionGraph("sharedFn")
- ;
+         .AssertVariable("resultA").HasValues("ValueA", "ValueB")
+         .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+         .ShareFunctionGraph("sharedFn")
+         ;
+
+        readonly static TestCase WriteArgument_CASE = @"
+$argument=""Value"";
+write_argument($argument);
+
+".AssertVariable("argument").HasValues("Value_WrittenInArgument");
+
+        readonly static TestCase IndirectNewEx_CASE= @"
+class Obj{
+    var $a;
+
+    function setter($value){
+        $this->a=$value;
+    }
+}
+
+$name=""Obj"";
+$obj=new $name();
+
+$obj->setter(""Value"");
+
+$result=$obj->a;
+".AssertVariable("result").HasValues("Value");
 
 
 
@@ -433,7 +456,7 @@ if($unknown){
         {
             AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
         }
-        
+
         [TestMethod]
         public void DynamicIncludeMerge()
         {
@@ -468,14 +491,14 @@ if($unknown){
         public void ConstantDeclaring()
         {
             AnalysisTestUtils.RunTestCase(ConstantDeclaring_CASE);
-        } 
+        }
 
         [TestMethod]
         public void BoolResolving()
         {
             AnalysisTestUtils.RunTestCase(BoolResolving_CASE);
-        } 
-        
+        }
+
         [TestMethod]
         public void ForeachIteration()
         {
@@ -498,6 +521,18 @@ if($unknown){
         public void SharedFunction()
         {
             AnalysisTestUtils.RunTestCase(SharedFunction_CASE);
+        }
+
+        [TestMethod]
+        public void WriteArgument()
+        {
+            AnalysisTestUtils.RunTestCase(WriteArgument_CASE);
+        }
+
+        [TestMethod]
+        public void IndirectNewEx()
+        {
+            AnalysisTestUtils.RunTestCase(IndirectNewEx_CASE);
         }
     }
 }

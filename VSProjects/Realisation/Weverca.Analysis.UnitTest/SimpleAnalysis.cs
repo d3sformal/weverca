@@ -5,6 +5,7 @@ using System.Linq;
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.Analysis.ProgramPoints;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
 
@@ -29,7 +30,7 @@ namespace Weverca.Analysis.UnitTest
         {
             _initializer = initializer;
             _flowResolver = new SimpleFlowResolver();
-            _functionResolver=new SimpleFunctionResolver(_initializer);
+            _functionResolver = new SimpleFunctionResolver(_initializer);
         }
 
         #region Resolvers that are used during analysis
@@ -401,7 +402,8 @@ namespace Weverca.Analysis.UnitTest
             {"strtoupper",_strtoupper},
             {"concat",_concat},
             {"define",_define},
-            {"abs",_abs},            
+            {"abs",_abs}, 
+            {"write_argument",_write_argument}
         };
 
         private readonly Dictionary<string, ProgramPointGraph> _sharedPpGraphs = new Dictionary<string, ProgramPointGraph>();
@@ -412,7 +414,7 @@ namespace Weverca.Analysis.UnitTest
         {
             _environmentInitializer = initializer;
         }
-        
+
         internal void SetFunctionShare(string functionName)
         {
             _sharedFunctionNames.Add(functionName);
@@ -434,7 +436,8 @@ namespace Weverca.Analysis.UnitTest
             var ctorName = new QualifiedName(new Name("__construct"));
             var ctors = resolveMethod(newObject, ctorName);
 
-            if (ctors.Count > 0){
+            if (ctors.Count > 0)
+            {
                 setCallBranching(ctors);
             }
 
@@ -483,7 +486,7 @@ namespace Weverca.Analysis.UnitTest
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
-
+            
             if (hasNamedSignature)
             {
                 //we have names for passed arguments
@@ -577,7 +580,6 @@ namespace Weverca.Analysis.UnitTest
                 {
                     possibleValues.Add(flow.OutSet.CreateString(possible0.Value + possible1.Value));
                 }
-
             }
 
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
@@ -601,6 +603,14 @@ namespace Weverca.Analysis.UnitTest
             var arg0 = flow.InSet.ReadValue(argument(0));
 
             flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.AnyFloatValue));
+        }
+
+        private static void _write_argument(FlowController flow)
+        {
+            var arg0 = flow.InSet.ReadValue(argument(0)).PossibleValues.First() as StringValue;
+
+            var value = new MemoryEntry(flow.OutSet.CreateString(arg0.Value + "_WrittenInArgument"));
+            flow.OutSet.Assign(argument(0), value);
         }
 
         private static void _constructor(FlowController flow)
@@ -769,12 +779,29 @@ namespace Weverca.Analysis.UnitTest
             var argCount = callInput.CreateInt(arguments.Length);
             callInput.Assign(new VariableName(".argument_count"), argCount);
 
-            for (int i = 0; i < arguments.Length; ++i)
+            var index=0;
+            var callPoint = Flow.ProgramPoint as RCallPoint;
+            foreach (var arg in callPoint.Arguments)
             {
-                var argVar = argument(i);
+                var parVar = argument(index);
 
-                callInput.Assign(argVar, arguments[i]);
+                //determine that argument value is based on variable, so we can get it's alias
+                var variableBased = arg as VariableBased;
+                if (variableBased == null)
+                {
+                    //assign value for parameter
+                    callInput.Assign(parVar, arguments[index]);
+                }
+                else
+                {
+                    //join parameter with alias (for testing we join all possible arguments)
+                    //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
+                    var alias = Flow.InSet.CreateAlias(variableBased.VariableEntry.DirectName);
+                    callInput.Assign(parVar, alias);
+                }
+                ++index;
             }
+
         }
 
         private static void keepArgumentInfo(FlowController flow, MemoryEntry argument, MemoryEntry resultValue)
@@ -806,7 +833,7 @@ namespace Weverca.Analysis.UnitTest
 
             bool willAssume;
             switch (condition.Form)
-            {
+            { 
                 case ConditionForm.All:
                     willAssume = needsAll(condition.Parts);
                     break;
@@ -861,7 +888,7 @@ namespace Weverca.Analysis.UnitTest
             {
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
-                var ppGraph = new ProgramPointGraph(cfg.start,null);
+                var ppGraph = new ProgramPointGraph(cfg.start, null);
                 flow.AddExtension(file, ppGraph);
             }
         }

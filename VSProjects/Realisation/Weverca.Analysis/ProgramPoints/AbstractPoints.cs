@@ -58,6 +58,63 @@ namespace Weverca.Analysis.ProgramPoints
         public virtual IEnumerable<AliasValue> Aliases { get; protected set; }
     }
 
+    public abstract class RCallPoint : RValuePoint
+    {
+        /// <summary>
+        /// Arguments specified for call - private storage
+        /// </summary>
+        private readonly RValuePoint[] _arguments;
+
+        /// <summary>
+        /// Arguments specified for call
+        /// </summary>
+        public IEnumerable<RValuePoint> Arguments { get { return _arguments; } }
+
+        /// <summary>
+        /// This object for call
+        /// <remarks>If there is no this object, is null</remarks>
+        /// </summary>
+        public readonly RValuePoint ThisObj;
+
+        public override MemoryEntry Value
+        {
+            get
+            {
+                //Return value is obtained from sink
+                return Extension.Sink.Value;
+            }
+            protected set
+            {
+                throw new NotSupportedException("Cannot set value of call node");
+            }
+        }
+
+        internal RCallPoint(RValuePoint thisObj, RValuePoint[] arguments)            
+        {
+            ThisObj = thisObj;
+            _arguments = arguments;
+        }
+
+        /// <summary>
+        /// Prepare arguments into flow controller
+        /// </summary>
+        internal void PrepareArguments()
+        {
+            //TODO better argument handling avoid copying values
+            var argumentValues = new MemoryEntry[_arguments.Length];
+            for (int i = 0; i < _arguments.Length; ++i)
+            {
+                argumentValues[i] = _arguments[i].Value;
+            }
+
+            if (ThisObj != null)
+            {
+                Flow.CalledObject = ThisObj.Value;
+            }
+            Flow.Arguments = argumentValues;
+        }     
+    }
+
     /// <summary>
     /// Base class for RValue points that are based on variable entry
     /// </summary>
