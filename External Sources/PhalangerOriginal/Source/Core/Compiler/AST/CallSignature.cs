@@ -32,6 +32,8 @@ namespace PHP.Core.AST
 		public Expression/*!*/ Expression { get { return expression; } }
 		private Expression/*!*/ expression;
 
+        public bool PublicAmpersand { get { return ampersand; } }
+
 		private bool ampersand;
 
 		public ActualParam(Position p, Expression param, bool ampersand)
