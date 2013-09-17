@@ -527,7 +527,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     else
                     {
                         // <seealso cref="UnaryOperationVisitor.VisitIntegerValue"/>
-                        result = OutSet.CreateDouble(-(System.Convert.ToDouble(number.Value)));
+                        result = OutSet.CreateDouble(-(TypeConversion.ToFloat(number.Value)));
                     }
                     break;
                 case Operations.LogicNegation:
@@ -566,6 +566,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     result = value;
                     break;
                 case Operations.Minus:
+                    // Result of arithmetic negation can overflow
                     if ((value.Value == 0) || ((-value.Value) != 0))
                     {
                         result = OutSet.CreateLong(-value.Value);
@@ -573,12 +574,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     else
                     {
                         // <seealso cref="UnaryOperationVisitor.VisitIntegerValue"/>
-                        result = OutSet.CreateDouble(-(System.Convert.ToDouble(value.Value)));
+                        result = OutSet.CreateDouble(-(TypeConversion.ToFloat(value.Value)));
                     }
                     break;
                 case Operations.LogicNegation:
-                    var booleanValue = TypeConversion.ToBoolean(OutSet, value);
-                    result = OutSet.CreateBool(!booleanValue.Value);
+                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(value.Value));
                     break;
                 case Operations.BitNegation:
                     result = OutSet.CreateLong(~value.Value);
@@ -619,22 +619,22 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     result = value;
                     break;
                 case Operations.Minus:
+                    // Result of arithmetic negation can overflow
                     if ((value.Value == 0) || ((-value.Value) != 0))
                     {
                         result = OutSet.CreateInt(-value.Value);
                     }
                     else
                     {
-                        // If the number has the lowest value (all 1s in binary), negation of it
-                        // is the same value. PHP behaves differently. It converts the number
-                        // to the same positive value, but that cause overflow. Then integer value
-                        // is converted to appropriate double value
-                        result = OutSet.CreateDouble(-(System.Convert.ToDouble(value.Value)));
+                        // If the number has the lowest value (the most important bit is 1, others are 0
+                        // in binary), arithmetic negation of it is zero. PHP behaves differently.
+                        // It converts the number to the same positive value, but that cause overflow.
+                        // Then integer value is converted to appropriate double value
+                        result = OutSet.CreateDouble(-(TypeConversion.ToFloat(value.Value)));
                     }
                     break;
                 case Operations.LogicNegation:
-                    var booleanValue = TypeConversion.ToBoolean(OutSet, value);
-                    result = OutSet.CreateBool(!booleanValue.Value);
+                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(value.Value));
                     break;
                 case Operations.BitNegation:
                     result = OutSet.CreateInt(~value.Value);
@@ -705,13 +705,14 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             if (value.Start.Equals(value.End))
             {
-                result = OutSet.CreateInt(value.Start);
+                VisitIntegerValue(OutSet.CreateInt(value.Start));
                 return;
             }
 
             switch (operation)
             {
                 case Operations.Minus:
+                    // Result of arithmetic negation can overflow
                     if ((value.Start == 0) || ((-value.Start) != 0))
                     {
                         result = OutSet.CreateIntegerInterval(-value.End, -value.Start);
@@ -719,8 +720,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     else
                     {
                         // <seealso cref="UnaryOperationVisitor.VisitIntegerValue"/>
-                        result = OutSet.CreateFloatInterval(-System.Convert.ToDouble(value.End),
-                            -System.Convert.ToDouble(value.Start));
+                        result = OutSet.CreateFloatInterval(-TypeConversion.ToFloat(value.End),
+                            -TypeConversion.ToFloat(value.Start));
                     }
                     break;
                 case Operations.BitNegation:
@@ -731,8 +732,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = OutSet.CreateFloatInterval(System.Convert.ToDouble(value.Start),
-                        System.Convert.ToDouble(value.End));
+                    result = OutSet.CreateFloatInterval(TypeConversion.ToFloat(value.Start),
+                        TypeConversion.ToFloat(value.End));
                     break;
                 default:
                     base.VisitIntervalIntegerValue(value);
@@ -744,13 +745,14 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             if (value.Start.Equals(value.End))
             {
-                result = OutSet.CreateLong(value.Start);
+                VisitLongintValue(OutSet.CreateLong(value.Start));
                 return;
             }
 
             switch (operation)
             {
                 case Operations.Minus:
+                    // Result of arithmetic negation can overflow
                     if ((value.Start == 0) || ((-value.Start) != 0))
                     {
                         result = OutSet.CreateLongintInterval(-value.End, -value.Start);
@@ -758,8 +760,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     else
                     {
                         // <seealso cref="UnaryOperationVisitor.VisitIntegerValue"/>
-                        result = OutSet.CreateFloatInterval(-System.Convert.ToDouble(value.End),
-                            -System.Convert.ToDouble(value.Start));
+                        result = OutSet.CreateFloatInterval(-TypeConversion.ToFloat(value.End),
+                            -TypeConversion.ToFloat(value.Start));
                     }
                     break;
                 case Operations.BitNegation:
@@ -778,8 +780,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = OutSet.CreateFloatInterval(System.Convert.ToDouble(value.Start),
-                        System.Convert.ToDouble(value.End));
+                    result = OutSet.CreateFloatInterval(TypeConversion.ToFloat(value.Start),
+                        TypeConversion.ToFloat(value.End));
                     break;
                 default:
                     base.VisitIntervalLongintValue(value);
@@ -791,7 +793,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         {
             if (value.Start.Equals(value.End))
             {
-                result = OutSet.CreateDouble(value.Start);
+                VisitFloatValue(OutSet.CreateDouble(value.Start));
                 return;
             }
 

@@ -49,16 +49,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExpressionEvaluator\BinaryOperations.cs" />
-    <Compile Include="ExpressionEvaluator\BinaryOperationVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\BinaryOperationVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftBooleanOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftFloatOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftIntegerOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftNullOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\TypeConversion.cs" />
     <Compile Include="ExpressionEvaluator\UnaryOperationVisitor.cs" />

@@ -63,6 +63,7 @@ namespace Weverca.TaintedAnalysis
     {
         WRONG_NUMBER_OF_ARGUMENTS,
         WRONG_ARGUMENTS_TYPE,
+        DIVISION_BY_ZERO,
         PROPERTY_OF_NON_OBJECT_VARIABLE,
         METHOD_CALL_ON_NON_OBJECT_VARIABLE,
         UNDEFINED_VALUE,

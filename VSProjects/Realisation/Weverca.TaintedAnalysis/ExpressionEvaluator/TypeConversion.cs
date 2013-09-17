@@ -22,7 +22,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, IntegerValue value)
         {
-            return outset.CreateBool(value.Value != 0);
+            return outset.CreateBool(ToBoolean(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the value of native integer to an equivalent native boolean value.
+        /// </summary>
+        /// <param name="value">Native integer to convert</param>
+        /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
+        public static bool ToBoolean(int value)
+        {
+            return value != 0;
         }
 
         /// <summary>
@@ -33,7 +43,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, LongintValue value)
         {
-            return outset.CreateBool(value.Value != 0);
+            return outset.CreateBool(ToBoolean(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the value of native long integer to an equivalent native boolean value.
+        /// </summary>
+        /// <param name="value">Native long integer to convert</param>
+        /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
+        public static bool ToBoolean(long value)
+        {
+            return value != 0;
         }
 
         /// <summary>
@@ -44,7 +64,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, FloatValue value)
         {
-            return outset.CreateBool(value.Value != 0.0);
+            return outset.CreateBool(ToBoolean(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the value of native floating-point number to an equivalent native boolean value.
+        /// </summary>
+        /// <param name="value">Native floating-point number to convert</param>
+        /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
+        public static bool ToBoolean(double value)
+        {
+            return value != 0.0;
         }
 
         /// <summary>
@@ -55,8 +85,19 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns><c>true</c> if string is not empty or "0", otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, StringValue value)
         {
-            Debug.Assert(value.Value != null, "StringValue can never be null");
-            return outset.CreateBool((value.Value.Length != 0) && (!string.Equals(value.Value, "0")));
+            return outset.CreateBool(ToBoolean(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the native string value to proper native boolean value.
+        /// </summary>
+        /// <param name="value">Native string to convert</param>
+        /// <returns><c>true</c> if string is not empty or "0", otherwise <c>false</c></returns>
+        public static bool ToBoolean(string value)
+        {
+            Debug.Assert(value != null, "String converted to boolean can never be null");
+
+            return (value.Length != 0) && (!string.Equals(value, "0"));
         }
 
         /// <summary>
@@ -176,7 +217,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>The number 1 if value is <c>true</c>, otherwise 0</returns>
         public static IntegerValue ToInteger(FlowOutputSet outset, BooleanValue value)
         {
-            return outset.CreateInt(System.Convert.ToInt32(value.Value));
+            return outset.CreateInt(ToInteger(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the native boolean value to an equivalent value of native integer.
+        /// </summary>
+        /// <param name="value">Native boolean value to convert</param>
+        /// <returns>The number 1 if value is <c>true</c>, otherwise 0</returns>
+        public static int ToInteger(bool value)
+        {
+            return System.Convert.ToInt32(value);
         }
 
         /// <summary>
@@ -190,9 +241,28 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             out IntegerValue convertedValue)
         {
             int casted;
-            var isConverted = TryConvertToInteger(outset, value.Value, out casted);
+            var isConverted = TryConvertToInteger(value.Value, out casted);
             convertedValue = outset.CreateInt(casted);
             return isConverted;
+        }
+
+        /// <summary>
+        /// Tries to convert the value of native long integer to an equivalent native integer value.
+        /// </summary>
+        /// <param name="value">Native long integer to convert</param>
+        /// <param name="convertedValue">Integer type value if conversion is successful, otherwise 0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryConvertToInteger(long value, out int convertedValue)
+        {
+            // This condition suppresses <c>OverflowException</c> of <c>Convert.ToInt32</c> conversion.
+            if (value < int.MinValue || value > int.MaxValue)
+            {
+                convertedValue = 0;
+                return false;
+            }
+
+            convertedValue = System.Convert.ToInt32(value);
+            return true;
         }
 
         /// <summary>
@@ -209,9 +279,35 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             out IntegerValue convertedValue)
         {
             int casted;
-            var isConverted = TryConvertToInteger(outset, value.Value, out casted);
+            var isConverted = TryConvertToInteger(value.Value, out casted);
             convertedValue = outset.CreateInt(casted);
             return isConverted;
+        }
+
+        /// <summary>
+        /// Tries to convert the value of native floating-point number to an equivalent native integer value.
+        /// </summary>
+        /// <remarks>
+        /// In PHP 5, when converting from floating-point number to integer, the number is rounded
+        /// towards zero. If the number is beyond the boundaries of integer, the result is undefined
+        /// integer. No warning, not even a notice will be issued when this happens.
+        /// </remarks>
+        /// <param name="value">Native floating-point number to convert</param>
+        /// <param name="convertedValue">Integer type value if conversion is successful, otherwise 0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryConvertToInteger(double value, out int convertedValue)
+        {
+            var truncated = Math.Truncate(value);
+
+            // This condition suppresses <c>OverflowException</c> of <c>Convert.ToInt32</c> conversion.
+            if (double.IsNaN(truncated) || truncated < int.MinValue || truncated > int.MaxValue)
+            {
+                convertedValue = 0;
+                return false;
+            }
+
+            convertedValue = System.Convert.ToInt32(truncated);
+            return true;
         }
 
         /// <summary>
@@ -296,7 +392,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>The number 1.0 if value is <c>true</c>, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, BooleanValue value)
         {
-            return outset.CreateDouble(System.Convert.ToDouble(value.Value));
+            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the native boolean value to an equivalent native floating-point number.
+        /// </summary>
+        /// <param name="value">Native boolean value to convert</param>
+        /// <returns>The number 1.0 if value is <c>true</c>, otherwise 0.0</returns>
+        public static double ToFloat(bool value)
+        {
+            return System.Convert.ToDouble(value);
         }
 
         /// <summary>
@@ -307,7 +413,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>A floating-point number that is equivalent to integer value.</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, IntegerValue value)
         {
-            return outset.CreateDouble(System.Convert.ToDouble(value.Value));
+            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the value of native integer value to an equivalent native floating-point number.
+        /// </summary>
+        /// <param name="value">Native integer value to convert</param>
+        /// <returns>A floating-point number that is equivalent to native integer value.</returns>
+        public static double ToFloat(int value)
+        {
+            return System.Convert.ToDouble(value);
         }
 
         /// <summary>
@@ -318,7 +434,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>A floating-point number that is equivalent to long integer value.</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, LongintValue value)
         {
-            return outset.CreateDouble(System.Convert.ToDouble(value.Value));
+            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the value of native long integer value to an equivalent native floating-point number.
+        /// </summary>
+        /// <param name="value">Native long integer value to convert</param>
+        /// <returns>A floating-point number that is equivalent to native long integer value.</returns>
+        public static double ToFloat(long value)
+        {
+            return System.Convert.ToDouble(value);
         }
 
         /// <summary>
@@ -329,15 +455,36 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>Number representation of string if it can be converted, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, StringValue value)
         {
+            FloatValue convertedValue;
+            TryConvertToFloat(outset, value, out convertedValue);
+            return convertedValue;
+        }
+
+        /// <summary>
+        /// Tries to convert the string value to corresponding floating-point number.
+        /// </summary>
+        /// <remarks>
+        /// Conversion of string to floating-point number is always defined, but in certain cases,
+        /// we want to know if the conversion is successful
+        /// </remarks>
+        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="value">String to convert</param>
+        /// <param name="convertedValue">Converted value if conversion is successful, otherwise 0.0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryConvertToFloat(FlowOutputSet outset, StringValue value,
+            out FloatValue convertedValue)
+        {
             // TODO: Implement the correct convert to float
             double result;
             if (double.TryParse(value.Value, out result))
             {
-                return outset.CreateDouble(result);
+                convertedValue = outset.CreateDouble(result);
+                return true;
             }
             else
             {
-                return outset.CreateDouble(0.0);
+                convertedValue = outset.CreateDouble(0.0);
+                return false;
             }
         }
 
@@ -380,7 +527,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>String "1" if value is <c>true</c>, otherwise empty string</returns>
         public static StringValue ToString(FlowOutputSet outset, BooleanValue value)
         {
-            return outset.CreateString(value.Value ? "1" : string.Empty);
+            return outset.CreateString(ToString(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the native boolean value to an equivalent native string representation.
+        /// </summary>
+        /// <param name="value">Native boolean value to convert</param>
+        /// <returns>String "1" if value is <c>true</c>, otherwise empty string</returns>
+        public static string ToString(bool value)
+        {
+            return value ? "1" : string.Empty;
         }
 
         /// <summary>
@@ -391,7 +548,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>The string representation of integer value</returns>
         public static StringValue ToString(FlowOutputSet outset, IntegerValue value)
         {
-            return outset.CreateString(System.Convert.ToString(value.Value));
+            return outset.CreateString(ToString(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the native integer value to an equivalent native string representation.
+        /// </summary>
+        /// <param name="value">Value of native integer to convert</param>
+        /// <returns>The string representation of native integer value</returns>
+        public static string ToString(int value)
+        {
+            return System.Convert.ToString(value);
         }
 
         /// <summary>
@@ -413,7 +580,17 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// <returns>The string representation of floating-point number</returns>
         public static StringValue ToString(FlowOutputSet outset, FloatValue value)
         {
-            return outset.CreateString(System.Convert.ToString(value.Value));
+            return outset.CreateString(ToString(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the native floating-point number to an equivalent native string representation.
+        /// </summary>
+        /// <param name="value">Native floating-point number to convert</param>
+        /// <returns>The string representation of native floating-point number</returns>
+        public static string ToString(double value)
+        {
+            return System.Convert.ToString(value);
         }
 
         /// <summary>
@@ -580,8 +757,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             out IntegerIntervalValue convertedValue)
         {
             int castedStart, castedEnd = 0;
-            var isConverted = TryConvertToInteger(outset, value.Start, out castedStart)
-                && TryConvertToInteger(outset, value.End, out castedEnd);
+            var isConverted = TryConvertToInteger(value.Start, out castedStart)
+                && TryConvertToInteger(value.End, out castedEnd);
             convertedValue = outset.CreateIntegerInterval(castedStart, castedEnd);
             return isConverted;
         }
@@ -602,63 +779,10 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             out IntegerIntervalValue convertedValue)
         {
             int castedStart, castedEnd = 0;
-            var isConverted = TryConvertToInteger(outset, value.Start, out castedStart)
-                && TryConvertToInteger(outset, value.End, out castedEnd);
+            var isConverted = TryConvertToInteger(value.Start, out castedStart)
+                && TryConvertToInteger(value.End, out castedEnd);
             convertedValue = outset.CreateIntegerInterval(castedStart, castedEnd);
             return isConverted;
-        }
-
-        #endregion
-
-        #region Conversion between natve types
-
-        /// <summary>
-        /// Tries to convert the value of long integer to an equivalent integer value.
-        /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
-        /// <param name="value">Native long integer to convert</param>
-        /// <param name="convertedValue">Integer type value if conversion is successful, otherwise 0</param>
-        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
-        public static bool TryConvertToInteger(FlowOutputSet outset, long value,
-            out int convertedValue)
-        {
-            // This condition suppresses <c>OverflowException</c> of <c>Convert.ToInt32</c> conversion.
-            if (value < int.MinValue || value > int.MaxValue)
-            {
-                convertedValue = 0;
-                return false;
-            }
-
-            convertedValue = System.Convert.ToInt32(value);
-            return true;
-        }
-
-        /// <summary>
-        /// Tries to convert the value of floating-point number to an equivalent integer value.
-        /// </summary>
-        /// <remarks>
-        /// In PHP 5, when converting from floating-point number to integer, the number is rounded
-        /// towards zero. If the number is beyond the boundaries of integer, the result is undefined
-        /// integer. No warning, not even a notice will be issued when this happens.
-        /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
-        /// <param name="value">Native floating-point number to convert</param>
-        /// <param name="convertedValue">Integer type value if conversion is successful, otherwise 0</param>
-        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
-        private static bool TryConvertToInteger(FlowOutputSet outset, double value,
-            out int convertedValue)
-        {
-            var truncated = Math.Truncate(value);
-
-            // This condition suppresses <c>OverflowException</c> of <c>Convert.ToInt32</c> conversion.
-            if (double.IsNaN(truncated) || truncated < int.MinValue || truncated > int.MaxValue)
-            {
-                convertedValue = 0;
-                return false;
-            }
-
-            convertedValue = System.Convert.ToInt32(truncated);
-            return true;
         }
 
         #endregion
