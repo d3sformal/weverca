@@ -14,7 +14,7 @@ namespace Weverca.Analysis.ProgramPoints
     /// Representation of item use ($usedItem[$index]), that can be assigned
     /// TODO: Needs to implement thisObj support
     /// </summary>
-    public class LItemUsePoint : LValuePoint
+    public class LItemUsePoint : LValuePoint, AliasProvider
     {
         public readonly ItemUse ItemUse;
 
@@ -44,7 +44,6 @@ namespace Weverca.Analysis.ProgramPoints
             Index = index;
         }
 
-
         public override void Assign(FlowController flow, MemoryEntry entry)
         {
             flow.Services.Evaluator.IndexAssign(IndexedValue, Index.Value, entry);
@@ -64,6 +63,11 @@ namespace Weverca.Analysis.ProgramPoints
         }
 
         public override void AssignAlias(FlowController flow, IEnumerable<AliasValue> aliases)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<AliasValue> CreateAlias(FlowController flow)
         {
             throw new NotImplementedException();
         }
@@ -103,5 +107,9 @@ namespace Weverca.Analysis.ProgramPoints
             Value = Services.Evaluator.ResolveIndex(UsedItem.Value, Index.Value);
         }
 
+        public IEnumerable<AliasValue> CreateAlias(FlowController flow)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

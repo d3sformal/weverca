@@ -114,6 +114,14 @@ namespace Weverca.Analysis.Memory
         /// <param name="targetVar">Target variable</param>
         /// <param name="alias">Assigned alias</param>
         protected abstract void assignAlias(VariableName targetVar, AliasValue alias);
+
+        /// <summary>
+        /// Assign alias to given targetVar
+        /// </summary>
+        /// <param name="targetVar">Target variable</param>
+        /// <param name="alias">Assigned alias</param>
+        protected abstract void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases);
+
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
         /// This merged info can be than changed with snapshot updatable operations
@@ -661,6 +669,13 @@ namespace Weverca.Analysis.Memory
             ++_statistics.MemoryEntryAssigns;
         }
 
+        public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
+        {
+            checkCanUpdate();
+            ++_statistics.AliasAssigns;
+            assignAliases(targetVar, aliases);
+        }
+
         public void Extend(params ISnapshotReadonly[] inputs)
         {
             checkCanUpdate();
@@ -762,6 +777,5 @@ namespace Weverca.Analysis.Memory
 
 
 
-   
     }
 }

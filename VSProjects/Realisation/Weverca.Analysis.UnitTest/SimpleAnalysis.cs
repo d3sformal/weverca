@@ -486,7 +486,7 @@ namespace Weverca.Analysis.UnitTest
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
-            
+
             if (hasNamedSignature)
             {
                 //we have names for passed arguments
@@ -766,11 +766,26 @@ namespace Weverca.Analysis.UnitTest
 
         private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
+            var callPoint = Flow.ProgramPoint as RCallPoint;
+            var callSignature=callPoint.CallSignature;
+            var enumerator = callPoint.Arguments.GetEnumerator();
+
             for (int i = 0; i < signature.FormalParams.Count; ++i)
             {
-                var param = signature.FormalParams[i];
+                enumerator.MoveNext();
 
-                callInput.Assign(param.Name, arguments[i]);
+                var param = signature.FormalParams[i];
+                var callParam = callSignature.Value.Parameters[i];
+
+                if (callParam.PublicAmpersand)
+                {
+                    var aliasProvider = enumerator.Current as AliasProvider;
+                    callInput.AssignAliases(param.Name, aliasProvider.CreateAlias(Flow));
+                }
+                else
+                {
+                    callInput.Assign(param.Name, arguments[i]);
+                }
             }
         }
 
@@ -779,15 +794,15 @@ namespace Weverca.Analysis.UnitTest
             var argCount = callInput.CreateInt(arguments.Length);
             callInput.Assign(new VariableName(".argument_count"), argCount);
 
-            var index=0;
+            var index = 0;
             var callPoint = Flow.ProgramPoint as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
                 var parVar = argument(index);
 
                 //determine that argument value is based on variable, so we can get it's alias
-                var variableBased = arg as VariableBased;
-                if (variableBased == null)
+                var aliasProvider = arg as AliasProvider;
+                if (aliasProvider == null)
                 {
                     //assign value for parameter
                     callInput.Assign(parVar, arguments[index]);
@@ -796,8 +811,8 @@ namespace Weverca.Analysis.UnitTest
                 {
                     //join parameter with alias (for testing we join all possible arguments)
                     //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
-                    var alias = Flow.InSet.CreateAlias(variableBased.VariableEntry.DirectName);
-                    callInput.Assign(parVar, alias);
+
+                    callInput.AssignAliases(parVar, aliasProvider.CreateAlias(Flow));
                 }
                 ++index;
             }
@@ -833,7 +848,7 @@ namespace Weverca.Analysis.UnitTest
 
             bool willAssume;
             switch (condition.Form)
-            { 
+            {
                 case ConditionForm.All:
                     willAssume = needsAll(condition.Parts);
                     break;

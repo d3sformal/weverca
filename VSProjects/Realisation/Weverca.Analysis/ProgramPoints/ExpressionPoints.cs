@@ -89,7 +89,7 @@ namespace Weverca.Analysis.ProgramPoints
 
 
         internal IncludingExPoint(IncludingEx include, RValuePoint includePath)
-            : base(null, new RValuePoint[] { includePath })
+            : base(null, null, new RValuePoint[] { includePath })
         {
             NeedsFlowResolver = true;
 
@@ -156,8 +156,8 @@ namespace Weverca.Analysis.ProgramPoints
 
         public override MemoryEntry Value { get; protected set; }
 
-        internal NewExPoint(NewEx newEx,RValuePoint name, RValuePoint[] arguments)
-            : base(null, arguments)
+        internal NewExPoint(NewEx newEx, RValuePoint name, RValuePoint[] arguments)
+            : base(null,newEx.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
             NeedsExpressionEvaluator = true;

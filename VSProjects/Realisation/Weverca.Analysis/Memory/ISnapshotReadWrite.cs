@@ -186,6 +186,9 @@ namespace Weverca.Analysis.Memory
         /// <param name="value">Value that will be assigned</param>
         void Assign(VariableName targetVar, Value value);
 
+
+        void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> alias);
+
         /// <summary>
         /// Assign memory entry into targetVar        
         /// </summary>

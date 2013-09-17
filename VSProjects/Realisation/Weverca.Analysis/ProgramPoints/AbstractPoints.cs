@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core.AST;
+
 using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.ProgramPoints
@@ -17,13 +19,22 @@ namespace Weverca.Analysis.ProgramPoints
     }
 
     /// <summary>
+    /// Implemented by program points, that can create alias values
+    /// </summary>
+    public interface AliasProvider
+    {
+        IEnumerable<AliasValue> CreateAlias(FlowController flow);
+    }
+
+    /// <summary>
     /// Implemented by program points, that can be resolved as variable entry
     /// </summary>
-    public interface VariableBased
+    public interface VariableBased : AliasProvider
     {
         VariableEntry VariableEntry { get; }
         RValuePoint ThisObj { get; }
     }
+
 
     /// <summary>
     /// Base class for RValue program points
@@ -70,6 +81,8 @@ namespace Weverca.Analysis.ProgramPoints
         /// </summary>
         public IEnumerable<RValuePoint> Arguments { get { return _arguments; } }
 
+        public readonly CallSignature? CallSignature;
+
         /// <summary>
         /// This object for call
         /// <remarks>If there is no this object, is null</remarks>
@@ -89,8 +102,9 @@ namespace Weverca.Analysis.ProgramPoints
             }
         }
 
-        internal RCallPoint(RValuePoint thisObj, RValuePoint[] arguments)            
+        internal RCallPoint(RValuePoint thisObj,CallSignature? callSignature, RValuePoint[] arguments)
         {
+            CallSignature = callSignature;
             ThisObj = thisObj;
             _arguments = arguments;
         }
@@ -112,7 +126,7 @@ namespace Weverca.Analysis.ProgramPoints
                 Flow.CalledObject = ThisObj.Value;
             }
             Flow.Arguments = argumentValues;
-        }     
+        }
     }
 
     /// <summary>
@@ -150,6 +164,18 @@ namespace Weverca.Analysis.ProgramPoints
             }
             return flow.Services.Evaluator.ResolveIndexedVariable(VariableEntry);
         }
+
+        public IEnumerable<AliasValue> CreateAlias(FlowController flow)
+        {
+            if (ThisObj == null)
+            {
+                return flow.Services.Evaluator.ResolveAlias(VariableEntry);
+            }
+            else
+            {
+                return flow.Services.Evaluator.ResolveAliasedField(ThisObj.Value, VariableEntry);
+            }
+        }
     }
 
     /// <summary>
@@ -186,6 +212,18 @@ namespace Weverca.Analysis.ProgramPoints
             else
             {
                 flow.Services.Evaluator.AliasedFieldAssign(ThisObj.Value, VariableEntry, aliases);
+            }
+        }
+
+        public IEnumerable<AliasValue> CreateAlias(FlowController flow)
+        {
+            if (ThisObj == null)
+            {
+                return flow.Services.Evaluator.ResolveAlias(VariableEntry);
+            }
+            else
+            {
+                return flow.Services.Evaluator.ResolveAliasedField(ThisObj.Value, VariableEntry);
             }
         }
     }

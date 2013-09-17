@@ -163,7 +163,19 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 info.References.AddRange(refAlias.References);
             }
         }
+        
+        protected override void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
+        {
+            var info = getOrCreate(targetVar);
+            var references = new HashSet<VirtualReference>();
+            foreach (ReferenceAlias alias in aliases)
+            {
+                references.UnionWith(alias.References);
+            }
 
+            info.References.Clear();
+            info.References.AddRange(references);
+        }
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
@@ -606,8 +618,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return indexes;
         }
         #endregion
-
-
 
         protected override void setInfo(Value value, params InfoValue[] info)
         {

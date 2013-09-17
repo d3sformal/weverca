@@ -322,7 +322,7 @@ write_argument($argument);
 
 ".AssertVariable("argument").HasValues("Value_WrittenInArgument");
 
-        readonly static TestCase IndirectNewEx_CASE= @"
+        readonly static TestCase IndirectNewEx_CASE = @"
 class Obj{
     var $a;
 
@@ -338,6 +338,21 @@ $obj->setter(""Value"");
 
 $result=$obj->a;
 ".AssertVariable("result").HasValues("Value");
+
+        readonly static TestCase ArgumentWrite_ExplicitAlias_CASE = @"
+
+function setArg($arg){
+    $arg=""Set"";
+}
+
+$result1=""NotSet"";
+$result2=""NotSet"";
+
+setArg($result1);
+setArg(&$result2);
+"
+    .AssertVariable("result1").HasValues("NotSet")
+    .AssertVariable("result2").HasValues("Set");
 
 
 
@@ -530,9 +545,17 @@ $result=$obj->a;
         }
 
         [TestMethod]
+        public void ArgumentWrite_ExplicitAlias()
+        {
+            AnalysisTestUtils.RunTestCase(ArgumentWrite_ExplicitAlias_CASE);
+        }
+
+        [TestMethod]
         public void IndirectNewEx()
         {
             AnalysisTestUtils.RunTestCase(IndirectNewEx_CASE);
         }
+
+
     }
 }

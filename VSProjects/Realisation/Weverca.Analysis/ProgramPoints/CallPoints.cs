@@ -16,11 +16,11 @@ namespace Weverca.Analysis.ProgramPoints
     public class FunctionCallPoint : RCallPoint
     {
         public readonly DirectFcnCall FunctionCall;
-        
+
         public override LangElement Partial { get { return FunctionCall; } }
-        
+
         internal FunctionCallPoint(DirectFcnCall functionCall, RValuePoint thisObj, RValuePoint[] arguments)
-            :base(thisObj,arguments)
+            : base(thisObj, functionCall.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
 
@@ -42,7 +42,7 @@ namespace Weverca.Analysis.ProgramPoints
         }
     }
 
-   
+
 
     public class IndirectFunctionCallPoint : RCallPoint
     {
@@ -55,8 +55,8 @@ namespace Weverca.Analysis.ProgramPoints
 
         public override LangElement Partial { get { return FunctionCall; } }
 
-        internal IndirectFunctionCallPoint(IndirectFcnCall functionCall, RValuePoint name,RValuePoint thisObj, RValuePoint[] arguments)
-            : base(thisObj, arguments)
+        internal IndirectFunctionCallPoint(IndirectFcnCall functionCall, RValuePoint name, RValuePoint thisObj, RValuePoint[] arguments)
+            : base(thisObj, functionCall.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
 

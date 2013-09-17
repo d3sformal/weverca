@@ -198,6 +198,11 @@ namespace Weverca.Analysis
         {
             Snapshot.Assign(targetVar, entry);
         }
+        
+        public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
+        {
+            Snapshot.AssignAliases(targetVar, aliases);
+        }
 
         public void FetchFromGlobal(params VariableName[] variables)
         {
@@ -288,12 +293,5 @@ namespace Weverca.Analysis
             return input.Snapshot;
         }
         #endregion
-
-
-
-
-
-
-
     }
 }

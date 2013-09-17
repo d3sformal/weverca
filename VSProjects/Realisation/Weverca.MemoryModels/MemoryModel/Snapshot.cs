@@ -791,5 +791,10 @@ namespace Weverca.MemoryModels.MemoryModel
         }
 
         #endregion
+
+        protected override void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
