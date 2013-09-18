@@ -390,7 +390,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             MemoryEntry entry;
             ReportSimpleHashSearch();
-            _data.TryGetValue(reference, out entry);
+            if (!_data.TryGetValue(reference, out entry))
+            {
+                //reading of uninitialized reference (may happen when aliasing cross contexts)
+                return new MemoryEntry(UndefinedValue);
+            }
 
             return entry;
         }
