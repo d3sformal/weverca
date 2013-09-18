@@ -27,6 +27,11 @@ namespace Weverca.TaintedAnalysis.UnitTest
             $result=$a->getPrevious();
         ";
 
+        string ObjectParameterByReferenceTest = @"
+$base=new  EventBase (new EventConfig());
+$a=new EventBufferEvent ($base);
+$a->read($result,0);";
+
         [TestMethod]
         public void ObjectConstruct()
         {
@@ -47,6 +52,14 @@ namespace Weverca.TaintedAnalysis.UnitTest
             var result = TestUtils.ResultTest(ObjectMethodTest);
             TestUtils.testType(result, typeof(AnyStringValue));
         }
+
+        [TestMethod]
+        public void ObjectParameterByReference()
+        {
+            var result = TestUtils.ResultTest(ObjectParameterByReferenceTest);
+            TestUtils.testType(result, typeof(AnyStringValue));
+        }
+
 
     /*    [TestMethod]
         public void ObjectMethod2()

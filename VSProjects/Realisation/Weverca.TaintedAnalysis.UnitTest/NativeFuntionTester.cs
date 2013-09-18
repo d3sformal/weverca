@@ -320,5 +320,22 @@ namespace Weverca.TaintedAnalysis.UnitTest
             Assert.AreEqual(TestUtils.ResultTest(functionResult8).GetType(), typeof(AnyValue));
         }
 
+        string parameterByReferenceTest = @"
+        mysqlnd_uh_convert_to_mysqlnd($result);";
+        [TestMethod]
+        public void ParameterByReference()
+        {
+            Assert.AreEqual(TestUtils.ResultTest(parameterByReferenceTest).GetType(), typeof(ObjectValue));
+        }
+
+        string parameterByReferenceTest2 = @"
+$result=4;
+        mysqlnd_uh_convert_to_mysqlnd($result);";
+        [TestMethod]
+        public void ParameterByReference2()
+        {
+            Assert.AreEqual(TestUtils.ResultTest(parameterByReferenceTest2).GetType(), typeof(ObjectValue));
+        }
+
     }
 }

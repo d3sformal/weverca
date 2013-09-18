@@ -9,6 +9,7 @@ using PHP.Core.AST;
 using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
+using Weverca.Analysis.ProgramPoints;
 
 namespace Weverca.TaintedAnalysis
 {
@@ -345,27 +346,58 @@ namespace Weverca.TaintedAnalysis
             return objectValues;
         }
 
-        private static void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
+        private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
+            var callPoint = Flow.ProgramPoint as RCallPoint;
+            var callSignature = callPoint.CallSignature;
+            var enumerator = callPoint.Arguments.GetEnumerator();
+
             for (int i = 0; i < signature.FormalParams.Count; ++i)
             {
-                var param = signature.FormalParams[i];
+                enumerator.MoveNext();
 
-                callInput.Assign(param.Name, arguments[i]);
+                var param = signature.FormalParams[i];
+                var callParam = callSignature.Value.Parameters[i];
+
+                if (callParam.PublicAmpersand)
+                {
+                    var aliasProvider = enumerator.Current as AliasProvider;
+                    callInput.AssignAliases(param.Name, aliasProvider.CreateAlias(Flow));
+                }
+                else
+                {
+                    callInput.Assign(param.Name, arguments[i]);
+                }
             }
         }
 
-        private static void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
+        private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
         {
             var argCount = callInput.CreateInt(arguments.Length);
             callInput.Assign(new VariableName(".argument_count"), argCount);
 
-            for (int i = 0; i < arguments.Length; ++i)
+            var index = 0;
+            var callPoint = Flow.ProgramPoint as RCallPoint;
+            foreach (var arg in callPoint.Arguments)
             {
-                var argVar = argument(i);
+                var parVar = argument(index);
 
-                callInput.Assign(argVar, arguments[i]);
+                //determine that argument value is based on variable, so we can get it's alias
+                var aliasProvider = arg as AliasProvider;
+                if (aliasProvider == null)
+                {
+                    //assign value for parameter
+                    callInput.Assign(parVar, arguments[index]);
+                }
+                else
+                {
+                    //join parameter with alias (for testing we join all possible arguments)
+                    //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
+                    callInput.AssignAliases(parVar, aliasProvider.CreateAlias(Flow));
+                }
+                ++index;
             }
+
         }
 
         #endregion

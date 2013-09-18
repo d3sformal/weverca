@@ -18,7 +18,7 @@ using Weverca.TaintedAnalysis.ExpressionEvaluator;
 
 namespace Weverca.TaintedAnalysis
 {
-
+    //TODO - funkcie co nesiria priznaky - pridat najst
 
 
     public class NativeFunctionArgument

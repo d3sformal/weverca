@@ -371,7 +371,7 @@ namespace Weverca.TaintedAnalysis
             Method = method;
             ObjectName = objectName;
         }
-        //TODO zbytocne nedavat hodnoty ktore tam uz su
+
         public void Analyze(FlowController flow)
         {
             if (NativeFunctionAnalyzer.checkArgumentsCount(flow, Method))
@@ -405,7 +405,12 @@ namespace Weverca.TaintedAnalysis
                         var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
                         MemoryEntry newfieldValues = NativeFunctionAnalyzer.getReturnValue(field.Type, flow);
                         ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, newfieldValues);
-                        flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), addToEntry(fieldEntry, newfieldValues.PossibleValues));
+                        List<Value> addedValues;
+                        flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), addToEntry(fieldEntry, newfieldValues.PossibleValues, out addedValues));
+                        if (addedValues.Count != 0)
+                        {
+                            ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, new MemoryEntry(addedValues));
+                        }
                     }
                     ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, value);
                 }
@@ -476,13 +481,17 @@ namespace Weverca.TaintedAnalysis
             return arguments;
         }
 
-        private MemoryEntry addToEntry(MemoryEntry entry, IEnumerable<Value> newValues)
+        private MemoryEntry addToEntry(MemoryEntry entry, IEnumerable<Value> newValues, out List<Value> addedValues)
         {
-            List<Value> resList = new List<Value>();
-            resList.AddRange(entry.PossibleValues);
+            addedValues = new List<Value>();
+            HashSet<Value> resList = new HashSet<Value>(entry.PossibleValues);
             foreach (var value in newValues)
             {
-                resList.Add(value);
+                if(resList.Contains(value))
+                {
+                    resList.Add(value);
+                    addedValues.Add(value);
+                }
             }
             return new MemoryEntry(resList);
         }
