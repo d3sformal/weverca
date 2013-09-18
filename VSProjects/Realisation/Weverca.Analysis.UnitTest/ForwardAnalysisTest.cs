@@ -354,6 +354,17 @@ setArg(&$result2);
     .AssertVariable("result1").HasValues("NotSet")
     .AssertVariable("result2").HasValues("Set");
 
+        readonly static TestCase ArgumentWrite_ExplicitAliasToUndefined_CASE = @"
+
+function setArg($arg){
+    $arg=""Set"";
+}
+
+setArg(&$result);
+
+"
+   .AssertVariable("result").HasValues("Set");
+
 
 
         [TestMethod]
@@ -548,6 +559,12 @@ setArg(&$result2);
         public void ArgumentWrite_ExplicitAlias()
         {
             AnalysisTestUtils.RunTestCase(ArgumentWrite_ExplicitAlias_CASE);
+        }
+
+        [TestMethod]
+        public void ArgumentWrite_ExplicitAliasToUndefined()
+        {
+            AnalysisTestUtils.RunTestCase(ArgumentWrite_ExplicitAliasToUndefined_CASE);
         }
 
         [TestMethod]

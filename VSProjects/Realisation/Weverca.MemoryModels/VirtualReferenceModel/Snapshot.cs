@@ -118,6 +118,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         protected override AliasValue createAlias(VariableName sourceVar)
         {
             var info = getInfo(sourceVar);
+            if (info == null)
+            {
+                //force reference creation
+                ReportMemoryEntryCreation();
+                assign(sourceVar, new MemoryEntry(UndefinedValue));
+                info = getInfo(sourceVar);
+            }
+
             return new ReferenceAlias(info.References);
         }
 
@@ -163,7 +171,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 info.References.AddRange(refAlias.References);
             }
         }
-        
+
         protected override void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
             var info = getOrCreate(targetVar);
@@ -185,7 +193,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var input = callerContext as Snapshot;
             extendVariables(input._globals, _globals, false);
-            extendData(input,true);
+            extendData(input, true);
 
             if (thisObject != null)
             {
@@ -209,7 +217,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 //merge info from extending inputs
                 extendVariables(input._globals, _globals, false);
                 extendVariables(input._locals, _locals, true);
-                extendData(input,isFirst);
+                extendData(input, isFirst);
 
                 _isGlobalScope &= input._isGlobalScope;
                 isFirst = false;

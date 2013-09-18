@@ -121,7 +121,7 @@ namespace Weverca.Analysis
             checkInitialized();
 
             extendInput();
-            
+
 
             _outSet.StartTransaction();
             _outSet.Extend(_inSet);
@@ -179,29 +179,29 @@ namespace Weverca.Analysis
 
             foreach (var ext in Extension.Branches)
             {
-                var start=ext.Start;
-                
-                _outSet.ExtendAsCall(_inSet,Flow.CalledObject,Flow.Arguments);
+                var start = ext.Start;
+
+                _outSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
                 if (Flow.Arguments == null)
                     Flow.Arguments = new MemoryEntry[0];
                 Services.FunctionResolver.InitializeCall(_outSet, ext, Flow.Arguments);
             }
         }
-        
+
         private void activateResolvers()
         {
-            if (NeedsExpressionEvaluator)
-                Services.Evaluator.SetContext(Flow);
+            //     if (NeedsExpressionEvaluator)
+            Services.Evaluator.SetContext(Flow);
 
-            if (NeedsFunctionResolver)
-                Services.FunctionResolver.SetContext(Flow);
+            //   if (NeedsFunctionResolver)
+            Services.FunctionResolver.SetContext(Flow);
 
-  
+
         }
 
         private void setNewController()
         {
-            Flow = new FlowController(Services, this);            
+            Flow = new FlowController(Services, this);
         }
 
         #endregion

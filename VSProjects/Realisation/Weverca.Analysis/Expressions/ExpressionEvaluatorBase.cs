@@ -191,7 +191,7 @@ namespace Weverca.Analysis.Expressions
             var aliases = new List<AliasValue>(possibleNames.Length);
             foreach (var aliasedVariable in possibleNames)
             {
-                aliases.Add(OutSet.CreateAlias(aliasedVariable));
+                aliases.Add(InSet.CreateAlias(aliasedVariable));
             }
 
             return aliases;
