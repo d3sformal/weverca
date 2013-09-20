@@ -27,12 +27,12 @@ namespace Weverca.Analysis.Memory
     /// </remarks>
     /// </summary>
     public abstract class SnapshotBase : ISnapshotReadWrite
-    {       
+    {
         /// <summary>
         /// singleton variable where return value is stored
         /// </summary>
         private static readonly VariableName _returnValue = new VariableName(".return");
-       
+
         /// <summary>
         /// Statistics object - here are stored statistics
         /// </summary>
@@ -101,26 +101,20 @@ namespace Weverca.Analysis.Memory
         /// <param name="sourceVar">Variable which alias will be created</param>
         /// <returns>Created alias</returns>
         protected abstract AliasValue createAlias(VariableName sourceVar);
-        
+
         /// <summary>
         /// Assign memory entry into targetVar        
         /// </summary>
         /// <param name="targetVar">Target of assigning</param>
         /// <param name="entry">Value that will be assigned</param>
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
-        /// <summary>
-        /// Assign alias to given targetVar
-        /// </summary>
-        /// <param name="targetVar">Target variable</param>
-        /// <param name="alias">Assigned alias</param>
-        protected abstract void assignAlias(VariableName targetVar, AliasValue alias);
 
         /// <summary>
         /// Assign alias to given targetVar
         /// </summary>
         /// <param name="targetVar">Target variable</param>
         /// <param name="alias">Assigned alias</param>
-        protected abstract void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases);
+        protected abstract void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases);
 
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
@@ -196,15 +190,15 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="value">Handler for object manipulation</param>
         /// <param name="index">Index of field that will be set</param>
-        /// <param name="alias">Alias that will be set for field</param>
-        protected abstract void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias);
+        /// <param name="aliases">Alias that will be set for field</param>
+        protected abstract void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases);
         /// <summary>
         /// Set specified index, in array represented by value 
         /// </summary>
         /// <param name="value">Handler for array manipulation</param>
         /// <param name="index">Index that will be set</param>
-        /// <param name="alias">Alias that will be set for field</param>
-        protected abstract void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias);
+        /// <param name="aliases">Alias that will be set for field</param>
+        protected abstract void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases);
 
         /// <summary>
         /// Get value for field specified by index, in object represented by value 
@@ -311,7 +305,7 @@ namespace Weverca.Analysis.Memory
         #region Snapshot controll operations
 
         public SnapshotBase()
-        {            
+        {
         }
 
         /// <summary>
@@ -380,7 +374,7 @@ namespace Weverca.Analysis.Memory
             checkCanUpdate();
 
             _statistics.AsCallExtendings++;
-            extendAsCall(callerContext, thisObject, arguments);         
+            extendAsCall(callerContext, thisObject, arguments);
         }
 
         #endregion
@@ -398,7 +392,7 @@ namespace Weverca.Analysis.Memory
         public AnyResourceValue AnyResourceValue { get { return new AnyResourceValue(); } }
         public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
         public VariableName ReturnValue { get { return _returnValue; } }
-                
+
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return new InfoValue<T>(data);
@@ -486,7 +480,7 @@ namespace Weverca.Analysis.Memory
             checkCanUpdate();
 
             ++_statistics.CreatedFunctionValues;
-            return new NativeAnalyzerValue(name,analyzer);
+            return new NativeAnalyzerValue(name, analyzer);
         }
 
 
@@ -507,10 +501,10 @@ namespace Weverca.Analysis.Memory
         {
             checkCanUpdate();
 
-            var type=new SourceTypeValue(declaration);
+            var type = new SourceTypeValue(declaration);
             ++_statistics.CreatedSourceTypeValues;
 
-            return type;    
+            return type;
         }
 
         public TypeValue CreateType(NativeTypeDecl declaration)
@@ -520,7 +514,7 @@ namespace Weverca.Analysis.Memory
             var type = new NativeTypeValue(declaration);
             ++_statistics.CreatedNativeTypeValues;
 
-            return type;    
+            return type;
         }
 
         public ObjectValue CreateObject(TypeValue type)
@@ -547,25 +541,25 @@ namespace Weverca.Analysis.Memory
             return createdArray;
         }
 
-        public IntegerIntervalValue CreateIntegerInterval(int start,int end)
+        public IntegerIntervalValue CreateIntegerInterval(int start, int end)
         {
             checkCanUpdate();
             ++_statistics.CreatedIntIntervalValues;
-            return new IntegerIntervalValue(start,end);
+            return new IntegerIntervalValue(start, end);
         }
 
         public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
             checkCanUpdate();
             ++_statistics.CreatedLongIntervalValues;
-            return new LongintIntervalValue(start,end);
+            return new LongintIntervalValue(start, end);
         }
 
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
             checkCanUpdate();
             ++_statistics.CreatedFloatIntervalValues;
-            return new FloatIntervalValue(start,end);
+            return new FloatIntervalValue(start, end);
         }
 
         public void SetInfo(Value value, params InfoValue[] info)
@@ -609,14 +603,15 @@ namespace Weverca.Analysis.Memory
             setIndex(value, index, entry);
         }
 
-        public void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        public void SetFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             checkCanUpdate();
 
             ++_statistics.FieldAliasAssigns;
             setFieldAlias(value, index, alias);
         }
-        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+
+        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             checkCanUpdate();
 
@@ -653,7 +648,7 @@ namespace Weverca.Analysis.Memory
             if (value is AliasValue)
             {
                 ++_statistics.AliasAssigns;
-                assignAlias(targetVar, value as AliasValue);
+                assignAlias(targetVar, new[] { value as AliasValue });
             }
             else
             {
@@ -673,7 +668,7 @@ namespace Weverca.Analysis.Memory
         {
             checkCanUpdate();
             ++_statistics.AliasAssigns;
-            assignAliases(targetVar, aliases);
+            assignAlias(targetVar, aliases);
         }
 
         public void Extend(params ISnapshotReadonly[] inputs)
@@ -729,11 +724,11 @@ namespace Weverca.Analysis.Memory
         }
 
         internal IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
-        {            
+        {
             ++_statistics.MethodResolvings;
-            return resolveMethod(objectValue,methodName);
+            return resolveMethod(objectValue, methodName);
         }
-                
+
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             ++_statistics.TypeResolvings;

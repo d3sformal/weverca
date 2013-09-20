@@ -159,21 +159,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
 
-        protected override void assignAlias(VariableName targetVar, AliasValue alias)
+        protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
-            var info = getOrCreate(targetVar);
-            var refAlias = alias as ReferenceAlias;
-
-            if (!hasSameReferences(info, refAlias.References))
-            {
-                reportSemanticChange();
-                info.References.Clear();
-                info.References.AddRange(refAlias.References);
-            }
-        }
-
-        protected override void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
-        {
+            
             var info = getOrCreate(targetVar);
             var references = new HashSet<VirtualReference>();
             foreach (ReferenceAlias alias in aliases)
@@ -184,7 +172,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             info.References.Clear();
             info.References.AddRange(references);
         }
-
+        
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             //called context cannot be global scope
@@ -517,7 +505,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, entry, true);
         }
 
-        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             var storage = getFieldStorage(value, index);
             assignAlias(storage, alias);
@@ -574,7 +562,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, entry, true);
         }
 
-        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             var storage = getIndexStorage(value, index);
             assignAlias(storage, alias);

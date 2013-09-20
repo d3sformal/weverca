@@ -86,6 +86,14 @@ namespace Weverca.Analysis.Expressions
         public abstract IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue, VariableEntry aliasedField);
 
         /// <summary>
+        /// Resolves alias from given index specifier
+        /// </summary>
+        /// <param name="arrayValue">Array containing aliased index</param>
+        /// <param name="aliasedIndex">Specifier of an field</param>
+        /// <returns>Resolved aliases</returns>
+        public abstract IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue, MemoryEntry aliasedIndex);
+
+        /// <summary>
         /// Assign possible aliases to given target
         /// </summary>
         /// <param name="target">Target variable specifier</param>
@@ -99,6 +107,14 @@ namespace Weverca.Analysis.Expressions
         /// <param name="aliasedField">Specifier of an field</param>
         /// <param name="possibleAliases">Possible aliases to be assigned</param>
         public abstract void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry aliasedField, IEnumerable<AliasValue> possibleAliases);
+
+        /// <summary>
+        /// Assign possible aliases to given array index
+        /// </summary>
+        /// <param name="arrayValue">Array containing assigned index</param>
+        /// <param name="aliasedIndex">Specifier of an index</param>
+        /// <param name="possibleAliases">Possible aliases to be assigned</param>
+        public abstract void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex, IEnumerable<AliasValue> possibleAliases);
 
         /// <summary>
         /// Assign possible values to given target

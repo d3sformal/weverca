@@ -384,6 +384,16 @@ namespace Weverca.Analysis.UnitTest
         {
             throw new NotImplementedException();
         }
+
+        public override IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue, MemoryEntry aliasedIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex, IEnumerable<AliasValue> possibleAliases)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>

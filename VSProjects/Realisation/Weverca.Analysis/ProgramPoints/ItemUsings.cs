@@ -64,12 +64,12 @@ namespace Weverca.Analysis.ProgramPoints
 
         public override void AssignAlias(FlowController flow, IEnumerable<AliasValue> aliases)
         {
-            throw new NotImplementedException();
+            flow.Services.Evaluator.AliasedIndexAssign(UsedItem.Value, Index.Value, aliases);
         }
 
         public IEnumerable<AliasValue> CreateAlias(FlowController flow)
         {
-            throw new NotImplementedException();
+            return flow.Services.Evaluator.ResolveAliasedIndex(UsedItem.Value, Index.Value);
         }
     }
 
@@ -109,7 +109,7 @@ namespace Weverca.Analysis.ProgramPoints
 
         public IEnumerable<AliasValue> CreateAlias(FlowController flow)
         {
-            throw new NotImplementedException();
+            return flow.Services.Evaluator.ResolveAliasedIndex(UsedItem.Value, Index.Value);
         }
     }
 }

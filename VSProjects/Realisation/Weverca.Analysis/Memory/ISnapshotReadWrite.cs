@@ -224,7 +224,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="objectValue">Object which field will be set</param>
         /// <param name="field">Field where alias will be set</param>
         /// <param name="alias">Alias that will be set</param>
-        void SetFieldAlias(ObjectValue objectValue, ContainerIndex field, AliasValue alias);
+        void SetFieldAlias(ObjectValue objectValue, ContainerIndex field, IEnumerable<AliasValue> alias);
         
         /// <summary>
         /// Set given value at specified index in array
@@ -240,7 +240,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="array">Array which index will be set</param>
         /// <param name="index">Index where alias will be set</param>
         /// <param name="alias">Alias that will be set</param>
-        void SetIndexAlias(AssociativeArray array, ContainerIndex index, AliasValue alias);
+        void SetIndexAlias(AssociativeArray array, ContainerIndex index, IEnumerable<AliasValue> alias);
 
 
         #endregion

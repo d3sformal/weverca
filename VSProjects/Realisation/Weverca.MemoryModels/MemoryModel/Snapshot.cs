@@ -60,8 +60,14 @@ namespace Weverca.MemoryModels.MemoryModel
             return new MemoryAlias(index);
         }
 
-        protected override void assignAlias(VariableName targetVar, AliasValue alias)
+        protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
+            //TODO signature change
+            if (aliases.Count() != 1)
+                throw new NotImplementedException();
+
+            var alias = aliases.First();
+
             MemoryIndex index = getOrCreateVariable(targetVar);
             assignMemoryAlias(index, alias);
         }
@@ -88,8 +94,14 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryEntry(fieldIndex, entry);
         }
 
-        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases)
         {
+            //TODO signature change
+            if (aliases.Count() != 1)
+                throw new NotImplementedException();
+
+            var alias = aliases.First();
+
             MemoryIndex fieldIndex = getOrCreateField(value, index);
             assignMemoryAlias(fieldIndex, alias);
         }
@@ -122,8 +134,14 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryEntry(fieldIndex, entry);
         }
 
-        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases)
         {
+            //TODO signature change
+            if (aliases.Count() != 1)
+                throw new NotImplementedException();
+
+            var alias = aliases.First();
+
             MemoryIndex fieldIndex = getOrCreateIndex(value, index);
             assignMemoryAlias(fieldIndex, alias);
         }
@@ -792,9 +810,5 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #endregion
 
-        protected override void assignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

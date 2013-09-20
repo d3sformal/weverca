@@ -234,12 +234,12 @@ namespace Weverca.Analysis
             Snapshot.SetIndex(value, index, entry);
         }
 
-        public void SetFieldAlias(ObjectValue value, ContainerIndex index, AliasValue alias)
+        public void SetFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             Snapshot.SetFieldAlias(value, index, alias);
         }
 
-        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, AliasValue alias)
+        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             Snapshot.SetIndexAlias(value, index, alias);
         }
