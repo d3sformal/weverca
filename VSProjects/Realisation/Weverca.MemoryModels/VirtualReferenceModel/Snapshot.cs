@@ -117,16 +117,35 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override AliasValue createAlias(VariableName sourceVar)
         {
-            var info = getInfo(sourceVar);
+            return createAlias(sourceVar, false);
+        }
+
+        private AliasValue createAlias(VariableName sourceVar, bool forceGlobal = false)
+        {
+            var info = getInfo(sourceVar, forceGlobal);
             if (info == null)
             {
                 //force reference creation
                 ReportMemoryEntryCreation();
-                assign(sourceVar, new MemoryEntry(UndefinedValue));
-                info = getInfo(sourceVar);
+                assign(sourceVar, new MemoryEntry(UndefinedValue), forceGlobal);
+                info = getInfo(sourceVar, forceGlobal);
             }
 
             return new ReferenceAlias(info.References);
+        }
+
+        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
+        {
+            var storage = getIndexStorage(array, index);
+
+            return createAlias(storage, true);
+        }
+
+        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
+        {
+            var storage = getFieldStorage(objectValue, field);
+
+            return createAlias(storage, true);
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
@@ -134,9 +153,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(targetVar, entry, false);
         }
 
-        protected void assign(VariableName targetVar, MemoryEntry entry, bool asGlobal = false)
+        protected void assign(VariableName targetVar, MemoryEntry entry, bool forceGlobal = false)
         {
-            var info = getOrCreate(targetVar, asGlobal);
+            var info = getOrCreate(targetVar, forceGlobal);
             var references = info.References;
 
             switch (references.Count)
@@ -161,7 +180,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
-            
+
             var info = getOrCreate(targetVar);
             var references = new HashSet<VirtualReference>();
             foreach (ReferenceAlias alias in aliases)
@@ -172,7 +191,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             info.References.Clear();
             info.References.AddRange(references);
         }
-        
+
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             //called context cannot be global scope
@@ -297,9 +316,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return readValue(sourceVar, false);
         }
 
-        protected MemoryEntry readValue(VariableName sourceVar, bool asGlobal = false)
+        protected MemoryEntry readValue(VariableName sourceVar, bool forceGlobal = false)
         {
-            var info = getInfo(sourceVar, asGlobal);
+            var info = getInfo(sourceVar, forceGlobal);
 
             if (info == null)
             {
@@ -351,16 +370,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return entry.PossibleValues;
         }
 
-        private VariableInfo getOrCreate(VariableName name, bool asGlobal = false)
+        private VariableInfo getOrCreate(VariableName name, bool forceGlobal = false)
         {
             VariableInfo result;
 
-            var storage = getVariableStorage(asGlobal);
+            var storage = getVariableStorage(forceGlobal);
 
             ReportSimpleHashSearch();
             if (!storage.TryGetValue(name, out result))
             {
-                storage[name] = result = new VariableInfo(asGlobal || _isGlobalScope);
+                storage[name] = result = new VariableInfo(forceGlobal || _isGlobalScope);
                 ReportSimpleHashAssign();
             }
 
@@ -397,11 +416,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             _data[reference] = entry;
         }
 
-        private VariableInfo getInfo(VariableName name, bool asGlobal = false)
+        private VariableInfo getInfo(VariableName name, bool forceGlobal = false)
         {
             ReportSimpleHashSearch();
 
-            var storage = getVariableStorage(asGlobal);
+            var storage = getVariableStorage(forceGlobal);
 
             VariableInfo info;
             if (storage.TryGetValue(name, out info))
@@ -676,12 +695,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             throw new NotImplementedException();
         }
 
-        private Dictionary<VariableName, VariableInfo> getVariableStorage(bool asGlobal)
+        private Dictionary<VariableName, VariableInfo> getVariableStorage(bool forceGlobal)
         {
             if (_isGlobalScope)
                 return _globals;
 
-            return asGlobal ? _globals : _locals;
+            return forceGlobal ? _globals : _locals;
         }
 
         public override string ToString()
@@ -707,13 +726,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        private void fillWithVariables(StringBuilder result, bool asGlobal)
+        private void fillWithVariables(StringBuilder result, bool forceGlobal)
         {
-            var variables = getVariableStorage(asGlobal);
+            var variables = getVariableStorage(forceGlobal);
 
             foreach (var variable in variables.Keys)
             {
-                if (!asGlobal && _locals[variable].IsGlobal)
+                if (!forceGlobal && _locals[variable].IsGlobal)
                 {
                     result.AppendFormat("{0}: #Fetched from global scope", variable);
                     result.AppendLine();
@@ -722,7 +741,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 {
                     result.AppendFormat("{0}: {{", variable);
 
-                    var entry = readValue(variable, asGlobal);
+                    var entry = readValue(variable, forceGlobal);
                     foreach (var value in entry.PossibleValues)
                     {
                         result.AppendFormat("'{0}', ", value);

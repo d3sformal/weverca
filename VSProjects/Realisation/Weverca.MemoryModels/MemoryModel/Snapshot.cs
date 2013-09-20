@@ -810,5 +810,15 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #endregion
 
+
+        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

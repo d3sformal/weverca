@@ -77,7 +77,7 @@ namespace Weverca.Analysis.ProgramPoints
     /// Representation of item use ($usedItem[$index]), that can be asked for value
     /// TODO: Needs to implement thisObj support
     /// </summary>
-    public class RItemUsePoint : RValuePoint
+    public class RItemUsePoint : RValuePoint, AliasProvider
     {
         public readonly ItemUse ItemUse;
 
@@ -90,6 +90,11 @@ namespace Weverca.Analysis.ProgramPoints
         /// Index value representation
         /// </summary>
         public readonly RValuePoint Index;
+
+        /// <summary>
+        /// Value of index computed during flowThrough
+        /// </summary>
+        public MemoryEntry IndexedValue { get; private set; }
 
         public override LangElement Partial { get { return ItemUse; } }
 
@@ -104,12 +109,22 @@ namespace Weverca.Analysis.ProgramPoints
 
         protected override void flowThrough()
         {
-            Value = Services.Evaluator.ResolveIndex(UsedItem.Value, Index.Value);
+            var initializable = UsedItem as ItemUseable;
+
+            if (initializable != null)
+            {
+                IndexedValue = initializable.ItemUseValue(Flow);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+            Value = Services.Evaluator.ResolveIndex(IndexedValue, Index.Value);
         }
 
         public IEnumerable<AliasValue> CreateAlias(FlowController flow)
         {
-            return flow.Services.Evaluator.ResolveAliasedIndex(UsedItem.Value, Index.Value);
+            return flow.Services.Evaluator.ResolveAliasedIndex(IndexedValue, Index.Value);
         }
     }
 }

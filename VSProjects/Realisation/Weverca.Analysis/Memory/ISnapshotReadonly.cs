@@ -78,6 +78,24 @@ namespace Weverca.Analysis.Memory
         /// <returns>Created alias</returns>
         AliasValue CreateAlias(VariableName sourceVar);
 
+
+        /// <summary>
+        /// Create alias for given index contained in array
+        /// </summary>
+        /// <param name="array">Array containing index</param>
+        /// <param name="index">Aliased index</param>
+        /// <returns>Created alias</returns>
+        AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index);
+
+        /// <summary>
+        /// Create alias for given field of objectValue
+        /// </summary>
+        /// <param name="objectValue">Value containing aliased field</param>
+        /// <param name="field">Aliased field</param>
+        /// <returns>Created alias</returns>
+        AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field);
+
+
         /// <summary>
         /// Resolves all possible functions for given functionName
         /// NOTE:

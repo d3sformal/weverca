@@ -69,7 +69,6 @@ namespace Weverca.Analysis.Memory
         /// <returns>True if there is semantic change in transaction, false otherwise</returns>
         protected abstract bool commitTransaction();
 
-
         /// <summary>
         /// Initialize object of given type
         /// </summary>
@@ -101,6 +100,23 @@ namespace Weverca.Analysis.Memory
         /// <param name="sourceVar">Variable which alias will be created</param>
         /// <returns>Created alias</returns>
         protected abstract AliasValue createAlias(VariableName sourceVar);
+
+        /// <summary>
+        /// Create alias for given index contained in array
+        /// </summary>
+        /// <param name="array">Array containing index</param>
+        /// <param name="index">Aliased index</param>
+        /// <returns>Created alias</returns>
+        protected abstract AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index);
+
+        /// <summary>
+        /// Create alias for given field of objectValue
+        /// </summary>
+        /// <param name="objectValue">Value containing aliased field</param>
+        /// <param name="field">Aliased field</param>
+        /// <returns>Created alias</returns>
+        protected abstract AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field);
+
 
         /// <summary>
         /// Assign memory entry into targetVar        
@@ -641,6 +657,22 @@ namespace Weverca.Analysis.Memory
             return result;
         }
 
+        public AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index)
+        {
+            var result = createIndexAlias(array, index);
+
+            ++_statistics.CreatedAliasValues;
+            return result;
+        }
+
+        public AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field)
+        {
+            var result = createFieldAlias(objectValue, field);
+
+            ++_statistics.CreatedAliasValues;
+            return result;
+        }
+
         public void Assign(VariableName targetVar, Value value)
         {
             checkCanUpdate();
@@ -767,10 +799,5 @@ namespace Weverca.Analysis.Memory
             }
         }
         #endregion
-
-
-
-
-
     }
 }

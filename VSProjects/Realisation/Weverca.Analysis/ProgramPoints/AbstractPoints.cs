@@ -10,6 +10,7 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.ProgramPoints
 {
+
     /// <summary>
     /// Implemented by Rvalue program points, that can be used as items   ($usedItem[$index])
     /// </summary>

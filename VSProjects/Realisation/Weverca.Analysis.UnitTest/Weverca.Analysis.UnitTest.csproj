@@ -55,6 +55,9 @@
     <Compile Include="ForwardAnalysisTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleAnalysis.cs" />
+    <Compile Include="SimpleExpressionEvaluator.cs" />
+    <Compile Include="SimpleFlowResolver.cs" />
+    <Compile Include="SimpleFunctionResolver.cs" />
     <Compile Include="SimpleNativeType.cs" />
     <Compile Include="StringAnalysis.cs" />
   </ItemGroup>

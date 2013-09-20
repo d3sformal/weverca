@@ -366,6 +366,19 @@ setArg(&$result);
    .AssertVariable("result").HasValues("Set");
 
 
+        readonly static TestCase ArgumentWrite_ExplicitAliasToUndefinedItem_CASE = @"
+
+function setArg($arg){
+    $arg=""Set"";
+}
+
+
+setArg(&$arr[0]);
+$result=$arr[0];
+"
+.AssertVariable("result").HasValues("Set");
+
+
 
         [TestMethod]
         public void BranchMerge()
@@ -565,6 +578,12 @@ setArg(&$result);
         public void ArgumentWrite_ExplicitAliasToUndefined()
         {
             AnalysisTestUtils.RunTestCase(ArgumentWrite_ExplicitAliasToUndefined_CASE);
+        }
+
+        [TestMethod]
+        public void ArgumentWrite_ExplicitAliasToUndefinedItem()
+        {
+            AnalysisTestUtils.RunTestCase(ArgumentWrite_ExplicitAliasToUndefinedItem_CASE);
         }
 
         [TestMethod]

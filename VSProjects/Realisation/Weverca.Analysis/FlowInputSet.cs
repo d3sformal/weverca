@@ -28,7 +28,7 @@ namespace Weverca.Analysis
         #region ISnapshotReadonly implementation
 
         public VariableName ReturnValue { get { return Snapshot.ReturnValue; } }
-        
+
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);
@@ -43,7 +43,7 @@ namespace Weverca.Analysis
         {
             return Snapshot.ReadValue(sourceVar);
         }
-        
+
         public ContainerIndex CreateIndex(string identifier)
         {
             return Snapshot.CreateIndex(identifier);
@@ -53,7 +53,17 @@ namespace Weverca.Analysis
         {
             return Snapshot.CreateAlias(sourceVar);
         }
-        
+
+        public AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index)
+        {
+            return Snapshot.CreateIndexAlias(array, index);
+        }
+
+        public AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field)
+        {
+            return Snapshot.CreateFieldAlias(objectValue, field);
+        }
+
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
             return Snapshot.ResolveFunction(functionName);
@@ -63,7 +73,7 @@ namespace Weverca.Analysis
         {
             return Snapshot.ResolveMethod(objectValue, methodName);
         }
-        
+
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             return Snapshot.ResolveType(typeName);
@@ -77,8 +87,8 @@ namespace Weverca.Analysis
         public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
         {
             return Snapshot.GetIndex(value, index);
-        }   
-        
+        }
+
         public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
         {
             return Snapshot.IterateObject(iteratedObject);
@@ -103,6 +113,6 @@ namespace Weverca.Analysis
                 return Snapshot.ToString();
             }
         }
- 
+
     }
 }
