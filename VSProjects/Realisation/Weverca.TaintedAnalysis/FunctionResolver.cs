@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.Text.RegularExpressions;
 using System.Linq;
 
 using PHP.Core;
@@ -11,15 +11,21 @@ using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
 using Weverca.Analysis.ProgramPoints;
 
+
+
 namespace Weverca.TaintedAnalysis
 {
+   
+
+
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
     public class FunctionResolver : FunctionResolverBase
     {
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
-
+        private Dictionary<FunctionDecl, FunctionHints> functionHints;
+        private Dictionary<MethodDecl, FunctionHints> methodHints;
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
         /// </summary>
@@ -402,4 +408,86 @@ namespace Weverca.TaintedAnalysis
 
         #endregion
     }
+
+
+    //TODO testy treba pockat na priznaky
+    internal class FunctionHints
+    {
+        HashSet<DirtyType> returnHints;
+        Dictionary<int, HashSet<DirtyType>> argumentHints;
+        FunctionHints(PHPDocBlock doc)
+        {
+            argumentHints = new Dictionary<int, HashSet<DirtyType>>();
+            returnHints = new HashSet<DirtyType>();
+            string comment=doc.ToString();
+            string returnPatern = "@wev-hint returnvalue remove HTMLdirty";
+            string argumentPatern = "@wev-hint returnvalue remove all";
+            foreach (var line in comment.Split('\n'))
+            {
+                if (System.Text.RegularExpressions.Regex.IsMatch(line, returnPatern, RegexOptions.IgnoreCase))
+                { 
+                    
+                }
+
+                if (System.Text.RegularExpressions.Regex.IsMatch(line, argumentPatern, RegexOptions.IgnoreCase))
+                {
+
+                }
+
+            }
+
+        }
+
+        private void addReturnHint(DirtyType type)
+        {
+            returnHints.Add(type);
+        }
+
+        private void addArgumentint(int i, DirtyType type)
+        {
+            if (argumentHints[i] == null)
+            {
+                argumentHints[i] = new HashSet<DirtyType>();
+            }
+            argumentHints[i].Add(type);
+        }
+
+        internal void applyHints(FlowController flow)
+        {
+            foreach (var type in returnHints)
+            {
+                MemoryEntry result = flow.OutSet.ReadValue(flow.OutSet.ReturnValue);
+                foreach (var value in result.PossibleValues)
+                {
+                    ValueInfoHandler.setClean(flow.OutSet, value, type);
+                }
+            }
+            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+            foreach (int arg in argumentHints.Keys)
+            {
+                if (arg < argumentCount)
+                {
+                    foreach (var type in argumentHints[arg])
+                    {
+                        MemoryEntry result = flow.OutSet.ReadValue(argument(arg));
+                        foreach (var value in result.PossibleValues)
+                        {
+                            ValueInfoHandler.setClean(flow.OutSet, value, type);
+                        }
+                    }
+                }
+            }
+        }
+        private VariableName argument(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+            return new VariableName(".arg" + index);
+        }
+    }
+
+
 }

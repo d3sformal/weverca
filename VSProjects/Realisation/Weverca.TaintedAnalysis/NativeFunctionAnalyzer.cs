@@ -176,6 +176,63 @@ namespace Weverca.TaintedAnalysis
             QualifiedName constantName = new QualifiedName(new Name("constant"));
             FunctionAnalyzerHelper constantAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[constantName]);
             wevercaImplementedFunctions.Add(constantName, new NativeAnalyzerMethod(constantAnalyzer._constant));
+
+            QualifiedName is_arrayName = new QualifiedName(new Name("is_array"));
+            FunctionAnalyzerHelper is_arrayAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_arrayName]);
+            wevercaImplementedFunctions.Add(is_arrayName, new NativeAnalyzerMethod(is_arrayAnalyzer._is_array));
+
+            QualifiedName is_boolName = new QualifiedName(new Name("is_bool"));
+            FunctionAnalyzerHelper is_boolAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_boolName]);
+            wevercaImplementedFunctions.Add(is_boolName, new NativeAnalyzerMethod(is_boolAnalyzer._is_bool));
+
+            QualifiedName is_doubleName = new QualifiedName(new Name("is_double"));
+            FunctionAnalyzerHelper is_doubleAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_doubleName]);
+            wevercaImplementedFunctions.Add(is_doubleName, new NativeAnalyzerMethod(is_doubleAnalyzer._is_double));
+
+            QualifiedName is_floatName = new QualifiedName(new Name("is_float"));
+            FunctionAnalyzerHelper is_floatAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_floatName]);
+            wevercaImplementedFunctions.Add(is_floatName, new NativeAnalyzerMethod(is_floatAnalyzer._is_double));
+
+            QualifiedName is_intName = new QualifiedName(new Name("is_int"));
+            FunctionAnalyzerHelper is_intAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_intName]);
+            wevercaImplementedFunctions.Add(is_intName, new NativeAnalyzerMethod(is_intAnalyzer._is_int));
+
+            QualifiedName is_integerName = new QualifiedName(new Name("is_integer"));
+            FunctionAnalyzerHelper is_integerAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_integerName]);
+            wevercaImplementedFunctions.Add(is_integerName, new NativeAnalyzerMethod(is_integerAnalyzer._is_int));
+
+            QualifiedName is_longName = new QualifiedName(new Name("is_long"));
+            FunctionAnalyzerHelper is_longAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_longName]);
+            wevercaImplementedFunctions.Add(is_longName, new NativeAnalyzerMethod(is_longAnalyzer._is_int));
+
+            QualifiedName is_nullName = new QualifiedName(new Name("is_null"));
+            FunctionAnalyzerHelper is_nullAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_nullName]);
+            wevercaImplementedFunctions.Add(is_nullName, new NativeAnalyzerMethod(is_nullAnalyzer._is_null));
+
+            QualifiedName is_numericName = new QualifiedName(new Name("is_numeric"));
+            FunctionAnalyzerHelper is_numericAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_numericName]);
+            wevercaImplementedFunctions.Add(is_numericName, new NativeAnalyzerMethod(is_numericAnalyzer._is_numeric));
+
+            QualifiedName is_objectName = new QualifiedName(new Name("is_object"));
+            FunctionAnalyzerHelper is_objectAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_objectName]);
+            wevercaImplementedFunctions.Add(is_objectName, new NativeAnalyzerMethod(is_objectAnalyzer._is_object));
+
+            QualifiedName is_realName = new QualifiedName(new Name("is_real"));
+            FunctionAnalyzerHelper is_realAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_realName]);
+            wevercaImplementedFunctions.Add(is_realName, new NativeAnalyzerMethod(is_realAnalyzer._is_double));
+
+            QualifiedName is_resourceName = new QualifiedName(new Name("is_resource"));
+            FunctionAnalyzerHelper is_resourceAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_resourceName]);
+            wevercaImplementedFunctions.Add(is_resourceName, new NativeAnalyzerMethod(is_resourceAnalyzer._is_resource)); 
+
+            QualifiedName is_scalarName = new QualifiedName(new Name("is_scalar"));
+            FunctionAnalyzerHelper is_scalarAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_scalarName]);
+            wevercaImplementedFunctions.Add(is_scalarName, new NativeAnalyzerMethod(is_scalarAnalyzer._is_scalar));
+
+            QualifiedName is_stringName = new QualifiedName(new Name("is_string"));
+            FunctionAnalyzerHelper is_stringAnalyzer = new FunctionAnalyzerHelper(allNativeFunctions[is_stringName]);
+            wevercaImplementedFunctions.Add(is_stringName, new NativeAnalyzerMethod(is_stringAnalyzer._is_string));
+        
         }
 
         static public NativeFunctionAnalyzer CreateInstance()
@@ -688,14 +745,7 @@ namespace Weverca.TaintedAnalysis
 
             MemoryEntry functionResult = new MemoryEntry(possibleValues.ToArray());
             flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
-            foreach (var value in functionResult.PossibleValues)
-            {
-                if (ValueTypeResolver.CanBeDirty(value))
-                {
-                    ValueInfoHandler.CopyFlags(flow.OutSet, arguments, value);
-                }
-            }
-
+            ValueInfoHandler.CopyFlags(flow.OutSet, arguments, functionResult);
             List<Value> assigned_aliases = NativeFunctionAnalyzer.ResolveAliasArguments(flow, nativeFunctions);
             ValueInfoHandler.CopyFlags(flow.OutSet, arguments, new MemoryEntry(assigned_aliases));
            
@@ -839,5 +889,111 @@ namespace Weverca.TaintedAnalysis
             }
         }
 
+
+        delegate bool Typedelegate(Value value);
+
+        public void _is_array(FlowController flow)
+        {
+            processIsFunctions(flow, new Typedelegate(value => {
+                return ValueTypeResolver.isArray(value);    
+            }));
+        }
+        public void _is_bool(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isBool(value);
+            }));
+        }
+        public void _is_double(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isFloat(value);
+            }));
+        }
+        public void _is_int(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value);
+            }));
+        }
+        public void _is_null(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return (value is UndefinedValue);
+            }));
+        }
+        public void _is_numeric(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value) || ValueTypeResolver.isFloat(value);
+            }));
+        }
+        public void _is_object(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isObject(value);
+            }));
+        }
+        public void _is_resource(FlowController flow) {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return (value is AnyResourceValue);
+            }));
+        }
+        public void _is_scalar(FlowController flow)
+        {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value) || ValueTypeResolver.isFloat(value) || ValueTypeResolver.isBool(value) || ValueTypeResolver.isString(value); ;
+            }));
+        }
+        public void _is_string(FlowController flow)
+        {
+            processIsFunctions(flow, new Typedelegate(value =>
+            {
+                return ValueTypeResolver.isString(value);
+            }));
+        }
+
+
+        private void processIsFunctions(FlowController flow,Typedelegate del)
+        {
+            if (NativeFunctionAnalyzer.checkArgumentsCount(flow, nativeFunctions))
+            {
+                bool canBeTrue = false;
+                bool canBeFalse = false;
+                foreach (var arg0 in flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(0)).PossibleValues)
+                {
+                    if (del(arg0))
+                    {
+                        canBeTrue = true;
+                    }
+                    else if (arg0 is AnyValue)
+                    {
+                        canBeTrue = true;
+                        canBeFalse = true;
+                        break;
+                    }
+                    else
+                    {
+                        canBeFalse = true;
+                    }
+                }
+                List<Value> result = new List<Value>();
+                if (canBeTrue)
+                {
+                    result.Add(flow.OutSet.CreateBool(true));
+                }
+                if (canBeFalse)
+                {
+                    result.Add(flow.OutSet.CreateBool(false));
+                }
+                flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(result));
+            }
+            else
+            {
+                flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.AnyBooleanValue));
+            }
+        }
     }
 }

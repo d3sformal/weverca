@@ -337,5 +337,53 @@ $result=4;
             Assert.AreEqual(TestUtils.ResultTest(parameterByReferenceTest2).GetType(), typeof(ObjectValue));
         }
 
+        string IsArrayTrueTest=@"
+            $a=array();
+            $result=is_array($a)
+        ";
+
+         string IsArrayFalseTest=@"
+            $a=9;
+            $result=is_array($a)
+        ";
+
+        [TestMethod]
+        public void IsArray_True()
+        {
+            var result = TestUtils.ResultTest(IsArrayTrueTest);
+            TestUtils.testValue(result, true);
+        }
+
+        [TestMethod]
+        public void IsArray_False()
+        {
+            var result = TestUtils.ResultTest(IsArrayFalseTest);
+            TestUtils.testValue(result, false);
+        }
+
+        string IsBoolTestTrue=@"
+            $a=true;
+            $result=is_bool($a)
+        ";
+
+         string IsBoolTestFalse=@"
+            $a=5;
+            $result=is_bool($a)
+        ";
+
+         [TestMethod]
+         public void IsBool_True()
+         {
+             var result = TestUtils.ResultTest(IsBoolTestTrue);
+             TestUtils.testValue(result, true);
+         }
+
+         [TestMethod]
+         public void IsBool_False()
+         {
+             var result = TestUtils.ResultTest(IsBoolTestFalse);
+             TestUtils.testValue(result, false);
+         }
+        }
     }
-}
+

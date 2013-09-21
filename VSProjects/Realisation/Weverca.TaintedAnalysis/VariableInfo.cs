@@ -8,13 +8,13 @@ using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 
 using PHP.Core;
+using Weverca.TaintedAnalysis.ExpressionEvaluator;
 
 namespace Weverca.TaintedAnalysis
 {
     enum DirtyType { 
         HTMLDirty, SQLDirty, FilePathDirty
     }
-
 
     class ValueInfoHandler 
     {
@@ -152,8 +152,24 @@ namespace Weverca.TaintedAnalysis
                     newInfos.Add(info);
                 }
             }
-            newInfos.Add(outSet.CreateInfo(newInfo));
-            outSet.SetInfo(value, newInfos.ToArray());
+            bool atleastOneFlagTrue = false;
+            Array values = DirtyType.GetValues(typeof(DirtyType));
+            foreach (DirtyType val in values)
+            {
+                atleastOneFlagTrue |= newInfo.isDirty(val);
+            }
+            //store only if the value contains at least on drity flag
+            if (atleastOneFlagTrue)
+            {
+                newInfos.Add(outSet.CreateInfo(newInfo));
+            }
+            if (newInfos.Count != 0)
+            {
+                if (ValueTypeResolver.CanBeDirty(value))
+                {
+                    outSet.SetInfo(value, newInfos.ToArray());
+                }
+            }
         }
 
     }
