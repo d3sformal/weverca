@@ -86,6 +86,16 @@ namespace Weverca.Analysis.Expressions
         }
 
         /// <summary>
+        /// Create LValue from given element
+        /// </summary>
+        /// <param name="el">Element which value will be created</param>
+        /// <returns>Created value</returns>
+        private LValuePoint CreateLValue(LangElement el)
+        {
+            return _valueCreator.CreateLValue(el);
+        }
+
+        /// <summary>
         /// Create argument rvalues according to given signature
         /// </summary>
         /// <param name="signature">Signature whicha arguments will be created</param>
@@ -217,6 +227,46 @@ namespace Weverca.Analysis.Expressions
             Result(new BinaryExPoint(x, lOperand, rOperand));
         }
 
+        public override void VisitConcatEx(ConcatEx x)
+        {
+            var expressions = new List<RValuePoint>();
+
+            foreach (var expression in x.Expressions)
+            {
+                expressions.Add(CreateRValue(expression));
+            }
+
+            Result(new ConcatExPoint(x, expressions));
+        }
+
+        public override void VisitIncDecEx(IncDecEx x)
+        {
+            var variable = CreateRValue(x.Variable);
+            Result(new IncDecExPoint(x, variable));
+        }
+
+        public override void VisitValueAssignEx(ValueAssignEx x)
+        {
+            var rValue = CreateRValue(x.RValue);
+            switch (x.PublicOperation)
+            {
+                case Operations.AssignAppend:
+                case Operations.AssignPrepend:
+                    var concatedValue=CreateRValue(x.LValue);
+                    Result(new AssignConcatPoint(x, concatedValue, rValue));
+                    return;
+                case Operations.AssignValue:
+                    var lValue = CreateLValue(x.LValue);
+                    Result(new AssignPoint(x, lValue, rValue));
+                    return;
+                default:
+                    //it's assign with binary operation
+                    var leftOperand = CreateRValue(x.LValue);
+                    Result(new AssignOperationPoint(x, leftOperand, rValue));
+                    return;
+            }
+        }
+
         #endregion
 
         #region Function visiting
@@ -265,7 +315,7 @@ namespace Weverca.Analysis.Expressions
         {
             var arguments = CreateArguments(x.CallSignature);
 
-            RValuePoint name=null;
+            RValuePoint name = null;
             if (!(x.ClassNameRef is DirectTypeRef))
             {
                 name = CreateRValue(x.ClassNameRef);

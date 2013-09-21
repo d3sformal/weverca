@@ -12,6 +12,89 @@ namespace Weverca.Analysis.ProgramPoints
 {
 
     /// <summary>
+    /// String concatenation representation
+    /// </summary>
+    public class IncDecExPoint : RValuePoint
+    {
+        public readonly IncDecEx IncDecEx;
+
+        public override LangElement Partial { get { return IncDecEx; } }
+
+        /// <summary>
+        /// Value that is incremented
+        /// </summary>
+        public readonly RValuePoint IncrementedValue;
+
+        /// <summary>
+        /// Here is stored incremented value
+        /// </summary>
+        public readonly AssignProvider IncrementTarget;
+
+        /// <summary>
+        /// Parts of concatenated string
+        /// </summary>
+        public readonly IEnumerable<RValuePoint> Parts;
+
+        internal IncDecExPoint(IncDecEx incDecEx, RValuePoint incrementedValue)
+        {            
+            NeedsExpressionEvaluator = true;
+            IncDecEx = incDecEx;
+            IncrementedValue = incrementedValue;
+            IncrementTarget = incrementedValue as AssignProvider;
+
+            if (IncrementTarget == null)
+            {
+                throw new NotSupportedException("Given incrementedValue doesn't support incrementation");
+            }
+        }
+
+        protected override void flowThrough()
+        {
+            var value = Services.Evaluator.IncDecEx(IncDecEx, IncrementedValue.Value);
+            IncrementTarget.Assign(Flow, value);
+
+            if (IncDecEx.Post)
+            {
+                //return value before incrementation
+                Value = IncrementedValue.Value;
+            }
+            else
+            {
+                //return value after incrementation
+                Value = value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// String concatenation representation
+    /// </summary>
+    public class ConcatExPoint : RValuePoint
+    {
+        public readonly ConcatEx Concat;
+
+        public override LangElement Partial { get { return Concat; } }
+
+        /// <summary>
+        /// Parts of concatenated string
+        /// </summary>
+        public readonly IEnumerable<RValuePoint> Parts;
+
+        internal ConcatExPoint(ConcatEx concat, IEnumerable<RValuePoint> parts)
+        {
+            NeedsExpressionEvaluator = true;
+            Parts = parts;
+        }
+
+        protected override void flowThrough()
+        {
+            var partValues = from part in Parts select part.Value;
+
+            Value = Services.Evaluator.Concat(partValues);
+        }
+    }
+
+    /// <summary>
     /// Unary expression representation
     /// </summary>
     public class UnaryExPoint : RValuePoint
@@ -157,7 +240,7 @@ namespace Weverca.Analysis.ProgramPoints
         public override MemoryEntry Value { get; protected set; }
 
         internal NewExPoint(NewEx newEx, RValuePoint name, RValuePoint[] arguments)
-            : base(null,newEx.CallSignature, arguments)
+            : base(null, newEx.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
             NeedsExpressionEvaluator = true;

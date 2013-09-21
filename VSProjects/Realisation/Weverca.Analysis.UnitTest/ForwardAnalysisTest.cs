@@ -379,6 +379,44 @@ $result=$arr[0];
 .AssertVariable("result").HasValues("Set");
 
 
+        readonly static TestCase StringConcatenation_CASE = @"
+$a='A';
+$b='B';
+
+$result=$a.$b.'C';
+$result.='D';
+"
+.AssertVariable("result").HasValues("ABCD");
+
+        readonly static TestCase IncrementEval_CASE = @"
+$a=3;
+$a+=2;
+$post_a=$a++;
+
+$b=5;
+$pre_b=++$b
+"
+            .AssertVariable("a").HasValues(6)
+            .AssertVariable("post_a").HasValues(5)
+            .AssertVariable("b").HasValues(6)
+            .AssertVariable("pre_b").HasValues(6)
+            ;
+
+        readonly static TestCase DecrementEval_CASE = @"
+$a=7;
+$a-=2;
+$post_a=$a--;
+
+$b=5;
+$pre_b=--$b
+"
+            .AssertVariable("a").HasValues(4)
+            .AssertVariable("post_a").HasValues(5)
+            .AssertVariable("b").HasValues(4)
+            .AssertVariable("pre_b").HasValues(4)
+            ;
+
+
 
         [TestMethod]
         public void BranchMerge()
@@ -592,6 +630,22 @@ $result=$arr[0];
             AnalysisTestUtils.RunTestCase(IndirectNewEx_CASE);
         }
 
+        [TestMethod]
+        public void StringConcatenation()
+        {
+            AnalysisTestUtils.RunTestCase(StringConcatenation_CASE);
+        }
 
+        [TestMethod]
+        public void IncrementEval()
+        {
+            AnalysisTestUtils.RunTestCase(IncrementEval_CASE);
+        }
+
+        [TestMethod]
+        public void DecrementEval()
+        {
+            AnalysisTestUtils.RunTestCase(DecrementEval_CASE);
+        }
     }
 }

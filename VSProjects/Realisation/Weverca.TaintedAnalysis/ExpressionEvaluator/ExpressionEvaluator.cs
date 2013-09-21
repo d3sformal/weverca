@@ -609,9 +609,9 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand)
+        public override MemoryEntry Concat(IEnumerable<MemoryEntry> parts)
         {
-            return BinaryEx(leftOperand, Operations.Concat, rightOperand);
+            throw new NotImplementedException();
         }
 
         public override MemoryEntry Constant(GlobalConstUse x)
@@ -769,6 +769,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         public override void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex, IEnumerable<AliasValue> possibleAliases)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
         {
             throw new NotImplementedException();
         }

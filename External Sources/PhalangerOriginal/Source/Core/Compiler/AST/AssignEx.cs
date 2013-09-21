@@ -50,6 +50,7 @@ namespace PHP.Core.AST
 	/// </remarks>
 	public sealed class ValueAssignEx : AssignEx
 	{
+        public Operations PublicOperation { get { return Operation; } }
 		internal override Operations Operation { get { return operation; } }
 		private Operations operation;
 

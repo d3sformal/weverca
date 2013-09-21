@@ -28,9 +28,18 @@ namespace Weverca.Analysis.ProgramPoints
     }
 
     /// <summary>
+    /// Implemented by program points, that can be assigned
+    /// </summary>
+    public interface AssignProvider
+    {
+        void Assign(FlowController flow, MemoryEntry entry);
+        void AssignAlias(FlowController flow, IEnumerable<AliasValue> aliases);
+    }
+
+    /// <summary>
     /// Implemented by program points, that can be resolved as variable entry
     /// </summary>
-    public interface VariableBased : AliasProvider
+    public interface VariableBased : AliasProvider, AssignProvider
     {
         VariableEntry VariableEntry { get; }
         RValuePoint ThisObj { get; }
@@ -55,7 +64,7 @@ namespace Weverca.Analysis.ProgramPoints
     /// Base class for LValue program points
     /// <remarks>LValue program points can be assigned by MemoryEntry value or alias</remarks>
     /// </summary>
-    public abstract class LValuePoint : ProgramPointBase
+    public abstract class LValuePoint : ProgramPointBase, AssignProvider
     {
         public abstract void Assign(FlowController flow, MemoryEntry entry);
         public abstract void AssignAlias(FlowController flow, IEnumerable<AliasValue> aliases);
@@ -103,7 +112,7 @@ namespace Weverca.Analysis.ProgramPoints
             }
         }
 
-        internal RCallPoint(RValuePoint thisObj,CallSignature? callSignature, RValuePoint[] arguments)
+        internal RCallPoint(RValuePoint thisObj, CallSignature? callSignature, RValuePoint[] arguments)
         {
             CallSignature = callSignature;
             ThisObj = thisObj;
@@ -175,6 +184,30 @@ namespace Weverca.Analysis.ProgramPoints
             else
             {
                 return flow.Services.Evaluator.ResolveAliasedField(ThisObj.Value, VariableEntry);
+            }
+        }
+
+        public void Assign(FlowController flow, MemoryEntry entry)
+        {
+            if (ThisObj == null)
+            {
+                flow.Services.Evaluator.Assign(VariableEntry, entry);
+            }
+            else
+            {
+                flow.Services.Evaluator.FieldAssign(ThisObj.Value, VariableEntry, entry);
+            }
+        }
+
+        public void AssignAlias(FlowController flow, IEnumerable<AliasValue> aliases)
+        {
+            if (ThisObj == null)
+            {
+                flow.Services.Evaluator.AliasAssign(VariableEntry, aliases);
+            }
+            else
+            {
+                flow.Services.Evaluator.AliasedFieldAssign(ThisObj.Value, VariableEntry, aliases);
             }
         }
     }

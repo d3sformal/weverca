@@ -166,6 +166,10 @@ namespace Weverca.Analysis.UnitTest
             {
                 case Operations.Equal:
                     return areEqual(leftOperand, rightOperand);
+                case Operations.Add:
+                    return add(leftOperand, rightOperand);
+                case Operations.Sub:
+                    return sub(leftOperand, rightOperand);
                 default:
                     throw new NotImplementedException();
             }
@@ -187,12 +191,52 @@ namespace Weverca.Analysis.UnitTest
             return new MemoryEntry(result.ToArray());
         }
 
+        public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
+        {
+            var inc = operation.Inc ? 1 : -1;
+
+            var values = new List<Value>();
+
+            foreach (IntegerValue incremented in incrementedValue.PossibleValues)
+            {
+                var result=OutSet.CreateInt(incremented.Value+inc);
+                values.Add(result);
+            }
+
+            return new MemoryEntry(values);
+        }
+
         public override MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
         {
             throw new NotImplementedException();
         }
 
         #region Expression evaluation helpers
+
+        private MemoryEntry add(MemoryEntry left, MemoryEntry right)
+        {
+            if (left.Count != 1 || right.Count != 1) {
+                throw new NotImplementedException(); 
+            }
+
+            var leftValue = left.PossibleValues.First() as IntegerValue;
+            var rightValue = right.PossibleValues.First() as IntegerValue;
+
+            return new MemoryEntry(OutSet.CreateInt(leftValue.Value + rightValue.Value));
+        }
+
+        private MemoryEntry sub(MemoryEntry left, MemoryEntry right)
+        {
+            if (left.Count != 1 || right.Count != 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            var leftValue = left.PossibleValues.First() as IntegerValue;
+            var rightValue = right.PossibleValues.First() as IntegerValue;
+
+            return new MemoryEntry(OutSet.CreateInt(leftValue.Value - rightValue.Value));
+        }
 
         private void keepParentInfo(MemoryEntry parent, MemoryEntry child)
         {
@@ -324,14 +368,26 @@ namespace Weverca.Analysis.UnitTest
             OutSet.Assign(constName, constantValue);
         }
 
-        public override MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand)
+        public override MemoryEntry Concat(IEnumerable<MemoryEntry> parts)
         {
-            throw new NotImplementedException();
+            var result=new StringBuilder();
+            foreach (MemoryEntry part in parts)
+            {
+                if (part.Count != 1)
+                    throw new NotImplementedException();
+
+                var partValue = part.PossibleValues.First() as PrimitiveValue;
+                result.Append(partValue.RawValue);
+            }
+
+            return new MemoryEntry(Flow.OutSet.CreateString(result.ToString()));
         }
 
         public override void Echo(EchoStmt echo, MemoryEntry[] values)
         {
             throw new NotImplementedException();
         }
+
+
     }
 }

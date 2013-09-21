@@ -158,6 +158,16 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Result of unary expression</returns>
         public abstract MemoryEntry UnaryEx(Operations operation, MemoryEntry operand);
 
+
+
+        /// <summary>
+        /// Process increment or decrement operation
+        /// <remarks>This method doesn't provide assigning into incremented LValue</remarks>
+        /// </summary>
+        /// <param name="operation">IncDec operation</param>
+        /// <param name="incrementedValue">Value that has to be incremented/decremented</param>
+        public abstract MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue);
+
         /// <summary>
         /// Process n-ary operation on given operands
         /// </summary>
@@ -178,12 +188,11 @@ namespace Weverca.Analysis.Expressions
         public abstract void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable);
 
         /// <summary>
-        /// Process concatenation of given operands
+        /// Process concatenation of given parts
         /// </summary>
-        /// <param name="leftOperand">Left operand on concatenation</param>
-        /// <param name="rightOperand">Right operand on concatenation</param>
-        /// <returns>Concatenation of operands</returns>
-        public abstract MemoryEntry Concat(MemoryEntry leftOperand, MemoryEntry rightOperand);
+        /// <param name="parts">Concatenated parts</param>
+        /// <returns>Concatenation of parts</returns>
+        public abstract MemoryEntry Concat(IEnumerable<MemoryEntry> parts);
 
         /// <summary>
         /// Process echo statement with given values
@@ -350,11 +359,5 @@ namespace Weverca.Analysis.Expressions
         {
             Flow = flow;
         }
-
-
-
-
-
-
     }
 }

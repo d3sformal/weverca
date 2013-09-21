@@ -238,10 +238,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
-            var rOperand = CreateRValue(x.RValue);
-            var lOperand = CreateLValue(x.LValue);
-
-            Result(new AssignPoint(x, lOperand, rOperand));
+            RValueResult(x);
         }
 
         #endregion
@@ -282,17 +279,22 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitUnaryEx(UnaryEx x)
         {
-            throw new NotImplementedException();
+            RValueResult(x);
         }
 
         public override void VisitConcatEx(ConcatEx x)
         {
-            throw new NotImplementedException();
+            RValueResult(x);
+        }
+
+        public override void VisitIncDecEx(IncDecEx x)
+        {
+            RValueResult(x);
         }
 
         public override void VisitArrayEx(ArrayEx x)
         {
-            throw new NotImplementedException();
+            RValueResult(x);
         }
 
         public override void VisitJumpStmt(JumpStmt x)
@@ -308,7 +310,7 @@ namespace Weverca.Analysis.Expressions
 
         public override void VisitNewEx(NewEx x)
         {
-            throw new NotImplementedException();
+            RValueResult(x);
         }
 
         public override void VisitIncludingEx(IncludingEx x)
@@ -360,9 +362,5 @@ namespace Weverca.Analysis.Expressions
         {
             Result(new NativeAnalyzerPoint(nativeAnalyzer));
         }
-
-
-
-
     }
 }
