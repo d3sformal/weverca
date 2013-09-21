@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core.AST;
 
 using Weverca.Analysis;
+using Weverca.Analysis.Memory;
 using MemoryModel = Weverca.MemoryModels.MemoryModel;
 
 namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
@@ -15,6 +16,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
         Expression[] expressions;
         List<TestCaseResult> results = new List<TestCaseResult>();
+        Dictionary<Expression, Value> associations = new Dictionary<Expression, Value>();
 
         #endregion
 
@@ -41,6 +43,12 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             return testCaseResult;
         }
 
+        public TestCase Associate(Expression expression, Value value)
+        {
+            associations.Add(expression, value);
+            return this;
+        }
+
         public void Run()
         {
             if (results.Count == 0)
@@ -64,6 +72,10 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
                 foreach (var part in conditions.Parts)
                 {
                     log.AssociateValue(part.SourceElement, testResult.ConditionsEvaluations[index]);
+                }
+                foreach (var association in associations)
+                {
+                    log.AssociateValue(association.Key, new MemoryEntry(association.Value));
                 }
 
                 bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, log);

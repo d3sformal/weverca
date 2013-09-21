@@ -166,7 +166,6 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             if (langElement is BinaryEx)
             {
                 BinaryEx binaryExpression = (BinaryEx)langElement;
-                //TODO: tady muze byt i AND, OR, ... a pak bude treba nastartovat cely proces od zacatku pro levou a pravou stranu zvlast... od new ConditionParts();
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
                     AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
@@ -229,7 +228,6 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             if (langElement is BinaryEx)
             {
                 BinaryEx binaryExpression = (BinaryEx)langElement;
-                //TODO: tady muze byt i AND, OR, ... a pak bude treba nastartovat cely proces od zacatku pro levou a pravou stranu zvlast... od new ConditionParts();
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
                     AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);

@@ -180,6 +180,15 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         {
             // a > b
             // a > 5 && b < 7
+
+            var a = new BinaryEx(Operations.GreaterThan, new DirectVarUse(new Position(), "a"), LiteralFactory.Create(2));
+            var b = new BinaryEx(Operations.GreaterThan, new DirectVarUse(new Position(), "b"), LiteralFactory.Create(3));
+
+            TestCase.Create(new BinaryEx(Operations.And, a, b))
+                .Associate(a, new BooleanValue(true))
+                .Associate(b, new BooleanValue(true))
+                .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new IntegerIntervalValue(3, int.MaxValue)).AddResultValue("b", new IntegerIntervalValue(4, int.MaxValue))
+                .Run();
         }
 
         [TestMethod]
