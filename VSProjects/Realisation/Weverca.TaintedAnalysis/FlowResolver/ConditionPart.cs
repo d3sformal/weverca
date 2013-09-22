@@ -217,6 +217,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                     throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", unaryExpression.PublicOperation, langElement.GetType().Name));
                 }
             }
+            else if (langElement is DirectVarUse)
+            {
+                DirectVarUse directVarUse = (DirectVarUse)langElement;
+                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.CreateBool(true));
+            }
             else
             {
                 throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", langElement.GetType().Name));
@@ -280,6 +285,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 {
                     throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", unaryExpression.PublicOperation, langElement.GetType().Name));
                 }
+            }
+            else if (langElement is DirectVarUse)
+            {
+                DirectVarUse directVarUse = (DirectVarUse)langElement;
+                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.AnyValue);
             }
             else
             {

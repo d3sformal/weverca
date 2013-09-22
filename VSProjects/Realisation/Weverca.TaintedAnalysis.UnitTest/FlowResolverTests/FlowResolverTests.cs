@@ -225,12 +225,19 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         }
 
         [TestMethod]
-        public void IndirectVariableUseExpressions()
+        public void VariableUseExpressions()
         {
+            // $a
             // $a[1]
             // $a[$b]
             // $a->b
             // $a::b
+
+            TestCase.Create(new DirectVarUse(new Position(), "a"))
+                    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new BooleanValue(true))
+                    .AddResult(ConditionForm.None, false, ConditionResults.True)
+                    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", new AnyValue())
+                    .Run();
         }
     }
 }
