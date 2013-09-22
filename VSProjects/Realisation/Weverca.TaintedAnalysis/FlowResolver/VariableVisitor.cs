@@ -24,6 +24,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         List<DirectVarUse> directlyUsed = new List<DirectVarUse>();
         List<IndirectVarUse> indirectlyUsed = new List<IndirectVarUse>();
 
+        /// <summary>
+        /// Visits the direct variable use.
+        /// </summary>
+        /// <param name="x">The executable.</param>
         public override void VisitDirectVarUse(DirectVarUse x)
         {
             base.VisitDirectVarUse(x);
@@ -33,6 +37,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Visits the indirect variable use.
+        /// </summary>
+        /// <param name="x">The executable.</param>
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
             base.VisitIndirectVarUse(x);

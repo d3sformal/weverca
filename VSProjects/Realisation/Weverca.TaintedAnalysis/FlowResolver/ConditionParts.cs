@@ -98,10 +98,6 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <returns><c>false</c> is returned if the assumption can be proved to be wrong; otherwise <c>true</c> is returned.</returns>
         public bool MakeAssumption()
         {
-            //False parts can be used to exclude some values of the variables used in it. - The precision will be low.
-            //True parts are the most precise for assuming the value of the variables used.
-            //For the unknown parts, we assume that the condition is true. That will be used for narrowing down possible values of the variable used.
-
             bool willAssume;
             switch (conditionForm)
             {

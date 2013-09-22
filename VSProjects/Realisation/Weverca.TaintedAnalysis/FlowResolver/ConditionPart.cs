@@ -50,6 +50,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
         #region Properties
 
+        /// <summary>
+        /// Gets the condition result.
+        /// </summary>
+        /// <seealso cref="PossibleValues"/>
         public PossibleValues ConditionResult { get; private set; }
 
         #endregion
@@ -74,6 +78,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
         #region Methods
 
+        /// <summary>
+        /// Assumes the condition.
+        /// According to the possible results of the condition the state of the inner block will be set up.
+        /// </summary>
+        /// <param name="flowOutputSet">The flow output set.</param>
         public void AssumeCondition(FlowOutputSet flowOutputSet)
         {
             this.flowOutputSet = flowOutputSet;
@@ -81,7 +90,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             var variables = GetVariables();
             if (variables.Count() == 0)
             {
-                //There is nothing to assume becouse there is no variable used in the expression.
+                //There is nothing to assume because there is no variable used in the expression.
                 return;
             }
 
@@ -108,6 +117,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
         #region Private Methods
 
+        /// <summary>
+        /// Gets the variables used in the condition.
+        /// </summary>
+        /// <returns></returns>
         IEnumerable<VariableUse> GetVariables()
         {
             VariableVisitor visitor = new VariableVisitor();
@@ -161,6 +174,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Makes the assumption in case of <c>true</c> as a condition result.
+        /// </summary>
+        /// <param name="langElement">The language element to assume.</param>
+        /// </exception>
         void AssumeTrue(LangElement langElement)
         {
             if (langElement is BinaryEx)
@@ -228,6 +246,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Makes the assumption in case of <c>false</c> as a condition result.
+        /// </summary>
+        /// <param name="langElement">The language element to assume.</param>
+        /// </exception>
         void AssumeFalse(LangElement langElement)
         {
             if (langElement is BinaryEx)
@@ -297,6 +320,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Makes the assumption for case like <value>a != b</value>.
+        /// </summary>
+        /// <param name="left">The left side of the expression.</param>
+        /// <param name="right">The right side of the expression.</param>
         void AssumeNotEquals(LangElement left, LangElement right)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
@@ -315,6 +343,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Makes the assumption for case like <value>a == b</value>.
+        /// </summary>
+        /// <param name="left">The left side of the expression.</param>
+        /// <param name="right">The right side of the expression.</param>
         void AssumeEquals(LangElement left, LangElement right)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
@@ -365,6 +398,12 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Makes the assumption for case like <value>a &gt; b</value>.
+        /// </summary>
+        /// <param name="left">The left side of the expression.</param>
+        /// <param name="right">The right side of the expression.</param>
+        /// <param name="equal">if set to <c>true</c> greater or equals is assumed.</param>
         void AssumeGreaterThan(LangElement left, LangElement right, bool equal)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
@@ -419,6 +458,12 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             }
         }
 
+        /// <summary>
+        /// Makes the assumption for case like <value>a &lt; b</value>.
+        /// </summary>
+        /// <param name="left">The left side of the expression.</param>
+        /// <param name="right">The right side of the expression.</param>
+        /// <param name="equal">if set to <c>true</c> lesser or equals is assumed.</param>
         void AssumeLesserThan(LangElement left, LangElement right, bool equal)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
