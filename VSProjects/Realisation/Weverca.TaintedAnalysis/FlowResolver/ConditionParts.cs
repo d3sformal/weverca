@@ -112,10 +112,10 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                     willAssume = TruePartsCount == 0;
                     break;
                 case ConditionForm.Some:
-                    willAssume = FalsePartsCount > 0;
+                    willAssume = FalsePartsCount > 0 || UnknownPartsCount > 0;
                     break;
                 case ConditionForm.SomeNot:
-                    willAssume = FalsePartsCount > 0;
+                    willAssume = FalsePartsCount > 0 || UnknownPartsCount > 0;
                     break;
                 default:
                     throw new NotSupportedException(string.Format("Condition form \"{0}\" is not supported", conditionForm));
