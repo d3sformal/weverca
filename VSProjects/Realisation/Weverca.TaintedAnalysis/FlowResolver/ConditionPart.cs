@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using PHP.Core.AST;
+
 using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 
@@ -43,7 +44,6 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         LangElement conditionPart;
         MemoryEntry evaluatedPart;
 
-        FlowOutputSet flowOutputSet;
         EvaluationLog log;
 
         #endregion
@@ -83,10 +83,8 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// According to the possible results of the condition the state of the inner block will be set up.
         /// </summary>
         /// <param name="flowOutputSet">The flow output set.</param>
-        public void AssumeCondition(FlowOutputSet flowOutputSet)
+        public void AssumeCondition(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet)
         {
-            this.flowOutputSet = flowOutputSet;
-
             var variables = GetVariables();
             if (variables.Count() == 0)
             {
@@ -96,16 +94,27 @@ namespace Weverca.TaintedAnalysis.FlowResolver
 
             if (ConditionResult == PossibleValues.OnlyTrue)
             {
-                AssumeTrue(conditionPart);
+                AssumeTrue(conditionPart, flowOutputSet);
             }
             else if (ConditionResult == PossibleValues.OnlyFalse)
             {
-                AssumeFalse(conditionPart);
+                AssumeFalse(conditionPart, flowOutputSet);
             }
             else if (ConditionResult == PossibleValues.Unknown)
             {
-                // We don't know how the condition can be evaluted, so we assume, that it is true. Therefore it is needed to set up inner environment.
-                AssumeTrue(conditionPart);
+                if (conditionForm == ConditionForm.All)
+                {
+                    AssumeTrue(conditionPart, flowOutputSet);
+                }
+                else if (conditionForm == ConditionForm.None)
+                {
+                    AssumeFalse(conditionPart, flowOutputSet);
+                }
+                else
+                {
+                    //TODO: run both assumptions and merge results
+                }
+                
             }
             else
             {
@@ -179,34 +188,34 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
         /// </exception>
-        void AssumeTrue(LangElement langElement)
+        void AssumeTrue(LangElement langElement, ISnapshotReadWrite flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
                 BinaryEx binaryExpression = (BinaryEx)langElement;
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
-                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.NotEqual)
                 {
-                    AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThan)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThanOrEqual)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThan)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.And)
                 {
@@ -228,7 +237,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 UnaryEx unaryExpression = (UnaryEx)langElement;
                 if (unaryExpression.PublicOperation == Operations.LogicNegation)
                 {
-                    AssumeFalse(unaryExpression.Expr);
+                    AssumeFalse(unaryExpression.Expr, flowOutputSet);
                 }
                 else
                 {
@@ -238,7 +247,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
-                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.CreateBool(true));
+                AssumeTrueDirectVarUse(directVarUse, flowOutputSet);
             }
             else
             {
@@ -251,34 +260,34 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
         /// </exception>
-        void AssumeFalse(LangElement langElement)
+        void AssumeFalse(LangElement langElement, ISnapshotReadWrite flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
                 BinaryEx binaryExpression = (BinaryEx)langElement;
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
-                    AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    AssumeNotEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.NotEqual)
                 {
-                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr);
+                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThan)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThanOrEqual)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThan)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, flowOutputSet);
                 }
                 else if (binaryExpression.PublicOperation == Operations.And)
                 {
@@ -302,7 +311,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                 UnaryEx unaryExpression = (UnaryEx)langElement;
                 if (unaryExpression.PublicOperation == Operations.LogicNegation)
                 {
-                    AssumeTrue(unaryExpression.Expr);
+                    AssumeTrue(unaryExpression.Expr, flowOutputSet);
                 }
                 else
                 {
@@ -312,7 +321,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
-                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.AnyValue);
+                AssumeFalseDirectVarUse(directVarUse, flowOutputSet);
             }
             else
             {
@@ -325,17 +334,18 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
-        void AssumeNotEquals(LangElement left, LangElement right)
+        void AssumeNotEquals(LangElement left, LangElement right, ISnapshotReadWrite flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeNotEquals(right, left);
+                AssumeNotEquals(right, left, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
                 var leftVar = (DirectVarUse)left;
                 //TODO: this can be done more accurate with negative set.
-                flowOutputSet.Assign(leftVar.VarName, flowOutputSet.AnyValue);
+                //flowOutputSet.Assign(leftVar.VarName, flowOutputSet.AnyValue);
+                //leave current set in the evaluation of the variable. There can be current values - {value}
             }
             else
             {
@@ -348,11 +358,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// </summary>
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
-        void AssumeEquals(LangElement left, LangElement right)
+        void AssumeEquals(LangElement left, LangElement right, ISnapshotReadWrite flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeEquals(right, left);
+                AssumeEquals(right, left, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
@@ -404,11 +414,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
         /// <param name="equal">if set to <c>true</c> greater or equals is assumed.</param>
-        void AssumeGreaterThan(LangElement left, LangElement right, bool equal)
+        void AssumeGreaterThan(LangElement left, LangElement right, bool equal, ISnapshotReadWrite flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeGreaterThan(right, left, equal);
+                AssumeGreaterThan(right, left, equal, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
@@ -464,11 +474,11 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
         /// <param name="equal">if set to <c>true</c> lesser or equals is assumed.</param>
-        void AssumeLesserThan(LangElement left, LangElement right, bool equal)
+        void AssumeLesserThan(LangElement left, LangElement right, bool equal, ISnapshotReadWrite flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeLesserThan(right, left, equal);
+                AssumeLesserThan(right, left, equal, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
@@ -515,6 +525,33 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             else
             {
                 throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+            }
+        }
+
+        void AssumeTrueDirectVarUse(DirectVarUse directVarUse, ISnapshotReadWrite flowOutputSet)
+        {
+            MemoryEntry memoryEntry = log.GetValue(directVarUse);
+            if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
+            {
+                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.CreateBool(true));
+            }
+        }
+
+        void AssumeFalseDirectVarUse(DirectVarUse directVarUse, ISnapshotReadWrite flowOutputSet)
+        {
+            MemoryEntry memoryEntry = log.GetValue(directVarUse);
+            if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
+            {
+                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.CreateBool(false));
+            }
+            else if (memoryEntry.PossibleValues.Any(a => a is AnyIntegerValue))
+            {
+                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.CreateInt(0));
+            }
+            else if (memoryEntry.PossibleValues.Any(a => a is IntegerIntervalValue))
+            {
+                //there should be 0 in the interval
+                flowOutputSet.Assign(directVarUse.VarName, flowOutputSet.CreateInt(0));
             }
         }
 

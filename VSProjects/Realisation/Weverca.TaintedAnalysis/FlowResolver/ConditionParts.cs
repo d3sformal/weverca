@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 
 using PHP.Core.AST;
+
 using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
+using Weverca.Analysis.Memory;
 
 namespace Weverca.TaintedAnalysis.FlowResolver
 {
@@ -18,7 +20,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         List<ConditionPart> conditionParts = new List<ConditionPart>();
         //TODO: something for holding values of variables. It might be useful to extend memory model.
 
-        FlowOutputSet flowOutputSet;
+        ISnapshotReadWrite flowOutputSet;
         ConditionForm conditionForm;
 
         #endregion
@@ -60,7 +62,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="langElements">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, params LangElement[] langElements)
+        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, params LangElement[] langElements)
             : this(conditionForm, flowOutputSet, langElements.Select(a => new ConditionPart(a, log)))
         { }
 
@@ -71,7 +73,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
             : this(conditionForm, flowOutputSet, log, conditionParts.Select(a => a.SourceElement).ToArray())
         { }
 
@@ -81,11 +83,23 @@ namespace Weverca.TaintedAnalysis.FlowResolver
         /// <param name="conditionForm">The condition form.</param>
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, IEnumerable<ConditionPart> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, IEnumerable<ConditionPart> conditionParts)
         {
             this.flowOutputSet = flowOutputSet;
-            this.conditionForm = conditionForm;
             this.conditionParts.AddRange(conditionParts);
+            
+            this.conditionForm = conditionForm;
+            if (this.conditionParts.Count == 1)
+            {
+                if (conditionForm == ConditionForm.Some)
+                {
+                    this.conditionForm = ConditionForm.All;
+                }
+                else if (conditionForm == ConditionForm.SomeNot)
+                {
+                    this.conditionForm = ConditionForm.None;
+                }
+            }
         }
 
         #endregion
@@ -121,7 +135,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             {
                 foreach (var conditionPart in conditionParts)
                 {
-                    conditionPart.AssumeCondition(flowOutputSet);
+                    conditionPart.AssumeCondition(conditionForm, flowOutputSet);
                 }
             }
 

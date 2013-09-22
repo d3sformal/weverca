@@ -34,6 +34,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             foreach (var test in equalTests)
             {
                 TestCase.Create(new BinaryEx(Operations.Equal, new DirectVarUse(new Position(), new VariableName(variableName)), test.Item1))
+                    .AssociateVariable(variableName, new AnyValue())
                     .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue(variableName, test.Item2)
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
                     .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue(variableName, new AnyValue())
@@ -41,6 +42,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
                 //flipped order: var == value --> value == var
                 TestCase.Create(new BinaryEx(Operations.Equal, test.Item1, new DirectVarUse(new Position(), new VariableName(variableName))))
+                    .AssociateVariable(variableName, new AnyValue())
                     .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue(variableName, test.Item2)
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
                     .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue(variableName, new AnyValue())
@@ -56,6 +58,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             foreach (var test in equalTests)
             {
                 TestCase.Create(new BinaryEx(Operations.NotEqual, new DirectVarUse(new Position(), new VariableName(variableName)), test.Item1))
+                    .AssociateVariable(variableName, new AnyValue())
                     .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new AnyValue())
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
                     .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", test.Item2)
@@ -63,6 +66,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
 
                 //flipped order: var != value --> value != var
                 TestCase.Create(new BinaryEx(Operations.NotEqual, test.Item1, new DirectVarUse(new Position(), new VariableName(variableName))))
+                    .AssociateVariable(variableName, new AnyValue())
                     .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new AnyValue())
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
                     .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", test.Item2)
@@ -75,6 +79,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         {
             //TODO: Is that proper null?
             TestCase.Create(new BinaryEx(Operations.Equal, new DirectVarUse(new Position(), new VariableName("a")), new NullLiteral(new Position())))
+                .AssociateVariable("a", new AnyValue())
                 .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new UndefinedValue())
                 .AddResult(ConditionForm.None, false, ConditionResults.True)
                 .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", new AnyValue())
@@ -207,6 +212,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             foreach (var test in equalTests)
             {
                 TestCase.Create(new UnaryEx(Operations.LogicNegation, new BinaryEx(Operations.Equal, new DirectVarUse(new Position(), new VariableName(variableName)), test.Item1)))
+                        .AssociateVariable(variableName, new AnyValue())
                         .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new AnyValue())
                         .AddResult(ConditionForm.None, false, ConditionResults.True)
                         .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", test.Item2)
@@ -234,9 +240,10 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             // $a::b
 
             TestCase.Create(new DirectVarUse(new Position(), "a"))
-                    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue("a", new BooleanValue(true))
+                    .AssociateVariable("a", new BooleanValue(true))
+                    .AddResult(ConditionForm.All, true, ConditionResults.Unkwnown).AddResultValue("a", new BooleanValue(true))
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
-                    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", new AnyValue())
+                    //.AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue("a", new AnyValue())
                     .Run();
         }
     }

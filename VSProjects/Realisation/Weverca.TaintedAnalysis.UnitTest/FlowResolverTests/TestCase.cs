@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.Analysis;
@@ -17,6 +18,7 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
         Expression[] expressions;
         List<TestCaseResult> results = new List<TestCaseResult>();
         Dictionary<Expression, Value> associations = new Dictionary<Expression, Value>();
+        Dictionary<string, Value> variableAssociations = new Dictionary<string, Value>();
 
         #endregion
 
@@ -49,6 +51,12 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
             return this;
         }
 
+        public TestCase AssociateVariable(string variableName, Value value)
+        {
+            variableAssociations.Add(variableName, value);
+            return this;
+        }
+
         public void Run()
         {
             if (results.Count == 0)
@@ -65,6 +73,10 @@ namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
                 FlowOutputSet flowOutputSet = new FlowOutputSet(snapshot);
 
                 FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
+                foreach (var association in variableAssociations)
+                {
+                    flowOutputSet.Assign(new VariableName(association.Key), association.Value);
+                }
 
                 //This change is because of new API for retrieving values
                 EvaluationLog log = new EvaluationLog();
