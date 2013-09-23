@@ -80,6 +80,35 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
         }
 
+        protected bool ComparisonOperation(int leftOperand, int rightOperand)
+        {
+            var outSet = OutSet;
+
+            switch (Operation)
+            {
+                case Operations.Equal:
+                    Result = outSet.CreateBool(leftOperand == rightOperand);
+                    return true;
+                case Operations.NotEqual:
+                    Result = outSet.CreateBool(leftOperand != rightOperand);
+                    return true;
+                case Operations.LessThan:
+                    Result = outSet.CreateBool(leftOperand < rightOperand);
+                    return true;
+                case Operations.LessThanOrEqual:
+                    Result = outSet.CreateBool(leftOperand <= rightOperand);
+                    return true;
+                case Operations.GreaterThan:
+                    Result = outSet.CreateBool(leftOperand > rightOperand);
+                    return true;
+                case Operations.GreaterThanOrEqual:
+                    Result = outSet.CreateBool(leftOperand >= rightOperand);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         protected bool ComparisonOperation(double leftOperand, double rightOperand)
         {
             var outSet = OutSet;
@@ -105,6 +134,105 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     return true;
                 case Operations.GreaterThanOrEqual:
                     Result = outSet.CreateBool(leftOperand >= rightOperand);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        protected bool ArithmeticOperation(int leftOperand, int rightOperand)
+        {
+            switch (Operation)
+            {
+                case Operations.Add:
+                    // Result of addition can overflow or underflow
+                    if (((rightOperand >= 0) && (leftOperand <= int.MaxValue - rightOperand))
+                        || ((rightOperand < 0) && (leftOperand >= int.MinValue - rightOperand)))
+                    {
+                        Result = OutSet.CreateInt(leftOperand + rightOperand);
+                    }
+                    else
+                    {
+                        // If aritmetic overflows or underflows, result is double
+                        Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) + rightOperand);
+                    }
+                    return true;
+                case Operations.Sub:
+                    // Result of addition can underflow or underflow
+                    if (((rightOperand >= 0) && (leftOperand >= int.MinValue + rightOperand))
+                        || ((rightOperand < 0) && (leftOperand <= int.MaxValue + rightOperand)))
+                    {
+                        Result = OutSet.CreateInt(leftOperand - rightOperand);
+                    }
+                    else
+                    {
+                        // If aritmetic overflows or underflows, result is double
+                        Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) - rightOperand);
+                    }
+                    return true;
+                case Operations.Mul:
+                    // Result of addition can overflow or underflow
+                    // TODO: Find more cleaner solution ((a * b <= c) <==> (a <= c / b))
+                    var product = System.Convert.ToInt64(leftOperand) * rightOperand;
+                    if ((product >= int.MinValue) && (product <= int.MaxValue))
+                    {
+                        Result = OutSet.CreateInt(System.Convert.ToInt32(product));
+                    }
+                    else
+                    {
+                        // If aritmetic overflows or underflows, result is double
+                        Result = OutSet.CreateDouble(TypeConversion.ToFloat(product));
+                    }
+                    return true;
+                case Operations.Div:
+                    if (rightOperand != 0)
+                    {
+                        if ((leftOperand % rightOperand) == 0)
+                        {
+                            Result = OutSet.CreateInt(leftOperand / rightOperand);
+                        }
+                        else
+                        {
+                            Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) / rightOperand);
+                        }
+                    }
+                    else
+                    {
+                        evaluator.SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by zero returns false boolean value
+                        Result = OutSet.CreateBool(false);
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        protected bool ArithmeticOperation(double leftOperand, double rightOperand)
+        {
+            switch (Operation)
+            {
+                case Operations.Add:
+                    Result = OutSet.CreateDouble(leftOperand + rightOperand);
+                    return true;
+                case Operations.Sub:
+                    Result = OutSet.CreateDouble(leftOperand - rightOperand);
+                    return true;
+                case Operations.Mul:
+                    Result = OutSet.CreateDouble(leftOperand * rightOperand);
+                    return true;
+                case Operations.Div:
+                    if (rightOperand != 0.0)
+                    {
+                        Result = OutSet.CreateDouble(leftOperand / rightOperand);
+                    }
+                    else
+                    {
+                        evaluator.SetWarning("Division by floating-point zero",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by floating-point zero does not return NaN, but false boolean value
+                        Result = OutSet.CreateBool(false);
+                    }
                     return true;
                 default:
                     return false;

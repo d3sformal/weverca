@@ -513,21 +513,42 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override void VisitStringValue(StringValue value)
         {
+            int integerValue;
+            double floatValue;
+            bool isInteger;
+
             switch (operation)
             {
                 case Operations.Plus:
-                    result = TypeConversion.ToInteger(OutSet, value);
-                    break;
-                case Operations.Minus:
-                    var number = TypeConversion.ToInteger(OutSet, value);
-                    if ((number.Value == 0) || ((-number.Value) != 0))
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
+                    if (isInteger)
                     {
-                        result = OutSet.CreateInt(-number.Value);
+                        result = OutSet.CreateInt(integerValue);
                     }
                     else
                     {
-                        // <seealso cref="UnaryOperationVisitor.VisitIntegerValue"/>
-                        result = OutSet.CreateDouble(-(TypeConversion.ToFloat(number.Value)));
+                        result = OutSet.CreateDouble(floatValue);
+                    }
+                    break;
+                case Operations.Minus:
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
+                    if (isInteger)
+                    {
+                        if ((integerValue == 0) || ((-integerValue) != 0))
+                        {
+                            result = OutSet.CreateInt(-integerValue);
+                        }
+                        else
+                        {
+                            // <seealso cref="UnaryOperationVisitor.VisitIntegerValue"/>
+                            result = OutSet.CreateDouble(-(TypeConversion.ToFloat(integerValue)));
+                        }
+                    }
+                    else
+                    {
+                        result = OutSet.CreateDouble(floatValue);
                     }
                     break;
                 case Operations.LogicNegation:
@@ -647,7 +668,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = TypeConversion.ToFloat(OutSet, value);
+                    result = OutSet.CreateDouble(value.Value);
                     break;
                 case Operations.StringCast:
                 case Operations.UnicodeCast:

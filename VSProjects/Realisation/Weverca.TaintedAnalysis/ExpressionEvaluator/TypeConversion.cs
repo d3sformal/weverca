@@ -269,7 +269,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// Tries to convert the value of floating-point number to an equivalent integer value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(FlowOutputSet, double, out int)"/>
+        /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)"/>
         /// </remarks>
         /// <param name="outset">Output set of FlowInfo</param>
         /// <param name="value">Floating-point number to convert</param>
@@ -327,8 +327,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// Tries to convert the string value to corresponding integer value.
         /// </summary>
         /// <remarks>
-        /// Conversion of string to integer value is always defined, but in certain cases, we want to know
-        /// if the conversion is successful (e.g. When creating a new array using index of string)
+        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)"/>
         /// </remarks>
         /// <param name="outset">Output set of FlowInfo</param>
         /// <param name="value">String to convert</param>
@@ -337,18 +336,30 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public static bool TryConvertToInteger(FlowOutputSet outset, StringValue value,
             out IntegerValue convertedValue)
         {
-            // TODO: Implement the correct convert to integer
-            int result;
-            if (int.TryParse(value.Value, out result))
-            {
-                convertedValue = outset.CreateInt(result);
-                return true;
-            }
-            else
-            {
-                convertedValue = outset.CreateInt(0);
-                return false;
-            }
+            int integerValue;
+            var isSuccessful = TryConvertToInteger(value.Value, out integerValue);
+            convertedValue = outset.CreateInt(integerValue);
+            return isSuccessful;
+        }
+
+        /// <summary>
+        /// Tries to convert the native string value to corresponding native integer value.
+        /// </summary>
+        /// <remarks>
+        /// Conversion of string to integer value is always defined, but in certain cases, we want to know
+        /// if the conversion is successful (e.g. explicit type-casting or when creating a new array using
+        /// index of string) In these cases, hexadecimal numbers are not recognized
+        /// </remarks>
+        /// <param name="value">Native string to convert</param>
+        /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryConvertToInteger(string value, out int convertedValue)
+        {
+            double floatValue;
+            bool isInteger;
+            var isSuccessful = TryConvertToNumber(value, false, out convertedValue,
+                out floatValue, out isInteger);
+            return isSuccessful && isInteger;
         }
 
         /// <summary>
@@ -406,27 +417,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Converts the value of integer value to an equivalent floating-point number.
-        /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
-        /// <param name="value">Integer value to convert</param>
-        /// <returns>A floating-point number that is equivalent to integer value.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, IntegerValue value)
-        {
-            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
-        }
-
-        /// <summary>
-        /// Converts the value of native integer value to an equivalent native floating-point number.
-        /// </summary>
-        /// <param name="value">Native integer value to convert</param>
-        /// <returns>A floating-point number that is equivalent to native integer value.</returns>
-        public static double ToFloat(int value)
-        {
-            return System.Convert.ToDouble(value);
-        }
-
-        /// <summary>
         /// Converts the value of long integer value to an equivalent floating-point number.
         /// </summary>
         /// <param name="outset">Output set of FlowInfo</param>
@@ -464,8 +454,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         /// Tries to convert the string value to corresponding floating-point number.
         /// </summary>
         /// <remarks>
-        /// Conversion of string to floating-point number is always defined, but in certain cases,
-        /// we want to know if the conversion is successful
+        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out double)"/>
         /// </remarks>
         /// <param name="outset">Output set of FlowInfo</param>
         /// <param name="value">String to convert</param>
@@ -474,18 +463,29 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public static bool TryConvertToFloat(FlowOutputSet outset, StringValue value,
             out FloatValue convertedValue)
         {
-            // TODO: Implement the correct convert to float
-            double result;
-            if (double.TryParse(value.Value, out result))
-            {
-                convertedValue = outset.CreateDouble(result);
-                return true;
-            }
-            else
-            {
-                convertedValue = outset.CreateDouble(0.0);
-                return false;
-            }
+            double floatValue;
+            var isSuccessful = TryConvertToFloat(value.Value, out floatValue);
+            convertedValue = outset.CreateDouble(floatValue);
+            return isSuccessful;
+        }
+
+        /// <summary>
+        /// Tries to convert the native string value to corresponding native floating-point number.
+        /// </summary>
+        /// <remarks>
+        /// Conversion of string to floating-point number is always defined, but in certain cases,
+        /// we want to know if the conversion is successful (e.g. explicit type-casting)
+        /// </remarks>
+        /// <param name="value">Native string to convert</param>
+        /// <param name="convertedValue">Converted value if conversion is successful, otherwise 0.0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryConvertToFloat(string value, out double convertedValue)
+        {
+            int integerValue;
+            bool isInteger;
+            var isSuccessful = TryConvertToNumber(value, false, out integerValue,
+                out convertedValue, out isInteger);
+            return isSuccessful || (!isInteger);
         }
 
         /// <summary>
@@ -787,6 +787,419 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         #endregion
 
+        #region ToNumber
+
+        /// <summary>
+        /// Tries to convert the string value to integer value and if it fails, then to floating-point number
+        /// </summary>
+        /// <remarks>
+        /// Conversion to number distinguishes if value is integer or floating-point constant and creates
+        /// integer whenever it is possible. A valid number constant is represented by regular expression
+        /// "[:space:]*(0[xX][0-9a-fA-F]+|[+-]?[0-9]*([0-9]([\.][0-9]*)?|[\.][0-9]+)([eE][+-]?[0-9]+)?)".
+        /// Conversion does not work the same as PHP scanner. In the first place, it absolutely ignores
+        /// binary and octane numbers. On the contrary, it permits whitespaces at the beginning and tolerates
+        /// characters after valid number format. In other words, it tries to parse everything what is
+        /// possible. In this respect it behaves identically to C function <c>strtod</c>. Finally, it is
+        /// very odd how numbers are converted during different operations. If string is converted by
+        /// an arithmetic or comparison operation, conversion is proper as described. However, if we convert
+        /// explicitly by type-casting or with bitwise operation, hexadecimal numbers are not recognized.
+        /// </remarks>
+        /// <param name="value">String value to convert</param>
+        /// <param name="canBeHexadecimal">Determines whether to parse hexadecimal format too</param>
+        /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <param name="floatValue">
+        /// New floating-point number if conversion is successful or integer is too large, otherwise 0.0
+        /// </param>
+        /// <param name="isInteger">
+        /// <c>true</c> if value is not converted to floating-point number, otherwise <c>false</c>
+        /// </param>
+        /// <param name="isHexadecimal">
+        /// <c>true</c> if number is converted from string in hexadecimal format, otherwise <c>false</c>
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if value is converted successfully to integer or floating-point number, otherwise
+        /// <c>false</c>, even if conversion to integer fails and result is stored as floating-point value
+        /// </returns>
+        public static bool TryConvertToNumber(string value, bool canBeHexadecimal, out int integerValue,
+            out double floatValue, out bool isInteger, out bool isHexadecimal)
+        {
+            // Skip whitespaces at the beginning of the string
+            var index = SkipWhiteSpace(value);
+
+            if (canBeHexadecimal && (value.Length > index + 2) && (value[index] == '0')
+                && ((value[index + 1] == 'x') || (value[index + 1] == 'X')))
+            {
+                index += 2;
+                if (TryConvertHexadecialToInteger(value[index], out integerValue))
+                {
+                    // The hexadecimal format is converted to integer or float
+                    isInteger = TryParseHexadecimal(value, index + 1, ref integerValue, out floatValue);
+                    isHexadecimal = true;
+                    return isInteger;
+                }
+                else
+                {
+                    // Conversion is valid because of the first zero
+                    integerValue = 0;
+                    floatValue = 0.0;
+                    isInteger = true;
+                    isHexadecimal = false;
+                    return true;
+                }
+            }
+
+            isHexadecimal = false;
+            var start = index;
+            index = SkipSign(value, index);
+
+            // Skip digits in integer part
+            var startDigits = index;
+            index = SkipDigits(value, index);
+            var isIntegerPart = index > startDigits;
+
+            bool isFractionalPart;
+            if (index >= value.Length)
+            {
+                if (isIntegerPart)
+                {
+                    // There is only integer part
+                    isInteger = TryParseToInteger(value, start, value.Length - start,
+                        out integerValue, out floatValue);
+                    return isInteger;
+                }
+                else
+                {
+                    // There is the end before begin of a number
+                    return SetParsingFailure(out integerValue, out floatValue, out isInteger);
+                }
+            }
+            else if (value[index] == '.')
+            {
+                ++index;
+                startDigits = index;
+                index = SkipDigits(value, index);
+
+                if ((index > startDigits) || isIntegerPart)
+                {
+                    // It is floating-point number, becasue there is decimal point
+                    isFractionalPart = true;
+                }
+                else
+                {
+                    // Before and after decimal point is not any digit
+                    return SetParsingFailure(out integerValue, out floatValue, out isInteger);
+                }
+            }
+            else
+            {
+                if (isIntegerPart)
+                {
+                    // It is valid number without decimal point (i.e. still integer)
+                    isFractionalPart = false;
+                }
+                else
+                {
+                    // Invalid character at the begin of the string
+                    return SetParsingFailure(out integerValue, out floatValue, out isInteger);
+                }
+            }
+
+            var end = SkipExponent(value, index);
+            if (isFractionalPart || (end > index))
+            {
+                integerValue = 0;
+                bool isSuccessful;
+
+                // We identify a coorect floating-point number format
+                if ((start == 0) && (end == value.Length))
+                {
+                    isSuccessful = double.TryParse(value, out floatValue);
+                }
+                else
+                {
+                    isSuccessful = double.TryParse(value.Substring(start, end - start), out floatValue);
+                }
+
+                Debug.Assert(isSuccessful, "The string is definitely in floating-point number format");
+                isInteger = false;
+                return true;
+            }
+            else
+            {
+                // There is only integer part
+                isInteger = TryParseToInteger(value, start, end - start, out integerValue, out floatValue);
+                return isInteger;
+            }
+        }
+
+        /// <summary>
+        /// Tries to convert the string value to integer value and if it fails, then to floating-point number
+        /// </summary>
+        /// <param name="value">String value to convert</param>
+        /// <param name="canBeHexadecimal">Determines whether to parse hexadecimal format too</param>
+        /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <param name="floatValue">
+        /// New floating-point number if conversion is successful or integer is too large, otherwise 0.0
+        /// </param>
+        /// <param name="isInteger">
+        /// <c>true</c> if value is not converted to floating-point number, otherwise <c>false</c>
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if value is converted successfully to integer or floating-point number, otherwise
+        /// <c>false</c>, even if conversion to integer fails and result is stored as floating-point value
+        /// </returns>
+        public static bool TryConvertToNumber(string value, bool canBeHexadecimal, out int integerValue,
+            out double floatValue, out bool isInteger)
+        {
+            bool isHexadecimal;
+            return TryConvertToNumber(value, canBeHexadecimal, out integerValue, out floatValue,
+                out isInteger, out isHexadecimal);
+        }
+
+        /// <summary>
+        /// Tries to convert the string value to integer value and if it fails, then to floating-point number
+        /// </summary>
+        /// <param name="value">String in integer format value to parse</param>
+        /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <param name="floatValue">New floating-point number if conversion fails, otherwise 0.0</param>
+        /// <returns><c>true</c> if value is parsed successfully, otherwise <c>false</c></returns>
+        private static bool TryParseToInteger(string value, out int integerValue, out double floatValue)
+        {
+            Debug.Assert(value.Length > 0, "The string with number must not be empty");
+
+            if (int.TryParse(value, out integerValue))
+            {
+                floatValue = integerValue;
+                return true;
+            }
+            else
+            {
+                integerValue = 0;
+                var isSuccessful = double.TryParse(value, out floatValue);
+                Debug.Assert(isSuccessful, "The string is definitely in floating-point number format");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tries to convert the substring to integer value and if it fails, then to floating-point number
+        /// </summary>
+        /// <param name="value">String value to parse</param>
+        /// <param name="start">Start of the substring to parse</param>
+        /// <param name="length">Length of the substring to parse</param>
+        /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <param name="floatValue">New floating-point number if conversion fails, otherwise 0.0</param>
+        /// <returns><c>true</c> if value is parsed successfully, otherwise <c>false</c></returns>
+        private static bool TryParseToInteger(string value, int start, int length,
+            out int integerValue, out double floatValue)
+        {
+            Debug.Assert((start >= 0) && (length >= 0) && (length <= value.Length),
+                "Start and length must indicate correct substring");
+
+            if ((start == 0) && (length == value.Length))
+            {
+                return TryParseToInteger(value, out integerValue, out floatValue);
+            }
+            else
+            {
+                return TryParseToInteger(value.Substring(start, length), out integerValue, out floatValue);
+            }
+        }
+
+        /// <summary>
+        /// Tries to convert hexadecimal string to integer and if it fails, then to floating-point number
+        /// </summary>
+        /// <param name="value">String to convert, it must be in format "0x[0-9a-fA-F]+"</param>
+        /// <param name="index">Position of the second digit of hexadecimal number within string</param>
+        /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <param name="floatValue">New floating-point number if conversion fails, otherwise 0.0</param>
+        /// <returns><c>true</c> if value is parsed to integer successfully, otherwise <c>false</c></returns>
+        private static bool TryParseHexadecimal(string value, int index, ref int integerValue,
+            out double floatValue)
+        {
+            Debug.Assert((index > 2) && (value.Length >= index),
+                "Index is the position of the second digit of hexadecimal number within string");
+
+            long convertedLong = integerValue;
+            for (; index < value.Length; ++index)
+            {
+                int hexaValue;
+                if (TryConvertHexadecialToInteger(value[index], out hexaValue))
+                {
+                    convertedLong <<= 4;
+                    convertedLong += hexaValue;
+                }
+                else
+                {
+                    break;
+                }
+
+                if (convertedLong > int.MaxValue)
+                {
+                    integerValue = 0;
+                    floatValue = System.Convert.ToDouble(convertedLong);
+
+                    ++index;
+                    for (; index < value.Length; ++index)
+                    {
+                        if (TryConvertHexadecialToInteger(value[index], out hexaValue))
+                        {
+                            floatValue *= 16;
+                            floatValue += hexaValue;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            integerValue = System.Convert.ToInt32(convertedLong);
+            floatValue = integerValue;
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to convert character representing hexadecimal digit to integer value
+        /// </summary>
+        /// <param name="character">Character to convert</param>
+        /// <param name="value">New integer value if conversion is successful, otherwise 0</param>
+        /// <returns><c>true</c> if character is hexadecimal digit, otherwise <c>false</c></returns>
+        private static bool TryConvertHexadecialToInteger(char character, out int value)
+        {
+            if (char.IsDigit(character))
+            {
+                value = character - '0';
+                return true;
+            }
+            else if ((character >= 'a') && (character <= 'f'))
+            {
+                value = 10 + (character - 'a');
+                return true;
+            }
+            else if ((character >= 'A') && (character <= 'F'))
+            {
+                value = 10 + (character - 'A');
+                return true;
+            }
+            else
+            {
+                value = 0;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finds out if the exponent part is at the beginning of string
+        /// </summary>
+        /// <param name="value">String value to search for</param>
+        /// <param name="index">The starting character position to search for</param>
+        /// <returns>
+        /// The first position after exponent part if it is valid, otherwise <paramref name="index" />
+        /// </returns>
+        private static int SkipExponent(string value, int index)
+        {
+            if (index < value.Length)
+            {
+                var c = value[index];
+                if ((c != 'e') && (c != 'E'))
+                {
+                    return index;
+                }
+            }
+            else
+            {
+                return index;
+            }
+
+            var start = index;
+            ++index;
+            index = SkipSign(value, index);
+
+            var end = SkipDigits(value, index);
+            return (end > index) ? end : start;
+        }
+
+        /// <summary>
+        /// Search the first non-digit character and returns its position
+        /// </summary>
+        /// <param name="value">String value to search for</param>
+        /// <param name="index">The starting character position to search for</param>
+        /// <returns>The first position of non-digit character or length of string</returns>
+        private static int SkipDigits(string value, int index)
+        {
+            for (; index < value.Length; ++index)
+            {
+                if (!char.IsDigit(value[index]))
+                {
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// Determines if the string at given position is character + or - and if so, skips it
+        /// </summary>
+        /// <param name="value">String value to search for</param>
+        /// <param name="index">The starting character position to search for</param>
+        /// <returns>
+        /// <paramref name="index" /> if character at the position is not + or -, otherwise the next position
+        /// </returns>
+        private static int SkipSign(string value, int index)
+        {
+            if (index < value.Length)
+            {
+                var c = value[index];
+                if ((c == '+') || (c == '-'))
+                {
+                    return index + 1;
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// Search the first non-whitespace character and returns its position
+        /// </summary>
+        /// <param name="value">String value to search for</param>
+        /// <returns>The first position of non-whitespace character or length of string</returns>
+        private static int SkipWhiteSpace(string value)
+        {
+            int index;
+            for (index = 0; index < value.Length; ++index)
+            {
+                if (!char.IsWhiteSpace(value[index]))
+                {
+                    break;
+                }
+            }
+
+            return index;
+        }
+
+        /// <summary>
+        /// Set all return values of <see cref="TypeConversion.TryConvertToNumber" /> to indicate failure
+        /// </summary>
+        /// <param name="integerValue">Converted integer value, always 0</param>
+        /// <param name="floatValue">Converted floating-point value, always 0.0</param>
+        /// <param name="isInteger">Always <c>true</c></param>
+        /// <returns>Always <c>false</c></returns>
+        private static bool SetParsingFailure(out int integerValue, out double floatValue, out bool isInteger)
+        {
+            integerValue = 0;
+            floatValue = 0.0;
+            isInteger = true;
+            return false;
+        }
+
+        #endregion
+
         #region Helper methods
 
         /// <summary>
@@ -852,7 +1265,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public static bool isUnknown(Value value)
         {
-            if (value is UndefinedValue || value is AnyValue || value is FloatIntervalValue || value is IntegerIntervalValue || value is LongintIntervalValue)
+            if (value is UndefinedValue
+                || value is AnyValue
+                || value is FloatIntervalValue
+                || value is IntegerIntervalValue
+                || value is LongintIntervalValue)
             {
                 return true;
             }

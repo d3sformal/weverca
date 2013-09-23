@@ -1,4 +1,6 @@
-﻿using PHP.Core.AST;
+﻿using System;
+
+using PHP.Core.AST;
 
 using Weverca.Analysis.Memory;
 
@@ -79,42 +81,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     Result = OutSet.CreateBool(true);
                     break;
-                case Operations.Add:
-                    Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value) + value.Value);
-                    break;
-                case Operations.Sub:
-                    Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value) - value.Value);
-                    break;
-                case Operations.Mul:
-                    if (leftOperand.Value)
-                    {
-                        Result = OutSet.CreateDouble(value.Value);
-                    }
-                    else
-                    {
-                        Result = OutSet.CreateDouble(0.0);
-                    }
-                    break;
-                case Operations.Div:
-                    if (value.Value != 0.0)
-                    {
-                        if (leftOperand.Value)
-                        {
-                            Result = OutSet.CreateDouble(1.0 / value.Value);
-                        }
-                        else
-                        {
-                            Result = OutSet.CreateDouble(0.0);
-                        }
-                    }
-                    else
-                    {
-                        evaluator.SetWarning("Division by floating-point zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by floating-point zero does not return NaN, but false boolean value
-                        Result = OutSet.CreateBool(false);
-                    }
-                    break;
                 case Operations.Mod:
                     if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
                     {
@@ -146,29 +112,38 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     break;
                 default:
                     var rightBoolean = TypeConversion.ToBoolean(value.Value);
-                    if (!ComparisonOperation(leftOperand.Value, rightBoolean))
+                    if (ComparisonOperation(leftOperand.Value, rightBoolean))
                     {
-                        if (!LogicalOperation(leftOperand.Value, rightBoolean))
+                        break;
+                    }
+
+                    if (ArithmeticOperation(TypeConversion.ToFloat(leftOperand.Value), value.Value))
+                    {
+                        break;
+                    }
+
+                    if (LogicalOperation(leftOperand.Value, rightBoolean))
+                    {
+                        break;
+                    }
+
+                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
+                    {
+                        if (BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), rightInteger))
                         {
-                            bool isBitwise;
-                            if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
-                            {
-                                isBitwise = BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), rightInteger);
-                            }
-                            else
-                            {
-                                isBitwise = IsOperationBitwise();
-                                if (isBitwise)
-                                {
-                                    Result = OutSet.AnyIntegerValue;
-                                }
-                            }
-                            if (!isBitwise)
-                            {
-                                base.VisitFloatValue(value);
-                            }
+                            break;
                         }
                     }
+                    else
+                    {
+                        if (IsOperationBitwise())
+                        {
+                            Result = OutSet.AnyIntegerValue;
+                            break;
+                        }
+                    }
+
+                    base.VisitFloatValue(value);
                     break;
             }
         }
@@ -182,30 +157,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     break;
                 case Operations.NotIdentical:
                     Result = OutSet.CreateBool(leftOperand.Value != value.Value);
-                    break;
-                case Operations.Add:
-                    Result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value)
-                        + TypeConversion.ToInteger(value.Value));
-                    break;
-                case Operations.Sub:
-                    Result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value)
-                        - TypeConversion.ToInteger(value.Value));
-                    break;
-                case Operations.Mul:
-                    Result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value && value.Value));
-                    break;
-                case Operations.Div:
-                    if (value.Value)
-                    {
-                        Result = TypeConversion.ToInteger(OutSet, leftOperand);
-                    }
-                    else
-                    {
-                        evaluator.SetWarning("Division by zero (converted from boolean false)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by false returns false boolean value
-                        Result = OutSet.CreateBool(false);
-                    }
                     break;
                 case Operations.Mod:
                     if (value.Value)
@@ -226,17 +177,110 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         + TypeConversion.ToString(value.Value));
                     break;
                 default:
-                    if (!ComparisonOperation(leftOperand.Value, value.Value))
+                    if (ComparisonOperation(leftOperand.Value, value.Value))
                     {
-                        if (!LogicalOperation(leftOperand.Value, value.Value))
+                        break;
+                    }
+
+                    var leftInteger = TypeConversion.ToInteger(leftOperand.Value);
+                    var rightInteger = TypeConversion.ToInteger(value.Value);
+                    if (ArithmeticOperation(leftInteger, rightInteger))
+                    {
+                        break;
+                    }
+
+                    if (BitwiseOperation(leftInteger, rightInteger))
+                    {
+                        break;
+                    }
+
+                    if (LogicalOperation(leftOperand.Value, value.Value))
+                    {
+                        break;
+                    }
+
+                    base.VisitBooleanValue(value);
+                    break;
+            }
+        }
+
+        public override void VisitStringValue(StringValue value)
+        {
+            switch (Operation)
+            {
+                case Operations.Identical:
+                    Result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    Result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    // TODO: There is a problem with conversion
+                    throw new NotImplementedException();
+                case Operations.Concat:
+                    Result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value) + value.Value);
+                    break;
+                default:
+                    var booleanValue = TypeConversion.ToBoolean(value.Value);
+                    if (LogicalOperation(leftOperand.Value, booleanValue))
+                    {
+                        break;
+                    }
+
+                    if (ComparisonOperation(leftOperand.Value, booleanValue))
+                    {
+                        break;
+                    }
+
+                    var leftInteger = TypeConversion.ToInteger(leftOperand.Value);
+
+                    int integerValue;
+                    double floatValue;
+                    bool isInteger;
+                    bool isHexadecimal;
+                    var isSuccessful = TypeConversion.TryConvertToNumber(value.Value, true,
+                        out integerValue, out floatValue, out isInteger, out isHexadecimal);
+
+                    if (isInteger)
+                    {
+                        if (ArithmeticOperation(leftInteger, integerValue))
                         {
-                            if (!BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value),
-                                TypeConversion.ToInteger(value.Value)))
-                            {
-                                base.VisitBooleanValue(value);
-                            }
+                            break;
                         }
                     }
+                    else
+                    {
+                        if (ArithmeticOperation(leftInteger, floatValue))
+                        {
+                            break;
+                        }
+                    }
+
+                    // If string has hexadecimal format, the first zero is recognized.
+                    if (isHexadecimal)
+                    {
+                        integerValue = 0;
+                    }
+
+                    if (isInteger || (isSuccessful
+                        && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
+                    {
+                        if (BitwiseOperation(leftInteger, integerValue))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // If at least one operand can not be recognized, result can be any integer value.
+                        if (IsOperationBitwise())
+                        {
+                            Result = OutSet.AnyIntegerValue;
+                            break;
+                        }
+                    }
+
+                    base.VisitStringValue(value);
                     break;
             }
         }
@@ -326,16 +370,22 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     break;
                 default:
                     var rightBoolean = TypeConversion.ToBoolean(value.Value);
-                    if (!ComparisonOperation(leftOperand.Value, rightBoolean))
+                    if (ComparisonOperation(leftOperand.Value, rightBoolean))
                     {
-                        if (!LogicalOperation(leftOperand.Value, rightBoolean))
-                        {
-                            if (!BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), value.Value))
-                            {
-                                base.VisitIntegerValue(value);
-                            }
-                        }
+                        break;
                     }
+
+                    if (LogicalOperation(leftOperand.Value, rightBoolean))
+                    {
+                        break;
+                    }
+
+                    if (!BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), value.Value))
+                    {
+                        break;
+                    }
+
+                    base.VisitIntegerValue(value);
                     break;
             }
         }

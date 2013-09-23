@@ -61,6 +61,11 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             visitor = new LeftBooleanOperandVisitor(value, Evaluator);
         }
 
+        public override void VisitStringValue(StringValue value)
+        {
+            visitor = new LeftStringOperandVisitor(value, Evaluator);
+        }
+
         public override void VisitIntegerValue(IntegerValue value)
         {
             visitor = new LeftIntegerOperandVisitor(value, Evaluator);
