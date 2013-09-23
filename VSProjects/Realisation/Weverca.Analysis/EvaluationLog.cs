@@ -97,15 +97,15 @@ namespace Weverca.Analysis
         private void associatePoint(ProgramPointBase point)
         {
             var partial = point.Partial;
-            _points.Add(partial, point);
+            _points[partial] = point;
 
             var lValue = point as VariableBased;
             if (lValue != null)
-                _lValues.Add(partial, lValue);
+                _lValues[partial] = lValue;
 
             var rValue = point as RValuePoint;
             if (rValue != null)
-                _rValues.Add(partial, rValue);
+                _rValues[partial] = rValue;
         }
 
 

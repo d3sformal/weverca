@@ -113,7 +113,11 @@ namespace Weverca.Analysis.Expressions
                 }
 
                 //join statement chain with flow edges in postfix computation order
-                lastPoint.AddFlowChild(currentPoint);
+                if (!currentPoint.FlowChildren.Any())
+                {
+                    //because of sharing points in some expressions - point is on flow path before this
+                    lastPoint.AddFlowChild(currentPoint);
+                }
                 lastPoint = currentPoint;
             }
         }
@@ -144,6 +148,10 @@ namespace Weverca.Analysis.Expressions
 
         internal RValuePoint CreateRValue(LangElement el)
         {
+            ProgramPointBase existingPoint;
+            if (_programPoints.TryGetValue(el, out existingPoint))
+                return existingPoint as RValuePoint;
+
             var result = _rValueCreator.CreateValue(el);
             _programPoints.Add(el, result);
 
@@ -158,7 +166,8 @@ namespace Weverca.Analysis.Expressions
             return result;
         }
 
-        internal AliasPoint CreateAliasValue(LangElement el){
+        internal AliasPoint CreateAliasValue(LangElement el)
+        {
             var result = _aliasValueCreator.CreateValue(el);
             _programPoints.Add(el, result);
 
@@ -210,7 +219,7 @@ namespace Weverca.Analysis.Expressions
                 variables.Add(variable);
             }
 
-            Result(new GlobalStmtPoint(x,variables.ToArray()));
+            Result(new GlobalStmtPoint(x, variables.ToArray()));
         }
 
         #endregion
@@ -348,7 +357,7 @@ namespace Weverca.Analysis.Expressions
                 parameters.Add(CreateRValue(param));
             }
 
-            Result(new EchoStmtPoint(x,parameters.ToArray()));
+            Result(new EchoStmtPoint(x, parameters.ToArray()));
         }
 
         #endregion

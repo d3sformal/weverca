@@ -29,6 +29,11 @@ namespace Weverca.Analysis
 
         public VariableName ReturnValue { get { return Snapshot.ReturnValue; } }
 
+        public bool VariableExists(VariableName variable, bool forceGlobalContext = false)
+        {
+            return Snapshot.VariableExists(variable, forceGlobalContext);
+        }
+
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);

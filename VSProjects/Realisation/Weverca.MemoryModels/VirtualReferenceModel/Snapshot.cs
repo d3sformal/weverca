@@ -148,6 +148,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return createAlias(storage, true);
         }
 
+
+        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
+        {
+            var info = getInfo(variable, forceGlobalContext);
+
+            return info != null;
+        }
+
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
             assign(targetVar, entry, false);

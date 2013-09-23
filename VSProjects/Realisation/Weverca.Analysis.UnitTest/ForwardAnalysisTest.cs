@@ -416,6 +416,10 @@ $pre_b=--$b
             .AssertVariable("pre_b").HasValues(4)
             ;
 
+        readonly static TestCase StringWithExpression_CASE = @"
+$a='A';
+$result=""Value $a"";
+".AssertVariable("result").HasValues("Value A");
 
 
         [TestMethod]
@@ -646,6 +650,12 @@ $pre_b=--$b
         public void DecrementEval()
         {
             AnalysisTestUtils.RunTestCase(DecrementEval_CASE);
+        }
+
+        [TestMethod]
+        public void StringWithExpression()
+        {
+            AnalysisTestUtils.RunTestCase(StringWithExpression_CASE);
         }
     }
 }

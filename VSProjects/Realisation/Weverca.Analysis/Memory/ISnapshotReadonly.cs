@@ -8,6 +8,17 @@ namespace Weverca.Analysis.Memory
 {
     public interface ISnapshotReadonly
     {
+
+        /// <summary>
+        /// Determine that variable exits in current snapshot
+        /// <remarks>If global context is not forced, searches in local context, 
+        /// or in global context in snapshot belonging to global code</remarks>
+        /// </summary>
+        /// <param name="variable">Tested variable</param>
+        /// <param name="forceGlobalContext">Determine, that searching in global context has to be forced</param>
+        /// <returns>True if variable exits, false otherwise</returns>
+        bool VariableExists(VariableName variable, bool forceGlobalContext = false);
+
         /// <summary>
         /// Iterator for given object
         /// </summary>
@@ -56,7 +67,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="variable">variable which info is readed</param>
         /// <returns>Stored info</returns>
         InfoValue[] ReadInfo(VariableName variable);
-        
+
         /// <summary>
         /// Read value stored in snapshot for sourceVar
         /// </summary>
@@ -64,7 +75,7 @@ namespace Weverca.Analysis.Memory
         /// <returns>Value stored for given variable</returns>
         MemoryEntry ReadValue(VariableName sourceVar);
 
-         /// <summary>
+        /// <summary>
         /// Creates index for given identifier
         /// </summary>
         /// <param name="identifier">Identifier of index</param>

@@ -820,5 +820,10 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

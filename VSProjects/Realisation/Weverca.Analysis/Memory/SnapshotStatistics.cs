@@ -54,6 +54,7 @@ namespace Weverca.Analysis.Memory
         public int ArrayIterations;
         public int CreatedSourceTypeValues;
         public int CreatedNativeTypeValues;
+        public int VariableExistSearches;
 
         internal SnapshotStatistics Clone()
         {

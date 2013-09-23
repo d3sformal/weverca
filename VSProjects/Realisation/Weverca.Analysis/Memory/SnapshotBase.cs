@@ -51,10 +51,6 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         public bool HasChanged { get; private set; }
 
-
-
-
-
         #region Template methods - API for implementors
 
         /// <summary>
@@ -251,6 +247,15 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="declaration">Declared type</param>
         protected abstract void declareGlobal(TypeValue declaration);
+        /// <summary>
+        /// Determine that variable exits in current snapshot
+        /// <remarks>If global context is not forced, searches in local context, 
+        /// or in global context in snapshot belonging to global code</remarks>
+        /// </summary>
+        /// <param name="variable">Tested variable</param>
+        /// <param name="forceGlobalContext">Determine, that searching in global context has to be forced</param>
+        /// <returns>True if variable exits, false otherwise</returns>
+        protected abstract bool variableExists(VariableName variable, bool forceGlobalContext);
 
         /// <summary>
         /// Resolves all possible functions for given functionName
@@ -389,13 +394,28 @@ namespace Weverca.Analysis.Memory
         {
             checkCanUpdate();
 
-            _statistics.AsCallExtendings++;
+            ++_statistics.AsCallExtendings;
             extendAsCall(callerContext, thisObject, arguments);
         }
 
         #endregion
 
         #region Implementation of ISnapshotReadWrite interface
+
+
+        /// <summary>
+        /// Determine that variable exits in current snapshot
+        /// <remarks>If global context is not forced, searches in local context, 
+        /// or in global context in snapshot belonging to global code</remarks>
+        /// </summary>
+        /// <param name="variable">Tested variable</param>
+        /// <param name="forceGlobalContext">Determine, that searching in global context has to be forced</param>
+        /// <returns>True if variable exits, false otherwise</returns>
+        public bool VariableExists(VariableName variable, bool forceGlobalContext)
+        {
+            ++_statistics.VariableExistSearches;
+            return variableExists(variable, forceGlobalContext);
+        }
 
         public AnyValue AnyValue { get { return new AnyValue(); } }
         public AnyStringValue AnyStringValue { get { return new AnyStringValue(); } }
