@@ -155,7 +155,7 @@ namespace Weverca.TaintedAnalysis
             if (calls.Length == 1)
             {
                 var outSet = calls[0].End.OutSet;
-                applyHints(outSet);
+               // applyHints(outSet);
                 return outSet.ReadValue(outSet.ReturnValue);
             }
             else
@@ -166,7 +166,7 @@ namespace Weverca.TaintedAnalysis
                 foreach (var call in calls)
                 {
                     var outSet = call.End.OutSet;
-                    applyHints(outSet);
+                    //applyHints(outSet);
                     entries.Add(outSet.ReadValue(outSet.ReturnValue));
                 }
 
@@ -463,15 +463,15 @@ namespace Weverca.TaintedAnalysis
             {
                 comment=doc.ToString();
             }
-            string endOfRegexp="";
+            string endOfRegexp="(";
             Array values = DirtyType.GetValues(typeof(DirtyType));
             foreach (DirtyType val in values)
             {
                    endOfRegexp+=val+"|";
             }
             endOfRegexp+="all)";
-            string returnPatern = "(^[ \t]*\\*?[ \t]*@wev-hint[ \t]*returnvalue[ \t]*remove[ \t]*" + endOfRegexp;
-            string argumentPatern = "(^[ \t]*\\*?[ \t]*@wev-hint[ \t]*outargument[ \t]*[0-9]+[ \t]*remove" + endOfRegexp;
+            string returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]*returnvalue[ \t]*remove[ \t]*" + endOfRegexp;
+            string argumentPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]*outargument[ \t]*[0-9]+[ \t]*remove" + endOfRegexp;
             Regex retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
             Regex argRegEx = new Regex(argumentPatern, RegexOptions.IgnoreCase);
             foreach (var line in comment.Split('\n'))
@@ -479,13 +479,13 @@ namespace Weverca.TaintedAnalysis
                
                 if (retRegEx.IsMatch(line))
                 {
-                    Console.WriteLine("OK ppp" + line + "ppp");
+                    Console.WriteLine("OK" + line);
                     Console.WriteLine();
                 }
 
                 if (argRegEx.IsMatch(line))
                 {
-                    Console.WriteLine("KO ppp" + line + "ppp");
+                    Console.WriteLine("KO" + line);
                     Console.WriteLine();
 
                 }
