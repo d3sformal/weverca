@@ -171,6 +171,13 @@ namespace Weverca.ControlFlowGraph
                 if (!nodes.Contains(node))
                 {
                     nodes.Add(node);
+                    if (node is TryBasicBlock)
+                    {
+                        foreach (var catchNode in (node as TryBasicBlock).catchBlocks)
+                        {
+                            queue.Enqueue(catchNode);
+                        }
+                    }
                     foreach (var edge in node.OutgoingEdges)
                     {
                         if (!nodes.Contains(edge.To))
