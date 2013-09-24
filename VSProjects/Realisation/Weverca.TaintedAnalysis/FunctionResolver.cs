@@ -24,8 +24,7 @@ namespace Weverca.TaintedAnalysis
     public class FunctionResolver : FunctionResolverBase
     {
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
-        private Dictionary<FunctionDecl, FunctionHints> functionHints;
-        private Dictionary<MethodDecl, FunctionHints> methodHints;
+  
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
         /// </summary>
@@ -108,6 +107,17 @@ namespace Weverca.TaintedAnalysis
                 //there are no names - use numbered arguments
                 setOrderedArguments(callInput, arguments);
             }
+            if (declaration is FunctionDecl)
+            {
+                callInput.Assign(new VariableName("$current_function"), new MemoryEntry(callInput.CreateFunction(declaration as FunctionDecl)));
+            }
+
+            if (declaration is MethodDecl)
+            {
+                callInput.Assign(new VariableName("$current_function"), new MemoryEntry(callInput.CreateFunction(declaration as MethodDecl)));
+            }
+            
+
         }
 
         public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
@@ -134,17 +144,18 @@ namespace Weverca.TaintedAnalysis
         }
 
         /// <summary>
-        /// Resolve return value from all possible calls
+        /// Resolve return value from all possible calls. It also aplies user hints for flags removal 
         /// </summary>
         /// <param name="calls">All calls on dispatch level, which return value is resolved</param>
         /// <returns>Resolved return value</returns>
         public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> callGraphs)
         {
             var calls = callGraphs.ToArray();
-
+            
             if (calls.Length == 1)
             {
                 var outSet = calls[0].End.OutSet;
+                applyHints(outSet);
                 return outSet.ReadValue(outSet.ReturnValue);
             }
             else
@@ -155,6 +166,7 @@ namespace Weverca.TaintedAnalysis
                 foreach (var call in calls)
                 {
                     var outSet = call.End.OutSet;
+                    applyHints(outSet);
                     entries.Add(outSet.ReadValue(outSet.ReturnValue));
                 }
 
@@ -165,6 +177,26 @@ namespace Weverca.TaintedAnalysis
         #endregion
 
         #region Private helpers
+
+        private void applyHints(FlowOutputSet outSet)
+        {
+            if (outSet.ReadValue(new VariableName("$current_function")).Count == 1 && outSet.ReadValue(new VariableName("$current_function")).PossibleValues.First() is FunctionValue)
+            {
+                FunctionValue function = outSet.ReadValue(new VariableName("$current_function")).PossibleValues.First() as FunctionValue;
+                if (function.DeclaringElement is FunctionDecl)
+                { 
+                    FunctionDecl funcDecl = (function.DeclaringElement as FunctionDecl);
+
+                    new FunctionHints(funcDecl.PHPDoc,funcDecl).applyHints(outSet);
+                }
+                else if (function.DeclaringElement is MethodDecl)
+                {
+                    MethodDecl methodDecl = (function.DeclaringElement as MethodDecl);
+                    new FunctionHints(methodDecl.PHPDoc,methodDecl).applyHints(outSet);
+                }
+            }
+        }
+
 
         private void setWarning(string message)
         {
@@ -200,7 +232,7 @@ namespace Weverca.TaintedAnalysis
             {
                 return (declaration as MethodDecl).Signature;
             }
-
+            
             if (declaration is FunctionDecl)
             {
                 return (declaration as FunctionDecl).Signature;
@@ -415,22 +447,46 @@ namespace Weverca.TaintedAnalysis
     {
         HashSet<DirtyType> returnHints;
         Dictionary<int, HashSet<DirtyType>> argumentHints;
-        FunctionHints(PHPDocBlock doc)
+        LangElement declaration;
+        internal FunctionHints(PHPDocBlock doc, LangElement _declaration)
         {
+            declaration = _declaration;
             argumentHints = new Dictionary<int, HashSet<DirtyType>>();
             returnHints = new HashSet<DirtyType>();
-            string comment=doc.ToString();
-            string returnPatern = "@wev-hint returnvalue remove HTMLdirty";
-            string argumentPatern = "@wev-hint returnvalue remove all";
+
+            string comment;
+            if(doc==null)
+            {
+                comment="";
+            }
+            else
+            {
+                comment=doc.ToString();
+            }
+            string endOfRegexp="";
+            Array values = DirtyType.GetValues(typeof(DirtyType));
+            foreach (DirtyType val in values)
+            {
+                   endOfRegexp+=val+"|";
+            }
+            endOfRegexp+="all)";
+            string returnPatern = "(^[ \t]*\\*?[ \t]*@wev-hint[ \t]*returnvalue[ \t]*remove[ \t]*" + endOfRegexp;
+            string argumentPatern = "(^[ \t]*\\*?[ \t]*@wev-hint[ \t]*outargument[ \t]*[0-9]+[ \t]*remove" + endOfRegexp;
+            Regex retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
+            Regex argRegEx = new Regex(argumentPatern, RegexOptions.IgnoreCase);
             foreach (var line in comment.Split('\n'))
             {
-                if (System.Text.RegularExpressions.Regex.IsMatch(line, returnPatern, RegexOptions.IgnoreCase))
-                { 
-                    
+               
+                if (retRegEx.IsMatch(line))
+                {
+                    Console.WriteLine("OK ppp" + line + "ppp");
+                    Console.WriteLine();
                 }
 
-                if (System.Text.RegularExpressions.Regex.IsMatch(line, argumentPatern, RegexOptions.IgnoreCase))
+                if (argRegEx.IsMatch(line))
                 {
+                    Console.WriteLine("KO ppp" + line + "ppp");
+                    Console.WriteLine();
 
                 }
 
@@ -452,17 +508,17 @@ namespace Weverca.TaintedAnalysis
             argumentHints[i].Add(type);
         }
 
-        internal void applyHints(FlowController flow)
+        internal void applyHints(FlowOutputSet outset)
         {
             foreach (var type in returnHints)
             {
-                MemoryEntry result = flow.OutSet.ReadValue(flow.OutSet.ReturnValue);
+                MemoryEntry result = outset.ReadValue(outset.ReturnValue);
                 foreach (var value in result.PossibleValues)
                 {
-                    ValueInfoHandler.setClean(flow.OutSet, value, type);
+                    ValueInfoHandler.setClean(outset, value, type);
                 }
             }
-            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+           /* MemoryEntry argc = outset.ReadValue(new VariableName(".argument_count"));
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
             foreach (int arg in argumentHints.Keys)
             {
@@ -470,14 +526,14 @@ namespace Weverca.TaintedAnalysis
                 {
                     foreach (var type in argumentHints[arg])
                     {
-                        MemoryEntry result = flow.OutSet.ReadValue(argument(arg));
+                        MemoryEntry result = outset.ReadValue(argument(arg));
                         foreach (var value in result.PossibleValues)
                         {
-                            ValueInfoHandler.setClean(flow.OutSet, value, type);
+                            ValueInfoHandler.setClean(outset, value, type);
                         }
                     }
                 }
-            }
+            }*/
         }
         private VariableName argument(int index)
         {
@@ -488,6 +544,4 @@ namespace Weverca.TaintedAnalysis
             return new VariableName(".arg" + index);
         }
     }
-
-
 }

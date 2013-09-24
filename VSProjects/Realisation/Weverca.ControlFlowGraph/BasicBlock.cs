@@ -156,4 +156,29 @@ namespace Weverca.ControlFlowGraph
             }
         }
     }
+
+    public class TryBasicBlock : BasicBlock
+    {
+        public List<CatchBasicBlock> catchBlocks = new List<CatchBasicBlock>();
+        public TryBasicBlock() : base ()
+        {
+            
+        }
+    }
+
+
+    public class CatchBasicBlock : BasicBlock
+    {
+        public DirectVarUse/*!*/ Variable { private set; get; }
+        public GenericQualifiedName ClassName { private set;  get; }
+        public CatchBasicBlock(DirectVarUse/*!*/ variable, GenericQualifiedName className)
+            : base()
+        {
+            Variable = variable;
+            ClassName = className;
+        }
+    
+    
+    }
+
 }

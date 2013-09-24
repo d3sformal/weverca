@@ -198,7 +198,7 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Stack of block which ends by throw
         /// </summary>
-        LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
+      //  LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
                 
         /// <summary>
         /// Improved dictonary storing labels in context.
@@ -222,7 +222,7 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = new BasicBlock();
             graph.start = currentBasicBlock;
             functionSinkStack.Push(new BasicBlock());
-            throwBlocks.Push(new List<BasicBlock>());
+            //throwBlocks.Push(new List<BasicBlock>());
         }
 
         public void CheckLabels()
@@ -256,10 +256,10 @@ namespace Weverca.ControlFlowGraph
                 statement.VisitMe(this);
             }
             DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
-            foreach (var block in throwBlocks.ElementAt(0)) {
+         /*   foreach (var block in throwBlocks.ElementAt(0)) {
                 block.Statements.RemoveLast();
                 DirectEdge.MakeNewAndConnect(block, functionSinkStack.Peek());
-            }
+            }*/
        }
 
         /// <summary>
@@ -442,11 +442,11 @@ namespace Weverca.ControlFlowGraph
             
             VisitStatementList(functionBody);
 
-            foreach (var block in throwBlocks.ElementAt(0))
+           /* foreach (var block in throwBlocks.ElementAt(0))
             {
                 block.Statements.RemoveLast();
                 DirectEdge.MakeNewAndConnect(block, functionSink);
-            }
+            }*/
 
 
             //Connects return destination
@@ -835,35 +835,39 @@ namespace Weverca.ControlFlowGraph
         public override void VisitTryStmt(TryStmt x)
         {
             BasicBlock followingBlock = new BasicBlock();
-         
 
-            throwBlocks.Push(new List<BasicBlock>());
+            TryBasicBlock tryBlock = new TryBasicBlock();
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, tryBlock); 
+            currentBasicBlock = tryBlock;
+           
+            //throwBlocks.Push(new List<BasicBlock>());
             VisitStatementList(x.Statements);
             DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
             
             
             foreach(var catchItem in x.Catches){
 
-                BasicBlock catchBlock = new BasicBlock();
+                CatchBasicBlock catchBlock = new CatchBasicBlock(catchItem.Variable,catchItem.ClassName);
 
-                foreach (var throwBlock in throwBlocks.Peek())
+                /*foreach (var throwBlock in throwBlocks.Peek())
                 {
-                    ThrowStmt throwStatement = (ThrowStmt)throwBlock.Statements.Last();
+                    //ThrowStmt throwStatement = (ThrowStmt)throwBlock.Statements.Last();
                     //throwBlock.Statements.RemoveLast();
-                    List<ActualParam> parameters = new List<ActualParam>();
-                    parameters.Add(new ActualParam(Position.Invalid, throwStatement.Expression, false));
-                    parameters.Add(new ActualParam(Position.Invalid, new StringLiteral(Position.Invalid, catchItem.ClassName.QualifiedName.ToString()), false));
-                    ConditionalEdge.MakeNewAndConnect(throwBlock, catchBlock, new DirectFcnCall(Position.Invalid, new QualifiedName(new Name("is_subclass_of")), null, Position.Invalid, parameters, new List<TypeRef>()));
-                }
-               
-                
+                    //List<ActualParam> parameters = new List<ActualParam>();
+                    //parameters.Add(new ActualParam(Position.Invalid, throwStatement.Expression, false));
+                    //parameters.Add(new ActualParam(Position.Invalid, new StringLiteral(Position.Invalid, catchItem.ClassName.QualifiedName.ToString()), false));
+                    //ConditionalEdge.MakeNewAndConnect(throwBlock, catchBlock, new DirectFcnCall(Position.Invalid, new QualifiedName(new Name("is_subclass_of")), null, Position.Invalid, parameters, new List<TypeRef>()));
+
+
+                }*/
+                tryBlock.catchBlocks.Add(catchBlock);
                 currentBasicBlock=catchBlock;
                 VisitStatementList(catchItem.Statements);
                 DirectEdge.MakeNewAndConnect(currentBasicBlock,followingBlock);
             }
             
             
-            throwBlocks.Pop();
+            //throwBlocks.Pop();
             currentBasicBlock=followingBlock;
             
         }
@@ -875,10 +879,10 @@ namespace Weverca.ControlFlowGraph
         public override void VisitThrowStmt(ThrowStmt x)
         {
             currentBasicBlock.AddElement(x);
-            foreach(var item in throwBlocks)
+           /* foreach(var item in throwBlocks)
             {
                 item.Add(currentBasicBlock);
-            }
+            }*/
             currentBasicBlock=new BasicBlock();
         }
 
