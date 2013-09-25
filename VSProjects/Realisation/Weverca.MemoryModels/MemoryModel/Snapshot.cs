@@ -41,11 +41,15 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Variables
 
-
         protected override MemoryEntry readValue(VariableName sourceVar)
         {
             MemoryIndex index = getVariableOrUnknown(sourceVar);
             return getMemoryEntry(index);
+        }
+
+        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
@@ -72,6 +76,11 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryAlias(index, alias);
         }
 
+        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Fields
@@ -86,6 +95,11 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             MemoryIndex fieldIndex = getFieldOrUnknown(value, index);
             return getMemoryEntry(fieldIndex);
+        }
+
+        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
+        {
+            throw new NotImplementedException();
         }
 
         protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
@@ -104,6 +118,11 @@ namespace Weverca.MemoryModels.MemoryModel
 
             MemoryIndex fieldIndex = getOrCreateField(value, index);
             assignMemoryAlias(fieldIndex, alias);
+        }
+
+        protected override bool objectFieldExists(ObjectValue objectValue, ContainerIndex field)
+        {
+            throw new NotImplementedException();
         }
 
         protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
@@ -128,6 +147,11 @@ namespace Weverca.MemoryModels.MemoryModel
             return getMemoryEntry(fieldIndex);
         }
 
+        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
             MemoryIndex fieldIndex = getOrCreateIndex(value, index);
@@ -144,6 +168,11 @@ namespace Weverca.MemoryModels.MemoryModel
 
             MemoryIndex fieldIndex = getOrCreateIndex(value, index);
             assignMemoryAlias(fieldIndex, alias);
+        }
+
+        protected override bool arrayIndexExists(AssociativeArray array, ContainerIndex index)
+        {
+            throw new NotImplementedException();
         }
 
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
@@ -817,11 +846,6 @@ namespace Weverca.MemoryModels.MemoryModel
         }
 
         protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
         {
             throw new NotImplementedException();
         }

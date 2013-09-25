@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using System.Collections.ObjectModel;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -11,25 +8,25 @@ using PHP.Core.AST;
 namespace Weverca.Analysis.Memory
 {
     /// <summary>
-    /// Represents memory snpashot used for fix point analysis.
-    /// NOTES: 
+    /// Represents memory snapshot used for fix point analysis.
+    /// NOTES:
     ///     * Snapshot will always work in context of some object.
-    ///     * Global variables behave in different way than objets variables (cross callstack)
-    ///     * Is correct for implementors to cast input Objects, Arrays, Snapshots to concrete implementation - Two snapshot implementations never won't be used together
-    /// <remarks>        
-    /// 
+    ///     * Global variables behave in different way than objects variables (cross call stack)
+    ///     * Is correct for implementers to cast input Objects, Arrays, Snapshots to concrete implementation - Two snapshot implementations never won't be used together
+    /// </summary>
+    /// <remarks>
+    ///
     /// Iteration looks like:
     /// StartTransaction
     /// ..changes in snapshot
     /// CommitTransaction
-    /// 
+    ///
     /// If snapshot has changed against state before start transaction is determined by HasChanged
     /// </remarks>
-    /// </summary>
     public abstract class SnapshotBase : ISnapshotReadWrite
     {
         /// <summary>
-        /// singleton variable where return value is stored
+        /// Singleton variable where return value is stored
         /// </summary>
         private static readonly VariableName _returnValue = new VariableName(".return");
 
@@ -62,7 +59,7 @@ namespace Weverca.Analysis.Memory
         /// NOTE:
         ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
         /// </summary>
-        /// <returns>True if there is semantic change in transaction, false otherwise</returns>
+        /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
         protected abstract bool commitTransaction();
 
         /// <summary>
@@ -72,7 +69,7 @@ namespace Weverca.Analysis.Memory
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
         /// <summary>
-        /// Iterator for given object
+        /// Iterates over the given object
         /// </summary>
         /// <param name="iteratedObject">Object which iterator will be created</param>
         /// <returns>Iterator for given object</returns>
@@ -81,12 +78,12 @@ namespace Weverca.Analysis.Memory
         /// <summary>
         /// Initialize array
         /// </summary>
-        /// <param name="createdArray">Created array that has to be initalized</param>
+        /// <param name="createdArray">Created array that has to be initialized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
         /// <summary>
         /// Create iterator for given array
         /// </summary>
-        /// <param name="iteratedArray">Aray which iterator will be created</param>
+        /// <param name="iteratedArray">Array which iterator will be created</param>
         /// <returns>Iterators for given array</returns>
         protected abstract IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray);
 
@@ -113,19 +110,18 @@ namespace Weverca.Analysis.Memory
         /// <returns>Created alias</returns>
         protected abstract AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field);
 
-
         /// <summary>
-        /// Assign memory entry into targetVar        
+        /// Assign memory entry into <paramref name="targetVar"/>
         /// </summary>
         /// <param name="targetVar">Target of assigning</param>
         /// <param name="entry">Value that will be assigned</param>
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
 
         /// <summary>
-        /// Assign alias to given targetVar
+        /// Assign alias to given <paramref name="targetVar"/>
         /// </summary>
         /// <param name="targetVar">Target variable</param>
-        /// <param name="alias">Assigned alias</param>
+        /// <param name="aliases">Assigned alias</param>
         protected abstract void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases);
 
         /// <summary>
@@ -138,7 +134,10 @@ namespace Weverca.Analysis.Memory
 
         /// <summary>
         /// Extend snapshot as call from given callerContext
-        /// </summary>                
+        /// </summary>
+        /// <param name="callerContext"></param>
+        /// <param name="thisObject"></param>
+        /// <param name="arguments"></param>
         protected abstract void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Merge given call output with current context.
@@ -164,23 +163,32 @@ namespace Weverca.Analysis.Memory
         /// <summary>
         /// Read info stored for given value
         /// </summary>
-        /// <param name="value">value which info is readed</param>
+        /// <param name="value">Value which info is read</param>
         /// <returns>Stored info</returns>
         protected abstract InfoValue[] readInfo(Value value);
 
         /// <summary>
         /// Read info stored for given variable
         /// </summary>
-        /// <param name="variable">variable which info is readed</param>
+        /// <param name="variable">Variable which info is read</param>
         /// <returns>Stored info</returns>
         protected abstract InfoValue[] readInfo(VariableName variable);
 
         /// <summary>
-        /// Read value stored in snapshot for sourceVar
+        /// Read value stored in snapshot for <paramref name="sourceVar"/>
         /// </summary>
-        /// <param name="sourceVar">Variable which value will be readed</param>
+        /// <param name="sourceVar">Variable which value will be read</param>
         /// <returns>Value stored for given variable</returns>
         protected abstract MemoryEntry readValue(VariableName sourceVar);
+
+        /// <summary>
+        /// Tries to read value stored in current snapshot for <paramref name="sourceVar" />
+        /// </summary>
+        /// <param name="sourceVar">Variable which value will be attempted to read</param>
+        /// <param name="entry">Value stored for given variable if exists, otherwise undefined value</param>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
+        protected abstract bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext);
 
         /// <summary>
         /// Set field specified by index, on object represented by value 
@@ -216,15 +224,35 @@ namespace Weverca.Analysis.Memory
         /// Get value for field specified by index, in object represented by value 
         /// </summary>
         /// <param name="value">Handler for object manipulation</param>
-        /// <param name="index">Index of field that will be set</param>        
+        /// <param name="index">Index of field that will be set</param>
+        /// <returns></returns>
         protected abstract MemoryEntry getField(ObjectValue value, ContainerIndex index);
+
+        /// <summary>
+        /// Tries to get value from object at specified field stored in current snapshot
+        /// </summary>
+        /// <param name="objectValue">Object which field is resolved</param>
+        /// <param name="field">Field where value will be searched</param>
+        /// <param name="entry">Value stored at given object field if exists, otherwise undefined value</param>
+        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
+        protected abstract bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry);
 
         /// <summary>
         /// Get value for field specified by index, in array represented by value 
         /// </summary>
         /// <param name="value">Handler for array manipulation</param>
-        /// <param name="index">Index that will be set</param>      
+        /// <param name="index">Index that will be set</param>
+        /// <returns></returns>
         protected abstract MemoryEntry getIndex(AssociativeArray value, ContainerIndex index);
+
+        /// <summary>
+        /// Tries to get value from array at specified index stored in current snapshot
+        /// </summary>
+        /// <param name="array">Array which index is resolved</param>
+        /// <param name="index">Index where value will be searched</param>
+        /// <param name="entry">Value stored at given index in array if exists, otherwise undefined value</param>
+        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
+        protected abstract bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry);
 
         /// <summary>
         /// Fetch variables from global context into current context
@@ -247,33 +275,57 @@ namespace Weverca.Analysis.Memory
         /// </summary>
         /// <param name="declaration">Declared type</param>
         protected abstract void declareGlobal(TypeValue declaration);
+
         /// <summary>
-        /// Determine that variable exits in current snapshot
-        /// <remarks>If global context is not forced, searches in local context, 
-        /// or in global context in snapshot belonging to global code</remarks>
+        /// Determines whether variable exists in current snapshot
         /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context,
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
         /// <param name="variable">Tested variable</param>
-        /// <param name="forceGlobalContext">Determine, that searching in global context has to be forced</param>
-        /// <returns>True if variable exits, false otherwise</returns>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         protected abstract bool variableExists(VariableName variable, bool forceGlobalContext);
+
+        /// <summary>
+        /// Determines whether field for the given object exists in current snapshot
+        /// </summary>
+        /// <param name="objectValue">Object which field is resolved</param>
+        /// <param name="field">Field where value will be searched</param>
+        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
+        protected abstract bool objectFieldExists(ObjectValue objectValue, ContainerIndex field);
+
+        /// <summary>
+        /// Determines whether element of index for the given array exists in current snapshot
+        /// </summary>
+        /// <param name="array">Array which index is resolved</param>
+        /// <param name="index">Index where value will be searched</param>
+        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
+        protected abstract bool arrayIndexExists(AssociativeArray array, ContainerIndex index);
 
         /// <summary>
         /// Resolves all possible functions for given functionName
         /// NOTE:
         ///     Multiple declarations for single functionName can happen for example because of branch merging
         /// </summary>
-        /// <param name="typeName">Name of resolved function</param>
+        /// <param name="functionName">Name of resolved function</param>
         /// <returns>Resolved functions</returns>
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectValue"></param>
+        /// <param name="methodName"></param>
+        /// <returns></returns>
         protected abstract IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName);
         /// <summary>
         /// Resolves all possible types for given typeName
         /// NOTE:
         ///     Multiple declarations for single typeName can happen for example because of branch merging
         /// </summary>
-        /// <param name="functionName">Name of resolved type</param>
+        /// <param name="typeName">Name of resolved type</param>
         /// <returns>Resolved types</returns>
         protected abstract IEnumerable<TypeValue> resolveType(QualifiedName typeName);
 
@@ -282,7 +334,7 @@ namespace Weverca.Analysis.Memory
         #region Statistic interface for implementors
 
         /// <summary>
-        /// Report hash search based on non-recursinve GetHaschode, Equals routines
+        /// Report hash search based on non-recursive <c>GetHashCode</c> and <c>Equals</c> routines
         /// </summary>
         protected void ReportSimpleHashSearch()
         {
@@ -290,7 +342,7 @@ namespace Weverca.Analysis.Memory
         }
 
         /// <summary>
-        /// Report hash assigns based on non-recursinve GetHaschode, Equals routines
+        /// Report hash assigns based on non-recursive <c>GetHashCode</c> and <c>Equals</c> routines
         /// </summary>
         protected void ReportSimpleHashAssign()
         {
@@ -325,6 +377,9 @@ namespace Weverca.Analysis.Memory
 
         #region Snapshot controll operations
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SnapshotBase" /> class.
+        /// </summary>
         public SnapshotBase()
         {
         }
@@ -359,7 +414,6 @@ namespace Weverca.Analysis.Memory
             }
             IsTransactionStarted = false;
 
-
             HasChanged = commitTransaction();
         }
 
@@ -388,8 +442,6 @@ namespace Weverca.Analysis.Memory
             IsFrozen = true;
         }
 
-
-
         internal void ExtendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
@@ -402,19 +454,44 @@ namespace Weverca.Analysis.Memory
 
         #region Implementation of ISnapshotReadWrite interface
 
-
         /// <summary>
-        /// Determine that variable exits in current snapshot
-        /// <remarks>If global context is not forced, searches in local context, 
-        /// or in global context in snapshot belonging to global code</remarks>
+        /// Determines whether variable exists in current snapshot
         /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context,
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
         /// <param name="variable">Tested variable</param>
-        /// <param name="forceGlobalContext">Determine, that searching in global context has to be forced</param>
-        /// <returns>True if variable exits, false otherwise</returns>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         public bool VariableExists(VariableName variable, bool forceGlobalContext)
         {
             ++_statistics.VariableExistSearches;
             return variableExists(variable, forceGlobalContext);
+        }
+
+        /// <summary>
+        /// Determines whether field for the given object exists in current snapshot
+        /// </summary>
+        /// <param name="objectValue">Object which field is resolved</param>
+        /// <param name="field">Field where value will be searched</param>
+        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
+        public bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field)
+        {
+            ++_statistics.ObjectFieldExistsSearches;
+            return objectFieldExists(objectValue, field);
+        }
+
+        /// <summary>
+        /// Determines whether element of index for the given array exists in current snapshot
+        /// </summary>
+        /// <param name="array">Array which index is resolved</param>
+        /// <param name="index">Index where value will be searched</param>
+        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
+        public bool ArrayIndexExists(AssociativeArray array, ContainerIndex index)
+        {
+            ++_statistics.ArrayIndexExistsSearches;
+            return arrayIndexExists(array, index);
         }
 
         public AnyValue AnyValue { get { return new AnyValue(); } }
@@ -508,8 +585,8 @@ namespace Weverca.Analysis.Memory
         /// <summary>
         /// Create function value from given declaration
         /// </summary>
-        /// <param name="analyzer">Analyzer declaration</param>
         /// <param name="name">Name of created analyzer</param>
+        /// <param name="analyzer">Analyzer declaration</param>
         /// <returns>Created value</returns>
         public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
         {
@@ -519,11 +596,10 @@ namespace Weverca.Analysis.Memory
             return new NativeAnalyzerValue(name, analyzer);
         }
 
-
         /// <summary>
         /// Create function value from given expression
         /// </summary>
-        /// <param name="expression">Lambda function declaration</param>        
+        /// <param name="expression">Lambda function declaration</param>
         /// <returns>Created value</returns>
         public FunctionValue CreateFunction(LambdaFunctionExpr expression)
         {
@@ -662,12 +738,31 @@ namespace Weverca.Analysis.Memory
             ++_statistics.FieldReads;
             return getField(value, index);
         }
+
+        public bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
+        {
+            // TODO_David: Je tohle treba?
+            checkCanUpdate();
+
+            ++_statistics.FieldReadAttempts;
+            return tryGetField(objectValue, field, out entry);
+        }
+
         public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
         {
             checkCanUpdate();
 
             ++_statistics.IndexReads;
             return getIndex(value, index);
+        }
+
+        public bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
+        {
+            // TODO_David: Je tohle treba?
+            checkCanUpdate();
+
+            ++_statistics.IndexReadAttempts;
+            return tryGetIndex(array, index, out entry);
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)
@@ -704,7 +799,7 @@ namespace Weverca.Analysis.Memory
             }
             else
             {
-                //create implicit memory entry
+                // create implicit memory entry
                 Assign(targetVar, new MemoryEntry(value));
             }
         }
@@ -741,6 +836,13 @@ namespace Weverca.Analysis.Memory
         {
             var result = readValue(sourceVar);
             ++_statistics.ValueReads;
+            return result;
+        }
+
+        public bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        {
+            var result = tryReadValue(sourceVar, out entry, forceGlobalContext);
+            ++_statistics.ValueReadAttempts;
             return result;
         }
 
@@ -802,7 +904,8 @@ namespace Weverca.Analysis.Memory
         #endregion
 
         #region Snapshot private helpers
-        void checkCanUpdate()
+
+        private void checkCanUpdate()
         {
             checkFrozenState();
             if (!IsTransactionStarted)
@@ -811,13 +914,14 @@ namespace Weverca.Analysis.Memory
             }
         }
 
-        void checkFrozenState()
+        private void checkFrozenState()
         {
             if (IsFrozen)
             {
                 throw new NotSupportedException("Cannot process action because snapshot has already been frozen");
             }
         }
+
         #endregion
     }
 }

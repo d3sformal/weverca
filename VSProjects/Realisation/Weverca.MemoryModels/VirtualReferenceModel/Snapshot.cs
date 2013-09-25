@@ -4,31 +4,29 @@ using System.Linq;
 using System.Text;
 
 using PHP.Core;
-using PHP.Core.AST;
-using Weverca.Analysis;
+
 using Weverca.Analysis.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {
-
     /// <summary>
     /// Simple (non efficient) implementation as proof of concept - will be heavily optimized, refactored
     /// </summary>
     public class Snapshot : SnapshotBase
     {
-        Dictionary<VariableName, VariableInfo> _oldVariables;
-        Dictionary<VariableName, VariableInfo> _locals = new Dictionary<VariableName, VariableInfo>();
-        Dictionary<VariableName, VariableInfo> _oldGlobals;
-        Dictionary<VariableName, VariableInfo> _globals = new Dictionary<VariableName, VariableInfo>();
-        Dictionary<VirtualReference, MemoryEntry> _oldData;
-        Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
+        private Dictionary<VariableName, VariableInfo> _oldVariables;
+        private Dictionary<VariableName, VariableInfo> _locals = new Dictionary<VariableName, VariableInfo>();
+        private Dictionary<VariableName, VariableInfo> _oldGlobals;
+        private Dictionary<VariableName, VariableInfo> _globals = new Dictionary<VariableName, VariableInfo>();
+        private Dictionary<VirtualReference, MemoryEntry> _oldData;
+        private Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
 
         /// <summary>
         /// Determine that this snapshot is pointed to global scope
         /// </summary>
-        bool _isGlobalScope;
+        private bool _isGlobalScope;
 
-        bool _hasSemanticChange;
+        private bool _hasSemanticChange;
 
         protected override void startTransaction()
         {
@@ -39,7 +37,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             _data = new Dictionary<VirtualReference, MemoryEntry>(_data);
             _locals = new Dictionary<VariableName, VariableInfo>(_locals);
             _globals = new Dictionary<VariableName, VariableInfo>(_globals);
-
 
             _isGlobalScope = true;// when not extend as call or from non global snapshot is global
             _hasSemanticChange = false;
@@ -93,7 +90,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return false;
         }
 
-
         private bool checkChange(Dictionary<VariableName, VariableInfo> oldVariables, Dictionary<VariableName, VariableInfo> variables)
         {
             foreach (var oldVar in oldVariables)
@@ -112,6 +108,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     return true;
                 }
             }
+
             return false;
         }
 
@@ -148,12 +145,23 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return createAlias(storage, true);
         }
 
-
         protected override bool variableExists(VariableName variable, bool forceGlobalContext)
         {
             var info = getInfo(variable, forceGlobalContext);
 
             return info != null;
+        }
+
+        protected override bool objectFieldExists(ObjectValue objectValue, ContainerIndex field)
+        {
+            var storage = getFieldStorage(objectValue, field);
+            return variableExists(storage, true);
+        }
+
+        protected override bool arrayIndexExists(AssociativeArray array, ContainerIndex index)
+        {
+            var storage = getIndexStorage(array, index);
+            return variableExists(storage, true);
         }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
@@ -185,10 +193,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-
         protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
-
             var info = getOrCreate(targetVar);
             var references = new HashSet<VirtualReference>();
             foreach (ReferenceAlias alias in aliases)
@@ -202,9 +208,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            //called context cannot be global scope
+            // called context cannot be global scope
             _isGlobalScope = false;
-
 
             var input = callerContext as Snapshot;
             extendVariables(input._globals, _globals, false);
@@ -215,7 +220,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 assign(thisObjectStorage(), thisObject);
             }
         }
-
 
         /// <summary>
         /// TODO this implementation is inefficient
@@ -238,7 +242,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 isFirst = false;
             }
         }
-
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
         {
@@ -337,6 +340,21 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return resolveReferences(info.References);
         }
 
+        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        {
+            var info = getInfo(sourceVar, forceGlobalContext);
+
+            if (info == null)
+            {
+                ReportMemoryEntryCreation();
+                entry = new MemoryEntry(UndefinedValue);
+                return false;
+            }
+
+            entry = resolveReferences(info.References);
+            return true;
+        }
+
         private void weakUpdate(List<VirtualReference> references, MemoryEntry update)
         {
             foreach (var reference in references)
@@ -347,7 +365,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
                 setEntry(reference, updated);
             }
-
         }
 
         private MemoryEntry resolveReferences(List<VirtualReference> references)
@@ -363,7 +380,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     var entries = from reference in references select getEntry(reference);
 
                     return MemoryEntry.Merge(entries);
-
             }
         }
 
@@ -400,7 +416,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             _locals[name] = info;
         }
 
-
         private MemoryEntry getEntry(VirtualReference reference)
         {
             MemoryEntry entry;
@@ -420,6 +435,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             {
                 throw new NotSupportedException("Entry cannot be null");
             }
+
             ReportSimpleHashAssign();
             _data[reference] = entry;
         }
@@ -449,7 +465,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             foreach (var reference in references)
             {
                 if (!info.References.Contains(reference))
+                {
                     return false;
+                }
             }
 
             return true;
@@ -458,7 +476,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private void reportSemanticChange()
         {
             if (_hasSemanticChange)
+            {
                 return;
+            }
 
             _hasSemanticChange = true;
         }
@@ -494,6 +514,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             ReportMemoryEntryCreation();
             assign(storage, new MemoryEntry(function), true);
         }
+
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
             var storage = functionStorage(functionName.Name.Value);
@@ -526,6 +547,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #region Object operations
+
         protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
             var storage = getFieldStorage(value, index);
@@ -543,6 +565,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             var storage = getFieldStorage(value, index);
             return readValue(storage, true);
         }
+
+        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
+        {
+            var storage = getFieldStorage(objectValue, field);
+            return tryReadValue(storage, out entry, true);
+        }
+
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             var info = getObjectInfoStorage(createdObject);
@@ -580,9 +609,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             var name = string.Format("$obj{0}#info", obj.UID);
             return new VariableName(name);
         }
+
         #endregion
 
         #region Array operations
+
         protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
             var storage = getIndexStorage(value, index);
@@ -599,6 +630,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             var storage = getIndexStorage(value, index);
             return readValue(storage, true);
+        }
+
+        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
+        {
+            var storage = getIndexStorage(array, index);
+            return tryReadValue(storage, out entry, true);
         }
 
         protected override void initializeArray(AssociativeArray createdArray)
@@ -626,7 +663,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new VariableName(name);
         }
 
-
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
             var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
@@ -635,7 +671,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             {
                 var varName = variable.Value;
                 if (!varName.StartsWith(arrayPrefix))
+                {
                     continue;
+                }
 
                 var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
 
@@ -644,6 +682,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return indexes;
         }
+
         #endregion
 
         protected override void setInfo(Value value, params InfoValue[] info)
@@ -672,7 +711,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         protected override InfoValue[] readInfo(VariableName variable)
         {
             var storage = infoStorage(variable);
-
 
             return getInfoValues(storage);
         }
@@ -706,7 +744,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private Dictionary<VariableName, VariableInfo> getVariableStorage(bool forceGlobal)
         {
             if (_isGlobalScope)
+            {
                 return _globals;
+            }
 
             return forceGlobal ? _globals : _locals;
         }
@@ -757,7 +797,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
                     result.Length -= 2;
                     result.AppendLine("}");
-
                 }
             }
         }

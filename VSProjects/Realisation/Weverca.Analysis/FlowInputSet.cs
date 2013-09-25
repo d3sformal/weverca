@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 using PHP.Core;
-using PHP.Core.AST;
 
 using Weverca.Analysis.Memory;
 
@@ -12,7 +8,7 @@ namespace Weverca.Analysis
 {
     /// <summary>
     /// Set of FlowInfo used as input for statement analysis.
-    /// </summary>    
+    /// </summary>
     public class FlowInputSet : ISnapshotReadonly
     {
         /// <summary>
@@ -25,13 +21,39 @@ namespace Weverca.Analysis
             Snapshot = snapshot;
         }
 
+        public string Representation
+        {
+            get
+            {
+                return Snapshot.ToString();
+            }
+        }
+
+        public override string ToString()
+        {
+            return Representation;
+        }
+
         #region ISnapshotReadonly implementation
 
-        public VariableName ReturnValue { get { return Snapshot.ReturnValue; } }
+        public VariableName ReturnValue
+        {
+            get { return Snapshot.ReturnValue; }
+        }
 
         public bool VariableExists(VariableName variable, bool forceGlobalContext = false)
         {
             return Snapshot.VariableExists(variable, forceGlobalContext);
+        }
+
+        public bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field)
+        {
+            return Snapshot.ObjectFieldExists(objectValue, field);
+        }
+
+        public bool ArrayIndexExists(AssociativeArray array, ContainerIndex index)
+        {
+            return Snapshot.ArrayIndexExists(array, index);
         }
 
         public InfoValue[] ReadInfo(Value value)
@@ -47,6 +69,11 @@ namespace Weverca.Analysis
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
             return Snapshot.ReadValue(sourceVar);
+        }
+
+        public bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext = false)
+        {
+            return Snapshot.TryReadValue(sourceVar, out entry, forceGlobalContext);
         }
 
         public ContainerIndex CreateIndex(string identifier)
@@ -89,9 +116,19 @@ namespace Weverca.Analysis
             return Snapshot.GetField(value, index);
         }
 
+        public bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
+        {
+            return Snapshot.TryGetField(objectValue, field, out entry);
+        }
+
         public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
         {
             return Snapshot.GetIndex(value, index);
+        }
+
+        public bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
+        {
+            return Snapshot.TryGetIndex(array, index, out entry);
         }
 
         public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
@@ -103,21 +140,7 @@ namespace Weverca.Analysis
         {
             return Snapshot.IterateArray(iteratedArray);
         }
+
         #endregion
-
-
-        public override string ToString()
-        {
-            return Representation;
-        }
-
-        public string Representation
-        {
-            get
-            {
-                return Snapshot.ToString();
-            }
-        }
-
     }
 }
