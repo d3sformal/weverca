@@ -26,27 +26,12 @@ namespace Weverca.Analysis
     {
         #region Private fields
 
-
-        private readonly HashSet<ProgramPointBase> _points = new HashSet<ProgramPointBase>();
-
         /// <summary>
-        /// End points of statement resolved from LangElement
+        /// Context used for building program point graph
         /// </summary>
-        private readonly Dictionary<LangElement, ProgramPointBase> _statementEnds = new Dictionary<LangElement, ProgramPointBase>();
-
-        private readonly Dictionary<object, ProgramPointBase> _chainStarts = new Dictionary<object, ProgramPointBase>();
-
-        private readonly Dictionary<AssumptionCondition, ProgramPointBase> _conditionStarts = new Dictionary<AssumptionCondition, ProgramPointBase>();
-
-        private readonly Dictionary<AssumptionCondition, ProgramPointBase> _conditionEnds = new Dictionary<AssumptionCondition, ProgramPointBase>();
-
-        /// <summary>
-        /// Set of processed blocks - is used for avoiding cycling at graph building
-        /// </summary>
-        private readonly HashSet<BasicBlock> _processedBlocks = new HashSet<BasicBlock>();
+        private readonly PPGraphBuildingContext _context;
 
         #endregion
-
 
         #region Public fields
 
@@ -58,53 +43,53 @@ namespace Weverca.Analysis
         /// <summary>
         /// All program points defined in program point graph
         /// </summary>
-        public IEnumerable<ProgramPointBase> Points { get { return _points; } }
+        public IEnumerable<ProgramPointBase> Points { get { return _context.CreatedPoints; } }
 
         /// <summary>
         /// Input program point into program point graph
         /// </summary>
-        public readonly ProgramPointBase Start;
+        public readonly EmptyProgramPoint Start;
         /// <summary>
         /// Output program point from program point graph
         /// </summary>
-        public readonly ProgramPointBase End;
+        public readonly EmptyProgramPoint End;
 
         #endregion
 
         #region Program point graph creating
 
+
         /// <summary>
         /// Create program point graph from source begining by entryPoint
         /// </summary>
-        /// <param name="entryPoint">Entry point into source (all feasible basic blocks will be included in program point graph)</param>
+        /// <param name="entryBlock">Entry point into source (all feasible basic blocks will be included in program point graph)</param>
         /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
-        public ProgramPointGraph(BasicBlock entryPoint, LangElement sourceObject)
+        public ProgramPointGraph(BasicBlock entryBlock, LangElement sourceObject)
         {
             SourceObject = sourceObject;
-            Start = getEmpty(entryPoint);
-            addChild(Start, entryPoint);
 
-            var endPoints = new List<ProgramPointBase>();
-            foreach (var point in _points)
-            {
-                if (point.FlowChildren.Any())
-                    continue;
+            _context = new PPGraphBuildingContext(this);
 
-                endPoints.Add(point);
-            }
+            var startBlock = _context.CreateEmptyPoint(out Start, entryBlock);
+            var endBlock = _context.CreateEmptyPoint(out End);
 
-            if (endPoints.Count == 0)
-            {
-                //End point is not reachable
-                End = null;
-                return;
-            }
+            buildGraph(startBlock);            
+            //connecting end points has to be done before contracting (because of loosing child less points)
+            connectChildLessPoints();
 
-            End = getEmpty(Start);
-            foreach (var endPoint in endPoints)
-            {
-                endPoint.AddFlowChild(End);
-            }
+            contractBlocks();
+        }
+        
+        /// <summary>
+        /// Create program point graph from given declaration
+        /// </summary>
+        /// <param name="declaration">Declaration which program point graph is created</param>
+        /// <returns>Created program point graph</returns>
+        public static ProgramPointGraph From(FunctionValue function)
+        {
+            var builder = new FunctionProgramPointBuilder();
+            function.Accept(builder);
+            return builder.Output;
         }
 
         /// <summary>
@@ -143,304 +128,179 @@ namespace Weverca.Analysis
             return new ProgramPointGraph(cfg.start, declaration);
         }
 
-        /// <summary>
-        /// Create program point graph from given declaration
-        /// </summary>
-        /// <param name="declaration">Declaration which program point graph is created</param>
-        /// <returns>Created program point graph</returns>
-        public static ProgramPointGraph From(FunctionValue function)
-        {
-            var builder = new FunctionProgramPointBuilder();
-            function.Accept(builder);
-            return builder.Output;
-        }
 
         #endregion
 
+        #region Graph building
         
-        #region Program point graph building
+        /// <summary>
+        /// Build graph from given starting block
+        /// <remarks>Uses _context graph build</remarks>
+        /// </summary>
+        /// <param name="startBlock">Block containing graph Start point</param>
+        private void buildGraph(PointsBlock startBlock)
+        {
+            //blocks that needs to handle children
+            var pendingBlocks = new Queue<PointsBlock>();
+            pendingBlocks.Enqueue(startBlock);
+
+            while (pendingBlocks.Count > 0)
+            {
+                var parentBlock = pendingBlocks.Dequeue();
+
+                //connect all its outgoing blocks (not condition edges)
+                connectConditionLessEdges(parentBlock, pendingBlocks);
+
+                //connect conditional edges (also with default branch)
+                connectConditionEdges(parentBlock, pendingBlocks);
+            }
+        }
 
         /// <summary>
-        /// Add child created from given block. This child already contains all its children within basic block.
+        /// Contract blocks that are not needed to be present in PPG
+        /// <remarks>Contracted blocks usually belongs to empty basic block from CFG</remarks>
         /// </summary>
-        /// <param name="parent">Parent which child will be added</param>
-        /// <param name="block">Block which first statement generates child</param>
-        private void addChild(ProgramPointBase parent, BasicBlock block)
+        private void contractBlocks()
         {
-            //Check that given basic block is not already processed
-            if (_processedBlocks.Contains(block))
+            //TODO implemente graph contraction because of empty points reduction
+        }
+
+        /// <summary>
+        /// Connect points that doesnt have any childs to End point
+        /// </summary>
+        private void connectChildLessPoints()
+        {            
+            //collect points without flow children
+            var childLessPoints = new List<ProgramPointBase>();
+            foreach (var point in Points)
             {
-                fillWithBlockEntry(parent, block);
-                return;
+                if (point.FlowChildren.Any())
+                    continue;
+
+                childLessPoints.Add(point);
             }
 
-            _processedBlocks.Add(block);
+            //Prevent self edge on End point
+            childLessPoints.Remove(End);
 
-
-            var current = parent;
-            foreach (var stmt in block.Statements)
+            //connect points to End
+            foreach (var point in childLessPoints)
             {
-                //create chain of program points
-                var child = getStatementStart(stmt, block);
-                current.AddFlowChild(child);
-                current = getStatementEnd(stmt, block);
+                point.AddFlowChild(End);
+            }
+        }
+
+        /// <summary>
+        /// Connect outgoing condition less edges from parentBlock with belonging children point blocks
+        /// </summary>
+        /// <param name="parentBlock">Parent point block which children point blocks will be connected</param>
+        /// <param name="pendingBlocks">Point blocks which children hasn't been processed yet</param>
+        private void connectConditionLessEdges(PointsBlock parentBlock, Queue<PointsBlock> pendingBlocks)
+        {
+            foreach (var child in parentBlock.OutgoingBlocks)
+            {
+                var childBlock = getChildBlock(child, pendingBlocks);
+
+                parentBlock.AddChild(childBlock);
+            }
+        }
+
+        /// <summary>
+        /// Connect outgoing condition edges from parentBlock with belonging children point blocks via assume blocks
+        /// </summary>
+        /// <param name="parentBlock">Parent point block which children point blocks will be connected</param>
+        /// <param name="pendingBlocks">Point blocks which children hasn't been processed yet</param>
+        private void connectConditionEdges(PointsBlock parentBlock, Queue<PointsBlock> pendingBlocks)
+        {
+            //collected expression values - because of sharing with default branch
+            var expressionValues = new List<RValuePoint>();
+
+            //collected expression parts - because of default assumption condition creation
+            var expressionParts = new List<Expression>();
+
+            //last points block created for parentBlocks condtion expression
+            //is used for conneting default branch assumption
+            PointsBlock lastConditionExpressionBlock = null;
+
+            //process all outgoing conditional edges
+            foreach (var edge in parentBlock.ConditionalEdges)
+            {
+                var expression=edge.Condition;
+                var conditionExpressionBlock = _context.CreateFromExpression(expression);
+                var expressionValue = conditionExpressionBlock.LastPoint as RValuePoint;
+
+                //collect info for default branch
+                expressionValues.Add(expressionValue);
+                expressionParts.Add(expression);
+
+                var condition = new AssumptionCondition(ConditionForm.All, expression);
+                parentBlock.AddChild(conditionExpressionBlock);
+
+                //connect edge.To through assume block
+                var assumeBlock = _context.CreateAssumeBlock(condition, edge.To, expressionValue);
+                conditionExpressionBlock.AddChild(assumeBlock);
+                lastConditionExpressionBlock = conditionExpressionBlock;
+
+                //assume block needs processing of its children
+                pendingBlocks.Enqueue(assumeBlock);
             }
 
-            foreach (var edge in block.OutgoingEdges)
-            {
-                var condition = getConditionEnd(edge.Condition, block);
-                addChild(condition, edge.To);
-                var conditionStart = getConditionStart(edge.Condition, block);
-                current.AddFlowChild(conditionStart);
-            }
-
-            if (block.DefaultBranch != null)
-            {
-                var conditionExpressions = from edge in block.OutgoingEdges select edge.Condition;
-
-                if (conditionExpressions.Any())
+            //if there is default branch, connect it to parent
+            if (parentBlock.Default != null)
+            {                
+                if (expressionValues.Count == 0)
                 {
-                    var defaultPoint = getDefaultBranchEnd(conditionExpressions, block);
-                    addChild(defaultPoint, block.DefaultBranch.To);
-                    var conditionStart = getDefaultBranchStart(conditionExpressions, block);
-                    current.AddFlowChild(conditionStart);
+                    //there is default branch without any condition - connect without assume block
+                     var defaultBlock = getChildBlock(parentBlock.Default, pendingBlocks);
+                    //default block needs processing of its children
+                     parentBlock.AddChild(defaultBlock);
                 }
                 else
                 {
-                    //there is no condition on edge
-                    addChild(current, block.DefaultBranch.To);
+                    //there has to be assumption condition on default branch
+                    var values= expressionValues.ToArray();
+                    var condition=new AssumptionCondition(ConditionForm.SomeNot,expressionParts.ToArray());
+                    var defaultAssumeBlock= _context.CreateAssumeBlock(condition, parentBlock.Default,values);
+
+                    //default Assume has to be added as child of last expression block
+                    //note: there is always last condition block, because of non empty expression values
+                    lastConditionExpressionBlock.AddChild(defaultAssumeBlock);
+                    pendingBlocks.Enqueue(defaultAssumeBlock);
                 }
             }
         }
 
-        private void fillWithBlockEntry(ProgramPointBase point, BasicBlock block, HashSet<BasicBlock> fillingBlocks = null)
+
+
+        #endregion 
+
+        #region Private utilities
+
+        /// <summary>
+        /// Get or creates points block from given block. Accordingly fills pendingBlocks if children processing is needed.
+        /// </summary>
+        /// <param name="block">Block which points block will be returned</param>
+        /// <param name="pendingBlocks">Point blocks needed children processing</param>
+        /// <returns>Founded or created points block</returns>
+        private PointsBlock getChildBlock(BasicBlock block, Queue<PointsBlock> pendingBlocks)
         {
-            if (fillingBlocks == null)
+            PointsBlock childBlock;
+            if (_context.IsCreated(block))
             {
-                fillingBlocks = new HashSet<BasicBlock>();
-            }
-
-            if (!fillingBlocks.Add(block))
-            {
-                //empty cycle
-                point.AddFlowChild(point);
-                return;
-            }
-
-            //parent has to point to first statement of block
-            if (block.Statements.Count > 0)
-            {
-                var entryPoint = getStatementStart(block.Statements[0], block);
-                point.AddFlowChild(entryPoint);
-                return;
+                childBlock = _context.GetBlock(block);
+                //child block was already in queue when it was created
             }
             else
             {
-                var conditionExpressions = new List<Expression>();
-                foreach (var edge in block.OutgoingEdges)
-                {
-                    //every outgoing edge is child of point, because of empty block body
-                    point.AddFlowChild(getConditionStart(edge.Condition, block));
-                    conditionExpressions.Add(edge.Condition);
-                }
+                childBlock = _context.CreateFromBlock(block);
 
-                if (conditionExpressions.Count == 0)
-                {
-                    //there is no program point on default branch     
-
-                    if (block.DefaultBranch != null)
-                    {
-                        fillWithBlockEntry(point, block.DefaultBranch.To, fillingBlocks);
-                    }
-                    else
-                    {
-                        //TODO Are there cases, where point wont get to EndPoint ?
-                    }
-
-                }
-                else
-                {
-                    //there is program point on default branch
-                    var defaultPoint = getDefaultBranchStart(conditionExpressions, block);
-                    point.AddFlowChild(defaultPoint);
-                }
+                //child block hasn't been in queue yet
+                pendingBlocks.Enqueue(childBlock);
             }
-
+            return childBlock;
         }
 
-        /// <summary>
-        /// Get program point indexed by default branch of given expressions. If there is no such a point, new is created.
-        /// </summary>
-        /// <param name="expressions">Expressions for created ConditionForm.SomeNot condition</param>
-        /// <param name="outerBlock">Block where expressions are located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getDefaultBranchStart(IEnumerable<Expression> expressions, BasicBlock outerBlock)
-        {
-            var assumption = new AssumptionCondition(ConditionForm.SomeNot, expressions.ToArray());
-            return getConditionStart(assumption, outerBlock);
-        }
-
-        /// <summary>
-        /// Get program point indexed by default branch of given expressions. If there is no such a point, new is created.
-        /// </summary>
-        /// <param name="expressions">Expressions for created ConditionForm.SomeNot condition</param>
-        /// <param name="outerBlock">Block where expressions are located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getDefaultBranchEnd(IEnumerable<Expression> expressions, BasicBlock outerBlock)
-        {
-            var assumption = new AssumptionCondition(ConditionForm.SomeNot, expressions.ToArray());
-            return getConditionEnd(assumption, outerBlock);
-        }
-
-        /// <summary>
-        /// Get program point indexed by statement. If there is no such a point, new is created.
-        /// </summary>
-        /// <param name="statement">Index of program point</param>
-        /// <param name="outerBlock">Block where statement is located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getStatementEnd(LangElement statement, BasicBlock outerBlock)
-        {
-            prepareStatement(statement, outerBlock);
-            return _statementEnds[statement];
-        }
-
-        /// <summary>
-        /// Get program point indexed by statement. If there is no such a point, new is created.
-        /// </summary>
-        /// <param name="statement">Index of program point</param>
-        /// <param name="outerBlock">Block where statement is located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getStatementStart(LangElement statement, BasicBlock outerBlock)
-        {
-            return prepareStatement(statement, outerBlock);
-        }
-
-
-        private ProgramPointBase prepareStatement(LangElement statement, BasicBlock outerBlock)
-        {
-            return getPoint(statement, () =>
-            {
-                var statementStart = ElementExpander.ExpandStatement(statement, onPointCreated);
-                var statementEnd = findChainEnd(statementStart);
-                _statementEnds.Add(statement, statementEnd);
-
-                return statementStart;
-            });
-        }
-
-        private ProgramPointBase findChainEnd(ProgramPointBase point)
-        {
-            while (point.FlowChildren.Any())
-            {
-                point = point.FlowChildren.First();
-            }
-
-            return point;
-        }
-
-        /// <summary>
-        /// Get program point indexed by ConditionForm.All condition, created from given expression. If there is no such point, new is created.
-        /// </summary>
-        /// <param name="expression">Expression for created condition</param>
-        /// <param name="outerBlock">Block where expression is located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getConditionStart(Expression expression, BasicBlock outerBlock)
-        {
-            var assumption = new AssumptionCondition(ConditionForm.All, expression);
-            return getConditionStart(assumption, outerBlock);
-        }
-
-
-        /// <summary>
-        /// Get program point indexed by ConditionForm.All condition, created from given expression. If there is no such point, new is created.
-        /// </summary>
-        /// <param name="expression">Expression for created condition</param>
-        /// <param name="outerBlock">Block where expression is located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getConditionEnd(Expression expression, BasicBlock outerBlock)
-        {
-            var assumption = new AssumptionCondition(ConditionForm.All, expression);
-            return getConditionEnd(assumption, outerBlock);
-        }
-
-
-
-        /// <summary>
-        /// Get program point indexed by condition. If there is no such point, new is created.
-        /// </summary>
-        /// <param name="condition">Index of program point</param>
-        /// <param name="outerBlock">Block where condition is located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getConditionStart(AssumptionCondition condition, BasicBlock outerBlock)
-        {
-            prepareCondition(condition, outerBlock);
-            return _conditionStarts[condition];
-        }
-
-
-        /// <summary>
-        /// Get program point indexed by condition. If there is no such point, new is created.
-        /// </summary>
-        /// <param name="condition">Index of program point</param>
-        /// <param name="outerBlock">Block where condition is located</param>
-        /// <returns>Indexed program point</returns>
-        private ProgramPointBase getConditionEnd(AssumptionCondition condition, BasicBlock outerBlock)
-        {
-            prepareCondition(condition, outerBlock);
-            return _conditionEnds[condition];
-        }
-
-        private void prepareCondition(AssumptionCondition condition, BasicBlock outerBlock)
-        {
-            getPoint(condition, () =>
-            {
-                var conditionStart = ElementExpander.ExpandCondition(condition, onPointCreated);
-                var conditionEnd = findChainEnd(conditionStart);
-                _conditionEnds.Add(condition, conditionEnd);
-                _conditionStarts.Add(condition, conditionStart);
-
-                return conditionStart;
-            });
-        }
-
-        /// <summary>
-        /// Get program point indexed by key. If there is no such point, create new empty point.
-        /// </summary>
-        /// <param name="key">Key of created program point</param>
-        /// <returns>Program point indexed by key</returns>
-        private ProgramPointBase getEmpty(object key)
-        {
-            return getPoint(key, () => {
-                var result = new EmptyProgramPoint();
-                onPointCreated(key, result);
-                return result;
-            });
-        }
-
-        /// <summary>
-        /// Get point indexed by given key. If there is no such point, create new with creator
-        /// </summary>
-        /// <param name="key">Index of program point</param>
-        /// <param name="creator">Creator of program point</param>
-        /// <returns>Program point indexed by key</returns>
-        private ProgramPointBase getPoint(object key, ProgramPointCreator creator)
-        {
-            ProgramPointBase result;
-
-            if (!_chainStarts.TryGetValue(key, out result))
-            {
-                result = creator();
-
-                _chainStarts[key] = result; 
-            }
-            return result;
-        }
         #endregion
 
-
-        private void onPointCreated(object key, ProgramPointBase point)
-        {
-            _points.Add(point);
-        }
     }
 }

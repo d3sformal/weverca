@@ -14,7 +14,7 @@ using Weverca.Analysis.ProgramPoints;
 namespace Weverca.Analysis.Expressions
 {
 
-    delegate void OnPointCreated(object partial, ProgramPointBase point);
+    delegate void OnPointCreated(ProgramPointBase point);
 
     /// <summary>
     /// Expands statement into chain of program points connected with stack connections
@@ -52,49 +52,19 @@ namespace Weverca.Analysis.Expressions
             statement.VisitMe(this);
         }
 
-        public static ProgramPointBase ExpandStatement(LangElement statement, OnPointCreated onPointCreated)
+        public static ProgramPointBase[] ExpandStatement(LangElement statement, OnPointCreated onPointCreated)
         {
             var expander = new ElementExpander();
             expander.Expand(statement);
             var postfix = Converter.GetPostfix(statement);
 
-            createPointsChain(expander, postfix);
+            var expandedChain = createPointsChain(expander, postfix);
             registerCreatedPoints(expander, onPointCreated);
 
-            var first = expander.GetProgramPoint(postfix.GetElement(0));
-            return first;
-        }
+            return expandedChain.ToArray();
+        }              
 
-        internal static ProgramPointBase ExpandCondition(AssumptionCondition condition, OnPointCreated onPointCreated)
-        {
-            var expander = new ElementExpander();
-            var chainOrder = new List<LangElement>();
-            var expressionParts = new List<RValuePoint>();
-
-            foreach (var postfix in condition.Parts)
-            {
-                chainOrder.AddRange(postfix);
-
-                var expressionStart = expander.CreateRValue(postfix.SourceElement);
-                expressionParts.Add(expressionStart);
-            }
-
-            createPointsChain(expander, chainOrder);
-            registerCreatedPoints(expander, onPointCreated);
-
-
-            var last = expander._programPoints[chainOrder.Last()];
-
-            var assumePoint = new AssumePoint(condition, expressionParts);
-            onPointCreated(assumePoint, assumePoint);
-
-            last.AddFlowChild(assumePoint);
-            var first = expander._programPoints[chainOrder[0]];
-
-            return first;
-        }
-
-        private static void createPointsChain(ElementExpander expander, IEnumerable<LangElement> orderedPartialas)
+        private static IEnumerable<ProgramPointBase> createPointsChain(ElementExpander expander, IEnumerable<LangElement> orderedPartialas)
         {
             ProgramPointBase lastPoint = null;
             foreach (var partial in orderedPartialas)
@@ -107,8 +77,10 @@ namespace Weverca.Analysis.Expressions
 
                 if (lastPoint == null)
                 {
-                    //there is no parent to add child
+                    //there is no parent to add child                    
                     lastPoint = currentPoint;
+
+                    yield return currentPoint; //because we dont want to miss first point
                     continue;
                 }
 
@@ -117,6 +89,8 @@ namespace Weverca.Analysis.Expressions
                 {
                     //because of sharing points in some expressions - point is on flow path before this
                     lastPoint.AddFlowChild(currentPoint);
+
+                    yield return currentPoint; //report point in right order
                 }
                 lastPoint = currentPoint;
             }
@@ -126,7 +100,7 @@ namespace Weverca.Analysis.Expressions
         {
             foreach (var pair in expander._programPoints)
             {
-                onPointCreated(pair.Key, pair.Value);
+                onPointCreated(pair.Value);
             }
         }
 
@@ -231,6 +205,10 @@ namespace Weverca.Analysis.Expressions
             throw new NotImplementedException();
         }
 
+        public override void VisitDirectVarUse(DirectVarUse x)
+        {
+            RValueResult(x);
+        }
         #endregion
 
         #region Assign expressions visiting

@@ -422,6 +422,17 @@ $result=""Value $a"";
 ".AssertVariable("result").HasValues("Value A");
 
 
+        readonly static TestCase LocalExceptionHandling_CASE = @"
+$result='Not catched';
+try{
+    throw new Exception('Test');
+}catch(Exception $ex){
+    $result='Catched';
+}
+
+".AssertVariable("result").HasValues("Catched");
+
+
         [TestMethod]
         public void BranchMerge()
         {
@@ -656,6 +667,12 @@ $result=""Value $a"";
         public void StringWithExpression()
         {
             AnalysisTestUtils.RunTestCase(StringWithExpression_CASE);
+        }
+
+//        [TestMethod]
+        public void LocalExceptionHandling()
+        {
+            AnalysisTestUtils.RunTestCase(LocalExceptionHandling_CASE);
         }
     }
 }

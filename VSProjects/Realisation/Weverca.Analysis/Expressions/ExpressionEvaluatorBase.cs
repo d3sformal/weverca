@@ -347,8 +347,6 @@ namespace Weverca.Analysis.Expressions
             }
         }
 
-
-
         #endregion
 
         /// <summary>

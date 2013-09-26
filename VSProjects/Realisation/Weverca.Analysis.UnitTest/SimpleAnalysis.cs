@@ -81,6 +81,9 @@ namespace Weverca.Analysis.UnitTest
         }
     }
 
+    class CatchBlockInfo
+    {
+    }
   
 
 

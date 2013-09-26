@@ -92,6 +92,8 @@
     <Compile Include="Memory\IValueVisitor.cs" />
     <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="NativeTypeDecl.cs" />
+    <Compile Include="PointsBlock.cs" />
+    <Compile Include="PPGraphBuildingContext.cs" />
     <Compile Include="ProgramPointBase.cs" />
     <Compile Include="ProgramPointGraph.cs" />
     <Compile Include="ProgramPoints\AbstractPoints.cs" />
