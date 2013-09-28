@@ -580,6 +580,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(info, new MemoryEntry(type), true);
         }
 
+        protected override TypeValue objectType(ObjectValue objectValue)
+        {
+            var info = getObjectInfoStorage(objectValue);
+
+            var type=readValue(info, true).PossibleValues.First() as TypeValue;
+            return type;
+        }
+
         protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             var info = getObjectInfoStorage(objectValue);

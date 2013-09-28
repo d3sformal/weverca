@@ -292,11 +292,60 @@ namespace Weverca.Analysis
             }
             else
             {
-                childBlock = _context.CreateFromBlock(block);
+                childBlock = createChildBlock(block, pendingBlocks);
 
                 //child block hasn't been in queue yet
                 pendingBlocks.Enqueue(childBlock);
             }
+            return childBlock;
+        }
+
+        private PointsBlock createChildBlock(BasicBlock block, Queue<PointsBlock> pendingBlocks)
+        {
+            PointsBlock childBlock;
+            childBlock = _context.CreateFromBlock(block);
+
+            var tryBlock = block as TryBasicBlock;
+            if (tryBlock != null)
+            {
+                //block is try block, we has to start scope of its catch blocks
+                var catchBlocks = new List<Tuple<GenericQualifiedName, ProgramPointBase>>();
+                foreach (var catchBB in tryBlock.catchBlocks)
+                {
+                    var startingCatch = getChildBlock(catchBB, pendingBlocks);
+
+                    startingCatch.DisallowContraction();
+
+                    var tuple = Tuple.Create(catchBB.ClassName, startingCatch.FirstPoint);
+                    catchBlocks.Add(tuple);
+                }
+
+                var scopeStart = _context.CreateCatchScopeStart(catchBlocks);
+                childBlock.PreprendFlowWith(scopeStart);
+            }
+
+            //find all incomming edges from catch blocks
+            //TODO: this is not correct in all cases - needs CFG change
+            var endingCatchBlocks = new List<Tuple<GenericQualifiedName, ProgramPointBase>>();
+            foreach (var incoming in block.IncommingEdges)
+            {
+                var catchBB = incoming.From as CatchBasicBlock;
+                if (catchBB == null)
+                    continue;
+
+                var endingCatch = getChildBlock(catchBB, pendingBlocks);
+                endingCatch.DisallowContraction();
+
+                var tuple = Tuple.Create(catchBB.ClassName, endingCatch.FirstPoint);
+                endingCatchBlocks.Add(tuple);
+            }
+
+            if (endingCatchBlocks.Count > 0)
+            {
+                var scopeEnd = _context.CreateCatchScopeEnd(endingCatchBlocks);
+                childBlock.PreprendFlowWith(scopeEnd);
+            }
+
             return childBlock;
         }
 

@@ -52,6 +52,11 @@ namespace Weverca.Analysis
         /// </summary>
         internal ProgramPointBase LastPoint { get { return _containedPoints[_containedPoints.Count - 1]; } }
 
+        /// <summary>
+        /// First program point in contained program points sequence
+        /// </summary>
+        internal ProgramPointBase FirstPoint { get { return _containedPoints[0]; } }
+
         #endregion
 
         /// <summary>
@@ -124,6 +129,19 @@ namespace Weverca.Analysis
         internal void AddChild(PointsBlock childBlock)
         {
             LastPoint.AddFlowChild(childBlock._containedPoints[0]);
+        }
+
+        internal void DisallowContraction()
+        {
+            _needsContraction = false;
+        }
+
+        internal void PreprendFlowWith(ProgramPointBase programPoint)
+        {
+            var first = FirstPoint;
+
+            programPoint.AddFlowChild(first);
+            _containedPoints.Insert(0, programPoint);
         }
     }
 }

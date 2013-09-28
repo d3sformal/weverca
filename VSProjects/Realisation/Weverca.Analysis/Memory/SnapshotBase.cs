@@ -76,6 +76,13 @@ namespace Weverca.Analysis.Memory
         protected abstract IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject);
 
         /// <summary>
+        /// Determine type of given object
+        /// </summary>
+        /// <param name="objectValue">Object which type is resolved</param>
+        /// <returns>Type of given object</returns>
+        protected abstract TypeValue objectType(ObjectValue objectValue);
+
+        /// <summary>
         /// Initialize array
         /// </summary>
         /// <param name="createdArray">Created array that has to be initialized</param>
@@ -509,6 +516,17 @@ namespace Weverca.Analysis.Memory
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return new InfoValue<T>(data);
+        }
+
+        /// <summary>
+        /// Determine type of given object
+        /// </summary>
+        /// <param name="objectValue">Object which type is resolved</param>
+        /// <returns>Type of given object</returns>
+        public TypeValue ObjectType(ObjectValue objectValue)
+        {
+            ++_statistics.ObjectTypeSearches;
+            return objectType(objectValue);
         }
 
         /// <summary>

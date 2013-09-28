@@ -60,6 +60,7 @@ namespace Weverca.Analysis.Memory
         public int ValueReadAttempts;
         public int FieldReadAttempts;
         public int IndexReadAttempts;
+        public int ObjectTypeSearches;
 
         internal SnapshotStatistics Clone()
         {

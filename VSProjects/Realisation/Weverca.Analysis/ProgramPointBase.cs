@@ -225,6 +225,19 @@ namespace Weverca.Analysis
             _flowChildren.Remove(child);
             child._flowParents.Remove(this);
         }
+
+        /// <summary>
+        /// Removes all flow children
+        /// </summary>
+        internal void RemoveFlowChildren()
+        {
+            foreach (var child in _flowChildren)
+            {
+                child._flowParents.Remove(this);
+            }
+            _flowChildren.Clear();
+        }
+
         #endregion
 
         #region Internal API for changes handling

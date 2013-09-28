@@ -849,5 +849,10 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override TypeValue objectType(ObjectValue objectValue)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

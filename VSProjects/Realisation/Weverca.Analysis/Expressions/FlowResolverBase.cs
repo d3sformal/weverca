@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Weverca.Analysis.Memory;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 namespace Weverca.Analysis.Expressions
@@ -31,6 +32,27 @@ namespace Weverca.Analysis.Expressions
         public abstract void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs,ExtensionType dispatchType);
 
         /// <summary>
+        /// Reports about try block scope start
+        /// </summary>
+        /// <param name="catchBlockStarts">Catch blocks associated with starting try block</param>
+        public abstract void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts);
+
+        /// <summary>
+        /// Reports about try block scope end
+        /// </summary>
+        /// <param name="catchBlockStarts">Catch blocks associated with ending try block</param>
+        public abstract void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts);
+
+        /// <summary>
+        /// Process throw statement according to current flow
+        /// </summary>
+        /// <param name="outSet">Flow output set</param>
+        /// <param name="throwStmt">Processed throw statement</param>
+        /// <param name="throwedValue">Value that was supplied into throw statement</param>
+        /// <returns>All possible catch block starts</returns>
+        public abstract IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
+
+        /// <summary>
         /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)
         /// </summary>
         /// <param name="flow">Flow controller where include extensions can be stored</param>
@@ -45,5 +67,8 @@ namespace Weverca.Analysis.Expressions
         {
             //By default there is nothing to do           
         }
+
+
+        
     }
 }

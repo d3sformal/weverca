@@ -338,6 +338,12 @@ namespace Weverca.Analysis.Expressions
             Result(new EchoStmtPoint(x, parameters.ToArray()));
         }
 
+        public override void VisitThrowStmt(ThrowStmt x)
+        {
+            var throwedValue = CreateRValue(x.Expression);
+            Result(new ThrowStmtPoint(x,throwedValue));
+        }
+
         #endregion
 
 

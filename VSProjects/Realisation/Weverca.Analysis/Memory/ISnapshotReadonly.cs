@@ -89,6 +89,13 @@ namespace Weverca.Analysis.Memory
         bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry);
 
         /// <summary>
+        /// Determine type of given object
+        /// </summary>
+        /// <param name="objectValue">Object which type is resolved</param>
+        /// <returns>Type of given object</returns>
+        TypeValue ObjectType(ObjectValue objectValue);
+
+        /// <summary>
         /// Read info stored for given value
         /// </summary>
         /// <param name="value">Value which info is read</param>

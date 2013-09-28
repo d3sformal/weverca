@@ -430,7 +430,26 @@ try{
     $result='Catched';
 }
 
-".AssertVariable("result").HasValues("Catched");
+".AssertVariable("result").HasValues("Catched")
+ .DeclareType(SimpleExceptionType.CreateType())
+ ;
+
+        readonly static TestCase CrossStackExceptionHandling_CASE = @"
+function throwEx(){
+    throw new Exception('Test');
+}
+
+$result='Not catched';
+try{
+   throwEx(); 
+}catch(Exception $ex){
+    $result='Catched';
+}
+
+".AssertVariable("result").HasValues("Catched")
+.DeclareType(SimpleExceptionType.CreateType())
+;
+
 
 
         [TestMethod]
@@ -669,10 +688,16 @@ try{
             AnalysisTestUtils.RunTestCase(StringWithExpression_CASE);
         }
 
-//        [TestMethod]
+        [TestMethod]
         public void LocalExceptionHandling()
         {
             AnalysisTestUtils.RunTestCase(LocalExceptionHandling_CASE);
+        }
+
+        [TestMethod]
+        public void CrossStackExceptionHandling()
+        {
+            AnalysisTestUtils.RunTestCase(CrossStackExceptionHandling_CASE);
         }
     }
 }

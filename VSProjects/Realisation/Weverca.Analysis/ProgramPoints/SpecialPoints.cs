@@ -4,10 +4,60 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 namespace Weverca.Analysis.ProgramPoints
 {
+
+    /// <summary>
+    /// Report that from this point starts scope of specified catch blocks
+    /// <remarks>Scope is explicitly ended with CatchScopeEndsPoint, 
+    /// or implicitly because of stack unwinding (that has to solve analysis itself)
+    /// </remarks>
+    /// </summary>
+    public class TryScopeStartsPoint : ProgramPointBase
+    {
+        /// <summary>
+        /// Starting points of catch blocks with scope in starting try block
+        /// </summary>
+        public readonly IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> CatchStarts;
+
+        public override LangElement Partial { get { return null; } }
+
+        public TryScopeStartsPoint(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> scopeStarts)
+        {
+            CatchStarts = scopeStarts;
+        }
+
+        protected override void flowThrough()
+        {
+            Services.FlowResolver.TryScopeStart(OutSet, CatchStarts);
+        }
+    }
+
+    /// <summary>
+    /// Report explicit scope ending of specified catch blocks   
+    /// </summary>
+    public class TryScopeEndsPoint : ProgramPointBase
+    {
+        /// <summary>
+        /// Starting points of catch blocks with scope in ending try block
+        /// </summary>
+        public readonly IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> CatchStarts;
+
+        public override LangElement Partial { get { return null; } }
+
+        public TryScopeEndsPoint(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchStarts)
+        {
+            CatchStarts = catchStarts;
+        }
+        protected override void flowThrough()
+        {
+            Services.FlowResolver.TryScopeEnd(OutSet, CatchStarts);
+        }
+    }
+
     /// <summary>
     /// Process assumption in program point graph
     /// <remarks>Enqueue flow children only if assumption condition is assumed</remarks>

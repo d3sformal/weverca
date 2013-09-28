@@ -126,6 +126,11 @@ namespace Weverca.Analysis
             return Snapshot.GetIndex(value, index);
         }
 
+        public TypeValue ObjectType(ObjectValue objectValue)
+        {
+            return Snapshot.ObjectType(objectValue);
+        }
+
         public bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
         {
             return Snapshot.TryGetIndex(array, index, out entry);
@@ -142,5 +147,8 @@ namespace Weverca.Analysis
         }
 
         #endregion
+
+
+
     }
 }

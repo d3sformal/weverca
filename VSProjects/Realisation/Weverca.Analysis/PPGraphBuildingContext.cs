@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using System.Diagnostics;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.ControlFlowGraph;
@@ -62,7 +63,8 @@ namespace Weverca.Analysis
         {
             PointsBlock createdBlock;
             var points = expandStatements(block.Statements);
-            if (points.Any())
+
+            if (points.Count > 0)
             {
                 createdBlock = PointsBlock.ForBlock(points, block, false);
             }
@@ -125,6 +127,24 @@ namespace Weverca.Analysis
             return PointsBlock.ForPoint(createdPoint, outgoingBlocks);
         }
 
+        internal TryScopeStartsPoint CreateCatchScopeStart(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlocks)
+        {
+            var scopeStart = new TryScopeStartsPoint(catchBlocks);
+
+            reportCreation(scopeStart);
+
+            return scopeStart;
+        }
+
+        internal TryScopeEndsPoint CreateCatchScopeEnd(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlocks)
+        {
+            var scopeEnd = new TryScopeEndsPoint(catchBlocks);
+
+            reportCreation(scopeEnd);
+
+            return scopeEnd;
+        }
+
         #endregion
 
         #region Block existence determining API
@@ -159,7 +179,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="statements">Statements to expand</param>
         /// <returns>Program points created from statements expanding</returns>
-        internal IEnumerable<ProgramPointBase> expandStatements(IEnumerable<LangElement> statements)
+        private List<ProgramPointBase> expandStatements(IEnumerable<LangElement> statements)
         {
             var points = new List<ProgramPointBase>();
             ProgramPointBase lastPoint = null;

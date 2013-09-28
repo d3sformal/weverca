@@ -18,6 +18,8 @@ namespace Weverca.Analysis.UnitTest
     /// </summary>
     class SimpleFlowResolver : FlowResolverBase
     {
+        private readonly static VariableName CatchBlocks_Storage = new VariableName(".catch_blocks");
+
         private readonly Dictionary<string, string> _includes = new Dictionary<string, string>();
 
         private FlowOutputSet _outSet;
@@ -71,9 +73,75 @@ namespace Weverca.Analysis.UnitTest
                     callerOutput.MergeWithCallLevel(ends);
                     break;
 
-                default :
+                default:
                     throw new NotImplementedException();
             }
+        }
+
+        public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
+        {
+            var blockStarts = new List<InfoValue>();
+            //NOTE this is only simple implementation without resolving try block stack
+            foreach (var blockStart in catchBlockStarts)
+            {
+                var blockInfo = new CatchBlockInfo(blockStart.Item1, blockStart.Item2);
+                var blockValue = outSet.CreateInfo<CatchBlockInfo>(blockInfo);
+                blockStarts.Add(blockValue);
+            }
+
+            outSet.FetchFromGlobal(CatchBlocks_Storage);
+            outSet.Assign(CatchBlocks_Storage, new MemoryEntry(blockStarts));
+        }
+
+        public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
+        {
+            //NOTE in simple implementation we doesn't resolve try block stack
+            outSet.FetchFromGlobal(CatchBlocks_Storage);
+            var catchBlocks = outSet.ReadValue(CatchBlocks_Storage);
+            var endingBlocks = new HashSet<GenericQualifiedName>();
+
+            foreach (var catchBlock in catchBlockStarts)
+            {
+                endingBlocks.Add(catchBlock.Item1);
+            }
+
+            var remainingCatchBlocks = new List<InfoValue>();
+            foreach (InfoValue<CatchBlockInfo> blockInfo in catchBlocks.PossibleValues)
+            {
+                if (!endingBlocks.Contains(blockInfo.Data.InputClass))
+                    remainingCatchBlocks.Add(blockInfo);
+            }
+
+            outSet.Assign(CatchBlocks_Storage, new MemoryEntry(remainingCatchBlocks));
+        }
+
+        public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
+        {
+            outSet.Assign(new VariableName(".throwed_value"),throwedValue);
+
+            if(throwedValue.Count!=1)
+                throw new NotImplementedException();
+            
+            var exceptionObj=(ObjectValue)throwedValue.PossibleValues.First();
+                        
+            var targetBlocks = new List<ProgramPointBase>();
+
+            outSet.FetchFromGlobal(CatchBlocks_Storage);
+            var catchBlocks = outSet.ReadValue(CatchBlocks_Storage);       
+     
+            //find catch blocks with valid scope and matchin catch condition
+            foreach (InfoValue<CatchBlockInfo> blockInfo in catchBlocks.PossibleValues)
+            {
+                var throwedType = outSet.ObjectType(exceptionObj).QualifiedName;
+
+                //check catch condition
+                if (blockInfo.Data.InputClass.QualifiedName != throwedType)
+                    continue;
+
+                targetBlocks.Add(blockInfo.Data.CatchStart);
+            }
+
+            return targetBlocks;
         }
 
         public override void Include(FlowController flow, MemoryEntry includeFile)

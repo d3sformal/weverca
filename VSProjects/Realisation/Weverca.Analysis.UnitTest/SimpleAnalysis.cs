@@ -83,10 +83,15 @@ namespace Weverca.Analysis.UnitTest
 
     class CatchBlockInfo
     {
-    }
-  
+        internal readonly GenericQualifiedName InputClass;
+
+        internal readonly ProgramPointBase CatchStart;
 
 
-
-   
+        public CatchBlockInfo(GenericQualifiedName inputClass, ProgramPointBase catchStart)
+        {
+            InputClass = inputClass;
+            CatchStart = catchStart;
+        }        
+    }  
 }

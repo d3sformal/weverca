@@ -10,6 +10,35 @@ using Weverca.Analysis.Memory;
 
 namespace Weverca.Analysis.ProgramPoints
 {
+    /// <summary>
+    /// Throw statement representation
+    /// </summary>
+    public class ThrowStmtPoint : ProgramPointBase
+    {
+        public readonly ThrowStmt Throw;
+
+        public readonly RValuePoint ThrowedValue;
+
+        public override LangElement Partial { get { return Throw; } }
+
+        internal ThrowStmtPoint(ThrowStmt throwStmt, RValuePoint throwedValue)
+        {
+            ThrowedValue = throwedValue;
+            Throw = throwStmt;
+        }
+
+        protected override void flowThrough()
+        {
+            var catchBlocks = Services.FlowResolver.Throw(OutSet, Throw, ThrowedValue.Value);
+
+            RemoveFlowChildren();
+
+            foreach (var catchBlock in catchBlocks)
+            {
+                AddFlowChild(catchBlock);
+            }
+        }
+    }
 
     /// <summary>
     /// Global statement representation

@@ -58,6 +58,20 @@ namespace Weverca.TaintedAnalysis.FlowResolver
             throw new NotImplementedException();
         }
 
+        public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
+        {
+            throw new NotImplementedException();
+        }
         #endregion
+
+        public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, PHP.Core.AST.ThrowStmt throwStmt, MemoryEntry throwedValue)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
