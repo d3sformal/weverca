@@ -13,12 +13,13 @@ namespace Weverca.MemoryModels.MemoryModel
         private static readonly MemoryIndex undefinedVariable = new MemoryIndex();
         private static readonly MemoryEntry emptyEntry = new MemoryEntry(new Value[] { });
 
-        private Dictionary<VariableName, MemoryIndex> variables = new Dictionary<VariableName, MemoryIndex>();
-        private Dictionary<AssociativeArray, ArrayDescriptor> arrays = new Dictionary<AssociativeArray, ArrayDescriptor>();
-        private Dictionary<ObjectValue, ObjectDescriptor> objects = new Dictionary<ObjectValue, ObjectDescriptor>();
+        internal Dictionary<VariableName, MemoryIndex> variables = new Dictionary<VariableName, MemoryIndex>();
 
-        private Dictionary<MemoryIndex, MemoryEntry> memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
-        private Dictionary<MemoryIndex, MemoryInfo> memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
+        internal Dictionary<AssociativeArray, ArrayDescriptor> arrays = new Dictionary<AssociativeArray, ArrayDescriptor>();
+        internal Dictionary<ObjectValue, ObjectDescriptor> objects = new Dictionary<ObjectValue, ObjectDescriptor>();
+
+        internal Dictionary<MemoryIndex, MemoryEntry> memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
+        internal Dictionary<MemoryIndex, MemoryInfo> memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
 
 
 
@@ -191,7 +192,84 @@ namespace Weverca.MemoryModels.MemoryModel
         
         protected override void extend(ISnapshotReadonly[] inputs)
         {
+            if (inputs.Length > 0) 
+            {
+                Snapshot baseSnapshot = inputs[0] as Snapshot;
+                if (baseSnapshot != null)
+                {
+                    getDataFrom(baseSnapshot);
+                }
+                else
+                {
+                    throw new ArgumentException("Can not cast ISnapshotReadonly to Snapshot");
+                }
+
+                for (int x = 1; x < inputs.Length; x++)
+                {
+                    Snapshot mergeSnapshot = inputs[0] as Snapshot;
+
+                    if (mergeSnapshot != null)
+                    {
+                        mergeWith(mergeSnapshot);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Can not cast ISnapshotReadonly to Snapshot");
+                    }
+                }
+            }
+        }
+
+        private void mergeWith(Snapshot mergeSnapshot)
+        {
+            mergeVariables(mergeSnapshot);
+        }
+
+        private void mergeVariables(Snapshot mergeSnapshot)
+        {
+            foreach (var item in mergeSnapshot.variables)
+            {
+                if (variables.ContainsKey(item.Key))
+                {
+                    mergeMemoryIndexes(mergeSnapshot, item.Value, variables[item.Key]);
+                }
+                else 
+                {
+                    variables[item.Key] = item.Value;
+                    insertMemoryIndex(mergeSnapshot, item.Value);
+                }
+            }
+        }
+
+        private void insertMemoryIndex(Snapshot mergeSnapshot, MemoryIndex outerIndex)
+        {
             throw new NotImplementedException();
+        }
+
+        private void mergeMemoryIndexes(Snapshot mergeSnapshot, MemoryIndex outerIndex, MemoryIndex innerIndex)
+        {
+            MemoryEntry outerEntry = getMemoryEntry(outerIndex);
+            MemoryEntry innerEntry = getMemoryEntry(innerIndex);
+
+            if (outerEntry != innerEntry)
+            {
+
+            }
+
+            MemoryInfo outerInfo = getMemoryInfo(outerIndex);
+            MemoryInfo innerInfo = getMemoryInfo(innerIndex);
+
+
+        }
+
+        private void getDataFrom(Snapshot baseSnapshot)
+        {
+            variables = new Dictionary<VariableName, MemoryIndex>(baseSnapshot.variables);
+            arrays = new Dictionary<AssociativeArray, ArrayDescriptor>(baseSnapshot.arrays);
+            objects = new Dictionary<ObjectValue, ObjectDescriptor>(baseSnapshot.objects);
+
+            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>(baseSnapshot.memoryEntries);
+            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(baseSnapshot.memoryInfos);
         }
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
