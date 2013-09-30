@@ -33,6 +33,11 @@ namespace Weverca.ControlFlowGraph
         /// The default branch for the direct unconditional connection between basic blocks
         /// </summary>
         public DirectEdge DefaultBranch;
+        
+        /// <summary>
+        /// Hold the references of the basic block which ends with this basic block
+        /// </summary>
+        public List<TryBasicBlock> EndIngTryBlocks;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BasicBlock"/> class.
@@ -43,6 +48,7 @@ namespace Weverca.ControlFlowGraph
             OutgoingEdges = new List<ConditionalEdge>();
             IncommingEdges = new List<IBasicBlockEdge>();
             DefaultBranch = null;
+            EndIngTryBlocks = new List<TryBasicBlock>();
         }
 
 

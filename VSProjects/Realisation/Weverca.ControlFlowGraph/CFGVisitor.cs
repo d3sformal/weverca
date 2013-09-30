@@ -842,6 +842,7 @@ namespace Weverca.ControlFlowGraph
            
             //throwBlocks.Push(new List<BasicBlock>());
             VisitStatementList(x.Statements);
+            currentBasicBlock.EndIngTryBlocks.Add(tryBlock);
             DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
             
             

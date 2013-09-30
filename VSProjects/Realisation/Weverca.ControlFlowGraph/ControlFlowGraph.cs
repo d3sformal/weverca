@@ -265,7 +265,10 @@ namespace Weverca.ControlFlowGraph
                         label += globalCode.SourceUnit.GetSourceCode(statement.Position) + Environment.NewLine;
                     }
                 }
-
+                if (node.EndIngTryBlocks.Count > 0)
+                {
+                    label += "ending Try block";
+                }
                 label = label.Replace("\"", "\\\"");
                 result += "node" + i + "[label=\"" + label + "\"]" + Environment.NewLine;
                 i++;
