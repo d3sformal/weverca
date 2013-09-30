@@ -49,9 +49,9 @@ namespace Weverca.ControlFlowGraph
         public BasicBlock start;
 
         /// <summary>
-        /// Globalcode is stored in controlflow graph for pursposes of drawing controflow graph. Analysis doesn't have to provide this field, because it doesn't draw controflow graph.
+        /// Analyzed code.
         /// </summary>
-        private GlobalCode globalCode;
+        public GlobalCode globalCode { get; private set; }
         
         /// <summary>
         /// Visitor used for controflow graph construction.

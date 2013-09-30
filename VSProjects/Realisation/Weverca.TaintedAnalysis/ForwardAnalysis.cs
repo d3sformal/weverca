@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
+
 using PHP.Core;
+using PHP.Core.AST;
+
 using Weverca.Analysis;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
@@ -11,7 +14,23 @@ namespace Weverca.TaintedAnalysis
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
             : base(entryMethodGraph)
         {
+            initGlobalDeclaredObjectAndFunctions(entryMethodGraph);
             GlobalsInitializer();
+        }
+
+        protected void initGlobalDeclaredObjectAndFunctions(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
+        {
+            foreach (var statement in entryMethodGraph.globalCode.Statements)
+            {
+                if (statement is FunctionDecl)
+                {
+                    EntryInput.DeclareGlobal(statement as FunctionDecl);
+                }
+                else if (statement is TypeDecl)
+                {
+                    EntryInput.DeclareGlobal(EntryInput.CreateType(statement as TypeDecl));
+                }
+            }
         }
 
         #region ForwardAnalysis override

@@ -60,6 +60,7 @@
     <Compile Include="NativeConstantTester.cs" />
     <Compile Include="NativeObjectTester.cs" />
     <Compile Include="TestUtils.cs" />
+    <Compile Include="FunctionTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

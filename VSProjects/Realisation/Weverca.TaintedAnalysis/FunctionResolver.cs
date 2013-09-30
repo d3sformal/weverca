@@ -155,7 +155,7 @@ namespace Weverca.TaintedAnalysis
             if (calls.Length == 1)
             {
                 var outSet = calls[0].End.OutSet;
-               // applyHints(outSet);
+                applyHints(outSet);
                 return outSet.ReadValue(outSet.ReturnValue);
             }
             else
@@ -166,7 +166,7 @@ namespace Weverca.TaintedAnalysis
                 foreach (var call in calls)
                 {
                     var outSet = call.End.OutSet;
-                    //applyHints(outSet);
+                    applyHints(outSet);
                     entries.Add(outSet.ReadValue(outSet.ReturnValue));
                 }
 
@@ -446,12 +446,12 @@ namespace Weverca.TaintedAnalysis
     internal class FunctionHints
     {
         HashSet<DirtyType> returnHints;
-        Dictionary<int, HashSet<DirtyType>> argumentHints;
+        Dictionary<VariableName, HashSet<DirtyType>> argumentHints;
         LangElement declaration;
         internal FunctionHints(PHPDocBlock doc, LangElement _declaration)
         {
             declaration = _declaration;
-            argumentHints = new Dictionary<int, HashSet<DirtyType>>();
+            argumentHints = new Dictionary<VariableName, HashSet<DirtyType>>();
             returnHints = new HashSet<DirtyType>();
 
             string comment;
@@ -463,6 +463,22 @@ namespace Weverca.TaintedAnalysis
             {
                 comment=doc.ToString();
             }
+
+            List<FormalParam> parameters=null;
+            if (declaration is MethodDecl)
+            { 
+                parameters=(declaration as MethodDecl).Signature.FormalParams;
+            }
+
+            if (declaration is FunctionDecl)
+            {
+                parameters = (declaration as FunctionDecl).Signature.FormalParams;
+            }
+
+
+
+
+
             string endOfRegexp="(";
             Array values = DirtyType.GetValues(typeof(DirtyType));
             foreach (DirtyType val in values)
@@ -470,26 +486,54 @@ namespace Weverca.TaintedAnalysis
                    endOfRegexp+=val+"|";
             }
             endOfRegexp+="all)";
-            string returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]*returnvalue[ \t]*remove[ \t]*" + endOfRegexp;
-            string argumentPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]*outargument[ \t]*[0-9]+[ \t]*remove" + endOfRegexp;
+            string returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+returnvalue[ \t]+remove[ \t]+" + endOfRegexp;
+            string argumentPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+outargument[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)[ \t]+remove[ \t]+" + endOfRegexp;
             Regex retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
             Regex argRegEx = new Regex(argumentPatern, RegexOptions.IgnoreCase);
+
             foreach (var line in comment.Split('\n'))
             {
-               
-                if (retRegEx.IsMatch(line))
+                Match match = retRegEx.Match(line);
+                if (match.Success)
                 {
-                    Console.WriteLine("OK" + line);
-                    Console.WriteLine();
+                    string res = match.Groups[1].Value.ToString();
+                    foreach (DirtyType val in values)
+                    {
+                        if(val.ToString().ToLower()==res.ToString().ToLower())
+                        {
+                            addReturnHint(val);
+                        }
+                        if (res == "all")
+                        {
+                            addReturnHint(val);
+                        }
+                    }                  
                 }
 
-                if (argRegEx.IsMatch(line))
+                Match argMatch = argRegEx.Match(line);
+                if (argMatch.Success)
                 {
-                    Console.WriteLine("KO" + line);
-                    Console.WriteLine();
-
-                }
-
+                    string argName = argMatch.Groups[1].Value;
+                    string res = argMatch.Groups[2].Value.ToString();
+                    foreach (var parameter in parameters)
+                    {
+                        if (parameter.Name.Equals(argName))
+                        {
+                            foreach (DirtyType val in values)
+                            {
+                                if (val.ToString().ToLower() == res.ToString().ToLower())
+                                {
+                                    addArgumentHint(new VariableName(argName),val);
+                                }
+                                if (res == "all")
+                                {
+                                    addArgumentHint(new VariableName(argName),val);
+                                }
+                            }
+                            break;
+                        }
+                    }
+               }
             }
 
         }
@@ -499,13 +543,13 @@ namespace Weverca.TaintedAnalysis
             returnHints.Add(type);
         }
 
-        private void addArgumentint(int i, DirtyType type)
+        private void addArgumentHint(VariableName name, DirtyType type)
         {
-            if (argumentHints[i] == null)
+            if (!argumentHints.ContainsKey(name))
             {
-                argumentHints[i] = new HashSet<DirtyType>();
+                argumentHints[name] = new HashSet<DirtyType>();
             }
-            argumentHints[i].Add(type);
+            argumentHints[name].Add(type);
         }
 
         internal void applyHints(FlowOutputSet outset)
@@ -518,30 +562,19 @@ namespace Weverca.TaintedAnalysis
                     ValueInfoHandler.setClean(outset, value, type);
                 }
             }
-           /* MemoryEntry argc = outset.ReadValue(new VariableName(".argument_count"));
-            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
-            foreach (int arg in argumentHints.Keys)
+
+
+            foreach (var variable in argumentHints.Keys)
             {
-                if (arg < argumentCount)
+                foreach (var flag in argumentHints[variable])
                 {
-                    foreach (var type in argumentHints[arg])
+                    MemoryEntry result = outset.ReadValue(variable);
+                    foreach (var value in result.PossibleValues)
                     {
-                        MemoryEntry result = outset.ReadValue(argument(arg));
-                        foreach (var value in result.PossibleValues)
-                        {
-                            ValueInfoHandler.setClean(outset, value, type);
-                        }
+                        ValueInfoHandler.setClean(outset, value, flag);
                     }
                 }
-            }*/
-        }
-        private VariableName argument(int index)
-        {
-            if (index < 0)
-            {
-                throw new NotSupportedException("Cannot get argument variable for negative index");
             }
-            return new VariableName(".arg" + index);
         }
     }
 }
