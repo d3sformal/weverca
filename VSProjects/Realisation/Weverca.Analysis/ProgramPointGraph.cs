@@ -64,10 +64,10 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="entryBlock">Entry point into source (all feasible basic blocks will be included in program point graph)</param>
         /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
-        public ProgramPointGraph(BasicBlock entryBlock, LangElement sourceObject)
+        private ProgramPointGraph(BasicBlock entryBlock, LangElement sourceObject)
         {
             SourceObject = sourceObject;
-
+            
             _context = new PPGraphBuildingContext(this);
 
             var startBlock = _context.CreateEmptyPoint(out Start, entryBlock);
@@ -127,6 +127,17 @@ namespace Weverca.Analysis
 
             return new ProgramPointGraph(cfg.start, declaration);
         }
+
+        /// <summary>
+        /// Creates program point graph for given control flow graph
+        /// </summary>
+        /// <param name="cfg">Input control flow graph</param>
+        /// <returns>Created program point graph</returns>
+        public static ProgramPointGraph FromSource(ControlFlowGraph.ControlFlowGraph cfg)
+        {
+            return new ProgramPointGraph(cfg.start, null);
+        }
+
 
 
         #endregion

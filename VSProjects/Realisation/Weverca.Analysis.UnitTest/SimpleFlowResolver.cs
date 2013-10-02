@@ -168,7 +168,7 @@ namespace Weverca.Analysis.UnitTest
             {
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
-                var ppGraph = new ProgramPointGraph(cfg.start, null);
+                var ppGraph = ProgramPointGraph.FromSource(cfg);
                 flow.AddExtension(file, ppGraph);
             }
         }

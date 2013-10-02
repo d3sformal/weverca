@@ -134,7 +134,7 @@ namespace Weverca.Analysis
         {
             EntryInput.CommitTransaction();
 
-            ProgramPointGraph = new ProgramPointGraph(EntryCFG.start,null);
+            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG);
             _services.SetServices(ProgramPointGraph);
 
             var output=_services.CreateEmptySet();            
