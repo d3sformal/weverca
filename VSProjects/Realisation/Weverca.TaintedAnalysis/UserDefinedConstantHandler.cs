@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 using PHP.Core;
+
 using Weverca.Analysis;
 using Weverca.Analysis.Memory;
 
@@ -12,67 +11,111 @@ namespace Weverca.TaintedAnalysis
     /// <summary>
     /// Provides the functionality to insert and retrieve constant values from memoryModel.
     /// </summary>
-    class UserDefinedConstantHandler
+    internal class UserDefinedConstantHandler
     {
+        private static readonly VariableName constantVariable = new VariableName(".constants");
+
         /// <summary>
-        /// Gets Constant value from FlowOutputSet
+        /// Gets constant value from FlowOutputSet
         /// </summary>
-        /// <param name="outset">FlowOutputSet, which contains values</param>
+        /// <param name="outset">FlowOutputSet which contains values</param>
         /// <param name="name">Constant name</param>
-        /// <returns>List of possible values</returns>
-        public static List<Value> getConstant(FlowOutputSet outset, QualifiedName name)
+        /// <returns>Memory entry of possible values</returns>
+        public static MemoryEntry GetConstant(FlowOutputSet outset, QualifiedName name)
         {
-            List<Value> result = new List<Value>();
-            outset.FetchFromGlobal(new VariableName(".constants"));
-            foreach (Value value in outset.ReadValue(new VariableName(".constants")).PossibleValues)
+            MemoryEntry entry;
+            bool isAlwaysDefined;
+            TryGetConstant(outset, name, out entry, out isAlwaysDefined);
+            return entry;
+        }
+
+        /// <summary>
+        /// Tries to get constant value from FlowOutputSet
+        /// </summary>
+        /// <param name="outset">FlowOutputSet which contains values</param>
+        /// <param name="name">Constant name</param>
+        /// <param name="entry">Memory entry of possible values</param>
+        /// <param name="isNotDefined">Indicates whether all values are derived from constant name</param>
+        /// <returns><c>true</c> if constant is defined in every pass, otherwise <c>false</c></returns>
+        public static bool TryGetConstant(FlowOutputSet outset, QualifiedName name,
+            out MemoryEntry entry, out bool isNotDefined)
+        {
+            var values = new HashSet<Value>();
+            outset.FetchFromGlobal(constantVariable);
+            var constantArrays = outset.ReadValue(constantVariable);
+            Debug.Assert(constantArrays.Count > 0, "Internal array of constants is always defined");
+
+            var isAlwaysDefined = true;
+            isNotDefined = true;
+
+            foreach (var value in constantArrays.PossibleValues)
             {
-                if (value is AssociativeArray)
+                var constantArray = value as AssociativeArray;
+                if (constantArray != null)
                 {
-                    AssociativeArray constArray = (AssociativeArray)value;
-                    //case insensitive constants
-                    foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex("." + name.Name.LowercaseValue)).PossibleValues)
+                    MemoryEntry arrayEntry;
+
+                    // Case-insensitive constants
+                    var index = outset.CreateIndex("." + name.Name.LowercaseValue);
+                    if (outset.TryGetIndex(constantArray, index, out arrayEntry))
                     {
-                        if (!(it is UndefinedValue))
+                        if (isNotDefined)
                         {
-                            result.Add(it);
+                            isNotDefined = false;
                         }
+
+                        values.UnionWith(arrayEntry.PossibleValues);
                     }
-                    //case sensitive constant
-                    foreach (Value it in outset.GetIndex(constArray, outset.CreateIndex(name.Name.Value)).PossibleValues)
+                    else
                     {
-                        if (!(it is UndefinedValue))
+                        // Case-sensitive constant
+                        index = outset.CreateIndex(name.Name.Value);
+                        if (outset.TryGetIndex(constantArray, index, out arrayEntry))
                         {
-                            result.Add(it);
+                            if (isNotDefined)
+                            {
+                                isNotDefined = false;
+                            }
+
+                            values.UnionWith(arrayEntry.PossibleValues);
+                        }
+                        else
+                        {
+                            if (isAlwaysDefined)
+                            {
+                                isAlwaysDefined = false;
+                            }
+
+                            // Undefined constant is interpreted as a string
+                            var stringValue = outset.CreateString(name.Name.Value);
+                            values.Add(stringValue);
                         }
                     }
                 }
             }
-            if (result.Count == 0)
-            {
-                result.Add(outset.UndefinedValue);
-                
-            }
 
-          
-
-            return result;
+            entry = new MemoryEntry(values);
+            return isAlwaysDefined;
         }
 
         /// <summary>
         /// Inserts new constant into FlowOutputSet.
         /// </summary>
-        /// <param name="outset">FlowOutputSet, where to isert the values.</param>
+        /// <param name="outset">FlowOutputSet, where to insert the values.</param>
         /// <param name="name">Constant name.</param>
-        /// <param name="value">constant value</param>
-        /// <param name="caseInsensitive">determins if the constant is case sensitive of insensitive</param>
-        public static void insertConstant(FlowOutputSet outset, QualifiedName name, MemoryEntry value, bool caseInsensitive = false)
+        /// <param name="value">Constant value</param>
+        /// <param name="caseInsensitive">Determines if the constant is case sensitive of insensitive</param>
+        public static void insertConstant(FlowOutputSet outset, QualifiedName name,
+            MemoryEntry value, bool caseInsensitive = false)
         {
-            outset.FetchFromGlobal(new VariableName(".constants"));
-            foreach (Value array in outset.ReadValue(new VariableName(".constants")).PossibleValues)
+            outset.FetchFromGlobal(constantVariable);
+            var constantArrays = outset.ReadValue(constantVariable);
+
+            foreach (var array in constantArrays.PossibleValues)
             {
-                if (array is AssociativeArray)
+                var constantArray = array as AssociativeArray;
+                if (constantArray != null)
                 {
-                    AssociativeArray constArray = (AssociativeArray)array;
                     ContainerIndex index;
                     if (caseInsensitive == true)
                     {
@@ -82,12 +125,11 @@ namespace Weverca.TaintedAnalysis
                     {
                         index = outset.CreateIndex(name.Name.Value);
                     }
-                    MemoryEntry entry = outset.GetIndex(constArray, index);
-                    if (entry.PossibleValues.Count() == 0 || (entry.PossibleValues.Count() == 1 && entry.PossibleValues.ElementAt(0).Equals(outset.UndefinedValue)))
-                    {
 
-                        //replace undefined values with string ""
-                        outset.SetIndex(constArray, index, value);
+                    if (!outset.ArrayIndexExists(constantArray, index))
+                    {
+                        // TODO: Replace undefined values with string ""? Really?
+                        outset.SetIndex(constantArray, index, value);
                     }
                 }
             }

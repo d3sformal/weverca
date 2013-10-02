@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 using PHP.Core;
@@ -38,7 +37,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             _locals = new Dictionary<VariableName, VariableInfo>(_locals);
             _globals = new Dictionary<VariableName, VariableInfo>(_globals);
 
-            _isGlobalScope = true;// when not extend as call or from non global snapshot is global
+            // when not extend as call or from non global snapshot is global
+            _isGlobalScope = true;
+
             _hasSemanticChange = false;
         }
 
@@ -377,9 +378,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 case 1:
                     return getEntry(references[0]);
                 default:
-                    var entries = from reference in references select getEntry(reference);
+                    var values = new HashSet<Value>();
+                    foreach (var reference in references)
+                    {
+                        var entry = getEntry(reference);
+                        values.UnionWith(entry.PossibleValues);
+                    }
 
-                    return MemoryEntry.Merge(entries);
+                    return new MemoryEntry(values);
             }
         }
 
@@ -518,9 +524,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
             var storage = functionStorage(functionName.Name.Value);
-            var entry = readValue(storage, true);
 
-            return from FunctionValue function in entry.PossibleValues select function;
+            MemoryEntry entry;
+            if (tryReadValue(storage, out entry, true))
+            {
+                var functions = new List<FunctionValue>(entry.Count);
+                foreach (var value in entry.PossibleValues)
+                {
+                    var function = value as FunctionValue;
+                    Debug.Assert(function != null, "Every value read from function storage is a function");
+                    functions.Add(function);
+                }
+
+                return functions;
+            }
+            else
+            {
+                return new List<FunctionValue>(0);
+            }
         }
 
         protected VariableName typeStorage(string typeName)
@@ -541,9 +562,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             var storage = typeStorage(typeName.Name.Value);
-            var entry = readValue(storage, true);
 
-            return from TypeValue type in entry.PossibleValues select type;
+            MemoryEntry entry;
+            if (tryReadValue(storage, out entry, true))
+            {
+                var types = new List<TypeValue>(entry.Count);
+                foreach (var value in entry.PossibleValues)
+                {
+                    var type = value as TypeValue;
+                    Debug.Assert(type != null, "Every value read from type storage is a type");
+                    types.Add(type);
+                }
+
+                return types;
+            }
+            else
+            {
+                return new List<TypeValue>(0);
+            }
         }
 
         #region Object operations
@@ -583,21 +619,23 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         protected override TypeValue objectType(ObjectValue objectValue)
         {
             var info = getObjectInfoStorage(objectValue);
+            var objectInfo = readValue(info, true);
+            Debug.Assert(objectInfo.Count == 1, "Object is always instance of just one type");
 
-            var type=readValue(info, true).PossibleValues.First() as TypeValue;
+            var enumerator = objectInfo.PossibleValues.GetEnumerator();
+            enumerator.MoveNext();
+            var type = enumerator.Current as TypeValue;
+            Debug.Assert(type != null, "The value read from object info storage is a type");
+
             return type;
         }
 
         protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
-            var info = getObjectInfoStorage(objectValue);
-            var objInfo = readValue(info, true);
-            if (objInfo.PossibleValues.Count() != 1)
-            {
-                throw new NotImplementedException();
-            }
+            var type = objectType(objectValue);
+            var methods = TypeMethodResolver.ResolveMethods(type, this);
 
-            foreach (var method in TypeMethodResolver.ResolveMethods(objInfo.PossibleValues.First() as TypeValue, this))
+            foreach (var method in methods)
             {
                 if (method.Name.Value == methodName.Name.Value)
                 {
@@ -616,6 +654,28 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             var name = string.Format("$obj{0}#info", obj.UID);
             return new VariableName(name);
+        }
+
+        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
+        {
+            // TODO: Add visibility
+
+            var arrayPrefix = string.Format("$obj{0}->", iteratedObject.UID);
+            var indexes = new List<ContainerIndex>();
+            foreach (var variable in _globals.Keys)
+            {
+                var varName = variable.Value;
+                if (!varName.StartsWith(arrayPrefix))
+                {
+                    continue;
+                }
+
+                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - arrayPrefix.Length);
+
+                indexes.Add(CreateIndex(indexIdentifier));
+            }
+
+            return indexes;
         }
 
         #endregion
@@ -737,16 +797,23 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private InfoValue[] getInfoValues(VariableName storage)
         {
-            var possibleValues = readValue(storage, true).PossibleValues;
+            MemoryEntry entry;
+            if (!tryReadValue(storage, out entry, true))
+            {
+                return new InfoValue[0];
+            }
 
-            var info = from value in possibleValues where value is InfoValue select value as InfoValue;
+            var possibleValues = entry.PossibleValues;
+            var infoValues = new List<InfoValue>(entry.Count);
 
-            return info.ToArray();
-        }
+            foreach (var value in possibleValues)
+            {
+                var infoValue = value as InfoValue;
+                Debug.Assert(infoValue != null, "Every value read from info storage is an info value");
+                infoValues.Add(infoValue);
+            }
 
-        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
-        {
-            throw new NotImplementedException();
+            return infoValues.ToArray();
         }
 
         private Dictionary<VariableName, VariableInfo> getVariableStorage(bool forceGlobal)

@@ -32,40 +32,59 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public override MemoryEntry ResolveVariable(VariableEntry variable)
         {
             MemoryEntry entry;
+            bool noValueExists;
+
             if (variable.IsDirect)
             {
                 // Special case of direct access is $this variable. It has always just one value
                 // Variable $this is absolutely valid outside method, if it does not access to any member.
                 // It behaves as undefined value, thus it returns null with warning.
-                entry = OutSet.ReadValue(variable.DirectName);
+                noValueExists = !OutSet.TryReadValue(variable.DirectName, out entry);
             }
             else
             {
                 var names = variable.PossibleNames;
                 Debug.Assert(names.Length > 0, "Every variable must have at least one name");
 
-                var entries = new List<MemoryEntry>(names.Length);
+                noValueExists = true;
+                var valueAlwaysExists = true;
+                var values = new HashSet<Value>();
+
                 foreach (var name in names)
                 {
-                    entries.Add(OutSet.ReadValue(name));
+                    MemoryEntry variableEntry;
+                    if (OutSet.TryReadValue(name, out variableEntry))
+                    {
+                        if (noValueExists)
+                        {
+                            noValueExists = false;
+                        }
+                    }
+                    else
+                    {
+                        if (valueAlwaysExists)
+                        {
+                            valueAlwaysExists = false;
+                        }
+                    }
+
+                    values.UnionWith(variableEntry.PossibleValues);
                 }
 
-                entry = MemoryEntry.Merge(entries);
+                if (!(valueAlwaysExists || noValueExists))
+                {
+                    SetWarning("Reading of possible undefined variable, null is included",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
+                }
+
+                entry = new MemoryEntry(values);
             }
 
-            if (ReplaceUndefinedValueByNull(ref entry))
+            if (noValueExists)
             {
-                // Undefined value means that variable was not initializes, we report that.
-                if (entry.Count > 1)
-                {
-                    SetWarning("Reading of possible undefined variable, null is returned",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-                else
-                {
-                    SetWarning("Reading of undefined variable, null is returned",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
+                // Undefined value means that variable was not initialized, we report that.
+                SetWarning("Reading of undefined variable, null is returned",
+                    AnalysisWarningCause.UNDEFINED_VALUE);
             }
 
             Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
@@ -74,80 +93,106 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableEntry field)
         {
-            Debug.Assert(objectValue.Count > 0, "Every object entry must have at least one value");
             Debug.Assert(field.PossibleNames.Length > 0, "Every field variable must have at least one name");
 
-            var indices = new List<ContainerIndex>();
+            var indices = new HashSet<ContainerIndex>();
             foreach (var fieldName in field.PossibleNames)
             {
-                indices.Add(OutSet.CreateIndex(fieldName.Value));
+                if (fieldName.Value.Length > 0)
+                {
+                    indices.Add(OutSet.CreateIndex(fieldName.Value));
+                }
+                else
+                {
+                    // Everything, that can be converted to empty string ("", null, false etc.),
+                    // produce empty property that does not represent any memory storage
+                    // TODO: This must be fatal error
+                    SetWarning("Cannot access empty property");
+                }
             }
 
-            var entries = new List<MemoryEntry>();
-            var isPossibleNonObject = false;
-            var objectValues = ResolveObjectsForMember(objectValue, out isPossibleNonObject);
+            Debug.Assert(objectValue.Count > 0, "Every object entry must have at least one value");
+
+            bool isAlwaysObject;
+            bool isAlwaysConcrete;
+            var objectValues = ResolveObjectsForMember(objectValue, out isAlwaysObject, out isAlwaysConcrete);
+
+            var noValueExists = true;
+            var valueAlwaysExists = isAlwaysConcrete;
+            var values = new HashSet<Value>();
 
             foreach (var objectInstance in objectValues)
             {
                 foreach (var index in indices)
                 {
-                    if (index.Identifier.Equals(string.Empty))
+                    MemoryEntry entry;
+                    if (OutSet.TryGetField(objectInstance, index, out entry))
                     {
-                        // Everything, that can be converted to empty string ("", null, false etc.),
-                        // produce empty property that does not represent any memory storage
-                        // TODO: This must be fatal error
-                        SetWarning("Cannot access empty property");
-                        // TODO: Add null value instead of undefined one
-                        entries.Add(new MemoryEntry(OutSet.UndefinedValue));
+                        if (noValueExists)
+                        {
+                            noValueExists = false;
+                        }
                     }
                     else
                     {
-                        // TODO: All fields are undefined after creation.
-                        entries.Add(OutSet.GetField(objectInstance, index));
+                        if (valueAlwaysExists)
+                        {
+                            valueAlwaysExists = false;
+                        }
                     }
+
+                    values.UnionWith(entry.PossibleValues);
                 }
             }
 
-            if (isPossibleNonObject)
+            if (!isAlwaysObject)
             {
-                if (objectValues.Count >= 1)
+                if ((objectValues.Count > 0) || (!isAlwaysConcrete))
                 {
                     SetWarning("Trying to get property of possible non-object variable",
                         AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                    // TODO: Add null value instead of undefined one
-                    entries.Add(new MemoryEntry(OutSet.UndefinedValue));
+                    values.Add(OutSet.UndefinedValue);
                 }
                 else
                 {
                     SetWarning("Trying to get property of non-object variable",
                         AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                    // TODO: Return null value instead of undefined one
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
 
-            var entry = MemoryEntry.Merge(entries);
-            if (ReplaceUndefinedValueByNull(ref entry))
+            if (!isAlwaysConcrete)
+            {
+                values.Add(OutSet.AnyValue);
+            }
+
+            if (!valueAlwaysExists)
             {
                 // Undefined value means that property was not initializes, we report that.
-                if (entry.Count > 1)
-                {
-                    SetWarning("Reading of possible undefined property, null is returned",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-                else
+                if (noValueExists)
                 {
                     SetWarning("Reading of undefined property, null is returned",
                         AnalysisWarningCause.UNDEFINED_VALUE);
                 }
+                else
+                {
+                    SetWarning("Reading of possible undefined property, null is included",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
+                }
             }
 
-            Debug.Assert(entry.Count > 0, "Every resolved field must give at least one value");
-            return entry;
+            Debug.Assert(values.Count > 0, "Every resolved field must give at least one value");
+            return new MemoryEntry(values);
         }
 
         public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue,
             VariableEntry aliasedField)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue,
+            MemoryEntry aliasedIndex)
         {
             throw new NotImplementedException();
         }
@@ -164,8 +209,16 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
+        public override void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex,
+            IEnumerable<AliasValue> possibleAliases)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void Assign(VariableEntry target, MemoryEntry entry)
         {
+            Debug.Assert(entry.Count > 0, "Memory entry assigned to variable must have at least one value");
+
             if (target.IsDirect)
             {
                 var name = target.DirectName;
@@ -176,7 +229,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                 }
                 else
                 {
-                    OutSet.Assign(target.DirectName, entry);
+                    OutSet.Assign(name, entry);
                 }
             }
             else
@@ -204,31 +257,28 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public override void FieldAssign(MemoryEntry objectValue, VariableEntry targetField,
             MemoryEntry entry)
         {
-            Debug.Assert(objectValue.Count > 0, "Every object entry must have at least one value");
-            Debug.Assert(targetField.PossibleNames.Length > 0,
-                "Every field variable must have at least one name");
-
             var isOneEntry = (objectValue.Count == 1) && targetField.IsDirect;
             if (isOneEntry)
             {
                 var enumerator = objectValue.PossibleValues.GetEnumerator();
                 enumerator.MoveNext();
-                var possibleObject = enumerator.Current as ObjectValue;
+                Debug.Assert(!(enumerator.Current is UndefinedValue), "Undefined value has been changed to object");
 
-                if (possibleObject != null)
+                var objectInstance = enumerator.Current as ObjectValue;
+                if (objectInstance != null)
                 {
                     string fieldName = targetField.DirectName.Value;
-                    if (fieldName.Equals(string.Empty))
+                    if (fieldName.Length > 0)
+                    {
+                        var index = OutSet.CreateIndex(fieldName);
+                        OutSet.SetField(objectInstance, index, entry);
+                    }
+                    else
                     {
                         // Everything, that can be converted to empty string ("", null, false etc.),
                         // produce empty property that does not represent any memory storage
                         // TODO: This must be fatal error
                         SetWarning("Cannot access empty property");
-                    }
-                    else
-                    {
-                        var index = OutSet.CreateIndex(fieldName);
-                        OutSet.SetField(possibleObject, index, entry);
                     }
                 }
                 else
@@ -239,49 +289,45 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
             else
             {
-                var isPossibleNonObject = false;
-                var isAtLeastOneObject = false;
+                Debug.Assert(targetField.PossibleNames.Length > 0,
+                    "Every field variable must have at least one name");
+
+                var indices = new HashSet<ContainerIndex>();
+                foreach (var fieldName in targetField.PossibleNames)
+                {
+                    if (fieldName.Value.Length > 0)
+                    {
+                        indices.Add(OutSet.CreateIndex(fieldName.Value));
+                    }
+                    else
+                    {
+                        // Everything, that can be converted to empty string ("", null, false etc.),
+                        // produce empty property that does not represent any memory storage
+                        // TODO: This must be fatal error
+                        SetWarning("Cannot access empty property");
+                    }
+                }
+
+                Debug.Assert(objectValue.Count > 0, "Every object entry must have at least one value");
+
+                bool isAlwaysObject;
+                bool isAlwaysConcrete;
+                var objectValues = ResolveObjectsForMember(objectValue, out isAlwaysObject, out isAlwaysConcrete);
 
                 // When saving to multiple object or multiple fields of one object (or both), only
                 // one memory place is changed. Others retain thier original value. Thus, the value
                 // is appended, not assigned, to the current values of all fields of all objects.
-                foreach (var variableValue in objectValue.PossibleValues)
+                foreach (var objectInstance in objectValues)
                 {
-                    var possibleObject = variableValue as ObjectValue;
-                    if (possibleObject != null)
+                    foreach (var index in indices)
                     {
-                        if (!isAtLeastOneObject)
-                        {
-                            isAtLeastOneObject = true;
-                        }
-
-                        foreach (var fieldName in targetField.PossibleNames)
-                        {
-                            if (fieldName.Value.Equals(string.Empty))
-                            {
-                                // Everything, that can be converted to empty string ("", null, false etc.),
-                                // produce empty property that does not represent any memory storage
-                                // TODO: This must be fatal error
-                                SetWarning("Cannot access empty property");
-                            }
-                            else
-                            {
-                                FieldAppendValue(fieldName.Value, possibleObject, entry);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (!isPossibleNonObject)
-                        {
-                            isPossibleNonObject = true;
-                        }
+                        FieldAppendValue(objectInstance, index, entry);
                     }
                 }
 
-                if (isPossibleNonObject)
+                if (!isAlwaysObject)
                 {
-                    if (isAtLeastOneObject)
+                    if ((objectValues.Count > 0) || (!isAlwaysConcrete))
                     {
                         SetWarning("Possible attempt to assign property of non-object",
                             AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
@@ -298,7 +344,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
             MemoryEntry rightOperand)
         {
-            var values = new List<Value>();
+            var values = new HashSet<Value>();
 
             foreach (var leftValue in leftOperand.PossibleValues)
             {
@@ -313,7 +359,7 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
-            var values = new List<Value>();
+            var values = new HashSet<Value>();
 
             foreach (var value in operand.PossibleValues)
             {
@@ -323,17 +369,81 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        public override MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
+        public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MemoryEntry ArrayEx(
+            IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
         {
             // TODO: It is not done
 
+            var keyCollections = new List<KeyValuePair<MemoryEntry, MemoryEntry>>();
+            foreach (var keyValue in keyValuePairs)
+            {
+                if (keyValue.Key == null)
+                {
+                    keyCollections.Add(keyValue);
+                    continue;
+                }
+
+                var keys = new HashSet<PrimitiveValue>();
+
+                // TODO: It is too complicated
+                foreach (var key in keyValue.Key.PossibleValues)
+                {
+                    if (key is IntegerValue)
+                    {
+                        keys.Add(key as IntegerValue);
+                    }
+                    else if (key is FloatValue)
+                    {
+                        IntegerValue integerValue;
+                        if (TypeConversion.TryConvertToInteger(OutSet, key as FloatValue, out integerValue))
+                        {
+                            keys.Add(integerValue);
+                        }
+                    }
+                    else if (key is BooleanValue)
+                    {
+                        keys.Add(TypeConversion.ToInteger(OutSet, key as BooleanValue));
+                    }
+                    else if (key is StringValue)
+                    {
+                        IntegerValue integerValue;
+                        if (TypeConversion.TryConvertToInteger(OutSet, key as StringValue, out integerValue))
+                        {
+                            keys.Add(integerValue);
+                        }
+                        else
+                        {
+                            keys.Add(key as StringValue);
+                        }
+                    }
+                    else if (key is UndefinedValue)
+                    {
+                        keys.Add(TypeConversion.ToString(OutSet, key as UndefinedValue));
+                    }
+                }
+
+                var entry = new MemoryEntry(keys);
+                keyCollections.Add(new KeyValuePair<MemoryEntry, MemoryEntry>(entry, keyValue.Value));
+            }
+
             int counter = 0;
             var array = OutSet.CreateArray();
-            foreach (var keyValue in keyValuePairs)
+            foreach (var keyValue in keyCollections)
             {
                 ContainerIndex index;
                 if (keyValue.Key != null)
                 {
+                    if (keyValue.Key.Count <= 0)
+                    {
+                        continue;
+                    }
+
+                    // TODO: All possible keys must be evaluated
                     var enumerator = keyValue.Key.PossibleValues.GetEnumerator();
                     enumerator.MoveNext();
 
@@ -344,16 +454,19 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                         {
                             counter = possibleInteger.Value + 1;
                         }
+                        index = OutSet.CreateIndex(TypeConversion.ToString(counter));
                     }
-
-                    var key = unaryOperationVisitor.Evaluate(Operations.StringCast, enumerator.Current as Value);
-                    var stringKey = key as StringValue;
-                    index = OutSet.CreateIndex(stringKey.Value);
+                    else
+                    {
+                        Debug.Assert(enumerator.Current is StringValue);
+                        var stringKey = enumerator.Current as StringValue;
+                        index = OutSet.CreateIndex(stringKey.Value);
+                    }
                 }
                 else
                 {
-                    index = OutSet.CreateIndex(counter.ToString());
-                    ++counter;
+                    index = OutSet.CreateIndex(TypeConversion.ToString(counter));
+                    counter = ((counter >= 0) ? (counter + 1) : 0);
                 }
 
                 OutSet.SetIndex(array, index, keyValue.Value);
@@ -371,7 +484,15 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             {
                 var value = unaryOperationVisitor.Evaluate(Operations.StringCast, possible);
                 var stringValue = value as StringValue;
-                names.Add(stringValue.Value);
+                if (stringValue != null)
+                {
+                    names.Add(stringValue.Value);
+                }
+                else
+                {
+                    // TODO: What to return?
+                    Debug.Assert(value is AnyStringValue);
+                }
             }
 
             return names;
@@ -379,95 +500,65 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
         {
-            Debug.Assert(array.Count > 0, "Every array entry must have at least one value");
+            // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
+            // The problem is that we do not know the name of variable and we cannot detect it.
+
             Debug.Assert(index.Count > 0, "Every index entry must have at least one value");
 
             var indexNames = VariableNames(index);
-            var indexes = CreateContainterIndexes(indexNames);
+            var indices = CreateContainterIndexes(indexNames);
 
             var isOneEntry = (array.Count == 1) && (index.Count == 1);
             if (isOneEntry)
             {
                 var arrayEnumerator = array.PossibleValues.GetEnumerator();
                 arrayEnumerator.MoveNext();
+                Debug.Assert(!(arrayEnumerator.Current is UndefinedValue), "Undefined value has been changed to array");
 
-                AssociativeArray possibleArray;
-                if (arrayEnumerator.Current is UndefinedValue)
+                var arrayValue = arrayEnumerator.Current as AssociativeArray;
+                if (arrayValue != null)
                 {
-                    // Array is created, if value of variable is null
-                    possibleArray = OutSet.CreateArray();
-                }
-                else
-                {
-                    possibleArray = arrayEnumerator.Current as AssociativeArray;
-                }
-
-                if (possibleArray != null)
-                {
-                    var indexEnumerator = indexes.GetEnumerator();
+                    var indexEnumerator = indices.GetEnumerator();
                     indexEnumerator.MoveNext();
-                    OutSet.SetIndex(possibleArray, indexEnumerator.Current, assignedValue);
+                    OutSet.SetIndex(arrayValue, indexEnumerator.Current, assignedValue);
                 }
                 else
                 {
                     // TODO: String can be accessed by index too
-                    SetWarning("Cannot assign using a key to variable different from array");
+                    SetWarning("Cannot assign using a key to variable different from array",
+                        AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
                 }
             }
             else
             {
-                // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
-                // The problem is that we do not know the name of variable and we cannot detect it.
+                Debug.Assert(array.Count > 0, "Every array entry must have at least one value");
 
-                var isPossibleNonArray = false;
-                var isAtLeastOneArray = false;
+                bool isAlwaysObject;
+                bool isAlwaysConcrete;
+                var arrayValues = ResolveArraysForIndex(array, out isAlwaysObject, out isAlwaysConcrete);
 
                 // When saving to multiple array or multiple array elements (or both), only
                 // one memory place is changed. Others retain thier original value. Thus, the value
                 // is appended, not assigned, to the current values of all elements of all arrays.
-                foreach (var variableValue in array.PossibleValues)
+                foreach (var arrayValue in arrayValues)
                 {
-                    var possibleArray = variableValue as AssociativeArray;
-                    if (possibleArray != null)
+                    foreach (var containerIndex in indices)
                     {
-                        if (!isAtLeastOneArray)
-                        {
-                            isAtLeastOneArray = true;
-                        }
-
-                        foreach (var containerIndex in indexes)
-                        {
-                            IndexAppendValue(possibleArray, containerIndex, assignedValue);
-                        }
-                    }
-                    else if (variableValue is UndefinedValue)
-                    {
-                        foreach (var containerIndex in indexes)
-                        {
-                            // Every value creates new single array
-                            possibleArray = OutSet.CreateArray();
-                            IndexAppendValue(possibleArray, containerIndex, assignedValue);
-                        }
-                    }
-                    else
-                    {
-                        // TODO: String can be accessed by index too
-                        if (!isPossibleNonArray)
-                        {
-                            isPossibleNonArray = true;
-                        }
+                        IndexAppendValue(arrayValue, containerIndex, assignedValue);
                     }
                 }
 
-                if (isPossibleNonArray)
+                if (!isAlwaysObject)
                 {
-                    if (isAtLeastOneArray)
+                    if ((arrayValues.Count > 0) || (!isAlwaysConcrete))
                     {
-                        SetWarning("Cannot assign using a key to variable possibly different from array.");
+                        SetWarning("Cannot assign using a key to variable possibly different from array",
+                            AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
                     }
                     else
                     {
-                        SetWarning("Cannot assign using a key to variable different from array.");
+                        SetWarning("Cannot assign using a key to variable different from array",
+                            AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
                     }
                 }
             }
@@ -475,89 +566,83 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
         public override MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
         {
-            Debug.Assert(array.Count > 0, "Every array entry must have at least one value");
-            Debug.Assert(index.Count > 0, "Every field entry must have at least one value");
+            Debug.Assert(index.Count > 0, "Every index entry must have at least one value");
 
             var indexNames = VariableNames(index);
-            var indexes = CreateContainterIndexes(indexNames);
+            var indices = CreateContainterIndexes(indexNames);
 
-            var entries = new List<MemoryEntry>();
-            var isPossibleNonArray = false;
-            var isAtLeastOneArray = false;
+            Debug.Assert(array.Count > 0, "Every array entry must have at least one value");
 
-            foreach (var variableValue in array.PossibleValues)
+            bool isAlwaysObject;
+            bool isAlwaysConcrete;
+            var arrayValues = ResolveArraysForIndex(array, out isAlwaysObject, out isAlwaysConcrete);
+
+            var noValueExists = true;
+            var valueAlwaysExists = isAlwaysConcrete;
+            var values = new HashSet<Value>();
+
+            foreach (var arrayValue in arrayValues)
             {
-                // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
-                // The problem is that we do not know the name of variable and we cannot detect it.
-
-                var arrayValue = variableValue as AssociativeArray;
-                if (arrayValue != null)
+                foreach (var containerIndex in indices)
                 {
-                    if (!isAtLeastOneArray)
+                    MemoryEntry entry;
+                    if (OutSet.TryGetIndex(arrayValue, containerIndex, out entry))
                     {
-                        isAtLeastOneArray = true;
-                    }
-
-                    foreach (var containerIndex in indexes)
-                    {
-                        entries.Add(OutSet.GetIndex(arrayValue, containerIndex));
-                    }
-                }
-                else
-                {
-                    var anyArrayValue = variableValue as AnyArrayValue;
-                    if (anyArrayValue != null)
-                    {
-                        if (!isAtLeastOneArray)
+                        if (noValueExists)
                         {
-                            isAtLeastOneArray = true;
+                            noValueExists = false;
                         }
-
-                        entries.Add(new MemoryEntry(OutSet.AnyValue));
                     }
                     else
                     {
-                        // TODO: String can be accessed by index too
-                        if (!isPossibleNonArray)
+                        if (valueAlwaysExists)
                         {
-                            isPossibleNonArray = true;
+                            valueAlwaysExists = false;
                         }
                     }
+
+                    values.UnionWith(entry.PossibleValues);
                 }
             }
 
-            if (isPossibleNonArray)
+            if (!isAlwaysObject)
             {
-                if (isAtLeastOneArray)
+                if ((arrayValues.Count > 0) || (!isAlwaysConcrete))
                 {
-                    SetWarning("Trying to get element of possible non-array variable");
-                    // TODO: Add null value instead of undefined one
-                    entries.Add(new MemoryEntry(OutSet.UndefinedValue));
+                    SetWarning("Trying to get element of possible non-array variable",
+                        AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
+                    values.Add(OutSet.UndefinedValue);
                 }
                 else
                 {
-                    SetWarning("Trying to get element of non-array variable");
-                    // TODO: Return null value instead of undefined one
+                    SetWarning("Trying to get element of non-array variable",
+                        AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
 
-            var entry = MemoryEntry.Merge(entries);
-            if (ReplaceUndefinedValueByNull(ref entry))
+            if (!isAlwaysConcrete)
             {
-                // Undefined value means that array element was not initializes, we report that.
-                if (entry.Count > 1)
+                values.Add(OutSet.AnyArrayValue);
+            }
+
+            if (!valueAlwaysExists)
+            {
+                // Undefined value means that property was not initializes, we report that.
+                if (noValueExists)
                 {
-                    SetWarning("Possible undefined array offset, null is returned");
+                    SetWarning("Undefined array offset, null is included",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
                 }
                 else
                 {
-                    SetWarning("Undefined array offset, null is returned");
+                    SetWarning("Possible undefined array offset, null is returned",
+                        AnalysisWarningCause.UNDEFINED_VALUE);
                 }
             }
 
-            Debug.Assert(entry.Count > 0, "Every resolved element must give at least one value");
-            return entry;
+            Debug.Assert(values.Count > 0, "Every resolved element must give at least one value");
+            return new MemoryEntry(values);
         }
 
         public override MemoryEntry ResolveIndexedVariable(VariableEntry variable)
@@ -565,23 +650,31 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             var names = variable.PossibleNames;
             Debug.Assert(names.Length > 0, "Every variable must have at least one name");
 
-            var entries = new List<MemoryEntry>(names.Length);
+            var allValues = new HashSet<Value>();
             foreach (var name in names)
             {
-                // TODO: Variable $this cannot be assigned and can be only object or null
                 var entry = OutSet.ReadValue(name);
                 Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
 
                 var values = new List<Value>();
-                var hasChanged = false;
+                var isEntryUnchanged = true;
                 foreach (var value in entry.PossibleValues)
                 {
                     var undefined = value as UndefinedValue;
-                    if (undefined != null)
+                    if ((undefined != null) && isEntryUnchanged)
                     {
-                        var arrayValue = OutSet.CreateArray();
-                        values.Add(arrayValue);
-                        hasChanged = true;
+                        if (name.IsThisVariableName)
+                        {
+                            // Variable $this cannot be assigned even if it is an object or null
+                            // TODO: This must be error
+                            SetWarning("Trying to create array in $this variable");
+                        }
+                        else
+                        {
+                            var arrayValue = OutSet.CreateArray();
+                            values.Add(arrayValue);
+                            isEntryUnchanged = false;
+                        }
                     }
                     else
                     {
@@ -589,63 +682,152 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
                     }
                 }
 
-                if (hasChanged)
+                if (!isEntryUnchanged)
                 {
                     var newEntry = new MemoryEntry(values);
                     OutSet.Assign(name, newEntry);
-                    entries.Add(newEntry);
                 }
-                else
+
+                allValues.UnionWith(values);
+            }
+
+            return new MemoryEntry(allValues);
+        }
+
+        public override void Foreach(MemoryEntry enumeree, VariableEntry keyVariable,
+            VariableEntry valueVariable)
+        {
+            // TODO: This is only basic functionality, for instance, reference of element is not recognized
+
+            Debug.Assert(enumeree.Count > 0, "Enumeree must always have at least one value");
+
+            bool isAlwaysArray;
+            bool isAlwaysConcrete;
+            var arrays = ResolveArraysForIndex(enumeree, out isAlwaysArray, out isAlwaysConcrete);
+
+            var values = new HashSet<Value>();
+            foreach (var array in arrays)
+            {
+                var indices = OutSet.IterateArray(array);
+                foreach (var index in indices)
                 {
-                    entries.Add(entry);
+                    var element = OutSet.GetIndex(array, index);
+                    values.UnionWith(element.PossibleValues);
                 }
             }
 
-            return MemoryEntry.Merge(entries);
-        }
+            if (!isAlwaysConcrete)
+            {
+                values.Add(OutSet.AnyValue);
+            }
 
-        public override void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable)
-        {
-            throw new NotImplementedException();
+            foreach (var valueName in valueVariable.PossibleNames)
+            {
+                // There could be no values because array could have no elements
+                // However it is fine because in this case, foreach will not trace to loop body
+                var entry = new MemoryEntry(values);
+                OutSet.Assign(valueName, entry);
+            }
+
+            if (!isAlwaysArray)
+            {
+                if ((arrays.Count > 0) || (!isAlwaysConcrete))
+                {
+                    SetWarning("Possibly invalid argument supplied for foreach");
+                }
+                else
+                {
+                    SetWarning("Invalid argument supplied for foreach");
+                }
+            }
         }
 
         public override MemoryEntry Concat(IEnumerable<MemoryEntry> parts)
         {
-            throw new NotImplementedException();
+            // TODO: Optimalize
+            MemoryEntry leftOperand = null;
+
+            foreach (var part in parts)
+            {
+                if (leftOperand != null)
+                {
+                    leftOperand = BinaryEx(leftOperand, Operations.Concat, part);
+                }
+                else
+                {
+                    leftOperand = part;
+                }
+            }
+
+            Debug.Assert(leftOperand != null);
+            return leftOperand;
+        }
+
+        public override void Echo(EchoStmt echo, MemoryEntry[] entries)
+        {
+            // TODO: Optimalize, implementation is provided only for faultless progress and testing
+
+            foreach (var entry in entries)
+            {
+                foreach (var value in entry.PossibleValues)
+                {
+                    unaryOperationVisitor.Evaluate(Operations.StringCast, value);
+                }
+            }
         }
 
         public override MemoryEntry Constant(GlobalConstUse x)
         {
-            List<Value> values = new List<Value>();
-            NativeConstantAnalyzer constantAnalyzer = NativeConstantAnalyzer.Create(OutSet);
-            QualifiedName name = x.Name;
+            var constantAnalyzer = NativeConstantAnalyzer.Create(OutSet);
+            var name = x.Name;
 
             if (constantAnalyzer.ExistContant(name))
             {
-                values.Add(constantAnalyzer.GetConstantValue(name));
+                var value = constantAnalyzer.GetConstantValue(name);
+                return new MemoryEntry(value);
             }
             else
             {
-                List<Value> result = UserDefinedConstantHandler.getConstant(OutSet, name);
-                foreach (var value in result)
+                MemoryEntry entry;
+                bool isNotDefined;
+                if (!UserDefinedConstantHandler.TryGetConstant(OutSet, name, out entry, out isNotDefined))
                 {
-                    if (value is UndefinedValue)
+                    if (isNotDefined)
                     {
-                        values.Add(OutSet.CreateString(name.Name.Value));
+                        SetWarning("Use of undefined constant",
+                            AnalysisWarningCause.UNDEFINED_VALUE);
                     }
                     else
                     {
-                        values.Add(value);
+                        SetWarning("Possible use of undefined constant",
+                            AnalysisWarningCause.UNDEFINED_VALUE);
                     }
                 }
-            }
 
-            return new MemoryEntry(values);
+                return entry;
+            }
         }
 
         public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
         {
-            UserDefinedConstantHandler.insertConstant(OutSet, new QualifiedName(new Name(x.Name.Value)), constantValue, false);
+            var name = new QualifiedName(new Name(x.Name.Value));
+            UserDefinedConstantHandler.insertConstant(OutSet, name, constantValue, false);
+        }
+
+        public override MemoryEntry CreateObject(QualifiedName typeName)
+        {
+            var classes = NativeObjectAnalyzer.GetInstance(Flow);
+            if (classes.ExistClass(typeName))
+            {
+                var typeDeclaration = classes.GetClass(typeName);
+                var type = OutSet.CreateType(typeDeclaration);
+                var objectValue = OutSet.CreateObject(type);
+                return new MemoryEntry(objectValue);
+            }
+            else
+            {
+                return base.CreateObject(typeName);
+            }
         }
 
         #endregion
@@ -660,31 +842,89 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
 
-        private static List<ObjectValue> ResolveObjectsForMember(MemoryEntry entry, out bool isPossibleNonObject)
+        private static List<ObjectValue> ResolveObjectsForMember(MemoryEntry entry,
+            out bool isAlwaysObject, out bool isAlwaysConcrete)
         {
-            var objectValues = new List<ObjectValue>();
-            isPossibleNonObject = false;
+            Debug.Assert(entry.Count > 0, "Every object entry must have at least one value");
 
-            foreach (var variableValue in entry.PossibleValues)
+            var objectValues = new List<ObjectValue>();
+            isAlwaysObject = true;
+            isAlwaysConcrete = true;
+
+            foreach (var value in entry.PossibleValues)
             {
                 // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
                 // The problem is that we do not know the name of variable and we cannot detect it.
 
-                var objectInstance = variableValue as ObjectValue;
+                var objectInstance = value as ObjectValue;
                 if (objectInstance != null)
                 {
                     objectValues.Add(objectInstance);
                 }
                 else
                 {
-                    if (!isPossibleNonObject)
+                    var anyObjectInstance = value as AnyObjectValue;
+                    if (anyObjectInstance != null)
                     {
-                        isPossibleNonObject = true;
+                        if (isAlwaysConcrete)
+                        {
+                            isAlwaysConcrete = false;
+                        }
+                    }
+                    else
+                    {
+                        if (isAlwaysObject)
+                        {
+                            isAlwaysObject = false;
+                        }
                     }
                 }
             }
 
             return objectValues;
+        }
+
+        private static List<AssociativeArray> ResolveArraysForIndex(MemoryEntry entry,
+            out bool isAlwaysArray, out bool isAlwaysConcrete)
+        {
+            Debug.Assert(entry.Count > 0, "Every array entry must have at least one value");
+
+            var arrayValues = new List<AssociativeArray>();
+            isAlwaysArray = true;
+            isAlwaysConcrete = true;
+
+            foreach (var value in entry.PossibleValues)
+            {
+                // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
+                // The problem is that we do not know the name of variable and we cannot detect it.
+
+                var arrayValue = value as AssociativeArray;
+                if (arrayValue != null)
+                {
+                    arrayValues.Add(arrayValue);
+                }
+                else
+                {
+                    var anyArrayValue = value as AnyArrayValue;
+                    if (anyArrayValue != null)
+                    {
+                        if (isAlwaysConcrete)
+                        {
+                            isAlwaysConcrete = false;
+                        }
+                    }
+                    else
+                    {
+                        // TODO: String can be accessed by index too
+                        if (isAlwaysArray)
+                        {
+                            isAlwaysArray = false;
+                        }
+                    }
+                }
+            }
+
+            return arrayValues;
         }
 
         private void AppendValue(VariableName variable, MemoryEntry entry)
@@ -694,9 +934,8 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             OutSet.Assign(variable, newValue);
         }
 
-        private void FieldAppendValue(string fieldName, ObjectValue objectValue, MemoryEntry entry)
+        private void FieldAppendValue(ObjectValue objectValue, ContainerIndex index, MemoryEntry entry)
         {
-            var index = OutSet.CreateIndex(fieldName);
             var currentValue = OutSet.GetField(objectValue, index);
             var newValue = MemoryEntry.Merge(currentValue, entry);
             OutSet.SetField(objectValue, index, newValue);
@@ -709,20 +948,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             OutSet.SetIndex(arrayValue, index, newValue);
         }
 
-        private bool ReplaceUndefinedValueByNull(ref MemoryEntry entry)
-        {
-            // TODO: It only finds out if values contain the undefined one.
-            foreach (var value in entry.PossibleValues)
-            {
-                if (value.Equals(OutSet.UndefinedValue))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private List<ContainerIndex> CreateContainterIndexes(IEnumerable<string> indexNames)
         {
             var indexes = new List<ContainerIndex>();
@@ -733,49 +958,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             }
 
             return indexes;
-        }
-
-        
-        public override MemoryEntry CreateObject(QualifiedName typeName)
-        {
-            //TODO call constructors, report errors on non existing objects
-            
-            var result = new List<ObjectValue>();
-            
-            NativeObjectAnalyzer classes = NativeObjectAnalyzer.GetInstance(Flow);
-            if (classes.ExistClass(typeName))
-            {
-                result.Add(OutSet.CreateObject(OutSet.CreateType(classes.GetClass(typeName))));    
-            }
-            else
-            {
-                var declarations = OutSet.ResolveType(typeName);  
-                foreach (var declaration in declarations)
-                {
-                    result.Add(OutSet.CreateObject(declaration));
-                }
-            }
-            return new MemoryEntry(result.ToArray());
-        }
-
-        public override void Echo(EchoStmt echo, MemoryEntry[] values)
-        {
-//            throw new NotImplementedException();
-        }
-
-        public override IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue, MemoryEntry aliasedIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex, IEnumerable<AliasValue> possibleAliases)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
-        {
-            throw new NotImplementedException();
         }
     }
 }

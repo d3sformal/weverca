@@ -877,7 +877,7 @@ namespace Weverca.TaintedAnalysis
                     }
                     else
                     {
-                        values = UserDefinedConstantHandler.getConstant(flow.OutSet, name);
+                        values = UserDefinedConstantHandler.GetConstant(flow.OutSet, name).PossibleValues.ToList();
                     }
 
                     flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(values));

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -53,7 +52,7 @@ namespace Weverca.Analysis.Expressions
         public abstract MemoryEntry ResolveVariable(VariableEntry variable);
 
         /// <summary>
-        /// Resolves value, determined by given variable specifier
+        /// Resolves value determined by given variable specifier that is accessed by array index
         /// NOTE:
         ///     Is useful for implicit array creation
         /// </summary>
@@ -83,7 +82,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="objectValue">Object containing aliased field</param>
         /// <param name="aliasedField">Specifier of an field</param>
         /// <returns>Resolved aliases</returns>
-        public abstract IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue, VariableEntry aliasedField);
+        public abstract IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue,
+            VariableEntry aliasedField);
 
         /// <summary>
         /// Resolves alias from given index specifier
@@ -91,7 +91,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="arrayValue">Array containing aliased index</param>
         /// <param name="aliasedIndex">Specifier of an field</param>
         /// <returns>Resolved aliases</returns>
-        public abstract IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue, MemoryEntry aliasedIndex);
+        public abstract IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue,
+            MemoryEntry aliasedIndex);
 
         /// <summary>
         /// Assign possible aliases to given target
@@ -106,7 +107,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="objectValue">Object containing assigned field</param>
         /// <param name="aliasedField">Specifier of an field</param>
         /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry aliasedField, IEnumerable<AliasValue> possibleAliases);
+        public abstract void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry aliasedField,
+            IEnumerable<AliasValue> possibleAliases);
 
         /// <summary>
         /// Assign possible aliases to given array index
@@ -114,7 +116,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="arrayValue">Array containing assigned index</param>
         /// <param name="aliasedIndex">Specifier of an index</param>
         /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex, IEnumerable<AliasValue> possibleAliases);
+        public abstract void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex,
+            IEnumerable<AliasValue> possibleAliases);
 
         /// <summary>
         /// Assign possible values to given target
@@ -129,7 +132,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="objectValue">Object containing assigned field</param>
         /// <param name="targetField">Specifier of an field</param>
         /// <param name="entry">Possible values to be assigned</param>
-        public abstract void FieldAssign(MemoryEntry objectValue, VariableEntry targetField, MemoryEntry entry);
+        public abstract void FieldAssign(MemoryEntry objectValue, VariableEntry targetField,
+            MemoryEntry entry);
 
         /// <summary>
         /// Assign assignedValue at indexedValue[index]
@@ -139,7 +143,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="indexedValue">Value which index is assigned</param>
         /// <param name="index">Specifier of an index</param>
         /// <param name="assignedValue">Value that is assigned</param>
-        public abstract void IndexAssign(MemoryEntry indexedValue, MemoryEntry index, MemoryEntry assignedValue);
+        public abstract void IndexAssign(MemoryEntry indexedValue, MemoryEntry index,
+            MemoryEntry assignedValue);
 
         /// <summary>
         /// Process binary operation on given operands
@@ -148,7 +153,8 @@ namespace Weverca.Analysis.Expressions
         /// <param name="operation">Binary operation</param>
         /// <param name="rightOperand">Right operand of operation</param>
         /// <returns>Result of binary expression</returns>
-        public abstract MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand);
+        public abstract MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
+            MemoryEntry rightOperand);
 
         /// <summary>
         /// Process unary operation on given operand
@@ -158,34 +164,34 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Result of unary expression</returns>
         public abstract MemoryEntry UnaryEx(Operations operation, MemoryEntry operand);
 
-
-
         /// <summary>
-        /// Process increment or decrement operation
-        /// <remarks>This method doesn't provide assigning into incremented LValue</remarks>
+        /// Process increment or decrement operation, in both prefix and postfix form
         /// </summary>
-        /// <param name="operation">IncDec operation</param>
+        /// <remarks>This method doesn't provide assigning into incremented LValue</remarks>
+        /// <param name="operation">Increment or decrement operation</param>
         /// <param name="incrementedValue">Value that has to be incremented/decremented</param>
+        /// <returns>Result of incremented or decremented</returns>
         public abstract MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue);
 
         /// <summary>
         /// Process n-ary operation on given operands
         /// </summary>
-        /// <param name="operation">Unary operation</param>
-        /// <param name="operands">All operands of operation</param>
+        /// <param name="keyValuePairs">Collection of key/value pairs that initialize the new array</param>
         /// <returns>Result of n-ary expression</returns>
-        public abstract MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs);
+        public abstract MemoryEntry ArrayEx(
+            IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs);
 
         /// <summary>
         /// Process foreach statement on given variables
-        /// <remarks>
-        ///  Is intented to store all possible values from enumeration into keyVariable and valueVariable
-        /// </remarks>
         /// </summary>
+        /// <remarks>
+        /// Is intended to store all possible values from enumeration into keyVariable and valueVariable
+        /// </remarks>
         /// <param name="enumeree">Enumerated value</param>
-        /// <param name="keyVariable">Varible where keys are stored</param>
+        /// <param name="keyVariable">Variable where keys are stored</param>
         /// <param name="valueVariable">Variable where values are stored</param>
-        public abstract void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable);
+        public abstract void Foreach(MemoryEntry enumeree, VariableEntry keyVariable,
+            VariableEntry valueVariable);
 
         /// <summary>
         /// Process concatenation of given parts
@@ -197,9 +203,9 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Process echo statement with given values
         /// </summary>
-        /// <param name="echo"></param>
-        /// <param name="values"></param>
-        public abstract void Echo(EchoStmt echo, MemoryEntry[] values);
+        /// <param name="echo">Echo statement</param>
+        /// <param name="entries">Values to be converted to string and printed out</param>
+        public abstract void Echo(EchoStmt echo, MemoryEntry[] entries);
 
         #endregion
 
@@ -229,7 +235,7 @@ namespace Weverca.Analysis.Expressions
         /// <returns>Created literal value representation</returns>
         public virtual MemoryEntry StringLiteral(StringLiteral x)
         {
-            return new MemoryEntry(OutSet.CreateString(x.Value as String));
+            return new MemoryEntry(OutSet.CreateString(x.Value as string));
         }
 
         /// <summary>
@@ -285,12 +291,12 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Get value representation of given constant
         /// </summary>
-        /// <param name="x">Constant</param>
+        /// <param name="x">Constant representation</param>
         /// <returns>Represented value</returns>
         public abstract MemoryEntry Constant(GlobalConstUse x);
 
         /// <summary>
-        /// Is called on const x=5 declarations
+        /// Is called on <c>const x = 5</c> declarations
         /// </summary>
         /// <param name="x">Constant declaration</param>
         /// <param name="constantValue">Value assigned into constant</param>
@@ -304,14 +310,77 @@ namespace Weverca.Analysis.Expressions
         public virtual MemoryEntry CreateObject(QualifiedName typeName)
         {
             var declarations = OutSet.ResolveType(typeName);
-
-            var result = new List<ObjectValue>();
-            foreach (var declaration in declarations)
+            if (!declarations.GetEnumerator().MoveNext())
             {
-                result.Add(OutSet.CreateObject(declaration));
+                // TODO: If no type is resolved, exception should be thrown
+                Debug.Fail("No type resolved");
             }
 
-            return new MemoryEntry(result.ToArray());
+            var values = new List<ObjectValue>();
+            foreach (var declaration in declarations)
+            {
+                var newObject = OutSet.CreateObject(declaration);
+                values.Add(newObject);
+
+                var sourceDeclaration = declaration as SourceTypeValue;
+                if (sourceDeclaration != null)
+                {
+                    foreach (var member in sourceDeclaration.Declaration.Members)
+                    {
+                        var fieldList = member as FieldDeclList;
+                        if (fieldList != null)
+                        {
+                            foreach (var field in fieldList.Fields)
+                            {
+                                var index = OutSet.CreateIndex(field.Name.Value);
+
+                                if (field.Initializer == null)
+                                {
+                                    OutSet.SetField(newObject, index, new MemoryEntry(OutSet.UndefinedValue));
+                                }
+                                else
+                                {
+                                    var literal = field.Initializer as Literal;
+                                    if (literal != null)
+                                    {
+                                        var visitor = new LiteralValueFactory(OutSet);
+                                        var newValue = visitor.EvaluateLiteral(literal);
+                                        OutSet.SetField(newObject, index, new MemoryEntry(newValue));
+                                    }
+                                    else
+                                    {
+                                        var globalConstant = field.Initializer as GlobalConstUse;
+                                        if (globalConstant != null)
+                                        {
+                                            var constant = Constant(globalConstant);
+                                            OutSet.SetField(newObject, index, constant);
+                                        }
+                                        else
+                                        {
+                                            // TODO: Finish inicialization with ClassConstUse, PseudoConstUse etc.
+                                            Debug.Fail("Unrecognized initialization!");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var constantList = member as ConstDeclList;
+                            if (constantList != null)
+                            {
+                                // TODO: Add support for class constants
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Fail("There cannot be NativeTypeValue or any other type");
+                }
+            }
+
+            return new MemoryEntry(values);
         }
 
         internal MemoryEntry IndirectCreateObject(MemoryEntry memoryEntry)
@@ -323,7 +392,6 @@ namespace Weverca.Analysis.Expressions
                 var qualifiedName = new QualifiedName(new Name(name.Value));
                 declarations.UnionWith(OutSet.ResolveType(qualifiedName));
             }
-
 
             var result = new List<ObjectValue>();
             foreach (var declaration in declarations)
