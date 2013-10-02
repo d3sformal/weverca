@@ -24,7 +24,9 @@ namespace Weverca.TaintedAnalysis
     public class FunctionResolver : FunctionResolverBase
     {
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
-  
+        private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
+        private Dictionary<FunctionDecl, FunctionHints> functions = new Dictionary<FunctionDecl, FunctionHints>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
         /// </summary>
@@ -93,6 +95,7 @@ namespace Weverca.TaintedAnalysis
         /// <param name="arguments"></param>
         public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
+
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
@@ -186,13 +189,20 @@ namespace Weverca.TaintedAnalysis
                 if (function.DeclaringElement is FunctionDecl)
                 { 
                     FunctionDecl funcDecl = (function.DeclaringElement as FunctionDecl);
-
-                    new FunctionHints(funcDecl.PHPDoc,funcDecl).applyHints(outSet);
+                    if (!functions.ContainsKey(funcDecl))
+                    {
+                        functions.Add(funcDecl, new FunctionHints(funcDecl.PHPDoc, funcDecl));
+                    }
+                    functions[funcDecl].applyHints(outSet);
                 }
                 else if (function.DeclaringElement is MethodDecl)
                 {
                     MethodDecl methodDecl = (function.DeclaringElement as MethodDecl);
-                    new FunctionHints(methodDecl.PHPDoc,methodDecl).applyHints(outSet);
+                    if (!methods.ContainsKey(methodDecl))
+                    {
+                        methods.Add(methodDecl, new FunctionHints(methodDecl.PHPDoc, methodDecl));
+                    }
+                    methods[methodDecl].applyHints(outSet);
                 }
             }
         }

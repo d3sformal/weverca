@@ -69,10 +69,27 @@ namespace Weverca.ControlFlowGraph
         public ControlFlowGraph(GlobalCode globalCode)
         {
             this.globalCode = globalCode;
+            List<Statement> functionsAndClasses = new List<Statement>();
+            foreach(var statement in globalCode.Statements)
+            {
+                if (statement is TypeDecl || statement is FunctionDecl)
+                {
+                    functionsAndClasses.Add(statement);
+                }
+            }
+
+            foreach (var statement in functionsAndClasses)
+            {
+                globalCode.Statements.Remove(statement);
+            }
+
+            globalCode.Statements.InsertRange(0, functionsAndClasses);
+            
             this.visitor = new CFGVisitor(this);
             globalCode.VisitMe(visitor);
 
             PostProcess(visitor);
+            
         }
 
         /// <summary>
