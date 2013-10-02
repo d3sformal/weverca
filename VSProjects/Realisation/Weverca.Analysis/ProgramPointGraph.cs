@@ -325,25 +325,23 @@ namespace Weverca.Analysis
             }
 
             //find all incomming edges from catch blocks
-            //TODO: this is not correct in all cases - needs CFG change
             var endingCatchBlocks = new List<Tuple<GenericQualifiedName, ProgramPointBase>>();
-            foreach (var incoming in block.IncommingEdges)
+            foreach (var endingTryBlock in block.EndIngTryBlocks)
             {
-                var catchBB = incoming.From as CatchBasicBlock;
-                if (catchBB == null)
-                    continue;
+                foreach (var endingCatch in endingTryBlock.catchBlocks)
+                {
+                    var endingCatchBlock = getChildBlock(endingCatch, pendingBlocks);
+                    endingCatchBlock.DisallowContraction();
 
-                var endingCatch = getChildBlock(catchBB, pendingBlocks);
-                endingCatch.DisallowContraction();
-
-                var tuple = Tuple.Create(catchBB.ClassName, endingCatch.FirstPoint);
-                endingCatchBlocks.Add(tuple);
+                    var tuple = Tuple.Create(endingCatch.ClassName, endingCatchBlock.FirstPoint);
+                    endingCatchBlocks.Add(tuple);
+                }
             }
 
             if (endingCatchBlocks.Count > 0)
             {
                 var scopeEnd = _context.CreateCatchScopeEnd(endingCatchBlocks);
-                childBlock.PreprendFlowWith(scopeEnd);
+                childBlock.AppendFlow(scopeEnd);
             }
 
             return childBlock;

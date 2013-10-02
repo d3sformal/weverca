@@ -143,5 +143,12 @@ namespace Weverca.Analysis
             programPoint.AddFlowChild(first);
             _containedPoints.Insert(0, programPoint);
         }
+
+        internal void AppendFlow(ProgramPointBase programPoint)
+        {
+            LastPoint.AddFlowChild(programPoint);
+
+            _containedPoints.Add(programPoint);
+        }
     }
 }
