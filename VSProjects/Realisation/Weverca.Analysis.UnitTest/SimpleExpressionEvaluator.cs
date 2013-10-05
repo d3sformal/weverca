@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.ProgramPoints;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
 
@@ -16,7 +14,7 @@ namespace Weverca.Analysis.UnitTest
     /// <summary>
     /// Expression evaluation is resolved here
     /// </summary>
-    class SimpleExpressionEvaluator : ExpressionEvaluatorBase
+    internal class SimpleExpressionEvaluator : ExpressionEvaluatorBase
     {
         public override void Assign(VariableEntry target, MemoryEntry value)
         {
@@ -119,8 +117,6 @@ namespace Weverca.Analysis.UnitTest
             var arrayValue = array.PossibleValues.First();
             var indexValue = index.PossibleValues.First() as PrimitiveValue;
 
-
-
             var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
 
             OutSet.SetIndex(arrayValue as AssociativeArray, containerIndex, assignedValue);
@@ -151,7 +147,7 @@ namespace Weverca.Analysis.UnitTest
                 values.UnionWith(OutSet.ReadValue(varName).PossibleValues);
             }
 
-            return new MemoryEntry(values); ;
+            return new MemoryEntry(values);
         }
 
         public override IEnumerable<string> VariableNames(MemoryEntry value)
@@ -199,7 +195,7 @@ namespace Weverca.Analysis.UnitTest
 
             foreach (IntegerValue incremented in incrementedValue.PossibleValues)
             {
-                var result=OutSet.CreateInt(incremented.Value+inc);
+                var result = OutSet.CreateInt(incremented.Value + inc);
                 values.Add(result);
             }
 
@@ -215,8 +211,9 @@ namespace Weverca.Analysis.UnitTest
 
         private MemoryEntry add(MemoryEntry left, MemoryEntry right)
         {
-            if (left.Count != 1 || right.Count != 1) {
-                throw new NotImplementedException(); 
+            if (left.Count != 1 || right.Count != 1)
+            {
+                throw new NotImplementedException();
             }
 
             var leftValue = left.PossibleValues.First() as IntegerValue;
@@ -262,7 +259,9 @@ namespace Weverca.Analysis.UnitTest
         private bool canBeSame(MemoryEntry left, MemoryEntry right)
         {
             if (containsAnyValue(left) || containsAnyValue(right))
+            {
                 return true;
+            }
 
             foreach (var possibleValue in left.PossibleValues)
             {
@@ -271,13 +270,16 @@ namespace Weverca.Analysis.UnitTest
                     return true;
                 }
             }
+
             return false;
         }
 
         private bool canBeDifferent(MemoryEntry left, MemoryEntry right)
         {
             if (containsAnyValue(left) || containsAnyValue(right))
+            {
                 return true;
+            }
 
             if (left.PossibleValues.Count() > 1 || left.PossibleValues.Count() > 1)
             {
@@ -311,7 +313,7 @@ namespace Weverca.Analysis.UnitTest
             {
                 foreach (PrimitiveValue indexValue in aliasedIndex.PossibleValues)
                 {
-                    var index=OutSet.CreateIndex(indexValue.RawValue.ToString());
+                    var index = OutSet.CreateIndex(indexValue.RawValue.ToString());
                     yield return OutSet.CreateIndexAlias(array, index);
                 }
             }
@@ -370,11 +372,13 @@ namespace Weverca.Analysis.UnitTest
 
         public override MemoryEntry Concat(IEnumerable<MemoryEntry> parts)
         {
-            var result=new StringBuilder();
-            foreach (MemoryEntry part in parts)
+            var result = new StringBuilder();
+            foreach (var part in parts)
             {
                 if (part.Count != 1)
+                {
                     throw new NotImplementedException();
+                }
 
                 var partValue = part.PossibleValues.First() as PrimitiveValue;
                 result.Append(partValue.RawValue);
@@ -388,6 +392,23 @@ namespace Weverca.Analysis.UnitTest
             throw new NotImplementedException();
         }
 
+        public override MemoryEntry CreateObject(QualifiedName typeName)
+        {
+            var types = OutSet.ResolveType(typeName);
+            if (!types.GetEnumerator().MoveNext())
+            {
+                // TODO: If no type is resolved, exception should be thrown
+                Debug.Fail("No type resolved");
+            }
 
+            var values = new List<ObjectValue>();
+            foreach (var type in types)
+            {
+                var newObject = CreateInitializedObject(type);
+                values.Add(newObject);
+            }
+
+            return new MemoryEntry(values);
+        }
     }
 }

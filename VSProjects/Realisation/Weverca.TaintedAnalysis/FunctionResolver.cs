@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -11,21 +11,19 @@ using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
 using Weverca.Analysis.ProgramPoints;
 
-
-
 namespace Weverca.TaintedAnalysis
 {
-   
-
-
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
     public class FunctionResolver : FunctionResolverBase
     {
+        private static readonly VariableName currentFunctionName = new VariableName("$current_function");
+
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
-        private Dictionary<FunctionDecl, FunctionHints> functions = new Dictionary<FunctionDecl, FunctionHints>();
+        private Dictionary<FunctionDecl, FunctionHints> functions
+            = new Dictionary<FunctionDecl, FunctionHints>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
@@ -36,7 +34,8 @@ namespace Weverca.TaintedAnalysis
 
         #region FunctionResolverBase overrides
 
-        public override void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
+        public override void MethodCall(MemoryEntry calledObject, QualifiedName name,
+            MemoryEntry[] arguments)
         {
             var objectValues = resolveObjectsForMember(calledObject);
             var methods = resolveMethod(objectValues, name, arguments);
@@ -49,7 +48,8 @@ namespace Weverca.TaintedAnalysis
             setCallBranching(functions);
         }
 
-        public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
+        public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name,
+            MemoryEntry[] arguments)
         {
             var methods = new Dictionary<object, FunctionValue>();
             var methodNames = getSubroutineNames(name);
@@ -90,37 +90,42 @@ namespace Weverca.TaintedAnalysis
         ///     arguments has to be initialized
         ///     sharing program point graphs is possible
         /// </summary>
-        /// <param name="callInput"></param>
-        /// <param name="declaration"></param>
-        /// <param name="arguments"></param>
-        public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
+        /// <param name="callInput">Input of initialized call</param>
+        /// <param name="extensionGraph">Graph representing initialized call</param>
+        /// <param name="arguments">Call arguments</param>
+        public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph,
+            MemoryEntry[] arguments)
         {
-
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
 
             if (hasNamedSignature)
             {
-                //we have names for passed arguments
+                // We have names for passed arguments
                 setNamedArguments(callInput, arguments, signature.Value);
             }
             else
             {
-                //there are no names - use numbered arguments
+                // There are no names - use numbered arguments
                 setOrderedArguments(callInput, arguments);
             }
-            if (declaration is FunctionDecl)
-            {
-                callInput.Assign(new VariableName("$current_function"), new MemoryEntry(callInput.CreateFunction(declaration as FunctionDecl)));
-            }
 
-            if (declaration is MethodDecl)
+            var functionDeclaration = declaration as FunctionDecl;
+            if (functionDeclaration != null)
             {
-                callInput.Assign(new VariableName("$current_function"), new MemoryEntry(callInput.CreateFunction(declaration as MethodDecl)));
+                callInput.Assign(currentFunctionName,
+                    new MemoryEntry(callInput.CreateFunction(functionDeclaration)));
             }
-            
-
+            else
+            {
+                var methodDeclaration = declaration as MethodDecl;
+                if (methodDeclaration != null)
+                {
+                    callInput.Assign(currentFunctionName,
+                        new MemoryEntry(callInput.CreateFunction(methodDeclaration)));
+                }
+            }
         }
 
         public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
@@ -140,21 +145,21 @@ namespace Weverca.TaintedAnalysis
             var constructors = resolveMethod(objectValues, constructorName, arguments);
             if (constructors.Count > 0)
             {
-                setCallBranching(constructors);         
+                setCallBranching(constructors);
             }
 
             return newObject;
         }
 
         /// <summary>
-        /// Resolve return value from all possible calls. It also aplies user hints for flags removal 
+        /// Resolve return value from all possible calls. It also applies user hints for flags removal
         /// </summary>
-        /// <param name="calls">All calls on dispatch level, which return value is resolved</param>
+        /// <param name="callGraphs">All calls on dispatch level, which return value is resolved</param>
         /// <returns>Resolved return value</returns>
         public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> callGraphs)
         {
             var calls = callGraphs.ToArray();
-            
+
             if (calls.Length == 1)
             {
                 var outSet = calls[0].End.OutSet;
@@ -165,15 +170,31 @@ namespace Weverca.TaintedAnalysis
             {
                 Debug.Assert(calls.Length > 0, "There must be at least one call");
 
-                var entries = new List<MemoryEntry>(calls.Length);
+                var values = new HashSet<Value>();
                 foreach (var call in calls)
                 {
                     var outSet = call.End.OutSet;
                     applyHints(outSet);
-                    entries.Add(outSet.ReadValue(outSet.ReturnValue));
+                    var returnValue = outSet.ReadValue(outSet.ReturnValue);
+                    values.UnionWith(returnValue.PossibleValues);
                 }
 
-                return MemoryEntry.Merge(entries);
+                return new MemoryEntry(values);
+            }
+        }
+
+        public override void DeclareGlobal(TypeDecl declaration)
+        {
+            var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
+            if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
+            {
+                // TODO: This must be fatal error
+                setWarning("Cannot redeclare class");
+            }
+            else
+            {
+                var type = OutSet.CreateType(declaration);
+                OutSet.DeclareGlobal(type);
             }
         }
 
@@ -183,30 +204,45 @@ namespace Weverca.TaintedAnalysis
 
         private void applyHints(FlowOutputSet outSet)
         {
-            if (outSet.ReadValue(new VariableName("$current_function")).Count == 1 && outSet.ReadValue(new VariableName("$current_function")).PossibleValues.First() is FunctionValue)
+            var currentFunctionEntry = outSet.ReadValue(currentFunctionName);
+            if (currentFunctionEntry.Count != 1)
             {
-                FunctionValue function = outSet.ReadValue(new VariableName("$current_function")).PossibleValues.First() as FunctionValue;
-                if (function.DeclaringElement is FunctionDecl)
-                { 
-                    FunctionDecl funcDecl = (function.DeclaringElement as FunctionDecl);
-                    if (!functions.ContainsKey(funcDecl))
-                    {
-                        functions.Add(funcDecl, new FunctionHints(funcDecl.PHPDoc, funcDecl));
-                    }
-                    functions[funcDecl].applyHints(outSet);
-                }
-                else if (function.DeclaringElement is MethodDecl)
+                return;
+            }
+
+            var enumerator = currentFunctionEntry.PossibleValues.GetEnumerator();
+            enumerator.MoveNext();
+            var currentFunction = enumerator.Current as FunctionValue;
+
+            if (currentFunction != null)
+            {
+                var functionDeclaration = currentFunction.DeclaringElement as FunctionDecl;
+                if (functionDeclaration != null)
                 {
-                    MethodDecl methodDecl = (function.DeclaringElement as MethodDecl);
-                    if (!methods.ContainsKey(methodDecl))
+                    if (!functions.ContainsKey(functionDeclaration))
                     {
-                        methods.Add(methodDecl, new FunctionHints(methodDecl.PHPDoc, methodDecl));
+                        functions.Add(functionDeclaration,
+                            new FunctionHints(functionDeclaration.PHPDoc, functionDeclaration));
                     }
-                    methods[methodDecl].applyHints(outSet);
+
+                    functions[functionDeclaration].applyHints(outSet);
+                }
+                else
+                {
+                    var methodDeclaration = currentFunction.DeclaringElement as MethodDecl;
+                    if (methodDeclaration != null)
+                    {
+                        if (!methods.ContainsKey(methodDeclaration))
+                        {
+                            methods.Add(methodDeclaration,
+                                new FunctionHints(methodDeclaration.PHPDoc, methodDeclaration));
+                        }
+
+                        methods[methodDeclaration].applyHints(outSet);
+                    }
                 }
             }
         }
-
 
         private void setWarning(string message)
         {
@@ -237,21 +273,23 @@ namespace Weverca.TaintedAnalysis
 
         private Signature? getSignature(LangElement declaration)
         {
-            //TODO resolving via visitor might be better
-            if (declaration is MethodDecl)
+            // TODO: Resolving via visitor might be better
+            var methodDeclaration = declaration as MethodDecl;
+            if (methodDeclaration != null)
             {
-                return (declaration as MethodDecl).Signature;
+                return methodDeclaration.Signature;
             }
-            
-            if (declaration is FunctionDecl)
+            else
             {
-                return (declaration as FunctionDecl).Signature;
+                var functionDeclaration = declaration as FunctionDecl;
+                if (functionDeclaration != null)
+                {
+                    return functionDeclaration.Signature;
+                }
             }
-
 
             return null;
         }
-
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
@@ -301,7 +339,8 @@ namespace Weverca.TaintedAnalysis
             return qualifiedNames;
         }
 
-        private Dictionary<object, FunctionValue> resolveFunction(QualifiedName name, MemoryEntry[] arguments)
+        private Dictionary<object, FunctionValue> resolveFunction(QualifiedName name,
+            MemoryEntry[] arguments)
         {
             var result = new Dictionary<object, FunctionValue>();
 
@@ -315,6 +354,7 @@ namespace Weverca.TaintedAnalysis
             else
             {
                 var functions = OutSet.ResolveFunction(name);
+                // TODO: Test if functions.Count > 0
 
                 foreach (var function in functions)
                 {
@@ -326,7 +366,8 @@ namespace Weverca.TaintedAnalysis
             return result;
         }
 
-        private Dictionary<object, FunctionValue> resolveMethod(IEnumerable<ObjectValue> objects, QualifiedName name, MemoryEntry[] arguments)
+        private Dictionary<object, FunctionValue> resolveMethod(IEnumerable<ObjectValue> objects,
+            QualifiedName name, MemoryEntry[] arguments)
         {
             var result = new Dictionary<object, FunctionValue>();
 
@@ -367,7 +408,8 @@ namespace Weverca.TaintedAnalysis
             return objectValues;
         }
 
-        private static List<ObjectValue> resolveObjectsForMember(MemoryEntry entry, out bool isPossibleNonObject)
+        private static List<ObjectValue> resolveObjectsForMember(MemoryEntry entry,
+            out bool isPossibleNonObject)
         {
             var objectValues = new List<ObjectValue>();
             isPossibleNonObject = false;
@@ -430,101 +472,97 @@ namespace Weverca.TaintedAnalysis
             {
                 var parVar = argument(index);
 
-                //determine that argument value is based on variable, so we can get it's alias
+                // Determine that argument value is based on variable, so we can get it's alias
                 var aliasProvider = arg as AliasProvider;
                 if (aliasProvider == null)
                 {
-                    //assign value for parameter
+                    // Assign value for parameter
                     callInput.Assign(parVar, arguments[index]);
                 }
                 else
                 {
-                    //join parameter with alias (for testing we join all possible arguments)
-                    //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
+                    // Join parameter with alias (for testing we join all possible arguments)
+                    // Be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
                     callInput.AssignAliases(parVar, aliasProvider.CreateAlias(Flow));
                 }
                 ++index;
             }
-
         }
 
         #endregion
     }
 
-
-    //TODO testy treba pockat na priznaky
+    // TODO: testy treba pockat na priznaky
     internal class FunctionHints
     {
-        HashSet<DirtyType> returnHints;
-        Dictionary<VariableName, HashSet<DirtyType>> argumentHints;
-        LangElement declaration;
-        internal FunctionHints(PHPDocBlock doc, LangElement _declaration)
+        private HashSet<DirtyType> returnHints;
+        private Dictionary<VariableName, HashSet<DirtyType>> argumentHints;
+        private LangElement declaration;
+
+        internal FunctionHints(PHPDocBlock doc, LangElement langElement)
         {
-            declaration = _declaration;
+            declaration = langElement;
             argumentHints = new Dictionary<VariableName, HashSet<DirtyType>>();
             returnHints = new HashSet<DirtyType>();
 
             string comment;
-            if(doc==null)
+            if (doc == null)
             {
-                comment="";
+                comment = string.Empty;
             }
             else
             {
-                comment=doc.ToString();
+                comment = doc.ToString();
             }
 
-            List<FormalParam> parameters=null;
+            List<FormalParam> parameters = null;
             if (declaration is MethodDecl)
-            { 
-                parameters=(declaration as MethodDecl).Signature.FormalParams;
+            {
+                parameters = (declaration as MethodDecl).Signature.FormalParams;
             }
-
-            if (declaration is FunctionDecl)
+            else if (declaration is FunctionDecl)
             {
                 parameters = (declaration as FunctionDecl).Signature.FormalParams;
             }
 
-
-
-
-
-            string endOfRegexp="(";
-            Array values = DirtyType.GetValues(typeof(DirtyType));
+            var endOfRegexp = "(";
+            var values = DirtyType.GetValues(typeof(DirtyType));
             foreach (DirtyType val in values)
             {
-                   endOfRegexp+=val+"|";
+                endOfRegexp += val + "|";
             }
-            endOfRegexp+="all)";
-            string returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+returnvalue[ \t]+remove[ \t]+" + endOfRegexp;
-            string argumentPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+outargument[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)[ \t]+remove[ \t]+" + endOfRegexp;
-            Regex retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
-            Regex argRegEx = new Regex(argumentPatern, RegexOptions.IgnoreCase);
+
+            endOfRegexp += "all)";
+            var returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+returnvalue[ \t]+remove[ \t]+" + endOfRegexp;
+            var argumentPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+outargument[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)[ \t]+remove[ \t]+" + endOfRegexp;
+            var retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
+            var argRegEx = new Regex(argumentPatern, RegexOptions.IgnoreCase);
 
             foreach (var line in comment.Split('\n'))
             {
-                Match match = retRegEx.Match(line);
+                var match = retRegEx.Match(line);
                 if (match.Success)
                 {
-                    string res = match.Groups[1].Value.ToString();
+                    var res = match.Groups[1].Value.ToString();
                     foreach (DirtyType val in values)
                     {
-                        if(val.ToString().ToLower()==res.ToString().ToLower())
+                        if (val.ToString().ToLower() == res.ToString().ToLower())
                         {
                             addReturnHint(val);
                         }
+
                         if (res == "all")
                         {
                             addReturnHint(val);
                         }
-                    }                  
+                    }
                 }
 
-                Match argMatch = argRegEx.Match(line);
+                var argMatch = argRegEx.Match(line);
                 if (argMatch.Success)
                 {
-                    string argName = argMatch.Groups[1].Value;
-                    string res = argMatch.Groups[2].Value.ToString();
+                    var argName = argMatch.Groups[1].Value;
+                    var res = argMatch.Groups[2].Value.ToString();
                     foreach (var parameter in parameters)
                     {
                         if (parameter.Name.Equals(argName))
@@ -533,19 +571,20 @@ namespace Weverca.TaintedAnalysis
                             {
                                 if (val.ToString().ToLower() == res.ToString().ToLower())
                                 {
-                                    addArgumentHint(new VariableName(argName),val);
+                                    addArgumentHint(new VariableName(argName), val);
                                 }
+
                                 if (res == "all")
                                 {
-                                    addArgumentHint(new VariableName(argName),val);
+                                    addArgumentHint(new VariableName(argName), val);
                                 }
                             }
+
                             break;
                         }
                     }
-               }
+                }
             }
-
         }
 
         private void addReturnHint(DirtyType type)
@@ -559,6 +598,7 @@ namespace Weverca.TaintedAnalysis
             {
                 argumentHints[name] = new HashSet<DirtyType>();
             }
+
             argumentHints[name].Add(type);
         }
 
@@ -566,19 +606,18 @@ namespace Weverca.TaintedAnalysis
         {
             foreach (var type in returnHints)
             {
-                MemoryEntry result = outset.ReadValue(outset.ReturnValue);
+                var result = outset.ReadValue(outset.ReturnValue);
                 foreach (var value in result.PossibleValues)
                 {
                     ValueInfoHandler.setClean(outset, value, type);
                 }
             }
 
-
             foreach (var variable in argumentHints.Keys)
             {
                 foreach (var flag in argumentHints[variable])
                 {
-                    MemoryEntry result = outset.ReadValue(variable);
+                    var result = outset.ReadValue(variable);
                     foreach (var value in result.PossibleValues)
                     {
                         ValueInfoHandler.setClean(outset, value, flag);

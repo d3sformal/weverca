@@ -814,20 +814,41 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
             UserDefinedConstantHandler.insertConstant(OutSet, name, constantValue, false);
         }
 
+        /// <summary>
+        /// Create object value of given type
+        /// </summary>
+        /// <param name="typeName">Object type specifier</param>
+        /// <returns>Created object</returns>
         public override MemoryEntry CreateObject(QualifiedName typeName)
         {
-            var classes = NativeObjectAnalyzer.GetInstance(Flow);
-            if (classes.ExistClass(typeName))
+            var types = OutSet.ResolveType(typeName);
+            if (!types.GetEnumerator().MoveNext())
             {
-                var typeDeclaration = classes.GetClass(typeName);
-                var type = OutSet.CreateType(typeDeclaration);
-                var objectValue = OutSet.CreateObject(type);
-                return new MemoryEntry(objectValue);
+                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
+                NativeTypeDecl nativeDeclaration;
+                if (objectAnalyzer.TryGetClass(typeName, out nativeDeclaration))
+                {
+                    var type = OutSet.CreateType(nativeDeclaration);
+                    OutSet.DeclareGlobal(type);
+                    var newTypes = new List<TypeValue>();
+                    newTypes.Add(type);
+                    types = newTypes;
+                }
+                else
+                {
+                    // TODO: If no type is resolved, exception should be thrown
+                    Debug.Fail("No type resolved");
+                }
             }
-            else
+
+            var values = new List<ObjectValue>();
+            foreach (var type in types)
             {
-                return base.CreateObject(typeName);
+                var newObject = CreateInitializedObject(type);
+                values.Add(newObject);
             }
+
+            return new MemoryEntry(values);
         }
 
         #endregion
@@ -959,5 +980,6 @@ namespace Weverca.TaintedAnalysis.ExpressionEvaluator
 
             return indexes;
         }
+
     }
 }

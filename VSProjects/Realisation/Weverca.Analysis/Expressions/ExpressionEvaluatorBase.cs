@@ -21,17 +21,26 @@ namespace Weverca.Analysis.Expressions
         /// <summary>
         /// Gets current output set of expression evaluation
         /// </summary>
-        public FlowOutputSet OutSet { get { return Flow.OutSet; } }
+        public FlowOutputSet OutSet
+        {
+            get { return Flow.OutSet; }
+        }
 
         /// <summary>
         /// Gets current input set of expression evaluation
         /// </summary>
-        public FlowInputSet InSet { get { return Flow.InSet; } }
+        public FlowInputSet InSet
+        {
+            get { return Flow.InSet; }
+        }
 
         /// <summary>
         /// Gets element which is currently evaluated
         /// </summary>
-        public LangElement Element { get { return Flow.CurrentPartial; } }
+        public LangElement Element
+        {
+            get { return Flow.CurrentPartial; }
+        }
 
         #region Template API methods for implementors
 
@@ -207,6 +216,27 @@ namespace Weverca.Analysis.Expressions
         /// <param name="entries">Values to be converted to string and printed out</param>
         public abstract void Echo(EchoStmt echo, MemoryEntry[] entries);
 
+        /// <summary>
+        /// Get value representation of given constant
+        /// </summary>
+        /// <param name="x">Constant representation</param>
+        /// <returns>Represented value</returns>
+        public abstract MemoryEntry Constant(GlobalConstUse x);
+
+        /// <summary>
+        /// Is called on <c>const x = 5</c> declarations
+        /// </summary>
+        /// <param name="x">Constant declaration</param>
+        /// <param name="constantValue">Value assigned into constant</param>
+        public abstract void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue);
+
+        /// <summary>
+        /// Create object value of given type
+        /// </summary>
+        /// <param name="typeName">Object type specifier</param>
+        /// <returns>Created object</returns>
+        public abstract MemoryEntry CreateObject(QualifiedName typeName);
+
         #endregion
 
         #region Default implementation of simple routines
@@ -288,101 +318,6 @@ namespace Weverca.Analysis.Expressions
             return new MemoryEntry(OutSet.UndefinedValue);
         }
 
-        /// <summary>
-        /// Get value representation of given constant
-        /// </summary>
-        /// <param name="x">Constant representation</param>
-        /// <returns>Represented value</returns>
-        public abstract MemoryEntry Constant(GlobalConstUse x);
-
-        /// <summary>
-        /// Is called on <c>const x = 5</c> declarations
-        /// </summary>
-        /// <param name="x">Constant declaration</param>
-        /// <param name="constantValue">Value assigned into constant</param>
-        public abstract void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue);
-
-        /// <summary>
-        /// Create object value of given type
-        /// </summary>
-        /// <param name="typeName">Object type specifier</param>
-        /// <returns>Created object</returns>
-        public virtual MemoryEntry CreateObject(QualifiedName typeName)
-        {
-            var declarations = OutSet.ResolveType(typeName);
-            if (!declarations.GetEnumerator().MoveNext())
-            {
-                // TODO: If no type is resolved, exception should be thrown
-                Debug.Fail("No type resolved");
-            }
-
-            var values = new List<ObjectValue>();
-            foreach (var declaration in declarations)
-            {
-                var newObject = OutSet.CreateObject(declaration);
-                values.Add(newObject);
-
-                var sourceDeclaration = declaration as SourceTypeValue;
-                if (sourceDeclaration != null)
-                {
-                    foreach (var member in sourceDeclaration.Declaration.Members)
-                    {
-                        var fieldList = member as FieldDeclList;
-                        if (fieldList != null)
-                        {
-                            foreach (var field in fieldList.Fields)
-                            {
-                                var index = OutSet.CreateIndex(field.Name.Value);
-
-                                if (field.Initializer == null)
-                                {
-                                    OutSet.SetField(newObject, index, new MemoryEntry(OutSet.UndefinedValue));
-                                }
-                                else
-                                {
-                                    var literal = field.Initializer as Literal;
-                                    if (literal != null)
-                                    {
-                                        var visitor = new LiteralValueFactory(OutSet);
-                                        var newValue = visitor.EvaluateLiteral(literal);
-                                        OutSet.SetField(newObject, index, new MemoryEntry(newValue));
-                                    }
-                                    else
-                                    {
-                                        var globalConstant = field.Initializer as GlobalConstUse;
-                                        if (globalConstant != null)
-                                        {
-                                            var constant = Constant(globalConstant);
-                                            OutSet.SetField(newObject, index, constant);
-                                        }
-                                        else
-                                        {
-                                            // TODO: Finish inicialization with ClassConstUse, PseudoConstUse etc.
-                                            Debug.Fail("Unrecognized initialization!");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            var constantList = member as ConstDeclList;
-                            if (constantList != null)
-                            {
-                                // TODO: Add support for class constants
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Fail("There cannot be NativeTypeValue or any other type");
-                }
-            }
-
-            return new MemoryEntry(values);
-        }
-
         internal MemoryEntry IndirectCreateObject(MemoryEntry memoryEntry)
         {
             var declarations = new HashSet<TypeValue>();
@@ -405,6 +340,33 @@ namespace Weverca.Analysis.Expressions
         public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
         {
             return new MemoryEntry(OutSet.CreateFunction(lambda));
+        }
+
+        /// <summary>
+        /// Creates initialized object according to the given type
+        /// </summary>
+        /// <param name="type">Type that is always needed when creating new object</param>
+        /// <returns>New initialized object</returns>
+        protected ObjectValue CreateInitializedObject(TypeValue type)
+        {
+            var newObject = OutSet.CreateObject(type);
+
+            var sourceDeclaration = type as SourceTypeValue;
+            if (sourceDeclaration != null)
+            {
+                var initializer = new ObjectInitializer(this);
+                initializer.InitializeObject(newObject, sourceDeclaration.Declaration);
+            }
+            else
+            {
+                var nativeDeclaration = type as NativeTypeValue;
+                if (nativeDeclaration != null)
+                {
+                    // TODO: Initialize all fields with its default or initialization value
+                }
+            }
+
+            return newObject;
         }
 
         public virtual void GlobalStatement(IEnumerable<VariableEntry> variables)

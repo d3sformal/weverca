@@ -37,6 +37,7 @@
     <Compile Include="AnalysisServices.cs" />
     <Compile Include="BackwardAnalysisBase.cs" />
     <Compile Include="Expressions\LiteralValueFactory.cs" />
+    <Compile Include="Expressions\ObjectInitializer.cs" />
     <Compile Include="FlowExtension.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />

@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.ProgramPoints;
 using Weverca.Analysis.Expressions;
 using Weverca.Analysis.Memory;
+using Weverca.Analysis.ProgramPoints;
 
 namespace Weverca.Analysis.UnitTest
 {
     /// <summary>
     /// Resolving function names and function initializing
     /// </summary>
-    class SimpleFunctionResolver : FunctionResolverBase
+    internal class SimpleFunctionResolver : FunctionResolverBase
     {
         private readonly EnvironmentInitializer _environmentInitializer;
 
@@ -25,12 +23,12 @@ namespace Weverca.Analysis.UnitTest
         /// </summary>
         private readonly Dictionary<string, NativeAnalyzerMethod> _nativeAnalyzers = new Dictionary<string, NativeAnalyzerMethod>()
         {
-            {"strtolower",_strtolower},
-            {"strtoupper",_strtoupper},
-            {"concat",_concat},
-            {"define",_define},
-            {"abs",_abs}, 
-            {"write_argument",_write_argument}
+            { "strtolower", _strtolower },
+            { "strtoupper", _strtoupper },
+            { "concat", _concat },
+            { "define", _define },
+            { "abs", _abs },
+            { "write_argument", _write_argument }
         };
 
         private readonly Dictionary<string, ProgramPointGraph> _sharedPpGraphs = new Dictionary<string, ProgramPointGraph>();
@@ -99,13 +97,15 @@ namespace Weverca.Analysis.UnitTest
         }
 
         /// <summary>
-        /// Initialize call into callInput. 
+        /// Initialize call into callInput.
         /// 
-        /// NOTE: 
+        /// NOTE:
         ///     arguments has to be initialized
         ///     sharing program point graphs is possible
         /// </summary>
-        /// <returns></returns>
+        /// <param name="callInput"></param>
+        /// <param name="extensionGraph"></param>
+        /// <param name="arguments"></param>
         public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
             _environmentInitializer(callInput);
@@ -139,12 +139,18 @@ namespace Weverca.Analysis.UnitTest
             return new MemoryEntry(flattenValues.ToArray());
         }
 
+        public override void DeclareGlobal(TypeDecl declaration)
+        {
+            var type = OutSet.CreateType(declaration);
+            OutSet.DeclareGlobal(type);
+        }
+
         #endregion
 
         #region Native analyzers
 
         /// <summary>
-        /// Analyzer method for strtolower php function
+        /// Analyzer method for <c>strtolower</c> php function
         /// </summary>
         /// <param name="flow"></param>
         private static void _strtolower(FlowController flow)
@@ -173,7 +179,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
         /// <summary>
-        /// Analyzer method for strtolower php function
+        /// Analyzer method for <c>strtoupper</c> php function
         /// </summary>
         /// <param name="flow"></param>
         private static void _strtoupper(FlowController flow)
@@ -242,14 +248,12 @@ namespace Weverca.Analysis.UnitTest
 
         private static void _constructor(FlowController flow)
         {
-            //  flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
+            // flow.OutSet.Assign(flow.OutSet.ReturnValue, flow.OutSet.ThisObject);
         }
 
         #endregion
 
         #region Private helpers
-
-
 
         /// <summary>
         /// Get storage for argument at given index
@@ -275,12 +279,10 @@ namespace Weverca.Analysis.UnitTest
             {
                 return (declaration as MethodDecl).Signature;
             }
-
-            if (declaration is FunctionDecl)
+            else if (declaration is FunctionDecl)
             {
                 return (declaration as FunctionDecl).Signature;
             }
-
 
             return null;
         }
