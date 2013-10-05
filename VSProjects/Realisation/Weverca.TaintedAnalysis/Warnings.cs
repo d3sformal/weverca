@@ -10,7 +10,9 @@ using Weverca.Analysis.Memory;
 namespace Weverca.TaintedAnalysis
 {
 
-
+    /// <summary>
+    /// Handler, which provides functionality for reading and storiny analysis warnings
+    /// </summary>
     public class AnalysisWarningHandler
     {
         /// <summary>
@@ -18,6 +20,11 @@ namespace Weverca.TaintedAnalysis
         /// </summary>
         private static readonly VariableName WARNING_STORAGE = new VariableName(".analysisWarning");
 
+        /// <summary>
+        /// Insert warning inte FlowOutputSet
+        /// </summary>
+        /// <param name="flowOutSet"></param>
+        /// <param name="warning"></param>
         public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning)
         {
             var previousWarnings = ReadWarnings(flowOutSet);
@@ -28,6 +35,11 @@ namespace Weverca.TaintedAnalysis
             flowOutSet.Assign(WARNING_STORAGE, new MemoryEntry(newEntry));
         }
 
+        /// <summary>
+        /// Read warnings from FlowOutputSet
+        /// </summary>
+        /// <param name="flowOutSet"></param>
+        /// <returns></returns>
         public static IEnumerable<Value> ReadWarnings(FlowOutputSet flowOutSet)
         {
             flowOutSet.FetchFromGlobal(WARNING_STORAGE);
@@ -36,18 +48,43 @@ namespace Weverca.TaintedAnalysis
         }
     }
 
+    /// <summary>
+    /// Class, which contains information about analysis warning
+    /// </summary>
     public class AnalysisWarning
     {
+        /// <summary>
+        /// Warning message
+        /// </summary>
         public string Message { get; private set; }
+
+        /// <summary>
+        /// Langelement of AST, which produced the warning
+        /// </summary>
         public LangElement LangElement { get; private set; }
+
+        /// <summary>
+        /// Cause of the warning(Why was the warning added)
+        /// </summary>
         public AnalysisWarningCause Cause { get; private set; }
 
+        /// <summary>
+        /// Construct new instance of AnalysisWarning, without cause
+        /// </summary>
+        /// <param name="message">Warning message</param>
+        /// <param name="element">Element, where the warning was produced</param>
         public AnalysisWarning(string message, LangElement element)
         {
             Message = message;
             LangElement = element;
         }
 
+        /// <summary>
+        /// Construct new instance of AnalysisWarning
+        /// </summary>
+        /// <param name="message">Warning message</param>
+        /// <param name="element">Element, where the warning was produced</param>
+        /// <param name="cause">Warning cause</param>
         public AnalysisWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
             Message = message;
@@ -55,12 +92,19 @@ namespace Weverca.TaintedAnalysis
             Cause = cause;
         }
 
+        /// <summary>
+        /// Return the warning message, with position in source code
+        /// </summary>
+        /// <returns>Return the warning message, with position in source code</returns>
         public override string ToString()
         {
             return "Warning at line " + LangElement.Position.FirstLine + " char " + LangElement.Position.FirstColumn + ": " + Message.ToString();
         }
     }
 
+    /// <summary>
+    /// Posiible warning causes, Fell free to add more.
+    /// </summary>
     public enum AnalysisWarningCause
     {
         WRONG_NUMBER_OF_ARGUMENTS,

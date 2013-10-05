@@ -73,7 +73,7 @@
     <Compile Include="NativeObjectAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserDefinedConstantHandler.cs" />
-    <Compile Include="VariableInfo.cs" />
+    <Compile Include="ValueInfoHandler.cs" />
     <Compile Include="Warnings.cs" />
   </ItemGroup>
   <ItemGroup>
