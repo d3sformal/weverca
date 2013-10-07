@@ -122,7 +122,7 @@ namespace Weverca.TaintedAnalysis.FlowResolver
                     willAssume = TruePartsCount == 0;
                     break;
                 case ConditionForm.Some:
-                    willAssume = FalsePartsCount > 0 || UnknownPartsCount > 0;
+                    willAssume = TruePartsCount > 0 || UnknownPartsCount > 0;
                     break;
                 case ConditionForm.SomeNot:
                     willAssume = FalsePartsCount > 0 || UnknownPartsCount > 0;
