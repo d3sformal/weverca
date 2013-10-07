@@ -27,7 +27,11 @@ namespace Weverca.Analysis
         /// <summary>
         /// Some part has to be false.
         /// </summary>
-        SomeNot
+        SomeNot,
+
+        ExactlyOne,
+
+        NotExactlyOne
     }
 
     /// <summary>
@@ -46,6 +50,7 @@ namespace Weverca.Analysis
         /// Form of condition parts conjunction.
         /// </summary>
         public readonly ConditionForm Form;
+
         /// <summary>
         /// Condition parts that are joined according to ConditionForm.
         /// </summary>
@@ -62,30 +67,6 @@ namespace Weverca.Analysis
             _initialParts = parts;
             Parts = from part in parts select Expressions.Converter.GetPostfix(part);
             Form = form;
-        }
-
-        public override int GetHashCode()
-        {
-            var sum = (int)Form;
-            foreach (var part in _initialParts)
-            {
-                sum += part.GetHashCode();
-            }
-            return sum;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var o = obj as AssumptionCondition;
-            if (o == null)
-                return false;
-
-
-            var sameCount = _initialParts.Length == o._initialParts.Length;
-            var sameEls = !_initialParts.Except(o._initialParts).Any();
-            var sameForms = Form == o.Form;
-
-            return sameForms && sameCount && sameEls;
         }
     }
 }
