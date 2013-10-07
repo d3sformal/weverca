@@ -15,17 +15,17 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.CodeMetrics.UnitTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.ControlFlowGraph.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.ControlFlowGraph.UnitTest\Weverca.ControlFlowGraph.UnitTest.csproj", "{33FB3567-FB67-40C3-977A-44C8B7F0B351}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis", "..\..\..\VSProjects\Realisation\Weverca.Analysis\Weverca.Analysis.csproj", "{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.AnalysisFramework", "..\..\..\VSProjects\Realisation\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj", "{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.MemoryModels", "..\..\..\VSProjects\Realisation\Weverca.MemoryModels\Weverca.MemoryModels.csproj", "{01F0A818-EBE4-431B-9091-0E5DC99382AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.MemoryModels.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.MemoryModels.UnitTest\Weverca.MemoryModels.UnitTest.csproj", "{95B23A3A-D548-483C-B1C4-52AADCFC64DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.Analysis.UnitTest\Weverca.Analysis.UnitTest.csproj", "{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.AnalysisFramework.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.AnalysisFramework.UnitTest\Weverca.AnalysisFramework.UnitTest.csproj", "{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis", "..\..\..\VSProjects\Realisation\Weverca.TaintedAnalysis\Weverca.TaintedAnalysis.csproj", "{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis", "..\..\..\VSProjects\Realisation\Weverca.Analysis\Weverca.Analysis.csproj", "{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.TaintedAnalysis.UnitTest\Weverca.TaintedAnalysis.UnitTest.csproj", "{2B198688-9ED7-4FD4-9A95-86C4173119C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Analysis.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.Analysis.UnitTest\Weverca.Analysis.UnitTest.csproj", "{2B198688-9ED7-4FD4-9A95-86C4173119C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca", "..\..\..\VSProjects\Realisation\Weverca\Weverca.csproj", "{4A26A734-9A13-4B70-B2E1-7C448D4C73AC}"
 EndProject

@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D6B94047-E7EB-4F27-A15F-BB3B8F8E1444}</ProjectGuid>
+    <ProjectGuid>{2B198688-9ED7-4FD4-9A95-86C4173119C8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Weverca.Analysis.UnitTest</RootNamespace>
-    <AssemblyName>Weverca.Analysis.UnitTest</AssemblyName>
+    <RootNamespace>Weverca.TaintedAnalysis.UnitTest</RootNamespace>
+    <AssemblyName>Weverca.TaintedAnalysis.UnitTest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -50,26 +50,26 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AnalysisTestUtils.cs" />
-    <Compile Include="Deprecated_ForwardAnalysisTest.cs" />
-    <Compile Include="ForwardAnalysisTest.cs" />
+    <Compile Include="FlowResolverTests\EqualsValueVisitor.cs" />
+    <Compile Include="FlowResolverTests\FlowResolverTests.cs" />
+    <Compile Include="FlowResolverTests\TestCase.cs" />
+    <Compile Include="FlowResolverTests\TestCaseResult.cs" />
+    <Compile Include="FlowResolverTests\ValueFactory.cs" />
+    <Compile Include="NativeFuntionTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleAnalysis.cs" />
-    <Compile Include="SimpleExceptionType.cs" />
-    <Compile Include="SimpleExpressionEvaluator.cs" />
-    <Compile Include="SimpleFlowResolver.cs" />
-    <Compile Include="SimpleFunctionResolver.cs" />
-    <Compile Include="SimpleNativeType.cs" />
-    <Compile Include="StringAnalysis.cs" />
+    <Compile Include="NativeConstantTester.cs" />
+    <Compile Include="NativeObjectTester.cs" />
+    <Compile Include="TestUtils.cs" />
+    <Compile Include="FunctionTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
       <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
+    <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
-      <Name>Weverca.Analysis</Name>
+      <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
       <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
@@ -83,7 +83,12 @@
       <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
       <Name>Weverca.Parser</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
+      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Name>Weverca.Analysis</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
