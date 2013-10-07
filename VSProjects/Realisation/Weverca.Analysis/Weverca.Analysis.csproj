@@ -68,9 +68,10 @@
     <Compile Include="FlowResolver\VariableVisitor.cs" />
     <Compile Include="ForwardAnalysis.cs" />
     <Compile Include="FunctionResolver.cs" />
-    <Compile Include="NativeConstantAnalyzer.cs" />
-    <Compile Include="NativeFunctionAnalyzer.cs" />
-    <Compile Include="NativeObjectAnalyzer.cs" />
+    <Compile Include="NativeAnalyzers\NativeAnalyzerUtils.cs" />
+    <Compile Include="NativeAnalyzers\NativeConstantAnalyzer.cs" />
+    <Compile Include="NativeAnalyzers\NativeFunctionAnalyzer.cs" />
+    <Compile Include="NativeAnalyzers\NativeObjectAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UserDefinedConstantHandler.cs" />
     <Compile Include="ValueInfoHandler.cs" />

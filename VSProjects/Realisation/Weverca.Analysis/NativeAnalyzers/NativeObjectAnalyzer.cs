@@ -32,6 +32,7 @@ namespace Weverca.Analysis
 
     public class MutableNativeTypeDecl
     {
+        #region properties
         /// <summary>
         /// Name of native type
         /// </summary>
@@ -51,6 +52,10 @@ namespace Weverca.Analysis
         public bool IsInterFace;
 
         public bool IsFinal;
+
+        #endregion
+
+        #region convert to mutable
 
         public NativeTypeDecl ConvertToMuttable(NativeObjectAnalyzer analyzer,
             Dictionary<string, NativeMethodInfo> WevercaImplementedMethods)
@@ -135,6 +140,8 @@ namespace Weverca.Analysis
             return new NativeTypeDecl(QualifiedName, nativeMethodsInfo, Constants,
                 Fields, BaseClassName, IsFinal, IsInterFace);
         }
+
+        #endregion
     }
 
     public class NativeObjectAnalyzer
@@ -150,53 +157,7 @@ namespace Weverca.Analysis
         private HashSet<string> methodTypes = new HashSet<string>();
         private HashSet<string> returnTypes = new HashSet<string>();
 
-        /* private static bool once = false;
-         private void checkTypes(FlowController flow)
-         {
-             once = true;
-               Console.WriteLine("arg types");
-                       Console.WriteLine();
-                       var it = methodTypes.GetEnumerator();
-                       while (it.MoveNext())
-                       {
-                           Console.WriteLine(it.Current);
-
-                       }
-                       Console.WriteLine();
-              Console.WriteLine("field types");
-             Console.WriteLine();
-              var it = fieldTypes.GetEnumerator();
-             while (it.MoveNext())
-             {
-                 Console.WriteLine(it.Current);
-
-             }
-             Console.WriteLine();
-            
-
-             Console.WriteLine("return types");
-             Console.WriteLine();
-             var it = returnTypes.GetEnumerator();
-             while (it.MoveNext())
-             {
-                 //Console.WriteLine(it.Current);
-                 if (NativeFunctionAnalyzer.getReturnValue(it.Current, flow) == null)
-                 {
-                     Console.WriteLine(it.Current.ToString());
-                 }
-             }
-             Console.WriteLine("done");
-         }*/
-
-        public static NativeObjectAnalyzer GetInstance(FlowController flow)
-        {
-            if (instance == null)
-            {
-                instance = new NativeObjectAnalyzer(flow);
-            }
-
-            return instance;
-        }
+        #region parsing xml
 
         private NativeObjectAnalyzer(FlowController flow)
         {
@@ -352,6 +313,18 @@ namespace Weverca.Analysis
             }
         }
 
+        #endregion
+
+        public static NativeObjectAnalyzer GetInstance(FlowController flow)
+        {
+            if (instance == null)
+            {
+                instance = new NativeObjectAnalyzer(flow);
+            }
+
+            return instance;
+        }
+
         public bool ExistClass(QualifiedName className)
         {
             return nativeObjects.ContainsKey(className);
@@ -384,15 +357,15 @@ namespace Weverca.Analysis
 
         public void Analyze(FlowController flow)
         {
-            if (NativeFunctionAnalyzer.checkArgumentsCount(flow, Method))
+            if (NativeAnalyzerUtils.checkArgumentsCount(flow, Method))
             {
-                NativeFunctionAnalyzer.checkArgumentTypes(flow, Method);
+                NativeAnalyzerUtils.checkArgumentTypes(flow, Method);
             }
 
             var nativeClass = NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
             var fields = nativeClass.Fields;
 
-            var functionResult = NativeFunctionAnalyzer.getReturnValue(Method.ReturnType, flow);
+            var functionResult = NativeAnalyzerUtils.ResolveReturnValue(Method.ReturnType, flow);
             var arguments = getArguments(flow);
             var allFieldsEntries = new List<MemoryEntry>();
 
@@ -414,7 +387,7 @@ namespace Weverca.Analysis
                     foreach (NativeFieldInfo field in fields.Values)
                     {
                         var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
-                        MemoryEntry newfieldValues = NativeFunctionAnalyzer.getReturnValue(field.Type, flow);
+                        MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
                         ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, newfieldValues);
                         List<Value> addedValues;
                         flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), addToEntry(fieldEntry, newfieldValues.PossibleValues, out addedValues));
@@ -435,15 +408,15 @@ namespace Weverca.Analysis
             allFieldsEntries.AddRange(arguments);
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, functionResult);
             flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
-            var assigned_aliases = NativeFunctionAnalyzer.ResolveAliasArguments(flow, (new NativeFunction[1] { Method }).ToList());
+            var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, (new NativeFunction[1] { Method }).ToList());
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, new MemoryEntry(assigned_aliases));
         }
 
         public void Construct(FlowController flow)
         {
-            if (NativeFunctionAnalyzer.checkArgumentsCount(flow, Method))
+            if (NativeAnalyzerUtils.checkArgumentsCount(flow, Method))
             {
-                NativeFunctionAnalyzer.checkArgumentTypes(flow, Method);
+                NativeAnalyzerUtils.checkArgumentTypes(flow, Method);
             }
 
             initObject(flow);
@@ -464,7 +437,7 @@ namespace Weverca.Analysis
                     {
                         if (field.isStatic == false)
                         {
-                            var fieldValues = NativeFunctionAnalyzer.getReturnValue(field.Type, flow);
+                            var fieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
                             createdFields.AddRange(fieldValues.PossibleValues);
                             flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), fieldValues);
                         }
@@ -489,7 +462,7 @@ namespace Weverca.Analysis
 
             for (int i = 0; i < argumentCount; i++)
             {
-                arguments.Add(flow.OutSet.ReadValue(NativeFunctionAnalyzer.argument(i)));
+                arguments.Add(flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(i)));
             }
 
             return arguments;

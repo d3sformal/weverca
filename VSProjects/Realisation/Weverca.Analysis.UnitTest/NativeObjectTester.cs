@@ -22,11 +22,6 @@ namespace Weverca.Analysis.UnitTest
             $result=$a->format('a');
         ";
 
-        string ObjectMethodTest2 = @"
-            $a=new RuntimeException ('0');
-            $result=$a->getPrevious();
-        ";
-
         string ObjectParameterByReferenceTest = @"
 $base=new  EventBase (new EventConfig());
 $a=new EventBufferEvent ($base);

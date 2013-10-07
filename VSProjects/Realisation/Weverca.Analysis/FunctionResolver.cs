@@ -363,7 +363,7 @@ namespace Weverca.Analysis
             if (nativeFunctionAnalyzer.existNativeFunction(name))
             {
                 var function = OutSet.CreateFunction(name.Name,
-                    new NativeAnalyzer(nativeFunctionAnalyzer.getNativeAnalyzer(name), Flow.CurrentPartial));
+                    new NativeAnalyzer(nativeFunctionAnalyzer.GetInstance(name), Flow.CurrentPartial));
                 // TODO: Check whether the number of arguments match.
                 result[function.DeclaringElement] = function;
             }

@@ -46,6 +46,8 @@ namespace Weverca.Analysis
     /// </summary>
     class NativeConstantAnalyzer
     {
+        #region properties
+
         /// <summary>
         /// Stores singleton instance
         /// </summary>
@@ -54,7 +56,10 @@ namespace Weverca.Analysis
         /// Stores defined constants.
         /// </summary>
         private Dictionary<QualifiedName, NativeConstant> constants = new Dictionary<QualifiedName,NativeConstant>();
+        
+        #endregion
 
+        #region methods
         /// <summary>
         /// Creates new instance of NativeConstantAnalyzer. Is private because this class is singleton.
         /// </summary>
@@ -223,5 +228,6 @@ namespace Weverca.Analysis
         {
             return constants[constant].Value;
         }
+        #endregion
     }
 }
