@@ -75,6 +75,7 @@
     <Compile Include="UserDefinedConstantHandler.cs" />
     <Compile Include="ValueInfoHandler.cs" />
     <Compile Include="Warnings.cs" />
+    <Compile Include="Widening\Widening.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

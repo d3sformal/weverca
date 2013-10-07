@@ -86,7 +86,7 @@ namespace Weverca.TaintedAnalysis
             var baseclassName = BaseClassName;
             while (baseclassName != null)
             {
-                var baseClass = analyzer.mutableNativeObjects[baseclassName.Value];
+                var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseclassName.Value];
                 foreach (var method in baseClass.Methods)
                 {
                     var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
@@ -142,8 +142,6 @@ namespace Weverca.TaintedAnalysis
         private static NativeObjectAnalyzer instance = null;
 
         private Dictionary<QualifiedName, NativeTypeDecl> nativeObjects;
-
-        public Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
 
         private Dictionary<string, NativeMethodInfo> WevercaImplementedMethods
             = new Dictionary<string, NativeMethodInfo>();
@@ -204,7 +202,7 @@ namespace Weverca.TaintedAnalysis
         {
             var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
             nativeObjects = new Dictionary<QualifiedName, NativeTypeDecl>();
-            mutableNativeObjects = new Dictionary<QualifiedName, MutableNativeTypeDecl>();
+            NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, MutableNativeTypeDecl>();
 
             var outSet = flow.OutSet;
             MutableNativeTypeDecl currentClass = null;
@@ -237,7 +235,7 @@ namespace Weverca.TaintedAnalysis
                                     currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("baseClass")));
                                 }
 
-                                mutableNativeObjects[currentClass.QualifiedName] = currentClass;
+                                NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.QualifiedName] = currentClass;
                                 if (reader.Name == "class")
                                 {
                                     currentClass.IsInterFace = false;
@@ -336,11 +334,11 @@ namespace Weverca.TaintedAnalysis
             /*
             check if every ancestor exist 
              */
-            foreach (var nativeObject in mutableNativeObjects.Values)
+            foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
                 if (nativeObject.QualifiedName != null)
                 {
-                    if (!mutableNativeObjects.ContainsKey(nativeObject.QualifiedName))
+                    if (!NativeObjectsAnalyzerHelper.mutableNativeObjects.ContainsKey(nativeObject.QualifiedName))
                     {
                         throw new Exception();
                     }
@@ -348,7 +346,7 @@ namespace Weverca.TaintedAnalysis
             }
 
             //generate result
-            foreach (var nativeObject in mutableNativeObjects.Values)
+            foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
                 nativeObjects[nativeObject.QualifiedName] = nativeObject.ConvertToMuttable(this, WevercaImplementedMethods);
             }
@@ -375,6 +373,8 @@ namespace Weverca.TaintedAnalysis
         private NativeMethod Method;
 
         private QualifiedName ObjectName;
+
+        public static Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
 
         public NativeObjectsAnalyzerHelper(NativeMethod method, QualifiedName objectName)
         {

@@ -193,8 +193,24 @@ namespace Weverca.TaintedAnalysis
             }
             else
             {
-                var type = OutSet.CreateType(declaration);
-                OutSet.DeclareGlobal(type);
+                //TODO copy stuf into
+                if (declaration.BaseClassName != null)
+                {
+                    if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
+                    {
+                        NativeTypeDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
+                    }
+                    else
+                    {
+                        IEnumerable<TypeValue> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
+                    }
+
+                }
+                else
+                {
+                    var type = OutSet.CreateType(declaration);
+                    OutSet.DeclareGlobal(type);
+                }
             }
         }
 
