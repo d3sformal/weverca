@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
+/*
+ * Program points that have no corresponding elements in Phalanger AST.
+ */
+
 namespace Weverca.Analysis.ProgramPoints
 {
 
