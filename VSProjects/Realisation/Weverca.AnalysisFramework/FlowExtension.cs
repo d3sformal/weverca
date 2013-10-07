@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Specifies type of dispatch (In analyzis there are multiple types of dispatch e.g. include is handled as special type of call)

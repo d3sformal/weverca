@@ -6,12 +6,12 @@ using System.Text.RegularExpressions;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
     /// <summary>
     /// Resolving function names and function initializing

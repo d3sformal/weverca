@@ -2,10 +2,10 @@
 
 using PHP.Core;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.ExpressionEvaluator
+namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
     /// Converts values of various PHP data types to another types.

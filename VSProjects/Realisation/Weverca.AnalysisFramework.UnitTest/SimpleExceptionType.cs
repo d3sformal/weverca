@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using PHP.Core;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     static class SimpleExceptionType
     {

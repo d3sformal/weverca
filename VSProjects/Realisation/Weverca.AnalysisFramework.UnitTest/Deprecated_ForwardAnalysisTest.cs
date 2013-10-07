@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     [TestClass]
     public class Deprecated_ForwardAnalysisTest

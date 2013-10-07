@@ -6,7 +6,7 @@ using System.Text;
 using PHP.Core;
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
 
     /// <summary>

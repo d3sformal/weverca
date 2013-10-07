@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Base class for value visitor.

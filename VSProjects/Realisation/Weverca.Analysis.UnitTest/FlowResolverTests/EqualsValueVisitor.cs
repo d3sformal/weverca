@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
+namespace Weverca.Analysis.UnitTest.FlowResolverTests
 {
     // TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
     internal class EqualsValueVisitor : IValueVisitor

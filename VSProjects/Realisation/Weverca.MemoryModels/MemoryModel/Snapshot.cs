@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PHP.Core;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.MemoryModel
 {

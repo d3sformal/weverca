@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.FlowResolver
+namespace Weverca.Analysis.FlowResolver
 {
     /// <summary>
     /// This class is used for evaluating conditions and assumptions.

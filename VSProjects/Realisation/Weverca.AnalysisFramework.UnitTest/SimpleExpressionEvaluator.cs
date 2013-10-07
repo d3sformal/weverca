@@ -6,10 +6,10 @@ using System.Text;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     /// <summary>
     /// Expression evaluation is resolved here

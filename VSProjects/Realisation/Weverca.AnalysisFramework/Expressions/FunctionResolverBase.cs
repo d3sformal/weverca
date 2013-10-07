@@ -3,9 +3,9 @@
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
     /// <summary>
     /// Provides resolving of function names and function initialization

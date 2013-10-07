@@ -2,7 +2,7 @@
 
 using PHP.Core;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     public interface ISnapshotReadonly
     {

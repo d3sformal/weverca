@@ -7,16 +7,16 @@ using System.Xml;
 using System.IO;
 
 
-using Weverca.Analysis;
+using Weverca.AnalysisFramework;
 using PHP.Core;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.Parsers;
 
 using PHP.Core.Parsers;
 using PHP.Core.AST;
-using Weverca.TaintedAnalysis.ExpressionEvaluator;
+using Weverca.Analysis.ExpressionEvaluator;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
     //TODO - funkcie co nesiria priznaky - pridat najst
 

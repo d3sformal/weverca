@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Text;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Memory entry represents multiple possibilities that for example single variable can have

@@ -8,13 +8,13 @@ using PHP.Core.AST;
 using PHP.Core.Reflection;
 
 using Weverca.ControlFlowGraph;
-using Weverca.Analysis.Expressions;
+using Weverca.AnalysisFramework.Expressions;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
 
     delegate ProgramPointBase ProgramPointCreator();

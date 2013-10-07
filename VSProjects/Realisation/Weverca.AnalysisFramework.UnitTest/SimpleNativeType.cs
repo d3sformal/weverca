@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 using PHP.Core;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     static class SimpleNativeType
     {

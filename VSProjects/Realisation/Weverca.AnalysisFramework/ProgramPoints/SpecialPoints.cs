@@ -11,7 +11,7 @@ using PHP.Core.AST;
  * Program points that have no corresponding elements in Phalanger AST.
  */
 
-namespace Weverca.Analysis.ProgramPoints
+namespace Weverca.AnalysisFramework.ProgramPoints
 {
 
     /// <summary>

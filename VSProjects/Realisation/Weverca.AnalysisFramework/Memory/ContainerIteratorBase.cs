@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using System.Collections;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Represents iterator which is used for traversing arrays and objects

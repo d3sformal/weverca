@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.VirtualReferenceModel;
 
 namespace Weverca.ControlFlowGraph.UnitTest

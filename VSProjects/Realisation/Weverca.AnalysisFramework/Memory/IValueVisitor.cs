@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Provides visitor functionality for Value class and its descendants.

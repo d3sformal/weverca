@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
 using PHP.Core;
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
     public abstract class FlowResolverBase
     {

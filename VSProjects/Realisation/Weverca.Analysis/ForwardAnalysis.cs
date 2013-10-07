@@ -3,11 +3,11 @@
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
     public class ForwardAnalysis : ForwardAnalysisBase
     {

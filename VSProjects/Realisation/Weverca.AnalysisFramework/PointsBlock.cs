@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using Weverca.ControlFlowGraph;
 
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Wrapps program points to behave like solid block. This abstraction also allows doing graph contractions for PPG vertices reduction.

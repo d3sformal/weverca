@@ -2,9 +2,9 @@
 using System.Text;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.UnitTest
+namespace Weverca.Analysis.UnitTest
 {
     /// <summary>
     /// Summary description for UnitTest1

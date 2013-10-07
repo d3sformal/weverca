@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Provide forward CFG analysis API.

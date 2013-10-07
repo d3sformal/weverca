@@ -2,9 +2,9 @@
 
 using PHP.Core;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Set of FlowInfo used as input for statement analysis.

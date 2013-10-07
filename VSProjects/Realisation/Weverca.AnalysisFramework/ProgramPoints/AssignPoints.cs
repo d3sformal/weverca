@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis.ProgramPoints
+namespace Weverca.AnalysisFramework.ProgramPoints
 {
     /// <summary>
     /// Assign expression representation

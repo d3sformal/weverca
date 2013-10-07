@@ -6,10 +6,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.Parsers;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     internal static class AnalysisTestUtils
     {

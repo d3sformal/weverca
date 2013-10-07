@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.ProgramPoints
+namespace Weverca.AnalysisFramework.ProgramPoints
 {
     /// <summary>
     /// Represents empty program point (it doesn't change flow)

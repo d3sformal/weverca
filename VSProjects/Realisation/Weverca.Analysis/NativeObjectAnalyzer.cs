@@ -6,10 +6,10 @@ using System.Xml;
 
 using PHP.Core;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
     public class NativeMethod : NativeFunction
     {

@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
-using Weverca.Analysis.Memory;
-using Weverca.Analysis.Expressions;
+using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
 
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Provide access to values computed for every partial. These values are

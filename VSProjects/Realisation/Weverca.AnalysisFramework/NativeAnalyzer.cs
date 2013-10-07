@@ -8,9 +8,9 @@ using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Delegate for native methods called during analysis in context of ProgramPointGraph

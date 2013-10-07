@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     public abstract class FunctionValue : Value
     {

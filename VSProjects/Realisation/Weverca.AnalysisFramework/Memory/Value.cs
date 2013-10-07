@@ -5,7 +5,7 @@ using System.Text;
 
 
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// All implementations of value has to be immutable

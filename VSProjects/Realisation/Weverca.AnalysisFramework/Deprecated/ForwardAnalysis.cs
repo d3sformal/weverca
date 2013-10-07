@@ -5,9 +5,9 @@ using System.Text;
 
 using PHP.Core.AST;
 
-using Weverca.Analysis.Expressions;
+using Weverca.AnalysisFramework.Expressions;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Extending layer for forward analysis, that provides methods for expression analysing.

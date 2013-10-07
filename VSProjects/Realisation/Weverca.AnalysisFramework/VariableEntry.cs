@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using PHP.Core;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Represents possible names resolved for single variable selector in source code

@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Weverca.Analysis;
+using Weverca.AnalysisFramework;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
 using PHP.Core;
-using Weverca.TaintedAnalysis.ExpressionEvaluator;
+using Weverca.Analysis.ExpressionEvaluator;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
     enum DirtyType { 
         HTMLDirty, SQLDirty, FilePathDirty

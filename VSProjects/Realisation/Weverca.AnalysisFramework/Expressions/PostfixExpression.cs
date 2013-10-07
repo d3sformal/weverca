@@ -5,7 +5,7 @@ using System.Text;
 
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
     /// <summary>
     /// Postfix representation of LangElement

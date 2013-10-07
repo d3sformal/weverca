@@ -6,7 +6,7 @@ using System.Text;
 using PHP.Core;
 using PHP.Core.AST;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Set of FlowInfo used as input for statement analysis.

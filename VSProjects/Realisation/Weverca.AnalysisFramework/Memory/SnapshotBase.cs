@@ -5,7 +5,7 @@ using System.Linq;
 using PHP.Core;
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Represents memory snapshot used for fix point analysis.

@@ -6,11 +6,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core;
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.Parsers;
 
-namespace Weverca.TaintedAnalysis.UnitTest
+namespace Weverca.Analysis.UnitTest
 {
 
     /// <summary>

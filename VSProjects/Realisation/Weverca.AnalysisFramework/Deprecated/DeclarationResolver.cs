@@ -7,7 +7,7 @@ using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.ControlFlowGraph;
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
     public abstract class DeclarationResolver<FlowInfo>
     {

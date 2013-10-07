@@ -3,10 +3,10 @@ using System.Linq;
 
 using PHP.Core;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
     /// <summary>
     /// Provides the functionality to insert and retrieve constant values from memoryModel.

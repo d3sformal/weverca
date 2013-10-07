@@ -6,7 +6,7 @@ using System.Text;
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Provide forward CFG analysis API.

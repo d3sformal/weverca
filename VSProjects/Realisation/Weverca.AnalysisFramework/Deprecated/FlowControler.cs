@@ -5,7 +5,7 @@ using System.Text;
 
 using PHP.Core.AST;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     public struct FlowControler<FlowInfo>
     {

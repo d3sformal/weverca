@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Expressions;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Expressions;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     /// <summary>
     /// Simple string analysis implementation which demonstrates usege of ForwardAnalysis of CFG.

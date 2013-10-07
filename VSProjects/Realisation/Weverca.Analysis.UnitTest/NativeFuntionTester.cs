@@ -5,17 +5,17 @@ using System.Text;
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Weverca.Analysis;
+using Weverca.AnalysisFramework;
 using PHP.Core;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.Parsers;
-using Weverca.TaintedAnalysis;
+using Weverca.Analysis;
 
 using PHP.Core.Parsers;
 using Weverca.ControlFlowGraph;
 
 
-namespace Weverca.TaintedAnalysis.UnitTest
+namespace Weverca.Analysis.UnitTest
 {
 
     [TestClass]

@@ -3,9 +3,9 @@
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.ExpressionEvaluator
+namespace Weverca.Analysis.ExpressionEvaluator
 {
     public class BinaryOperationVisitor : AbstractValueVisitor
     {

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {

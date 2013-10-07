@@ -2,7 +2,7 @@
 
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
     /// <summary>
     /// Converts elements between representations

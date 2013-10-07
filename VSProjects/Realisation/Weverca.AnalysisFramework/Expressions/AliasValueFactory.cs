@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
     /// <summary>
     /// Creates AliasValue points (created values has stack edges connected, but no flow edges)

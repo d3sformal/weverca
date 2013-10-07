@@ -5,7 +5,7 @@ using System.Linq;
 
 using PHP.Core;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.MemoryModel;
 
 namespace Weverca.MemoryModels.UnitTest

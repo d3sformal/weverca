@@ -4,10 +4,10 @@ using System.Linq;
 
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.FlowResolver
+namespace Weverca.Analysis.FlowResolver
 {
     /// <summary>
     /// Class which holds a context of a part of a condition.

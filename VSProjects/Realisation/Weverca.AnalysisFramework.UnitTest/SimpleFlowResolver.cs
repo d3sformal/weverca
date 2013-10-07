@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.ProgramPoints;
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     /// <summary>
     /// Controlling flow actions during analysis

@@ -6,10 +6,10 @@ using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
+namespace Weverca.Analysis.UnitTest.FlowResolverTests
 {
     [TestClass]
     public class FlowResolverTests

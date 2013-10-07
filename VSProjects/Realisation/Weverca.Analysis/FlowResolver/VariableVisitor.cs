@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using PHP.Core.AST;
 
-namespace Weverca.TaintedAnalysis.FlowResolver
+namespace Weverca.Analysis.FlowResolver
 {
     /// <summary>
     /// This visitor will find all variable uses in an AST.

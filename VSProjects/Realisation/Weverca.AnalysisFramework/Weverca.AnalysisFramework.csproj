@@ -7,8 +7,8 @@
     <ProjectGuid>{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Weverca.Analysis</RootNamespace>
-    <AssemblyName>Weverca.Analysis</AssemblyName>
+    <RootNamespace>Weverca.AnalysisFramework</RootNamespace>
+    <AssemblyName>Weverca.AnalysisFramework</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

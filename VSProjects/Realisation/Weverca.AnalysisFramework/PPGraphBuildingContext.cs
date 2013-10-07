@@ -11,10 +11,10 @@ using PHP.Core.AST;
 
 using Weverca.ControlFlowGraph;
 
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Context providing services for building program point graphs

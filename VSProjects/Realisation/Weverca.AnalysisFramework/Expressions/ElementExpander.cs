@@ -8,10 +8,10 @@ using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 
-using Weverca.Analysis.Memory;
-using Weverca.Analysis.ProgramPoints;
+using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
-namespace Weverca.Analysis.Expressions
+namespace Weverca.AnalysisFramework.Expressions
 {
 
     delegate void OnPointCreated(ProgramPointBase point);

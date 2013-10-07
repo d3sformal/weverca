@@ -2,7 +2,7 @@
 
 using PHP.Core;
 
-namespace Weverca.Analysis.Memory
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Value representing interval of values

@@ -5,11 +5,11 @@ using System.Linq;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis.ProgramPoints;
-using Weverca.Analysis.Expressions;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis.UnitTest
+namespace Weverca.AnalysisFramework.UnitTest
 {
     /// <summary>
     /// Initializer used for setting environment because of testing purposes

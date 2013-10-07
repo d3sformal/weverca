@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis.UnitTest
+namespace Weverca.Analysis.UnitTest
 {
     [TestClass]
     public class NativeObjectTester

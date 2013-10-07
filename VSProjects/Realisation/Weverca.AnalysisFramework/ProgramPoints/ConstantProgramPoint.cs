@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
-using Weverca.Analysis.Memory;
-using Weverca.Analysis.Expressions;
+using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
 
 
-namespace Weverca.Analysis.ProgramPoints
+namespace Weverca.AnalysisFramework.ProgramPoints
 {
     /// <summary>
     /// Provider of constant(not changed during time) value, the value is not dependent on outer arguments

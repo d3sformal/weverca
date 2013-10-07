@@ -7,7 +7,7 @@ using PHP.Core.AST;
 
 using Weverca.ControlFlowGraph;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
 
     /// <summary>

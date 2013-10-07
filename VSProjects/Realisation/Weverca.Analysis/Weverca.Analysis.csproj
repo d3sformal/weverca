@@ -7,8 +7,8 @@
     <ProjectGuid>{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Weverca.TaintedAnalysis</RootNamespace>
-    <AssemblyName>Weverca.TaintedAnalysis</AssemblyName>
+    <RootNamespace>Weverca.Analysis</RootNamespace>
+    <AssemblyName>Weverca.Analysis</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>

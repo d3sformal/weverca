@@ -6,10 +6,10 @@ using System.Text;
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
 
-using Weverca.Analysis.Memory;
-using Weverca.Analysis.Expressions;
+using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Program point computed during fix point algorithm.

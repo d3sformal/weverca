@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
     class FunctionProgramPointBuilder:AbstractValueVisitor
     {

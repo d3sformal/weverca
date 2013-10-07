@@ -1,4 +1,4 @@
-﻿namespace Weverca.Analysis.Memory
+﻿namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Represent special kind of value. For example these values can express some non-determinism.

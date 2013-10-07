@@ -5,11 +5,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 using MemoryModel = Weverca.MemoryModels.MemoryModel;
 
-namespace Weverca.TaintedAnalysis.UnitTest.FlowResolverTests
+namespace Weverca.Analysis.UnitTest.FlowResolverTests
 {
     class TestCase
     {

@@ -4,10 +4,10 @@ using System.Linq;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Analysis;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.TaintedAnalysis
+namespace Weverca.Analysis
 {
 
     /// <summary>

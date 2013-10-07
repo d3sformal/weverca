@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.ProgramPoints
+namespace Weverca.AnalysisFramework.ProgramPoints
 {
     /// <summary>
     /// Represents alias for direct variable use

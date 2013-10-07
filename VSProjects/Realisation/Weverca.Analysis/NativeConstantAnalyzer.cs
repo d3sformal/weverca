@@ -4,13 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 using PHP.Core.AST;
 using PHP.Core;
 using System.Xml;
 using System.IO;
-using Weverca.Analysis;
-namespace Weverca.TaintedAnalysis
+using Weverca.AnalysisFramework;
+namespace Weverca.Analysis
 {
 
     /// <summary>

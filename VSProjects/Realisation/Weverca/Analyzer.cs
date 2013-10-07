@@ -8,8 +8,8 @@ using System.IO;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework;
 using Weverca.Analysis;
-using Weverca.TaintedAnalysis;
 
 using Weverca.Parsers;
 using Weverca.ControlFlowGraph;

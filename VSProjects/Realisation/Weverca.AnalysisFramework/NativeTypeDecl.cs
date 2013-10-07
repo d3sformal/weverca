@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 
 using PHP.Core;
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis
+namespace Weverca.AnalysisFramework
 {
 
     public enum Visibility

@@ -4,7 +4,7 @@ using System.Text;
 
 using PHP.Core;
 
-using Weverca.Analysis.Memory;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {
