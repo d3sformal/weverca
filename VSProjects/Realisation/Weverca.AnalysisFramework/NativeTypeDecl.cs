@@ -29,7 +29,7 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsStatic;
 
-        public readonly MemoryEntry Value;
+        public readonly MemoryEntry InitValue;
 
         public readonly Expression Initializer;
 
@@ -39,7 +39,7 @@ namespace Weverca.AnalysisFramework
             Type = type;
             Visibility = visibility;
             IsStatic=isStatic;
-            Value = value;
+            InitValue = value;
         }
 
         public NativeFieldInfo(VariableName name, string type, Visibility visibility, Expression initializer, bool isStatic)
