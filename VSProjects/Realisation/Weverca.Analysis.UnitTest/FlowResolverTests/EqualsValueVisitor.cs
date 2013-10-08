@@ -57,7 +57,7 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
             throw new NotImplementedException();
         }
 
-        public void VisitAnyPrimitiveValue(AnyPrimitiveValue value)
+        public void VisitAnyScalarValue(AnyScalarValue value)
         {
             throw new NotImplementedException();
         }
@@ -107,12 +107,12 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
             throw new NotImplementedException();
         }
 
-        public void VisitPrimitiveValue(PrimitiveValue value)
+        public void VisitScalarValue(ScalarValue value)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitGenericPrimitiveValue<T>(PrimitiveValue<T> value)
+        public void VisitGenericScalarValue<T>(ScalarValue<T> value)
         {
             throw new NotImplementedException();
         }
@@ -228,5 +228,31 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
         }
 
         #endregion
+
+        public void VisitConcreteValue(ConcreteValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitGenericNumericValue<T>(NumericValue<T> value)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitCompoundValue(CompoundValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAnyNumericValue(AnyNumericValue value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void VisitAnyCompoundValue(AnyCompoundValue value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

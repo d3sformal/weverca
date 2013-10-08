@@ -7,14 +7,15 @@
     {
         public override int GetHashCode()
         {
-            return this.GetType().GetHashCode();
+            return GetType().GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
-            return this.GetType() == obj.GetType();
+            return GetType() == obj.GetType();
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitSpecialValue(this);
@@ -23,129 +24,10 @@
 
     public abstract class AliasValue : SpecialValue
     {
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAliasValue(this);
-        }
-    }
-
-    public class AnyValue : SpecialValue
-    {
-        internal AnyValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyValue(this);
-        }
-    }
-
-    public class UndefinedValue : SpecialValue
-    {
-        internal UndefinedValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitUndefinedValue(this);
-        }
-    }
-
-    public class ResourceValue : SpecialValue
-    {
-        internal ResourceValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitResourceValue(this);
-        }
-    }
-
-    public abstract class AnyPrimitiveValue : AnyValue
-    {
-        internal AnyPrimitiveValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyPrimitiveValue(this);
-        }
-    }
-
-    public class AnyStringValue : AnyPrimitiveValue
-    {
-        internal AnyStringValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyStringValue(this);
-        }
-    }
-
-    public class AnyIntegerValue : AnyPrimitiveValue
-    {
-        internal AnyIntegerValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyIntegerValue(this);
-        }
-    }
-
-    public class AnyLongintValue : AnyPrimitiveValue
-    {
-        internal AnyLongintValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyLongintValue(this);
-        }
-    }
-
-    public class AnyFloatValue : AnyPrimitiveValue
-    {
-        internal AnyFloatValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyFloatValue(this);
-        }
-    }
-
-    public class AnyBooleanValue : AnyPrimitiveValue
-    {
-        internal AnyBooleanValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyBooleanValue(this);
-        }
-    }
-
-    public class AnyObjectValue : AnyValue
-    {
-        internal AnyObjectValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyObjectValue(this);
-        }
-    }
-
-    public class AnyArrayValue : AnyValue
-    {
-        internal AnyArrayValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyArrayValue(this);
-        }
-    }
-
-    public class AnyResourceValue : AnyValue
-    {
-        internal AnyResourceValue() { }
-
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAnyResourceValue(this);
         }
     }
 
@@ -158,6 +40,7 @@
             RawData = rawData;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitInfoValue(this);
@@ -196,6 +79,7 @@
             Data = data;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitInfoValue<T>(this);

@@ -236,9 +236,14 @@ namespace Weverca.Analysis
                                     long longValue;
                                     double doubleValue;
 
-                                    if (bool.TryParse(stringValue, out boolValue))
+                                    if (stringValue == null)
                                     {
-                                        initValue=outSet.CreateBool(boolValue);
+                                        // TODO: stringValue cannot be null, this is hotfix of error
+                                        initValue = outSet.CreateString(string.Empty);
+                                    }
+                                    else if (bool.TryParse(stringValue, out boolValue))
+                                    {
+                                        initValue = outSet.CreateBool(boolValue);
                                     }
                                     else if(int.TryParse(stringValue, out intValue))
                                     {
@@ -252,7 +257,7 @@ namespace Weverca.Analysis
                                     {
                                         initValue = outSet.CreateDouble(doubleValue);
                                     }
-                                    else 
+                                    else
                                     {
                                         initValue = outSet.CreateString(stringValue);
                                     }

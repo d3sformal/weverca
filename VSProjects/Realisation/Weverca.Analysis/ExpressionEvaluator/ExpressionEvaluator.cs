@@ -388,7 +388,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     continue;
                 }
 
-                var keys = new HashSet<PrimitiveValue>();
+                var keys = new HashSet<ScalarValue>();
 
                 // TODO: It is too complicated
                 foreach (var key in keyValue.Key.PossibleValues)

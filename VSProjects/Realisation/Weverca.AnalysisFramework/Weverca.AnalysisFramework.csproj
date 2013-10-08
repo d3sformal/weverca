@@ -68,7 +68,11 @@
     <Compile Include="FlowOutputSet.cs" />
     <Compile Include="ForwardAnalysisBase.cs" />
     <Compile Include="FunctionProgramPointBuilder.cs" />
+    <Compile Include="Memory\AnyValues.cs" />
+    <Compile Include="Memory\CompoundValues.cs" />
+    <Compile Include="Memory\ConcreteValues.cs" />
     <Compile Include="Memory\FunctionValues.cs" />
+    <Compile Include="Memory\ScalarValues.cs" />
     <Compile Include="Memory\SnapshotBase.cs" />
     <Compile Include="Memory\AbstractValueVisitor.cs" />
     <Compile Include="Memory\IntervalValues.cs" />
@@ -76,10 +80,8 @@
     <Compile Include="Memory\ISnapshotReadonly.cs" />
     <Compile Include="Memory\ISnapshotReadWrite.cs" />
     <Compile Include="Memory\MemoryEntry.cs" />
-    <Compile Include="Memory\PrimitiveValues.cs" />
     <Compile Include="Memory\SnapshotStatistics.cs" />
     <Compile Include="Memory\SpecialValues.cs" />
-    <Compile Include="Memory\StructuredValues.cs" />
     <Compile Include="Memory\ContainerIteratorBase.cs" />
     <Compile Include="Memory\TypeValues.cs" />
     <Compile Include="Memory\Value.cs" />

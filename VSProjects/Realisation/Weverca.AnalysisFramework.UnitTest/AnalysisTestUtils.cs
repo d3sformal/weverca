@@ -17,7 +17,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// Initializer which sets environment for tests before analyzing
         /// </summary>
         /// <param name="outSet"></param>
-        static private void GLOBAL_ENVIRONMENT_INITIALIZER(FlowOutputSet outSet)
+        private static void GLOBAL_ENVIRONMENT_INITIALIZER(FlowOutputSet outSet)
         {
             var post = new VariableName("_POST");
             var postInfo = outSet.CreateInfo(new SimpleInfo(
@@ -30,7 +30,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             outSet.SetInfo(value, postInfo);
         }
 
-        static internal ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
+        internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
         {
             var fileName = "./cfg_test.php";
             var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -42,7 +42,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return cfg;
         }
 
-        static internal void CopyInfo(FlowOutputSet outSet, MemoryEntry source, MemoryEntry target)
+        internal static void CopyInfo(FlowOutputSet outSet, MemoryEntry source, MemoryEntry target)
         {
             var infos = new HashSet<InfoValue>();
 
@@ -66,7 +66,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="infos"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        static internal bool TestValues(string varName, IEnumerable<ValueInfo> infos, params string[] values)
+        internal static bool TestValues(string varName, IEnumerable<ValueInfo> infos, params string[] values)
         {
             var info = getVarInfo(varName, infos);
 
@@ -86,7 +86,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return true;
         }
 
-        static internal ValueInfo getVarInfo(string varName, IEnumerable<ValueInfo> infos)
+        internal static ValueInfo getVarInfo(string varName, IEnumerable<ValueInfo> infos)
         {
             foreach (var info in infos)
             {
@@ -95,11 +95,12 @@ namespace Weverca.AnalysisFramework.UnitTest
                     return info;
                 }
             }
-            Debug.Assert(false, "Variable of name: '" + varName + "' hasn't been found");
+
+            Debug.Fail("Variable of name: '" + varName + "' hasn't been found");
             return null;
         }
 
-        static internal ValueInfo[] GetEndPointInfo(string code)
+        internal static ValueInfo[] GetEndPointInfo(string code)
         {
             var cfg = AnalysisTestUtils.CreateCFG(code);
             var analysis = new StringAnalysis(cfg);
@@ -108,7 +109,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return list.ToArray();
         }
 
-        static internal FlowOutputSet GetEndPointOutSet(TestCase test)
+        internal static FlowOutputSet GetEndPointOutSet(TestCase test)
         {
             var cfg = AnalysisTestUtils.CreateCFG(test.PhpCode);
             var analysis = new SimpleAnalysis(cfg, test.EnvironmentInitializer);
@@ -122,31 +123,31 @@ namespace Weverca.AnalysisFramework.UnitTest
             return analysis.ProgramPointGraph.End.OutSet;
         }
 
-        static internal void RunTestCase(TestCase testCase)
+        internal static void RunTestCase(TestCase testCase)
         {
             var output = GetEndPointOutSet(testCase);
 
             testCase.Assert(output);
         }
 
-        static internal void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
+        internal static void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             var entry = outset.ReadValue(new VariableName(variableName));
 
-            var actualValues = (from PrimitiveValue<T> value in entry.PossibleValues select value.Value).ToArray();
+            var actualValues = (from ScalarValue<T> value in entry.PossibleValues select value.Value).ToArray();
 
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
         }
 
-        static internal TestCase AssertVariable(this string test_CODE, string variableName, string assertMessage = null, string nonDeterministic = "unknown")
+        internal static TestCase AssertVariable(this string test_CODE, string variableName, string assertMessage = null, string nonDeterministic = "unknown")
         {
             var testCase = new TestCase(test_CODE, variableName, assertMessage);
             testCase.SetNonDeterministic(nonDeterministic);
             return testCase;
         }
 
-        static internal T GetSingle<T>(this MemoryEntry entry)
+        internal static T GetSingle<T>(this MemoryEntry entry)
         {
             if (entry.PossibleValues.Count() != 1)
             {
@@ -187,7 +188,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
     }
 
-    delegate void AssertRunner(FlowOutputSet output);
+    internal delegate void AssertRunner(FlowOutputSet output);
 
     internal class TestCase
     {
@@ -230,14 +231,14 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         /// <summary>
-        /// Set function which PPGraph will be shared accross all calls
+        /// Set function which PPGraph will be shared across all calls
         /// </summary>
         /// <param name="sharedFunctionName">Name of shared function</param>
         /// <returns></returns>
         internal TestCase ShareFunctionGraph(string sharedFunctionName)
         {
             _sharedFunctions.Add(sharedFunctionName);
-            return this; ;
+            return this;
         }
 
         internal TestCase DeclareType(NativeTypeDecl typeDeclaration)
@@ -330,7 +331,5 @@ namespace Weverca.AnalysisFramework.UnitTest
                 PreviousTest.IncludeInitializer(analysis);
             }
         }
-
-  
     }
 }

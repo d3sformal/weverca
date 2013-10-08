@@ -62,7 +62,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
 
             var values = new HashSet<Value>();
-            var indexValue = index.PossibleValues.First() as PrimitiveValue;
+            var indexValue = index.PossibleValues.First() as ScalarValue;
             var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
 
             foreach (var arrayValue in array.PossibleValues)
@@ -115,7 +115,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
 
             var arrayValue = array.PossibleValues.First();
-            var indexValue = index.PossibleValues.First() as PrimitiveValue;
+            var indexValue = index.PossibleValues.First() as ScalarValue;
 
             var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
 
@@ -311,7 +311,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             foreach (AssociativeArray array in arrayValue.PossibleValues)
             {
-                foreach (PrimitiveValue indexValue in aliasedIndex.PossibleValues)
+                foreach (ScalarValue indexValue in aliasedIndex.PossibleValues)
                 {
                     var index = OutSet.CreateIndex(indexValue.RawValue.ToString());
                     yield return OutSet.CreateIndexAlias(array, index);
@@ -380,7 +380,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                     throw new NotImplementedException();
                 }
 
-                var partValue = part.PossibleValues.First() as PrimitiveValue;
+                var partValue = part.PossibleValues.First() as ScalarValue;
                 result.Append(partValue.RawValue);
             }
 

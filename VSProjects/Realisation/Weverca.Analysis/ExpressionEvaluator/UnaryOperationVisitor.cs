@@ -270,7 +270,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override void VisitAnyPrimitiveValue(AnyPrimitiveValue value)
+        public override void VisitAnyScalarValue(AnyScalarValue value)
         {
             switch (operation)
             {
@@ -291,7 +291,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 default:
                     if (!PerformUsualOperation(value))
                     {
-                        base.VisitAnyPrimitiveValue(value);
+                        base.VisitAnyScalarValue(value);
                     }
                     break;
             }
@@ -413,11 +413,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override void VisitPrimitiveValue(PrimitiveValue value)
+        public override void VisitScalarValue(ScalarValue value)
         {
             if (!PerformUsualOperation(value))
             {
-                base.VisitPrimitiveValue(value);
+                base.VisitScalarValue(value);
             }
         }
 
