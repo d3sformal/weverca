@@ -29,15 +29,26 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsStatic;
 
-        public readonly MemoryEntry Identifier;
+        public readonly MemoryEntry Value;
 
-        public NativeFieldInfo(VariableName name, string type, Visibility visibility, MemoryEntry identifier, bool isStatic)
+        public readonly Expression Initializer;
+
+        public NativeFieldInfo(VariableName name, string type, Visibility visibility, MemoryEntry value, bool isStatic)
         {
             Name = name;
             Type = type;
             Visibility = visibility;
             IsStatic=isStatic;
-            Identifier = identifier;
+            Value = value;
+        }
+
+        public NativeFieldInfo(VariableName name, string type, Visibility visibility, Expression initializer, bool isStatic)
+        {
+            Name = name;
+            Type = type;
+            Visibility = visibility;
+            IsStatic = isStatic;
+            Initializer = initializer;
         }
     }
 
@@ -56,16 +67,42 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly NativeAnalyzerMethod Method;
 
+        public readonly Visibility Visibility;
+
         public readonly bool IsStatic;
 
         public readonly bool IsFinal;
 
-        public NativeMethodInfo(Name name, NativeAnalyzerMethod method, bool isFinal = false, bool isStatic = false)
+
+        public NativeMethodInfo(Name name,  Visibility visibility,NativeAnalyzerMethod method, bool isFinal = false, bool isStatic = false)
         {
             Name = name;
             Method = method;
             IsFinal = isFinal;
             isStatic = IsStatic;
+            Visibility = visibility;
+        }
+    }
+
+    public class ConstantInfo
+    {
+        public readonly VariableName Name;
+        public readonly MemoryEntry Value;
+        public readonly Expression Initializer;
+        public readonly Visibility Visibility;
+
+        public ConstantInfo(VariableName name, Visibility visibility, MemoryEntry value)
+        { 
+            Name=name;
+            Value=value;
+            Visibility = visibility;
+        }
+
+        public ConstantInfo(VariableName name, Visibility visibility, Expression initializer)
+        {
+            Name = name;
+            Initializer = initializer;
+            Visibility = visibility;
         }
     }
 
@@ -86,7 +123,7 @@ namespace Weverca.AnalysisFramework
 
         public readonly ReadOnlyDictionary<VariableName, NativeFieldInfo> Fields;
 
-        public readonly ReadOnlyDictionary<VariableName, MemoryEntry> Constants;
+        public readonly ReadOnlyDictionary<VariableName, ConstantInfo> Constants;
 
         public readonly ReadOnlyCollection<NativeMethodInfo> ModeledMethods;
 
@@ -96,13 +133,13 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsInterface;
 
-        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, MemoryEntry> constants, Dictionary<VariableName, NativeFieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
+        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, NativeFieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
             ModeledMethods = new ReadOnlyCollection<NativeMethodInfo>(new List<NativeMethodInfo>(methods));
             SourceCodeMethods = new ReadOnlyCollection<MethodDecl>(new List<MethodDecl>(sourceCodeMethods));
-            Constants = new ReadOnlyDictionary<VariableName, MemoryEntry>(constants);
+            Constants = new ReadOnlyDictionary<VariableName, ConstantInfo>(constants);
             Fields = new ReadOnlyDictionary<VariableName, NativeFieldInfo>(fields);
             IsFinal = isFinal;
             IsInterface = isInteface;

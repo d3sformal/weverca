@@ -44,13 +44,15 @@ namespace Weverca.Analysis
 
         public Dictionary<VariableName, NativeFieldInfo> Fields;
 
-        public Dictionary<VariableName, MemoryEntry> Constants;
+        public Dictionary<VariableName, ConstantInfo> Constants;
 
         public List<NativeMethod> Methods;
 
         public bool IsInterFace;
 
         public bool IsFinal;
+
+        public Visibility visibility;
 
         #endregion
 
@@ -74,13 +76,13 @@ namespace Weverca.Analysis
                     var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
                     if (method.Name.Name.Value.ToLower() == "__construct")
                     {
-                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name,
+                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, visibility,
                             helper.Construct, method.IsFinal, method.IsStatic));
                         containsConstructor = true;
                     }
                     else
                     {
-                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name,
+                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, visibility,
                             helper.Analyze, method.IsFinal, method.IsStatic));
                         allreadyDeclaredMethods.Add(method.Name);
                     }
@@ -96,14 +98,14 @@ namespace Weverca.Analysis
                     var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
                     if (method.Name.Name.Value.ToLower() == "__construct" && containsConstructor == false)
                     {
-                        var methodInfo = new NativeMethodInfo(method.Name.Name, helper.Construct,
+                        var methodInfo = new NativeMethodInfo(method.Name.Name, visibility, helper.Construct,
                             method.IsFinal, method.IsStatic);
                         nativeMethodsInfo.Add(methodInfo);
                         containsConstructor = true;
                     }
                     else
                     {
-                        var newMethod = new NativeMethodInfo(method.Name.Name,
+                        var newMethod = new NativeMethodInfo(method.Name.Name, visibility,
                             helper.Analyze, method.IsFinal, method.IsStatic);
                         if (!allreadyDeclaredMethods.Contains(method.Name))
                         {
@@ -136,7 +138,7 @@ namespace Weverca.Analysis
                  Console.WriteLine(QualifiedName);
             */
 
-            return new NativeTypeDecl(QualifiedName, nativeMethodsInfo,new List<MethodDecl>(), Constants,Fields, BaseClassName, IsFinal, IsInterFace);
+            return new NativeTypeDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);
         }
 
         #endregion
@@ -187,7 +189,7 @@ namespace Weverca.Analysis
                                 }
                                 currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
                                 currentClass.Fields = new Dictionary<VariableName, NativeFieldInfo>();
-                                currentClass.Constants = new Dictionary<VariableName, MemoryEntry>();
+                                currentClass.Constants = new Dictionary<VariableName, ConstantInfo>();
                                 currentClass.Methods = new List<NativeMethod>();
                                 if (reader.GetAttribute("baseClass") != null)
                                 {
@@ -229,7 +231,7 @@ namespace Weverca.Analysis
                                             visiblity = Visibility.PUBLIC;
                                             break;
                                     }
-                                    Value initValue=outSet.UndefinedValue;
+                                    Value initValue = outSet.UndefinedValue;
                                     string stringValue = reader.GetAttribute("value");
                                     int intValue;
                                     bool boolValue;
@@ -245,11 +247,11 @@ namespace Weverca.Analysis
                                     {
                                         initValue = outSet.CreateBool(boolValue);
                                     }
-                                    else if(int.TryParse(stringValue, out intValue))
+                                    else if (int.TryParse(stringValue, out intValue))
                                     {
                                         initValue = outSet.CreateInt(intValue);
                                     }
-                                    else if (long.TryParse(stringValue,out longValue))
+                                    else if (long.TryParse(stringValue, out longValue))
                                     {
                                         initValue = outSet.CreateLong(longValue);
                                     }
@@ -261,37 +263,39 @@ namespace Weverca.Analysis
                                     {
                                         initValue = outSet.CreateString(stringValue);
                                     }
-                                    
+
                                     currentClass.Fields[new VariableName(fieldName)] = new NativeFieldInfo(new VariableName(fieldName), fieldType, visiblity, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
                                 }
                                 else
                                 {
                                     string value = reader.GetAttribute("value");
                                     //resolve constant
+                                    VariableName constantName = new VariableName(fieldName);
+                                    Visibility visibility = Visibility.PUBLIC;
                                     switch (fieldType)
                                     {
                                         case "int":
                                         case "integer":
                                             try
                                             {
-                                                currentClass.Constants[new VariableName(fieldName)] = new MemoryEntry(outSet.CreateInt(int.Parse(value)));
+                                                currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
                                             }
                                             catch (Exception)
                                             {
-                                                currentClass.Constants[new VariableName(fieldName)] = new MemoryEntry(outSet.CreateDouble(double.Parse(value)));
+                                                currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             }
                                             break;
                                         case "string":
-                                            currentClass.Constants[new VariableName(fieldName)] = new MemoryEntry(outSet.CreateString(value));
+                                            currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateString(value)));
                                             break;
                                         case "boolean":
-                                            currentClass.Constants[new VariableName(fieldName)] = new MemoryEntry(outSet.CreateBool(bool.Parse(value)));
+                                            currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
                                             break;
                                         case "float":
-                                            currentClass.Constants[new VariableName(fieldName)] = new MemoryEntry(outSet.CreateDouble(double.Parse(value)));
+                                            currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             break;
                                         case "NULL":
-                                            currentClass.Constants[new VariableName(fieldName)] = new MemoryEntry(outSet.UndefinedValue);
+                                            currentClass.Constants[constantName] = new ConstantInfo(constantName,visibility, new MemoryEntry(outSet.UndefinedValue));
                                             break;
                                         default:
                                             break;

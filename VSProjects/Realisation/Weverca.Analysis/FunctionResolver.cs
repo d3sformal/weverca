@@ -222,7 +222,7 @@ namespace Weverca.Analysis
             List<NativeMethodInfo> modeledMethods = new List<NativeMethodInfo>();
             List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
             Dictionary<VariableName, NativeFieldInfo> fields = new Dictionary<VariableName, NativeFieldInfo>();
-            Dictionary<VariableName, MemoryEntry> constants = new Dictionary<VariableName, MemoryEntry>();
+            Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
 
             foreach (var member in declaration.Members)
             {
@@ -230,20 +230,9 @@ namespace Weverca.Analysis
                 {
                     foreach (FieldDecl field in (member as FieldDeclList).Fields)
                     { 
-                        Visibility visibility;
-                        if (field.Field.IsPrivate)
-                        {
-                            visibility = Visibility.PRIVATE;
-                        }
-                        else if (field.Field.IsProtected)
-                        {
-                            visibility = Visibility.PROTECTED;
-                        }
-                        else 
-                        {
-                            visibility = Visibility.PROTECTED;
-                        }
-                        fields.Add(new VariableName(field.Name.Value),new NativeFieldInfo(field.Name,"any",visibility,null,field.Field.IsFinal));
+                        Visibility visibility = Visibility.PUBLIC;
+                        
+                        fields.Add(new VariableName(field.Name.Value),new NativeFieldInfo(field.Name,"any",visibility,field.Initializer,true));
                     }
 
                 }
