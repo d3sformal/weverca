@@ -423,7 +423,7 @@ namespace Weverca.Analysis
                     List<Value> result = new List<Value>();
                     foreach (var arg1 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(1)).PossibleValues)
                     {
-                        if (ValueTypeResolver.isArray(arg1) || ValueTypeResolver.isObject(arg1))
+                        if (ValueTypeResolver.IsArray(arg1) || ValueTypeResolver.IsObject(arg1))
                         {
                             canBeFalse = true;
                         }
@@ -495,25 +495,25 @@ namespace Weverca.Analysis
         public void _is_array(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value => {
-                return ValueTypeResolver.isArray(value);    
+                return ValueTypeResolver.IsArray(value);    
             }));
         }
         public void _is_bool(FlowController flow) {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isBool(value);
+                return ValueTypeResolver.IsBool(value);
             }));
         }
         public void _is_double(FlowController flow) {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isFloat(value);
+                return ValueTypeResolver.IsFloat(value);
             }));
         }
         public void _is_int(FlowController flow) {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value);
+                return ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value);
             }));
         }
         public void _is_null(FlowController flow) {
@@ -525,13 +525,13 @@ namespace Weverca.Analysis
         public void _is_numeric(FlowController flow) {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value) || ValueTypeResolver.isFloat(value);
+                return ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value) || ValueTypeResolver.IsFloat(value);
             }));
         }
         public void _is_object(FlowController flow) {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isObject(value);
+                return ValueTypeResolver.IsObject(value);
             }));
         }
         public void _is_resource(FlowController flow) {
@@ -544,14 +544,14 @@ namespace Weverca.Analysis
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value) || ValueTypeResolver.isFloat(value) || ValueTypeResolver.isBool(value) || ValueTypeResolver.isString(value); ;
+                return ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value) || ValueTypeResolver.IsFloat(value) || ValueTypeResolver.IsBool(value) || ValueTypeResolver.IsString(value); ;
             }));
         }
         public void _is_string(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
-                return ValueTypeResolver.isString(value);
+                return ValueTypeResolver.IsString(value);
             }));
         }
 

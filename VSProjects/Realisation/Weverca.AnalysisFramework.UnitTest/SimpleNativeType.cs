@@ -9,6 +9,7 @@ using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 using PHP.Core;
+using PHP.Core.AST;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -22,7 +23,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             };
 
-            var declaration = new NativeTypeDecl(new QualifiedName(new Name("NativeType")), methods, new Dictionary<string,Value>(), new Dictionary<string, NativeFieldInfo>(),null,false,false);
+            var declaration = new NativeTypeDecl(new QualifiedName(new Name("NativeType")), methods, new List<MethodDecl>(), new Dictionary<VariableName, MemoryEntry>(), new Dictionary<VariableName, NativeFieldInfo>(), null, false, false);
             return declaration;
         }
 

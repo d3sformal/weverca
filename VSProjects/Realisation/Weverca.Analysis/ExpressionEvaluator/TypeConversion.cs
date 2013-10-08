@@ -1220,50 +1220,50 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
     public class ValueTypeResolver
     {
-        public static bool isInt(Value value)
+        public static bool IsInt(Value value)
         {
             return value is IntegerIntervalValue || value is IntegerValue || value is AnyIntegerValue;
         }
 
-        public static bool isLong(Value value)
+        public static bool IsLong(Value value)
         {
             return value is LongintValue || value is AnyLongintValue || value is LongintIntervalValue;
         }
 
-        public static bool isFloat(Value value)
+        public static bool IsFloat(Value value)
         {
             return value is FloatIntervalValue || value is FloatValue || value is AnyFloatValue;
         }
 
-        public static bool isBool(Value value)
+        public static bool IsBool(Value value)
         {
             return value is BooleanValue || value is AnyBooleanValue;
         }
 
-        public static bool isString(Value value)
+        public static bool IsString(Value value)
         {
             return value is StringValue || value is AnyStringValue;
         }
 
-        public static bool isObject(Value value)
+        public static bool IsObject(Value value)
         {
             return value is ObjectValue || value is AnyObjectValue;
         }
 
-        public static bool isArray(Value value)
+        public static bool IsArray(Value value)
         {
             return value is AssociativeArray || value is AnyArrayValue;
         }
 
         public static bool CanBeDirty(Value value)
         {
-            return !(ValueTypeResolver.isBool(value)
-                || ValueTypeResolver.isInt(value)
-                || ValueTypeResolver.isFloat(value)
-                || ValueTypeResolver.isLong(value));
+            return !(ValueTypeResolver.IsBool(value)
+                || ValueTypeResolver.IsInt(value)
+                || ValueTypeResolver.IsFloat(value)
+                || ValueTypeResolver.IsLong(value));
         }
 
-        public static bool isUnknown(Value value)
+        public static bool IsUnknown(Value value)
         {
             if (value is UndefinedValue
                 || value is AnyValue

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using PHP.Core;
-
+using PHP.Core.AST;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.AnalysisFramework.UnitTest
@@ -18,7 +17,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 method("__construct",_method___construct),
             };
 
-            var declaration = new NativeTypeDecl(new QualifiedName(new Name("Exception")), methods, new Dictionary<string, Value>(), new Dictionary<string, NativeFieldInfo>(), null, false, false);
+            var declaration = new NativeTypeDecl(new QualifiedName(new Name("Exception")), methods, new List<MethodDecl>(), new Dictionary<VariableName, MemoryEntry>(), new Dictionary<VariableName, NativeFieldInfo>(), null, false, false);
             return declaration;
         }
 

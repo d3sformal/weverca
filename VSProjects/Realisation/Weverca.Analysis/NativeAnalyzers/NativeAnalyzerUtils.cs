@@ -245,40 +245,40 @@ namespace Weverca.Analysis
                         break;
                     case "int":
                     case "integer":
-                        if (!(ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value)))
+                        if (!(ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value)))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "float":
                     case "number":
-                        if (!(ValueTypeResolver.isInt(value) || ValueTypeResolver.isLong(value) || ValueTypeResolver.isFloat(value)))
+                        if (!(ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value) || ValueTypeResolver.IsFloat(value)))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "string":
                     case "char":
-                        if (!ValueTypeResolver.isString(value))
+                        if (!ValueTypeResolver.IsString(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "array":
-                        if (!ValueTypeResolver.isArray(value))
+                        if (!ValueTypeResolver.IsArray(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "object":
-                        if (!ValueTypeResolver.isObject(value))
+                        if (!ValueTypeResolver.IsObject(value))
                         {
                             argumentMatches = false;
                         }
                         break;
                     case "bool":
                     case "boolean":
-                        if (!ValueTypeResolver.isBool(value))
+                        if (!ValueTypeResolver.IsBool(value))
                         {
                             argumentMatches = false;
                         }
@@ -292,7 +292,7 @@ namespace Weverca.Analysis
                         break;
                     case "callable":
                     case "callback":
-                        if (!ValueTypeResolver.isString(value) && !(value is FunctionValue))
+                        if (!ValueTypeResolver.IsString(value) && !(value is FunctionValue))
                         {
                             argumentMatches = false;
                         }
@@ -300,7 +300,7 @@ namespace Weverca.Analysis
                     case "void":
                         throw new Exception("Void is not a type of argument");
                     default:
-                        if (!ValueTypeResolver.isObject(value))
+                        if (!ValueTypeResolver.IsObject(value))
                         {
                             argumentMatches = false;
                         }
@@ -399,7 +399,7 @@ namespace Weverca.Analysis
                     var obj = (value as ObjectValue);
                     foreach (NativeFieldInfo field in fields.Values)
                     {
-                        if (field.isStatic == false)
+                        if (field.IsStatic == false)
                         {
                             flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), (NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow)));
                         }

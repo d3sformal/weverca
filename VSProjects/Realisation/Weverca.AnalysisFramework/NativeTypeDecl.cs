@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 
 using PHP.Core;
 using Weverca.AnalysisFramework.Memory;
+using PHP.Core.AST;
 
 namespace Weverca.AnalysisFramework
 {
@@ -20,20 +21,23 @@ namespace Weverca.AnalysisFramework
     public class NativeFieldInfo
     {
 
-        public readonly Name Name;
+        public readonly VariableName Name;
 
         public readonly Visibility Visibility;
 
         public readonly string Type;
 
-        public readonly bool isStatic;
+        public readonly bool IsStatic;
 
-        public NativeFieldInfo(Name name, string type, Visibility visibility, bool IsStatic)
+        public readonly MemoryEntry Identifier;
+
+        public NativeFieldInfo(VariableName name, string type, Visibility visibility, MemoryEntry identifier, bool isStatic)
         {
             Name = name;
             Type = type;
             Visibility = visibility;
             IsStatic=isStatic;
+            Identifier = identifier;
         }
     }
 
@@ -78,25 +82,28 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Name of base class
         /// </summary>
-        public readonly QualifiedName? BaseClassName;
+        public readonly Nullable<QualifiedName> BaseClassName;
 
-        public readonly Dictionary<string, NativeFieldInfo> Fields;
+        public readonly ReadOnlyDictionary<VariableName, NativeFieldInfo> Fields;
 
-        public readonly Dictionary<string, Value> Constants;
+        public readonly ReadOnlyDictionary<VariableName, MemoryEntry> Constants;
 
-        public readonly IEnumerable<NativeMethodInfo> Methods;
+        public readonly ReadOnlyCollection<NativeMethodInfo> ModeledMethods;
+
+        public readonly ReadOnlyCollection<MethodDecl> SourceCodeMethods;
 
         public readonly bool IsFinal;
 
         public readonly bool IsInterface;
 
-        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, Dictionary<string, Value> constants, Dictionary<string, NativeFieldInfo> fields, QualifiedName? baseClassName ,bool isFinal,bool isInteface)
+        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, MemoryEntry> constants, Dictionary<VariableName, NativeFieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
-            Methods = new ReadOnlyCollection<NativeMethodInfo>(new List<NativeMethodInfo>(methods));
-            Constants = constants;
-            Fields = fields;
+            ModeledMethods = new ReadOnlyCollection<NativeMethodInfo>(new List<NativeMethodInfo>(methods));
+            SourceCodeMethods = new ReadOnlyCollection<MethodDecl>(new List<MethodDecl>(sourceCodeMethods));
+            Constants = new ReadOnlyDictionary<VariableName, MemoryEntry>(constants);
+            Fields = new ReadOnlyDictionary<VariableName, NativeFieldInfo>(fields);
             IsFinal = isFinal;
             IsInterface = isInteface;
         }

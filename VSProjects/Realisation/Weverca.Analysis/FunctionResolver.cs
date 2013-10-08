@@ -193,7 +193,7 @@ namespace Weverca.Analysis
             }
             else
             {
-                //TODO copy stuf into
+                NativeTypeDecl type = convertToType(declaration);
                 if (declaration.BaseClassName != null)
                 {
                     if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
@@ -204,12 +204,10 @@ namespace Weverca.Analysis
                     {
                         IEnumerable<TypeValue> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
                     }
-
                 }
                 else
                 {
-                    var type = OutSet.CreateType(declaration);
-                    OutSet.DeclareGlobal(type);
+                    OutSet.DeclareGlobal(OutSet.CreateType(type));
                 }
             }
         }
@@ -217,6 +215,62 @@ namespace Weverca.Analysis
         #endregion
 
         #region Private helpers
+
+        private NativeTypeDecl convertToType(TypeDecl declaration)
+        {
+            //TODO: traits ako to funguje
+            List<NativeMethodInfo> modeledMethods = new List<NativeMethodInfo>();
+            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
+            Dictionary<VariableName, NativeFieldInfo> fields = new Dictionary<VariableName, NativeFieldInfo>();
+            Dictionary<VariableName, MemoryEntry> constants = new Dictionary<VariableName, MemoryEntry>();
+
+            foreach (var member in declaration.Members)
+            {
+                if (member is FieldDeclList)
+                {
+                    foreach (FieldDecl field in (member as FieldDeclList).Fields)
+                    { 
+                        Visibility visibility;
+                        if (field.Field.IsPrivate)
+                        {
+                            visibility = Visibility.PRIVATE;
+                        }
+                        else if (field.Field.IsProtected)
+                        {
+                            visibility = Visibility.PROTECTED;
+                        }
+                        else 
+                        {
+                            visibility = Visibility.PROTECTED;
+                        }
+                        fields.Add(new VariableName(field.Name.Value),new NativeFieldInfo(field.Name,"any",visibility,null,field.Field.IsFinal));
+                    }
+
+                }
+                else if (member is ConstDeclList)
+                {
+                    foreach (var constant in (member as ConstDeclList).Constants)
+                    { 
+                        constants.Add(constant.Name,null);
+                    }
+                }
+                else if (member is MethodDecl)
+                {
+                    sourceCodeMethods.Add(member as MethodDecl);
+                }
+                else 
+                {
+                    //ignore traits are not supported by AST, only by parser
+                }
+            }
+            bool isFinal = declaration.Type.IsFinal;
+            bool isInterface = declaration.Type.IsInterface;
+
+            // NativeTypeDecl result=new NativeTypeDecl();
+            Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
+
+            return new NativeTypeDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
+        }
 
         private void applyHints(FlowOutputSet outSet)
         {
