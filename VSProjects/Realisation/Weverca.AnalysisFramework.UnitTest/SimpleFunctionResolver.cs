@@ -146,12 +146,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             OutSet.DeclareGlobal(type);
         }
 
-        private ObjectDecl convertToType(TypeDecl declaration)
+        private ClassDecl convertToType(TypeDecl declaration)
         {
             //TODO: traits ako to funguje
-            List<NativeMethodInfo> modeledMethods = new List<NativeMethodInfo>();
+            List<MethodInfo> modeledMethods = new List<MethodInfo>();
             List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
-            Dictionary<VariableName, NativeFieldInfo> fields = new Dictionary<VariableName, NativeFieldInfo>();
+            Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>();
             Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
 
             foreach (var member in declaration.Members)
@@ -162,7 +162,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                     {
                         Visibility visibility = Visibility.PUBLIC;
 
-                        fields.Add(new VariableName(field.Name.Value), new NativeFieldInfo(field.Name, "any", visibility, field.Initializer, true));
+                        fields.Add(new VariableName(field.Name.Value), new FieldInfo(field.Name, "any", visibility, field.Initializer, true));
                     }
 
                 }
@@ -188,7 +188,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             // NativeTypeDecl result=new NativeTypeDecl();
             Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
 
-            return new ObjectDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
+            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
         }
 
         #endregion

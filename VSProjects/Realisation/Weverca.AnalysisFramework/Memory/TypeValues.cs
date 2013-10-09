@@ -23,9 +23,9 @@ namespace Weverca.AnalysisFramework.Memory
 
     public class TypeValue : TypeValueBase
     {
-        public readonly ObjectDecl Declaration;
+        public readonly ClassDecl Declaration;
 
-        internal TypeValue(ObjectDecl declaration)
+        internal TypeValue(ClassDecl declaration)
             :base(declaration.QualifiedName)
         {
             Declaration = declaration;

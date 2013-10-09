@@ -11,19 +11,19 @@ namespace Weverca.AnalysisFramework.UnitTest
 {
     static class SimpleExceptionType
     {
-        public static ObjectDecl CreateType()
+        public static ClassDecl CreateType()
         {
-            var methods = new NativeMethodInfo[]{
+            var methods = new MethodInfo[]{
                 method("__construct",_method___construct),
             };
 
-            var declaration = new ObjectDecl(new QualifiedName(new Name("Exception")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, NativeFieldInfo>(), null, false, false);
+            var declaration = new ClassDecl(new QualifiedName(new Name("Exception")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, false);
             return declaration;
         }
 
-        private static NativeMethodInfo method(string name, NativeAnalyzerMethod analyzer)
+        private static MethodInfo method(string name, NativeAnalyzerMethod analyzer)
         {
-            return new NativeMethodInfo(new Name(name),Visibility.PUBLIC, analyzer);
+            return new MethodInfo(new Name(name),Visibility.PUBLIC, analyzer);
         }
 
         private static void _method___construct(FlowController flow)

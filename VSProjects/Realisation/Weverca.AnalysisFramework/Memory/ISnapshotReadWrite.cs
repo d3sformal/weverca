@@ -144,7 +144,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="declaration">Native type declaration</param>
         /// <returns>Created value</returns>
-        TypeValueBase CreateType(ObjectDecl declaration);        
+        TypeValueBase CreateType(ClassDecl declaration);        
 
         /// <summary>
         /// Create function value from given expression

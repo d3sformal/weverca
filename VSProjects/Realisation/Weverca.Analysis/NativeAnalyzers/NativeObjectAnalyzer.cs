@@ -42,7 +42,7 @@ namespace Weverca.Analysis
         /// </summary>
         public QualifiedName? BaseClassName;
 
-        public Dictionary<VariableName, NativeFieldInfo> Fields;
+        public Dictionary<VariableName, FieldInfo> Fields;
 
         public Dictionary<VariableName, ConstantInfo> Constants;
 
@@ -58,10 +58,10 @@ namespace Weverca.Analysis
 
         #region convert to mutable
 
-        public ObjectDecl ConvertToMuttable(NativeObjectAnalyzer analyzer,
-            Dictionary<string, NativeMethodInfo> WevercaImplementedMethods)
+        public ClassDecl ConvertToMuttable(NativeObjectAnalyzer analyzer,
+            Dictionary<string, MethodInfo> WevercaImplementedMethods)
         {
-            var nativeMethodsInfo = new List<NativeMethodInfo>();
+            var nativeMethodsInfo = new List<MethodInfo>();
             bool containsConstructor = false;
             var allreadyDeclaredMethods = new HashSet<QualifiedName>();
 
@@ -76,13 +76,13 @@ namespace Weverca.Analysis
                     var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
                     if (method.Name.Name.Value.ToLower() == "__construct")
                     {
-                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, visibility,
+                        nativeMethodsInfo.Add(new MethodInfo(method.Name.Name, visibility,
                             helper.Construct, method.IsFinal, method.IsStatic));
                         containsConstructor = true;
                     }
                     else
                     {
-                        nativeMethodsInfo.Add(new NativeMethodInfo(method.Name.Name, visibility,
+                        nativeMethodsInfo.Add(new MethodInfo(method.Name.Name, visibility,
                             helper.Analyze, method.IsFinal, method.IsStatic));
                         allreadyDeclaredMethods.Add(method.Name);
                     }
@@ -98,14 +98,14 @@ namespace Weverca.Analysis
                     var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
                     if (method.Name.Name.Value.ToLower() == "__construct" && containsConstructor == false)
                     {
-                        var methodInfo = new NativeMethodInfo(method.Name.Name, visibility, helper.Construct,
+                        var methodInfo = new MethodInfo(method.Name.Name, visibility, helper.Construct,
                             method.IsFinal, method.IsStatic);
                         nativeMethodsInfo.Add(methodInfo);
                         containsConstructor = true;
                     }
                     else
                     {
-                        var newMethod = new NativeMethodInfo(method.Name.Name, visibility,
+                        var newMethod = new MethodInfo(method.Name.Name, visibility,
                             helper.Analyze, method.IsFinal, method.IsStatic);
                         if (!allreadyDeclaredMethods.Contains(method.Name))
                         {
@@ -138,7 +138,7 @@ namespace Weverca.Analysis
                  Console.WriteLine(QualifiedName);
             */
 
-            return new ObjectDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);
+            return new ClassDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);
         }
 
         #endregion
@@ -148,10 +148,10 @@ namespace Weverca.Analysis
     {
         private static NativeObjectAnalyzer instance = null;
 
-        private Dictionary<QualifiedName, ObjectDecl> nativeObjects;
+        private Dictionary<QualifiedName, ClassDecl> nativeObjects;
 
-        private Dictionary<string, NativeMethodInfo> WevercaImplementedMethods
-            = new Dictionary<string, NativeMethodInfo>();
+        private Dictionary<string, MethodInfo> WevercaImplementedMethods
+            = new Dictionary<string, MethodInfo>();
 
         private HashSet<string> fieldTypes = new HashSet<string>();
         private HashSet<string> methodTypes = new HashSet<string>();
@@ -162,7 +162,7 @@ namespace Weverca.Analysis
         private NativeObjectAnalyzer(FlowController flow)
         {
             var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
-            nativeObjects = new Dictionary<QualifiedName, ObjectDecl>();
+            nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
             NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, MutableNativeTypeDecl>();
 
             var outSet = flow.OutSet;
@@ -188,7 +188,7 @@ namespace Weverca.Analysis
                                     currentClass.IsFinal = false;
                                 }
                                 currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
-                                currentClass.Fields = new Dictionary<VariableName, NativeFieldInfo>();
+                                currentClass.Fields = new Dictionary<VariableName, FieldInfo>();
                                 currentClass.Constants = new Dictionary<VariableName, ConstantInfo>();
                                 currentClass.Methods = new List<NativeMethod>();
                                 if (reader.GetAttribute("baseClass") != null)
@@ -264,7 +264,7 @@ namespace Weverca.Analysis
                                         initValue = outSet.CreateString(stringValue);
                                     }
 
-                                    currentClass.Fields[new VariableName(fieldName)] = new NativeFieldInfo(new VariableName(fieldName), fieldType, visiblity, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
+                                    currentClass.Fields[new VariableName(fieldName)] = new FieldInfo(new VariableName(fieldName), fieldType, visiblity, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
                                 }
                                 else
                                 {
@@ -365,12 +365,12 @@ namespace Weverca.Analysis
             return nativeObjects.ContainsKey(className);
         }
 
-        public ObjectDecl GetClass(QualifiedName className)
+        public ClassDecl GetClass(QualifiedName className)
         {
             return nativeObjects[className];
         }
 
-        public bool TryGetClass(QualifiedName className, out ObjectDecl declaration)
+        public bool TryGetClass(QualifiedName className, out ClassDecl declaration)
         {
             return nativeObjects.TryGetValue(className, out declaration);
         }
@@ -410,7 +410,7 @@ namespace Weverca.Analysis
                 {
                     var fieldsEntries = new List<MemoryEntry>();
                     var obj = value as ObjectValue;
-                    foreach (NativeFieldInfo field in fields.Values)
+                    foreach (FieldInfo field in fields.Values)
                     {
                         var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
                         allFieldsEntries.Add(fieldEntry);
@@ -419,7 +419,7 @@ namespace Weverca.Analysis
 
                     fieldsEntries.Add(new MemoryEntry(value));
                     fieldsEntries.AddRange(arguments);
-                    foreach (NativeFieldInfo field in fields.Values)
+                    foreach (FieldInfo field in fields.Values)
                     {
                         var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
                         MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
@@ -468,7 +468,7 @@ namespace Weverca.Analysis
                 if (value is ObjectValue)
                 {
                     var obj = value as ObjectValue;
-                    foreach (NativeFieldInfo field in fields.Values)
+                    foreach (FieldInfo field in fields.Values)
                     {
                         if (field.IsStatic == false)
                         {

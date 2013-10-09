@@ -655,7 +655,7 @@ namespace Weverca.AnalysisFramework.Memory
             return new LambdaFunctionValue(expression);
         }
 
-        public TypeValueBase CreateType(ObjectDecl declaration)
+        public TypeValueBase CreateType(ClassDecl declaration)
         {
             checkCanUpdate();
 

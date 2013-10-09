@@ -18,7 +18,7 @@ namespace Weverca.AnalysisFramework
         PRIVATE, PUBLIC, PROTECTED
     }
 
-    public class NativeFieldInfo
+    public class FieldInfo
     {
 
         public readonly VariableName Name;
@@ -33,7 +33,7 @@ namespace Weverca.AnalysisFramework
 
         public readonly Expression Initializer;
 
-        public NativeFieldInfo(VariableName name, string type, Visibility visibility, MemoryEntry value, bool isStatic)
+        public FieldInfo(VariableName name, string type, Visibility visibility, MemoryEntry value, bool isStatic)
         {
             Name = name;
             Type = type;
@@ -42,7 +42,7 @@ namespace Weverca.AnalysisFramework
             InitValue = value;
         }
 
-        public NativeFieldInfo(VariableName name, string type, Visibility visibility, Expression initializer, bool isStatic)
+        public FieldInfo(VariableName name, string type, Visibility visibility, Expression initializer, bool isStatic)
         {
             Name = name;
             Type = type;
@@ -55,7 +55,7 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Represent info stored for native method
     /// </summary>
-    public class NativeMethodInfo
+    public class MethodInfo
     {
         /// <summary>
         /// Name of native method
@@ -74,7 +74,7 @@ namespace Weverca.AnalysisFramework
         public readonly bool IsFinal;
 
 
-        public NativeMethodInfo(Name name,  Visibility visibility,NativeAnalyzerMethod method, bool isFinal = false, bool isStatic = false)
+        public MethodInfo(Name name,  Visibility visibility,NativeAnalyzerMethod method, bool isFinal = false, bool isStatic = false)
         {
             Name = name;
             Method = method;
@@ -109,7 +109,7 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Represent native type declaration
     /// </summary>
-    public class ObjectDecl
+    public class ClassDecl
     {
         /// <summary>
         /// Name of native type
@@ -121,11 +121,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly Nullable<QualifiedName> BaseClassName;
 
-        public readonly ReadOnlyDictionary<VariableName, NativeFieldInfo> Fields;
+        public readonly ReadOnlyDictionary<VariableName, FieldInfo> Fields;
 
         public readonly ReadOnlyDictionary<VariableName, ConstantInfo> Constants;
 
-        public readonly ReadOnlyCollection<NativeMethodInfo> ModeledMethods;
+        public readonly ReadOnlyCollection<MethodInfo> ModeledMethods;
 
         public readonly ReadOnlyCollection<MethodDecl> SourceCodeMethods;
 
@@ -133,14 +133,14 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsInterface;
 
-        public ObjectDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, NativeFieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
+        public ClassDecl(QualifiedName typeName, IEnumerable<MethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
-            ModeledMethods = new ReadOnlyCollection<NativeMethodInfo>(new List<NativeMethodInfo>(methods));
+            ModeledMethods = new ReadOnlyCollection<MethodInfo>(new List<MethodInfo>(methods));
             SourceCodeMethods = new ReadOnlyCollection<MethodDecl>(new List<MethodDecl>(sourceCodeMethods));
             Constants = new ReadOnlyDictionary<VariableName, ConstantInfo>(constants);
-            Fields = new ReadOnlyDictionary<VariableName, NativeFieldInfo>(fields);
+            Fields = new ReadOnlyDictionary<VariableName, FieldInfo>(fields);
             IsFinal = isFinal;
             IsInterface = isInteface;
         }

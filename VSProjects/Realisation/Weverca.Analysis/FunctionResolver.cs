@@ -193,16 +193,30 @@ namespace Weverca.Analysis
             }
             else
             {
-                ObjectDecl type = convertToType(declaration);
+                ClassDecl type = convertToClassDecl(declaration);
                 if (declaration.BaseClassName != null)
                 {
                     if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
                     {
-                        ObjectDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
+                        ClassDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
+                        ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
+                        OutSet.DeclareGlobal(OutSet.CreateType(newType));
                     }
                     else
                     {
                         IEnumerable<TypeValueBase> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
+                        foreach (var value in types)
+                        {
+                            if (value is TypeValue)
+                            {
+                                ClassDecl newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
+                                OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                            }
+                            else
+                            {
+                                OutSet.DeclareGlobal(OutSet.CreateType(type));
+                            }
+                        }
                     }
                 }
                 else
@@ -216,12 +230,46 @@ namespace Weverca.Analysis
 
         #region Private helpers
 
-        private ObjectDecl convertToType(TypeDecl declaration)
+        private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass,ClassDecl currentClass)
+        {
+            List<MethodInfo> modeledMethods = new List<MethodInfo>(baseClass.ModeledMethods);
+            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>(currentClass.SourceCodeMethods);
+            Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>(currentClass.Fields);
+            Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>(currentClass.Constants);
+
+            foreach (var field in baseClass.Fields)
+            {
+                if (!fields.ContainsKey(field.Key))
+                {
+                    fields.Add(field.Key,field.Value);
+                }
+            }
+
+            foreach (var constant in baseClass.Constants)
+            {
+                if (!constants.ContainsKey(constant.Key))
+                {
+                    constants.Add(constant.Key, constant.Value);
+                }
+            }
+
+            foreach (var method in baseClass.SourceCodeMethods)
+            {
+                if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() == 0)
+                {
+                    sourceCodeMethods.Add(method);
+                }
+            }
+
+            return new ClassDecl(currentClass.QualifiedName, modeledMethods, sourceCodeMethods, constants,fields, baseClass.QualifiedName, currentClass.IsFinal, currentClass.IsInterface);
+        }
+
+        private ClassDecl convertToClassDecl(TypeDecl declaration)
         {
             //TODO: traits ako to funguje
-            List<NativeMethodInfo> modeledMethods = new List<NativeMethodInfo>();
+            List<MethodInfo> modeledMethods = new List<MethodInfo>();
             List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
-            Dictionary<VariableName, NativeFieldInfo> fields = new Dictionary<VariableName, NativeFieldInfo>();
+            Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>();
             Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
 
             foreach (var member in declaration.Members)
@@ -232,7 +280,7 @@ namespace Weverca.Analysis
                     { 
                         Visibility visibility = Visibility.PUBLIC;
                         
-                        fields.Add(new VariableName(field.Name.Value),new NativeFieldInfo(field.Name,"any",visibility,field.Initializer,true));
+                        fields.Add(new VariableName(field.Name.Value),new FieldInfo(field.Name,"any",visibility,field.Initializer,true));
                     }
 
                 }
@@ -258,7 +306,7 @@ namespace Weverca.Analysis
             // NativeTypeDecl result=new NativeTypeDecl();
             Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
 
-            return new ObjectDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
+            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
         }
 
         private void applyHints(FlowOutputSet outSet)

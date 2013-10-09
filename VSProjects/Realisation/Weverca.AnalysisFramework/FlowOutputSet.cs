@@ -139,7 +139,7 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateFunction(expression);
         }
 
-        public TypeValueBase CreateType(ObjectDecl declaration)
+        public TypeValueBase CreateType(ClassDecl declaration)
         {
             return Snapshot.CreateType(declaration);
         }
