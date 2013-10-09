@@ -174,6 +174,22 @@ namespace Weverca.AnalysisFramework.Memory
 
         #endregion
 
+        #region Snapshot entry manipulation
+
+        /// <summary>
+        /// Create snapshot entry providing reading,... services for variable
+        /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context (there can be 
+        /// fetched some variables from global context also),
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
+        /// <param name="name">Name of variable</param>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns>Readable snapshot entry for variable identifier</returns>
+        ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false);
+
+        #endregion
 
 
         #region Value storing

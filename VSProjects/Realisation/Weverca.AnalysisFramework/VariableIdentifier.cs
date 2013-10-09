@@ -8,7 +8,7 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Represents possible names resolved for single variable selector in source code
     /// </summary>
-    public class VariableEntry
+    public class VariableIdentifier
     {
         /// <summary>
         /// Possible names of variable
@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework
         /// Creates variable entry from given possible names
         /// </summary>
         /// <param name="possibleNames">Possible names for variable selector</param>
-        internal VariableEntry(IEnumerable<string> possibleNames)
+        internal VariableIdentifier(IEnumerable<string> possibleNames)
         {
             var variableNames = new Stack<VariableName>();
             foreach (var name in possibleNames)
@@ -54,7 +54,7 @@ namespace Weverca.AnalysisFramework
         /// Creates variable entry from direct name
         /// </summary>
         /// <param name="directName">Direct name for variable selector</param>
-        internal VariableEntry(VariableName directName)
+        internal VariableIdentifier(VariableName directName)
         {
             PossibleNames = new VariableName[] { directName };
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using PHP.Core;
 
@@ -36,21 +37,25 @@ namespace Weverca.AnalysisFramework
 
         #region ISnapshotReadonly implementation
 
+        [Obsolete("Names of variables and their behaviour according to unknown fields etc is up to analysis and wont be handled by framework")]
         public VariableName ReturnValue
         {
             get { return Snapshot.ReturnValue; }
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public bool VariableExists(VariableName variable, bool forceGlobalContext = false)
         {
             return Snapshot.VariableExists(variable, forceGlobalContext);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field)
         {
             return Snapshot.ObjectFieldExists(objectValue, field);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public bool ArrayIndexExists(AssociativeArray array, ContainerIndex index)
         {
             return Snapshot.ArrayIndexExists(array, index);
@@ -66,31 +71,37 @@ namespace Weverca.AnalysisFramework
             return Snapshot.ReadInfo(variable);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
             return Snapshot.ReadValue(sourceVar);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext = false)
         {
             return Snapshot.TryReadValue(sourceVar, out entry, forceGlobalContext);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public ContainerIndex CreateIndex(string identifier)
         {
             return Snapshot.CreateIndex(identifier);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public AliasValue CreateAlias(VariableName sourceVar)
         {
             return Snapshot.CreateAlias(sourceVar);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index)
         {
             return Snapshot.CreateIndexAlias(array, index);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field)
         {
             return Snapshot.CreateFieldAlias(objectValue, field);
@@ -101,6 +112,7 @@ namespace Weverca.AnalysisFramework
             return Snapshot.ResolveFunction(functionName);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             return Snapshot.ResolveMethod(objectValue, methodName);
@@ -111,16 +123,19 @@ namespace Weverca.AnalysisFramework
             return Snapshot.ResolveType(typeName);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
         {
             return Snapshot.GetField(value, index);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
         {
             return Snapshot.TryGetField(objectValue, field, out entry);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
         {
             return Snapshot.GetIndex(value, index);
@@ -131,16 +146,19 @@ namespace Weverca.AnalysisFramework
             return Snapshot.ObjectType(objectValue);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
         {
             return Snapshot.TryGetIndex(array, index, out entry);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
         {
             return Snapshot.IterateObject(iteratedObject);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray)
         {
             return Snapshot.IterateArray(iteratedArray);
@@ -148,7 +166,13 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
+        #region Snapshot entry API
 
+        public ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false)
+        {
+            throw new System.NotImplementedException();
+        }
 
+        #endregion
     }
 }

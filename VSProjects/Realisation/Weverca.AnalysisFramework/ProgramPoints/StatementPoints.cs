@@ -66,7 +66,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var variables = new VariableEntry[_variables.Length];
+            var variables = new VariableIdentifier[_variables.Length];
             for (int i = 0; i < _variables.Length; ++i)
             {
                 variables[i] = _variables[i].VariableEntry;

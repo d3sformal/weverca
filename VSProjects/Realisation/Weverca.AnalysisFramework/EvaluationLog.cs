@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="partial">Partial which variable is associated</param>
         /// <param name="value">Associated variable</param>
-        internal void AssociateVariable(LangElement partial, VariableEntry variable)
+        internal void AssociateVariable(LangElement partial, VariableIdentifier variable)
         {
             var point = new TestVariablePoint(partial, variable);
             associatePoint(point);
@@ -131,7 +131,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="partial">Partial which variable will be returned</param>
         /// <returns>Associated variable, or null if there is no associated variable</returns>
-        public VariableEntry GetVariable(LangElement partial)
+        public VariableIdentifier GetVariable(LangElement partial)
         {
             VariableBased varLike;
             if (_lValues.TryGetValue(partial, out varLike))

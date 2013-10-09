@@ -41,7 +41,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public interface VariableBased : AliasProvider, AssignProvider
     {
-        VariableEntry VariableEntry { get; }
+        VariableIdentifier VariableEntry { get; }
         RValuePoint ThisObj { get; }
     }
 
@@ -146,7 +146,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     {
         public RValuePoint ThisObj { get; private set; }
 
-        public VariableEntry VariableEntry { get; protected set; }
+        public VariableIdentifier VariableEntry { get; protected set; }
 
         internal RVariableEntryPoint(RValuePoint thisObj)
         {
@@ -217,7 +217,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public abstract class LVariableEntryPoint : LValuePoint, VariableBased
     {
-        public VariableEntry VariableEntry { get; protected set; }
+        public VariableIdentifier VariableEntry { get; protected set; }
         public RValuePoint ThisObj { get; protected set; }
 
         internal LVariableEntryPoint(RValuePoint thisObj)

@@ -58,7 +58,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="variable">Specifier of resolved variable</param>
         /// <returns>Possible values obtained from resolving variable specifier</returns>
-        public abstract MemoryEntry ResolveVariable(VariableEntry variable);
+        public abstract MemoryEntry ResolveVariable(VariableIdentifier variable);
 
         /// <summary>
         /// Resolves value determined by given variable specifier that is accessed by array index
@@ -67,7 +67,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="variable">Variable which is indexed</param>
         /// <returns>Possible values obtained from resolving indexed variable</returns>
-        public abstract MemoryEntry ResolveIndexedVariable(VariableEntry variable);
+        public abstract MemoryEntry ResolveIndexedVariable(VariableIdentifier variable);
 
         /// <summary>
         /// Resolves value, determined by given field specifier
@@ -75,7 +75,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="objectValue">Object value which field is resolved</param>
         /// <param name="field">Specifier of resolved field</param>
         /// <returns>Possible values obtained from resolving given field</returns>
-        public abstract MemoryEntry ResolveField(MemoryEntry objectValue, VariableEntry field);
+        public abstract MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field);
 
         /// <summary>
         /// Resolves value at indexedValue[index]
@@ -92,7 +92,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="aliasedField">Specifier of an field</param>
         /// <returns>Resolved aliases</returns>
         public abstract IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue,
-            VariableEntry aliasedField);
+            VariableIdentifier aliasedField);
 
         /// <summary>
         /// Resolves alias from given index specifier
@@ -108,7 +108,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="target">Target variable specifier</param>
         /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasAssign(VariableEntry target, IEnumerable<AliasValue> possibleAliases);
+        public abstract void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases);
 
         /// <summary>
         /// Assign possible aliases to given object field
@@ -116,7 +116,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="objectValue">Object containing assigned field</param>
         /// <param name="aliasedField">Specifier of an field</param>
         /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry aliasedField,
+        public abstract void AliasedFieldAssign(MemoryEntry objectValue, VariableIdentifier aliasedField,
             IEnumerable<AliasValue> possibleAliases);
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="target">Target variable specifier</param>
         /// <param name="entry">Possible values to be assigned</param>
-        public abstract void Assign(VariableEntry target, MemoryEntry entry);
+        public abstract void Assign(VariableIdentifier target, MemoryEntry entry);
 
         /// <summary>
         /// Assign possible values to given targetField of an objectValue
@@ -141,7 +141,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="objectValue">Object containing assigned field</param>
         /// <param name="targetField">Specifier of an field</param>
         /// <param name="entry">Possible values to be assigned</param>
-        public abstract void FieldAssign(MemoryEntry objectValue, VariableEntry targetField,
+        public abstract void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
             MemoryEntry entry);
 
         /// <summary>
@@ -199,8 +199,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="enumeree">Enumerated value</param>
         /// <param name="keyVariable">Variable where keys are stored</param>
         /// <param name="valueVariable">Variable where values are stored</param>
-        public abstract void Foreach(MemoryEntry enumeree, VariableEntry keyVariable,
-            VariableEntry valueVariable);
+        public abstract void Foreach(MemoryEntry enumeree, VariableIdentifier keyVariable,
+            VariableIdentifier valueVariable);
 
         /// <summary>
         /// Process concatenation of given parts
@@ -246,7 +246,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="variable">Aliased variable specifier</param>
         /// <returns>Resolved aliases</returns>
-        public virtual IEnumerable<AliasValue> ResolveAlias(VariableEntry variable)
+        public virtual IEnumerable<AliasValue> ResolveAlias(VariableIdentifier variable)
         {
             var possibleNames = variable.PossibleNames;
             var aliases = new List<AliasValue>(possibleNames.Length);
@@ -369,7 +369,7 @@ namespace Weverca.AnalysisFramework.Expressions
             return newObject;
         }
 
-        public virtual void GlobalStatement(IEnumerable<VariableEntry> variables)
+        public virtual void GlobalStatement(IEnumerable<VariableIdentifier> variables)
         {
             foreach (var variable in variables)
             {

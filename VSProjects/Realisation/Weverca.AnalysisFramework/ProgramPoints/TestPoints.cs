@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         public readonly LangElement Element;
         public override LangElement Partial { get { return Element; } }
 
-        internal TestVariablePoint(LangElement element, VariableEntry entry)
+        internal TestVariablePoint(LangElement element, VariableIdentifier entry)
             : base(null)
         {
             Element = element;

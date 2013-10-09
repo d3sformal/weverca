@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using PHP.Core;
 
@@ -6,12 +7,30 @@ namespace Weverca.AnalysisFramework.Memory
 {
     public interface ISnapshotReadonly
     {
+        #region Snapshot entry API
+        /// <summary>
+        /// Create snapshot entry providing reading,... services for variable
+        /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context (there can be 
+        /// fetched some variables from global context also),
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
+        /// <param name="name">Name of variable</param>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns>Readable snapshot entry for variable identifier</returns>
+        ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false);
+
+        #endregion
+
+        [Obsolete("Names of variables and their behaviour according to unknown fields etc is up to analysis and wont be handled by framework")]
         /// <summary>
         /// Gets variable where return value is stored
         /// </summary>
-        /// <value>Variable name of return value storage</value>
+        /// <value>Variable name of return value storage</value>        
         VariableName ReturnValue { get; }
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Determines whether variable exists in current snapshot
         /// </summary>
@@ -24,6 +43,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         bool VariableExists(VariableName variable, bool forceGlobalContext = false);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Determines whether field for the given object exists in current snapshot
         /// </summary>
@@ -32,6 +52,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
         bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Determines whether element of index for the given array exists in current snapshot
         /// </summary>
@@ -40,6 +61,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
         bool ArrayIndexExists(AssociativeArray array, ContainerIndex index);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Iterates over the given object
         /// </summary>
@@ -47,6 +69,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Iterator for given object</returns>
         IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Create iterator for given array
         /// </summary>
@@ -54,6 +77,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Iterators for given array</returns>
         IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Get value from object at specified field
         /// </summary>
@@ -62,6 +86,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Value stored at given field in objectValue</returns>
         MemoryEntry GetField(ObjectValue objectValue, ContainerIndex field);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Tries to get value from object at specified field stored in current snapshot
         /// </summary>
@@ -71,6 +96,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
         bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Get value from array at specified index
         /// </summary>
@@ -79,6 +105,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Value stored at given index in array</returns>
         MemoryEntry GetIndex(AssociativeArray array, ContainerIndex index);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Tries to get value from array at specified index stored in current snapshot
         /// </summary>
@@ -88,6 +115,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
         bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Determine type of given object
         /// </summary>
@@ -109,6 +137,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Stored info</returns>
         InfoValue[] ReadInfo(VariableName variable);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Read value stored in snapshot for <paramref name="sourceVar" />
         /// </summary>
@@ -116,6 +145,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Value stored for given variable</returns>
         MemoryEntry ReadValue(VariableName sourceVar);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Tries to read value stored in current snapshot for <paramref name="sourceVar" />
         /// </summary>
@@ -125,6 +155,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext = false);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Creates index for given identifier
         /// </summary>
@@ -132,6 +163,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created index</returns>
         ContainerIndex CreateIndex(string identifier);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Create alias for given variable
         /// </summary>
@@ -139,6 +171,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created alias</returns>
         AliasValue CreateAlias(VariableName sourceVar);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Create alias for given index contained in array
         /// </summary>
@@ -147,6 +180,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created alias</returns>
         AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index);
 
+        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Create alias for given field of objectValue
         /// </summary>

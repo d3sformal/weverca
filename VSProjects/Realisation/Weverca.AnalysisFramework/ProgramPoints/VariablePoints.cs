@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             : base(thisObj)
         {
             Variable = variable;
-            VariableEntry = new VariableEntry(Variable.VarName);
+            VariableEntry = new VariableIdentifier(Variable.VarName);
         }
 
         protected override void flowThrough()
@@ -68,7 +68,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 varNames = new string[0];
             }
 
-            VariableEntry = new VariableEntry(varNames);
+            VariableEntry = new VariableIdentifier(varNames);
         }
 
     }
@@ -87,7 +87,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
 
             Variable = variable;
-            VariableEntry = new VariableEntry(Variable.VarName);
+            VariableEntry = new VariableIdentifier(Variable.VarName);
         }
 
         protected override void flowThrough()
@@ -122,7 +122,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             var names = Services.Evaluator.VariableNames(Name.Value);
-            VariableEntry = new VariableEntry(names);
+            VariableEntry = new VariableIdentifier(names);
 
             resolveValue();
         }

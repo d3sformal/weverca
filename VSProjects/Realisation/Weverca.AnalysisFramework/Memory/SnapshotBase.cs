@@ -48,6 +48,10 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         public bool HasChanged { get; private set; }
 
+        #region Implementation of SnapshotEntry based API
+
+        #endregion
+
         #region Template methods - API for implementors
 
         /// <summary>
@@ -68,13 +72,14 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="createdObject">Created object that has to be initialized</param>
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
+        
         /// <summary>
         /// Iterates over the given object
         /// </summary>
         /// <param name="iteratedObject">Object which iterator will be created</param>
         /// <returns>Iterator for given object</returns>
         protected abstract IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject);
-
+        
         /// <summary>
         /// Determine type of given object
         /// </summary>
@@ -94,6 +99,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Iterators for given array</returns>
         protected abstract IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Create alias for given variable
         /// </summary>
@@ -101,6 +107,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created alias</returns>
         protected abstract AliasValue createAlias(VariableName sourceVar);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Create alias for given index contained in array
         /// </summary>
@@ -109,6 +116,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created alias</returns>
         protected abstract AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Create alias for given field of objectValue
         /// </summary>
@@ -117,6 +125,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created alias</returns>
         protected abstract AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Assign memory entry into <paramref name="targetVar"/>
         /// </summary>
@@ -124,6 +133,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="entry">Value that will be assigned</param>
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Assign alias to given <paramref name="targetVar"/>
         /// </summary>
@@ -131,6 +141,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="aliases">Assigned alias</param>
         protected abstract void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
         /// This merged info can be than changed with snapshot updatable operations
@@ -139,6 +150,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="inputs">Input snapshots that should be merged</param>
         protected abstract void extend(ISnapshotReadonly[] inputs);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Extend snapshot as call from given callerContext
         /// </summary>
@@ -181,6 +193,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Stored info</returns>
         protected abstract InfoValue[] readInfo(VariableName variable);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Read value stored in snapshot for <paramref name="sourceVar"/>
         /// </summary>
@@ -188,6 +201,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Value stored for given variable</returns>
         protected abstract MemoryEntry readValue(VariableName sourceVar);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Tries to read value stored in current snapshot for <paramref name="sourceVar" />
         /// </summary>
@@ -197,6 +211,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         protected abstract bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Set field specified by index, on object represented by value 
         /// </summary>
@@ -204,6 +219,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="index">Index of field that will be set</param>
         /// <param name="entry">Data that will be set on specified field</param>
         protected abstract void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry);
+
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Set specified index, in array represented by value 
         /// </summary>
@@ -212,6 +229,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="entry">Data that will be set on specified index</param>
         protected abstract void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Set field specified by index, on object represented by value 
         /// </summary>
@@ -219,6 +237,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="index">Index of field that will be set</param>
         /// <param name="aliases">Alias that will be set for field</param>
         protected abstract void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases);
+
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Set specified index, in array represented by value 
         /// </summary>
@@ -227,6 +247,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="aliases">Alias that will be set for field</param>
         protected abstract void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Get value for field specified by index, in object represented by value 
         /// </summary>
@@ -235,6 +256,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns></returns>
         protected abstract MemoryEntry getField(ObjectValue value, ContainerIndex index);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Tries to get value from object at specified field stored in current snapshot
         /// </summary>
@@ -244,6 +266,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
         protected abstract bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Get value for field specified by index, in array represented by value 
         /// </summary>
@@ -252,6 +275,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns></returns>
         protected abstract MemoryEntry getIndex(AssociativeArray value, ContainerIndex index);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Tries to get value from array at specified index stored in current snapshot
         /// </summary>
@@ -283,6 +307,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="declaration">Declared type</param>
         protected abstract void declareGlobal(TypeValue declaration);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Determines whether variable exists in current snapshot
         /// </summary>
@@ -295,6 +320,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         protected abstract bool variableExists(VariableName variable, bool forceGlobalContext);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Determines whether field for the given object exists in current snapshot
         /// </summary>
@@ -303,6 +329,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
         protected abstract bool objectFieldExists(ObjectValue objectValue, ContainerIndex field);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Determines whether element of index for the given array exists in current snapshot
         /// </summary>
@@ -320,6 +347,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Resolved functions</returns>
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// 
         /// </summary>
@@ -938,6 +966,21 @@ namespace Weverca.AnalysisFramework.Memory
             {
                 throw new NotSupportedException("Cannot process action because snapshot has already been frozen");
             }
+        }
+
+        #endregion
+
+
+        #region Snapshot entry API
+
+        public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

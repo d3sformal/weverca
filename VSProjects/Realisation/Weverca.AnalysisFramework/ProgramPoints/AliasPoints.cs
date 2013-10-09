@@ -16,7 +16,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     {
         public readonly DirectVarUse Variable;
 
-        public readonly VariableEntry VariableEntry;
+        public readonly VariableIdentifier VariableEntry;
 
         public override LangElement Partial { get { return Variable; } }
 
@@ -24,7 +24,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             NeedsExpressionEvaluator = true;
 
-            VariableEntry = new VariableEntry(variable.VarName);
+            VariableEntry = new VariableIdentifier(variable.VarName);
             Variable = variable;
         }
 

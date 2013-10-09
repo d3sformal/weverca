@@ -189,21 +189,24 @@ namespace Weverca.AnalysisFramework
             Snapshot.SetInfo(variable, info);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public void Assign(VariableName targetVar, Value value)
         {
             Snapshot.Assign(targetVar, value);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public void Assign(VariableName targetVar, MemoryEntry entry)
         {
             Snapshot.Assign(targetVar, entry);
         }
-        
+
+        [Obsolete("Use snapshot entry API instead")]
         public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
             Snapshot.AssignAliases(targetVar, aliases);
         }
-
+        
         public void FetchFromGlobal(params VariableName[] variables)
         {
             Snapshot.FetchFromGlobal(variables);
@@ -224,21 +227,25 @@ namespace Weverca.AnalysisFramework
             Snapshot.DeclareGlobal(declaration);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
             Snapshot.SetField(value, index, entry);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
             Snapshot.SetIndex(value, index, entry);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public void SetFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             Snapshot.SetFieldAlias(value, index, alias);
         }
 
+        [Obsolete("Use snapshot entry API instead")]
         public void SetIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
             Snapshot.SetIndexAlias(value, index, alias);
@@ -292,6 +299,15 @@ namespace Weverca.AnalysisFramework
         {
             return input.Snapshot;
         }
+        #endregion
+
+        #region Snapshot output API
+
+        public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

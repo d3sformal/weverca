@@ -268,7 +268,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private void assumeEqual(LangElement left, LangElement right)
         {
-            VariableEntry leftVar;
+            VariableIdentifier leftVar;
             MemoryEntry value;
 
             var call = left as DirectFcnCall;

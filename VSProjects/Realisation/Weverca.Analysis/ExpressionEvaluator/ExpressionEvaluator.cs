@@ -29,7 +29,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region ExpressionEvaluatorBase overrides
 
-        public override MemoryEntry ResolveVariable(VariableEntry variable)
+        public override MemoryEntry ResolveVariable(VariableIdentifier variable)
         {
             MemoryEntry entry;
             bool noValueExists;
@@ -91,7 +91,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return entry;
         }
 
-        public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableEntry field)
+        public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
         {
             Debug.Assert(field.PossibleNames.Length > 0, "Every field variable must have at least one name");
 
@@ -186,7 +186,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue,
-            VariableEntry aliasedField)
+            VariableIdentifier aliasedField)
         {
             throw new NotImplementedException();
         }
@@ -197,13 +197,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override void AliasAssign(VariableEntry target, IEnumerable<AliasValue> possibleAliases)
+        public override void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases)
         {
             var entry = new MemoryEntry(possibleAliases);
             Assign(target, entry);
         }
 
-        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry aliasedField,
+        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableIdentifier aliasedField,
             IEnumerable<AliasValue> possibleAliases)
         {
             throw new NotImplementedException();
@@ -215,7 +215,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override void Assign(VariableEntry target, MemoryEntry entry)
+        public override void Assign(VariableIdentifier target, MemoryEntry entry)
         {
             Debug.Assert(entry.Count > 0, "Memory entry assigned to variable must have at least one value");
 
@@ -254,7 +254,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override void FieldAssign(MemoryEntry objectValue, VariableEntry targetField,
+        public override void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
             MemoryEntry entry)
         {
             var isOneEntry = (objectValue.Count == 1) && targetField.IsDirect;
@@ -645,7 +645,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        public override MemoryEntry ResolveIndexedVariable(VariableEntry variable)
+        public override MemoryEntry ResolveIndexedVariable(VariableIdentifier variable)
         {
             var names = variable.PossibleNames;
             Debug.Assert(names.Length > 0, "Every variable must have at least one name");
@@ -694,8 +694,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(allValues);
         }
 
-        public override void Foreach(MemoryEntry enumeree, VariableEntry keyVariable,
-            VariableEntry valueVariable)
+        public override void Foreach(MemoryEntry enumeree, VariableIdentifier keyVariable,
+            VariableIdentifier valueVariable)
         {
             // TODO: This is only basic functionality, for instance, reference of element is not recognized
 

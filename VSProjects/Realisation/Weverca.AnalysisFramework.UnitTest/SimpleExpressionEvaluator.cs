@@ -16,7 +16,7 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     internal class SimpleExpressionEvaluator : ExpressionEvaluatorBase
     {
-        public override void Assign(VariableEntry target, MemoryEntry value)
+        public override void Assign(VariableIdentifier target, MemoryEntry value)
         {
             if (target.IsDirect)
             {
@@ -28,7 +28,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        public override void FieldAssign(MemoryEntry objectValue, VariableEntry targetField, MemoryEntry value)
+        public override void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField, MemoryEntry value)
         {
             if (!targetField.IsDirect)
             {
@@ -42,7 +42,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableEntry field)
+        public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
         {
             if (!field.IsDirect || objectValue.PossibleValues.Count() != 1)
             {
@@ -85,7 +85,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return result;
         }
 
-        public override MemoryEntry ResolveIndexedVariable(VariableEntry entry)
+        public override MemoryEntry ResolveIndexedVariable(VariableIdentifier entry)
         {
             if (!entry.IsDirect)
             {
@@ -122,7 +122,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             OutSet.SetIndex(arrayValue as AssociativeArray, containerIndex, assignedValue);
         }
 
-        public override void AliasAssign(VariableEntry target, IEnumerable<AliasValue> alias)
+        public override void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> alias)
         {
             if (alias.Count() != 1)
             {
@@ -139,7 +139,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        public override MemoryEntry ResolveVariable(VariableEntry variable)
+        public override MemoryEntry ResolveVariable(VariableIdentifier variable)
         {
             var values = new HashSet<Value>();
             foreach (var varName in variable.PossibleNames)
@@ -297,12 +297,12 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #endregion
 
-        public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue, VariableEntry aliasedField)
+        public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue, VariableIdentifier aliasedField)
         {
             throw new NotImplementedException();
         }
 
-        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableEntry fieldEntry, IEnumerable<AliasValue> possibleAliasses)
+        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableIdentifier fieldEntry, IEnumerable<AliasValue> possibleAliasses)
         {
             throw new NotImplementedException();
         }
@@ -324,7 +324,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
-        public override void Foreach(MemoryEntry enumeree, VariableEntry keyVariable, VariableEntry valueVariable)
+        public override void Foreach(MemoryEntry enumeree, VariableIdentifier keyVariable, VariableIdentifier valueVariable)
         {
             if (valueVariable.IsDirect)
             {
