@@ -193,16 +193,16 @@ namespace Weverca.Analysis
             }
             else
             {
-                NativeTypeDecl type = convertToType(declaration);
+                ObjectDecl type = convertToType(declaration);
                 if (declaration.BaseClassName != null)
                 {
                     if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
                     {
-                        NativeTypeDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
+                        ObjectDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
                     }
                     else
                     {
-                        IEnumerable<TypeValue> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
+                        IEnumerable<TypeValueBase> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
                     }
                 }
                 else
@@ -216,7 +216,7 @@ namespace Weverca.Analysis
 
         #region Private helpers
 
-        private NativeTypeDecl convertToType(TypeDecl declaration)
+        private ObjectDecl convertToType(TypeDecl declaration)
         {
             //TODO: traits ako to funguje
             List<NativeMethodInfo> modeledMethods = new List<NativeMethodInfo>();
@@ -258,7 +258,7 @@ namespace Weverca.Analysis
             // NativeTypeDecl result=new NativeTypeDecl();
             Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
 
-            return new NativeTypeDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
+            return new ObjectDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
         }
 
         private void applyHints(FlowOutputSet outSet)

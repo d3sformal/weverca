@@ -109,7 +109,7 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Represent native type declaration
     /// </summary>
-    public class NativeTypeDecl
+    public class ObjectDecl
     {
         /// <summary>
         /// Name of native type
@@ -133,7 +133,7 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsInterface;
 
-        public NativeTypeDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, NativeFieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
+        public ObjectDecl(QualifiedName typeName, IEnumerable<NativeMethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, NativeFieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;

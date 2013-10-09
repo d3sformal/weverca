@@ -549,7 +549,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new VariableName("$type:" + typeName);
         }
 
-        protected override void declareGlobal(TypeValue declaration)
+        protected override void declareGlobal(TypeValueBase declaration)
         {
             var storage = typeStorage(declaration.QualifiedName.Name.Value);
 
@@ -559,17 +559,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(declaration), true);
         }
 
-        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
+        protected override IEnumerable<TypeValueBase> resolveType(QualifiedName typeName)
         {
             var storage = typeStorage(typeName.Name.Value);
 
             MemoryEntry entry;
             if (tryReadValue(storage, out entry, true))
             {
-                var types = new List<TypeValue>(entry.Count);
+                var types = new List<TypeValueBase>(entry.Count);
                 foreach (var value in entry.PossibleValues)
                 {
-                    var type = value as TypeValue;
+                    var type = value as TypeValueBase;
                     Debug.Assert(type != null, "Every value read from type storage is a type");
                     types.Add(type);
                 }
@@ -578,7 +578,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
             else
             {
-                return new List<TypeValue>(0);
+                return new List<TypeValueBase>(0);
             }
         }
 
@@ -608,7 +608,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return tryReadValue(storage, out entry, true);
         }
 
-        protected override void initializeObject(ObjectValue createdObject, TypeValue type)
+        protected override void initializeObject(ObjectValue createdObject, TypeValueBase type)
         {
             var info = getObjectInfoStorage(createdObject);
             //TODO set info
@@ -616,7 +616,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(info, new MemoryEntry(type), true);
         }
 
-        protected override TypeValue objectType(ObjectValue objectValue)
+        protected override TypeValueBase objectType(ObjectValue objectValue)
         {
             var info = getObjectInfoStorage(objectValue);
             var objectInfo = readValue(info, true);
@@ -624,7 +624,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var enumerator = objectInfo.PossibleValues.GetEnumerator();
             enumerator.MoveNext();
-            var type = enumerator.Current as TypeValue;
+            var type = enumerator.Current as TypeValueBase;
             Debug.Assert(type != null, "The value read from object info storage is a type");
 
             return type;

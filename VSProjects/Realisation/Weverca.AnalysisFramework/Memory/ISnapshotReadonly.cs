@@ -121,7 +121,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="objectValue">Object which type is resolved</param>
         /// <returns>Type of given object</returns>
-        TypeValue ObjectType(ObjectValue objectValue);
+        TypeValueBase ObjectType(ObjectValue objectValue);
 
         /// <summary>
         /// Read info stored for given value
@@ -205,6 +205,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="typeName">Name of resolved type</param>
         /// <returns>Resolved types</returns>
-        IEnumerable<TypeValue> ResolveType(QualifiedName typeName);
+        IEnumerable<TypeValueBase> ResolveType(QualifiedName typeName);
     }
 }

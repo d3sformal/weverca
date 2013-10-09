@@ -1212,7 +1212,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var standardClass = outset.ResolveType(new QualifiedName(new Name("stdClass")));
             var enumerator = standardClass.GetEnumerator();
             enumerator.MoveNext();
-            return outset.CreateObject(enumerator.Current as TypeValue);
+            return outset.CreateObject(enumerator.Current as TypeValueBase);
         }
 
         #endregion

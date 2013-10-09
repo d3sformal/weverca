@@ -241,7 +241,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return this;
         }
 
-        internal TestCase DeclareType(NativeTypeDecl typeDeclaration)
+        internal TestCase DeclareType(ObjectDecl typeDeclaration)
         {
             _initializers.Add((outSet) =>
             {

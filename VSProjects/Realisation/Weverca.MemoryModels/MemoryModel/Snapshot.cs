@@ -86,7 +86,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Fields
 
-        protected override void initializeObject(ObjectValue createdObject, TypeValue type)
+        protected override void initializeObject(ObjectValue createdObject, TypeValueBase type)
         {
             ObjectDescriptor descriptor = new ObjectDescriptor(type);
             objects[createdObject] = descriptor;
@@ -303,7 +303,7 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
-        protected override void declareGlobal(TypeValue declaration)
+        protected override void declareGlobal(TypeValueBase declaration)
         {
             throw new NotImplementedException();
         }
@@ -315,7 +315,7 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
-        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
+        protected override IEnumerable<TypeValueBase> resolveType(QualifiedName typeName)
         {
             throw new NotImplementedException();
         }
@@ -928,7 +928,7 @@ namespace Weverca.MemoryModels.MemoryModel
             throw new NotImplementedException();
         }
 
-        protected override TypeValue objectType(ObjectValue objectValue)
+        protected override TypeValueBase objectType(ObjectValue objectValue)
         {
             throw new NotImplementedException();
         }

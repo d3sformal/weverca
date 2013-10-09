@@ -273,22 +273,16 @@ namespace Weverca.AnalysisFramework.Memory
         #region Type values
 
         /// <summary>
+        /// Visits <see cref="TypeValueBase"/>
+        /// </summary>
+        /// <param name="value"></param>
+        void VisitTypeValue(TypeValueBase value);
+
+        /// <summary>
         /// Visits <see cref="TypeValue"/>
         /// </summary>
         /// <param name="value"></param>
-        void VisitTypeValue(TypeValue value);
-
-        /// <summary>
-        /// Visits <see cref="SourceTypeValue"/>
-        /// </summary>
-        /// <param name="value"></param>
-        void VisitSourceTypeValue(SourceTypeValue value);
-
-        /// <summary>
-        /// Visits <see cref="NativeTypeValue"/>
-        /// </summary>
-        /// <param name="value"></param>
-        void VisitNativeTypeValue(NativeTypeValue value);
+        void VisitNativeTypeValue(TypeValue value);
 
         #endregion
 

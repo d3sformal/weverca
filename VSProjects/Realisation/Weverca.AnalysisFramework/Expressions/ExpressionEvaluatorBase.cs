@@ -320,7 +320,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         internal MemoryEntry IndirectCreateObject(MemoryEntry memoryEntry)
         {
-            var declarations = new HashSet<TypeValue>();
+            var declarations = new HashSet<TypeValueBase>();
 
             foreach (StringValue name in memoryEntry.PossibleValues)
             {
@@ -347,11 +347,11 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="type">Type that is always needed when creating new object</param>
         /// <returns>New initialized object</returns>
-        protected ObjectValue CreateInitializedObject(TypeValue type)
+        protected ObjectValue CreateInitializedObject(TypeValueBase type)
         {
             var newObject = OutSet.CreateObject(type);
 
-            var sourceDeclaration = type as SourceTypeValue;
+            var sourceDeclaration = type as TypeValue;
             if (sourceDeclaration != null)
             {
                 var initializer = new ObjectInitializer(this);
@@ -359,7 +359,7 @@ namespace Weverca.AnalysisFramework.Expressions
             }
             else
             {
-                var nativeDeclaration = type as NativeTypeValue;
+                var nativeDeclaration = type as TypeValue;
                 if (nativeDeclaration != null)
                 {
                     // TODO: Initialize all fields with its default or initialization value

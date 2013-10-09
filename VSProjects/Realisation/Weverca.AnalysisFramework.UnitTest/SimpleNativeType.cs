@@ -15,7 +15,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 {
     static class SimpleNativeType
     {
-        public static NativeTypeDecl CreateType()
+        public static ObjectDecl CreateType()
         {
             var methods = new NativeMethodInfo[]{
                 method("__construct",_method___construct),
@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             };
 
-            var declaration = new NativeTypeDecl(new QualifiedName(new Name("NativeType")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, NativeFieldInfo>(), null, false, false);
+            var declaration = new ObjectDecl(new QualifiedName(new Name("NativeType")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, NativeFieldInfo>(), null, false, false);
             return declaration;
         }
 

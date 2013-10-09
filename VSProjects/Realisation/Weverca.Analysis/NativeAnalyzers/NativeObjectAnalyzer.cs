@@ -58,7 +58,7 @@ namespace Weverca.Analysis
 
         #region convert to mutable
 
-        public NativeTypeDecl ConvertToMuttable(NativeObjectAnalyzer analyzer,
+        public ObjectDecl ConvertToMuttable(NativeObjectAnalyzer analyzer,
             Dictionary<string, NativeMethodInfo> WevercaImplementedMethods)
         {
             var nativeMethodsInfo = new List<NativeMethodInfo>();
@@ -138,7 +138,7 @@ namespace Weverca.Analysis
                  Console.WriteLine(QualifiedName);
             */
 
-            return new NativeTypeDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);
+            return new ObjectDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);
         }
 
         #endregion
@@ -148,7 +148,7 @@ namespace Weverca.Analysis
     {
         private static NativeObjectAnalyzer instance = null;
 
-        private Dictionary<QualifiedName, NativeTypeDecl> nativeObjects;
+        private Dictionary<QualifiedName, ObjectDecl> nativeObjects;
 
         private Dictionary<string, NativeMethodInfo> WevercaImplementedMethods
             = new Dictionary<string, NativeMethodInfo>();
@@ -162,7 +162,7 @@ namespace Weverca.Analysis
         private NativeObjectAnalyzer(FlowController flow)
         {
             var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
-            nativeObjects = new Dictionary<QualifiedName, NativeTypeDecl>();
+            nativeObjects = new Dictionary<QualifiedName, ObjectDecl>();
             NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, MutableNativeTypeDecl>();
 
             var outSet = flow.OutSet;
@@ -365,12 +365,12 @@ namespace Weverca.Analysis
             return nativeObjects.ContainsKey(className);
         }
 
-        public NativeTypeDecl GetClass(QualifiedName className)
+        public ObjectDecl GetClass(QualifiedName className)
         {
             return nativeObjects[className];
         }
 
-        public bool TryGetClass(QualifiedName className, out NativeTypeDecl declaration)
+        public bool TryGetClass(QualifiedName className, out ObjectDecl declaration)
         {
             return nativeObjects.TryGetValue(className, out declaration);
         }

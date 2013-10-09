@@ -71,7 +71,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="createdObject">Created object that has to be initialized</param>
         /// <param name="type">Desired type of initialized object</param>
-        protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
+        protected abstract void initializeObject(ObjectValue createdObject, TypeValueBase type);
         
         /// <summary>
         /// Iterates over the given object
@@ -85,7 +85,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="objectValue">Object which type is resolved</param>
         /// <returns>Type of given object</returns>
-        protected abstract TypeValue objectType(ObjectValue objectValue);
+        protected abstract TypeValueBase objectType(ObjectValue objectValue);
 
         /// <summary>
         /// Initialize array
@@ -305,7 +305,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Declare given type into global context
         /// </summary>
         /// <param name="declaration">Declared type</param>
-        protected abstract void declareGlobal(TypeValue declaration);
+        protected abstract void declareGlobal(TypeValueBase declaration);
 
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
@@ -362,7 +362,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="typeName">Name of resolved type</param>
         /// <returns>Resolved types</returns>
-        protected abstract IEnumerable<TypeValue> resolveType(QualifiedName typeName);
+        protected abstract IEnumerable<TypeValueBase> resolveType(QualifiedName typeName);
 
         #endregion
 
@@ -551,7 +551,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="objectValue">Object which type is resolved</param>
         /// <returns>Type of given object</returns>
-        public TypeValue ObjectType(ObjectValue objectValue)
+        public TypeValueBase ObjectType(ObjectValue objectValue)
         {
             ++_statistics.ObjectTypeSearches;
             return objectType(objectValue);
@@ -655,27 +655,17 @@ namespace Weverca.AnalysisFramework.Memory
             return new LambdaFunctionValue(expression);
         }
 
-        public TypeValue CreateType(TypeDecl declaration)
+        public TypeValueBase CreateType(ObjectDecl declaration)
         {
             checkCanUpdate();
 
-            var type = new SourceTypeValue(declaration);
-            ++_statistics.CreatedSourceTypeValues;
-
-            return type;
-        }
-
-        public TypeValue CreateType(NativeTypeDecl declaration)
-        {
-            checkCanUpdate();
-
-            var type = new NativeTypeValue(declaration);
+            var type = new TypeValue(declaration);
             ++_statistics.CreatedNativeTypeValues;
 
             return type;
         }
 
-        public ObjectValue CreateObject(TypeValue type)
+        public ObjectValue CreateObject(TypeValueBase type)
         {
             checkCanUpdate();
 
@@ -911,7 +901,7 @@ namespace Weverca.AnalysisFramework.Memory
             declareGlobal(function);
         }
 
-        public void DeclareGlobal(TypeValue type)
+        public void DeclareGlobal(TypeValueBase type)
         {
             ++_statistics.DeclaredTypes;
             declareGlobal(type);
@@ -929,7 +919,7 @@ namespace Weverca.AnalysisFramework.Memory
             return resolveMethod(objectValue, methodName);
         }
 
-        public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
+        public IEnumerable<TypeValueBase> ResolveType(QualifiedName typeName)
         {
             ++_statistics.TypeResolvings;
             return resolveType(typeName);

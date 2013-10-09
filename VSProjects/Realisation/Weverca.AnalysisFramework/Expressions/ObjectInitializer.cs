@@ -55,14 +55,14 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="createdObject">A new object to be initialized</param>
         /// <param name="typeDeclaration">Type declaration used to initialize the given object</param>
-        public void InitializeObject(ObjectValue createdObject, TypeDecl typeDeclaration)
+        public void InitializeObject(ObjectValue createdObject, ObjectDecl typeDeclaration)
         {
             Debug.Assert(thisObject == null, "Created object must be selected after enter to method");
 
             try
             {
                 thisObject = createdObject;
-                VisitTypeDecl(typeDeclaration);
+                //VisitTypeDecl(typeDeclaration);
                 Debug.Assert(thisObject != null, "Initialized object must stay until end of initialization");
             }
             finally

@@ -390,7 +390,7 @@ namespace Weverca.Analysis
             QualifiedName typeName = new QualifiedName(new Name(type));
             if (objectAnalyzer.ExistClass(typeName))
             {
-                NativeTypeDecl decl = objectAnalyzer.GetClass(typeName);
+                ObjectDecl decl = objectAnalyzer.GetClass(typeName);
 
                 var fields = objectAnalyzer.GetClass(typeName).Fields;
                 ObjectValue value = flow.OutSet.CreateObject(flow.OutSet.CreateType(decl));

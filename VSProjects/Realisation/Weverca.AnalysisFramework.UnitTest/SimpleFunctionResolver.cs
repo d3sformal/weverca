@@ -141,8 +141,54 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override void DeclareGlobal(TypeDecl declaration)
         {
-            var type = OutSet.CreateType(declaration);
+
+            var type = OutSet.CreateType(convertToType(declaration));
             OutSet.DeclareGlobal(type);
+        }
+
+        private ObjectDecl convertToType(TypeDecl declaration)
+        {
+            //TODO: traits ako to funguje
+            List<NativeMethodInfo> modeledMethods = new List<NativeMethodInfo>();
+            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
+            Dictionary<VariableName, NativeFieldInfo> fields = new Dictionary<VariableName, NativeFieldInfo>();
+            Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
+
+            foreach (var member in declaration.Members)
+            {
+                if (member is FieldDeclList)
+                {
+                    foreach (FieldDecl field in (member as FieldDeclList).Fields)
+                    {
+                        Visibility visibility = Visibility.PUBLIC;
+
+                        fields.Add(new VariableName(field.Name.Value), new NativeFieldInfo(field.Name, "any", visibility, field.Initializer, true));
+                    }
+
+                }
+                else if (member is ConstDeclList)
+                {
+                    foreach (var constant in (member as ConstDeclList).Constants)
+                    {
+                        constants.Add(constant.Name, null);
+                    }
+                }
+                else if (member is MethodDecl)
+                {
+                    sourceCodeMethods.Add(member as MethodDecl);
+                }
+                else
+                {
+                    //ignore traits are not supported by AST, only by parser
+                }
+            }
+            bool isFinal = declaration.Type.IsFinal;
+            bool isInterface = declaration.Type.IsInterface;
+
+            // NativeTypeDecl result=new NativeTypeDecl();
+            Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
+
+            return new ObjectDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
         }
 
         #endregion

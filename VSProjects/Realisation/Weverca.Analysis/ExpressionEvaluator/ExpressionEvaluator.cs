@@ -825,12 +825,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (!types.GetEnumerator().MoveNext())
             {
                 var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
-                NativeTypeDecl nativeDeclaration;
+                ObjectDecl nativeDeclaration;
                 if (objectAnalyzer.TryGetClass(typeName, out nativeDeclaration))
                 {
                     var type = OutSet.CreateType(nativeDeclaration);
                     OutSet.DeclareGlobal(type);
-                    var newTypes = new List<TypeValue>();
+                    var newTypes = new List<TypeValueBase>();
                     newTypes.Add(type);
                     types = newTypes;
                 }
