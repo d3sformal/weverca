@@ -31,6 +31,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca", "..\..\..\VSProje
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Common", "..\..\..\VSProjects\Realisation\Weverca.Common\Weverca.Common.csproj", "{3CEE322A-B262-453B-9A92-47D39807E166}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis", "..\..\..\VSProjects\Realisation\Weverca.TaintedAnalysis\Weverca.TaintedAnalysis.csproj", "{7EA2E284-D1C3-43CD-974A-61DBADD47DD3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.TaintedAnalysis.UnitTest", "..\..\..\VSProjects\Realisation\Weverca.TaintedAnalysis.UnitTest\Weverca.TaintedAnalysis.UnitTest.csproj", "{D074C980-78A8-4F31-BC12-0D2EA8A883C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +101,14 @@ Global
 		{3CEE322A-B262-453B-9A92-47D39807E166}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CEE322A-B262-453B-9A92-47D39807E166}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CEE322A-B262-453B-9A92-47D39807E166}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EA2E284-D1C3-43CD-974A-61DBADD47DD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EA2E284-D1C3-43CD-974A-61DBADD47DD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EA2E284-D1C3-43CD-974A-61DBADD47DD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EA2E284-D1C3-43CD-974A-61DBADD47DD3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D074C980-78A8-4F31-BC12-0D2EA8A883C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D074C980-78A8-4F31-BC12-0D2EA8A883C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D074C980-78A8-4F31-BC12-0D2EA8A883C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D074C980-78A8-4F31-BC12-0D2EA8A883C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
