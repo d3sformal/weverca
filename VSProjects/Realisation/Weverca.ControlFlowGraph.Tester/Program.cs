@@ -7,7 +7,7 @@ using PHP.Core.Parsers;
 using Weverca.Parsers;
 using Weverca.ControlFlowGraph;
 
-namespace Weverca.Parser.Tester
+namespace Weverca.ControlFlowGraph.Tester
 {
     /******* Poznamka pro veverky:
      * Testovaci program (Weverca.Parser.Tester) je nastaven tak, ze pokud ho spustite bez parametru,

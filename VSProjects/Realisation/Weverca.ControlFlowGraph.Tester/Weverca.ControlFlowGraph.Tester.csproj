@@ -7,8 +7,8 @@
     <ProjectGuid>{5A766979-C92A-443D-A976-0DFAAC987EEB}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Weverca.Parser.Tester</RootNamespace>
-    <AssemblyName>Weverca.Parser.Tester</AssemblyName>
+    <RootNamespace>Weverca.ControlFlowGraph.Tester</RootNamespace>
+    <AssemblyName>Weverca.ControlFlowGraph.Tester</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
