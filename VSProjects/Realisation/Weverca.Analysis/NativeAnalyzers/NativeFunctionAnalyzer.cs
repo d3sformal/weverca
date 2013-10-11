@@ -376,7 +376,7 @@ namespace Weverca.Analysis
                 {
                     foreach (var arg2 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(2)).PossibleValues)
                     {
-                        UnaryOperationVisitor unaryVisitor = new UnaryOperationVisitor(new ExpressionEvaluator.ExpressionEvaluator());
+                        var unaryVisitor = new UnaryOperationEvaluator(flow, new StringConverter(flow));
                         Value result = unaryVisitor.Evaluate(Operations.BoolCast, arg2);
                         if (result is UndefinedValue)
                         {
@@ -405,18 +405,22 @@ namespace Weverca.Analysis
                 }
                 foreach (var arg0 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(0)).PossibleValues)
                 {
-
-                    UnaryOperationVisitor unaryVisitor = new UnaryOperationVisitor(new ExpressionEvaluator.ExpressionEvaluator());
-                    Value arg0Retyped = unaryVisitor.Evaluate(Operations.StringCast, arg0);
+                    var stringConverter = new StringConverter(flow);
+                    // TODO: arg0Retyped can be null if cannot be converted to StringValue
+                    var arg0Retyped = stringConverter.Evaluate(arg0);
                     string constantName = "";
+
+                    // TODO: It cannot never be null
+                    /*
                     if (arg0Retyped is UndefinedValue)
                     {
                         canBeFalse = true;
                         continue;
                     }
                     else
+                     */
                     {
-                        constantName = (arg0Retyped as StringValue).Value;
+                        constantName = arg0Retyped.Value;
                     }
 
                     QualifiedName qConstantName = new QualifiedName(new Name(constantName));
@@ -465,11 +469,12 @@ namespace Weverca.Analysis
             {
                 foreach (var arg0 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(0)).PossibleValues)
                 {
-                    UnaryOperationVisitor unaryVisitor = new UnaryOperationVisitor(new ExpressionEvaluator.ExpressionEvaluator());
-                    Value arg0Retyped = unaryVisitor.Evaluate(Operations.StringCast, arg0);
+                    var stringConverter = new StringConverter(flow);
+                    // TODO: arg0Retyped can be null if cannot be converted to StringValue
+                    var arg0Retyped = stringConverter.Evaluate(arg0);
                     List<Value> values = new List<Value>();
                     NativeConstantAnalyzer constantAnalyzer = NativeConstantAnalyzer.Create(flow.OutSet);
-                    QualifiedName name = new QualifiedName(new Name((arg0Retyped as StringValue).Value));
+                    QualifiedName name = new QualifiedName(new Name(arg0Retyped.Value));
 
                     if (constantAnalyzer.ExistContant(name))
                     {

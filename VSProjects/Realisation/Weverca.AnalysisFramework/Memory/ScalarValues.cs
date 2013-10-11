@@ -119,6 +119,11 @@ namespace Weverca.AnalysisFramework.Memory
         where T : IComparable, IComparable<T>, IEquatable<T>
     {
         /// <summary>
+        /// Gets representation of native zero value. This value has nothing to do with the value of class
+        /// </summary>
+        public abstract T Zero { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="NumericValue{T}" /> class.
         /// </summary>
         /// <param name="value">Numeric value representing the object</param>
@@ -136,6 +141,12 @@ namespace Weverca.AnalysisFramework.Memory
     /// </summary>
     public class IntegerValue : NumericValue<int>
     {
+        /// <inheritdoc />
+        public override int Zero
+        {
+            get { return 0; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="IntegerValue" /> class.
         /// </summary>
@@ -154,6 +165,12 @@ namespace Weverca.AnalysisFramework.Memory
     /// </summary>
     public class LongintValue : NumericValue<long>
     {
+        /// <inheritdoc />
+        public override long Zero
+        {
+            get { return 0L; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="LongintValue" /> class.
         /// </summary>
@@ -172,6 +189,12 @@ namespace Weverca.AnalysisFramework.Memory
     /// </summary>
     public class FloatValue : NumericValue<double>
     {
+        /// <inheritdoc />
+        public override double Zero
+        {
+            get { return 0.0; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FloatValue" /> class.
         /// </summary>

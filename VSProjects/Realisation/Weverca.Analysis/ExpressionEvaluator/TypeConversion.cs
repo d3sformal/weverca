@@ -10,16 +10,81 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <summary>
     /// Converts values of various PHP data types to another types.
     /// </summary>
+    /// <remarks>
+    /// The class <see cref="TypeConversion" /> with its static methods serves as converter between native
+    /// and even user-defined (in case of objects) PHP types. The class is very similar to
+    /// <c>System.Convert</c> class in .NET Framework. It is highly recommended to prefer this class to .NET
+    /// one even if the conversions between equivalent PHP and .NET types do not differ, because it is more
+    /// expressive and not so error prone. All these types are supported: Boolean, integer, floating point
+    /// number, string, array, object, resource and NULL value (the only value of null type). However,
+    /// conversion between every two types is not supported. There are particular cases that may occur:
+    /// <list type="bullet">
+    /// <item>
+    /// <description>
+    /// There is no conversion. This is the case of the conversion between the same types.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// Conversion is not defined. There are conversions that return the right type, but does not make
+    /// any sense (e.g. conversion of object to integer). The result of operation is implementation-defined
+    /// and analysis should return an abstract interpretation of the given type.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// Conversion can fail. Some conversion depends on particular value and in some cases can fail
+    /// (e.g. conversion of too large floating point number to integer). For that reason, there are methods
+    /// that try to perform conversion and indicate whether they succeed.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>
+    /// A successful conversion. All other conversions will succeed even if new value result lose some data.
+    /// </description>
+    /// </item>
+    /// </list>
+    /// </remarks>
     public static class TypeConversion
     {
+        /// <summary>
+        /// Name of standard generic empty class used for typecasting to object
+        /// </summary>
+        private static readonly QualifiedName standardClass = new QualifiedName(new Name("stdClass"));
+
         #region ToBoolean
+
+        /// <summary>
+        /// Converts the numeric value to an equivalent boolean value.
+        /// </summary>
+        /// <typeparam name="T">Type of number representation</typeparam>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Numeric value to convert</param>
+        /// <returns><c>true</c> if number is not zero, otherwise <c>false</c></returns>
+        public static BooleanValue ToBoolean<T>(FlowOutputSet outset, NumericValue<T> value)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            return outset.CreateBool(ToBoolean(value));
+        }
+
+        /// <summary>
+        /// Converts the native numeric value to an equivalent native boolean value.
+        /// </summary>
+        /// <typeparam name="T">Type of number representation</typeparam>
+        /// <param name="value">Native numeric value to convert</param>
+        /// <returns><c>true</c> if native number is not zero, otherwise <c>false</c></returns>
+        public static bool ToBoolean<T>(NumericValue<T> value)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            return !value.Value.Equals(value.Zero);
+        }
 
         /// <summary>
         /// Converts the value of integer to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Integer to convert</param>
-        /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
+        /// <returns><c>true</c> if integer value is not zero, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, IntegerValue value)
         {
             return outset.CreateBool(ToBoolean(value.Value));
@@ -29,7 +94,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Converts the value of native integer to an equivalent native boolean value.
         /// </summary>
         /// <param name="value">Native integer to convert</param>
-        /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
+        /// <returns><c>true</c> if integer value is not zero, otherwise <c>false</c></returns>
         public static bool ToBoolean(int value)
         {
             return value != 0;
@@ -38,7 +103,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of long integer to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Long integer to convert</param>
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, LongintValue value)
@@ -59,7 +124,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of floating-point number to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Floating-point number to convert</param>
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, FloatValue value)
@@ -80,7 +145,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the string value to proper boolean value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
         /// <returns><c>true</c> if string is not empty or "0", otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, StringValue value)
@@ -103,19 +168,29 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from the object reference value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Object of any type to convert</param>
         /// <returns>Always <c>true</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, ObjectValue value)
         {
+            return outset.CreateBool(ToBoolean(value));
+        }
+
+        /// <summary>
+        /// Determines native boolean value from the object reference value.
+        /// </summary>
+        /// <param name="value">Object of any type to convert</param>
+        /// <returns>Always <c>true</c></returns>
+        public static bool ToBoolean(ObjectValue value)
+        {
             // Notice that in PHP 4, an object evaluates as false if it has no properties.
-            return outset.CreateBool(true);
+            return true;
         }
 
         /// <summary>
         /// Determines boolean value from content of the array value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
         /// <returns><c>true</c> if array has at least one element, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, AssociativeArray value)
@@ -128,42 +203,72 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from the reference to external resource.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">External resource to convert</param>
         /// <returns>Always <c>true</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, ResourceValue value)
         {
-            return outset.CreateBool(true);
+            return outset.CreateBool(ToBoolean(value));
+        }
+
+        /// <summary>
+        /// Determines native boolean value from the reference to external resource.
+        /// </summary>
+        /// <param name="value">External resource to convert</param>
+        /// <returns>Always <c>true</c></returns>
+        public static bool ToBoolean(ResourceValue value)
+        {
+            return true;
         }
 
         /// <summary>
         /// Determines boolean value from any object reference value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Any object of any type to convert</param>
         /// <returns>Always <c>true</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, AnyObjectValue value)
         {
+            return outset.CreateBool(ToBoolean(value));
+        }
+
+        /// <summary>
+        /// Determines native boolean value from any object reference value.
+        /// </summary>
+        /// <param name="value">Any object of any type to convert</param>
+        /// <returns>Always <c>true</c></returns>
+        public static bool ToBoolean(AnyObjectValue value)
+        {
             // Notice that in PHP 4, an object evaluates as false if it has no properties.
-            return outset.CreateBool(true);
+            return true;
         }
 
         /// <summary>
         /// Determines boolean value from any reference to external resource.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Any external resource to convert</param>
         /// <returns>Always <c>true</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, AnyResourceValue value)
         {
-            return outset.CreateBool(true);
+            return outset.CreateBool(ToBoolean(value));
+        }
+
+        /// <summary>
+        /// Determines native boolean value from any reference to external resource.
+        /// </summary>
+        /// <param name="value">Any external resource to convert</param>
+        /// <returns>Always <c>true</c></returns>
+        public static bool ToBoolean(AnyResourceValue value)
+        {
+            return true;
         }
 
         /// <summary>
         /// Tries to convert possible interval of numbers to an equivalent boolean value.
         /// </summary>
         /// <typeparam name="T">Type of values represented by interval</typeparam>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Value representing interval of numbers to convert</param>
         /// <param name="convertedValue">
         /// <c>true</c> if interval does not contain zero and
@@ -174,22 +279,41 @@ namespace Weverca.Analysis.ExpressionEvaluator
             out BooleanValue convertedValue)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
+            bool casted;
+            var isConverted = TryConvertToBoolean(value, out casted);
+            convertedValue = outset.CreateBool(casted);
+            return isConverted;
+        }
+
+        /// <summary>
+        /// Tries to convert possible interval of numbers to an equivalent native boolean value.
+        /// </summary>
+        /// <typeparam name="T">Type of values represented by interval</typeparam>
+        /// <param name="value">Value representing interval of numbers to convert</param>
+        /// <param name="convertedValue">
+        /// <c>true</c> if interval does not contain zero and
+        /// <c>false</c> if interval consists only from zero value or other cases.
+        /// </param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryConvertToBoolean<T>(IntervalValue<T> value, out bool convertedValue)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
             if ((value.Start.CompareTo(value.Zero) <= 0) && (value.End.CompareTo(value.Zero) >= 0))
             {
                 if (value.Start.Equals(value.Zero) && value.End.Equals(value.Zero))
                 {
-                    convertedValue = outset.CreateBool(false);
+                    convertedValue = false;
                     return true;
                 }
                 else
                 {
-                    convertedValue = outset.CreateBool(false);
+                    convertedValue = false;
                     return false;
                 }
             }
             else
             {
-                convertedValue = outset.CreateBool(true);
+                convertedValue = true;
                 return true;
             }
         }
@@ -197,12 +321,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Undefined value</param>
         /// <returns>Always <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, UndefinedValue value)
         {
-            return outset.CreateBool(false);
+            return outset.CreateBool(ToBoolean(value));
+        }
+
+        /// <summary>
+        /// Converts an undefined value to an equivalent native boolean value.
+        /// </summary>
+        /// <param name="value">Undefined value</param>
+        /// <returns>Always <c>false</c></returns>
+        public static bool ToBoolean(UndefinedValue value)
+        {
+            return false;
         }
 
         #endregion
@@ -212,7 +346,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the boolean value to an equivalent value of integer.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Boolean value to convert</param>
         /// <returns>The number 1 if value is <c>true</c>, otherwise 0</returns>
         public static IntegerValue ToInteger(FlowOutputSet outset, BooleanValue value)
@@ -233,7 +367,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Tries to convert the value of long integer to an equivalent integer value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Long integer to convert</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
@@ -271,7 +405,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)"/>
         /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Floating-point number to convert</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
@@ -313,7 +447,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the string value to corresponding integer value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
         /// <returns>Integer representation of string if it can be converted, otherwise 0</returns>
         public static IntegerValue ToInteger(FlowOutputSet outset, StringValue value)
@@ -329,7 +463,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)"/>
         /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
@@ -370,7 +504,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// is undefined for other than scalar types. However, it typically acts as predefined
         /// function <c>intval</c> which has conversion of to array defined clearly.
         /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
         /// <returns>1 if array has at least one element, otherwise 0</returns>
         public static IntegerValue ToInteger(FlowOutputSet outset, AssociativeArray value)
@@ -383,7 +517,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to an equivalent integer value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Undefined value</param>
         /// <returns>Always 0 value</returns>
         public static IntegerValue ToInteger(FlowOutputSet outset, UndefinedValue value)
@@ -398,7 +532,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the boolean value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Boolean value to convert</param>
         /// <returns>The number 1.0 if value is <c>true</c>, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, BooleanValue value)
@@ -419,7 +553,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of long integer value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Long integer value to convert</param>
         /// <returns>A floating-point number that is equivalent to long integer value.</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, LongintValue value)
@@ -440,7 +574,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the string value to corresponding floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
         /// <returns>Number representation of string if it can be converted, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, StringValue value)
@@ -456,7 +590,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(string, out double)"/>
         /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
         /// <param name="convertedValue">Converted value if conversion is successful, otherwise 0.0</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
@@ -494,7 +628,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.ToInteger(FlowOutputSet, AssociativeArray)"/>
         /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
         /// <returns>1.0 if array has at least one element, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, AssociativeArray value)
@@ -507,7 +641,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Undefined value</param>
         /// <returns>Always 0.0 value</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, UndefinedValue value)
@@ -522,7 +656,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the boolean value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Boolean value to convert</param>
         /// <returns>String "1" if value is <c>true</c>, otherwise empty string</returns>
         public static StringValue ToString(FlowOutputSet outset, BooleanValue value)
@@ -543,7 +677,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the integer value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Value of integer to convert</param>
         /// <returns>The string representation of integer value</returns>
         public static StringValue ToString(FlowOutputSet outset, IntegerValue value)
@@ -564,7 +698,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the long integer value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Value of long integer to convert</param>
         /// <returns>The string representation of long integer value</returns>
         public static StringValue ToString(FlowOutputSet outset, LongintValue value)
@@ -575,7 +709,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the floating-point number to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Floating-point number to convert</param>
         /// <returns>The string representation of floating-point number</returns>
         public static StringValue ToString(FlowOutputSet outset, FloatValue value)
@@ -596,7 +730,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines string value from content of the array value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
         /// <returns>Always "Array" string</returns>
         public static StringValue ToString(FlowOutputSet outset, AssociativeArray value)
@@ -607,7 +741,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines string value from the reference to external resource.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">External resource to convert</param>
         /// <returns>
         /// Value "Resource id #X", where X is a unique number assigned to the resource by PHP at runtime
@@ -620,7 +754,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines string value from content of any array value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Any array to convert</param>
         /// <returns>Always "Array" string</returns>
         public static StringValue ToString(FlowOutputSet outset, AnyArrayValue value)
@@ -631,7 +765,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Undefined value</param>
         /// <returns>Empty string</returns>
         public static StringValue ToString(FlowOutputSet outset, UndefinedValue value)
@@ -646,13 +780,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the array to corresponding new object.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
         /// <returns>Object with fields named by indices of array and initialized by their values</returns>
         public static ObjectValue ToObject(FlowOutputSet outset, AssociativeArray value)
         {
             var objectValue = CreateStandardObject(outset);
-            var indices = outset.IterateObject(objectValue);
+            var indices = outset.IterateArray(value);
 
             foreach (var index in indices)
             {
@@ -666,7 +800,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Creates an object containing one field with the undefined value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Undefined value</param>
         /// <returns>Object with field named "scalar" which contains undefined value</returns>
         public static ObjectValue ToObject(FlowOutputSet outset, UndefinedValue value)
@@ -677,7 +811,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Creates an object containing one field with a value but an object, array or undefined value.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">A value to convert</param>
         /// <returns>Object with field named "scalar" which contains the value</returns>
         public static ObjectValue ToObject(FlowOutputSet outset, Value value)
@@ -695,7 +829,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the object to corresponding array structure.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Object of any type to convert</param>
         /// <returns>Array with keys named by fields of object and initialized by their values</returns>
         public static AssociativeArray ToArray(FlowOutputSet outset, ObjectValue value)
@@ -718,7 +852,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to corresponding array structure.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Undefined value</param>
         /// <returns>Empty with no elements</returns>
         public static AssociativeArray ToArray(FlowOutputSet outset, UndefinedValue value)
@@ -729,7 +863,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts a value but an object, array or undefined value to corresponding array structure.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">A value to convert</param>
         /// <returns>Array with a single element with the value on position of 0 index</returns>
         public static AssociativeArray ToArray(FlowOutputSet outset, Value value)
@@ -747,7 +881,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Tries to convert the interval of long integer to an equivalent integer interval.
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Long integer to convert</param>
         /// <param name="convertedValue">
         /// Integer interval in the same range as input if conversion is successful, otherwise (0;0)
@@ -769,7 +903,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(FlowOutputSet, double, out int)"/>
         /// </remarks>
-        /// <param name="outset">Output set of FlowInfo</param>
+        /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Floating-point number to convert</param>
         /// <param name="convertedValue">
         /// Integer interval in the same range as input if conversion is successful, otherwise (0;0)
@@ -1203,14 +1337,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Helper methods
 
         /// <summary>
-        /// Creates a new object of build-in type "stdClass"
+        /// Creates a new object of build-in type <c>stdClass</c>
         /// </summary>
-        /// <param name="outset">Output set of FlowInfo</param>
-        /// <returns>Object of "stdClass" type with no fields nor methods</returns>
+        /// <param name="outset">Output set of a program point</param>
+        /// <returns>Object of <c>stdClass</c> type with no fields nor methods</returns>
         private static ObjectValue CreateStandardObject(FlowOutputSet outset)
         {
-            var standardClass = outset.ResolveType(new QualifiedName(new Name("stdClass")));
-            var enumerator = standardClass.GetEnumerator();
+            var standardClassType = outset.ResolveType(standardClass);
+            var enumerator = standardClassType.GetEnumerator();
             enumerator.MoveNext();
             return outset.CreateObject(enumerator.Current as TypeValueBase);
         }
@@ -1220,6 +1354,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
     public class ValueTypeResolver
     {
+        public static bool IsBool(Value value)
+        {
+            return value is BooleanValue || value is AnyBooleanValue;
+        }
+
         public static bool IsInt(Value value)
         {
             return value is IntegerIntervalValue || value is IntegerValue || value is AnyIntegerValue;
@@ -1235,14 +1374,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return value is FloatIntervalValue || value is FloatValue || value is AnyFloatValue;
         }
 
-        public static bool IsBool(Value value)
-        {
-            return value is BooleanValue || value is AnyBooleanValue;
-        }
-
         public static bool IsString(Value value)
         {
             return value is StringValue || value is AnyStringValue;
+        }
+
+        public static bool IsCompound(Value value)
+        {
+            return value is CompoundValue || value is AnyCompoundValue;
         }
 
         public static bool IsObject(Value value)
@@ -1255,6 +1394,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return value is AssociativeArray || value is AnyArrayValue;
         }
 
+        public static bool IsResource(Value value)
+        {
+            return value is ResourceValue || value is AnyResourceValue;
+        }
+
         public static bool CanBeDirty(Value value)
         {
             return !(ValueTypeResolver.IsBool(value)
@@ -1265,18 +1409,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public static bool IsUnknown(Value value)
         {
-            if (value is UndefinedValue
+            return value is UndefinedValue
                 || value is AnyValue
-                || value is FloatIntervalValue
                 || value is IntegerIntervalValue
-                || value is LongintIntervalValue)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+                || value is LongintIntervalValue
+                || value is FloatIntervalValue;
         }
     }
 }

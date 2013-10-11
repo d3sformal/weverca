@@ -15,7 +15,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// </summary>
     public class ExpressionEvaluator : ExpressionEvaluatorBase
     {
-        private UnaryOperationVisitor unaryOperationVisitor;
+        private StringConverter stringConverter;
+        private UnaryOperationEvaluator unaryOperationEvaluator;
+        private IncrementDecrementEvaluator incrementDecrementEvaluator;
         private BinaryOperationVisitor binaryOperationVisitor;
 
         /// <summary>
@@ -23,7 +25,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         public ExpressionEvaluator()
         {
-            unaryOperationVisitor = new UnaryOperationVisitor(this);
+            stringConverter = new StringConverter(Flow);
+            unaryOperationEvaluator = new UnaryOperationEvaluator(Flow, stringConverter);
+            incrementDecrementEvaluator = new IncrementDecrementEvaluator(Flow);
             binaryOperationVisitor = new BinaryOperationVisitor(this);
         }
 
@@ -359,19 +363,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
-            var values = new HashSet<Value>();
-
-            foreach (var value in operand.PossibleValues)
-            {
-                values.Add(unaryOperationVisitor.Evaluate(operation, value));
-            }
-
-            return new MemoryEntry(values);
+            unaryOperationEvaluator.SetContext(Flow);
+            return unaryOperationEvaluator.Evaluate(operation, operand);
         }
 
         public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
         {
-            throw new NotImplementedException();
+            incrementDecrementEvaluator.SetContext(Flow);
+            return incrementDecrementEvaluator.Evaluate(operation.Inc, incrementedValue);
         }
 
         public override MemoryEntry ArrayEx(
@@ -479,20 +478,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             Debug.Assert(variableSpecifier.Count > 0, "Every variable must have at least one name");
 
+            // TODO: What should I return if value cannot be converted to concrete string?
+            bool isAlwaysConcrete;
+            stringConverter.SetContext(Flow);
+            var stringValues = stringConverter.Evaluate(variableSpecifier, out isAlwaysConcrete);
+
             var names = new HashSet<string>();
-            foreach (var possible in variableSpecifier.PossibleValues)
+            foreach (var value in stringValues)
             {
-                var value = unaryOperationVisitor.Evaluate(Operations.StringCast, possible);
-                var stringValue = value as StringValue;
-                if (stringValue != null)
-                {
-                    names.Add(stringValue.Value);
-                }
-                else
-                {
-                    // TODO: What to return?
-                    Debug.Assert(value is AnyStringValue);
-                }
+                names.Add(value.Value);
             }
 
             return names;
@@ -767,12 +761,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             // TODO: Optimalize, implementation is provided only for faultless progress and testing
 
+            stringConverter.SetContext(Flow);
             foreach (var entry in entries)
             {
-                foreach (var value in entry.PossibleValues)
-                {
-                    unaryOperationVisitor.Evaluate(Operations.StringCast, value);
-                }
+                bool isAlwaysConcrete;
+                stringConverter.Evaluate(entry, out isAlwaysConcrete);
             }
         }
 
@@ -836,8 +829,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    // TODO: If no type is resolved, exception should be thrown
-                    Debug.Fail("No type resolved");
+                    // TODO: This must be error
+                    SetWarning("Class not found");
                 }
             }
 
@@ -980,6 +973,5 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             return indexes;
         }
-
     }
 }
