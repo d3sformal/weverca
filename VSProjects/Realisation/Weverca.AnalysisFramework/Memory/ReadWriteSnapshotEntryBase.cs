@@ -24,5 +24,18 @@ namespace Weverca.AnalysisFramework.Memory
             : base(owningSnapshot)
         {
         }
+
+        /// <summary>
+        /// Write given value at memory represented by snapshot entry
+        /// </summary>
+        /// <param name="value">Written value</param>
+        public abstract void WriteMemory(MemoryEntry value);
+
+        /// <summary>
+        /// Set aliases to current snapshot entry. Aliases can be set even to those entries
+        /// that doesn't belongs to any variable, field,..
+        /// </summary>
+        /// <param name="aliases">Aliases that will be set to snapshot entry</param>
+        public abstract void SetAliases(IEnumerable<AliasEntry> aliases);
     }
 }

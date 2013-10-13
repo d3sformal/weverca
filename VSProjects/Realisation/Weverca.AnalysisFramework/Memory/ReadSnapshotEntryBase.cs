@@ -24,12 +24,6 @@ namespace Weverca.AnalysisFramework.Memory
         protected readonly SnapshotBase OwningSnapshot;
 
         /// <summary>
-        /// Read memory represented by current snapshot entry
-        /// </summary>
-        /// <returns>Memory represented by current snapshot entry</returns>
-        protected abstract MemoryEntry readMemory();
-
-        /// <summary>
         /// Determine that memory represented by current snapshot entry Is already defined.
         /// If not, reading memory returns UndefinedValue. But UndefinedValue can be returned
         /// even for defined memory entries - this can be used to distinct 
@@ -45,13 +39,19 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract IEnumerable<AliasEntry> aliases();
 
         /// <summary>
+        /// Read memory represented by current snapshot entry
+        /// </summary>
+        /// <returns>Memory represented by current snapshot entry</returns>
+        protected abstract MemoryEntry readMemory();
+
+        /// <summary>
         /// Read memory represented by given index identifier resolved on current
         /// snapshot entry (resulting snapshot entry can encapsulate merging, alias resolving and
         /// other stuff based on nondeterminism of identifier and current snapshot entry)
         /// </summary>
         /// <param name="index">Identifier of an index</param>
-        /// <returns>Snapshot entries representing index resolving on current entry</returns>
-        protected abstract IEnumerable<ReadSnapshotEntryBase> readIndex(MemberIdentifier index);
+        /// <returns>Snapshot entry representing index resolving on current entry</returns>
+        protected abstract ReadWriteSnapshotEntryBase readIndex(MemberIdentifier index);
 
         /// <summary>
         /// Read memory represented by given field identifier resolved on current
@@ -59,8 +59,15 @@ namespace Weverca.AnalysisFramework.Memory
         /// other stuff based on nondeterminism of identifier and current snapshot entry)
         /// </summary>
         /// <param name="field">Identifier of an field</param>
-        /// <returns>Snapshot entries representing field resolving on current entry</returns>
-        protected abstract IEnumerable<ReadSnapshotEntryBase> readField(MemberIdentifier field);
+        /// <returns>Snapshot entry representing field resolving on current entry</returns>
+        protected abstract ReadWriteSnapshotEntryBase readField(VariableIdentifier field);
+
+
+        /// <summary>
+        /// Returns variables corresponding to current snapshot entry
+        /// </summary>
+        /// <returns>Variable identifier of current snapshot entry or null if entry doesn't belong to variable</returns>
+        protected abstract VariableIdentifier getVariableIdentifier();
 
         /// <summary>
         /// Initialize read only snapshot entry
@@ -90,6 +97,17 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Aliases of current snapshot entry</returns>
         public IEnumerable<AliasEntry> Aliases { get { return aliases(); } }
 
+
+        /// <summary>
+        /// Returns variables corresponding to current snapshot entry
+        /// </summary>
+        /// <returns>Variable identifier of current snapshot entry or null if entry doesn't belong to variable</returns>
+        public VariableIdentifier GetVariableIdentifier()
+        {
+            //TODO statistics reporting
+            return getVariableIdentifier();
+        }
+
         /// <summary>
         /// Read memory represented by current snapshot entry
         /// </summary>
@@ -107,10 +125,10 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="index">Identifier of an index</param>
         /// <returns>Snapshot entries representing index resolving on current entry</returns>
-        public ReadSnapshotEntryBase[] ReadIndex(MemberIdentifier index)
+        public ReadWriteSnapshotEntryBase ReadIndex(MemberIdentifier index)
         {
             //TODO statistics reporting
-            return readIndex(index).ToArray();
+            return readIndex(index);
         }
 
         /// <summary>
@@ -120,10 +138,10 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="field">Identifier of an field</param>
         /// <returns>Snapshot entries representing field resolving on current entry</returns>
-        public ReadSnapshotEntryBase[] ReadField(MemberIdentifier field)
+        public ReadWriteSnapshotEntryBase ReadField(VariableIdentifier field)
         {
             //TODO statistics reporting
-            return readField(field).ToArray();
+            return readField(field);
         }
     }
 }
