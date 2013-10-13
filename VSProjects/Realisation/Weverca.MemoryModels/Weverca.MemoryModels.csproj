@@ -39,6 +39,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyMemoryModel\MemoryContainers\MemoryAlias.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\MemoryIndex.cs" />
+    <Compile Include="CopyMemoryModel\MemoryContainers\MemoryInfo.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\Snapshot.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\SnapshotEntry.cs" />
+    <Compile Include="CopyMemoryModel\Structures\ArrayDescriptor.cs" />
+    <Compile Include="CopyMemoryModel\Structures\ObjectDescriptor.cs" />
     <Compile Include="MemoryModel\Structures\ArrayDescriptor.cs" />
     <Compile Include="MemoryModel\ValueVisitors\AssignedAliasVisitor.cs" />
     <Compile Include="MemoryModel\ValueVisitors\DestroyemoryEntryVisitor.cs" />
