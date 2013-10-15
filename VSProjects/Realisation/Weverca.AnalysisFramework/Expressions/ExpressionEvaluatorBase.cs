@@ -35,6 +35,22 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
+        /// InSet's snapshot
+        /// </summary>
+        public SnapshotBase InSnapshot
+        {
+            get { return InSet.Snapshot; }
+        }
+
+        /// <summary>
+        /// OutSet's snapshot
+        /// </summary>
+        public SnapshotBase OutSnapshot
+        {
+            get { return OutSet.Snapshot; }
+        }
+
+        /// <summary>
         /// Gets element which is currently evaluated
         /// </summary>
         public LangElement Element
@@ -53,12 +69,15 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>Possible variable names</returns>
         public abstract IEnumerable<string> VariableNames(MemoryEntry variableSpecifier);
 
+
+        public abstract MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation);
+
         /// <summary>
         /// Resolves value, determined by given variable specifier
         /// </summary>
         /// <param name="variable">Specifier of resolved variable</param>
         /// <returns>Possible values obtained from resolving variable specifier</returns>
-        public abstract MemoryEntry ResolveVariable(VariableIdentifier variable);
+        public abstract ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable);
 
         /// <summary>
         /// Resolves value determined by given variable specifier that is accessed by array index
@@ -75,7 +94,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="objectValue">Object value which field is resolved</param>
         /// <param name="field">Specifier of resolved field</param>
         /// <returns>Possible values obtained from resolving given field</returns>
-        public abstract MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field);
+        public abstract ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field);
 
         /// <summary>
         /// Resolves value at indexedValue[index]
@@ -83,7 +102,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="indexedValue">Value which index is resolved</param>
         /// <param name="index">Specifier of an index</param>
         /// <returns>Possible values obtained from resolving given index</returns>
-        public abstract MemoryEntry ResolveIndex(MemoryEntry indexedValue, MemoryEntry index);
+        public abstract ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index);
 
         /// <summary>
         /// Resolves alias from given field specifier
@@ -108,7 +127,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="target">Target variable specifier</param>
         /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases);
+        public abstract void AliasAssign(ReadWriteSnapshotEntryBase target, IEnumerable<AliasEntry> possibleAliases);
 
         /// <summary>
         /// Assign possible aliases to given object field
@@ -131,18 +150,18 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Assign possible values to given target
         /// </summary>
-        /// <param name="target">Target variable specifier</param>
+        /// <param name="target">Target snapshot entry</param>
         /// <param name="entry">Possible values to be assigned</param>
-        public abstract void Assign(VariableIdentifier target, MemoryEntry entry);
+        public abstract void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry);
 
         /// <summary>
         /// Assign possible values to given targetField of an objectValue
         /// </summary>
         /// <param name="objectValue">Object containing assigned field</param>
         /// <param name="targetField">Specifier of an field</param>
-        /// <param name="entry">Possible values to be assigned</param>
-        public abstract void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
-            MemoryEntry entry);
+        /// <param name="assignedValue">Possible values to be assigned</param>
+        public abstract void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField,
+            MemoryEntry assignedValue);
 
         /// <summary>
         /// Assign assignedValue at indexedValue[index]
@@ -152,7 +171,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="indexedValue">Value which index is assigned</param>
         /// <param name="index">Specifier of an index</param>
         /// <param name="assignedValue">Value that is assigned</param>
-        public abstract void IndexAssign(MemoryEntry indexedValue, MemoryEntry index,
+        public abstract void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index,
             MemoryEntry assignedValue);
 
         /// <summary>
@@ -387,5 +406,6 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             Flow = flow;
         }
+
     }
 }

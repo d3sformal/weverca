@@ -18,31 +18,28 @@ namespace Weverca.AnalysisFramework.Memory
     public abstract class ReadSnapshotEntryBase
     {
         /// <summary>
-        /// Snapshot creating current entry
-        /// Is used for storing statistics information
-        /// </summary>
-        protected readonly SnapshotBase OwningSnapshot;
-
-        /// <summary>
         /// Determine that memory represented by current snapshot entry Is already defined.
         /// If not, reading memory returns UndefinedValue. But UndefinedValue can be returned
         /// even for defined memory entries - this can be used to distinct 
         /// between null/undefined semantic of PHP.
         /// </summary>
-        protected abstract bool isDefined();
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        protected abstract bool isDefined(SnapshotBase context);
 
         /// <summary>
         /// Returns aliases that can be used for making alias join
         /// to current snapshot entry
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Aliases of current snapshot entry</returns>
-        protected abstract IEnumerable<AliasEntry> aliases();
+        protected abstract IEnumerable<AliasEntry> aliases(SnapshotBase context);
 
         /// <summary>
         /// Read memory represented by current snapshot entry
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Memory represented by current snapshot entry</returns>
-        protected abstract MemoryEntry readMemory();
+        protected abstract MemoryEntry readMemory(SnapshotBase context);
 
         /// <summary>
         /// Read memory represented by given index identifier resolved on current
@@ -50,37 +47,27 @@ namespace Weverca.AnalysisFramework.Memory
         /// other stuff based on nondeterminism of identifier and current snapshot entry)
         /// </summary>
         /// <param name="index">Identifier of an index</param>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Snapshot entry representing index resolving on current entry</returns>
-        protected abstract ReadWriteSnapshotEntryBase readIndex(MemberIdentifier index);
+        protected abstract ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index);
 
         /// <summary>
         /// Read memory represented by given field identifier resolved on current
         /// snapshot entry (resulting snapshot entry can encapsulate merging, alias resolving and
         /// other stuff based on nondeterminism of identifier and current snapshot entry)
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <param name="field">Identifier of an field</param>
         /// <returns>Snapshot entry representing field resolving on current entry</returns>
-        protected abstract ReadWriteSnapshotEntryBase readField(VariableIdentifier field);
+        protected abstract ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field);
 
 
         /// <summary>
         /// Returns variables corresponding to current snapshot entry
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Variable identifier of current snapshot entry or null if entry doesn't belong to variable</returns>
-        protected abstract VariableIdentifier getVariableIdentifier();
-
-        /// <summary>
-        /// Initialize read only snapshot entry
-        /// </summary>
-        /// 
-        /// <param name="owningSnapshot">
-        /// Snapshot creating current entry
-        /// Is used for storing statistics information
-        /// </param>
-        protected ReadSnapshotEntryBase(SnapshotBase owningSnapshot)
-        {
-            OwningSnapshot = owningSnapshot;
-        }
+        protected abstract VariableIdentifier getVariableIdentifier(SnapshotBase context);
 
         /// <summary>
         /// Determine that memory represented by current snapshot entry Is already defined.
@@ -88,34 +75,44 @@ namespace Weverca.AnalysisFramework.Memory
         /// even for defined memory entries - this can be used to distinct 
         /// between null/undefined semantic of PHP.
         /// </summary>
-        public bool IsDefined{get{return isDefined();}}
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        public bool IsDefined(SnapshotBase context)
+        {
+            return isDefined(context);
+        }
 
         /// <summary>
         /// Returns aliases that can be used for making alias join
         /// to current snapshot entry
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Aliases of current snapshot entry</returns>
-        public IEnumerable<AliasEntry> Aliases { get { return aliases(); } }
+        public IEnumerable<AliasEntry> Aliases(SnapshotBase context)
+        {
+            return aliases(context);
+        }
 
 
         /// <summary>
         /// Returns variables corresponding to current snapshot entry
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Variable identifier of current snapshot entry or null if entry doesn't belong to variable</returns>
-        public VariableIdentifier GetVariableIdentifier()
+        public VariableIdentifier GetVariableIdentifier(SnapshotBase context)
         {
             //TODO statistics reporting
-            return getVariableIdentifier();
+            return getVariableIdentifier(context);
         }
 
         /// <summary>
         /// Read memory represented by current snapshot entry
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Memory represented by current snapshot entry</returns>
-        public MemoryEntry ReadMemory()
-        {            
+        public MemoryEntry ReadMemory(SnapshotBase context)
+        {
             //TODO statistics reporting
-            return readMemory();
+            return readMemory(context);
         }
 
         /// <summary>
@@ -123,12 +120,13 @@ namespace Weverca.AnalysisFramework.Memory
         /// snapshot entry (resulting snapshot entry can encapsulate merging, alias resolving and
         /// other stuff based on nondeterminism of identifier and current snapshot entry)
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <param name="index">Identifier of an index</param>
         /// <returns>Snapshot entries representing index resolving on current entry</returns>
-        public ReadWriteSnapshotEntryBase ReadIndex(MemberIdentifier index)
+        public ReadWriteSnapshotEntryBase ReadIndex(SnapshotBase context, MemberIdentifier index)
         {
             //TODO statistics reporting
-            return readIndex(index);
+            return readIndex(context,index);
         }
 
         /// <summary>
@@ -136,12 +134,13 @@ namespace Weverca.AnalysisFramework.Memory
         /// snapshot entry (resulting snapshot entry can encapsulate merging, alias resolving and
         /// other stuff based on nondeterminism of identifier and current snapshot entry)
         /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <param name="field">Identifier of an field</param>
         /// <returns>Snapshot entries representing field resolving on current entry</returns>
-        public ReadWriteSnapshotEntryBase ReadField(VariableIdentifier field)
+        public ReadWriteSnapshotEntryBase ReadField(SnapshotBase context, VariableIdentifier field)
         {
             //TODO statistics reporting
-            return readField(field);
+            return readField(context,field);
         }
     }
 }

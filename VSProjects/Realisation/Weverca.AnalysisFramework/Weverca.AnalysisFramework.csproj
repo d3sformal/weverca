@@ -99,7 +99,6 @@
     <Compile Include="ProgramPointBase.cs" />
     <Compile Include="ProgramPointGraph.cs" />
     <Compile Include="ProgramPoints\AbstractPoints.cs" />
-    <Compile Include="ProgramPoints\AliasPoints.cs" />
     <Compile Include="ProgramPoints\AssignPoints.cs" />
     <Compile Include="ProgramPoints\ConstantProgramPoint.cs" />
     <Compile Include="ProgramPoints\DeclarationPoints.cs" />

@@ -56,9 +56,9 @@ namespace Weverca.AnalysisFramework
         //====================================
 
 
-        Dictionary<LangElement, VariableBased> _lValues = new Dictionary<LangElement, VariableBased>();
+        Dictionary<LangElement, LValuePoint> _lValues = new Dictionary<LangElement, LValuePoint>();
 
-        Dictionary<LangElement, RValuePoint> _rValues = new Dictionary<LangElement, RValuePoint>();
+        Dictionary<LangElement, ValuePoint> _rValues = new Dictionary<LangElement, ValuePoint>();
 
         Dictionary<LangElement, ProgramPointBase> _points = new Dictionary<LangElement, ProgramPointBase>();
 
@@ -99,11 +99,11 @@ namespace Weverca.AnalysisFramework
             var partial = point.Partial;
             _points[partial] = point;
 
-            var lValue = point as VariableBased;
+            var lValue = point as LValuePoint;
             if (lValue != null)
                 _lValues[partial] = lValue;
 
-            var rValue = point as RValuePoint;
+            var rValue = point as ValuePoint;
             if (rValue != null)
                 _rValues[partial] = rValue;
         }
@@ -117,10 +117,10 @@ namespace Weverca.AnalysisFramework
         /// <returns>Associated value, or null if there is no associated value</returns>
         public MemoryEntry GetValue(LangElement partial)
         {
-            RValuePoint rValue;
+            ValuePoint rValue;
             if (_rValues.TryGetValue(partial, out rValue))
             {
-                return rValue.Value;
+                return rValue.Value.ReadMemory(rValue.InSnapshot);
             }
 
             return null;
@@ -133,10 +133,10 @@ namespace Weverca.AnalysisFramework
         /// <returns>Associated variable, or null if there is no associated variable</returns>
         public VariableIdentifier GetVariable(LangElement partial)
         {
-            VariableBased varLike;
+            LValuePoint varLike;
             if (_lValues.TryGetValue(partial, out varLike))
             {
-                return varLike.VariableEntry;
+                return varLike.LValue.GetVariableIdentifier(varLike.InSnapshot);
             }
 
             ProgramPointBase point;

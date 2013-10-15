@@ -15,7 +15,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     ///     For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
-    public class ArrayDescriptor
+    internal class ArrayDescriptor
     {
         /// <summary>
         /// List of indexes for the array
@@ -59,7 +59,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// <summary>
     /// Mutable variant of ArrayDescriptor - use for creating new structure
     /// </summary>
-    public class ArrayDescriptorBuilder
+    internal class ArrayDescriptorBuilder
     {
         /// <summary>
         /// List of variables where the array is stored in

@@ -50,6 +50,36 @@ namespace Weverca.AnalysisFramework.Memory
 
         #region Implementation of SnapshotEntry based API
 
+        /// <summary>
+        /// Create snapshot entry providing reading,... services for variable
+        /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context (there can be 
+        /// fetched some variables from global context also),
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
+        /// <param name="name">Name of variable</param>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns>Readable snapshot entry for variable identifier</returns>
+        protected abstract ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext);
+
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        protected abstract ReadWriteSnapshotEntryBase getControlVariable(VariableName name);
+
+        /// <summary>
+        /// Creates snapshot entry containing given value. Created entry doesn't have
+        /// explicit memory storage. But it still can be asked for saving indexes, fields, resolving aliases,... !!!
+        /// </summary>
+        /// <param name="value">Value wrapped in snapshot entry</param>
+        /// <returns>Created value entry</returns>
+        protected abstract ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry);
+
         #endregion
 
         #region Template methods - API for implementors
@@ -963,16 +993,77 @@ namespace Weverca.AnalysisFramework.Memory
 
         #region Snapshot entry API
 
+
+        /// <summary>
+        /// Get snapshot entry providing reading,... services for variable
+        /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context (there can be 
+        /// fetched some variables from global context also),
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
+        /// <param name="name">Name of variable</param>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns>Readable snapshot entry for variable identifier</returns>
         public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
-            throw new NotImplementedException();
+            return getVariable(variable, forceGlobalContext);
         }
 
+        /// <summary>
+        /// Get snapshot entry providing reading,... services for variable
+        /// </summary>
+        /// <remarks>
+        /// If global context is not forced, searches in local context (there can be 
+        /// fetched some variables from global context also),
+        /// or in global context in snapshot belonging to global code
+        /// </remarks>
+        /// <param name="name">Name of variable</param>
+        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
+        /// <returns>Readable snapshot entry for variable identifier</returns>
         public ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
-            throw new NotImplementedException();
+            return getVariable(variable, forceGlobalContext);
+        }
+
+
+        /// <summary>
+        /// Creates snapshot entry containing given value. Created entry doesn't have
+        /// explicit memory storage. But it still can be asked for saving indexes, fields, resolving aliases,... !!!
+        /// </summary>
+        /// <param name="value">Value wrapped in snapshot entry</param>
+        /// <returns>Created value entry</returns>
+        public ReadSnapshotEntryBase CreateSnapshotEntry(MemoryEntry value)
+        {
+            return createSnapshotEntry(value);
+        }
+
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        public ReadWriteSnapshotEntryBase GetControlVariable(VariableName variable)
+        {
+            return getControlVariable(variable);
+        }
+
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        public ReadSnapshotEntryBase ReadControlVariable(VariableName variable)
+        {
+            return getControlVariable(variable);
         }
 
         #endregion
+
+        
     }
 }

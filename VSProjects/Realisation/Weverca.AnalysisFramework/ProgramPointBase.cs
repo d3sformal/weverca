@@ -49,6 +49,10 @@ namespace Weverca.AnalysisFramework
 
         public abstract LangElement Partial { get; }
 
+        public SnapshotBase InSnapshot { get { return _inSet.Snapshot; } }
+
+        public SnapshotBase OutSnapshot { get { return _outSet.Snapshot; } }
+
         /// <summary>
         /// Childrens of this program point
         /// </summary>

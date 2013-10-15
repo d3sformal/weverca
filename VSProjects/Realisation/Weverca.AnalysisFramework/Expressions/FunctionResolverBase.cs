@@ -34,6 +34,22 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
+        /// InSet's snapshot
+        /// </summary>
+        public SnapshotBase InSnapshot
+        {
+            get { return InSet.Snapshot; }
+        }
+
+        /// <summary>
+        /// OutSet's snapshot
+        /// </summary>
+        public SnapshotBase OutSnapshot
+        {
+            get { return OutSet.Snapshot; }
+        }
+
+        /// <summary>
         /// Gets element which is currently evaluated
         /// </summary>
         public LangElement Element

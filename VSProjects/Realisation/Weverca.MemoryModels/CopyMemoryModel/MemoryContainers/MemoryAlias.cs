@@ -14,7 +14,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     ///     For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
-    public class MemoryAlias
+    internal class MemoryAlias
     {
         /// <summary>
         /// Gets the may aliasses.
@@ -65,7 +65,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// <summary>
     /// Mutable variant of MemoryAlias - use for creating new structure
     /// </summary>
-    public class MemoryAliasBuilder
+    internal class MemoryAliasBuilder
     {
         /// <summary>
         /// Gets the may aliasses.

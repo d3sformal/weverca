@@ -76,7 +76,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Evaluated parts of assumed expression parts
         /// </summary>
-        public readonly IEnumerable<RValuePoint> ExpressionParts;
+        public readonly IEnumerable<ValuePoint> ExpressionParts;
 
         /// <summary>
         /// Evaluation log provide access to partial expression results
@@ -90,7 +90,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public bool Assumed { get; private set; }
 
-        internal AssumePoint(AssumptionCondition condition, IEnumerable<RValuePoint> expressionParts)
+        internal AssumePoint(AssumptionCondition condition, IEnumerable<ValuePoint> expressionParts)
         {
             NeedsFlowResolver = true;
             Condition = condition;
@@ -119,7 +119,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// Sink for extension results. Merge caller context with call context.
     /// <remarks>Is used as reference to call result</remarks>
     /// </summary>
-    public class ExtensionSinkPoint : RValuePoint
+    public class ExtensionSinkPoint : ValuePoint
     {
         /// <summary>
         /// Extension which owns this sink
@@ -140,7 +140,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Services.FlowResolver.CallDispatchMerge(OutSet, OwningExtension.Branches, OwningExtension.Type);
-            Value = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
+
+            var returnValue= Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
+            Value = OutSet.CreateSnapshotEntry(returnValue);
         }
 
         /// <summary>
@@ -158,7 +160,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// Native analyzer point representation
     /// </summary>
-    public class NativeAnalyzerPoint : RValuePoint
+    public class NativeAnalyzerPoint : ValuePoint
     {
         /// <summary>
         /// Native analyzer contained in this point

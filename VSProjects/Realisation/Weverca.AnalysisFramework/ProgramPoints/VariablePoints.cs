@@ -13,22 +13,33 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// Representation of direct variable use, that can be assigned
     /// </summary>
-    public class LVariablePoint : LVariableEntryPoint
+    public class VariablePoint : LValuePoint
     {
         public readonly DirectVarUse Variable;
 
+        public readonly ValuePoint ThisObj;
+
+        public readonly VariableIdentifier VariableName;
+
         public override LangElement Partial { get { return Variable; } }
 
-        internal LVariablePoint(DirectVarUse variable, RValuePoint thisObj)
-            : base(thisObj)
+        internal VariablePoint(DirectVarUse variable, ValuePoint thisObj)
         {
             Variable = variable;
-            VariableEntry = new VariableIdentifier(Variable.VarName);
+            VariableName = new VariableIdentifier(Variable.VarName);
+            ThisObj = thisObj;
         }
 
         protected override void flowThrough()
         {
-
+            if (ThisObj == null)
+            {
+                LValue = Services.Evaluator.ResolveVariable(VariableName);
+            }
+            else
+            {
+                LValue = Services.Evaluator.ResolveField(ThisObj.Value, VariableName);
+            }
         }
 
         public override string ToString()
@@ -40,19 +51,20 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// Representation of indirect variable use that can be assigned
     /// </summary>
-    public class LIndirectVariablePoint : LVariableEntryPoint
+    public class IndirectVariablePoint : LValuePoint
     {
         public readonly IndirectVarUse Variable;
 
         /// <summary>
         /// Indirect name of variable
         /// </summary>
-        public readonly RValuePoint VariableName;
+        public readonly ValuePoint VariableName;
+
+        public readonly ValuePoint ThisObj;
 
         public override LangElement Partial { get { return Variable; } }
 
-        internal LIndirectVariablePoint(IndirectVarUse variable, RValuePoint variableName, RValuePoint thisObj)
-            : base(thisObj)
+        internal IndirectVariablePoint(IndirectVarUse variable, ValuePoint variableName, ValuePoint thisObj)
         {
             NeedsExpressionEvaluator = true;
 
@@ -62,69 +74,22 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var varNames = Services.Evaluator.VariableNames(VariableName.Value);
+            var varNames = Services.Evaluator.VariableNames(VariableName.Value.ReadMemory(InSnapshot));
             if (varNames == null)
             {
                 varNames = new string[0];
             }
 
-            VariableEntry = new VariableIdentifier(varNames);
-        }
+            var variable = new VariableIdentifier(varNames);
 
-    }
-
-    /// <summary>
-    /// Representation of direct variable use, which can be asked for variable value
-    /// </summary>
-    public class RVariablePoint : RVariableEntryPoint
-    {
-        public readonly DirectVarUse Variable;
-
-        public override LangElement Partial { get { return Variable; } }
-
-        internal RVariablePoint(DirectVarUse variable, RValuePoint thisObj)
-            : base(thisObj)
-        {
-
-            Variable = variable;
-            VariableEntry = new VariableIdentifier(Variable.VarName);
-        }
-
-        protected override void flowThrough()
-        {
-            //no preparations are needed
-            resolveValue();
-        }
-    }
-
-    /// <summary>
-    /// Representation of indirect variable use, which can be asked for variable value
-    /// </summary>
-    public class RIndirectVariablePoint : RVariableEntryPoint
-    {
-        public readonly IndirectVarUse Variable;
-
-        /// <summary>
-        /// Indirect name of variable
-        /// </summary>
-        public readonly RValuePoint Name;
-
-        public override LangElement Partial { get { return Variable; } }
-
-        internal RIndirectVariablePoint(IndirectVarUse variable, RValuePoint name, RValuePoint thisObj)
-            : base(thisObj)
-        {
-            NeedsExpressionEvaluator = true;
-            Variable = variable;
-            Name = name;
-        }
-
-        protected override void flowThrough()
-        {
-            var names = Services.Evaluator.VariableNames(Name.Value);
-            VariableEntry = new VariableIdentifier(names);
-
-            resolveValue();
+            if (ThisObj == null)
+            {
+                LValue = Services.Evaluator.ResolveVariable(variable);
+            }
+            else
+            {
+                LValue = Services.Evaluator.ResolveField(ThisObj.Value, variable);
+            }
         }
     }
 }

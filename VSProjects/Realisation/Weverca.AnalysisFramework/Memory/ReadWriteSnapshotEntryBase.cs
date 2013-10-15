@@ -13,29 +13,42 @@ namespace Weverca.AnalysisFramework.Memory
     public abstract class ReadWriteSnapshotEntryBase : ReadSnapshotEntryBase
     {
         /// <summary>
-        /// Initialize read write snapshot entry
-        /// </summary>
-        /// 
-        /// <param name="owningSnapshot">
-        /// Snapshot creating current entry.
-        /// Is used for storing statistics information.
-        /// </param>
-        protected ReadWriteSnapshotEntryBase(SnapshotBase owningSnapshot)
-            : base(owningSnapshot)
-        {
-        }
-
-        /// <summary>
         /// Write given value at memory represented by snapshot entry
         /// </summary>
         /// <param name="value">Written value</param>
-        public abstract void WriteMemory(MemoryEntry value);
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        protected abstract void writeMemory(SnapshotBase context, MemoryEntry value);
 
         /// <summary>
         /// Set aliases to current snapshot entry. Aliases can be set even to those entries
         /// that doesn't belongs to any variable, field,..
         /// </summary>
-        /// <param name="aliases">Aliases that will be set to snapshot entry</param>
-        public abstract void SetAliases(IEnumerable<AliasEntry> aliases);
+        /// <param name="aliasedEntry">Snapshot entry which will be aliased from current entry</param>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        protected abstract void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry);
+
+        /// <summary>
+        /// Write given value at memory represented by snapshot entry
+        /// </summary>
+        /// <param name="value">Written value</param>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        public void WriteMemory(SnapshotBase context, MemoryEntry value)
+        {
+            //TODO statistics reporting
+            writeMemory(context, value);
+        }
+
+        /// <summary>
+        /// Set aliases to current snapshot entry. Aliases can be set even to those entries
+        /// that doesn't belongs to any variable, field,..
+        /// </summary>
+        /// <param name="aliasedEntry">Snapshot entry which will be aliased from current entry</param>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        public void SetAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
+        {
+            //TODO statistics reporting
+            setAliases(context, aliasedEntry);
+        }
+
     }
 }

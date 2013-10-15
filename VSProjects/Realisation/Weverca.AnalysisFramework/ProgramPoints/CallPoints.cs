@@ -19,7 +19,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public override LangElement Partial { get { return FunctionCall; } }
 
-        internal FunctionCallPoint(DirectFcnCall functionCall, RValuePoint thisObj, RValuePoint[] arguments)
+        internal FunctionCallPoint(DirectFcnCall functionCall, ValuePoint thisObj, ValuePoint[] arguments)
             : base(thisObj, functionCall.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
@@ -37,7 +37,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
             else
             {
-                Services.FunctionResolver.MethodCall(ThisObj.Value, FunctionCall.QualifiedName, Flow.Arguments);
+                Services.FunctionResolver.MethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot), FunctionCall.QualifiedName, Flow.Arguments);
             }
         }
     }
@@ -51,11 +51,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Indirect name of call
         /// </summary>
-        public readonly RValuePoint Name;
+        public readonly ValuePoint Name;
 
         public override LangElement Partial { get { return FunctionCall; } }
 
-        internal IndirectFunctionCallPoint(IndirectFcnCall functionCall, RValuePoint name, RValuePoint thisObj, RValuePoint[] arguments)
+        internal IndirectFunctionCallPoint(IndirectFcnCall functionCall, ValuePoint name, ValuePoint thisObj, ValuePoint[] arguments)
             : base(thisObj, functionCall.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
@@ -69,11 +69,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             PrepareArguments();
             if (ThisObj == null)
             {
-                Services.FunctionResolver.IndirectCall(Name.Value, Flow.Arguments);
+                Services.FunctionResolver.IndirectCall(Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
             }
             else
             {
-                Services.FunctionResolver.IndirectMethodCall(ThisObj.Value, Name.Value, Flow.Arguments);
+                Services.FunctionResolver.IndirectMethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot), Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
             }
         }
     }

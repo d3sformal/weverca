@@ -224,7 +224,7 @@ namespace Weverca.AnalysisFramework
         private void connectConditionEdges(PointsBlock parentBlock, Queue<PointsBlock> pendingBlocks)
         {
             //collected expression values - because of sharing with default branch
-            var expressionValues = new List<RValuePoint>();
+            var expressionValues = new List<ValuePoint>();
 
             //collected expression parts - because of default assumption condition creation
             var expressionParts = new List<Expression>();
@@ -238,7 +238,7 @@ namespace Weverca.AnalysisFramework
             {
                 var expression=edge.Condition;
                 var conditionExpressionBlock = _context.CreateFromExpression(expression);
-                var expressionValue = conditionExpressionBlock.LastPoint as RValuePoint;
+                var expressionValue = conditionExpressionBlock.LastPoint as ValuePoint;
 
                 //collect info for default branch
                 expressionValues.Add(expressionValue);

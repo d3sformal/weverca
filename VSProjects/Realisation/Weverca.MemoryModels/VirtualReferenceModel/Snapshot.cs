@@ -4,6 +4,7 @@ using System.Text;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel
@@ -113,6 +114,28 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return false;
         }
 
+        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
+        {
+            var storages = new List<VariableInfo>();
+            foreach (var name in variable.PossibleNames)
+            {
+                var info=getOrCreate(name, forceGlobalContext);
+                storages.Add(info.Clone());
+            }
+
+            return new SnapshotStorageEntry(storages.ToArray());
+        }
+
+        protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
+        {
+            return new SnapshotMemoryEntry( entry);
+        }
+
         protected override AliasValue createAlias(VariableName sourceVar)
         {
             return createAlias(sourceVar, false);
@@ -170,16 +193,21 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(targetVar, entry, false);
         }
 
-        protected void assign(VariableName targetVar, MemoryEntry entry, bool forceGlobal = false)
+        private void assign(VariableName targetVar, MemoryEntry entry, bool forceGlobal = false)
         {
             var info = getOrCreate(targetVar, forceGlobal);
+            assign(info, entry);
+        }
+
+        private void assign(VariableInfo info, MemoryEntry entry)
+        {
             var references = info.References;
 
             switch (references.Count)
             {
                 case 0:
                     //reserve new virtual reference
-                    var allocatedReference = new VirtualReference(targetVar, info.IsGlobal);
+                    var allocatedReference = new VirtualReference(info.Name, info.IsGlobal);
                     info.References.Add(allocatedReference);
 
                     setEntry(allocatedReference, entry);
@@ -328,10 +356,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return readValue(sourceVar, false);
         }
 
-        protected MemoryEntry readValue(VariableName sourceVar, bool forceGlobal = false)
+        private MemoryEntry readValue(VariableName sourceVar, bool forceGlobal = false)
         {
             var info = getInfo(sourceVar, forceGlobal);
 
+            return readValue(info);
+        }
+
+        private MemoryEntry readValue(VariableInfo info)
+        {
             if (info == null)
             {
                 ReportMemoryEntryCreation();
@@ -409,7 +442,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             ReportSimpleHashSearch();
             if (!storage.TryGetValue(name, out result))
             {
-                storage[name] = result = new VariableInfo(forceGlobal || _isGlobalScope);
+                storage[name] = result = new VariableInfo(name,forceGlobal || _isGlobalScope);
                 ReportSimpleHashAssign();
             }
 
@@ -831,21 +864,26 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return Representation;
         }
 
+        public string GetRepresentation()
+        {
+            var result = new StringBuilder();
+
+            if (!_isGlobalScope)
+            {
+                result.AppendLine("===LOCALS===");
+                fillWithVariables(result, false);
+            }
+            result.AppendLine("\n===GLOBALS===");
+            fillWithVariables(result, true);
+
+            return result.ToString();
+        }
+
         public string Representation
         {
             get
             {
-                var result = new StringBuilder();
-
-                if (!_isGlobalScope)
-                {
-                    result.AppendLine("===LOCALS===");
-                    fillWithVariables(result, false);
-                }
-                result.AppendLine("\n===GLOBALS===");
-                fillWithVariables(result, true);
-
-                return result.ToString();
+                return GetRepresentation();
             }
         }
 
@@ -874,6 +912,34 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     result.AppendLine("}");
                 }
             }
+        }
+
+        internal void Write(VariableInfo[] storages, MemoryEntry value)
+        {
+            foreach (var storage in storages)
+            {
+                //translation because of memory model cross-contexts
+                var variable = getContextVariable(storage);
+                assign(variable, value);
+            }
+        }
+
+        internal bool IsDefined(VariableInfo storage)
+        {
+            var variables=getVariableStorage(storage.IsGlobal);
+            return variables.ContainsKey(storage.Name);
+        }
+
+        internal MemoryEntry ReadValue(VariableInfo variableInfo)
+        {
+            return readValue(variableInfo);
+        }
+
+        private VariableInfo getContextVariable(VariableInfo info)
+        {
+            var variables=getVariableStorage(info.IsGlobal);
+
+            return variables[info.Name];
         }
     }
 }

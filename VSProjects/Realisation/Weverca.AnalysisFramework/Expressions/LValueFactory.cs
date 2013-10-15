@@ -68,7 +68,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="el">Element which value will be created</param>
         /// <returns>Created value</returns>
-        private RValuePoint CreateRValue(LangElement el)
+        private ValuePoint CreateRValue(LangElement el)
         {
             return _valueCreator.CreateRValue(el);
         }
@@ -82,25 +82,25 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            RValuePoint thisObj = null;
+            ValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
                 thisObj = CreateRValue(x.IsMemberOf);
             }
 
-            Result(new LVariablePoint(x,thisObj));
+            Result(new VariablePoint(x,thisObj));
         }
 
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
-            RValuePoint thisObj = null;
+            ValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
                 thisObj = CreateRValue(x.IsMemberOf);
             }
 
             var varName = CreateRValue(x.VarNameEx);
-            Result(new LIndirectVariablePoint(x, varName,thisObj));
+            Result(new IndirectVariablePoint(x, varName,thisObj));
         }
 
         public override void VisitItemUse(ItemUse x)
@@ -113,7 +113,7 @@ namespace Weverca.AnalysisFramework.Expressions
             var array = CreateRValue(x.Array);
             var index = CreateRValue(x.Index);
 
-            Result(new LItemUsePoint(x, array, index));
+            Result(new ItemUsePoint(x, array, index));
 
         }
 

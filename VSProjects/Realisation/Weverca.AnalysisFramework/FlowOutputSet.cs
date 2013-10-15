@@ -201,7 +201,7 @@ namespace Weverca.AnalysisFramework
         {
             Snapshot.AssignAliases(targetVar, aliases);
         }
-        
+
         public void FetchFromGlobal(params VariableName[] variables)
         {
             Snapshot.FetchFromGlobal(variables);
@@ -300,9 +300,22 @@ namespace Weverca.AnalysisFramework
 
         public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
-            throw new NotImplementedException();
+            return Snapshot.GetVariable(variable,forceGlobalContext);
+        }
+
+        public ReadSnapshotEntryBase CreateSnapshotEntry(MemoryEntry value)
+        {
+            return Snapshot.CreateSnapshotEntry(value);
+        }
+
+        public ReadWriteSnapshotEntryBase GetControlVariable(VariableName variable)
+        {
+            return Snapshot.GetControlVariable(variable);
         }
 
         #endregion
+
+
+
     }
 }

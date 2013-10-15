@@ -120,11 +120,13 @@ namespace Weverca.AnalysisFramework.Expressions
 
         #region Program point creation
 
-        internal RValuePoint CreateRValue(LangElement el)
+        internal ValuePoint CreateRValue(LangElement el)
         {
+            if (el == null)
+                return null;
             ProgramPointBase existingPoint;
             if (_programPoints.TryGetValue(el, out existingPoint))
-                return existingPoint as RValuePoint;
+                return existingPoint as ValuePoint;
 
             var result = _rValueCreator.CreateValue(el);
             _programPoints.Add(el, result);
@@ -140,7 +142,7 @@ namespace Weverca.AnalysisFramework.Expressions
             return result;
         }
 
-        internal AliasPoint CreateAliasValue(LangElement el)
+        internal ValuePoint CreateAliasValue(LangElement el)
         {
             var result = _aliasValueCreator.CreateValue(el);
             _programPoints.Add(el, result);
@@ -180,17 +182,12 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitGlobalStmt(GlobalStmt x)
         {
-            var variables = new List<VariableBased>();
+            var variables = new List<LValuePoint>();
             foreach (var varItem in x.VarList)
             {
                 var lValue = CreateLValue(varItem);
-                var variable = lValue as VariableBased;
-                if (variable == null)
-                {
-                    throw new NotSupportedException("Cannot set given LValue as global variable");
-                }
 
-                variables.Add(variable);
+                variables.Add(lValue);
             }
 
             Result(new GlobalStmtPoint(x, variables.ToArray()));
@@ -310,17 +307,17 @@ namespace Weverca.AnalysisFramework.Expressions
             var enumeree = CreateRValue(x.Enumeree);
 
 
-            VariableBased keyVar = null;
-            VariableBased valueVar = null;
+            LValuePoint keyVar = null;
+            LValuePoint valueVar = null;
 
             if (x.KeyVariable != null)
             {
-                keyVar = CreateLValue(x.KeyVariable.Variable) as VariableBased;
+                keyVar = CreateLValue(x.KeyVariable.Variable);
             }
 
             if (x.ValueVariable != null)
             {
-                valueVar = CreateLValue(x.ValueVariable.Variable) as VariableBased;
+                valueVar = CreateLValue(x.ValueVariable.Variable);
             }
 
             Result(new ForeachStmtPoint(x, enumeree, keyVar, valueVar));
@@ -329,7 +326,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitEchoStmt(EchoStmt x)
         {
-            var parameters = new List<RValuePoint>();
+            var parameters = new List<ValuePoint>();
             foreach (var param in x.Parameters)
             {
                 parameters.Add(CreateRValue(param));

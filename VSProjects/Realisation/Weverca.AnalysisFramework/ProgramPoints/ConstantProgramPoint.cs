@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// Constant value representation
     /// <remarks>Is usually used for storing literal value providers, etc.</remarks>
     /// </summary>
-    public class ConstantProgramPoint : RValuePoint
+    public class ConstantProgramPoint : ValuePoint
     {
         /// <summary>
         /// Provider of constant value
@@ -44,7 +44,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Value = _constantProvider(Services.Evaluator);
+            var value= _constantProvider(Services.Evaluator);
+            Value = OutSet.CreateSnapshotEntry(value);
         }
     }
 }

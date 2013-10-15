@@ -14,15 +14,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// Memory entry wrapper
     /// <remarks>This program point is used for testing purposes only</remarks>
     /// </summary>
-    public class TestMemoryEntryPoint : RValuePoint
+    public class TestMemoryEntryPoint : ValuePoint
     {
         public readonly LangElement Element;
         public override LangElement Partial { get { return Element; } }
 
         internal TestMemoryEntryPoint(LangElement element, MemoryEntry entry)
         {
-            Element = element;
-            Value = entry;
+            throw new NotImplementedException();
+            /*Element = element;
+            Value = entry;*/
         }
 
         protected override void flowThrough()
@@ -35,16 +36,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// VariableEntryWrapper
     /// <remarks>This program point is used for testing purposes only</remarks>
     /// </summary>
-    public class TestVariablePoint : LVariableEntryPoint
+    public class TestVariablePoint : LValuePoint
     {
         public readonly LangElement Element;
         public override LangElement Partial { get { return Element; } }
 
         internal TestVariablePoint(LangElement element, VariableIdentifier entry)
-            : base(null)
         {
-            Element = element;
-            VariableEntry = entry;
+            throw new NotImplementedException();
+           /* Element = element;
+            VariableEntry = entry;*/
         }
 
         protected override void flowThrough()

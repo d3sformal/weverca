@@ -932,5 +932,20 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override ReadWriteSnapshotEntryBase getVariable(AnalysisFramework.VariableIdentifier variable, bool forceGlobalContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

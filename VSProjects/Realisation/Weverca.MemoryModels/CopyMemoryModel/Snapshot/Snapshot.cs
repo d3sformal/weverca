@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
@@ -19,11 +20,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal Dictionary<AssociativeArray, ArrayDescriptor> arrays = new Dictionary<AssociativeArray, ArrayDescriptor>();
         internal Dictionary<ObjectValue, ObjectDescriptor> objects = new Dictionary<ObjectValue, ObjectDescriptor>();
 
-        internal Dictionary<Value, MemoryInfo> memoryEntries = new Dictionary<Value, MemoryInfo>();
+        internal Dictionary<Value, MemoryInfo> memoryValueInfos = new Dictionary<Value, MemoryInfo>();
 
         internal Dictionary<MemoryIndex, MemoryEntry> memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
-        internal Dictionary<MemoryIndex, MemoryAlias> memoryEntries = new Dictionary<MemoryIndex, MemoryAlias>();
-        internal Dictionary<MemoryIndex, MemoryInfo> memoryEntries = new Dictionary<MemoryIndex, MemoryInfo>();
+        internal Dictionary<MemoryIndex, MemoryAlias> memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>();
+        internal Dictionary<MemoryIndex, MemoryInfo> memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
 
 
         #region AbstractSnapshot Implementation
@@ -276,5 +277,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         #endregion
+
+        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

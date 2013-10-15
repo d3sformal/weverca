@@ -4,15 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using PHP.Core;
-
 using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.MemoryModels.CopyMemoryModel
+namespace Weverca.MemoryModels.VirtualReferenceModel
 {
-    class SnapshotEntry : ReadWriteSnapshotEntryBase
+    class SnapshotMemoryEntry:ReadWriteSnapshotEntryBase
     {
-        HashSet<MemoryIndex> memoryIndexes;
+        internal readonly MemoryEntry WrappedEntry;
+        internal SnapshotMemoryEntry( MemoryEntry wrappedEntry)
+
+        {
+            WrappedEntry = wrappedEntry;
+        }
 
 
 
@@ -38,7 +41,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return WrappedEntry;
         }
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)

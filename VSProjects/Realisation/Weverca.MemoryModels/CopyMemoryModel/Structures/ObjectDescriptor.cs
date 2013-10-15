@@ -15,7 +15,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     ///     For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
-    public class ObjectDescriptor
+    internal class ObjectDescriptor
     {
         /// <summary>
         /// Gets the fields.
@@ -87,7 +87,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// <summary>
     /// Mutable variant of ObjectDescriptor - use for creating new structure
     /// </summary>
-    public class ObjectDescriptorBuilder
+    internal class ObjectDescriptorBuilder
     {
         /// <summary>
         /// Gets the fields.

@@ -12,7 +12,7 @@ namespace Weverca.AnalysisFramework.UnitTest
     [TestClass]
     public class ForwardAnalysisTest
     {
-        readonly static TestCase ParallelBlock_CASE = @"
+        readonly static TestCase BranchMerge_CASE = @"
 $str='f1';
 if($unknown){
     $str='f1a';
@@ -455,7 +455,7 @@ try{
         [TestMethod]
         public void BranchMerge()
         {
-            AnalysisTestUtils.RunTestCase(ParallelBlock_CASE);
+            AnalysisTestUtils.RunTestCase(BranchMerge_CASE);
         }
 
 

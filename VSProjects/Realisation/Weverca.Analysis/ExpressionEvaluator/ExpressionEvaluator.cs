@@ -33,8 +33,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region ExpressionEvaluatorBase overrides
 
-        public override MemoryEntry ResolveVariable(VariableIdentifier variable)
+        public MemoryEntry ResolveVariable_obsolete(VariableIdentifier variable)
         {
+            throw new NotImplementedException("API has changed");
             MemoryEntry entry;
             bool noValueExists;
 
@@ -95,7 +96,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return entry;
         }
 
-        public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
+        public MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
         {
             Debug.Assert(field.PossibleNames.Length > 0, "Every field variable must have at least one name");
 
@@ -201,7 +202,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases)
+        public void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases)
         {
             var entry = new MemoryEntry(possibleAliases);
             Assign(target, entry);
@@ -219,7 +220,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override void Assign(VariableIdentifier target, MemoryEntry entry)
+        public void Assign(VariableIdentifier target, MemoryEntry entry)
         {
             Debug.Assert(entry.Count > 0, "Memory entry assigned to variable must have at least one value");
 
@@ -258,7 +259,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
+        public void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
             MemoryEntry entry)
         {
             var isOneEntry = (objectValue.Count == 1) && targetField.IsDirect;
@@ -492,7 +493,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return names;
         }
 
-        public override void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
+        public void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
         {
             // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
             // The problem is that we do not know the name of variable and we cannot detect it.
@@ -558,7 +559,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
+        public MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
         {
             Debug.Assert(index.Count > 0, "Every index entry must have at least one value");
 
@@ -972,6 +973,46 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             return indexes;
+        }
+
+        public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void AliasAssign(ReadWriteSnapshotEntryBase target, IEnumerable<AliasEntry> possibleAliases)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index, MemoryEntry assignedValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
+        {
+            throw new NotImplementedException();
         }
     }
 }

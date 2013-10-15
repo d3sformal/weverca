@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using PHP.Core;
+
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {
     class VariableInfo
     {
         internal List<VirtualReference> References { get; private set; }
         internal readonly bool IsGlobal;
+        internal readonly VariableName Name;
 
-        public VariableInfo(bool isGlobal)
+        public VariableInfo(VariableName name, bool isGlobal)
         {
             References = new List<VirtualReference>();
             IsGlobal = isGlobal;
+            Name = name;
         }
 
         internal VariableInfo Clone()
         {
-            var result = new VariableInfo(IsGlobal);
+            var result = new VariableInfo(Name,IsGlobal);
 
             result.References.AddRange(References);
             return result;

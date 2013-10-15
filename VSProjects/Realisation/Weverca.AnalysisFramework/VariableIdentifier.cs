@@ -40,21 +40,26 @@ namespace Weverca.AnalysisFramework
         /// Creates variable entry from given possible names
         /// </summary>
         /// <param name="possibleNames">Possible names for variable selector</param>
-        internal VariableIdentifier(IEnumerable<string> possibleNames)
+        public VariableIdentifier(IEnumerable<string> possibleNames)
         {
-            var variableNames = new Stack<VariableName>();
+            var variableNames = new List<VariableName>();
             foreach (var name in possibleNames)
             {
-                variableNames.Push(new VariableName(name));
+                variableNames.Add(new VariableName(name));
             }
             PossibleNames = variableNames.ToArray();
+        }
+
+        public VariableIdentifier(params string[] possibleNames)
+            : this((IEnumerable<string>)possibleNames)
+        {
         }
 
         /// <summary>
         /// Creates variable entry from direct name
         /// </summary>
         /// <param name="directName">Direct name for variable selector</param>
-        internal VariableIdentifier(VariableName directName)
+        public VariableIdentifier(VariableName directName)
         {
             PossibleNames = new VariableName[] { directName };
         }

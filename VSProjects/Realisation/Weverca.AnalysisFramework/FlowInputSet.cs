@@ -15,7 +15,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Stored snapshot
         /// </summary>
-        protected internal readonly SnapshotBase Snapshot;
+        public readonly SnapshotBase Snapshot;
 
         internal FlowInputSet(SnapshotBase snapshot)
         {
@@ -170,9 +170,17 @@ namespace Weverca.AnalysisFramework
 
         public ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
-            throw new System.NotImplementedException();
+            return Snapshot.ReadVariable(variable, forceGlobalContext);
+        }
+
+        public ReadSnapshotEntryBase ReadControlVariable(VariableName variable)
+        {
+            return Snapshot.ReadControlVariable(variable);
         }
 
         #endregion
+
+
+
     }
 }

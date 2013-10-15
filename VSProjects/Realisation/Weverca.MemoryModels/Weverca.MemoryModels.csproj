@@ -60,6 +60,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModel\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotMemoryEntry.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotStorageEntry.cs" />
+    <Compile Include="VirtualReferenceModel\ReferenceAliasEntry.cs" />
     <Compile Include="VirtualReferenceModel\TypeMethodResolver.cs" />
     <Compile Include="VirtualReferenceModel\VariableInfo.cs" />
     <Compile Include="VirtualReferenceModel\VirtualReference.cs" />

@@ -21,7 +21,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Here is stored result of CreateValue operation
         /// </summary>
-        private RValuePoint _resultPoint;
+        private ValuePoint _resultPoint;
 
         /// <summary>
         /// Expander is used for creating sub values
@@ -38,7 +38,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="el">Element from which RValue point will be created</param>
         /// <returns>Created RValue</returns>
-        internal RValuePoint CreateValue(LangElement el)
+        internal ValuePoint CreateValue(LangElement el)
         {
             //empty current result, because of avoiding incorrect use
             _resultPoint = null;
@@ -69,7 +69,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Set given RValue as CreateValue result
         /// </summary>
         /// <param name="value">Result value</param>
-        private void Result(RValuePoint value)
+        private void Result(ValuePoint value)
         {
             Debug.Assert(_resultPoint == null, "Value has to be null - someone doesn't read it's value");
             _resultPoint = value;
@@ -80,7 +80,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="el">Element which value will be created</param>
         /// <returns>Created value</returns>
-        private RValuePoint CreateRValue(LangElement el)
+        private ValuePoint CreateRValue(LangElement el)
         {
             return _valueCreator.CreateRValue(el);
         }
@@ -100,9 +100,9 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="signature">Signature whicha arguments will be created</param>
         /// <returns>Created arguments</returns>
-        private RValuePoint[] CreateArguments(CallSignature signature)
+        private ValuePoint[] CreateArguments(CallSignature signature)
         {
-            var args = new List<RValuePoint>();
+            var args = new List<ValuePoint>();
             foreach (var param in signature.Parameters)
             {
                 var value = CreateRValue(param.Expression);
@@ -181,25 +181,25 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            RValuePoint thisObj = null;
+            ValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
                 thisObj = CreateRValue(x.IsMemberOf);
             }
 
-            Result(new RVariablePoint(x, thisObj));
+            Result(new VariablePoint(x, thisObj));
         }
 
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
-            RValuePoint thisObj = null;
+            ValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
                 thisObj = CreateRValue(x.IsMemberOf);
             }
 
             var name = CreateRValue(x.VarNameEx);
-            Result(new RIndirectVariablePoint(x, name, thisObj));
+            Result(new IndirectVariablePoint(x, name, thisObj));
         }
 
         public override void VisitIndirectTypeRef(IndirectTypeRef x)
@@ -229,7 +229,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitConcatEx(ConcatEx x)
         {
-            var expressions = new List<RValuePoint>();
+            var expressions = new List<ValuePoint>();
 
             foreach (var expression in x.Expressions)
             {
@@ -261,7 +261,7 @@ namespace Weverca.AnalysisFramework.Expressions
                     return;
                 default:
                     //it's assign with binary operation
-                    var leftOperand = CreateRValue(x.LValue);
+                    var leftOperand = CreateLValue(x.LValue);
                     Result(new AssignOperationPoint(x, leftOperand, rValue));
                     return;
             }
@@ -275,7 +275,7 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var arguments = CreateArguments(x.CallSignature);
 
-            RValuePoint thisObj = null;
+            ValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
                 thisObj = CreateRValue(x.IsMemberOf);
@@ -289,7 +289,7 @@ namespace Weverca.AnalysisFramework.Expressions
             var arguments = CreateArguments(x.CallSignature);
             var name = CreateRValue(x.PublicNameExpr);
 
-            RValuePoint thisObj = null;
+            ValuePoint thisObj = null;
             if (x.IsMemberOf != null)
             {
                 thisObj = CreateRValue(x.IsMemberOf);
@@ -315,7 +315,7 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var arguments = CreateArguments(x.CallSignature);
 
-            RValuePoint name = null;
+            ValuePoint name = null;
             if (!(x.ClassNameRef is DirectTypeRef))
             {
                 name = CreateRValue(x.ClassNameRef);
@@ -339,24 +339,24 @@ namespace Weverca.AnalysisFramework.Expressions
             var array = CreateRValue(x.Array);
             var index = CreateRValue(x.Index);
 
-            Result(new RItemUsePoint(x, array, index));
+            Result(new ItemUsePoint(x, array, index));
 
         }
 
         public override void VisitArrayEx(ArrayEx x)
         {
-            var operands = new LinkedList<KeyValuePair<RValuePoint, RValuePoint>>();
+            var operands = new LinkedList<KeyValuePair<ValuePoint, ValuePoint>>();
 
             foreach (var item in x.Items)
             {
 
-                RValuePoint index = null;
+                ValuePoint index = null;
                 if (item.Index != null)
                 {
                     index = CreateRValue(item.Index);
                 }
 
-                RValuePoint value = null;
+                ValuePoint value = null;
                 var valueItem = item as ValueItem;
                 if (valueItem != null)
                 {
@@ -375,7 +375,7 @@ namespace Weverca.AnalysisFramework.Expressions
                     }
                 }
 
-                operands.AddLast(new KeyValuePair<RValuePoint, RValuePoint>(index, value));
+                operands.AddLast(new KeyValuePair<ValuePoint, ValuePoint>(index, value));
             }
 
             Result(new ArrayExPoint(x, operands));

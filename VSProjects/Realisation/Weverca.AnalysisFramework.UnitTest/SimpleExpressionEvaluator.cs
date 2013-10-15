@@ -16,73 +16,19 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     internal class SimpleExpressionEvaluator : ExpressionEvaluatorBase
     {
-        public override void Assign(VariableIdentifier target, MemoryEntry value)
+        public override void Assign(ReadWriteSnapshotEntryBase target , MemoryEntry value)
         {
-            if (target.IsDirect)
-            {
-                OutSet.Assign(target.DirectName, value);
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
+            target.WriteMemory(OutSnapshot,value);
         }
 
-        public override void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField, MemoryEntry value)
+        public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
         {
-            if (!targetField.IsDirect)
-            {
-                throw new NotImplementedException();
-            }
-
-            var index = OutSet.CreateIndex(targetField.DirectName.Value);
-            foreach (ObjectValue obj in objectValue.PossibleValues)
-            {
-                OutSet.SetField(obj, index, value);
-            }
+            return objectValue.ReadField(InSnapshot, field);
         }
 
-        public override MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
+        public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase arrayValue, MemberIdentifier index)
         {
-            if (!field.IsDirect || objectValue.PossibleValues.Count() != 1)
-            {
-                throw new NotImplementedException();
-            }
-
-            var obj = objectValue.PossibleValues.First() as ObjectValue;
-            var index = OutSet.CreateIndex(field.DirectName.Value);
-            return OutSet.GetField(obj, index);
-        }
-
-        public override MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
-        {
-            if (index.PossibleValues.Count() != 1)
-            {
-                throw new NotImplementedException();
-            }
-
-            var values = new HashSet<Value>();
-            var indexValue = index.PossibleValues.First() as ScalarValue;
-            var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
-
-            foreach (var arrayValue in array.PossibleValues)
-            {
-                if (arrayValue is AssociativeArray)
-                {
-
-                    var possibleIndexValues = OutSet.GetIndex((AssociativeArray)arrayValue, containerIndex).PossibleValues;
-                    values.UnionWith(possibleIndexValues);
-                }
-                else
-                {
-                    values.Add(OutSet.AnyValue);
-                }
-            }
-
-            var result = new MemoryEntry(values.ToArray());
-            keepParentInfo(array, result);
-
-            return result;
+            return arrayValue.ReadIndex(InSnapshot,index);
         }
 
         public override MemoryEntry ResolveIndexedVariable(VariableIdentifier entry)
@@ -106,48 +52,11 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             return array;
         }
+             
 
-        public override void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
+        public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
         {
-            if (array.PossibleValues.Count() != 1 && index.PossibleValues.Count() != 1)
-            {
-                throw new NotImplementedException();
-            }
-
-            var arrayValue = array.PossibleValues.First();
-            var indexValue = index.PossibleValues.First() as ScalarValue;
-
-            var containerIndex = OutSet.CreateIndex(indexValue.RawValue.ToString());
-
-            OutSet.SetIndex(arrayValue as AssociativeArray, containerIndex, assignedValue);
-        }
-
-        public override void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> alias)
-        {
-            if (alias.Count() != 1)
-            {
-                throw new NotImplementedException();
-            }
-
-            if (target.IsDirect)
-            {
-                OutSet.Assign(target.DirectName, alias.First());
-            }
-            else
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public override MemoryEntry ResolveVariable(VariableIdentifier variable)
-        {
-            var values = new HashSet<Value>();
-            foreach (var varName in variable.PossibleNames)
-            {
-                values.UnionWith(OutSet.ReadValue(varName).PossibleValues);
-            }
-
-            return new MemoryEntry(values);
+            return OutSet.GetVariable(variable);
         }
 
         public override IEnumerable<string> VariableNames(MemoryEntry value)
@@ -409,6 +318,26 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
 
             return new MemoryEntry(values);
+        }
+
+        public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void AliasAssign(ReadWriteSnapshotEntryBase target, IEnumerable<AliasEntry> possibleAliases)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index, MemoryEntry assignedValue)
+        {
+            throw new NotImplementedException();
         }
     }
 }

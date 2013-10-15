@@ -170,7 +170,7 @@ namespace Weverca.AnalysisFramework.Memory
         #region Snapshot entry manipulation
 
         /// <summary>
-        /// Create snapshot entry providing reading,... services for variable
+        /// Get snapshot entry providing reading,... services for variable
         /// </summary>
         /// <remarks>
         /// If global context is not forced, searches in local context (there can be 
@@ -182,8 +182,24 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Readable snapshot entry for variable identifier</returns>
         ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false);
 
-        #endregion
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        ReadWriteSnapshotEntryBase GetControlVariable(VariableName variable);
 
+        /// <summary>
+        /// Creates snapshot entry containing given value. Created entry doesn't have
+        /// explicit memory storage. But it still can be asked for saving indexes, fields, resolving aliases,... !!!
+        /// </summary>
+        /// <param name="value">Value wrapped in snapshot entry</param>
+        /// <returns>Created value entry</returns>
+        ReadSnapshotEntryBase CreateSnapshotEntry(MemoryEntry value);
+
+        #endregion
 
         #region Value storing
 
@@ -253,7 +269,6 @@ namespace Weverca.AnalysisFramework.Memory
 
 
         #endregion
-
 
         #region Global context manipulation
 

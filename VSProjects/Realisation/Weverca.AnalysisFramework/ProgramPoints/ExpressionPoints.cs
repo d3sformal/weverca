@@ -14,7 +14,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// String concatenation representation
     /// </summary>
-    public class IncDecExPoint : RValuePoint
+    public class IncDecExPoint : ValuePoint
     {
         public readonly IncDecEx IncDecEx;
 
@@ -23,24 +23,24 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Value that is incremented
         /// </summary>
-        public readonly RValuePoint IncrementedValue;
+        public readonly ValuePoint IncrementedValue;
 
         /// <summary>
         /// Here is stored incremented value
         /// </summary>
-        public readonly AssignProvider IncrementTarget;
+        public readonly LValuePoint IncrementTarget;
 
         /// <summary>
         /// Parts of concatenated string
         /// </summary>
-        public readonly IEnumerable<RValuePoint> Parts;
+        public readonly IEnumerable<ValuePoint> Parts;
 
-        internal IncDecExPoint(IncDecEx incDecEx, RValuePoint incrementedValue)
+        internal IncDecExPoint(IncDecEx incDecEx, ValuePoint incrementedValue)
         {            
             NeedsExpressionEvaluator = true;
             IncDecEx = incDecEx;
             IncrementedValue = incrementedValue;
-            IncrementTarget = incrementedValue as AssignProvider;
+            IncrementTarget = incrementedValue as LValuePoint;
 
             if (IncrementTarget == null)
             {
@@ -50,18 +50,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var value = Services.Evaluator.IncDecEx(IncDecEx, IncrementedValue.Value);
-            IncrementTarget.Assign(Flow, value);
+            var beforeIncrementValue= IncrementedValue.Value.ReadMemory(InSet.Snapshot);
+            var afterIncrementValue = Services.Evaluator.IncDecEx(IncDecEx,beforeIncrementValue);
+            Services.Evaluator.Assign(IncrementTarget.LValue, afterIncrementValue);
 
             if (IncDecEx.Post)
             {
                 //return value before incrementation
-                Value = IncrementedValue.Value;
+                Value = OutSet.CreateSnapshotEntry(beforeIncrementValue);
             }
             else
             {
                 //return value after incrementation
-                Value = value;
+                Value=OutSet.CreateSnapshotEntry(afterIncrementValue);
             }
         }
     }
@@ -69,7 +70,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// String concatenation representation
     /// </summary>
-    public class ConcatExPoint : RValuePoint
+    public class ConcatExPoint : ValuePoint
     {
         public readonly ConcatEx Concat;
 
@@ -78,9 +79,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Parts of concatenated string
         /// </summary>
-        public readonly IEnumerable<RValuePoint> Parts;
+        public readonly IEnumerable<ValuePoint> Parts;
 
-        internal ConcatExPoint(ConcatEx concat, IEnumerable<RValuePoint> parts)
+        internal ConcatExPoint(ConcatEx concat, IEnumerable<ValuePoint> parts)
         {
             NeedsExpressionEvaluator = true;
             Parts = parts;
@@ -88,27 +89,27 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var partValues = from part in Parts select part.Value;
-
-            Value = Services.Evaluator.Concat(partValues);
+            var partValues = from part in Parts select part.Value.ReadMemory(InSnapshot);
+            var concatedValue=Services.Evaluator.Concat(partValues);
+            Value = OutSet.CreateSnapshotEntry(concatedValue);
         }
     }
 
     /// <summary>
     /// Unary expression representation
     /// </summary>
-    public class UnaryExPoint : RValuePoint
+    public class UnaryExPoint : ValuePoint
     {
         public readonly UnaryEx Expression;
 
         /// <summary>
         /// Operand of unary expression
         /// </summary>
-        public readonly RValuePoint Operand;
+        public readonly ValuePoint Operand;
 
         public override LangElement Partial { get { return Expression; } }
 
-        internal UnaryExPoint(UnaryEx expression, RValuePoint operand)
+        internal UnaryExPoint(UnaryEx expression, ValuePoint operand)
         {
             NeedsExpressionEvaluator = true;
 
@@ -118,30 +119,31 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Value = Services.Evaluator.UnaryEx(Expression.PublicOperation, Operand.Value);
+            var value=Services.Evaluator.UnaryEx(Expression.PublicOperation, Operand.Value.ReadMemory(InSnapshot));
+            Value = OutSet.CreateSnapshotEntry(value);
         }
     }
 
     /// <summary>
     /// Binary expression representation
     /// </summary>
-    public class BinaryExPoint : RValuePoint
+    public class BinaryExPoint : ValuePoint
     {
         public readonly BinaryEx Expression;
 
         /// <summary>
         /// Left operand of expression
         /// </summary>
-        public readonly RValuePoint LeftOperand;
+        public readonly ValuePoint LeftOperand;
 
         /// <summary>
         /// Right operand of expression
         /// </summary>
-        public readonly RValuePoint RightOperand;
+        public readonly ValuePoint RightOperand;
 
         public override LangElement Partial { get { return Expression; } }
 
-        internal BinaryExPoint(BinaryEx expression, RValuePoint lOperand, RValuePoint rOperand)
+        internal BinaryExPoint(BinaryEx expression, ValuePoint lOperand, ValuePoint rOperand)
         {
             NeedsExpressionEvaluator = true;
 
@@ -152,7 +154,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Value = Services.Evaluator.BinaryEx(LeftOperand.Value, Expression.PublicOperation, RightOperand.Value);
+            var value=Services.Evaluator.BinaryEx(LeftOperand.Value.ReadMemory(InSnapshot), Expression.PublicOperation, RightOperand.Value.ReadMemory(InSnapshot));
+            Value = OutSet.CreateSnapshotEntry(value);
         }
     }
 
@@ -166,13 +169,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Path specified for including expression
         /// </summary>
-        public readonly RValuePoint IncludePath;
+        public readonly ValuePoint IncludePath;
 
         public override LangElement Partial { get { return Include; } }
 
 
-        internal IncludingExPoint(IncludingEx include, RValuePoint includePath)
-            : base(null, null, new RValuePoint[] { includePath })
+        internal IncludingExPoint(IncludingEx include, ValuePoint includePath)
+            : base(null, null, new ValuePoint[] { includePath })
         {
             NeedsFlowResolver = true;
 
@@ -183,14 +186,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             PrepareArguments();
-            Flow.FlowResolver.Include(Flow, IncludePath.Value);
+            Flow.FlowResolver.Include(Flow, IncludePath.Value.ReadMemory(InSnapshot));
         }
     }
 
     /// <summary>
     /// Array expression representation
     /// </summary>
-    public class ArrayExPoint : RValuePoint
+    public class ArrayExPoint : ValuePoint
     {
         public readonly ArrayEx Array;
 
@@ -199,9 +202,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Initializer values specified for created array
         /// </summary>
-        private LinkedList<KeyValuePair<RValuePoint, RValuePoint>> _initializedValues;
+        private LinkedList<KeyValuePair<ValuePoint, ValuePoint>> _initializedValues;
 
-        public ArrayExPoint(ArrayEx array, LinkedList<KeyValuePair<RValuePoint, RValuePoint>> initializedValues)
+        public ArrayExPoint(ArrayEx array, LinkedList<KeyValuePair<ValuePoint, ValuePoint>> initializedValues)
         {
             NeedsExpressionEvaluator = true;
 
@@ -217,12 +220,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             {
                 //resolve initializing values to memory entries
 
-                var index = pair.Key == null ? null : pair.Key.Value;
-                var value = pair.Value.Value;
+                var index = pair.Key == null ? null : pair.Key.Value.ReadMemory(InSnapshot);
+                var value = pair.Value.Value.ReadMemory(InSnapshot);
                 initializer.Add(new KeyValuePair<MemoryEntry, MemoryEntry>(index, value));
             }
 
-            Value = Services.Evaluator.ArrayEx(initializer);
+            var arrayValue=Services.Evaluator.ArrayEx(initializer);
+            Value = OutSet.CreateSnapshotEntry(arrayValue);
         }
     }
 
@@ -233,13 +237,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     {
         public readonly NewEx NewEx;
 
-        public readonly RValuePoint Name;
+        public readonly ValuePoint Name;
 
         public override LangElement Partial { get { return NewEx; } }
 
-        public override MemoryEntry Value { get; protected set; }
+        public override ReadSnapshotEntryBase Value { get; protected set; }
 
-        internal NewExPoint(NewEx newEx, RValuePoint name, RValuePoint[] arguments)
+        internal NewExPoint(NewEx newEx, ValuePoint name, ValuePoint[] arguments)
             : base(null, newEx.CallSignature, arguments)
         {
             NeedsFunctionResolver = true;
@@ -254,18 +258,21 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             PrepareArguments();
 
 
+            MemoryEntry value;
             //Create object according to class name
             if (Name == null)
             {
-                Value = Services.Evaluator.CreateObject(NewEx.ClassNameRef.GenericQualifiedName.QualifiedName);
+                value = Services.Evaluator.CreateObject(NewEx.ClassNameRef.GenericQualifiedName.QualifiedName);
             }
             else
             {
-                Value = Services.Evaluator.IndirectCreateObject(Name.Value);
+                value= Services.Evaluator.IndirectCreateObject(Name.Value.ReadMemory(InSnapshot));
             }
 
             //initialize created object
-            Value = Services.FunctionResolver.InitializeObject(Value, Flow.Arguments);
+            var initializedObject = Services.FunctionResolver.InitializeObject(value, Flow.Arguments);
+
+            Value = OutSet.CreateSnapshotEntry(initializedObject);
         }
     }
 

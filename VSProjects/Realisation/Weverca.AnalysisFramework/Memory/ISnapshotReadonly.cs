@@ -9,7 +9,7 @@ namespace Weverca.AnalysisFramework.Memory
     {
         #region Snapshot entry API
         /// <summary>
-        /// Create snapshot entry providing reading,... services for variable
+        /// Get snapshot entry providing reading,... services for variable
         /// </summary>
         /// <remarks>
         /// If global context is not forced, searches in local context (there can be 
@@ -20,6 +20,15 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
         /// <returns>Readable snapshot entry for variable identifier</returns>
         ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false);
+
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries and vica-versa.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        ReadSnapshotEntryBase ReadControlVariable(VariableName variable);
 
         #endregion
 

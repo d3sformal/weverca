@@ -556,15 +556,7 @@ namespace Weverca.Analysis
                 var param = signature.FormalParams[i];
                 var callParam = callSignature.Value.Parameters[i];
 
-                if (callParam.PublicAmpersand)
-                {
-                    var aliasProvider = enumerator.Current as AliasProvider;
-                    callInput.AssignAliases(param.Name, aliasProvider.CreateAlias(Flow));
-                }
-                else
-                {
-                    callInput.Assign(param.Name, arguments[i]);
-                }
+                throw new NotImplementedException("API has changed");
             }
         }
 
@@ -580,7 +572,7 @@ namespace Weverca.Analysis
                 var parVar = argument(index);
 
                 // Determine that argument value is based on variable, so we can get it's alias
-                var aliasProvider = arg as AliasProvider;
+                var aliasProvider = arg as LValuePoint;
                 if (aliasProvider == null)
                 {
                     // Assign value for parameter
@@ -590,7 +582,7 @@ namespace Weverca.Analysis
                 {
                     // Join parameter with alias (for testing we join all possible arguments)
                     // Be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
-                    callInput.AssignAliases(parVar, aliasProvider.CreateAlias(Flow));
+                    throw new NotImplementedException("API has changed");
                 }
                 ++index;
             }

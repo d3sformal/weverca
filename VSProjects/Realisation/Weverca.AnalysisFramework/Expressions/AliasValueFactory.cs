@@ -20,7 +20,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Here is stored result of CreateValue operation
         /// </summary>
-        AliasPoint _resultPoint;
+        ValuePoint _resultPoint;
 
         /// <summary>
         /// Expander is used for creating sub values
@@ -37,7 +37,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="el">Element from which AliasValue point will be created</param>
         /// <returns>Created RValue</returns>
-        internal AliasPoint CreateValue(LangElement el)
+        internal ValuePoint CreateValue(LangElement el)
         {
             _resultPoint = null;
 
@@ -54,7 +54,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Set given RValue as CreateValue result
         /// </summary>
         /// <param name="value">Result value</param>
-        private void Result(AliasPoint lValue)
+        private void Result(ValuePoint lValue)
         {
             _resultPoint = lValue;
         }
@@ -64,8 +64,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="el">Element which value will be created</param>
         /// <returns>Created value</returns>
-        private RValuePoint CreateRValue(LangElement el)
-        {
+        private ValuePoint CreateRValue(LangElement el)
+        {            
             return _valueCreator.CreateRValue(el);
         }
 
@@ -79,7 +79,8 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            Result(new AliasVariablePoint(x));
+            var thisObj=CreateRValue(x.IsMemberOf);
+            Result(new VariablePoint(x,thisObj));
         }
 
         public override void VisitIndirectVarUse(IndirectVarUse x)

@@ -54,16 +54,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// Constant declaration representation
     /// </summary>
-    public class ConstantDeclPoint : RValuePoint
+    public class ConstantDeclPoint : ValuePoint
     {
         public readonly ConstantDecl Declaration;
 
-        public readonly RValuePoint Initializer;
+        public readonly ValuePoint Initializer;
 
         public override LangElement Partial { get { return Declaration; } }
 
 
-        internal ConstantDeclPoint(ConstantDecl declaration, RValuePoint initializer)
+        internal ConstantDeclPoint(ConstantDecl declaration, ValuePoint initializer)
         {
             NeedsExpressionEvaluator = true;
 
@@ -73,7 +73,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Services.Evaluator.ConstantDeclaration(Declaration, Initializer.Value);
+            Services.Evaluator.ConstantDeclaration(Declaration, Initializer.Value.ReadMemory(InSnapshot));
 
             Value = Initializer.Value;
         }

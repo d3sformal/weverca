@@ -17,11 +17,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     {
         public readonly ThrowStmt Throw;
 
-        public readonly RValuePoint ThrowedValue;
+        public readonly ValuePoint ThrowedValue;
 
         public override LangElement Partial { get { return Throw; } }
 
-        internal ThrowStmtPoint(ThrowStmt throwStmt, RValuePoint throwedValue)
+        internal ThrowStmtPoint(ThrowStmt throwStmt, ValuePoint throwedValue)
         {
             ThrowedValue = throwedValue;
             Throw = throwStmt;
@@ -29,7 +29,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var catchBlocks = Services.FlowResolver.Throw(OutSet, Throw, ThrowedValue.Value);
+            var catchBlocks = Services.FlowResolver.Throw(OutSet, Throw, ThrowedValue.Value.ReadMemory(InSet.Snapshot));
 
             RemoveFlowChildren();
 
@@ -45,19 +45,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class GlobalStmtPoint : ProgramPointBase
     {
-        private readonly VariableBased[] _variables;
+        private readonly LValuePoint[] _variables;
 
         public readonly GlobalStmt Global;
 
         /// <summary>
         /// Variables to be fetched from global scope
         /// </summary>
-        public IEnumerable<VariableBased> Variables { get { return _variables; } }
+        public IEnumerable<LValuePoint> Variables { get { return _variables; } }
 
         public override LangElement Partial { get { return Global; } }
 
 
-        internal GlobalStmtPoint(GlobalStmt global, VariableBased[] variables)
+        internal GlobalStmtPoint(GlobalStmt global, LValuePoint[] variables)
         {
             NeedsExpressionEvaluator = true;
             Global = global;
@@ -69,7 +69,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var variables = new VariableIdentifier[_variables.Length];
             for (int i = 0; i < _variables.Length; ++i)
             {
-                variables[i] = _variables[i].VariableEntry;
+                variables[i] = _variables[i].LValue.GetVariableIdentifier(InSet.Snapshot);
             }
             Services.Evaluator.GlobalStatement(variables);
         }
@@ -80,7 +80,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class EchoStmtPoint : ProgramPointBase
     {
-        private readonly RValuePoint[] _parameters;
+        private readonly ValuePoint[] _parameters;
 
         public readonly EchoStmt Echo;
 
@@ -89,9 +89,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Parameters pasted to echo statement
         /// </summary>
-        public IEnumerable<RValuePoint> Parameters { get { return _parameters; } }
+        public IEnumerable<ValuePoint> Parameters { get { return _parameters; } }
 
-        internal EchoStmtPoint(EchoStmt echoStmt, RValuePoint[] parameters)
+        internal EchoStmtPoint(EchoStmt echoStmt, ValuePoint[] parameters)
         {
             NeedsExpressionEvaluator = true;
             Echo = echoStmt;
@@ -104,7 +104,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             for (int i = 0; i < values.Length; ++i)
             {
-                values[i] = _parameters[i].Value;
+                values[i] = _parameters[i].Value.ReadMemory(InSnapshot);
             }
             Services.Evaluator.Echo(Echo, values);
         }
@@ -120,21 +120,21 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Enumerated object
         /// </summary>
-        public readonly RValuePoint Enumeree;
+        public readonly ValuePoint Enumeree;
 
         /// <summary>
         /// Key variable of foreach statement
         /// </summary>
-        public readonly VariableBased KeyVar;
+        public readonly LValuePoint KeyVar;
 
         /// <summary>
         /// Value variable of foreach statement
         /// </summary>
-        public readonly VariableBased ValVar;
+        public readonly LValuePoint ValVar;
 
         public override LangElement Partial { get { return Foreach; } }
 
-        internal ForeachStmtPoint(ForeachStmt foreachStmt, RValuePoint enumeree, VariableBased keyVar, VariableBased valVar)
+        internal ForeachStmtPoint(ForeachStmt foreachStmt, ValuePoint enumeree, LValuePoint keyVar, LValuePoint valVar)
         {
             NeedsExpressionEvaluator = true;
 
@@ -146,28 +146,28 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var keyVar = KeyVar == null ? null : KeyVar.VariableEntry;
-            var valVar = ValVar == null ? null : ValVar.VariableEntry;
+            var keyVar = KeyVar == null ? null : KeyVar.LValue.GetVariableIdentifier(InSet.Snapshot);
+            var valVar = ValVar == null ? null : ValVar.LValue.GetVariableIdentifier(InSet.Snapshot);
 
-            Services.Evaluator.Foreach(Enumeree.Value, keyVar, valVar);
+            Services.Evaluator.Foreach(Enumeree.Value.ReadMemory(InSet.Snapshot), keyVar, valVar);
         }
     }
 
     /// <summary>
     /// Jump statement representation
     /// </summary>
-    public class JumpStmtPoint : RValuePoint
+    public class JumpStmtPoint : ValuePoint
     {
         public readonly JumpStmt Jump;
 
         /// <summary>
         /// Jump argument
         /// </summary>
-        public readonly RValuePoint Expression;
+        public readonly ValuePoint Expression;
 
         public override LangElement Partial { get { return Jump; } }
 
-        internal JumpStmtPoint(RValuePoint expression, JumpStmt jmp)
+        internal JumpStmtPoint(ValuePoint expression, JumpStmt jmp)
         {
             NeedsFunctionResolver = true;
             Jump = jmp;
@@ -176,14 +176,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
+            MemoryEntry value;
             switch (Jump.Type)
             {
                 case JumpStmt.Types.Return:
-                    Value = Services.FunctionResolver.Return(Expression.Value);
+                    value = Services.FunctionResolver.Return(Expression.Value.ReadMemory(InSnapshot));
                     break;
                 default:
                     throw new NotImplementedException();
             }
+
+            Value = OutSet.CreateSnapshotEntry(value);
         }
     }
 

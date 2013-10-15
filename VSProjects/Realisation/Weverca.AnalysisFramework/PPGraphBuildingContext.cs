@@ -106,7 +106,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="outgoingBlock">Block used as outcomming edge</param>
         /// <param name="expressionValues">Expression parts of assumed condition</param>
         /// <returns>Created points block</returns>
-        internal PointsBlock CreateAssumeBlock(AssumptionCondition condition, BasicBlock outgoingBlock, params RValuePoint[] expressionValues)
+        internal PointsBlock CreateAssumeBlock(AssumptionCondition condition, BasicBlock outgoingBlock, params ValuePoint[] expressionValues)
         {
             var point = new AssumePoint(condition, expressionValues);
             reportCreation(point);

@@ -13,7 +13,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// Assign expression representation
     /// </summary>
-    public class AssignPoint : RValuePoint
+    public class AssignPoint : ValuePoint
     {
         public readonly ValueAssignEx Assign;
 
@@ -27,9 +27,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Value provider for assign
         /// </summary>
-        public readonly RValuePoint ROperand;
+        public readonly ValuePoint ROperand;
 
-        internal AssignPoint(ValueAssignEx assign, LValuePoint lOperand, RValuePoint rOperand)
+        internal AssignPoint(ValueAssignEx assign, LValuePoint lOperand, ValuePoint rOperand)
         {
             NeedsExpressionEvaluator = true;
             LOperand = lOperand;
@@ -40,14 +40,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Value = ROperand.Value;
-            LOperand.Assign(Flow, Value);
+
+            Services.Evaluator.Assign(LOperand.LValue, Value.ReadMemory(InSet.Snapshot));
         }
     }
 
     /// <summary>
     /// Assign expression representation
     /// </summary>
-    public class AssignConcatPoint : RValuePoint
+    public class AssignConcatPoint : ValuePoint
     {
         public readonly ValueAssignEx Assign;
 
@@ -58,33 +59,33 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Here will be stored assigned value
         /// </summary>
-        public readonly AssignProvider AssignTarget;
+        public readonly LValuePoint AssignTarget;
 
         /// <summary>
         /// Assigned operand
         /// </summary>
-        public readonly RValuePoint LOperand;
+        public readonly ValuePoint LOperand;
 
         /// <summary>
         /// Value provider for assign
         /// </summary>
-        public readonly RValuePoint ROperand;
+        public readonly ValuePoint ROperand;
 
-        internal AssignConcatPoint(ValueAssignEx assign, RValuePoint lOperand, RValuePoint rOperand)
+        internal AssignConcatPoint(ValueAssignEx assign, ValuePoint lOperand, ValuePoint rOperand)
         {
             NeedsExpressionEvaluator = true;
             LOperand = lOperand;
             ROperand = rOperand;
             Assign = assign;
 
-            AssignTarget = lOperand as AssignProvider;
+            AssignTarget = lOperand as LValuePoint;
             if (AssignTarget == null)
                 throw new NotSupportedException("Given lOperand cannot be used ass assign target");
         }
 
         protected override void flowThrough()
         {
-            RValuePoint firstPart, secondPart;
+            ValuePoint firstPart, secondPart;
             switch (Assign.PublicOperation)
             {
                 case Operations.AssignPrepend:
@@ -99,16 +100,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     throw new NotSupportedException("Given concat assign is not supported");
             }
 
-            Value = Services.Evaluator.Concat(new MemoryEntry[] { firstPart.Value, secondPart.Value });
-            AssignTarget.Assign(Flow, Value);
+            var concatedValue = Services.Evaluator.Concat(new MemoryEntry[] { firstPart.Value.ReadMemory(InSnapshot), secondPart.Value.ReadMemory(InSnapshot) });
+            Value = OutSet.CreateSnapshotEntry(concatedValue);
+            Services.Evaluator.Assign(AssignTarget.LValue, concatedValue);
         }
-
     }
 
     /// <summary>
     /// Assign expression representation
     /// </summary>
-    public class AssignOperationPoint : RValuePoint
+    public class AssignOperationPoint : ValuePoint
     {
         public readonly ValueAssignEx Assign;
 
@@ -119,26 +120,26 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Here will be stored assigned value
         /// </summary>
-        public readonly AssignProvider AssignTarget;
+        public readonly LValuePoint AssignTarget;
 
         /// <summary>
         /// Assigned operand
         /// </summary>
-        public readonly RValuePoint LOperand;
+        public readonly LValuePoint LOperand;
 
         /// <summary>
         /// Value provider for assign
         /// </summary>
-        public readonly RValuePoint ROperand;
+        public readonly ValuePoint ROperand;
 
-        internal AssignOperationPoint(ValueAssignEx assign, RValuePoint lOperand, RValuePoint rOperand)
+        internal AssignOperationPoint(ValueAssignEx assign, LValuePoint lOperand, ValuePoint rOperand)
         {
             NeedsExpressionEvaluator = true;
             LOperand = lOperand;
             ROperand = rOperand;
             Assign = assign;
 
-            AssignTarget = lOperand as AssignProvider;
+            AssignTarget = lOperand as LValuePoint;
             if (AssignTarget == null)
                 throw new NotSupportedException("Given lOperand cannot be used ass assign target");
         }
@@ -146,8 +147,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             var binaryOperation = toBinaryOperation(Assign.PublicOperation);
-            Value = Services.Evaluator.BinaryEx(LOperand.Value, binaryOperation, ROperand.Value);
-            AssignTarget.Assign(Flow, Value);
+            var value= Services.Evaluator.BinaryEx(LOperand.Value.ReadMemory(InSnapshot), binaryOperation, ROperand.Value.ReadMemory(InSnapshot));
+            Value = OutSet.CreateSnapshotEntry(value);
+
+            Services.Evaluator.Assign(LOperand.LValue, value);
         }
 
         private Operations toBinaryOperation(Operations assignOperation)
@@ -186,7 +189,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <summary>
     /// Reference assign representation
     /// </summary>
-    public class RefAssignPoint : RValuePoint
+    public class RefAssignPoint : ValuePoint
     {
         public readonly RefAssignEx Assign;
 
@@ -200,9 +203,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Alias value provider
         /// </summary>
-        public readonly AliasPoint ROperand;
+        public readonly ValuePoint ROperand;
 
-        internal RefAssignPoint(RefAssignEx assign, LValuePoint lOperand, AliasPoint rOperand)
+        internal RefAssignPoint(RefAssignEx assign, LValuePoint lOperand, ValuePoint rOperand)
         {
             NeedsExpressionEvaluator = true;
             LOperand = lOperand;
@@ -212,7 +215,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            LOperand.AssignAlias(Flow, ROperand.Aliases);
+            Services.Evaluator.AliasAssign(LOperand.LValue, ROperand.Value.Aliases(InSet.Snapshot));
+
+            Value=ROperand.Value;
         }
     }
 }
