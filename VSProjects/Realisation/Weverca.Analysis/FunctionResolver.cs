@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using PHP.Core;
 using PHP.Core.AST;
-
+using PHP.Core.Reflection;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
@@ -183,45 +182,148 @@ namespace Weverca.Analysis
             }
         }
 
+        //TODO add warnings
         public override void DeclareGlobal(TypeDecl declaration)
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
+            ClassDecl type = convertToClassDecl(declaration);
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
-                // TODO: This must be fatal error
-                setWarning("Cannot redeclare class");
+                setWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
+            }
+            else if (OutSet.ResolveType(declaration.Type.QualifiedName).Count() != 0)
+            {
+                setWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
             }
             else
             {
-                ClassDecl type = convertToClassDecl(declaration);
-                if (declaration.BaseClassName != null)
+                if (type.IsInterface)
                 {
-                    if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
+                    List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
+                    sourceCodeMethods.AddRange(type.SourceCodeMethods);
+                    List<MethodInfo> modeledMethods = new List<MethodInfo>();
+                    modeledMethods.AddRange(type.ModeledMethods);
+
+                    if (type.Fields.Count != 0 || type.Constants.Count != 0)
                     {
-                        ClassDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
-                        ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
-                        OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                        setWarning("Interface cannot contain fields or constants", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
                     }
-                    else
+
+                    foreach (var method in type.SourceCodeMethods)
                     {
-                        IEnumerable<TypeValueBase> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
-                        foreach (var value in types)
+                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Private) || method.Modifiers.HasFlag(PhpMemberAttributes.Protected))
                         {
-                            if (value is TypeValue)
+                            setWarning("Interface method must be public", AnalysisWarningCause.INTERFACE_METHOD_MUST_BE_PUBLIC);
+                        }
+                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Final))
+                        {
+                            setWarning("Interface method cannot be final",AnalysisWarningCause.INTERFACE_METHOD_CANNOT_BE_FINAL);
+                        }
+                    }
+
+                    foreach (GenericQualifiedName Interface in declaration.ImplementsList)
+                    {
+                        List<ClassDecl> interfaces = new List<ClassDecl>();
+                        if (objectAnalyzer.ExistClass(Interface.QualifiedName))
+                        {
+                            var interfaceType = objectAnalyzer.GetClass(Interface.QualifiedName);
+                            interfaces.Add(interfaceType);
+                        }
+                        else if (OutSet.ResolveType(Interface.QualifiedName).Count() == 0)
+                        {
+                            setWarning("Interface " + Interface.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                        }
+                        else
+                        {
+                            foreach(var interfaceValue in OutSet.ResolveType(Interface.QualifiedName))
                             {
-                                ClassDecl newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
-                                OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                                interfaces.Add((interfaceValue as TypeValue).Declaration);
                             }
-                            else
+                        }
+
+                        if (interfaces.Count != 0)
+                        {
+                            foreach (var value in interfaces)
                             {
-                                OutSet.DeclareGlobal(OutSet.CreateType(type));
+                                if (value.IsInterface == false)
+                                {
+                                    setWarning("Interface " + value.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                                }
+                                else 
+                                {
+                                    foreach (var method in value.SourceCodeMethods)
+                                    {
+                                        if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                        {
+                                            setWarning("Can't inherit abstract function " + method.Name, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        }
+                                        else 
+                                        {
+                                            sourceCodeMethods.Add(method);
+                                        }
+                                    }
+                                    foreach (var method in value.ModeledMethods)
+                                    {
+                                        if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                        {
+                                            setWarning("Can't inherit abstract function " + method.Name, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        }
+                                        else 
+                                        {
+                                            modeledMethods.Add(method);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                    ClassDecl t = new ClassDecl(type.QualifiedName, modeledMethods,sourceCodeMethods,new Dictionary<VariableName,ConstantInfo>(),new Dictionary<VariableName,FieldInfo>(),null,false,true);
+                    OutSet.DeclareGlobal(OutSet.CreateType(t));
                 }
                 else
                 {
-                    OutSet.DeclareGlobal(OutSet.CreateType(type));
+                    //TODO dokoncit
+                    if (declaration.BaseClassName != null)
+                    {
+                        if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
+                        {
+                            ClassDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
+                            if (baseClass.IsFinal)
+                            {
+                                setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
+                            }
+
+                            ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
+                            OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                        }
+                        else
+                        {
+                            IEnumerable<TypeValueBase> types = OutSet.ResolveType(declaration.BaseClassName.Value.QualifiedName);
+                            if (types.Count() == 0)
+                            {
+                                setWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                            }
+                            else
+                            {
+                                foreach (var value in types)
+                                {
+                                    if (value is TypeValue)
+                                    {
+                                        if ((value as TypeValue).Declaration.IsFinal)
+                                        {
+                                            setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
+                                        }
+                                        ClassDecl newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
+                                        OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        OutSet.DeclareGlobal(OutSet.CreateType(type));
+                    }
                 }
             }
         }
@@ -230,7 +332,7 @@ namespace Weverca.Analysis
 
         #region Private helpers
 
-        private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass,ClassDecl currentClass)
+        private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass, ClassDecl currentClass)
         {
             List<MethodInfo> modeledMethods = new List<MethodInfo>(baseClass.ModeledMethods);
             List<MethodDecl> sourceCodeMethods = new List<MethodDecl>(currentClass.SourceCodeMethods);
@@ -241,7 +343,7 @@ namespace Weverca.Analysis
             {
                 if (!fields.ContainsKey(field.Key))
                 {
-                    fields.Add(field.Key,field.Value);
+                    fields.Add(field.Key, field.Value);
                 }
             }
 
@@ -257,11 +359,14 @@ namespace Weverca.Analysis
             {
                 if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() == 0)
                 {
-                    sourceCodeMethods.Add(method);
+                    if (modeledMethods.Where(a => a.Name == method.Name).Count() == 0)
+                    {
+                        sourceCodeMethods.Add(method);
+                    }
                 }
             }
 
-            return new ClassDecl(currentClass.QualifiedName, modeledMethods, sourceCodeMethods, constants,fields, baseClass.QualifiedName, currentClass.IsFinal, currentClass.IsInterface);
+            return new ClassDecl(currentClass.QualifiedName, modeledMethods, sourceCodeMethods, constants, fields, baseClass.QualifiedName, currentClass.IsFinal, currentClass.IsInterface);
         }
 
         private ClassDecl convertToClassDecl(TypeDecl declaration)
@@ -277,25 +382,25 @@ namespace Weverca.Analysis
                 if (member is FieldDeclList)
                 {
                     foreach (FieldDecl field in (member as FieldDeclList).Fields)
-                    { 
+                    {
                         Visibility visibility = Visibility.PUBLIC;
-                        
-                        fields.Add(new VariableName(field.Name.Value),new FieldInfo(field.Name,"any",visibility,field.Initializer,true));
+
+                        fields.Add(new VariableName(field.Name.Value), new FieldInfo(field.Name, "any", visibility, field.Initializer, true));
                     }
 
                 }
                 else if (member is ConstDeclList)
                 {
                     foreach (var constant in (member as ConstDeclList).Constants)
-                    { 
-                        constants.Add(constant.Name,null);
+                    {
+                        constants.Add(constant.Name, null);
                     }
                 }
                 else if (member is MethodDecl)
                 {
                     sourceCodeMethods.Add(member as MethodDecl);
                 }
-                else 
+                else
                 {
                     //ignore traits are not supported by AST, only by parser
                 }

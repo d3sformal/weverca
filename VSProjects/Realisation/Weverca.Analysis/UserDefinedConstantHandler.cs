@@ -13,7 +13,7 @@ namespace Weverca.Analysis
     /// </summary>
     internal class UserDefinedConstantHandler
     {
-        private static readonly VariableName constantVariable = new VariableName(".constants");
+        private static readonly VariableName constantVariable = new VariableName("constants");
 
         /// <summary>
         /// Gets constant value from FlowOutputSet
@@ -108,31 +108,21 @@ namespace Weverca.Analysis
         public static void insertConstant(FlowOutputSet outset, QualifiedName name,
             MemoryEntry value, bool caseInsensitive = false)
         {
-            outset.FetchFromGlobal(constantVariable);
-            var constantArrays = outset.ReadValue(constantVariable);
-
-            foreach (var array in constantArrays.PossibleValues)
+             ReadWriteSnapshotEntryBase constant;
+            var constantArrays= outset.ReadControlVariable(constantVariable);
+            if (caseInsensitive == true)
             {
-                var constantArray = array as AssociativeArray;
-                if (constantArray != null)
-                {
-                    ContainerIndex index;
-                    if (caseInsensitive == true)
-                    {
-                        index = outset.CreateIndex("." + name.Name.LowercaseValue);
-                    }
-                    else
-                    {
-                        index = outset.CreateIndex(name.Name.Value);
-                    }
-
-                    if (!outset.ArrayIndexExists(constantArray, index))
-                    {
-                        // TODO: Replace undefined values with string ""? Really?
-                        outset.SetIndex(constantArray, index, value);
-                    }
-                }
+               constant=constantArrays.ReadField(outset.Snapshot, new VariableIdentifier(new VariableName("." + name.Name.LowercaseValue)));
             }
+            else
+            {
+                constant = constantArrays.ReadField(outset.Snapshot, new VariableIdentifier(new VariableName(name.Name.Value)));
+            }
+            if (!constant.IsDefined(outset.Snapshot))
+            {
+                constant.WriteMemory(outset.Snapshot, value);
+            }
+
         }
         
     }

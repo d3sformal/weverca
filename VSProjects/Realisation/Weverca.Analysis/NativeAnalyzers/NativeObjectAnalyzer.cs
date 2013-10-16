@@ -137,8 +137,7 @@ namespace Weverca.Analysis
             /* if (containsConstructor == false)
                  Console.WriteLine(QualifiedName);
             */
-
-            return new ClassDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);
+           return new ClassDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);     
         }
 
         #endregion
