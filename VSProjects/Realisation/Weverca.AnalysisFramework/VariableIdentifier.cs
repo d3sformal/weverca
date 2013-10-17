@@ -18,7 +18,12 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Determine that there is only single possible name
         /// </summary>
-        public bool IsDirect { get { return PossibleNames.Length == 1; } }
+        public bool IsDirect { get { return PossibleNames.Length == 1; } }        
+        
+        /// <summary>
+        /// Determine that variable identifier name is not known
+        /// </summary>
+        public bool IsUnknown { get { return PossibleNames.Length == 0; } }
 
         /// <summary>
         /// If VariableEntry IsDirect we can read it's name

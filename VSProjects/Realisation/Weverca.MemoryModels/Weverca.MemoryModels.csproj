@@ -39,9 +39,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyMemoryModel\IndexCollectors\AssignCollector.cs" />
+    <Compile Include="CopyMemoryModel\IndexCollectors\CreateCollector.cs" />
+    <Compile Include="CopyMemoryModel\IndexCollectors\IIndexCollector.cs" />
+    <Compile Include="CopyMemoryModel\IndexCollectors\ReadCollector.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\MemoryAlias.cs" />
-    <Compile Include="CopyMemoryModel\Snapshot\MemoryIndex.cs" />
+    <Compile Include="CopyMemoryModel\MemoryWorkers\AssignWorker.cs" />
+    <Compile Include="CopyMemoryModel\MemoryWorkers\ReadWorker.cs" />
+    <Compile Include="CopyMemoryModel\Indexes\MemoryIndex.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\MemoryInfo.cs" />
+    <Compile Include="CopyMemoryModel\Indexes\MemoryPath.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\Snapshot.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\SnapshotEntry.cs" />
     <Compile Include="CopyMemoryModel\Structures\ArrayDescriptor.cs" />

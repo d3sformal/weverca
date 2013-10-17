@@ -16,7 +16,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     ///     For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
-    public class MemoryInfo
+    class MemoryInfo
     {
         /// <summary>
         /// Gets the information values.
@@ -57,7 +57,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// <summary>
     /// Mutable variant of MemoryInfo - use for creating new structure
     /// </summary>
-    public class MemoryInfoBuilder
+    class MemoryInfoBuilder
     {
         /// <summary>
         /// Gets the information values.

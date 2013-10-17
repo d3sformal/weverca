@@ -20,20 +20,36 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// List of indexes for the array
         /// </summary>
-        public ReadOnlyDictionary<ContainerIndex, MemoryIndex> Indexes { get; private set; }
+        public ReadOnlyDictionary<string, MemoryIndex> Indexes { get; private set; }
 
         /// <summary>
         /// Variable where the array is stored in
         /// </summary>
-        public ReadOnlyCollection<MemoryIndex> ParentVariable { get; private set; }
+        public MemoryIndex ParentVariable { get; private set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public MemoryIndex UnknownIndex { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
         /// </summary>
         public ArrayDescriptor()
         {
-            Indexes = new ReadOnlyDictionary<ContainerIndex, MemoryIndex>(new Dictionary<ContainerIndex, MemoryIndex>());
-            ParentVariable = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
+            Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
+            ParentVariable = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
+        /// </summary>
+        /// <param name="parentVariable">The parent variable.</param>
+        public ArrayDescriptor(MemoryIndex parentVariable)
+        {
+            Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
+            ParentVariable = parentVariable;
+            UnknownIndex = MemoryIndex.MakeIndexAnyIndex(parentVariable);
         }
 
         /// <summary>
@@ -42,8 +58,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="arrayDescriptorBuilder">The array descriptor builder.</param>
         public ArrayDescriptor(ArrayDescriptorBuilder arrayDescriptorBuilder)
         {
-            Indexes = new ReadOnlyDictionary<ContainerIndex, MemoryIndex>(arrayDescriptorBuilder.Indexes);
-            ParentVariable = new ReadOnlyCollection<MemoryIndex>(arrayDescriptorBuilder.ParentVariable);
+            Indexes = new ReadOnlyDictionary<string, MemoryIndex>(arrayDescriptorBuilder.Indexes);
+            ParentVariable = arrayDescriptorBuilder.ParentVariable;
+            UnknownIndex = MemoryIndex.MakeIndexAnyIndex(arrayDescriptorBuilder.UnknownIndex);
         }
 
         /// <summary>
@@ -64,12 +81,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// List of variables where the array is stored in
         /// </summary>
-        public List<MemoryIndex> ParentVariable { get; set; }
+        public MemoryIndex ParentVariable { get; set; }
 
         /// <summary>
         /// List of indexes for the array
         /// </summary>
-        public Dictionary<ContainerIndex, MemoryIndex> Indexes { get; private set; }
+        public Dictionary<string, MemoryIndex> Indexes { get; private set; }
+       
+        /// <summary>
+        /// 
+        /// </summary>
+        public MemoryIndex UnknownIndex { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptorBuilder"/> class from the given array descriptor.
@@ -77,8 +99,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="arrayDescriptor">The array descriptor.</param>
         public ArrayDescriptorBuilder(ArrayDescriptor arrayDescriptor)
         {
-            Indexes = new Dictionary<ContainerIndex, MemoryIndex>(arrayDescriptor.Indexes);
-            ParentVariable = new List<MemoryIndex>(arrayDescriptor.ParentVariable);
+            Indexes = new Dictionary<string, MemoryIndex>(arrayDescriptor.Indexes);
+            ParentVariable = arrayDescriptor.ParentVariable;
+            UnknownIndex = arrayDescriptor.UnknownIndex;
         }
 
         /// <summary>
@@ -87,31 +110,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="containerIndex">Index of the container.</param>
         /// <param name="index">The index.</param>
         /// <returns></returns>
-        public ArrayDescriptorBuilder add(ContainerIndex containerIndex, MemoryIndex index)
+        public ArrayDescriptorBuilder add(string containerIndex, MemoryIndex index)
         {
             Indexes[containerIndex] = index;
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the parent variable.
-        /// </summary>
-        /// <param name="parentVariable">The parent variable.</param>
-        /// <returns></returns>
-        internal ArrayDescriptorBuilder AddParentVariable(MemoryIndex parentVariable)
-        {
-            ParentVariable.Add(parentVariable);
-            return this;
-        }
-
-        /// <summary>
-        /// Removes the parent variable.
-        /// </summary>
-        /// <param name="parentVariable">The parent variable.</param>
-        /// <returns></returns>
-        internal ArrayDescriptorBuilder RemoveParentVariable(MemoryIndex parentVariable)
-        {
-            ParentVariable.Remove(parentVariable);
             return this;
         }
 
