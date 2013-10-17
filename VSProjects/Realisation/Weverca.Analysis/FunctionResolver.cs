@@ -199,90 +199,12 @@ namespace Weverca.Analysis
             {
                 if (type.IsInterface)
                 {
-                    List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
-                    sourceCodeMethods.AddRange(type.SourceCodeMethods);
-                    List<MethodInfo> modeledMethods = new List<MethodInfo>();
-                    modeledMethods.AddRange(type.ModeledMethods);
-
-                    if (type.Fields.Count != 0 || type.Constants.Count != 0)
-                    {
-                        setWarning("Interface cannot contain fields or constants", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
-                    }
-
-                    foreach (var method in type.SourceCodeMethods)
-                    {
-                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Private) || method.Modifiers.HasFlag(PhpMemberAttributes.Protected))
-                        {
-                            setWarning("Interface method must be public", AnalysisWarningCause.INTERFACE_METHOD_MUST_BE_PUBLIC);
-                        }
-                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Final))
-                        {
-                            setWarning("Interface method cannot be final",AnalysisWarningCause.INTERFACE_METHOD_CANNOT_BE_FINAL);
-                        }
-                    }
-
-                    foreach (GenericQualifiedName Interface in declaration.ImplementsList)
-                    {
-                        List<ClassDecl> interfaces = new List<ClassDecl>();
-                        if (objectAnalyzer.ExistClass(Interface.QualifiedName))
-                        {
-                            var interfaceType = objectAnalyzer.GetClass(Interface.QualifiedName);
-                            interfaces.Add(interfaceType);
-                        }
-                        else if (OutSet.ResolveType(Interface.QualifiedName).Count() == 0)
-                        {
-                            setWarning("Interface " + Interface.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
-                        }
-                        else
-                        {
-                            foreach(var interfaceValue in OutSet.ResolveType(Interface.QualifiedName))
-                            {
-                                interfaces.Add((interfaceValue as TypeValue).Declaration);
-                            }
-                        }
-
-                        if (interfaces.Count != 0)
-                        {
-                            foreach (var value in interfaces)
-                            {
-                                if (value.IsInterface == false)
-                                {
-                                    setWarning("Interface " + value.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
-                                }
-                                else 
-                                {
-                                    foreach (var method in value.SourceCodeMethods)
-                                    {
-                                        if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
-                                        {
-                                            setWarning("Can't inherit abstract function " + method.Name, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
-                                        }
-                                        else 
-                                        {
-                                            sourceCodeMethods.Add(method);
-                                        }
-                                    }
-                                    foreach (var method in value.ModeledMethods)
-                                    {
-                                        if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
-                                        {
-                                            setWarning("Can't inherit abstract function " + method.Name, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
-                                        }
-                                        else 
-                                        {
-                                            modeledMethods.Add(method);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    ClassDecl t = new ClassDecl(type.QualifiedName, modeledMethods,sourceCodeMethods,new Dictionary<VariableName,ConstantInfo>(),new Dictionary<VariableName,FieldInfo>(),null,false,true);
-                    OutSet.DeclareGlobal(OutSet.CreateType(t));
+                    DeclareInterface(declaration, objectAnalyzer, type);
                 }
                 else
                 {
                     //TODO dokoncit
+                    //check imterface which are implement
                     if (declaration.BaseClassName != null)
                     {
                         if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
@@ -326,11 +248,95 @@ namespace Weverca.Analysis
                     }
                 }
             }
-        }
+        }      
 
         #endregion
 
         #region Private helpers
+
+        private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDecl type)
+        {
+            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
+            sourceCodeMethods.AddRange(type.SourceCodeMethods);
+            List<MethodInfo> modeledMethods = new List<MethodInfo>();
+            modeledMethods.AddRange(type.ModeledMethods);
+
+            if (type.Fields.Count != 0 || type.Constants.Count != 0)
+            {
+                setWarning("Interface cannot contain fields or constants", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
+            }
+
+            foreach (var method in type.SourceCodeMethods)
+            {
+                if (method.Modifiers.HasFlag(PhpMemberAttributes.Private) || method.Modifiers.HasFlag(PhpMemberAttributes.Protected))
+                {
+                    setWarning("Interface method must be public", method, AnalysisWarningCause.INTERFACE_METHOD_MUST_BE_PUBLIC);
+                }
+                if (method.Modifiers.HasFlag(PhpMemberAttributes.Final))
+                {
+                    setWarning("Interface method cannot be final",method, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_BE_FINAL);
+                }
+            }
+
+            foreach (GenericQualifiedName Interface in declaration.ImplementsList)
+            {
+                List<ClassDecl> interfaces = new List<ClassDecl>();
+                if (objectAnalyzer.ExistClass(Interface.QualifiedName))
+                {
+                    var interfaceType = objectAnalyzer.GetClass(Interface.QualifiedName);
+                    interfaces.Add(interfaceType);
+                }
+                else if (OutSet.ResolveType(Interface.QualifiedName).Count() == 0)
+                {
+                    setWarning("Interface " + Interface.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                }
+                else
+                {
+                    foreach (var interfaceValue in OutSet.ResolveType(Interface.QualifiedName))
+                    {
+                        interfaces.Add((interfaceValue as TypeValue).Declaration);
+                    }
+                }
+
+                if (interfaces.Count != 0)
+                {
+                    foreach (var value in interfaces)
+                    {
+                        if (value.IsInterface == false)
+                        {
+                            setWarning("Interface " + value.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                        }
+                        else
+                        {
+                            foreach (var method in value.SourceCodeMethods)
+                            {
+                                if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                {
+                                    setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                }
+                                else
+                                {
+                                    sourceCodeMethods.Add(method);
+                                }
+                            }
+                            foreach (var method in value.ModeledMethods)
+                            {
+                                if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                {
+                                    setWarning("Can't inherit abstract function " + method.Name,AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                }
+                                else
+                                {
+                                    modeledMethods.Add(method);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ClassDecl t = new ClassDecl(type.QualifiedName, modeledMethods, sourceCodeMethods, new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, true);
+            OutSet.DeclareGlobal(OutSet.CreateType(t));
+        }
 
         private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass, ClassDecl currentClass)
         {
@@ -344,6 +350,21 @@ namespace Weverca.Analysis
                 if (!fields.ContainsKey(field.Key))
                 {
                     fields.Add(field.Key, field.Value);
+                }
+                else 
+                {
+                    if (fields[field.Key].IsStatic != field.Value.IsStatic)
+                    {
+                        if (field.Value.IsStatic)
+                        {
+                            setWarning("Cannot redeclare static " + fields[field.Key].Name + " with non static " + fields[field.Key].Name, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                        }
+                        else 
+                        {
+                            setWarning("Cannot redeclare non static " + fields[field.Key].Name + " with static " + fields[field.Key].Name, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+
+                        }
+                    }
                 }
             }
 
@@ -362,6 +383,20 @@ namespace Weverca.Analysis
                     if (modeledMethods.Where(a => a.Name == method.Name).Count() == 0)
                     {
                         sourceCodeMethods.Add(method);
+                    }
+                    else
+                    {
+                        if (modeledMethods.Where(a => a.Name == method.Name).First().IsFinal)
+                        {
+                            setWarning("Cannot redeclare final method "+method.Name,method,AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
+                        }
+                    }
+                }
+                else 
+                {
+                    if(sourceCodeMethods.Where(a => a.Name == method.Name).First().Modifiers.HasFlag(PhpMemberAttributes.Final))
+                    {
+                        setWarning("Cannot redeclare final method "+method.Name,method,AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                     }
                 }
             }
@@ -383,9 +418,29 @@ namespace Weverca.Analysis
                 {
                     foreach (FieldDecl field in (member as FieldDeclList).Fields)
                     {
-                        Visibility visibility = Visibility.PUBLIC;
-
-                        fields.Add(new VariableName(field.Name.Value), new FieldInfo(field.Name, "any", visibility, field.Initializer, true));
+                        Visibility visibility;
+                        if (member.Modifiers.HasFlag(PhpMemberAttributes.Private))
+                        {
+                            visibility = Visibility.PRIVATE;
+                        }
+                        else if (member.Modifiers.HasFlag(PhpMemberAttributes.Protected))
+                        {
+                            visibility = Visibility.PROTECTED;
+                        }
+                        else
+                        {
+                            visibility = Visibility.PUBLIC;
+                        }
+                        bool isStatic = member.Modifiers.HasFlag(PhpMemberAttributes.Static);
+                        //multiple declaration of fields
+                        if (fields.ContainsKey(new VariableName(field.Name.Value)))
+                        {
+                            setWarning("Cannot redeclare field " + field.Name,member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
+                        }
+                        else
+                        {
+                            fields.Add(new VariableName(field.Name.Value), new FieldInfo(field.Name, "any", visibility, field.Initializer, isStatic));
+                        }
                     }
 
                 }
@@ -393,12 +448,28 @@ namespace Weverca.Analysis
                 {
                     foreach (var constant in (member as ConstDeclList).Constants)
                     {
-                        constants.Add(constant.Name, null);
+                        if (constants.ContainsKey(constant.Name))
+                        {
+                            setWarning("Cannot redeclare constant " + constant.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                        }
+                        else
+                        {
+                            //in php all object constatns are public
+                            Visibility visbility=Visibility.PUBLIC;         
+                            constants.Add(constant.Name, new ConstantInfo(constant.Name,visbility,constant.Initializer));
+                        }
                     }
                 }
                 else if (member is MethodDecl)
                 {
-                    sourceCodeMethods.Add(member as MethodDecl);
+                    if (sourceCodeMethods.Where(a => a.Name == (member as MethodDecl).Name).Count() == 0)
+                    {
+                        sourceCodeMethods.Add(member as MethodDecl);
+                    }
+                    else
+                    {
+                        setWarning("Cannot redeclare constant " +(member as MethodDecl).Name,member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                    }
                 }
                 else
                 {
@@ -464,6 +535,11 @@ namespace Weverca.Analysis
         private void setWarning(string message, AnalysisWarningCause cause)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+        }
+
+        private void setWarning(string message,LangElement element, AnalysisWarningCause cause)
+        {
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, element, cause));
         }
 
         /// <summary>
