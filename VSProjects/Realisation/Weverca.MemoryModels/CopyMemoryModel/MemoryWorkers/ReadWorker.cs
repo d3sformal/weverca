@@ -15,6 +15,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         private Snapshot snapshot;
 
+
         public ReadWorker(Snapshot snapshot)
         {
             this.snapshot = snapshot;
@@ -22,7 +23,31 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public MemoryEntry ReadValue(IIndexCollector collector)
         {
-            throw new NotImplementedException();
+            if (collector.MustIndexesCount == 1 && collector.IsDefined)
+            {
+                MemoryIndex index = collector.MustIndexes.First();
+                return snapshot.GetMemoryEntry(index);
+            }
+            else
+            {
+                HashSet<Value> values = new HashSet<Value>();
+                if (!collector.IsDefined)
+                {
+                    values.Add(snapshot.UndefinedValue);
+                }
+
+                foreach (MemoryIndex index in collector.MustIndexes)
+                {
+                    MemoryEntry entry = snapshot.GetMemoryEntry(index);
+                    foreach (Value value in entry.PossibleValues)
+                    {
+                        values.Add(value);
+                    }
+                }
+
+                return new MemoryEntry(values);
+            }
+
         }
     }
 }

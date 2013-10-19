@@ -32,12 +32,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         public MemoryIndex UnknownIndex { get; private set; }
 
+        public AssociativeArray ArrayValue { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
         /// </summary>
-        public ArrayDescriptor()
+        public ArrayDescriptor(AssociativeArray arrayValue)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
+            ArrayValue = arrayValue;
             ParentVariable = null;
         }
 
@@ -61,6 +64,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(arrayDescriptorBuilder.Indexes);
             ParentVariable = arrayDescriptorBuilder.ParentVariable;
             UnknownIndex = MemoryIndex.MakeIndexAnyIndex(arrayDescriptorBuilder.UnknownIndex);
+            ArrayValue = arrayDescriptorBuilder.ArrayValue;
         }
 
         /// <summary>
@@ -93,6 +97,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         public MemoryIndex UnknownIndex { get; private set; }
 
+        public AssociativeArray ArrayValue { get; private set; }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptorBuilder"/> class from the given array descriptor.
         /// </summary>
@@ -102,6 +108,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Indexes = new Dictionary<string, MemoryIndex>(arrayDescriptor.Indexes);
             ParentVariable = arrayDescriptor.ParentVariable;
             UnknownIndex = arrayDescriptor.UnknownIndex;
+            ArrayValue = arrayDescriptor.ArrayValue;
         }
 
         /// <summary>
@@ -123,6 +130,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public ArrayDescriptor Build()
         {
             return new ArrayDescriptor(this);
+        }
+
+        internal ArrayDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
+        {
+            ParentVariable = parentIndex;
+            return this;
+        }
+
+        internal ArrayDescriptorBuilder SetUnknownField(MemoryIndex memoryIndex)
+        {
+            UnknownIndex = memoryIndex;
+            return this;
         }
     }
 }

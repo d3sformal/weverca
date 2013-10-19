@@ -79,7 +79,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override bool isDefined(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            Snapshot snapshot = toSnapshot(context);
+
+            ReadCollector collector = new ReadCollector();
+            collector.ProcessPath(snapshot, path);
+
+            return collector.IsDefined;
         }
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)

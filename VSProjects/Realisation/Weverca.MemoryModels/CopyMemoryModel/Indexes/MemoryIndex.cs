@@ -11,7 +11,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// Index to the memory structure
     /// Provides linkink in structure and avoids modification of pointing objecs on change of targeting
     /// </summary>
-    class MemoryIndex
+    public class MemoryIndex
     {
         public ReadOnlyCollection<IndexSegment> MemoryPath {get; private set; }
         public int Length { get { return MemoryPath.Count; } }
@@ -117,7 +117,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
-    class IndexSegment
+    public class IndexSegment
     {
         public static string UNDEFINED_STR = "?";
 

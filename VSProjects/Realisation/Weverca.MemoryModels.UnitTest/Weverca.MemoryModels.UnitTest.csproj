@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CopyMemoryModel\MemoryIndexTest.cs" />
     <Compile Include="MemoryModelUnitTest.cs" />
     <Compile Include="MemorySnapshotTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

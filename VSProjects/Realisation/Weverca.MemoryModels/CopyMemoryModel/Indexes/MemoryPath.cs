@@ -152,7 +152,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
-    enum PathType
+    public enum PathType
     {
         Variable, Field, Index
     }

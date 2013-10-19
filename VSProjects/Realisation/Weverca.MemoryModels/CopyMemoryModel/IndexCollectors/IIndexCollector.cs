@@ -11,6 +11,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         IEnumerable<MemoryIndex> MustIndexes { get; }
         IEnumerable<MemoryIndex> MayIndexes { get; }
 
+        int MustIndexesCount { get; }
+        int MayIndexesCount { get; }
+
+        bool IsDefined { get; }
+
         void Next(Snapshot snapshot, PathSegment segment);
     }
 
@@ -26,6 +31,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public abstract IEnumerable<MemoryIndex> MustIndexes { get; }
         public abstract IEnumerable<MemoryIndex> MayIndexes { get; }
+        public abstract int MustIndexesCount { get; }
+        public abstract int MayIndexesCount { get; }
+        public abstract bool IsDefined { get; protected set; }
         public abstract void Next(Snapshot snapshot, PathSegment segment);
     }
 }
