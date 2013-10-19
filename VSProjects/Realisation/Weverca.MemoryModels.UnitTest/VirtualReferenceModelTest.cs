@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.VirtualReferenceModel;
 
@@ -62,9 +63,10 @@ namespace Weverca.ControlFlowGraph.UnitTest
         public void AliasAssign()
         {
             var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1, false);
-            var alias = snapshot1.CreateAlias(testVar1);
+            var testVar1Entry = readVariable(testVar1,snapshot1);
+            var testVar2Entry = getVariable(testVar2, snapshot1);
 
-            snapshot1.Assign(testVar2, alias);
+            testVar2Entry.SetAliases(snapshot1, testVar1Entry);
 
             //read value from testVar1 accross testVar2
             var mustAliasRead = readFirstValue<StringValue>(snapshot1, testVar1);
@@ -117,8 +119,11 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
             var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1);
             var snapshot2 = createSnapshotWithValue(testVar2, testStringValue2, false);
-            var testVar2Alias = snapshot2.CreateAlias(testVar2);
-            snapshot2.Assign(testVar1, testVar2Alias);
+
+            var testVar1Entry = getVariable(testVar1, snapshot2);
+            var testVar2Entry = readVariable(testVar2, snapshot2);
+
+            testVar1Entry.SetAliases(snapshot2,testVar2Entry);
             snapshot2.CommitTransaction();
 
             var mergedSnapshot = new Snapshot();
@@ -146,6 +151,16 @@ namespace Weverca.ControlFlowGraph.UnitTest
             }
 
             return snapshot;
+        }
+
+        private ReadWriteSnapshotEntryBase getVariable(VariableName name, Snapshot context)
+        {
+            return context.GetVariable(new VariableIdentifier(name));
+        }
+
+        private ReadSnapshotEntryBase readVariable(VariableName name, Snapshot context)
+        {
+            return context.ReadVariable(new VariableIdentifier(name));
         }
 
         private T readFirstValue<T>(Snapshot snapshot, VariableName variable)

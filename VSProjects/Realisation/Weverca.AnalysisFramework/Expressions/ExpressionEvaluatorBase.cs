@@ -126,8 +126,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Assign possible aliases to given target
         /// </summary>
         /// <param name="target">Target variable specifier</param>
-        /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasAssign(ReadWriteSnapshotEntryBase target, IEnumerable<AliasEntry> possibleAliases);
+        /// <param name="aliasedValue">Possible aliases to be assigned</param>
+        public abstract void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue);
 
         /// <summary>
         /// Assign possible aliases to given object field

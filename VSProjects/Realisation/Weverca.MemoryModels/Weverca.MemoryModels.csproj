@@ -65,6 +65,7 @@
     <Compile Include="MemoryModel\ValueVisitors\RemoveAliasVisitor.cs" />
     <Compile Include="MemoryModel\Workers\MergeWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VirtualReferenceModel\IndexStorageVisitor.cs" />
     <Compile Include="VirtualReferenceModel\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotMemoryEntry.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="VirtualReferenceModel\ReferenceAliasEntry.cs" />
     <Compile Include="VirtualReferenceModel\TypeMethodResolver.cs" />
     <Compile Include="VirtualReferenceModel\VariableInfo.cs" />
+    <Compile Include="VirtualReferenceModel\FieldStorageVisitor.cs" />
     <Compile Include="VirtualReferenceModel\VirtualReference.cs" />
   </ItemGroup>
   <ItemGroup>

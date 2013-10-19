@@ -215,7 +215,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Services.Evaluator.AliasAssign(LOperand.LValue, ROperand.Value.Aliases(InSet.Snapshot));
+            Services.Evaluator.AliasAssign(LOperand.LValue, ROperand.Value);
 
             Value=ROperand.Value;
         }

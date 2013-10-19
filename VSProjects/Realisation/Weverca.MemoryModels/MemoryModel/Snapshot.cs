@@ -65,7 +65,7 @@ namespace Weverca.MemoryModels.MemoryModel
             return new MemoryAlias(index);
         }
 
-        protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
+        protected void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
             //TODO signature change
             if (aliases.Count() != 1)
@@ -109,7 +109,7 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryEntry(fieldIndex, entry);
         }
 
-        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases)
+        protected void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases)
         {
             //TODO signature change
             if (aliases.Count() != 1)
@@ -159,7 +159,7 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryEntry(fieldIndex, entry);
         }
 
-        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases)
+        protected void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases)
         {
             //TODO signature change
             if (aliases.Count() != 1)

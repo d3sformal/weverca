@@ -120,6 +120,10 @@ namespace Weverca.AnalysisFramework
             ValuePoint rValue;
             if (_rValues.TryGetValue(partial, out rValue))
             {
+                if (rValue.InSet == null)
+                    //TODO this is only workaround for back compatibility with Flow resolver
+                    return rValue.Value.ReadMemory(null);
+
                 return rValue.Value.ReadMemory(rValue.InSnapshot);
             }
 
@@ -131,12 +135,12 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="partial">Partial which variable will be returned</param>
         /// <returns>Associated variable, or null if there is no associated variable</returns>
-        public VariableIdentifier GetVariable(LangElement partial)
+        public ReadWriteSnapshotEntryBase GetVariable(LangElement partial)
         {
             LValuePoint varLike;
             if (_lValues.TryGetValue(partial, out varLike))
             {
-                return varLike.LValue.GetVariableIdentifier(varLike.InSnapshot);
+                return varLike.LValue;
             }
 
             ProgramPointBase point;

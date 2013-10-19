@@ -170,12 +170,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         //OBSOLETE
-        protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
         protected override void extend(ISnapshotReadonly[] inputs)
         {
             throw new NotImplementedException();
@@ -210,19 +204,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             throw new NotImplementedException();
         }
-
-        //OBSOLETE
-        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases)
-        {
-            throw new NotImplementedException();
-        }
-
+        
         //OBSOLETE
         protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
         {

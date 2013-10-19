@@ -990,7 +990,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotImplementedException();
         }
 
-        public override void AliasAssign(ReadWriteSnapshotEntryBase target, IEnumerable<AliasEntry> possibleAliases)
+        public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
         {
             throw new NotImplementedException();
         }

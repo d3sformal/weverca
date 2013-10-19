@@ -119,7 +119,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             var storages = new List<VariableInfo>();
             foreach (var name in variable.PossibleNames)
             {
-                var info=getOrCreate(name, forceGlobalContext);
+                var info = getOrCreate(name, forceGlobalContext);
                 storages.Add(info.Clone());
             }
 
@@ -133,7 +133,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
-            return new SnapshotMemoryEntry( entry);
+            return new SnapshotMemoryEntry(entry);
         }
 
         protected override AliasValue createAlias(VariableName sourceVar)
@@ -222,17 +222,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        protected override void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases)
+        void assignAlias(VariableInfo target, IEnumerable<ReferenceAliasEntry> aliases)
         {
-            var info = getOrCreate(targetVar);
             var references = new HashSet<VirtualReference>();
-            foreach (ReferenceAlias alias in aliases)
+            foreach (var alias in aliases)
             {
-                references.UnionWith(alias.References);
+                var contextVariable = getContextVariable(alias.Variable);
+
+                if (contextVariable.References.Count == 0)
+                {
+                    var implicitRef = new VirtualReference(contextVariable);
+                    contextVariable.References.Add(implicitRef);
+                }
+
+                references.UnionWith(contextVariable.References);
             }
 
-            info.References.Clear();
-            info.References.AddRange(references);
+            target.References.Clear();
+            target.References.AddRange(references);
         }
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
@@ -442,7 +449,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             ReportSimpleHashSearch();
             if (!storage.TryGetValue(name, out result))
             {
-                storage[name] = result = new VariableInfo(name,forceGlobal || _isGlobalScope);
+                storage[name] = result = new VariableInfo(name, forceGlobal || _isGlobalScope);
                 ReportSimpleHashAssign();
             }
 
@@ -622,13 +629,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             var storage = getFieldStorage(value, index);
             assign(storage, entry, true);
         }
-
-        protected override void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
-        {
-            var storage = getFieldStorage(value, index);
-            assignAlias(storage, alias);
-        }
-
+        
         protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
         {
             var storage = getFieldStorage(value, index);
@@ -720,13 +721,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             var storage = getIndexStorage(value, index);
             assign(storage, entry, true);
         }
-
-        protected override void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
-        {
-            var storage = getIndexStorage(value, index);
-            assignAlias(storage, alias);
-        }
-
+        
         protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
         {
             var storage = getIndexStorage(value, index);
@@ -924,9 +919,19 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
+        internal void SetAliases(VariableInfo[] storages, IEnumerable<ReferenceAliasEntry> aliases)
+        {
+            foreach (var storage in storages)
+            {
+                var variable = getContextVariable(storage);
+
+                assignAlias(variable, aliases);
+            }
+        }
+
         internal bool IsDefined(VariableInfo storage)
         {
-            var variables=getVariableStorage(storage.IsGlobal);
+            var variables = getVariableStorage(storage.IsGlobal);
             return variables.ContainsKey(storage.Name);
         }
 
@@ -937,9 +942,38 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableInfo getContextVariable(VariableInfo info)
         {
-            var variables=getVariableStorage(info.IsGlobal);
+            var variables = getVariableStorage(info.IsGlobal);
 
             return variables[info.Name];
+        }
+
+        internal IEnumerable<VariableInfo> IndexStorages(AssociativeArray array,MemberIdentifier index)
+        {
+            var storages = new List<VariableInfo>();
+            foreach(var indexName in index.PossibleNames){
+                //TODO refactor ContainerIndex API
+                var containerIndex = CreateIndex(indexName);
+                var storageName = getIndexStorage(array, containerIndex);
+                var storage = getOrCreate(storageName, true);
+                storages.Add(storage);
+            }
+
+            return storages;
+        }
+
+        internal IEnumerable<VariableInfo> FieldStorages(ObjectValue objectValue, VariableIdentifier field)
+        {
+            var storages = new List<VariableInfo>();
+            foreach (var fieldName in field.PossibleNames)
+            {
+                //TODO refactor ContainerIndex API
+                var fieldIndex = CreateIndex(fieldName.Value);
+                var storageName = getFieldStorage(objectValue, fieldIndex);
+                var storage = getOrCreate(storageName, true);
+                storages.Add(storage);
+            }
+
+            return storages;
         }
     }
 }

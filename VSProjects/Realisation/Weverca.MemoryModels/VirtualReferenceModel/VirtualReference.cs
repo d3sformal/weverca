@@ -28,6 +28,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             IsGlobal = isGlobal;
         }
 
+        internal VirtualReference(VariableInfo info)
+            :this(info.Name,info.IsGlobal)
+        {
+        }
+
         public override int GetHashCode()
         {
             return OriginatedVariable.GetHashCode();

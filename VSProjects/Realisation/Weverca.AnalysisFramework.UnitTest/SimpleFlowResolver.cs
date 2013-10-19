@@ -268,29 +268,25 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private void assumeEqual(LangElement left, LangElement right)
         {
-            VariableIdentifier leftVar;
+            ReadWriteSnapshotEntryBase lValue;
             MemoryEntry value;
 
             var call = left as DirectFcnCall;
             if (call != null && call.QualifiedName.Name.Value == "abs")
             {
                 var absParam = call.CallSignature.Parameters[0];
-                leftVar = _log.GetVariable(absParam.Expression);
+                lValue = _log.GetVariable(absParam.Expression);
                 value = getReverse_abs(_log.GetValue(right));
             }
             else
             {
-                leftVar = _log.GetVariable(left);
+                lValue = _log.GetVariable(left);
                 value = _log.GetValue(right);
             }
 
-            if (leftVar != null && value != null)
+            if (lValue != null && value != null)
             {
-                foreach (var possibleVar in leftVar.PossibleNames)
-                {
-                    _outSet.Assign(possibleVar, value);
-                }
-
+                lValue.WriteMemory(_outSet.Snapshot, value);
             }
         }
 

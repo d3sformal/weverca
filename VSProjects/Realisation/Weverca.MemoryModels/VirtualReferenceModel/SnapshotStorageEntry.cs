@@ -9,18 +9,18 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {
-    class SnapshotStorageEntry:ReadWriteSnapshotEntryBase
+    class SnapshotStorageEntry : ReadWriteSnapshotEntryBase
     {
         private readonly VariableInfo[] _storages;
 
         internal SnapshotStorageEntry(params VariableInfo[] storage)
         {
-            _storages = storage;            
+            _storages = storage;
         }
-        
+
         protected override void writeMemory(SnapshotBase context, MemoryEntry value)
         {
-            
+
             C(context).Write(_storages, value);
         }
 
@@ -52,8 +52,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     return new MemoryEntry(target.UndefinedValue);
                 case 1:
                     return target.ReadValue(_storages[0]);
+                default:
+                    var entries = new List<MemoryEntry>();
+                    foreach (var storage in _storages)
+                    {
+                        entries.Add(target.ReadValue(storage));
+                    }
+                    return MemoryEntry.Merge(entries);
             }
-            throw new NotImplementedException();
         }
 
         private Snapshot C(SnapshotBase context)
@@ -63,17 +69,27 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            throw new NotImplementedException();
+            var snapshot = C(context);
+            var aliasEntries = aliasedEntry.Aliases(context);
+            var aliases = from entry in aliasEntries select entry as ReferenceAliasEntry;
+
+            snapshot.SetAliases(_storages, aliases);
         }
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            var snapshot = C(context);
+            var indexVisitor = new IndexStorageVisitor(this,snapshot, index);
+
+            return new SnapshotStorageEntry(indexVisitor.Storages);
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field)
         {
-            throw new NotImplementedException();
+            var snapshot = C(context);
+            var fieldVisitor = new FieldStorageVisitor(this, snapshot, field);
+
+            return new SnapshotStorageEntry(fieldVisitor.Storages);
         }
 
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)

@@ -23,12 +23,18 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
         {
-            return objectValue.ReadField(InSnapshot, field);
+            return objectValue.ReadField(OutSnapshot, field);
         }
 
         public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase arrayValue, MemberIdentifier index)
         {
-            return arrayValue.ReadIndex(InSnapshot,index);
+            return arrayValue.ReadIndex(OutSnapshot,index);
+        }
+
+
+        public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
+        {
+            target.SetAliases(OutSnapshot, aliasedValue);
         }
 
         public override MemoryEntry ResolveIndexedVariable(VariableIdentifier entry)
@@ -322,13 +328,18 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
         {
-            throw new NotImplementedException();
+            var possibleNames = new List<string>();
+            foreach (var possibleMember in memberRepresentation.PossibleValues)
+            {
+                var value = possibleMember as ScalarValue;
+                if (value ==null)
+                    continue;
+                
+                possibleNames.Add(value.RawValue.ToString());
+            }
+            return new MemberIdentifier(possibleNames);
         }
 
-        public override void AliasAssign(ReadWriteSnapshotEntryBase target, IEnumerable<AliasEntry> possibleAliases)
-        {
-            throw new NotImplementedException();
-        }
 
         public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
         {

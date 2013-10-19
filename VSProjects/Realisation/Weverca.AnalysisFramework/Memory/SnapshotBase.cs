@@ -163,14 +163,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="entry">Value that will be assigned</param>
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Assign alias to given <paramref name="targetVar"/>
-        /// </summary>
-        /// <param name="targetVar">Target variable</param>
-        /// <param name="aliases">Assigned alias</param>
-        protected abstract void assignAlias(VariableName targetVar, IEnumerable<AliasValue> aliases);
-
+      
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
@@ -259,24 +252,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="entry">Data that will be set on specified index</param>
         protected abstract void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Set field specified by index, on object represented by value 
-        /// </summary>
-        /// <param name="value">Handler for object manipulation</param>
-        /// <param name="index">Index of field that will be set</param>
-        /// <param name="aliases">Alias that will be set for field</param>
-        protected abstract void setFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> aliases);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Set specified index, in array represented by value 
-        /// </summary>
-        /// <param name="value">Handler for array manipulation</param>
-        /// <param name="index">Index that will be set</param>
-        /// <param name="aliases">Alias that will be set for field</param>
-        protected abstract void setIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> aliases);
-
+        
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Get value for field specified by index, in object represented by value 
@@ -783,18 +759,12 @@ namespace Weverca.AnalysisFramework.Memory
 
         public void SetFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
-            checkCanUpdate();
-
-            ++_statistics.FieldAliasAssigns;
-            setFieldAlias(value, index, alias);
+            throw new NotSupportedException("Obsolete API");
         }
 
         public void SetIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
         {
-            checkCanUpdate();
-
-            ++_statistics.IndexAliasAssigns;
-            setIndexAlias(value, index, alias);
+            throw new NotSupportedException("Obsolete API");
         }
 
         public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
@@ -860,8 +830,7 @@ namespace Weverca.AnalysisFramework.Memory
 
             if (value is AliasValue)
             {
-                ++_statistics.AliasAssigns;
-                assignAlias(targetVar, new[] { value as AliasValue });
+                throw new NotSupportedException("Obsolete API");
             }
             else
             {
@@ -879,9 +848,7 @@ namespace Weverca.AnalysisFramework.Memory
 
         public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
         {
-            checkCanUpdate();
-            ++_statistics.AliasAssigns;
-            assignAlias(targetVar, aliases);
+            throw new NotSupportedException("Obsolete API");
         }
 
         public void Extend(params ISnapshotReadonly[] inputs)
