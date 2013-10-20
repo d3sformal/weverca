@@ -63,7 +63,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(arrayDescriptorBuilder.Indexes);
             ParentVariable = arrayDescriptorBuilder.ParentVariable;
-            UnknownIndex = MemoryIndex.MakeIndexAnyIndex(arrayDescriptorBuilder.UnknownIndex);
+            UnknownIndex = arrayDescriptorBuilder.UnknownIndex;
             ArrayValue = arrayDescriptorBuilder.ArrayValue;
         }
 

@@ -39,7 +39,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The may references.
         /// </value>
-        public ReadOnlyCollection<ObjectValue> MayReferences { get; private set; }
+        public ReadOnlyCollection<MemoryIndex> MayReferences { get; private set; }
 
         /// <summary>
         /// Gets the types.
@@ -69,7 +69,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Fields = new ReadOnlyDictionary<string, MemoryIndex>(objectDescriptorBuilder.Fields);
             MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences);
-            MayReferences = new ReadOnlyCollection<ObjectValue>(objectDescriptorBuilder.MayReferences);
+            MayReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MayReferences);
             Types = new ReadOnlyCollection<TypeValueBase>(objectDescriptorBuilder.Types);
 
             UnknownField = objectDescriptorBuilder.UnknownField;
@@ -86,7 +86,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Fields = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
 
             MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            MayReferences = new ReadOnlyCollection<ObjectValue>(new List<ObjectValue>());
+            MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
 
             ObjectValue = objectValue;
@@ -101,7 +101,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Fields = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
 
             MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            MayReferences = new ReadOnlyCollection<ObjectValue>(new List<ObjectValue>());
+            MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
 
             UnknownField = MemoryIndex.MakeIndexAnyField(parentVariable);
@@ -147,7 +147,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The may references.
         /// </value>
-        public List<ObjectValue> MayReferences { get; private set; }
+        public List<MemoryIndex> MayReferences { get; private set; }
 
         /// <summary>
         /// Gets the types.
@@ -177,7 +177,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Fields = new Dictionary<string, MemoryIndex>(objectDescriptor.Fields);
             MustReferences = new List<MemoryIndex>(objectDescriptor.MustReferences);
-            MayReferences = new List<ObjectValue>(objectDescriptor.MayReferences);
+            MayReferences = new List<MemoryIndex>(objectDescriptor.MayReferences);
             Types = new List<TypeValueBase>(objectDescriptor.Types);
 
             ParentVariable = objectDescriptor.ParentVariable;
@@ -213,7 +213,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="reference">The reference.</param>
         /// <returns></returns>
-        public ObjectDescriptorBuilder addMayReference(ObjectValue reference)
+        public ObjectDescriptorBuilder addMayReference(MemoryIndex reference)
         {
             MayReferences.Add(reference);
             return this;
@@ -235,7 +235,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="reference">The reference.</param>
         /// <returns></returns>
-        public ObjectDescriptorBuilder removeMayReference(ObjectValue reference)
+        public ObjectDescriptorBuilder removeMayReference(MemoryIndex reference)
         {
             MayReferences.Remove(reference);
             return this;

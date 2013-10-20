@@ -143,7 +143,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             IndexSegment otherPath = obj as IndexSegment;
 
-            if (otherPath == null || otherPath.Type != this.Type && otherPath.IsAny != this.IsAny)
+            if (otherPath == null || otherPath.Type != this.Type || otherPath.IsAny != this.IsAny)
             {
                 return false;
             }
@@ -177,6 +177,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 case PathType.Field:
                     return String.Format("->{0}", Name);
+
+                case PathType.Variable:
+                    return String.Format("${0}", Name);
 
                 default:
                     return Name;

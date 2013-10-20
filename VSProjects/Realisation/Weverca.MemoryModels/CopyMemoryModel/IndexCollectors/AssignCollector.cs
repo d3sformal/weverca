@@ -13,11 +13,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class AssignCollector : IndexCollector
     {
-        List<MemoryIndex> mustIndexes = new List<MemoryIndex>();
-        List<MemoryIndex> mayIndexes = new List<MemoryIndex>();
+        HashSet<MemoryIndex> mustIndexes = new HashSet<MemoryIndex>();
+        HashSet<MemoryIndex> mayIndexes = new HashSet<MemoryIndex>();
 
-        List<MemoryIndex> mustIndexesProcess = new List<MemoryIndex>();
-        List<MemoryIndex> mayIndexesProcess = new List<MemoryIndex>();
+        HashSet<MemoryIndex> mustIndexesProcess = new HashSet<MemoryIndex>();
+        HashSet<MemoryIndex> mayIndexesProcess = new HashSet<MemoryIndex>();
 
         public override bool IsDefined { get; protected set; }
 
@@ -61,7 +61,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             //TODO pavel - reseni aliasu
 
-            List<MemoryIndex> indexSwap = mustIndexes;
+            HashSet<MemoryIndex> indexSwap = mustIndexes;
             mustIndexes = mustIndexesProcess;
             mustIndexesProcess = indexSwap;
             mustIndexesProcess.Clear();
@@ -108,6 +108,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private void processField(Snapshot snapshot, PathSegment segment)
         {
+            ReferenceCollector collector = new ReferenceCollector(snapshot, mustIndexes, mayIndexes);
+            collector.Collect();
+
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
                 processField(snapshot, segment, parentIndex, mustIndexesProcess, true);
@@ -119,15 +122,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        private void processField(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex, 
-            List<MemoryIndex> mustTarget, bool isMust)
+        private void processField(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
+            HashSet<MemoryIndex> mustTarget, bool isMust)
         {
-            ObjectValue objectValue;
-            if (!snapshot.TryGetObject(parentIndex, out objectValue))
-            {
-                objectValue = snapshot.CreateObject(parentIndex, isMust);
-            }
-
+            ObjectValue objectValue = snapshot.GetObject(parentIndex);
             ObjectDescriptor descriptor = snapshot.GetDescriptor(objectValue);
 
             if (segment.IsAny)
@@ -144,7 +142,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryIndex field;
                 if (!descriptor.Fields.TryGetValue(segment.Names[0], out field))
                 {
-                    field = snapshot.CreateField(segment.Names[0], descriptor);
+                    field = snapshot.CreateField(segment.Names[0], descriptor, isMust, true);
                 }
                 mustTarget.Add(field);
             }
@@ -155,7 +153,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     MemoryIndex field;
                     if (!descriptor.Fields.TryGetValue(segment.Names[0], out field))
                     {
-                        field = snapshot.CreateField(segment.Names[0], descriptor);
+                        field = snapshot.CreateField(segment.Names[0], descriptor, isMust, true);
                     }
                     mayIndexesProcess.Add(field);
                 }
@@ -169,14 +167,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 processIndex(snapshot, segment, parentIndex, mustIndexesProcess, true);
             }
 
-            foreach (MemoryIndex parentIndex in mayIndexesProcess)
+            foreach (MemoryIndex parentIndex in mayIndexes)
             {
                 processIndex(snapshot, segment, parentIndex, mayIndexesProcess, false);
             }
         }
 
-        private void processIndex(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex, 
-            List<MemoryIndex> mustTarget, bool isMust)
+        private void processIndex(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
+            HashSet<MemoryIndex> mustTarget, bool isMust)
         {
             AssociativeArray arrayValue;
             if (!snapshot.TryGetArray(parentIndex, out arrayValue))
@@ -200,7 +198,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryIndex field;
                 if (!descriptor.Indexes.TryGetValue(segment.Names[0], out field))
                 {
-                    field = snapshot.CreateIndex(segment.Names[0], descriptor);
+                    field = snapshot.CreateIndex(segment.Names[0], descriptor, isMust, true);
                 }
                 mustTarget.Add(field);
             }
@@ -211,12 +209,122 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     MemoryIndex field;
                     if (!descriptor.Indexes.TryGetValue(segment.Names[0], out field))
                     {
-                        field = snapshot.CreateIndex(segment.Names[0], descriptor);
+                        field = snapshot.CreateIndex(segment.Names[0], descriptor, isMust, true);
                     }
                     mayIndexesProcess.Add(field);
                 }
             }
         }
 
+
+        private class ReferenceCollector
+        {
+            HashSet<MemoryIndex> mustReferences = new HashSet<MemoryIndex>();
+            HashSet<MemoryIndex> mayReferences = new HashSet<MemoryIndex>();
+
+            HashSet<MemoryIndex> mustIndexes;
+            HashSet<MemoryIndex> mayIndexes;
+            private Snapshot snapshot;
+
+            public ReferenceCollector(Snapshot snapshot, HashSet<MemoryIndex> mustIndexes, HashSet<MemoryIndex> mayIndexes)
+            {
+                this.snapshot = snapshot;
+                this.mustIndexes = mustIndexes;
+                this.mayIndexes = mayIndexes;
+            }
+
+            private ObjectDescriptor createObject(MemoryIndex parentIndex, bool isMust)
+            {
+                ObjectValue objectValue;
+                if (!snapshot.TryGetObject(parentIndex, out objectValue))
+                {
+                    objectValue = snapshot.CreateObject(parentIndex, true);
+                }
+                return snapshot.GetDescriptor(objectValue);
+            }
+
+            private void addMustReference(MemoryIndex referenceIndex)
+            {
+                bool isInCollections = mustReferences.Contains(referenceIndex) 
+                    || mustIndexes.Contains(referenceIndex);
+                
+                if (!isInCollections)
+                {
+                    mustReferences.Add(referenceIndex);
+
+                    if (mayIndexes.Contains(referenceIndex))
+                    {
+                        mayIndexes.Remove(referenceIndex);
+                    }
+                }
+            }
+
+            private void addMayReference(MemoryIndex referenceIndex)
+            {
+                bool isInCollections = mustReferences.Contains(referenceIndex)
+                    || mustIndexes.Contains(referenceIndex)
+                    || mayReferences.Contains(referenceIndex)
+                    || mayIndexes.Contains(referenceIndex);
+
+                if (!isInCollections)
+                {
+                    mayReferences.Add(referenceIndex);
+                }
+            }
+
+            private void collectReferences()
+            {
+                foreach (MemoryIndex parentIndex in mustIndexes)
+                {
+                    ObjectDescriptor descriptor = createObject(parentIndex, true);
+
+                    foreach (MemoryIndex referenceIndex in descriptor.MustReferences)
+                    {
+                        addMustReference(referenceIndex);
+                    }
+
+                    foreach (MemoryIndex referenceIndex in descriptor.MayReferences)
+                    {
+                        addMayReference(referenceIndex);
+                    }
+                }
+
+                foreach (MemoryIndex parentIndex in mayIndexes)
+                {
+                    ObjectDescriptor descriptor = createObject(parentIndex, false);
+
+                    foreach (MemoryIndex referenceIndex in descriptor.MustReferences)
+                    {
+                        addMayReference(referenceIndex);
+                    }
+
+                    foreach (MemoryIndex referenceIndex in descriptor.MayReferences)
+                    {
+                        addMayReference(referenceIndex);
+                    }
+                }
+            }
+
+            private void moveToIndexess()
+            {
+                foreach (MemoryIndex mustReference in mustReferences)
+                {
+                    mustIndexes.Add(mustReference);
+                }
+
+                foreach (MemoryIndex mayReference in mayReferences)
+                {
+                    mayIndexes.Add(mayReference);
+                }
+            }
+
+            public void Collect()
+            {
+                collectReferences();
+                moveToIndexess();
+            }
+        }
     }
+
+    
 }

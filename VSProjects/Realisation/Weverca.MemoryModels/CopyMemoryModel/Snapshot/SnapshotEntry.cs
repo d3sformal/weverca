@@ -24,6 +24,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             this.path = path;
         }
 
+        public SnapshotEntry(AnalysisFramework.VariableIdentifier variable)
+        {
+            if (variable.IsUnknown)
+            {
+                path = MemoryPath.MakePathAnyVariable();
+            }
+            else
+            {
+                var names = from name in variable.PossibleNames select name.Value;
+                path = MemoryPath.MakePathVariable(names);
+            }
+        }
+
         #region ReadWriteSnapshotEntryBase Implementation
 
         #region Navigation
@@ -65,7 +78,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value)
         {
-            throw new NotImplementedException();
+            Snapshot snapshot = toSnapshot(context);
+
+            AssignCollector collector = new AssignCollector();
+            collector.ProcessPath(snapshot, path);
+
+            AssignWorker worker = new AssignWorker(snapshot);
+            worker.Assign(collector, value);
         }
 
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
