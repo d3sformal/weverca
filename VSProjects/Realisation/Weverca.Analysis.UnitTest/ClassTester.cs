@@ -13,6 +13,7 @@ namespace Weverca.Analysis.UnitTest
     [TestClass]
     public class ClassTester
     {
+
         string ClassExtendTest = @"
            class A
            {
@@ -30,8 +31,8 @@ namespace Weverca.Analysis.UnitTest
             var outset = TestUtils.Analyze(ClassExtendTest);
             var it = (outset.ResolveType(new QualifiedName(new Name("B"))).GetEnumerator());
             it.MoveNext();
-            TypeValue B=it.Current as TypeValue;
-            Debug.Equals(B.Declaration.Fields.Count,2);
+            TypeValue B = it.Current as TypeValue;
+            Debug.Equals(B.Declaration.Fields.Count, 2);
             Debug.Assert(B.Declaration.Fields[new VariableName("x")] != null);
             Debug.Assert(B.Declaration.Fields[new VariableName("y")] != null);
 
@@ -39,9 +40,20 @@ namespace Weverca.Analysis.UnitTest
             it.MoveNext();
             TypeValue A = it.Current as TypeValue;
             Debug.Equals(A.Declaration.Fields.Count, 1);
-            Debug.Assert(A.Declaration.Fields[new VariableName("x")]!=null);
+            Debug.Assert(A.Declaration.Fields[new VariableName("x")] != null);
 
         }
+        
+        //class having abstract class 
+
+        //class not implementing interface method
+
+        //enxtending final class
+
+        //extending final method
+
+
+        //interface tests
 
         string InterfaceContainingFieldTest = @"
            interface A
@@ -66,7 +78,10 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceContainingConstant()
         {
             var outset = TestUtils.Analyze(InterfaceContainingContantTest);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS));
+            if (TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS) == true)
+            {
+                Debug.Fail();
+            }
         }
 
         string InterfaceContainingFinalMethodTest = @"
@@ -125,7 +140,31 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotInheritFunction()
         {
             var outset = TestUtils.Analyze(InterfaceCannotInheritFunctionTest);
+            if (TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION) == true) {
+                Debug.Fail();
+            }
+        }
+
+        string InterfaceCannotInheritFunctionTest2 = @"
+           interface a
+           {
+                function x();
+           }
+           interface b
+           {
+                function x($a);
+           }
+
+           interface c extends a,b
+           {
+           }
+        ";
+        [TestMethod]
+        public void InterfaceCannotInheritFunction2()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotInheritFunctionTest2);
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION));
+            
         }
 
         string InterfaceInheritTest = @"
@@ -163,6 +202,50 @@ namespace Weverca.Analysis.UnitTest
             var typeValue = enumerator.Current;
             Debug.Assert((typeValue as TypeValue).Declaration.SourceCodeMethods.Count==4);
         }
+
+        string InterfaceMethodCannotHaveImplementationTest = @"
+           interface a
+           {
+                function x(){}
+           }
+           
+        ";
+        [TestMethod]
+        public void InterfaceMethodCannotHaveImplementation()
+        {
+            var outset = TestUtils.Analyze(InterfaceMethodCannotHaveImplementationTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_HAVE_IMPLEMENTATION));
+
+        }
+
+        string InterfaceCannotInheritMehodTrueTest = @"
+        interface a extends ArrayAccess
+        {
+        function offsetGet(&$a);
+        }";
+
+        [TestMethod]
+        public void InterfaceCannotInheritMehodTrue()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotInheritMehodTrueTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION));
+
+        }
+
+        string InterfaceCannotInheritMehodFalseTest = @"
+        interface a extends ArrayAccess
+        {
+        function offsetGet($a);
+        }";
+
+        [TestMethod]
+        public void InterfaceCannotInheritMehodFalse()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotInheritMehodFalseTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION)==false);
+
+        }
+    
 
     }
 }

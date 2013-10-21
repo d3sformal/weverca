@@ -23,14 +23,14 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             };
 
-            var declaration = new ClassDecl(new QualifiedName(new Name("NativeType")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, false);
+            var declaration = new ClassDecl(new QualifiedName(new Name("NativeType")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, false,false);
             return declaration;
         }
 
 
         private static MethodInfo method(string name, NativeAnalyzerMethod analyzer)
         {
-            return new MethodInfo(new Name(name),Visibility.PUBLIC, analyzer);
+            return new MethodInfo(new Name(name),Visibility.PUBLIC, analyzer,new List<MethodArgument>());
         }
 
         private static void _method___construct(FlowController flow)

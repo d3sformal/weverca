@@ -188,7 +188,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             // NativeTypeDecl result=new NativeTypeDecl();
             Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
 
-            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
+            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface,declaration.Type.IsAbstract);
         }
 
         #endregion

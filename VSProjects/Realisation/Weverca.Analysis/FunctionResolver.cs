@@ -182,7 +182,8 @@ namespace Weverca.Analysis
             }
         }
 
-        //TODO add warnings
+        //TODO abstract stuff
+        //TODO if implements interface
         public override void DeclareGlobal(TypeDecl declaration)
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
@@ -210,13 +211,20 @@ namespace Weverca.Analysis
                         if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
                         {
                             ClassDecl baseClass = objectAnalyzer.GetClass(declaration.BaseClassName.Value.QualifiedName);
-                            if (baseClass.IsFinal)
+                            if (baseClass.IsInterface == true)
+                            {
+                                setWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                            }
+                            else if (baseClass.IsFinal)
                             {
                                 setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
                             }
-
-                            ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
-                            OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                            else
+                            {
+                                ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
+                                checkClass(newType);
+                                OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                            }
                         }
                         else
                         {
@@ -231,12 +239,21 @@ namespace Weverca.Analysis
                                 {
                                     if (value is TypeValue)
                                     {
-                                        if ((value as TypeValue).Declaration.IsFinal)
+                                        if ((value as TypeValue).Declaration.IsInterface)
+                                        {
+                                            setWarning("Class " + (value as TypeValue).Declaration.QualifiedName.Name + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                                        }
+                                        else if ((value as TypeValue).Declaration.IsFinal)
                                         {
                                             setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
                                         }
                                         ClassDecl newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
+                                        checkClass(newType);
                                         OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                                    }
+                                    else
+                                    {
+                                        setWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
                                     }
                                 }
                             }
@@ -244,15 +261,24 @@ namespace Weverca.Analysis
                     }
                     else
                     {
+                        checkClass(type);
                         OutSet.DeclareGlobal(OutSet.CreateType(type));
                     }
                 }
             }
-        }      
+        }
 
         #endregion
 
         #region Private helpers
+
+        private void checkClass(ClassDecl type)
+        { 
+            //TODO
+            //if one method is abstract whole class has to be abstract
+            //check implemented interfaces
+            //abstract method cannot have body
+        }
 
         private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDecl type)
         {
@@ -261,9 +287,9 @@ namespace Weverca.Analysis
             List<MethodInfo> modeledMethods = new List<MethodInfo>();
             modeledMethods.AddRange(type.ModeledMethods);
 
-            if (type.Fields.Count != 0 || type.Constants.Count != 0)
+            if (type.Fields.Count != 0)
             {
-                setWarning("Interface cannot contain fields or constants", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
+                setWarning("Interface cannot contain fields", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
             }
 
             foreach (var method in type.SourceCodeMethods)
@@ -274,7 +300,11 @@ namespace Weverca.Analysis
                 }
                 if (method.Modifiers.HasFlag(PhpMemberAttributes.Final))
                 {
-                    setWarning("Interface method cannot be final",method, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_BE_FINAL);
+                    setWarning("Interface method cannot be final", method, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_BE_FINAL);
+                }
+                if (method.Body != null)
+                {
+                    setWarning("Interface method cannot have body", method, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_HAVE_IMPLEMENTATION);
                 }
             }
 
@@ -294,7 +324,14 @@ namespace Weverca.Analysis
                 {
                     foreach (var interfaceValue in OutSet.ResolveType(Interface.QualifiedName))
                     {
-                        interfaces.Add((interfaceValue as TypeValue).Declaration);
+                        if (interfaceValue is TypeValue)
+                        {
+                            interfaces.Add((interfaceValue as TypeValue).Declaration);
+                        }
+                        else
+                        {
+                            setWarning("Interface " + Interface.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                        }
                     }
                 }
 
@@ -308,11 +345,29 @@ namespace Weverca.Analysis
                         }
                         else
                         {
+                            //interface cannot have implement
                             foreach (var method in value.SourceCodeMethods)
                             {
                                 if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
                                 {
-                                    setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                    //if arguments doesnt match
+                                    if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    {
+                                        var match = modeledMethods.Where(a => a.Name == method.Name).First();
+                                        if (!AreMethodsCompatible(match, method))
+                                        {
+                                            setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        }
+                                    }
+                                    else if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    {
+                                        var match = sourceCodeMethods.Where(a => a.Name == method.Name).First();
+                                        if (!AreMethodsCompatible(match, method))
+                                        {
+                                            setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        }
+                                    }
+
                                 }
                                 else
                                 {
@@ -323,7 +378,24 @@ namespace Weverca.Analysis
                             {
                                 if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
                                 {
-                                    setWarning("Can't inherit abstract function " + method.Name,AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                    //if arguments doesnt match
+                                    if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    {
+                                        var match = modeledMethods.Where(a => a.Name == method.Name).First();
+                                        if (!AreMethodsCompatible(match, method))
+                                        {
+                                            setWarning("Can't inherit abstract function " + method.Name, declaration, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        }
+                                    }
+                                    else if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    {
+                                        var match = sourceCodeMethods.Where(a => a.Name == method.Name).First();
+                                        if (!AreMethodsCompatible(match, method))
+                                        {
+                                            setWarning("Can't inherit abstract function " + method.Name, match, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        }
+                                    }
+
                                 }
                                 else
                                 {
@@ -334,14 +406,80 @@ namespace Weverca.Analysis
                     }
                 }
             }
-            ClassDecl t = new ClassDecl(type.QualifiedName, modeledMethods, sourceCodeMethods, new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, true);
+            ClassDecl t = new ClassDecl(type.QualifiedName, modeledMethods, sourceCodeMethods, new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, true, false);
             OutSet.DeclareGlobal(OutSet.CreateType(t));
+        }
+
+        private bool AreMethodsCompatible(MethodDecl a, MethodDecl b)
+        {
+            if (a.Signature.FormalParams.Count == b.Signature.FormalParams.Count)
+            {
+                for (int i = 0; i < a.Signature.FormalParams.Count; i++)
+                {
+                    if (a.Signature.FormalParams[i].PassedByRef != b.Signature.FormalParams[i].PassedByRef)
+                    {
+                        return false;
+                    }
+                    if (a.Signature.FormalParams[i].InitValue == null ^ a.Signature.FormalParams[i].InitValue == null)
+                    {
+                        return false;
+
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool AreMethodsCompatible(MethodDecl a, MethodInfo b)
+        {
+            return AreMethodsCompatible(b, a);
+        }
+        private bool AreMethodsCompatible(MethodInfo a, MethodDecl b)
+        {
+            if (a.Arguments.Count == b.Signature.FormalParams.Count)
+            {
+                for (int i = 0; i < a.Arguments.Count; i++)
+                {
+                    if (a.Arguments[i].ByReference != b.Signature.FormalParams[i].PassedByRef)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private bool AreMethodsCompatible(MethodInfo a, MethodInfo b)
+        {
+            if (a.Arguments.Count == b.Arguments.Count)
+            {
+                for (int i = 0; i < a.Arguments.Count; i++)
+                {
+                    if (a.Arguments[i].ByReference != b.Arguments[i].ByReference)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass, ClassDecl currentClass)
         {
             List<MethodInfo> modeledMethods = new List<MethodInfo>(baseClass.ModeledMethods);
-            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>(currentClass.SourceCodeMethods);
+            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>(baseClass.SourceCodeMethods);
             Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>(currentClass.Fields);
             Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>(currentClass.Constants);
 
@@ -349,9 +487,12 @@ namespace Weverca.Analysis
             {
                 if (!fields.ContainsKey(field.Key))
                 {
-                    fields.Add(field.Key, field.Value);
+                    if (field.Value.Visibility != Visibility.PRIVATE)
+                    {
+                        fields.Add(field.Key, field.Value);
+                    }
                 }
-                else 
+                else
                 {
                     if (fields[field.Key].IsStatic != field.Value.IsStatic)
                     {
@@ -359,7 +500,7 @@ namespace Weverca.Analysis
                         {
                             setWarning("Cannot redeclare static " + fields[field.Key].Name + " with non static " + fields[field.Key].Name, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
                         }
-                        else 
+                        else
                         {
                             setWarning("Cannot redeclare non static " + fields[field.Key].Name + " with static " + fields[field.Key].Name, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
 
@@ -375,8 +516,8 @@ namespace Weverca.Analysis
                     constants.Add(constant.Key, constant.Value);
                 }
             }
-
-            foreach (var method in baseClass.SourceCodeMethods)
+            //TODO extending methods warnings
+            foreach (var method in currentClass.SourceCodeMethods)
             {
                 if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() == 0)
                 {
@@ -388,25 +529,33 @@ namespace Weverca.Analysis
                     {
                         if (modeledMethods.Where(a => a.Name == method.Name).First().IsFinal)
                         {
-                            setWarning("Cannot redeclare final method "+method.Name,method,AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
+                            setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                         }
+                        //TODO
+                        //static non static
+                        //arguments has to match
+                        //cannot be abstract
                     }
                 }
-                else 
+                else
                 {
-                    if(sourceCodeMethods.Where(a => a.Name == method.Name).First().Modifiers.HasFlag(PhpMemberAttributes.Final))
+                    if (sourceCodeMethods.Where(a => a.Name == method.Name).First().Modifiers.HasFlag(PhpMemberAttributes.Final))
                     {
-                        setWarning("Cannot redeclare final method "+method.Name,method,AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
+                        setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                     }
+                    //TODO
+                    //static non static
+                    //arguments has to match
+                    //cannot be abstract
                 }
             }
 
-            return new ClassDecl(currentClass.QualifiedName, modeledMethods, sourceCodeMethods, constants, fields, baseClass.QualifiedName, currentClass.IsFinal, currentClass.IsInterface);
+            return new ClassDecl(currentClass.QualifiedName, modeledMethods, sourceCodeMethods, constants, fields, baseClass.QualifiedName, currentClass.IsFinal, currentClass.IsInterface, currentClass.IsAbstract);
         }
 
         private ClassDecl convertToClassDecl(TypeDecl declaration)
         {
-            //TODO: traits ako to funguje
+            
             List<MethodInfo> modeledMethods = new List<MethodInfo>();
             List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
             Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>();
@@ -435,7 +584,7 @@ namespace Weverca.Analysis
                         //multiple declaration of fields
                         if (fields.ContainsKey(new VariableName(field.Name.Value)))
                         {
-                            setWarning("Cannot redeclare field " + field.Name,member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
+                            setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
                         }
                         else
                         {
@@ -455,8 +604,8 @@ namespace Weverca.Analysis
                         else
                         {
                             //in php all object constatns are public
-                            Visibility visbility=Visibility.PUBLIC;         
-                            constants.Add(constant.Name, new ConstantInfo(constant.Name,visbility,constant.Initializer));
+                            Visibility visbility = Visibility.PUBLIC;
+                            constants.Add(constant.Name, new ConstantInfo(constant.Name, visbility, constant.Initializer));
                         }
                     }
                 }
@@ -468,7 +617,7 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        setWarning("Cannot redeclare constant " +(member as MethodDecl).Name,member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                        setWarning("Cannot redeclare constant " + (member as MethodDecl).Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
                     }
                 }
                 else
@@ -482,7 +631,7 @@ namespace Weverca.Analysis
             // NativeTypeDecl result=new NativeTypeDecl();
             Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
 
-            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface);
+            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface, declaration.Type.IsAbstract);
         }
 
         private void applyHints(FlowOutputSet outSet)
@@ -537,7 +686,7 @@ namespace Weverca.Analysis
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
 
-        private void setWarning(string message,LangElement element, AnalysisWarningCause cause)
+        private void setWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, element, cause));
         }

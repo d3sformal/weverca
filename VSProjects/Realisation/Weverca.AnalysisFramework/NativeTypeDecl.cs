@@ -52,6 +52,20 @@ namespace Weverca.AnalysisFramework
         }
     }
 
+    public class MethodArgument
+    {
+        public readonly bool ByReference;
+        public readonly VariableName Name;
+        public readonly bool Optional;
+
+        public MethodArgument(VariableName name, bool byRefence, bool optional)
+        {
+            Name = name;
+            ByReference = byRefence;
+            Optional= optional;
+        }
+    }
+
     /// <summary>
     /// Represent info stored for native method
     /// </summary>
@@ -69,18 +83,23 @@ namespace Weverca.AnalysisFramework
 
         public readonly Visibility Visibility;
 
+        public readonly ReadOnlyCollection<MethodArgument> Arguments;
+
         public readonly bool IsStatic;
 
         public readonly bool IsFinal;
 
+        public readonly bool IsAbstract;
 
-        public MethodInfo(Name name,  Visibility visibility,NativeAnalyzerMethod method, bool isFinal = false, bool isStatic = false)
+        public MethodInfo(Name name, Visibility visibility, NativeAnalyzerMethod method, List<MethodArgument> args, bool isFinal = false, bool isStatic = false, bool isAbstract = false)
         {
             Name = name;
             Method = method;
             IsFinal = isFinal;
             isStatic = IsStatic;
             Visibility = visibility;
+            Arguments=new ReadOnlyCollection<MethodArgument>(args);
+            IsAbstract = isAbstract;
         }
     }
 
@@ -133,7 +152,9 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsInterface;
 
-        public ClassDecl(QualifiedName typeName, IEnumerable<MethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface)
+        public readonly bool IsAbstract;
+
+        public ClassDecl(QualifiedName typeName, IEnumerable<MethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface,bool isAbstract)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
@@ -143,6 +164,7 @@ namespace Weverca.AnalysisFramework
             Fields = new ReadOnlyDictionary<VariableName, FieldInfo>(fields);
             IsFinal = isFinal;
             IsInterface = isInteface;
+            IsAbstract = isAbstract;
         }
     }
 }

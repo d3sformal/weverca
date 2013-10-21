@@ -16,6 +16,8 @@ namespace Weverca.Analysis
 
         public bool IsFinal;
 
+        public bool IsAbstract=false;
+
         public NativeMethod()
         {
         }
@@ -27,6 +29,17 @@ namespace Weverca.Analysis
             ReturnType = returnType;
             Analyzer = null;
         }
+        public List<MethodArgument> ConvertArguments()
+        {
+            List<MethodArgument> res = new List<MethodArgument>();
+            foreach (var arg in Arguments)
+            { 
+                res.Add(new MethodArgument(new VariableName(),arg.ByReference,arg.Optional));
+            }
+
+            return res;
+        }
+
     }
 
     public class MutableNativeTypeDecl
@@ -54,6 +67,8 @@ namespace Weverca.Analysis
 
         public Visibility visibility;
 
+        public bool IsAbstract=false;
+
         #endregion
 
         #region convert to mutable
@@ -77,13 +92,13 @@ namespace Weverca.Analysis
                     if (method.Name.Name.Value.ToLower() == "__construct")
                     {
                         nativeMethodsInfo.Add(new MethodInfo(method.Name.Name, visibility,
-                            helper.Construct, method.IsFinal, method.IsStatic));
+                            helper.Construct, method.ConvertArguments(), method.IsFinal, method.IsStatic, method.IsAbstract));
                         containsConstructor = true;
                     }
                     else
                     {
                         nativeMethodsInfo.Add(new MethodInfo(method.Name.Name, visibility,
-                            helper.Analyze, method.IsFinal, method.IsStatic));
+                            helper.Analyze, method.ConvertArguments(), method.IsFinal, method.IsStatic,method.IsAbstract));
                         allreadyDeclaredMethods.Add(method.Name);
                     }
                 }
@@ -98,15 +113,15 @@ namespace Weverca.Analysis
                     var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
                     if (method.Name.Name.Value.ToLower() == "__construct" && containsConstructor == false)
                     {
-                        var methodInfo = new MethodInfo(method.Name.Name, visibility, helper.Construct,
-                            method.IsFinal, method.IsStatic);
+                        var methodInfo = new MethodInfo(method.Name.Name, visibility, helper.Construct,method.ConvertArguments(),
+                            method.IsFinal, method.IsStatic,method.IsAbstract);
                         nativeMethodsInfo.Add(methodInfo);
                         containsConstructor = true;
                     }
                     else
                     {
                         var newMethod = new MethodInfo(method.Name.Name, visibility,
-                            helper.Analyze, method.IsFinal, method.IsStatic);
+                            helper.Analyze, method.ConvertArguments(), method.IsFinal, method.IsStatic, method.IsAbstract);
                         if (!allreadyDeclaredMethods.Contains(method.Name))
                         {
                             nativeMethodsInfo.Add(newMethod);
@@ -137,7 +152,7 @@ namespace Weverca.Analysis
             /* if (containsConstructor == false)
                  Console.WriteLine(QualifiedName);
             */
-           return new ClassDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace);     
+           return new ClassDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace,IsAbstract);     
         }
 
         #endregion

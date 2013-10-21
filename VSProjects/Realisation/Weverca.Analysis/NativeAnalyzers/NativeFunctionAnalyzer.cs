@@ -27,7 +27,7 @@ namespace Weverca.Analysis
         public bool ByReference { get; private set; }
         public bool Optional { get; private set; }
         public bool Dots { get; private set; }
-        public NativeFunctionArgument(string type, bool optional, bool byReference, bool dots)
+        public NativeFunctionArgument( string type, bool optional, bool byReference, bool dots)
         {
             this.Type = type;
             this.ByReference = byReference;
