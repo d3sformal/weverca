@@ -52,6 +52,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             applyIndex(value);
         }
 
+        public override void VisitAnyArrayValue(AnyArrayValue value)
+        {
+
+
+            throw new NotImplementedException("How can be any array value indexing implemented in memory model? ");
+        }
+
         private void applyIndex(AssociativeArray array)
         {
             _indexStorages.AddRange(_context.IndexStorages(array,_index));

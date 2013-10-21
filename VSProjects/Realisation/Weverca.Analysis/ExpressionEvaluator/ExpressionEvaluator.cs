@@ -977,17 +977,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
         {
-            throw new NotImplementedException();
+            var possibleNames = new List<string>();
+            foreach (var possibleMember in memberRepresentation.PossibleValues)
+            {
+                var value = possibleMember as ScalarValue;
+                if (value == null)
+                    continue;
+
+                possibleNames.Add(value.RawValue.ToString());
+            }
+            return new MemberIdentifier(possibleNames);
         }
 
         public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
         {
-            throw new NotImplementedException();
+            return objectValue.ReadField(OutSnapshot, field);
         }
 
         public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            return indexedValue.ReadIndex(OutSnapshot, index);
         }
 
         public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
@@ -997,7 +1006,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry)
         {
-            throw new NotImplementedException();
+            target.WriteMemory(OutSnapshot, entry);
         }
 
         public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
@@ -1012,7 +1021,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
         {
-            throw new NotImplementedException();
+            return OutSet.GetVariable(variable);
         }
     }
 }
