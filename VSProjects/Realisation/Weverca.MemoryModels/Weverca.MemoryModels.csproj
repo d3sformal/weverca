@@ -66,16 +66,19 @@
     <Compile Include="MemoryModel\ValueVisitors\RemoveAliasVisitor.cs" />
     <Compile Include="MemoryModel\Workers\MergeWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VirtualReferenceModel\IndexStorageVisitor.cs" />
-    <Compile Include="VirtualReferenceModel\ReferenceAlias.cs" />
+    <Compile Include="VirtualReferenceModel\Containers\DataContainer.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotEntries\IndexStorageVisitor.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
-    <Compile Include="VirtualReferenceModel\SnapshotMemoryEntry.cs" />
-    <Compile Include="VirtualReferenceModel\SnapshotStorageEntry.cs" />
-    <Compile Include="VirtualReferenceModel\ReferenceAliasEntry.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotMemoryEntry.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotStorageEntry.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\ReferenceAliasEntry.cs" />
     <Compile Include="VirtualReferenceModel\TypeMethodResolver.cs" />
-    <Compile Include="VirtualReferenceModel\VariableInfo.cs" />
-    <Compile Include="VirtualReferenceModel\FieldStorageVisitor.cs" />
-    <Compile Include="VirtualReferenceModel\VirtualReference.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\VariableInfo.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotEntries\FieldStorageVisitor.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\VariableKey.cs" />
+    <Compile Include="VirtualReferenceModel\Containers\VariableContainer.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\VirtualReference.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

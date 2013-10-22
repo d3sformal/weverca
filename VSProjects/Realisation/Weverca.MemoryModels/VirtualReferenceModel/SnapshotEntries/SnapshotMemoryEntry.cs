@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.MemoryModels.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     class SnapshotMemoryEntry:ReadWriteSnapshotEntryBase
     {

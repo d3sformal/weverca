@@ -6,17 +6,19 @@ using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.MemoryModels.VirtualReferenceModel
+using Weverca.MemoryModels.VirtualReferenceModel.Memory;
+
+namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     class IndexStorageVisitor : AbstractValueVisitor
     {
         private readonly Snapshot _context;
-        private readonly List<VariableInfo> _indexStorages = new List<VariableInfo>();
+        private readonly List<VariableKey> _indexStorages = new List<VariableKey>();
         private readonly MemberIdentifier _index;
 
         private AssociativeArray implicitArray;
 
-        internal readonly VariableInfo[] Storages;
+        internal readonly VariableKey[] Storages;
 
 
         internal IndexStorageVisitor(ReadWriteSnapshotEntryBase indexedEntry,Snapshot context,MemberIdentifier index)
@@ -54,13 +56,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         public override void VisitAnyArrayValue(AnyArrayValue value)
         {
-
-
-            throw new NotImplementedException("How can be any array value indexing implemented in memory model? ");
+            throw new NotImplementedException("How can be AnyArrayValue indexing implemented in memory model? ");
         }
 
         private void applyIndex(AssociativeArray array)
-        {
+        {            
             _indexStorages.AddRange(_context.IndexStorages(array,_index));
         }
         

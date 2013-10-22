@@ -7,24 +7,24 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.MemoryModels.VirtualReferenceModel
+using Weverca.MemoryModels.VirtualReferenceModel.Memory;
+
+namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     class SnapshotStorageEntry : ReadWriteSnapshotEntryBase
     {
-        private readonly VariableInfo[] _storages;
+        private readonly VariableKey[] _storages;
 
-        internal SnapshotStorageEntry(params VariableInfo[] storage)
+        internal SnapshotStorageEntry(params VariableKey[] storage)
         {
             _storages = storage;
         }
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value)
         {
-
             C(context).Write(_storages, value);
         }
-
-
+        
         protected override bool isDefined(SnapshotBase context)
         {
             foreach (var storage in _storages)
@@ -32,7 +32,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 if (C(context).IsDefined(storage))
                     return true;
             }
-            return _storages.Length > 0;
+            return false;
         }
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)

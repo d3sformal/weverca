@@ -5,24 +5,26 @@ using System.Text;
 
 using PHP.Core;
 
-namespace Weverca.MemoryModels.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
     class VariableInfo
     {
         internal List<VirtualReference> References { get; private set; }
-        internal readonly bool IsGlobal;
         internal readonly VariableName Name;
+        public VariableKind Kind;
 
-        public VariableInfo(VariableName name, bool isGlobal)
+        public bool IsGlobal { get { return Kind == VariableKind.Global; } }
+
+        public VariableInfo(VariableName name, VariableKind kind)
         {
             References = new List<VirtualReference>();
-            IsGlobal = isGlobal;
+            Kind = kind;
             Name = name;
         }
 
         internal VariableInfo Clone()
         {
-            var result = new VariableInfo(Name,IsGlobal);
+            var result = new VariableInfo(Name,Kind);
 
             result.References.AddRange(References);
             return result;
@@ -54,6 +56,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var hasDifferentReferences = References.Except(o.References).Any();
             return !hasDifferentReferences;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}|{1}", Name, Kind);
         }
     }
 }

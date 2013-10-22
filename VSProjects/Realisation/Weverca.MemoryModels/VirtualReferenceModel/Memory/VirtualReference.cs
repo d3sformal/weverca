@@ -5,7 +5,7 @@ using System.Text;
 
 using PHP.Core;
 
-namespace Weverca.MemoryModels.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
     /// <summary>
     /// Hash and equals according to originatedVariable - needed for merging two branches with same variable names
@@ -17,25 +17,25 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// </summary>
         internal readonly VariableName OriginatedVariable;
 
-        internal readonly bool IsGlobal;
+        internal readonly VariableKind Kind;
         /// <summary>
         /// Create virtual reference according to originatedVariable
         /// </summary>
         /// <param name="originatedVariable">Variable determining reference target</param>
-        internal VirtualReference(VariableName originatedVariable,bool isGlobal)
+        internal VirtualReference(VariableName originatedVariable, VariableKind kind)
         {
             OriginatedVariable = originatedVariable;
-            IsGlobal = isGlobal;
+            Kind = kind;
         }
 
         internal VirtualReference(VariableInfo info)
-            :this(info.Name,info.IsGlobal)
+            : this(info.Name, info.Kind)
         {
         }
 
         public override int GetHashCode()
         {
-            return OriginatedVariable.GetHashCode();
+            return OriginatedVariable.GetHashCode() + (int)Kind;
         }
 
 
@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
 
 
-            return o.OriginatedVariable == this.OriginatedVariable && o.IsGlobal == this.IsGlobal;
+            return o.OriginatedVariable == this.OriginatedVariable && o.Kind == this.Kind;
         }
     }
 }

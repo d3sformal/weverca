@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.MemoryModels.VirtualReferenceModel
+namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
     class ReferenceAliasEntry : AliasEntry
     {
-        internal readonly VariableInfo Variable;
+        internal readonly VariableKey Key;
 
-        public ReferenceAliasEntry(VariableInfo variable)
+        public ReferenceAliasEntry(VariableKey key)
         {
-            Variable = variable.Clone();
+            Key = key;
         }
     }
 }

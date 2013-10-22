@@ -67,6 +67,11 @@ namespace Weverca.AnalysisFramework.Memory
             }
         }
 
+        public MemberIdentifier(params string[] possibleNames)
+            : this((IEnumerable<string>)possibleNames)
+        {
+        }
+
         /// <summary>
         /// Creates member identifier for given names.
         /// Names has to be distinct.

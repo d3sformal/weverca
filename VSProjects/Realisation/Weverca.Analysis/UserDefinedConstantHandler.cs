@@ -40,62 +40,34 @@ namespace Weverca.Analysis
         public static bool TryGetConstant(FlowOutputSet outset, QualifiedName name,
             out MemoryEntry entry, out bool isNotDefined)
         {
+            var context=outset.Snapshot;
             var values = new HashSet<Value>();
-            outset.FetchFromGlobal(constantVariable);
-            var constantArrays = outset.ReadValue(constantVariable);
-            Debug.Assert(constantArrays.Count > 0, "Internal array of constants is always defined");
-
-            var isAlwaysDefined = true;
-            isNotDefined = true;
-
-            foreach (var value in constantArrays.PossibleValues)
-            {
-                var constantArray = value as AssociativeArray;
-                if (constantArray != null)
-                {
-                    MemoryEntry arrayEntry;
-
-                    // Case-insensitive constants
-                    var index = outset.CreateIndex("." + name.Name.LowercaseValue);
-                    if (outset.TryGetIndex(constantArray, index, out arrayEntry))
-                    {
-                        if (isNotDefined)
-                        {
-                            isNotDefined = false;
-                        }
-
-                        values.UnionWith(arrayEntry.PossibleValues);
-                    }
-                    else
-                    {
-                        // Case-sensitive constant
-                        index = outset.CreateIndex(name.Name.Value);
-                        if (outset.TryGetIndex(constantArray, index, out arrayEntry))
-                        {
-                            if (isNotDefined)
-                            {
-                                isNotDefined = false;
-                            }
-
-                            values.UnionWith(arrayEntry.PossibleValues);
-                        }
-                        else
-                        {
-                            if (isAlwaysDefined)
-                            {
-                                isAlwaysDefined = false;
-                            }
-
-                            // Undefined constant is interpreted as a string
-                            var stringValue = outset.CreateString(name.Name.Value);
-                            values.Add(stringValue);
-                        }
-                    }
-                }
+            
+            var constantArrays = outset.ReadControlVariable(constantVariable);
+            Debug.Assert(constantArrays.IsDefined(context), "Internal array of constants is always defined");
+                      
+            var caseInsensitiveConstant=constantArrays.ReadIndex(context,new MemberIdentifier("." + name.Name.LowercaseValue));
+            if(caseInsensitiveConstant.IsDefined(context)){
+                entry=caseInsensitiveConstant.ReadMemory(context);
+                isNotDefined=false;
+                return true;
             }
 
-            entry = new MemoryEntry(values);
-            return isAlwaysDefined;
+            //else there can be case sensitive constant
+
+            var caseSensitiveConstant=constantArrays.ReadIndex(context,new MemberIdentifier(name.Name.Value));
+            if(caseSensitiveConstant.IsDefined(context)){
+                entry=caseSensitiveConstant.ReadMemory(context);
+                isNotDefined=false;
+                return true;
+            }
+            
+           // Undefined constant is interpreted as a string
+            isNotDefined = true;
+            var stringValue = outset.CreateString(name.Name.Value);
+            entry=new MemoryEntry(stringValue);
+            
+            return false;
         }
 
         /// <summary>
@@ -108,15 +80,15 @@ namespace Weverca.Analysis
         public static void insertConstant(FlowOutputSet outset, QualifiedName name,
             MemoryEntry value, bool caseInsensitive = false)
         {
-             ReadWriteSnapshotEntryBase constant;
-            var constantArrays= outset.ReadControlVariable(constantVariable);
+            ReadWriteSnapshotEntryBase constant;
+            var constantArrays = outset.ReadControlVariable(constantVariable);
             if (caseInsensitive == true)
             {
-               constant=constantArrays.ReadField(outset.Snapshot, new VariableIdentifier(new VariableName("." + name.Name.LowercaseValue)));
+                constant = constantArrays.ReadIndex(outset.Snapshot, new MemberIdentifier("." + name.Name.LowercaseValue));
             }
             else
             {
-                constant = constantArrays.ReadField(outset.Snapshot, new VariableIdentifier(new VariableName(name.Name.Value)));
+                constant = constantArrays.ReadIndex(outset.Snapshot, new MemberIdentifier(name.Name.Value));
             }
             if (!constant.IsDefined(outset.Snapshot))
             {
@@ -124,6 +96,6 @@ namespace Weverca.Analysis
             }
 
         }
-        
+
     }
 }

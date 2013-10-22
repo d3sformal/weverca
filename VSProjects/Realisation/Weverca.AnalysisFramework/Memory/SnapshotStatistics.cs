@@ -5,68 +5,96 @@ using System.Text;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+    public enum Statistic
+    {
+        CreatedIntValues,
+        CreatedBooleanValues,
+        CreatedFloatValues,
+        CreatedObjectValues,
+        CreatedArrayValues,
+        CreatedAliasValues,
+        AliasAssigns,
+        MemoryEntryAssigns,
+        SnapshotExtendings,
+        CallLevelMerges,
+        ValueReads,
+        AsCallExtendings,
+        CreatedStringValues,
+        SimpleHashSearches,
+        SimpleHashAssigns,
+        CreatedFunctionValues,
+        MemoryEntryMerges,
+        MemoryEntryComparisons,
+        MemoryEntryCreation,
+        IndexAssigns,
+        FieldAssigns,
+        IndexReads,
+        FieldReads,
+        IndexAliasAssigns,
+        FieldAliasAssigns,
+        GlobalVariableFetches,
+        CreatedLongValues,
+        CreatedIndexes,
+        DeclaredFunctions,
+        FunctionResolvings,
+        DeclaredTypes,
+        TypeResolvings,
+        MethodResolvings,
+        CreatedIntIntervalValues,
+        CreatedLongIntervalValues,
+        CreatedFloatIntervalValues,
+        VariableInfoSettings,
+        ValueInfoSettings,
+        ValueInfoReads,
+        VariableInfoReads,
+        ObjectIterations,
+        ArrayIterations,
+        CreatedSourceTypeValues,
+        CreatedNativeTypeValues,
+        VariableExistSearches,
+        ObjectFieldExistsSearches,
+        ArrayIndexExistsSearches,
+        ValueReadAttempts,
+        FieldReadAttempts,
+        IndexReadAttempts,
+        ObjectTypeSearches,
+
+        Last = ObjectTypeSearches
+    }
+
     /// <summary>
-    /// TODO Convert as Enum indexed array based storage
+    /// Storage used for snapshot statistic measuring
     /// </summary>
     public class SnapshotStatistics
     {
-        public int CreatedIntValues;
-        public int CreatedBooleanValues;
-        public int CreatedFloatValues;
-        public int CreatedObjectValues;
-        public int CreatedArrayValues;
-        public int CreatedAliasValues;
-        public int AliasAssigns;
-        public int MemoryEntryAssigns;
-        public int SnapshotExtendings;
-        public int CallLevelMerges;
-        public int ValueReads;
-        public int AsCallExtendings;
-        public int CreatedStringValues;
-        public int SimpleHashSearches;
-        public int SimpleHashAssigns;
-        public int CreatedFunctionValues;
-        public int MemoryEntryMerges;
-        public int MemoryEntryComparisons;
-        public int MemoryEntryCreation;
-        public int IndexAssigns;
-        public int FieldAssigns;
-        public int IndexReads;
-        public int FieldReads;
-        public int IndexAliasAssigns;
-        public int FieldAliasAssigns;
-        public int GlobalVariableFetches;
-        public int CreatedLongValues;
-        public int CreatedIndexes;
-        public int DeclaredFunctions;
-        public int FunctionResolvings;
-        public int DeclaredTypes;
-        public int TypeResolvings;
-        public int MethodResolvings;
-        public int CreatedIntIntervalValues;
-        public int CreatedLongIntervalValues;
-        public int CreatedFloatIntervalValues;
-        public int VariableInfoSettings;
-        public int ValueInfoSettings;
-        public int ValueInfoReads;
-        public int VariableInfoReads;
-        public int ObjectIterations;
-        public int ArrayIterations;
-        public int CreatedSourceTypeValues;
-        public int CreatedNativeTypeValues;
-        public int VariableExistSearches;
-        public int ObjectFieldExistsSearches;
-        public int ArrayIndexExistsSearches;
-        public int ValueReadAttempts;
-        public int FieldReadAttempts;
-        public int IndexReadAttempts;
-        public int ObjectTypeSearches;
+        private readonly int[] _statistics = new int[(int)Statistic.Last+1];
+
+        private SnapshotStatistics(int[] statistics)
+        {
+            _statistics = statistics;
+        }
+
+        internal SnapshotStatistics()
+        {
+        }
+
+        internal void Report(Statistic statistic, int value = 1)
+        {
+            _statistics[(int)statistic] += value;
+        }
 
         internal SnapshotStatistics Clone()
         {
-            throw new NotImplementedException();
+            var statistics = (int[])_statistics.Clone();
+            return new SnapshotStatistics(statistics);
         }
 
-        
+        internal void MergeWith(SnapshotStatistics statistics)
+        {
+            for (int i = 0; i < _statistics.Length; ++i)
+            {
+                _statistics[i] += statistics._statistics[i];
+            }
+        }
     }
 }

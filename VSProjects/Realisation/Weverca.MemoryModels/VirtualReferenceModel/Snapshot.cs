@@ -7,6 +7,10 @@ using PHP.Core;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
+using Weverca.MemoryModels.VirtualReferenceModel.Memory;
+using Weverca.MemoryModels.VirtualReferenceModel.Containers;
+using Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries;
+
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {
     /// <summary>
@@ -14,113 +18,146 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
     /// </summary>
     public class Snapshot : SnapshotBase
     {
-        private Dictionary<VariableName, VariableInfo> _oldVariables;
-        private Dictionary<VariableName, VariableInfo> _locals = new Dictionary<VariableName, VariableInfo>();
-        private Dictionary<VariableName, VariableInfo> _oldGlobals;
-        private Dictionary<VariableName, VariableInfo> _globals = new Dictionary<VariableName, VariableInfo>();
-        private Dictionary<VirtualReference, MemoryEntry> _oldData;
-        private Dictionary<VirtualReference, MemoryEntry> _data = new Dictionary<VirtualReference, MemoryEntry>();
+        private VariableContainer _locals;
+        private VariableContainer _globals;
+        private VariableContainer _meta;
+        private VariableContainer _controls;
+
+        private DataContainer _data;
 
         /// <summary>
         /// Determine that this snapshot is pointed to global scope
         /// </summary>
         private bool _isGlobalScope;
 
-        private bool _hasSemanticChange;
+        public Snapshot()
+        {
+            _globals = new VariableContainer(VariableKind.Global, this);
+            _locals = new VariableContainer(VariableKind.Local, this, _globals);
+            _controls = new VariableContainer(VariableKind.Control, this);
+            _meta = new VariableContainer(VariableKind.Meta, this);
+
+            _data = new DataContainer(this);
+        }
+
+        #region Snapshot manipulation
 
         protected override void startTransaction()
         {
-            _oldData = _data;
-            _oldVariables = _locals;
-            _oldGlobals = _globals;
+            _locals.FlipBuffers();
+            _globals.FlipBuffers();
+            _controls.FlipBuffers();
+            _meta.FlipBuffers();
+            _data.FlipBuffers();
 
-            _data = new Dictionary<VirtualReference, MemoryEntry>(_data);
-            _locals = new Dictionary<VariableName, VariableInfo>(_locals);
-            _globals = new Dictionary<VariableName, VariableInfo>(_globals);
 
-            // when not extend as call or from non global snapshot is global
+            // when not extend as call or from non global snapshot, context is global
             _isGlobalScope = true;
-
-            _hasSemanticChange = false;
         }
 
         protected override bool commitTransaction()
         {
-            if (_hasSemanticChange)
+            if (
+                _locals.DifferInCount ||
+                _meta.DifferInCount ||
+                _globals.DifferInCount ||
+                _controls.DifferInCount ||
+                _data.DifferInCount
+                )
             {
+                //there is some difference in size of containers
+                //it means that there is change according to previous transaction
                 return true;
             }
-            else
+
+
+            //check variables according to old ones
+            if (
+                _locals.CheckChange() ||
+                _meta.CheckChange() ||
+                _controls.CheckChange() ||
+                _globals.CheckChange()
+                )
             {
-                _hasSemanticChange =
-                    _data.Count != _oldData.Count ||
-                    _locals.Count != _oldVariables.Count ||
-                    _globals.Count != _oldGlobals.Count
-                    ;
-
-                if (_hasSemanticChange)
-                {
-                    //evident change
-                    return true;
-                }
-
-                //check variables according to old ones
-                if (checkChange(_oldVariables, _locals) || checkChange(_oldGlobals, _globals))
-                {
-                    return true;
-                }
-
-                foreach (var oldData in _oldData)
-                {
-                    ReportSimpleHashSearch();
-                    MemoryEntry currEntry;
-                    if (!_data.TryGetValue(oldData.Key, out currEntry))
-                    {
-                        //differ in presence of some reference
-                        return true;
-                    }
-
-                    ReportMemoryEntryComparison();
-                    if (!currEntry.Equals(oldData.Value))
-                    {
-                        //differ in stored data
-                        return true;
-                    }
-                }
+                //there is change in variable info
+                return true;
             }
 
-            return false;
+            return _data.CheckChange();
         }
 
-        private bool checkChange(Dictionary<VariableName, VariableInfo> oldVariables, Dictionary<VariableName, VariableInfo> variables)
+        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            foreach (var oldVar in oldVariables)
+            // called context cannot be global scope
+            _isGlobalScope = false;
+
+            var input = callerContext as Snapshot;
+
+            _globals.ExtendBy(input._globals);
+            _meta.ExtendBy(input._meta);
+            _controls.ExtendBy(input._controls);
+            _data.ExtendBy(input._data, true);
+
+
+            if (thisObject != null)
             {
-                ReportSimpleHashSearch();
-                VariableInfo currVar;
-                if (!variables.TryGetValue(oldVar.Key, out currVar))
-                {
-                    //differ in some variable presence
-                    return true;
-                }
-
-                if (!currVar.Equals(oldVar.Value))
-                {
-                    //differ in variable definition
-                    return true;
-                }
+                assign(getThisObjectStorage(), thisObject);
             }
-
-            return false;
         }
 
-        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
+        /// <summary>
+        /// TODO this implementation is inefficient
+        /// </summary>
+        /// <param name="inputs"></param>
+        protected override void extend(ISnapshotReadonly[] inputs)
         {
-            var storages = new List<VariableInfo>();
+            _data.ClearCurrent();
+            _locals.ClearCurrent();
+
+            var isFirst = true;
+            foreach (Snapshot input in inputs)
+            {
+                //merge info from extending inputs
+                _globals.ExtendBy(input._globals);
+                _controls.ExtendBy(input._controls);
+                _locals.ExtendBy(input._locals);
+                _meta.ExtendBy(input._meta);
+
+                _data.ExtendBy(input._data, isFirst);
+
+                _isGlobalScope &= input._isGlobalScope;
+                isFirst = false;
+            }
+        }
+
+        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
+        {
+            var isFirst = true;
+            foreach (Snapshot callInput in callOutput)
+            {
+                //Local variables are not extended
+                _globals.ExtendBy(callInput._globals);
+                _meta.ExtendBy(callInput._meta);
+                _controls.ExtendBy(callInput._controls);
+
+                _data.ExtendBy(callInput._data, isFirst);
+                isFirst = false;
+            }
+        }
+
+        #endregion
+
+        #region Snapshot entry API
+
+        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobal)
+        {
+            var kind = repairKind(VariableKind.Local, forceGlobal);
+
+            var storages = new List<VariableKey>();
             foreach (var name in variable.PossibleNames)
             {
-                var info = getOrCreate(name, forceGlobalContext);
-                storages.Add(info.Clone());
+                var key = getOrCreateKey(name, kind);
+                storages.Add(key);
             }
 
             return new SnapshotStorageEntry(storages.ToArray());
@@ -128,7 +165,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
-            throw new NotImplementedException();
+            return new SnapshotStorageEntry(new[] { getOrCreateKey(name, VariableKind.Control) });
         }
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
@@ -136,66 +173,176 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new SnapshotMemoryEntry(entry);
         }
 
-        protected override AliasValue createAlias(VariableName sourceVar)
+        #endregion
+
+        #region API for Snapshot entries
+
+        internal void Write(VariableKey[] storages, MemoryEntry value)
         {
-            return createAlias(sourceVar, false);
+            foreach (var storage in storages)
+            {
+                //translation because of memory model cross-contexts
+                var variable = getOrCreateInfo(storage);
+                assign(variable, value);
+            }
         }
 
-        private AliasValue createAlias(VariableName sourceVar, bool forceGlobal = false)
+        internal void SetAliases(VariableKey[] storages, IEnumerable<ReferenceAliasEntry> aliases)
         {
-            var info = getInfo(sourceVar, forceGlobal);
-            if (info == null)
+            foreach (var storage in storages)
             {
-                //force reference creation
-                ReportMemoryEntryCreation();
-                assign(sourceVar, new MemoryEntry(UndefinedValue), forceGlobal);
-                info = getInfo(sourceVar, forceGlobal);
+                var variable = getOrCreateInfo(storage);
+
+                assignAlias(variable, aliases);
+            }
+        }
+
+        internal bool IsDefined(VariableKey storage)
+        {
+            var variables = getVariableContainer(storage.Kind);
+            return variables.ContainsKey(storage.Name);
+        }
+
+        internal MemoryEntry ReadValue(VariableKey key)
+        {
+            var variable = getOrCreateInfo(key);
+            return readValue(variable);
+        }
+
+        internal IEnumerable<VariableKey> IndexStorages(AssociativeArray array, MemberIdentifier index)
+        {
+            var storages = new List<VariableKey>();
+            foreach (var indexName in index.PossibleNames)
+            {
+                //TODO refactor ContainerIndex API
+                var containerIndex = CreateIndex(indexName);
+                var key = getIndexStorage(array, containerIndex);
+
+                storages.Add(key);
             }
 
-            return new ReferenceAlias(info.References);
+            return storages;
         }
 
-        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
+        internal IEnumerable<VariableKey> FieldStorages(ObjectValue objectValue, VariableIdentifier field)
         {
-            var storage = getIndexStorage(array, index);
+            var storages = new List<VariableKey>();
+            foreach (var fieldName in field.PossibleNames)
+            {
+                //TODO refactor ContainerIndex API
+                var fieldIndex = CreateIndex(fieldName.Value);
+                var key = getFieldStorage(objectValue, fieldIndex);
+                storages.Add(key);
+            }
 
-            return createAlias(storage, true);
+            return storages;
         }
 
-        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
+        /// <summary>
+        /// Method allowing statitic reporting via Snapshot entries
+        /// </summary>
+        /// <param name="statistic">Reported statistic</param>
+        internal void ReportStatistic(Statistic statistic)
         {
-            var storage = getFieldStorage(objectValue, field);
-
-            return createAlias(storage, true);
+            Report(statistic);
         }
 
-        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
-        {
-            var info = getInfo(variable, forceGlobalContext);
+        #endregion
 
-            return info != null;
+        #region Global scope operations
+
+        protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
+        {
+            foreach (var variable in variables)
+            {
+                var global = getOrCreateInfo(variable, VariableKind.Global);
+                _locals.Fetch(global);
+            }
         }
 
-        protected override bool objectFieldExists(ObjectValue objectValue, ContainerIndex field)
+        protected override IEnumerable<VariableName> getGlobalVariables()
         {
-            var storage = getFieldStorage(objectValue, field);
-            return variableExists(storage, true);
+            return _globals.VariableNames;
         }
 
-        protected override bool arrayIndexExists(AssociativeArray array, ContainerIndex index)
+        protected override void declareGlobal(TypeValueBase declaration)
         {
-            var storage = getIndexStorage(array, index);
-            return variableExists(storage, true);
+            var storage = getTypeStorage(declaration.QualifiedName.Name.Value);
+
+            var entry = readValue(storage);
+
+            ReportMemoryEntryCreation();
+            assign(storage, new MemoryEntry(declaration));
         }
 
-        protected override void assign(VariableName targetVar, MemoryEntry entry)
+        protected override void declareGlobal(FunctionValue function)
         {
-            assign(targetVar, entry, false);
+            var storage = getFunctionStorage(function.Name.Value);
+
+            ReportMemoryEntryCreation();
+            assign(storage, new MemoryEntry(function));
         }
 
-        private void assign(VariableName targetVar, MemoryEntry entry, bool forceGlobal = false)
+
+        protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
-            var info = getOrCreate(targetVar, forceGlobal);
+            var storage = getFunctionStorage(functionName.Name.Value);
+
+            MemoryEntry entry;
+            if (tryReadValue(storage, out entry))
+            {
+                var functions = new List<FunctionValue>(entry.Count);
+                foreach (var value in entry.PossibleValues)
+                {
+                    var function = value as FunctionValue;
+                    Debug.Assert(function != null, "Every value read from function storage is a function");
+                    functions.Add(function);
+                }
+
+                return functions;
+            }
+            else
+            {
+                return new List<FunctionValue>(0);
+            }
+        }
+
+        protected override IEnumerable<TypeValueBase> resolveType(QualifiedName typeName)
+        {
+            var storage = getTypeStorage(typeName.Name.Value);
+
+            MemoryEntry entry;
+            if (tryReadValue(storage, out entry))
+            {
+                var types = new List<TypeValueBase>(entry.Count);
+                foreach (var value in entry.PossibleValues)
+                {
+                    var type = value as TypeValueBase;
+                    Debug.Assert(type != null, "Every value read from type storage is a type");
+                    types.Add(type);
+                }
+
+                return types;
+            }
+            else
+            {
+                return new List<TypeValueBase>(0);
+            }
+        }
+
+        #endregion
+
+        #region Snapshot memory manipulation
+
+        private void assign(VariableName targetVar, MemoryEntry entry, VariableKind kind = VariableKind.Local)
+        {
+            var info = getOrCreateInfo(targetVar, kind);
+            assign(info, entry);
+        }
+
+        private void assign(VariableKey key, MemoryEntry entry)
+        {
+            var info = getOrCreateInfo(key);
             assign(info, entry);
         }
 
@@ -207,7 +354,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             {
                 case 0:
                     //reserve new virtual reference
-                    var allocatedReference = new VirtualReference(info.Name, info.IsGlobal);
+                    var allocatedReference = new VirtualReference(info.Name, info.Kind);
                     info.References.Add(allocatedReference);
 
                     setEntry(allocatedReference, entry);
@@ -222,150 +369,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        void assignAlias(VariableInfo target, IEnumerable<ReferenceAliasEntry> aliases)
+        private MemoryEntry readValue(VariableKey key)
         {
-            var references = new HashSet<VirtualReference>();
-            foreach (var alias in aliases)
-            {
-                var contextVariable = getContextVariable(alias.Variable);
-
-                if (contextVariable.References.Count == 0)
-                {
-                    var implicitRef = new VirtualReference(contextVariable);
-                    contextVariable.References.Add(implicitRef);
-                }
-
-                references.UnionWith(contextVariable.References);
-            }
-
-            target.References.Clear();
-            target.References.AddRange(references);
-        }
-
-        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
-        {
-            // called context cannot be global scope
-            _isGlobalScope = false;
-
-            var input = callerContext as Snapshot;
-            extendVariables(input._globals, _globals, false);
-            extendData(input, true);
-
-            if (thisObject != null)
-            {
-                assign(thisObjectStorage(), thisObject);
-            }
-        }
-
-        /// <summary>
-        /// TODO this implementation is inefficient
-        /// </summary>
-        /// <param name="inputs"></param>
-        protected override void extend(ISnapshotReadonly[] inputs)
-        {
-            _data = new Dictionary<VirtualReference, MemoryEntry>();
-            _locals = new Dictionary<VariableName, VariableInfo>();
-
-            var isFirst = true;
-            foreach (Snapshot input in inputs)
-            {
-                //merge info from extending inputs
-                extendVariables(input._globals, _globals, false);
-                extendVariables(input._locals, _locals, true);
-                extendData(input, isFirst);
-
-                _isGlobalScope &= input._isGlobalScope;
-                isFirst = false;
-            }
-        }
-
-        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
-        {
-            var isFirst = true;
-            foreach (Snapshot callInput in callOutput)
-            {
-                //Local variables are not extended
-                extendVariables(callInput._globals, _globals, false);
-                extendData(callInput, isFirst);
-                isFirst = false;
-            }
-        }
-
-        private void extendData(Snapshot input, bool directExtend)
-        {
-            foreach (var dataPair in input._data)
-            {
-                MemoryEntry oldEntry;
-                ReportSimpleHashSearch();
-
-                if (!_data.TryGetValue(dataPair.Key, out oldEntry))
-                {
-                    //copy reference, because its immutable
-                    ReportSimpleHashAssign();
-                    _data[dataPair.Key] = dataPair.Value;
-                }
-                else
-                {
-                    ReportMemoryEntryComparison();
-                    if (!dataPair.Value.Equals(oldEntry))
-                    {
-                        //merge two memory entries
-                        ReportMemoryEntryMerge();
-                        if (directExtend)
-                        {
-                            _data[dataPair.Key] = dataPair.Value;
-                        }
-                        else
-                        {
-                            _data[dataPair.Key] = MemoryEntry.Merge(oldEntry, dataPair.Value);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void extendVariables(Dictionary<VariableName, VariableInfo> inputVariables, Dictionary<VariableName, VariableInfo> variables, bool canFetchFromGlobals)
-        {
-            foreach (var varPair in inputVariables)
-            {
-                VariableInfo oldVar;
-                ReportSimpleHashSearch();
-                if (!variables.TryGetValue(varPair.Key, out oldVar))
-                {
-                    //copy variable info, so we can process changes on it
-                    ReportSimpleHashAssign();
-                    if (canFetchFromGlobals && varPair.Value.IsGlobal)
-                    {
-                        //fetch from globals
-                        variables[varPair.Key] = _globals[varPair.Key];
-                    }
-                    else
-                    {
-                        variables[varPair.Key] = varPair.Value.Clone();
-                    }
-                }
-                else
-                {
-                    //merge variable references
-                    foreach (var reference in varPair.Value.References)
-                    {
-                        if (!oldVar.References.Contains(reference))
-                        {
-                            oldVar.References.Add(reference);
-                        }
-                    }
-                }
-            }
-        }
-
-        protected override MemoryEntry readValue(VariableName sourceVar)
-        {
-            return readValue(sourceVar, false);
-        }
-
-        private MemoryEntry readValue(VariableName sourceVar, bool forceGlobal = false)
-        {
-            var info = getInfo(sourceVar, forceGlobal);
+            var info = getOrCreateInfo(key);
 
             return readValue(info);
         }
@@ -381,19 +387,34 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return resolveReferences(info.References);
         }
 
-        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        private MemoryEntry readValue(VariableName sourceVar, VariableKind kind)
         {
-            var info = getInfo(sourceVar, forceGlobalContext);
+            var info = getInfo(sourceVar, kind);
 
-            if (info == null)
+            return readValue(info);
+        }
+
+
+
+
+        void assignAlias(VariableInfo target, IEnumerable<ReferenceAliasEntry> aliases)
+        {
+            var references = new HashSet<VirtualReference>();
+            foreach (var alias in aliases)
             {
-                ReportMemoryEntryCreation();
-                entry = new MemoryEntry(UndefinedValue);
-                return false;
+                var contextVariable = getOrCreateInfo(alias.Key);
+
+                if (contextVariable.References.Count == 0)
+                {
+                    var implicitRef = new VirtualReference(contextVariable);
+                    contextVariable.References.Add(implicitRef);
+                }
+
+                references.UnionWith(contextVariable.References);
             }
 
-            entry = resolveReferences(info.References);
-            return true;
+            target.References.Clear();
+            target.References.AddRange(references);
         }
 
         private void weakUpdate(List<VirtualReference> references, MemoryEntry update)
@@ -427,6 +448,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
                     return new MemoryEntry(values);
             }
+
         }
 
         private IEnumerable<Value> resolveValuesFrom(VirtualReference reference)
@@ -440,39 +462,26 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return entry.PossibleValues;
         }
 
-        private VariableInfo getOrCreate(VariableName name, bool forceGlobal = false)
+        private VariableInfo getOrCreateInfo(VariableName name, VariableKind kind)
         {
+            //convert kind according to current scope
+            kind = repairKind(kind, _isGlobalScope);
+
             VariableInfo result;
+            var storage = getVariableContainer(kind);
 
-            var storage = getVariableStorage(forceGlobal);
-
-            ReportSimpleHashSearch();
             if (!storage.TryGetValue(name, out result))
             {
-                storage[name] = result = new VariableInfo(name, forceGlobal || _isGlobalScope);
-                ReportSimpleHashAssign();
+                result = new VariableInfo(name, kind);
+                storage.SetValue(name, result);
             }
 
             return result;
         }
 
-        private void fetch(VariableName name, VariableInfo info)
-        {
-            ReportSimpleHashAssign();
-            _locals[name] = info;
-        }
-
         private MemoryEntry getEntry(VirtualReference reference)
         {
-            MemoryEntry entry;
-            ReportSimpleHashSearch();
-            if (!_data.TryGetValue(reference, out entry))
-            {
-                //reading of uninitialized reference (may happen when aliasing cross contexts)
-                return new MemoryEntry(UndefinedValue);
-            }
-
-            return entry;
+            return _data.GetEntry(reference);
         }
 
         private void setEntry(VirtualReference reference, MemoryEntry entry)
@@ -482,15 +491,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 throw new NotSupportedException("Entry cannot be null");
             }
 
-            ReportSimpleHashAssign();
-            _data[reference] = entry;
+            _data.SetEntry(reference, entry);
         }
 
-        private VariableInfo getInfo(VariableName name, bool forceGlobal = false)
+        private VariableInfo getInfo(VariableName name, VariableKind kind = VariableKind.Local)
         {
             ReportSimpleHashSearch();
 
-            var storage = getVariableStorage(forceGlobal);
+            var storage = getVariableContainer(kind);
 
             VariableInfo info;
             if (storage.TryGetValue(name, out info))
@@ -519,141 +527,32 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return true;
         }
 
-        private void reportSemanticChange()
-        {
-            if (_hasSemanticChange)
-            {
-                return;
-            }
-
-            _hasSemanticChange = true;
-        }
-
-        protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
-        {
-            foreach (var variable in variables)
-            {
-                var global = getOrCreate(variable, true);
-                fetch(variable, global);
-            }
-        }
 
         private void fetchFromGlobalAll(params VariableName[] variables)
         {
             fetchFromGlobal(variables);
         }
 
-        protected override IEnumerable<VariableName> getGlobalVariables()
-        {
-            return _globals.Keys;
-        }
 
-        private VariableName functionStorage(string functionName)
-        {
-            return new VariableName("$function-" + functionName);
-        }
 
-        protected override void declareGlobal(FunctionValue function)
-        {
-            var storage = functionStorage(function.Name.Value);
 
-            ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(function), true);
-        }
-
-        protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
-        {
-            var storage = functionStorage(functionName.Name.Value);
-
-            MemoryEntry entry;
-            if (tryReadValue(storage, out entry, true))
-            {
-                var functions = new List<FunctionValue>(entry.Count);
-                foreach (var value in entry.PossibleValues)
-                {
-                    var function = value as FunctionValue;
-                    Debug.Assert(function != null, "Every value read from function storage is a function");
-                    functions.Add(function);
-                }
-
-                return functions;
-            }
-            else
-            {
-                return new List<FunctionValue>(0);
-            }
-        }
-
-        protected VariableName typeStorage(string typeName)
-        {
-            return new VariableName("$type:" + typeName);
-        }
-
-        protected override void declareGlobal(TypeValueBase declaration)
-        {
-            var storage = typeStorage(declaration.QualifiedName.Name.Value);
-
-            var entry = readValue(storage);
-
-            ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(declaration), true);
-        }
-
-        protected override IEnumerable<TypeValueBase> resolveType(QualifiedName typeName)
-        {
-            var storage = typeStorage(typeName.Name.Value);
-
-            MemoryEntry entry;
-            if (tryReadValue(storage, out entry, true))
-            {
-                var types = new List<TypeValueBase>(entry.Count);
-                foreach (var value in entry.PossibleValues)
-                {
-                    var type = value as TypeValueBase;
-                    Debug.Assert(type != null, "Every value read from type storage is a type");
-                    types.Add(type);
-                }
-
-                return types;
-            }
-            else
-            {
-                return new List<TypeValueBase>(0);
-            }
-        }
+        #endregion
 
         #region Object operations
 
-        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
-        {
-            var storage = getFieldStorage(value, index);
-            assign(storage, entry, true);
-        }
-        
-        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
-        {
-            var storage = getFieldStorage(value, index);
-            return readValue(storage, true);
-        }
-
-        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
-        {
-            var storage = getFieldStorage(objectValue, field);
-            return tryReadValue(storage, out entry, true);
-        }
 
         protected override void initializeObject(ObjectValue createdObject, TypeValueBase type)
         {
             var info = getObjectInfoStorage(createdObject);
             //TODO set info
             ReportMemoryEntryCreation();
-            assign(info, new MemoryEntry(type), true);
+            assign(info, new MemoryEntry(type));
         }
 
         protected override TypeValueBase objectType(ObjectValue objectValue)
         {
             var info = getObjectInfoStorage(objectValue);
-            var objectInfo = readValue(info, true);
+            var objectInfo = readValue(info);
             Debug.Assert(objectInfo.Count == 1, "Object is always instance of just one type");
 
             var enumerator = objectInfo.PossibleValues.GetEnumerator();
@@ -678,17 +577,333 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        private VariableName getFieldStorage(ObjectValue obj, ContainerIndex field)
+        #endregion
+
+        #region Array operations
+
+        protected override void initializeArray(AssociativeArray createdArray)
         {
-            var name = string.Format("$obj{0}->{1}", obj.UID, field.Identifier);
-            return new VariableName(name);
+            //TODO initialize array
+            var info = getArrayInfoStorage(createdArray);
+            ReportMemoryEntryCreation();
+            assign(info, new MemoryEntry());
         }
 
-        private VariableName getObjectInfoStorage(ObjectValue obj)
+        #endregion
+
+        #region Special storages
+
+        private VariableKey getFunctionStorage(string functionName)
+        {
+            return getMeta("$function-" + functionName);
+        }
+
+        private VariableKey getTypeStorage(string typeName)
+        {
+            return getMeta("$type:" + typeName);
+        }
+
+        private VariableKey getFieldStorage(ObjectValue obj, ContainerIndex field)
+        {
+            var name = string.Format("$obj{0}->{1}", obj.UID, field.Identifier);
+            return getMeta(name);
+        }
+
+        private VariableKey getObjectInfoStorage(ObjectValue obj)
         {
             var name = string.Format("$obj{0}#info", obj.UID);
-            return new VariableName(name);
+            return getMeta(name);
         }
+
+        private VariableKey getIndexStorage(AssociativeArray arr, ContainerIndex index)
+        {
+            var name = string.Format("$arr{0}[{1}]", arr.UID, index.Identifier);
+            return getMeta(name);
+        }
+
+        private VariableKey getThisObjectStorage()
+        {
+            //TODO this should be control (but it has different scope propagation)
+            return new VariableKey(VariableKind.Local, new VariableName("this"));
+        }
+
+        private VariableKey getArrayInfoStorage(AssociativeArray arr)
+        {
+            var name = string.Format("$arr{0}#info", arr.UID);
+            return getMeta(name);
+        }
+
+        private VariableKey getMeta(string variableName)
+        {
+            return new VariableKey(VariableKind.Meta, new VariableName(variableName));
+        }
+
+        #endregion
+
+        #region Private utilities
+
+        private VariableKey getOrCreateKey(VariableName name, VariableKind kind = VariableKind.Local)
+        {
+            var info = getInfo(name, kind);
+            if (info != null)
+                return new VariableKey(info.Kind, info.Name);
+
+            return new VariableKey(kind, name);
+        }
+
+
+        /// <summary>
+        /// Repair kind according to global scope and forceGlobal directives
+        /// </summary>
+        /// <param name="kind"></param>
+        /// <param name="forceGlobal"></param>
+        /// <returns></returns>
+        private VariableKind repairKind(VariableKind kind, bool forceGlobal)
+        {
+            if (kind == VariableKind.Control)
+                return kind;
+
+            if (kind == VariableKind.Meta)
+                return kind;
+
+            if (forceGlobal || _isGlobalScope)
+                return VariableKind.Global;
+
+            return kind;
+        }
+
+        private VariableContainer getVariableContainer(VariableKind kind)
+        {
+            kind = repairKind(kind, _isGlobalScope);
+            switch (kind)
+            {
+                case VariableKind.Global:
+                    return _globals;
+                case VariableKind.Local:
+                    return _locals;
+                case VariableKind.Control:
+                    return _controls;
+                case VariableKind.Meta:
+                    return _meta;
+                default:
+                    throw new NotSupportedException("Variable kind");
+            }
+        }
+
+        private VariableInfo getOrCreateInfo(VariableKey key)
+        {
+            var variable = getOrCreateInfo(key.Name, key.Kind);
+            return variable;
+        }
+
+        private VariableInfo getInfo(VariableKey key)
+        {
+            var variable = getInfo(key.Name, key.Kind);
+
+            return variable;
+        }
+
+        #endregion
+
+        #region Building string representation of snapshot
+
+        public override string ToString()
+        {
+            return Representation;
+        }
+
+        public string Representation
+        {
+            get
+            {
+                return GetRepresentation();
+            }
+        }
+        public string GetRepresentation()
+        {
+            var result = new StringBuilder();
+
+            if (!_isGlobalScope)
+            {
+                result.AppendLine("===LOCALS===");
+                result.AppendLine(_locals.ToString());
+            }
+            result.AppendLine("===GLOBALS===");
+            result.AppendLine(_globals.ToString());
+
+            result.AppendLine("===CONTROLS===");
+            result.AppendLine(_controls.ToString());
+
+            result.AppendLine("\n===META===");
+            result.AppendLine(_meta.ToString());
+
+            return result.ToString();
+        }
+
+
+
+        private void fillWithVariables(StringBuilder result, VariableKind kind)
+        {
+            var variables = getVariableContainer(kind);
+
+            foreach (var variableInfo in variables.VariableInfos)
+            {
+
+                if (kind != VariableKind.Global && variableInfo.IsGlobal)
+                {
+                    result.AppendFormat("{0}: #Fetched from global scope", variableInfo);
+                    result.AppendLine();
+                }
+                else
+                {
+                    result.AppendFormat("{0}: {{", variableInfo);
+
+
+                    var entry = readValue(variableInfo);
+                    foreach (var value in entry.PossibleValues)
+                    {
+                        result.AppendFormat("'{0}', ", value);
+                    }
+
+                    result.Length -= 2;
+                    result.AppendLine("}");
+                }
+            }
+        }
+
+        #endregion
+
+
+
+
+
+
+
+
+        //========================OLD API IMPLEMENTATION=======================
+        #region OLD API related methods (will be removed after backcompatibility won't be needed)
+
+
+        protected override AliasValue createAlias(VariableName sourceVar)
+        {
+            return createAlias(sourceVar);
+        }
+
+        private AliasValue createAlias(VariableKey key)
+        {
+            var info = getOrCreateInfo(key);
+            if (info.References.Count == 0)
+            {
+                assign(info, new MemoryEntry(UndefinedValue));
+            }
+            return new ReferenceAlias(info.References);
+        }
+
+        private AliasValue createAlias(VariableName sourceVar, VariableKind kind = VariableKind.Local)
+        {
+            var info = getInfo(sourceVar, kind);
+            if (info == null)
+            {
+                //force reference creation
+                ReportMemoryEntryCreation();
+                assign(sourceVar, new MemoryEntry(UndefinedValue), kind);
+                info = getInfo(sourceVar, kind);
+            }
+
+            return new ReferenceAlias(info.References);
+        }
+
+        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
+        {
+            var storage = getIndexStorage(array, index);
+
+            return createAlias(storage);
+        }
+
+        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
+        {
+            var storage = getFieldStorage(objectValue, field);
+
+            return createAlias(storage);
+        }
+
+        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
+        {
+            var kind = repairKind(VariableKind.Local, forceGlobalContext);
+            var info = getInfo(variable, kind);
+
+            return info != null;
+        }
+
+        private bool variableExists(VariableKey key)
+        {
+            var info = getInfo(key);
+            return info != null;
+        }
+
+        protected override bool objectFieldExists(ObjectValue objectValue, ContainerIndex field)
+        {
+            var storage = getFieldStorage(objectValue, field);
+            return variableExists(storage);
+        }
+
+        protected override bool arrayIndexExists(AssociativeArray array, ContainerIndex index)
+        {
+            var storage = getIndexStorage(array, index);
+            return variableExists(storage);
+        }
+
+        protected override void assign(VariableName targetVar, MemoryEntry entry)
+        {
+            assign(targetVar, entry, VariableKind.Local);
+        }
+
+
+
+        protected override MemoryEntry readValue(VariableName sourceVar)
+        {
+            return readValue(sourceVar, VariableKind.Local);
+        }
+
+        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        {
+            var kind = repairKind(VariableKind.Local, forceGlobalContext);
+            return tryReadValue(new VariableKey(kind, sourceVar), out entry);
+        }
+
+        private bool tryReadValue(VariableKey key, out MemoryEntry entry)
+        {
+            var info = getInfo(key);
+
+            if (info == null)
+            {
+                ReportMemoryEntryCreation();
+                entry = new MemoryEntry(UndefinedValue);
+                return false;
+            }
+
+            entry = resolveReferences(info.References);
+            return true;
+        }
+
+        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        {
+            var storage = getFieldStorage(value, index);
+            assign(storage, entry);
+        }
+
+        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
+        {
+            var storage = getFieldStorage(value, index);
+            return readValue(storage);
+        }
+
+        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
+        {
+            var storage = getFieldStorage(objectValue, field);
+            return tryReadValue(storage, out entry);
+        }
+
 
         protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
@@ -696,9 +911,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var arrayPrefix = string.Format("$obj{0}->", iteratedObject.UID);
             var indexes = new List<ContainerIndex>();
-            foreach (var variable in _globals.Keys)
+            foreach (var varName in _meta.VariableIdentifiers)
             {
-                var varName = variable.Value;
                 if (!varName.StartsWith(arrayPrefix))
                 {
                     continue;
@@ -712,81 +926,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return indexes;
         }
 
-        #endregion
-
-        #region Array operations
-
-        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
-        {
-            var storage = getIndexStorage(value, index);
-            assign(storage, entry, true);
-        }
-        
-        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
-        {
-            var storage = getIndexStorage(value, index);
-            return readValue(storage, true);
-        }
-
-        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
-        {
-            var storage = getIndexStorage(array, index);
-            return tryReadValue(storage, out entry, true);
-        }
-
-        protected override void initializeArray(AssociativeArray createdArray)
-        {
-            //TODO initialize array
-            var info = getArrayInfoStorage(createdArray);
-            ReportMemoryEntryCreation();
-            assign(info, new MemoryEntry(), true);
-        }
-
-        private VariableName getIndexStorage(AssociativeArray arr, ContainerIndex index)
-        {
-            var name = string.Format("$arr{0}[{1}]", arr.UID, index.Identifier);
-            return new VariableName(name);
-        }
-
-        private VariableName thisObjectStorage()
-        {
-            return new VariableName("this");
-        }
-
-        private VariableName getArrayInfoStorage(AssociativeArray arr)
-        {
-            var name = string.Format("$arr{0}#info", arr.UID);
-            return new VariableName(name);
-        }
-
-        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
-        {
-            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
-            var indexes = new List<ContainerIndex>();
-            foreach (var variable in _globals.Keys)
-            {
-                var varName = variable.Value;
-                if (!varName.StartsWith(arrayPrefix))
-                {
-                    continue;
-                }
-
-                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
-
-                indexes.Add(CreateIndex(indexIdentifier));
-            }
-
-            return indexes;
-        }
-
-        #endregion
-
         protected override void setInfo(Value value, params InfoValue[] info)
         {
             var storage = infoStorage(value);
 
             ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(info), true);
+            assign(storage, new MemoryEntry(info), VariableKind.Global);
         }
 
         protected override void setInfo(VariableName variable, params InfoValue[] info)
@@ -794,7 +939,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             var storage = infoStorage(variable);
 
             ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(info), true);
+            assign(storage, new MemoryEntry(info), VariableKind.Global);
         }
 
         protected override InfoValue[] readInfo(Value value)
@@ -844,136 +989,45 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return infoValues.ToArray();
         }
 
-        private Dictionary<VariableName, VariableInfo> getVariableStorage(bool forceGlobal)
-        {
-            if (_isGlobalScope)
-            {
-                return _globals;
-            }
 
-            return forceGlobal ? _globals : _locals;
+        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        {
+            var storage = getIndexStorage(value, index);
+            assign(storage, entry);
         }
 
-        public override string ToString()
+        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
         {
-            return Representation;
+            var storage = getIndexStorage(value, index);
+            return readValue(storage);
         }
 
-        public string GetRepresentation()
+        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
         {
-            var result = new StringBuilder();
-
-            if (!_isGlobalScope)
-            {
-                result.AppendLine("===LOCALS===");
-                fillWithVariables(result, false);
-            }
-            result.AppendLine("\n===GLOBALS===");
-            fillWithVariables(result, true);
-
-            return result.ToString();
+            var storage = getIndexStorage(array, index);
+            return tryReadValue(storage, out entry);
         }
 
-        public string Representation
-        {
-            get
-            {
-                return GetRepresentation();
-            }
-        }
 
-        private void fillWithVariables(StringBuilder result, bool forceGlobal)
+        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
-            var variables = getVariableStorage(forceGlobal);
-
-            foreach (var variable in variables.Keys)
+            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
+            var indexes = new List<ContainerIndex>();
+            foreach (var varName in _meta.VariableIdentifiers)
             {
-                if (!forceGlobal && _locals[variable].IsGlobal)
+                if (!varName.StartsWith(arrayPrefix))
                 {
-                    result.AppendFormat("{0}: #Fetched from global scope", variable);
-                    result.AppendLine();
+                    continue;
                 }
-                else
-                {
-                    result.AppendFormat("{0}: {{", variable);
 
-                    var entry = readValue(variable, forceGlobal);
-                    foreach (var value in entry.PossibleValues)
-                    {
-                        result.AppendFormat("'{0}', ", value);
-                    }
+                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
 
-                    result.Length -= 2;
-                    result.AppendLine("}");
-                }
-            }
-        }
-
-        internal void Write(VariableInfo[] storages, MemoryEntry value)
-        {
-            foreach (var storage in storages)
-            {
-                //translation because of memory model cross-contexts
-                var variable = getContextVariable(storage);
-                assign(variable, value);
-            }
-        }
-
-        internal void SetAliases(VariableInfo[] storages, IEnumerable<ReferenceAliasEntry> aliases)
-        {
-            foreach (var storage in storages)
-            {
-                var variable = getContextVariable(storage);
-
-                assignAlias(variable, aliases);
-            }
-        }
-
-        internal bool IsDefined(VariableInfo storage)
-        {
-            var variables = getVariableStorage(storage.IsGlobal);
-            return variables.ContainsKey(storage.Name);
-        }
-
-        internal MemoryEntry ReadValue(VariableInfo variableInfo)
-        {
-            return readValue(variableInfo);
-        }
-
-        private VariableInfo getContextVariable(VariableInfo info)
-        {
-            var variables = getVariableStorage(info.IsGlobal);
-
-            return variables[info.Name];
-        }
-
-        internal IEnumerable<VariableInfo> IndexStorages(AssociativeArray array,MemberIdentifier index)
-        {
-            var storages = new List<VariableInfo>();
-            foreach(var indexName in index.PossibleNames){
-                //TODO refactor ContainerIndex API
-                var containerIndex = CreateIndex(indexName);
-                var storageName = getIndexStorage(array, containerIndex);
-                var storage = getOrCreate(storageName, true);
-                storages.Add(storage);
+                indexes.Add(CreateIndex(indexIdentifier));
             }
 
-            return storages;
+            return indexes;
         }
 
-        internal IEnumerable<VariableInfo> FieldStorages(ObjectValue objectValue, VariableIdentifier field)
-        {
-            var storages = new List<VariableInfo>();
-            foreach (var fieldName in field.PossibleNames)
-            {
-                //TODO refactor ContainerIndex API
-                var fieldIndex = CreateIndex(fieldName.Value);
-                var storageName = getFieldStorage(objectValue, fieldIndex);
-                var storage = getOrCreate(storageName, true);
-                storages.Add(storage);
-            }
-
-            return storages;
-        }
+        #endregion
     }
 }

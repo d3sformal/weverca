@@ -102,7 +102,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="createdObject">Created object that has to be initialized</param>
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValueBase type);
-        
+
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Iterates over the given object
         /// </summary>
@@ -122,6 +123,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="createdArray">Created array that has to be initialized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
+        
+        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Create iterator for given array
         /// </summary>
@@ -164,7 +167,6 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
 
       
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
         /// This merged info can be than changed with snapshot updatable operations
@@ -173,7 +175,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="inputs">Input snapshots that should be merged</param>
         protected abstract void extend(ISnapshotReadonly[] inputs);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Extend snapshot as call from given callerContext
         /// </summary>
@@ -375,11 +376,21 @@ namespace Weverca.AnalysisFramework.Memory
         #region Statistic interface for implementors
 
         /// <summary>
+        /// Report statistic operation of given value
+        /// </summary>
+        /// <param name="statistic">Statistic to be reported</param>
+        /// <param name="value">Value that will increase reported statistic</param>
+        protected void Report(Statistic statistic,int value=1)
+        {
+            _statistics.Report(statistic,value);
+        }
+
+        /// <summary>
         /// Report hash search based on non-recursive <c>GetHashCode</c> and <c>Equals</c> routines
         /// </summary>
         protected void ReportSimpleHashSearch()
         {
-            ++_statistics.SimpleHashSearches;
+            _statistics.Report(Statistic.SimpleHashSearches);
         }
 
         /// <summary>
@@ -387,7 +398,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         protected void ReportSimpleHashAssign()
         {
-            ++_statistics.SimpleHashAssigns;
+            _statistics.Report(Statistic.SimpleHashAssigns);
         }
 
         /// <summary>
@@ -395,7 +406,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         protected void ReportMemoryEntryMerge()
         {
-            ++_statistics.MemoryEntryMerges;
+            _statistics.Report(Statistic.MemoryEntryMerges);
         }
 
         /// <summary>
@@ -403,7 +414,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         protected void ReportMemoryEntryComparison()
         {
-            ++_statistics.MemoryEntryComparisons;
+            _statistics.Report(Statistic.MemoryEntryComparisons);
         }
 
         /// <summary>
@@ -411,7 +422,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         protected void ReportMemoryEntryCreation()
         {
-            ++_statistics.MemoryEntryCreation;
+            _statistics.Report(Statistic.MemoryEntryCreation);
         }
 
         #endregion
@@ -487,7 +498,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.AsCallExtendings;
+            _statistics.Report(Statistic.AsCallExtendings);
             extendAsCall(callerContext, thisObject, arguments);
         }
 
@@ -507,7 +518,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         public bool VariableExists(VariableName variable, bool forceGlobalContext)
         {
-            ++_statistics.VariableExistSearches;
+            _statistics.Report(Statistic.VariableExistSearches);
             return variableExists(variable, forceGlobalContext);
         }
 
@@ -519,7 +530,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
         public bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field)
         {
-            ++_statistics.ObjectFieldExistsSearches;
+            _statistics.Report(Statistic.ObjectFieldExistsSearches);
             return objectFieldExists(objectValue, field);
         }
 
@@ -531,7 +542,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
         public bool ArrayIndexExists(AssociativeArray array, ContainerIndex index)
         {
-            ++_statistics.ArrayIndexExistsSearches;
+            _statistics.Report(Statistic.ArrayIndexExistsSearches);
             return arrayIndexExists(array, index);
         }
 
@@ -559,7 +570,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Type of given object</returns>
         public TypeValueBase ObjectType(ObjectValue objectValue)
         {
-            ++_statistics.ObjectTypeSearches;
+            _statistics.Report(Statistic.ObjectTypeSearches);
             return objectType(objectValue);
         }
 
@@ -570,7 +581,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created index</returns>
         public ContainerIndex CreateIndex(string identifier)
         {
-            ++_statistics.CreatedIndexes;
+            _statistics.Report(Statistic.CreatedIndexes);
             return new ContainerIndex(identifier);
         }
 
@@ -578,7 +589,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedStringValues;
+            _statistics.Report(Statistic.CreatedStringValues);
             return new StringValue(literal);
         }
 
@@ -586,14 +597,14 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedIntValues;
+            _statistics.Report(Statistic.CreatedIntValues);
             return new IntegerValue(number);
         }
 
         public LongintValue CreateLong(long number)
         {
             checkCanUpdate();
-            ++_statistics.CreatedLongValues;
+            _statistics.Report(Statistic.CreatedLongValues);
             return new LongintValue(number);
         }
 
@@ -601,7 +612,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedBooleanValues;
+            _statistics.Report(Statistic.CreatedBooleanValues);
             return new BooleanValue(boolean);
         }
 
@@ -609,7 +620,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedFloatValues;
+            _statistics.Report(Statistic.CreatedFloatValues);
             return new FloatValue(number);
         }
 
@@ -617,7 +628,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedFunctionValues;
+            _statistics.Report(Statistic.CreatedFunctionValues);
             return new SourceFunctionValue(declaration);
         }
 
@@ -630,7 +641,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedFunctionValues;
+            _statistics.Report(Statistic.CreatedFunctionValues);
             return new SourceMethodValue(declaration);
         }
 
@@ -644,7 +655,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedFunctionValues;
+            _statistics.Report(Statistic.CreatedFunctionValues);
             return new NativeAnalyzerValue(name, analyzer);
         }
 
@@ -657,7 +668,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.CreatedFunctionValues;
+            _statistics.Report(Statistic.CreatedFunctionValues);
             return new LambdaFunctionValue(expression);
         }
 
@@ -666,7 +677,7 @@ namespace Weverca.AnalysisFramework.Memory
             checkCanUpdate();
 
             var type = new TypeValue(declaration);
-            ++_statistics.CreatedNativeTypeValues;
+            _statistics.Report(Statistic.CreatedNativeTypeValues);
 
             return type;
         }
@@ -676,7 +687,7 @@ namespace Weverca.AnalysisFramework.Memory
             checkCanUpdate();
 
             var createdObject = new ObjectValue();
-            ++_statistics.CreatedObjectValues;
+            _statistics.Report(Statistic.CreatedObjectValues);
 
             initializeObject(createdObject, type);
 
@@ -688,7 +699,7 @@ namespace Weverca.AnalysisFramework.Memory
             checkCanUpdate();
 
             var createdArray = new AssociativeArray();
-            ++_statistics.CreatedArrayValues;
+            _statistics.Report(Statistic.CreatedArrayValues);
 
             initializeArray(createdArray);
 
@@ -698,47 +709,47 @@ namespace Weverca.AnalysisFramework.Memory
         public IntegerIntervalValue CreateIntegerInterval(int start, int end)
         {
             checkCanUpdate();
-            ++_statistics.CreatedIntIntervalValues;
+            _statistics.Report(Statistic.CreatedIntIntervalValues);
             return new IntegerIntervalValue(start, end);
         }
 
         public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
             checkCanUpdate();
-            ++_statistics.CreatedLongIntervalValues;
+            _statistics.Report(Statistic.CreatedLongIntervalValues);
             return new LongintIntervalValue(start, end);
         }
 
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
             checkCanUpdate();
-            ++_statistics.CreatedFloatIntervalValues;
+            _statistics.Report(Statistic.CreatedFloatIntervalValues);
             return new FloatIntervalValue(start, end);
         }
 
         public void SetInfo(Value value, params InfoValue[] info)
         {
             checkCanUpdate();
-            ++_statistics.ValueInfoSettings;
+            _statistics.Report(Statistic.ValueInfoSettings);
             setInfo(value, info);
         }
 
         public void SetInfo(VariableName variable, params InfoValue[] info)
         {
             checkCanUpdate();
-            ++_statistics.VariableInfoSettings;
+            _statistics.Report(Statistic.VariableInfoSettings);
             setInfo(variable, info);
         }
 
         public InfoValue[] ReadInfo(Value value)
         {
-            ++_statistics.ValueInfoReads;
+            _statistics.Report(Statistic.ValueInfoReads);
             return readInfo(value);
         }
 
         public InfoValue[] ReadInfo(VariableName variable)
         {
-            ++_statistics.VariableInfoReads;
+            _statistics.Report(Statistic.VariableInfoReads);
             return readInfo(variable);
         }
 
@@ -746,14 +757,14 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.FieldAssigns;
+            _statistics.Report(Statistic.FieldAssigns);
             setField(value, index, entry);
         }
         public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
             checkCanUpdate();
 
-            ++_statistics.IndexAssigns;
+            _statistics.Report(Statistic.IndexAssigns);
             setIndex(value, index, entry);
         }
 
@@ -771,7 +782,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.FieldReads;
+            _statistics.Report(Statistic.FieldReads);
             return getField(value, index);
         }
 
@@ -780,7 +791,7 @@ namespace Weverca.AnalysisFramework.Memory
             // TODO_David: Je tohle treba?
             checkCanUpdate();
 
-            ++_statistics.FieldReadAttempts;
+            _statistics.Report(Statistic.FieldReadAttempts);
             return tryGetField(objectValue, field, out entry);
         }
 
@@ -788,7 +799,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            ++_statistics.IndexReads;
+            _statistics.Report(Statistic.IndexReads);
             return getIndex(value, index);
         }
 
@@ -797,14 +808,14 @@ namespace Weverca.AnalysisFramework.Memory
             // TODO_David: Je tohle treba?
             checkCanUpdate();
 
-            ++_statistics.IndexReadAttempts;
+            _statistics.Report(Statistic.IndexReadAttempts);
             return tryGetIndex(array, index, out entry);
         }
 
         public AliasValue CreateAlias(VariableName sourceVar)
         {
             var result = createAlias(sourceVar);
-            ++_statistics.CreatedAliasValues;
+            _statistics.Report(Statistic.CreatedAliasValues);
             return result;
         }
 
@@ -812,7 +823,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             var result = createIndexAlias(array, index);
 
-            ++_statistics.CreatedAliasValues;
+            _statistics.Report(Statistic.CreatedAliasValues);
             return result;
         }
 
@@ -820,7 +831,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             var result = createFieldAlias(objectValue, field);
 
-            ++_statistics.CreatedAliasValues;
+            _statistics.Report(Statistic.CreatedAliasValues);
             return result;
         }
 
@@ -843,7 +854,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
             assign(targetVar, value);
-            ++_statistics.MemoryEntryAssigns;
+            _statistics.Report(Statistic.MemoryEntryAssigns);
         }
 
         public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
@@ -855,33 +866,33 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
             extend(inputs);
-            ++_statistics.SnapshotExtendings;
+            _statistics.Report(Statistic.SnapshotExtendings);
         }
 
         public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             checkCanUpdate();
             mergeWithCallLevel(callOutputs);
-            ++_statistics.CallLevelMerges;
+            _statistics.Report(Statistic.CallLevelMerges);
         }
 
         public MemoryEntry ReadValue(VariableName sourceVar)
         {
             var result = readValue(sourceVar);
-            ++_statistics.ValueReads;
+            _statistics.Report(Statistic.ValueReads);
             return result;
         }
 
         public bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {
             var result = tryReadValue(sourceVar, out entry, forceGlobalContext);
-            ++_statistics.ValueReadAttempts;
+            _statistics.Report(Statistic.ValueReadAttempts);
             return result;
         }
 
         public void FetchFromGlobal(params VariableName[] variables)
         {
-            _statistics.GlobalVariableFetches += variables.Length;
+            _statistics.Report(Statistic.GlobalVariableFetches, variables.Length);
             fetchFromGlobal(variables);
         }
 
@@ -894,43 +905,43 @@ namespace Weverca.AnalysisFramework.Memory
         public void DeclareGlobal(FunctionDecl declaration)
         {
             var function = CreateFunction(declaration);
-            ++_statistics.DeclaredFunctions;
+            _statistics.Report(Statistic.DeclaredFunctions);
             declareGlobal(function);
         }
 
         public void DeclareGlobal(TypeValueBase type)
         {
-            ++_statistics.DeclaredTypes;
+            _statistics.Report(Statistic.DeclaredTypes);
             declareGlobal(type);
         }
 
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
-            ++_statistics.FunctionResolvings;
+            _statistics.Report(Statistic.FunctionResolvings);
             return resolveFunction(functionName);
         }
 
         internal IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
-            ++_statistics.MethodResolvings;
+            _statistics.Report(Statistic.MethodResolvings);
             return resolveMethod(objectValue, methodName);
         }
 
         public IEnumerable<TypeValueBase> ResolveType(QualifiedName typeName)
         {
-            ++_statistics.TypeResolvings;
+            _statistics.Report(Statistic.TypeResolvings);
             return resolveType(typeName);
         }
 
         public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
         {
-            ++_statistics.ObjectIterations;
+            _statistics.Report(Statistic.ObjectIterations);
             return iterateObject(iteratedObject);
         }
 
         public IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray)
         {
-            ++_statistics.ArrayIterations;
+            _statistics.Report(Statistic.ArrayIterations);
             return iterateArray(iteratedArray);
         }
 
