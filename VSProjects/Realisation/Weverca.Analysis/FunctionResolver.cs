@@ -878,7 +878,6 @@ namespace Weverca.Analysis
             var callPoint = Flow.ProgramPoint as RCallPoint;
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
-
             for (int i = 0; i < signature.FormalParams.Count; ++i)
             {
                 enumerator.MoveNext();
@@ -886,36 +885,48 @@ namespace Weverca.Analysis
                 var param = signature.FormalParams[i];
                 var callParam = callSignature.Value.Parameters[i];
 
-                throw new NotImplementedException("API has changed");
+                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+
+                if (callParam.PublicAmpersand)
+                {
+                    argumentVar.SetAliases(callInput.Snapshot, enumerator.Current.Value);
+                }
+                else
+                {
+                    argumentVar.WriteMemory(callInput.Snapshot, arguments[i]);
+                }
             }
         }
 
         private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
         {
-            var argCount = callInput.CreateInt(arguments.Length);
-            callInput.Assign(new VariableName(".argument_count"), argCount);
+            var argCount = new MemoryEntry(callInput.CreateInt(arguments.Length));
+            var argCountEntry = callInput.GetVariable(new VariableIdentifier(".argument_count"));
+            argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;
             var callPoint = Flow.ProgramPoint as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
-                var parVar = argument(index);
+                var argVar = argument(index);
+                var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
 
-                // Determine that argument value is based on variable, so we can get it's alias
+                //determine that argument value is based on variable, so we can get it's alias
                 var aliasProvider = arg as LValuePoint;
                 if (aliasProvider == null)
                 {
-                    // Assign value for parameter
-                    callInput.Assign(parVar, arguments[index]);
+                    //assign value for parameter
+                    argumentEntry.WriteMemory(callInput.Snapshot, arguments[index]);
                 }
                 else
                 {
-                    // Join parameter with alias (for testing we join all possible arguments)
-                    // Be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
-                    throw new NotImplementedException("API has changed");
+                    //join parameter with alias (for testing we join all possible arguments)
+                    //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
+                    argumentEntry.SetAliases(callInput.Snapshot, aliasProvider.LValue);
                 }
                 ++index;
             }
+
         }
 
         #endregion
