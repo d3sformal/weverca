@@ -46,23 +46,26 @@ namespace Weverca.Analysis
             var post = new VariableName("_POST");
             var postValue = EntryInput.AnyArrayValue;
             EntryInput.FetchFromGlobal(post);
-            EntryInput.Assign(post, new MemoryEntry(postValue));
+            var postVariable = EntryInput.GetVariable(new VariableIdentifier(post), true);
+            postVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(postValue));
             ValueInfoHandler.setDirty(EntryInput, postValue);
+
 
             var get = new VariableName("_GET");
             var getValue = EntryInput.AnyArrayValue;
             EntryInput.FetchFromGlobal(get);
-            EntryInput.Assign(get, new MemoryEntry(getValue));
+            var getVariable = EntryInput.GetVariable(new VariableIdentifier(get), true);
+            getVariable.WriteMemory(EntryInput.Snapshot , new MemoryEntry(getValue));
             ValueInfoHandler.setDirty(EntryInput, getValue);
 
             var contants = new VariableName(".constants");
             var constValue = EntryInput.CreateArray();
-            EntryInput.FetchFromGlobal(contants);
-            EntryInput.Assign(contants, new MemoryEntry(constValue));
+            var contantVariable = EntryInput.GetControlVariable(contants);
+            contantVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(constValue));
 
             var warnings = new VariableName(".analysisWarning");
-            EntryInput.FetchFromGlobal(warnings);
-            EntryInput.Assign(warnings, new MemoryEntry(EntryInput.UndefinedValue));
+            var warningsVariable=EntryInput.GetControlVariable(warnings);
+            warningsVariable.WriteMemory(EntryInput.Snapshot,new MemoryEntry(EntryInput.UndefinedValue));
         }
     }
 }

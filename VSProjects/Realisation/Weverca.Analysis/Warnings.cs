@@ -31,8 +31,9 @@ namespace Weverca.Analysis
             var newEntry = new List<Value>(previousWarnings);
             newEntry.Add(flowOutSet.CreateInfo(warning));
 
-            flowOutSet.FetchFromGlobal(WARNING_STORAGE);
-            flowOutSet.Assign(WARNING_STORAGE, new MemoryEntry(newEntry));
+           // flowOutSet.FetchFromGlobal(WARNING_STORAGE);
+            var warnings=flowOutSet.GetControlVariable(WARNING_STORAGE);
+            warnings.WriteMemory(flowOutSet.Snapshot, new MemoryEntry(newEntry));
         }
 
         /// <summary>
@@ -42,8 +43,8 @@ namespace Weverca.Analysis
         /// <returns></returns>
         public static IEnumerable<Value> ReadWarnings(FlowOutputSet flowOutSet)
         {
-            flowOutSet.FetchFromGlobal(WARNING_STORAGE);
-            var result = flowOutSet.ReadValue(WARNING_STORAGE).PossibleValues;
+            //flowOutSet.FetchFromGlobal(WARNING_STORAGE);
+            var result = flowOutSet.ReadControlVariable(WARNING_STORAGE).ReadMemory(flowOutSet.Snapshot).PossibleValues;
             return from value in result where !(value is UndefinedValue) select value;
         }
     }
