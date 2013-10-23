@@ -44,7 +44,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         public bool IsFrozen { get; private set; }
         /// <summary>
-        /// Determine that memory snapshot has changed on last commit
+        /// Determine that the snapshot commited by the last transaction differs from the snapshot commited by the previous transaction
+        /// Always return false if the transaction is started and not yet commited
         /// </summary>
         public bool HasChanged { get; private set; }
 
@@ -89,7 +90,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         protected abstract void startTransaction();
         /// <summary>
-        /// Commit started transaction - if changes has been detected during transaction must return true, false otherwise
+        /// Commit started transaction - must return true if the content of the snapshot is different 
+        /// than the content commited by previous transaction, false otherwise
         /// NOTE:
         ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
         /// </summary>
