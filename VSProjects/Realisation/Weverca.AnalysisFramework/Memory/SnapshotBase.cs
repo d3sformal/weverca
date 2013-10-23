@@ -91,7 +91,7 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract void startTransaction();
         /// <summary>
         /// Commit started transaction - must return true if the content of the snapshot is different 
-        /// than the content commited by previous transaction, false otherwise
+        /// than the content commited by the previous transaction, false otherwise
         /// NOTE:
         ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
         /// </summary>
@@ -456,7 +456,10 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <summary>
-        /// Commit snapshot transaction - if snapshot has been changed during transaction HasChanged is set to true
+        /// Commit started transaction - sets HasChanged to true if the content of the snapshot is different 
+        /// than the content commited by the previous transaction, sets it to false otherwise
+        /// NOTE:
+        ///     Difference is meant in semantic (two objects with different references but same content doesn't mean difference)
         /// </summary>
         public void CommitTransaction()
         {
