@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
@@ -32,7 +31,7 @@ namespace Weverca.Analysis.FlowResolver
             //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
 
             ConditionParts conditionParts = new ConditionParts(condition.Form, outSet, log, condition.Parts);
-            return conditionParts.MakeAssumption();
+            return conditionParts.MakeAssumption(null);
         }
 
         /// <summary>
@@ -58,20 +57,43 @@ namespace Weverca.Analysis.FlowResolver
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Reports about try block scope start
+        /// </summary>
+        /// <param name="outSet"></param>
+        /// <param name="catchBlockStarts">Catch blocks associated with starting try block</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Reports about try block scope end
+        /// </summary>
+        /// <param name="outSet"></param>
+        /// <param name="catchBlockStarts">Catch blocks associated with ending try block</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             throw new NotImplementedException();
         }
-        #endregion
 
+        /// <summary>
+        /// Process throw statement according to current flow
+        /// </summary>
+        /// <param name="outSet">Flow output set</param>
+        /// <param name="throwStmt">Processed throw statement</param>
+        /// <param name="throwedValue">Value that was supplied into throw statement</param>
+        /// <returns>
+        /// All possible catch block starts
+        /// </returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, PHP.Core.AST.ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             throw new NotImplementedException();
         }
+
+        #endregion
     }
 }

@@ -18,10 +18,10 @@ namespace Weverca.Analysis.FlowResolver
         #region Members
 
         List<ConditionPart> conditionParts = new List<ConditionPart>();
-        //TODO: something for holding values of variables. It might be useful to extend memory model.
 
         ISnapshotReadWrite flowOutputSet;
         ConditionForm conditionForm;
+        EvaluationLog log;
 
         #endregion
 
@@ -56,14 +56,14 @@ namespace Weverca.Analysis.FlowResolver
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConditionParts"/> class.
+        /// Initializes a new instance of the <see cref="ConditionParts" /> class.
         /// </summary>
         /// <param name="conditionForm">The condition form.</param>
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="langElements">The elements of the condition.</param>
         public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, params LangElement[] langElements)
-            : this(conditionForm, flowOutputSet, langElements.Select(a => new ConditionPart(a, log)))
+            : this(conditionForm, flowOutputSet, log, langElements.Select(a => new ConditionPart(a, log)))
         { }
 
         /// <summary>
@@ -82,20 +82,22 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="conditionForm">The condition form.</param>
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
+        /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, IEnumerable<ConditionPart> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, IEnumerable<ConditionPart> conditionParts)
         {
             this.flowOutputSet = flowOutputSet;
             this.conditionParts.AddRange(conditionParts);
+            this.log = log;
             
             this.conditionForm = conditionForm;
             if (this.conditionParts.Count == 1)
             {
-                if (conditionForm == ConditionForm.Some)
+                if (conditionForm == ConditionForm.Some || conditionForm == ConditionForm.ExactlyOne)
                 {
                     this.conditionForm = ConditionForm.All;
                 }
-                else if (conditionForm == ConditionForm.SomeNot)
+                else if (conditionForm == ConditionForm.SomeNot || conditionForm == ConditionForm.NotExactlyOne)
                 {
                     this.conditionForm = ConditionForm.None;
                 }
@@ -109,8 +111,15 @@ namespace Weverca.Analysis.FlowResolver
         /// <summary>
         /// Tries to confirm the assumption and setup the environment inside of the assumed block.
         /// </summary>
-        /// <returns><c>false</c> is returned if the assumption can be proved to be wrong; otherwise <c>true</c> is returned.</returns>
-        public bool MakeAssumption()
+        /// <param name="outputMemoryContext">
+        ///     If set to <c>null</c>, output will be written to flowOutputSet given provided while constracting this instance;
+        ///     otherwise output will be written into this parameter.
+        /// </param>
+        /// <returns>
+        ///   <c>false</c> is returned if the assumption can be proved to be wrong; otherwise <c>true</c> is returned.
+        /// </returns>
+        /// <exception cref="System.NotSupportedException"></exception>
+        public bool MakeAssumption(MemoryContext outputMemoryContext)
         {
             bool willAssume;
             switch (conditionForm)
@@ -127,15 +136,41 @@ namespace Weverca.Analysis.FlowResolver
                 case ConditionForm.SomeNot:
                     willAssume = FalsePartsCount > 0 || UnknownPartsCount > 0;
                     break;
+                case ConditionForm.ExactlyOne:
+                    willAssume = TruePartsCount == 1 || UnknownPartsCount > 0;
+                    break;
+                case ConditionForm.NotExactlyOne:
+                    willAssume = TruePartsCount != 1 || UnknownPartsCount > 0;
+                    break;
                 default:
                     throw new NotSupportedException(string.Format("Condition form \"{0}\" is not supported", conditionForm));
             }
 
             if (willAssume)
             {
+                MemoryContext memoryContext = outputMemoryContext ?? new MemoryContext(log, flowOutputSet);
+                
+                bool intersectionMerge = conditionForm == ConditionForm.All || conditionForm == ConditionForm.None || conditionForm == ConditionForm.ExactlyOne ?
+                    true : false;
+
                 foreach (var conditionPart in conditionParts)
                 {
-                    conditionPart.AssumeCondition(conditionForm, flowOutputSet);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
+                    conditionPart.AssumeCondition(conditionForm, currentMemoryContext, flowOutputSet);
+                    if (intersectionMerge)
+                    {
+                        memoryContext.IntersectionMerge(currentMemoryContext);
+                    }
+                    else
+                    {
+                        memoryContext.UnionMerge(currentMemoryContext);
+                    }
+                }
+
+                //If this condition is false, then we are in recursion. Made by splitting 1 condition with logic operator into two.
+                if (outputMemoryContext == null)
+                {
+                    memoryContext.AssignToSnapshot(flowOutputSet);
                 }
             }
 
