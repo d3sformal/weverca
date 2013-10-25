@@ -689,8 +689,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(allValues);
         }
 
-        public override void Foreach(MemoryEntry enumeree, VariableIdentifier keyVariable,
-            VariableIdentifier valueVariable)
+        public override void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable,
+            ReadWriteSnapshotEntryBase valueVariable)
         {
             // TODO: This is only basic functionality, for instance, reference of element is not recognized
 
@@ -716,13 +716,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 values.Add(OutSet.AnyValue);
             }
 
-            foreach (var valueName in valueVariable.PossibleNames)
-            {
-                // There could be no values because array could have no elements
-                // However it is fine because in this case, foreach will not trace to loop body
-                var entry = new MemoryEntry(values);
-                OutSet.Assign(valueName, entry);
-            }
+
+            // There could be no values because array could have no elements
+            // However it is fine because in this case, foreach will not trace to loop body
+            var entry = new MemoryEntry(values);
+            valueVariable.WriteMemory(OutSnapshot, entry);
 
             if (!isAlwaysArray)
             {

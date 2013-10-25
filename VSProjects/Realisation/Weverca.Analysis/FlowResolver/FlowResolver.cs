@@ -30,7 +30,7 @@ namespace Weverca.Analysis.FlowResolver
             //TODO: How to resolve not-bool conditions, like if (1) etc.?
             //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
 
-            ConditionParts conditionParts = new ConditionParts(condition.Form, outSet, log, condition.Parts);
+            ConditionParts conditionParts = new ConditionParts(condition.Form, outSet.Snapshot, log, condition.Parts);
             return conditionParts.MakeAssumption(null);
         }
 
@@ -42,7 +42,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="dispatchType">Type of merged call</param>
         public override void CallDispatchMerge(FlowOutputSet callerOutput,IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs, ExtensionType dispatchType)
         {
-            var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet as ISnapshotReadonly).ToArray();
+            var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet).ToArray();
             callerOutput.MergeWithCallLevel(ends);
         }
 

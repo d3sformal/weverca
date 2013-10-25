@@ -218,8 +218,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="enumeree">Enumerated value</param>
         /// <param name="keyVariable">Variable where keys are stored</param>
         /// <param name="valueVariable">Variable where values are stored</param>
-        public abstract void Foreach(MemoryEntry enumeree, VariableIdentifier keyVariable,
-            VariableIdentifier valueVariable);
+        public abstract void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable,
+            ReadWriteSnapshotEntryBase valueVariable);
 
         /// <summary>
         /// Process concatenation of given parts

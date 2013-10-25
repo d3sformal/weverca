@@ -66,8 +66,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal IndirectVariablePoint(IndirectVarUse variable, ValuePoint variableName, ValuePoint thisObj)
         {
-            NeedsExpressionEvaluator = true;
-
             Variable = variable;
             VariableName = variableName;
         }

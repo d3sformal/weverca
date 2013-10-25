@@ -37,7 +37,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal ConstantProgramPoint(LangElement partial, ConstantProvider constantProvider)
         {
-            NeedsExpressionEvaluator = true;
             _constantProvider = constantProvider;
             _partial = partial;
         }

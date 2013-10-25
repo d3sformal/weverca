@@ -19,8 +19,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal TypeDeclPoint(TypeDecl declaration)
         {
-            NeedsFunctionResolver = true;
-
             Declaration = declaration;
         }
 
@@ -41,7 +39,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal FunctionDeclPoint(FunctionDecl declaration)
         {
-            NeedsFunctionResolver = true;
             Declaration = declaration;
         }
 
@@ -65,8 +62,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal ConstantDeclPoint(ConstantDecl declaration, ValuePoint initializer)
         {
-            NeedsExpressionEvaluator = true;
-
             Declaration = declaration;
             Initializer = initializer;
         }

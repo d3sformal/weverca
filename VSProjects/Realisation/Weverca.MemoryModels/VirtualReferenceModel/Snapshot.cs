@@ -160,12 +160,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 storages.Add(key);
             }
 
-            return new SnapshotStorageEntry(storages.ToArray());
+            return new SnapshotStorageEntry(variable, storages.ToArray());
         }
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
-            return new SnapshotStorageEntry(new[] { getOrCreateKey(name, VariableKind.Control) });
+            return new SnapshotStorageEntry(new VariableIdentifier(name), new[] { getOrCreateKey(name, VariableKind.Control) });
         }
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)

@@ -37,7 +37,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal IncDecExPoint(IncDecEx incDecEx, ValuePoint incrementedValue)
         {            
-            NeedsExpressionEvaluator = true;
             IncDecEx = incDecEx;
             IncrementedValue = incrementedValue;
             IncrementTarget = incrementedValue as LValuePoint;
@@ -83,7 +82,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal ConcatExPoint(ConcatEx concat, IEnumerable<ValuePoint> parts)
         {
-            NeedsExpressionEvaluator = true;
             Parts = parts;
         }
 
@@ -111,8 +109,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal UnaryExPoint(UnaryEx expression, ValuePoint operand)
         {
-            NeedsExpressionEvaluator = true;
-
             Expression = expression;
             Operand = operand;
         }
@@ -145,8 +141,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal BinaryExPoint(BinaryEx expression, ValuePoint lOperand, ValuePoint rOperand)
         {
-            NeedsExpressionEvaluator = true;
-
             Expression = expression;
             LeftOperand = lOperand;
             RightOperand = rOperand;
@@ -177,8 +171,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal IncludingExPoint(IncludingEx include, ValuePoint includePath)
             : base(null, null, new ValuePoint[] { includePath })
         {
-            NeedsFlowResolver = true;
-
             Include = include;
             IncludePath = includePath;
         }
@@ -206,8 +198,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public ArrayExPoint(ArrayEx array, LinkedList<KeyValuePair<ValuePoint, ValuePoint>> initializedValues)
         {
-            NeedsExpressionEvaluator = true;
-
             _initializedValues = initializedValues;
             Array = array;
         }
@@ -246,17 +236,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal NewExPoint(NewEx newEx, ValuePoint name, ValuePoint[] arguments)
             : base(null, newEx.CallSignature, arguments)
         {
-            NeedsFunctionResolver = true;
-            NeedsExpressionEvaluator = true;
             Name = name;
-
             NewEx = newEx;
         }
 
         protected override void flowThrough()
         {
             PrepareArguments();
-
 
             MemoryEntry value;
             //Create object according to class name

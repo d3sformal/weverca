@@ -15,8 +15,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
     {
         private readonly VariableKey[] _storages;
 
-        internal SnapshotStorageEntry(params VariableKey[] storage)
+        /// <summary>
+        /// If snapshot entry belongs to variable identifier, store it for next use
+        /// </summary>
+        private readonly VariableIdentifier _identifier;
+
+        internal SnapshotStorageEntry(VariableIdentifier identifier, params VariableKey[] storage)
         {
+            _identifier = identifier;
             _storages = storage;
         }
 
@@ -24,7 +30,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         {
             C(context).Write(_storages, value);
         }
-        
+
         protected override bool isDefined(SnapshotBase context)
         {
             foreach (var storage in _storages)
@@ -79,9 +85,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
             var snapshot = C(context);
-            var indexVisitor = new IndexStorageVisitor(this,snapshot, index);
+            var indexVisitor = new IndexStorageVisitor(this, snapshot, index);
 
-            return new SnapshotStorageEntry(indexVisitor.Storages);
+            return new SnapshotStorageEntry(null, indexVisitor.Storages);
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field)
@@ -89,12 +95,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var snapshot = C(context);
             var fieldVisitor = new FieldStorageVisitor(this, snapshot, field);
 
-            return new SnapshotStorageEntry(fieldVisitor.Storages);
+            return new SnapshotStorageEntry(null, fieldVisitor.Storages);
         }
 
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return _identifier;
         }
     }
 }

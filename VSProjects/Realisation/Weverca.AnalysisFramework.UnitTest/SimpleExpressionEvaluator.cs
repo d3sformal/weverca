@@ -16,9 +16,9 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     internal class SimpleExpressionEvaluator : ExpressionEvaluatorBase
     {
-        public override void Assign(ReadWriteSnapshotEntryBase target , MemoryEntry value)
+        public override void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry value)
         {
-            target.WriteMemory(OutSnapshot,value);
+            target.WriteMemory(OutSnapshot, value);
         }
 
         public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
@@ -28,7 +28,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase arrayValue, MemberIdentifier index)
         {
-            return arrayValue.ReadIndex(OutSnapshot,index);
+            return arrayValue.ReadIndex(OutSnapshot, index);
         }
 
 
@@ -58,7 +58,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             return array;
         }
-             
+
 
         public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
         {
@@ -239,22 +239,19 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
-        public override void Foreach(MemoryEntry enumeree, VariableIdentifier keyVariable, VariableIdentifier valueVariable)
+        public override void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable, ReadWriteSnapshotEntryBase valueVariable)
         {
-            if (valueVariable.IsDirect)
+            var values = new HashSet<Value>();
+
+            var array = enumeree.PossibleValues.First() as AssociativeArray;
+            var indexes = OutSet.IterateArray(array);
+
+            foreach (var index in indexes)
             {
-                var values = new HashSet<Value>();
-
-                var array = enumeree.PossibleValues.First() as AssociativeArray;
-                var indexes = OutSet.IterateArray(array);
-
-                foreach (var index in indexes)
-                {
-                    values.UnionWith(OutSet.GetIndex(array, index).PossibleValues);
-                }
-
-                OutSet.Assign(valueVariable.DirectName, new MemoryEntry(values));
+                values.UnionWith(OutSet.GetIndex(array, index).PossibleValues);
             }
+
+            valueVariable.WriteMemory(OutSnapshot, new MemoryEntry(values));
         }
 
         public override MemoryEntry Constant(GlobalConstUse x)
@@ -332,9 +329,9 @@ namespace Weverca.AnalysisFramework.UnitTest
             foreach (var possibleMember in memberRepresentation.PossibleValues)
             {
                 var value = possibleMember as ScalarValue;
-                if (value ==null)
+                if (value == null)
                     continue;
-                
+
                 possibleNames.Add(value.RawValue.ToString());
             }
             return new MemberIdentifier(possibleNames);

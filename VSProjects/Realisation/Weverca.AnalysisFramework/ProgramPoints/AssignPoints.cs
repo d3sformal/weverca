@@ -31,7 +31,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal AssignPoint(ValueAssignEx assign, LValuePoint lOperand, ValuePoint rOperand)
         {
-            NeedsExpressionEvaluator = true;
             LOperand = lOperand;
             ROperand = rOperand;
             Assign = assign;
@@ -73,7 +72,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal AssignConcatPoint(ValueAssignEx assign, ValuePoint lOperand, ValuePoint rOperand)
         {
-            NeedsExpressionEvaluator = true;
             LOperand = lOperand;
             ROperand = rOperand;
             Assign = assign;
@@ -134,7 +132,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal AssignOperationPoint(ValueAssignEx assign, LValuePoint lOperand, ValuePoint rOperand)
         {
-            NeedsExpressionEvaluator = true;
             LOperand = lOperand;
             ROperand = rOperand;
             Assign = assign;
@@ -207,7 +204,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal RefAssignPoint(RefAssignEx assign, LValuePoint lOperand, ValuePoint rOperand)
         {
-            NeedsExpressionEvaluator = true;
             LOperand = lOperand;
             ROperand = rOperand;
             Assign = assign;

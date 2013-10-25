@@ -35,8 +35,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal ItemUsePoint(ItemUse itemUse, ValuePoint usedItem, ValuePoint index)
         {
-            NeedsExpressionEvaluator = true;
-
             ItemUse = itemUse;
             UsedItem = usedItem;
             Index = index;

@@ -38,7 +38,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             switch (condition.Form)
             {
                 case ConditionForm.All:
-                    willAssume = needsAll(condition.Parts);
+                    willAssume = needsAll(outSet.Snapshot, condition.Parts);
                     break;
 
                 default:
@@ -117,18 +117,17 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
-            outSet.Assign(new VariableName(".throwed_value"),throwedValue);
+            outSet.Assign(new VariableName(".throwed_value"), throwedValue);
 
-            if(throwedValue.Count!=1)
+            if (throwedValue.Count != 1)
                 throw new NotImplementedException();
-            
-            var exceptionObj=(ObjectValue)throwedValue.PossibleValues.First();
-                        
+
+            var exceptionObj = (ObjectValue)throwedValue.PossibleValues.First();
+
             var targetBlocks = new List<ProgramPointBase>();
 
-            outSet.FetchFromGlobal(CatchBlocks_Storage);
-            var catchBlocks = outSet.ReadValue(CatchBlocks_Storage);       
-     
+            var catchBlocks = outSet.ReadVariable(new VariableIdentifier(CatchBlocks_Storage), true).ReadMemory(outSet.Snapshot);
+
             //find catch blocks with valid scope and matchin catch condition
             foreach (InfoValue<CatchBlockInfo> blockInfo in catchBlocks.PossibleValues)
             {
@@ -185,13 +184,13 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #region Assumption helpers
 
-        private bool needsAll(IEnumerable<Expressions.Postfix> conditionParts)
+        private bool needsAll(SnapshotBase input, IEnumerable<Expressions.Postfix> conditionParts)
         {
             //we are searching for one part, that can be evaluated only as false
 
             foreach (var evaluatedPart in conditionParts)
             {
-                var value = _log.GetValue(evaluatedPart.SourceElement);
+                var value = _log.ReadSnapshotEntry(evaluatedPart.SourceElement).ReadMemory(input);
                 if (evalOnlyFalse(value))
                 {
                     return false;

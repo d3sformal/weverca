@@ -133,7 +133,8 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal static void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            var entry = outset.ReadValue(new VariableName(variableName));
+            var variable=outset.ReadVariable(new VariableIdentifier(variableName));
+            var entry = variable.ReadMemory(outset.Snapshot);
 
             var actualValues = (from ScalarValue<T> value in entry.PossibleValues select value.Value).ToArray();
 

@@ -22,8 +22,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal FunctionCallPoint(DirectFcnCall functionCall, ValuePoint thisObj, ValuePoint[] arguments)
             : base(thisObj, functionCall.CallSignature, arguments)
         {
-            NeedsFunctionResolver = true;
-
             FunctionCall = functionCall;
         }
 
@@ -58,8 +56,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal IndirectFunctionCallPoint(IndirectFcnCall functionCall, ValuePoint name, ValuePoint thisObj, ValuePoint[] arguments)
             : base(thisObj, functionCall.CallSignature, arguments)
         {
-            NeedsFunctionResolver = true;
-
             Name = name;
             FunctionCall = functionCall;
         }

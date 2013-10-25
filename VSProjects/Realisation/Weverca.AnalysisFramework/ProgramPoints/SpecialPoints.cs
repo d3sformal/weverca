@@ -92,9 +92,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal AssumePoint(AssumptionCondition condition, IEnumerable<ValuePoint> expressionParts)
         {
-            NeedsFlowResolver = true;
             Condition = condition;
-            Log = new EvaluationLog(expressionParts);
+            Log = new EvaluationLog(this, expressionParts);
         }
 
         protected override void flowThrough()
@@ -131,9 +130,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal ExtensionSinkPoint(FlowExtension owningExtension)
         {
-            NeedsFlowResolver = true;
-            NeedsFunctionResolver = true;
-
             OwningExtension = owningExtension;
         }
 
@@ -171,7 +167,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal NativeAnalyzerPoint(NativeAnalyzer analyzer)
         {
-            NeedsFunctionResolver = true;
             Analyzer = analyzer;
         }
 

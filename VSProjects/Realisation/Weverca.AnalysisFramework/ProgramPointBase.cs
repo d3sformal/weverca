@@ -37,9 +37,7 @@ namespace Weverca.AnalysisFramework
         protected FlowOutputSet _inSet;
         private FlowOutputSet _outSet;
 
-        protected bool NeedsExpressionEvaluator;
-        protected bool NeedsFunctionResolver;
-        protected bool NeedsFlowResolver;
+
 
         protected FlowController Flow;
 
@@ -176,16 +174,18 @@ namespace Weverca.AnalysisFramework
 
         private void prepareExtension()
         {
-            if (!NeedsFunctionResolver)
-            {
-                Services.FunctionResolver.SetContext(Flow);
-            }
-
             foreach (var ext in Extension.Branches)
             {
                 var start = ext.Start;
 
-                _outSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
+                if (Extension.Type == ExtensionType.ParallelCall)
+                {
+                    _outSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
+                }
+                else
+                {
+                    _outSet.Extend(_inSet);
+                }
                 if (Flow.Arguments == null)
                     Flow.Arguments = new MemoryEntry[0];
                 Services.FunctionResolver.InitializeCall(_outSet, ext, Flow.Arguments);
@@ -194,13 +194,8 @@ namespace Weverca.AnalysisFramework
 
         private void activateResolvers()
         {
-            //     if (NeedsExpressionEvaluator)
             Services.Evaluator.SetContext(Flow);
-
-            //   if (NeedsFunctionResolver)
             Services.FunctionResolver.SetContext(Flow);
-
-
         }
 
         private void setNewController()

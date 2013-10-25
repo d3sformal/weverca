@@ -19,7 +19,7 @@ namespace Weverca.AnalysisFramework
     public class EvaluationLog
     {
         //=========This is obsolete===========
-        #region Partial associations members
+        
 
         #region Internal methods for associating partials
         /// <summary>
@@ -28,6 +28,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="partial">Partial which value is associated</param>
         /// <param name="value">Associated value</param>
+        [Obsolete("Use constructor with specified expression parts instead)")]
         internal void AssociateValue(LangElement partial, MemoryEntry value)
         {
             var point = new TestMemoryEntryPoint(partial, value);
@@ -40,34 +41,57 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="partial">Partial which variable is associated</param>
         /// <param name="value">Associated variable</param>
+        [Obsolete("Use constructor with specified expression parts instead)")]
         internal void AssociateVariable(LangElement partial, VariableIdentifier variable)
         {
             var point = new TestVariablePoint(partial, variable);
             associatePoint(point);
         }
-        #endregion
 
         #endregion
+        
 
         [Obsolete("Use constructor with specified expression parts. It doesn't need explicit value association")]
         internal EvaluationLog()
         {
+            _owner = new TestMemoryEntryPoint(null, null);
+            _owner.Initialize(new FlowOutputSet(null), new FlowOutputSet(null));
+        }
+
+        /// <summary>
+        /// Get value associated (computed during analysis) for given partial.         
+        /// </summary>
+        /// <param name="partial">Partial which value will be returned</param>
+        /// <returns>Associated value, or null if there is no associated value</returns>
+        [Obsolete("Use read snapshot entry instead. (Change because of new Snapshot access API)")]
+        public MemoryEntry GetValue(LangElement partial)
+        {
+            var entry = ReadSnapshotEntry(partial);
+            if (entry == null)
+                return null;
+
+            return entry.ReadMemory(_owner.InSnapshot);
         }
         //====================================
 
+        #region Partial associations members
+        
+        readonly Dictionary<LangElement, LValuePoint> _lValues = new Dictionary<LangElement, LValuePoint>();
 
-        Dictionary<LangElement, LValuePoint> _lValues = new Dictionary<LangElement, LValuePoint>();
+        readonly Dictionary<LangElement, ValuePoint> _rValues = new Dictionary<LangElement, ValuePoint>();
 
-        Dictionary<LangElement, ValuePoint> _rValues = new Dictionary<LangElement, ValuePoint>();
+        readonly Dictionary<LangElement, ProgramPointBase> _points = new Dictionary<LangElement, ProgramPointBase>();
 
-        Dictionary<LangElement, ProgramPointBase> _points = new Dictionary<LangElement, ProgramPointBase>();
+        readonly  ProgramPointBase _owner;
+        #endregion
 
         /// <summary>
         /// Expects expression parts that are already not connected into PPG !!!
         /// </summary>
         /// <param name="expressionParts">Parts of condition expression</param>
-        internal EvaluationLog(IEnumerable<ProgramPointBase> expressionParts)
+        internal EvaluationLog(ProgramPointBase owner, IEnumerable<ProgramPointBase> expressionParts)
         {
+            _owner = owner; 
             foreach (var part in expressionParts)
             {
                 associatePointHierarchy(part);
@@ -110,21 +134,14 @@ namespace Weverca.AnalysisFramework
 
 
         #region Public methods for retrieving associations for partials
-        /// <summary>
-        /// Get value associated (computed during analysis) for given partial.         
-        /// </summary>
-        /// <param name="partial">Partial which value will be returned</param>
-        /// <returns>Associated value, or null if there is no associated value</returns>
-        public MemoryEntry GetValue(LangElement partial)
+
+
+        public ReadSnapshotEntryBase ReadSnapshotEntry(LangElement partial)
         {
             ValuePoint rValue;
             if (_rValues.TryGetValue(partial, out rValue))
             {
-                if (rValue.InSet == null)
-                    //TODO this is only workaround for back compatibility with Flow resolver
-                    return rValue.Value.ReadMemory(null);
-
-                return rValue.Value.ReadMemory(rValue.InSnapshot);
+                return rValue.Value;
             }
 
             return null;

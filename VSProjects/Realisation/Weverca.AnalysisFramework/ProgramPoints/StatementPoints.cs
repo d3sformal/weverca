@@ -59,7 +59,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal GlobalStmtPoint(GlobalStmt global, LValuePoint[] variables)
         {
-            NeedsExpressionEvaluator = true;
             Global = global;
             _variables = variables;
         }
@@ -93,7 +92,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal EchoStmtPoint(EchoStmt echoStmt, ValuePoint[] parameters)
         {
-            NeedsExpressionEvaluator = true;
             Echo = echoStmt;
             _parameters = parameters;
         }
@@ -136,8 +134,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal ForeachStmtPoint(ForeachStmt foreachStmt, ValuePoint enumeree, LValuePoint keyVar, LValuePoint valVar)
         {
-            NeedsExpressionEvaluator = true;
-
             Foreach = foreachStmt;
             KeyVar = keyVar;
             ValVar = valVar;
@@ -146,8 +142,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var keyVar = KeyVar == null ? null : KeyVar.LValue.GetVariableIdentifier(InSet.Snapshot);
-            var valVar = ValVar == null ? null : ValVar.LValue.GetVariableIdentifier(InSet.Snapshot);
+            var keyVar = KeyVar == null ? null : KeyVar.LValue;
+            var valVar = ValVar == null ? null : ValVar.LValue;
 
             Services.Evaluator.Foreach(Enumeree.Value.ReadMemory(InSet.Snapshot), keyVar, valVar);
         }
@@ -169,7 +165,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal JumpStmtPoint(ValuePoint expression, JumpStmt jmp)
         {
-            NeedsFunctionResolver = true;
             Jump = jmp;
             Expression = expression;
         }
