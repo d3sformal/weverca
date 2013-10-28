@@ -44,7 +44,7 @@ namespace Weverca.Analysis
         static public bool checkArgumentsCount(FlowController flow, List<NativeFunction> nativeFunctions)
         {
             //check number of arduments
-            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
 
             //argument count hassnt been comupted yet
@@ -148,7 +148,7 @@ namespace Weverca.Analysis
         public static void checkArgumentTypes(FlowController flow, List<NativeFunction> nativeFunctions)
         {
             List<List<AnalysisWarning>> warningsList = new List<List<AnalysisWarning>>();
-            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
 
             foreach (var nativeFunction in nativeFunctions)
@@ -160,7 +160,7 @@ namespace Weverca.Analysis
                     for (int i = 0; i < argumentCount; i++)
                     {
 
-                        MemoryEntry arg = flow.InSet.ReadValue(Argument(i));
+                        MemoryEntry arg = flow.InSet.ReadVariable(Argument(i)).ReadMemory(flow.InSet.Snapshot);
 
                         NativeFunctionArgument functionArgument = nativeFunction.Arguments.ElementAt(functionArgumentNumber);
 
@@ -194,7 +194,7 @@ namespace Weverca.Analysis
         public static List<Value> ResolveAliasArguments(FlowController flow, List<NativeFunction> nativeFunctions)
         {
             List<Value> result = new List<Value>();
-            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
 
             foreach (var nativeFunction in nativeFunctions)
@@ -206,13 +206,13 @@ namespace Weverca.Analysis
                     for (int i = 0; i < argumentCount; i++)
                     {
 
-                        MemoryEntry arg = flow.InSet.ReadValue(Argument(i));
+                        MemoryEntry arg = flow.InSet.ReadVariable(Argument(i)).ReadMemory(flow.InSet.Snapshot);
 
                         NativeFunctionArgument functionArgument = nativeFunction.Arguments.ElementAt(functionArgumentNumber);
                         if (functionArgument.ByReference == true)
                         {
                             MemoryEntry res = NativeAnalyzerUtils.ResolveReturnValue(functionArgument.Type, flow);
-                            flow.OutSet.Assign(Argument(i), res);
+                            flow.OutSet.GetVariable(Argument(i)).WriteMemory(flow.OutSet.Snapshot, res);
                             result.AddRange(res.PossibleValues);
                         }
 
@@ -386,6 +386,7 @@ namespace Weverca.Analysis
 
         private static Value CreateObject(FlowController flow, string type)
         {
+
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(flow);
             QualifiedName typeName = new QualifiedName(new Name(type));
             if (objectAnalyzer.ExistClass(typeName))
@@ -402,6 +403,7 @@ namespace Weverca.Analysis
                         if (field.IsStatic == false)
                         {
                             flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), (NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow)));
+      
                         }
                     }
                 }
@@ -414,13 +416,13 @@ namespace Weverca.Analysis
 
         }
 
-        public static VariableName Argument(int index)
+        public static VariableIdentifier Argument(int index)
         {
             if (index < 0)
             {
                 throw new NotSupportedException("Cannot get argument variable for negative index");
             }
-            return new VariableName(".arg" + index);
+            return new VariableIdentifier(".arg" + index);
         }
     }
 }

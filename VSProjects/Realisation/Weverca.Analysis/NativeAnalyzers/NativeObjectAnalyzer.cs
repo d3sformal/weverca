@@ -418,45 +418,34 @@ namespace Weverca.Analysis
             var arguments = getArguments(flow);
             var allFieldsEntries = new List<MemoryEntry>();
 
-            foreach (var value in flow.OutSet.ReadValue(new VariableName("this")).PossibleValues)
+            var thisVariable=flow.OutSet.GetVariable(new VariableIdentifier("this"));
+            var fieldsEntries = new List<MemoryEntry>();
+            foreach (FieldInfo field in fields.Values)
             {
-                if (value is ObjectValue)
-                {
-                    var fieldsEntries = new List<MemoryEntry>();
-                    var obj = value as ObjectValue;
-                    foreach (FieldInfo field in fields.Values)
-                    {
-                        var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
-                        allFieldsEntries.Add(fieldEntry);
-                        fieldsEntries.Add(fieldEntry);
-                    }
+                var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                allFieldsEntries.Add(fieldEntry.ReadMemory(flow.OutSet.Snapshot));
+                fieldsEntries.Add(fieldEntry.ReadMemory(flow.OutSet.Snapshot));
+            }
 
-                    fieldsEntries.Add(new MemoryEntry(value));
-                    fieldsEntries.AddRange(arguments);
-                    foreach (FieldInfo field in fields.Values)
-                    {
-                        var fieldEntry = flow.OutSet.GetField(obj, flow.OutSet.CreateIndex(field.Name.Value));
-                        MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
-                        ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, newfieldValues);
-                        List<Value> addedValues;
-                        flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), addToEntry(fieldEntry, newfieldValues.PossibleValues, out addedValues));
-                        if (addedValues.Count != 0)
-                        {
-                            ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, new MemoryEntry(addedValues));
-                        }
-                    }
-
-                    ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, value);
-                }
-                else if (value is AnyObjectValue)
+            fieldsEntries.AddRange(arguments);
+            foreach (FieldInfo field in fields.Values)
+            {
+                var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
+                ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, newfieldValues);
+                List<Value> addedValues;
+                thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value)).WriteMemory(flow.OutSet.Snapshot,addToEntry(fieldEntry.ReadMemory(flow.OutSet.Snapshot), newfieldValues.PossibleValues, out addedValues));
+                
+                if (addedValues.Count != 0)
                 {
-                    ValueInfoHandler.CopyFlags(flow.OutSet, arguments, value);
+                    ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, new MemoryEntry(addedValues));
                 }
             }
 
+
             allFieldsEntries.AddRange(arguments);
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, functionResult);
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
+            flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot, functionResult);
             var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, (new NativeFunction[1] { Method }).ToList());
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, new MemoryEntry(assigned_aliases));
         }
@@ -477,26 +466,16 @@ namespace Weverca.Analysis
             var fields = nativeClass.Fields;
 
             var createdFields = new List<Value>();
-            foreach (var value in flow.OutSet.ReadValue(new VariableName("this")).PossibleValues)
+            var thisVariable = flow.OutSet.GetVariable(new VariableIdentifier("this"));
+                        
+            foreach (FieldInfo field in fields.Values)
             {
-                if (value is ObjectValue)
+                if (field.IsStatic == false)
                 {
-                    var obj = value as ObjectValue;
-                    foreach (FieldInfo field in fields.Values)
-                    {
-                        if (field.IsStatic == false)
-                        {
-                            var fieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
-                            createdFields.AddRange(fieldValues.PossibleValues);
-                            flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), fieldValues);
-                        }
-                    }
-
-                    createdFields.Add(value);
-                }
-                else if (value is AnyObjectValue)
-                {
-                    ValueInfoHandler.CopyFlags(flow.OutSet, getArguments(flow), value);
+                    var fieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
+                    createdFields.AddRange(fieldValues.PossibleValues);
+                    thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                    thisVariable.WriteMemory(flow.OutSet.Snapshot, fieldValues);
                 }
             }
 
@@ -505,13 +484,13 @@ namespace Weverca.Analysis
 
         private List<MemoryEntry> getArguments(FlowController flow)
         {
-            var argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
-            var argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+            MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
             var arguments = new List<MemoryEntry>();
 
             for (int i = 0; i < argumentCount; i++)
             {
-                arguments.Add(flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(i)));
+                arguments.Add(flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(i)).ReadMemory(flow.OutSet.Snapshot));
             }
 
             return arguments;

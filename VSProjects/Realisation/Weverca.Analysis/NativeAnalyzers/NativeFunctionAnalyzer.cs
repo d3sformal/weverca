@@ -308,7 +308,7 @@ namespace Weverca.Analysis
             }
             //return value
 
-            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
 
             var possibleValues = new List<Value>();
@@ -337,11 +337,11 @@ namespace Weverca.Analysis
             List<MemoryEntry> arguments = new List<MemoryEntry>();
             for (int i = 0; i < argumentCount; i++)
             {
-                arguments.Add(flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(i)));
+               arguments.Add(flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(i)).ReadMemory(flow.OutSet.Snapshot));
             }
 
             MemoryEntry functionResult = new MemoryEntry(possibleValues.ToArray());
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, functionResult);
+            flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot, functionResult);
             ValueInfoHandler.CopyFlags(flow.OutSet, arguments, functionResult);
             List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, nativeFunctions);
             ValueInfoHandler.CopyFlags(flow.OutSet, arguments, new MemoryEntry(assigned_aliases));
@@ -357,8 +357,12 @@ namespace Weverca.Analysis
         public void _define(FlowController flow)
         {
 
-            NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions);
-            MemoryEntry argc = flow.InSet.ReadValue(new VariableName(".argument_count"));
+            if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))
+            {
+                NativeAnalyzerUtils.checkArgumentTypes(flow, nativeFunctions);
+            }
+
+            MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
 
             var nativeFunction = nativeFunctions.ElementAt(0);
@@ -374,7 +378,7 @@ namespace Weverca.Analysis
                 }
                 else
                 {
-                    foreach (var arg2 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(2)).PossibleValues)
+                    foreach (var arg2 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(2)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                     {
                         var unaryVisitor = new UnaryOperationEvaluator(flow, new StringConverter(flow));
                         Value result = unaryVisitor.Evaluate(Operations.BoolCast, arg2);
@@ -403,7 +407,7 @@ namespace Weverca.Analysis
 
                     }
                 }
-                foreach (var arg0 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(0)).PossibleValues)
+                foreach (var arg0 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                 {
                     var stringConverter = new StringConverter(flow);
                     // TODO: arg0Retyped can be null if cannot be converted to StringValue
@@ -425,7 +429,7 @@ namespace Weverca.Analysis
 
                     QualifiedName qConstantName = new QualifiedName(new Name(constantName));
                     List<Value> result = new List<Value>();
-                    foreach (var arg1 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(1)).PossibleValues)
+                    foreach (var arg1 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(1)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                     {
                         if (ValueTypeResolver.IsArray(arg1) || ValueTypeResolver.IsObject(arg1))
                         {
@@ -459,7 +463,7 @@ namespace Weverca.Analysis
             {
                 possibleValues.Add(flow.OutSet.CreateBool(false));
             }
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues));
+            flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot,new MemoryEntry(possibleValues));
         }
 
         //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
@@ -467,7 +471,7 @@ namespace Weverca.Analysis
         {
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))
             {
-                foreach (var arg0 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(0)).PossibleValues)
+                foreach (var arg0 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                 {
                     var stringConverter = new StringConverter(flow);
                     // TODO: arg0Retyped can be null if cannot be converted to StringValue
@@ -484,13 +488,12 @@ namespace Weverca.Analysis
                     {
                         values = UserDefinedConstantHandler.GetConstant(flow.OutSet, name).PossibleValues.ToList();
                     }
-
-                    flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(values));
+                    flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot,new MemoryEntry(values));
                 }
             }
             else
             {
-                flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.UndefinedValue));
+                flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.UndefinedValue));
             }
         }
 
@@ -567,7 +570,7 @@ namespace Weverca.Analysis
             {
                 bool canBeTrue = false;
                 bool canBeFalse = false;
-                foreach (var arg0 in flow.OutSet.ReadValue(NativeAnalyzerUtils.Argument(0)).PossibleValues)
+                foreach (var arg0 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                 {
                     if (del(arg0))
                     {
@@ -593,11 +596,12 @@ namespace Weverca.Analysis
                 {
                     result.Add(flow.OutSet.CreateBool(false));
                 }
-                flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(result));
+
+                flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot,new MemoryEntry(result));
             }
             else
             {
-                flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.AnyBooleanValue));
+                flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.AnyBooleanValue));
             }
         }
 
