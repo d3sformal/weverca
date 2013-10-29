@@ -54,7 +54,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Returns hash code of scalar value, so the class behaves as the scalar type
         /// </summary>
         /// <returns>Hash code of scalar value</returns>
-        public override int GetHashCode()
+        protected override int getHashCode()
         {
             return Value.GetHashCode();
         }
@@ -64,13 +64,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="obj">The object to compare with the current object</param>
         /// <returns><c>true</c> whether objects have the same scalar value, otherwise <c>false</c></returns>
-        public override bool Equals(object obj)
+        protected override bool equals(Value obj)
         {
-            if (base.Equals(obj))
-            {
-                return true;
-            }
-
             var o = obj as ScalarValue<T>;
             if (o == null)
             {
@@ -108,6 +103,12 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitBooleanValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -158,6 +159,12 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitIntegerValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -181,6 +188,12 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitLongintValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -206,6 +219,12 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitFloatValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -227,6 +246,12 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitStringValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -74,6 +74,15 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract ReadWriteSnapshotEntryBase getControlVariable(VariableName name);
 
         /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling in local context. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        protected abstract ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name);
+
+        /// <summary>
         /// Creates snapshot entry containing given value. Created entry doesn't have
         /// explicit memory storage. But it still can be asked for saving indexes, fields, resolving aliases,... !!!
         /// </summary>
@@ -112,7 +121,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="iteratedObject">Object which iterator will be created</param>
         /// <returns>Iterator for given object</returns>
         protected abstract IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject);
-        
+
         /// <summary>
         /// Determine type of given object
         /// </summary>
@@ -125,7 +134,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="createdArray">Created array that has to be initialized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
-        
+
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Create iterator for given array
@@ -168,7 +177,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="entry">Value that will be assigned</param>
         protected abstract void assign(VariableName targetVar, MemoryEntry entry);
 
-      
+
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
         /// This merged info can be than changed with snapshot updatable operations
@@ -255,7 +264,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="entry">Data that will be set on specified index</param>
         protected abstract void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
 
-        
+
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
         /// Get value for field specified by index, in object represented by value 
@@ -382,9 +391,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="statistic">Statistic to be reported</param>
         /// <param name="value">Value that will increase reported statistic</param>
-        protected void Report(Statistic statistic,int value=1)
+        protected void Report(Statistic statistic, int value = 1)
         {
-            _statistics.Report(statistic,value);
+            _statistics.Report(statistic, value);
         }
 
         /// <summary>
@@ -551,6 +560,7 @@ namespace Weverca.AnalysisFramework.Memory
             return arrayIndexExists(array, index);
         }
 
+        #region TODO: Implement as singletons!!!
         public AnyValue AnyValue { get { return new AnyValue(); } }
         public AnyStringValue AnyStringValue { get { return new AnyStringValue(); } }
         public AnyBooleanValue AnyBooleanValue { get { return new AnyBooleanValue(); } }
@@ -562,6 +572,7 @@ namespace Weverca.AnalysisFramework.Memory
         public AnyResourceValue AnyResourceValue { get { return new AnyResourceValue(); } }
         public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
         public VariableName ReturnValue { get { return _returnValue; } }
+        #endregion
 
         public InfoValue<T> CreateInfo<T>(T data)
         {
@@ -1045,8 +1056,32 @@ namespace Weverca.AnalysisFramework.Memory
             return getControlVariable(variable);
         }
 
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling in local context. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        public ReadWriteSnapshotEntryBase GetLocalControlVariable(VariableName variable)
+        {
+            return getLocalControlVariable(variable);
+        }
+
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling in local context. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        public ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable)
+        {
+            return getLocalControlVariable(variable);
+        }
+
         #endregion
 
-        
+
     }
 }

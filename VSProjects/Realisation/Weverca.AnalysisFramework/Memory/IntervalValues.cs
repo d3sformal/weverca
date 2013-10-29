@@ -39,7 +39,7 @@ namespace Weverca.AnalysisFramework.Memory
             visitor.VisitGenericIntervalValue(this);
         }
 
-        public override bool Equals(object obj)
+        protected override bool equals(Value obj)
         {
             var o = obj as IntervalValue<T>;
             if (o == null)
@@ -50,7 +50,7 @@ namespace Weverca.AnalysisFramework.Memory
             return Start.Equals(o.Start) && End.Equals(o.End);
         }
 
-        public override int GetHashCode()
+        protected override int getHashCode()
         {
             return Start.GetHashCode() + End.GetHashCode();
         }
@@ -82,6 +82,12 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitIntervalIntegerValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class LongintIntervalValue : IntervalValue<long>
@@ -105,6 +111,12 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitIntervalLongintValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class FloatIntervalValue : IntervalValue<double>
@@ -127,6 +139,12 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitIntervalFloatValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

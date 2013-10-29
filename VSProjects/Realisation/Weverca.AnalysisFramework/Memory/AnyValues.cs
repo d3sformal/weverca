@@ -11,12 +11,14 @@
         /// </summary>
         internal AnyValue() { }
 
-        public override int GetHashCode()
+        /// <inheritdoc />
+        protected override int getHashCode()
         {
             return GetType().GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        /// <inheritdoc />
+        protected override bool equals(Value obj)
         {
             return GetType() == obj.GetType();
         }
@@ -25,6 +27,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAnyValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -38,6 +46,7 @@
         {
             visitor.VisitAnyScalarValue(this);
         }
+
     }
 
     /// <summary>
@@ -55,6 +64,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAnyBooleanValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -86,6 +101,12 @@
         {
             visitor.VisitAnyIntegerValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -103,6 +124,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAnyLongintValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -122,6 +149,12 @@
         {
             visitor.VisitAnyFloatValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -139,6 +172,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAnyStringValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -170,6 +209,12 @@
         {
             visitor.VisitAnyObjectValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -188,6 +233,12 @@
         {
             visitor.VisitAnyArrayValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -205,6 +256,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAnyResourceValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

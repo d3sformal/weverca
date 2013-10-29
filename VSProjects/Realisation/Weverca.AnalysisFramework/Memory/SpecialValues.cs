@@ -1,16 +1,18 @@
-﻿namespace Weverca.AnalysisFramework.Memory
+﻿using System;
+
+namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
     /// Represent special kind of value. For example these values can express some non-determinism.
     /// </summary>
     public class SpecialValue : Value
     {
-        public override int GetHashCode()
+        protected override int getHashCode()
         {
             return GetType().GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        protected override bool equals(Value obj)
         {
             return GetType() == obj.GetType();
         }
@@ -19,6 +21,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitSpecialValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -31,6 +39,7 @@
         }
     }
 
+    [Obsolete("Use Value.SetInfo() instead")]
     public abstract class InfoValue : SpecialValue
     {
         public readonly object RawData;
@@ -46,12 +55,12 @@
             visitor.VisitInfoValue(this);
         }
 
-        public override int GetHashCode()
+        protected override int getHashCode()
         {
             return RawData.GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        protected override bool equals(Value obj)
         {
             var o = obj as InfoValue;
             if (o == null)
@@ -88,6 +97,12 @@
         public override string ToString()
         {
             return Data.ToString();
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -46,6 +46,26 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitNativeAnalyzerValue(this);
         }
+
+        protected override int getHashCode()
+        {
+            return Analyzer.GetHashCode();
+        }
+
+        protected override bool equals(Value other)
+        {
+            var o = other as NativeAnalyzerValue;
+            if (o == null)
+                return false;
+
+            return Analyzer.Equals(o.Analyzer);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class SourceFunctionValue : FunctionValue
@@ -61,6 +81,26 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitSourceFunctionValue(this);
+        }
+
+        protected override int getHashCode()
+        {
+            return Declaration.GetHashCode();
+        }
+
+        protected override bool equals(Value other)
+        {
+            var o = other as SourceFunctionValue;
+            if (o == null)
+                return false;
+
+            return Declaration.Equals(o.Declaration);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -78,6 +118,26 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitSourceMethodValue(this); 
         }
+
+        protected override int getHashCode()
+        {
+            return Declaration.GetHashCode();
+        }
+
+        protected override bool equals(Value other)
+        {
+            var o = other as SourceMethodValue;
+            if (o == null)
+                return false;
+
+            return Declaration.Equals(o.Declaration);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     public class LambdaFunctionValue : FunctionValue
@@ -93,6 +153,26 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitLambdaFunctionValue(this); 
+        }
+
+        protected override int getHashCode()
+        {
+            return Declaration.GetHashCode();
+        }
+
+        protected override bool equals(Value other)
+        {
+            var o = other as LambdaFunctionValue;
+            if (o == null)
+                return false;
+
+            return Declaration.Equals(o.Declaration);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

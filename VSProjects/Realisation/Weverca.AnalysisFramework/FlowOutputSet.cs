@@ -74,25 +74,7 @@ namespace Weverca.AnalysisFramework
         
         #region Snapshot API wrapping
 
-        public AnyStringValue AnyStringValue { get { return Snapshot.AnyStringValue; } }
-
-        public AnyBooleanValue AnyBooleanValue { get { return Snapshot.AnyBooleanValue; } }
-
-        public AnyIntegerValue AnyIntegerValue  { get { return Snapshot.AnyIntegerValue; } }
-
-        public AnyFloatValue AnyFloatValue { get { return Snapshot.AnyFloatValue; } }
-
-        public AnyLongintValue AnyLongintValue { get { return Snapshot.AnyLongintValue; } }
-
-        public AnyObjectValue AnyObjectValue { get { return Snapshot.AnyObjectValue; } }
-
-        public AnyArrayValue AnyArrayValue { get { return Snapshot.AnyArrayValue; } }
-
-        public AnyResourceValue AnyResourceValue { get { return Snapshot.AnyResourceValue; } }
-
-        public AnyValue AnyValue { get { return Snapshot.AnyValue; } }
-
-        public UndefinedValue UndefinedValue { get { return Snapshot.UndefinedValue; } }
+     
         
         public StringValue CreateString(string literal)
         {
@@ -311,6 +293,11 @@ namespace Weverca.AnalysisFramework
         public ReadWriteSnapshotEntryBase GetControlVariable(VariableName variable)
         {
             return Snapshot.GetControlVariable(variable);
+        }
+
+        public ReadWriteSnapshotEntryBase GetLocalControlVariable(VariableName variable)
+        {
+            return Snapshot.GetLocalControlVariable(variable);
         }
 
         #endregion

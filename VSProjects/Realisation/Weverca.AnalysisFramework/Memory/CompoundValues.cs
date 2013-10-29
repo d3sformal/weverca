@@ -7,6 +7,16 @@
         {
             visitor.VisitCompoundValue(this);
         }
+
+        protected override int getHashCode()
+        {
+            return UID+this.GetType().GetHashCode();
+        }
+
+        protected override bool equals(Value other)
+        {
+            return this == other;
+        }
     }
 
     /// <summary>
@@ -27,6 +37,12 @@
         {
             visitor.VisitObjectValue(this);
         }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -46,6 +62,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitAssociativeArray(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

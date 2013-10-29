@@ -609,5 +609,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 throw new NotImplementedException();
             }
         }
+
+        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -21,7 +21,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private VariableContainer _locals;
         private VariableContainer _globals;
         private VariableContainer _meta;
-        private VariableContainer _controls;
+        private VariableContainer _globalControls;
+        private VariableContainer _localControls;
 
         private DataContainer _data;
 
@@ -34,7 +35,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             _globals = new VariableContainer(VariableKind.Global, this);
             _locals = new VariableContainer(VariableKind.Local, this, _globals);
-            _controls = new VariableContainer(VariableKind.Control, this);
+            _localControls = new VariableContainer(VariableKind.LocalControl, this, _globalControls);
+            _globalControls = new VariableContainer(VariableKind.GlobalControl, this);
             _meta = new VariableContainer(VariableKind.Meta, this);
 
             _data = new DataContainer(this);
@@ -46,7 +48,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             _locals.FlipBuffers();
             _globals.FlipBuffers();
-            _controls.FlipBuffers();
+            _localControls.FlipBuffers();
+            _globalControls.FlipBuffers();
             _meta.FlipBuffers();
             _data.FlipBuffers();
 
@@ -61,7 +64,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 _locals.DifferInCount ||
                 _meta.DifferInCount ||
                 _globals.DifferInCount ||
-                _controls.DifferInCount ||
+                _localControls.DifferInCount ||
+                _globalControls.DifferInCount ||
                 _data.DifferInCount
                 )
             {
@@ -75,8 +79,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             if (
                 _locals.CheckChange() ||
                 _meta.CheckChange() ||
-                _controls.CheckChange() ||
-                _globals.CheckChange()
+                _globalControls.CheckChange() ||
+                _globals.CheckChange() ||
+                _localControls.CheckChange()
                 )
             {
                 //there is change in variable info
@@ -95,7 +100,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             _globals.ExtendBy(input._globals);
             _meta.ExtendBy(input._meta);
-            _controls.ExtendBy(input._controls);
+            _globalControls.ExtendBy(input._globalControls);
             _data.ExtendBy(input._data, true);
 
 
@@ -113,14 +118,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             _data.ClearCurrent();
             _locals.ClearCurrent();
+            _localControls.ClearCurrent();
 
             var isFirst = true;
             foreach (Snapshot input in inputs)
             {
                 //merge info from extending inputs
                 _globals.ExtendBy(input._globals);
-                _controls.ExtendBy(input._controls);
+                _globalControls.ExtendBy(input._globalControls);
                 _locals.ExtendBy(input._locals);
+                _localControls.ExtendBy(input._localControls);
                 _meta.ExtendBy(input._meta);
 
                 _data.ExtendBy(input._data, isFirst);
@@ -138,7 +145,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 //Local variables are not extended
                 _globals.ExtendBy(callInput._globals);
                 _meta.ExtendBy(callInput._meta);
-                _controls.ExtendBy(callInput._controls);
+                _globalControls.ExtendBy(callInput._globalControls);
 
                 _data.ExtendBy(callInput._data, isFirst);
                 isFirst = false;
@@ -165,7 +172,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
-            return new SnapshotStorageEntry(new VariableIdentifier(name), new[] { getOrCreateKey(name, VariableKind.Control) });
+            return new SnapshotStorageEntry(new VariableIdentifier(name), new[] { getOrCreateKey(name, VariableKind.GlobalControl) });
+        }
+
+        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
+        {
+            return new SnapshotStorageEntry(new VariableIdentifier(name), new[] { getOrCreateKey(name, VariableKind.LocalControl) });
         }
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
@@ -660,7 +672,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// <returns></returns>
         private VariableKind repairKind(VariableKind kind, bool forceGlobal)
         {
-            if (kind == VariableKind.Control)
+            if (kind == VariableKind.GlobalControl)
                 return kind;
 
             if (kind == VariableKind.Meta)
@@ -681,8 +693,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     return _globals;
                 case VariableKind.Local:
                     return _locals;
-                case VariableKind.Control:
-                    return _controls;
+                case VariableKind.GlobalControl:
+                    return _globalControls;
                 case VariableKind.Meta:
                     return _meta;
                 default:
@@ -731,8 +743,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             result.AppendLine("===GLOBALS===");
             result.AppendLine(_globals.ToString());
 
-            result.AppendLine("===CONTROLS===");
-            result.AppendLine(_controls.ToString());
+            result.AppendLine("===GLOBAL CONTROLS===");
+            result.AppendLine(_globalControls.ToString());
+
+            result.AppendLine("===LOCAL CONTROLS===");
+            result.AppendLine(_localControls.ToString());
 
             result.AppendLine("\n===META===");
             result.AppendLine(_meta.ToString());
@@ -772,13 +787,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
-
-
-
-
-
-
-
+        
 
         //========================OLD API IMPLEMENTATION=======================
         #region OLD API related methods (will be removed after backcompatibility won't be needed)
@@ -1029,5 +1038,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
+
     }
 }

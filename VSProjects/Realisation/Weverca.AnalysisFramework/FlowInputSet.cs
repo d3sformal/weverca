@@ -37,6 +37,28 @@ namespace Weverca.AnalysisFramework
 
         #region ISnapshotReadonly implementation
 
+        #region Value singletons
+        public AnyStringValue AnyStringValue { get { return Snapshot.AnyStringValue; } }
+
+        public AnyBooleanValue AnyBooleanValue { get { return Snapshot.AnyBooleanValue; } }
+
+        public AnyIntegerValue AnyIntegerValue { get { return Snapshot.AnyIntegerValue; } }
+
+        public AnyFloatValue AnyFloatValue { get { return Snapshot.AnyFloatValue; } }
+
+        public AnyLongintValue AnyLongintValue { get { return Snapshot.AnyLongintValue; } }
+
+        public AnyObjectValue AnyObjectValue { get { return Snapshot.AnyObjectValue; } }
+
+        public AnyArrayValue AnyArrayValue { get { return Snapshot.AnyArrayValue; } }
+
+        public AnyResourceValue AnyResourceValue { get { return Snapshot.AnyResourceValue; } }
+
+        public AnyValue AnyValue { get { return Snapshot.AnyValue; } }
+
+        public UndefinedValue UndefinedValue { get { return Snapshot.UndefinedValue; } }
+        #endregion
+
         [Obsolete("Names of variables and their behaviour according to unknown fields etc is up to analysis and wont be handled by framework")]
         public VariableName ReturnValue
         {
@@ -174,6 +196,11 @@ namespace Weverca.AnalysisFramework
         }
 
         public ReadSnapshotEntryBase ReadControlVariable(VariableName variable)
+        {
+            return Snapshot.ReadControlVariable(variable);
+        }
+
+        public ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable)
         {
             return Snapshot.ReadControlVariable(variable);
         }

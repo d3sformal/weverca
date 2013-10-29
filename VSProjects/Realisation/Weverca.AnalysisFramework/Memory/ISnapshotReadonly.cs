@@ -7,6 +7,19 @@ namespace Weverca.AnalysisFramework.Memory
 {
     public interface ISnapshotReadonly
     {
+        #region Value singletons
+
+        AnyValue AnyValue { get; }
+        UndefinedValue UndefinedValue { get; }
+        AnyStringValue AnyStringValue { get; }
+        AnyBooleanValue AnyBooleanValue { get; }
+        AnyIntegerValue AnyIntegerValue { get; }
+        AnyLongintValue AnyLongintValue { get; }
+        AnyObjectValue AnyObjectValue { get; }
+        AnyArrayValue AnyArrayValue { get; }
+
+        #endregion
+
         #region Snapshot entry API
         /// <summary>
         /// Get snapshot entry providing reading,... services for variable
@@ -29,6 +42,15 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable determining control entry</param>
         /// <returns>Created control entry</returns>
         ReadSnapshotEntryBase ReadControlVariable(VariableName variable);
+
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling in local context. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable);
 
         #endregion
 

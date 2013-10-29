@@ -30,23 +30,6 @@ namespace Weverca.AnalysisFramework.Memory
 
         #region Creating values
 
-
-        //=========TODO==============================
-        //=These properties should be rewritten to methods 
-        //=(because of storing info for values we don't want any singletons)
-        //===========================================
-
-        AnyValue AnyValue { get; }
-        UndefinedValue UndefinedValue { get; }
-        AnyStringValue AnyStringValue { get; }
-        AnyBooleanValue AnyBooleanValue { get; }
-        AnyIntegerValue AnyIntegerValue { get; }
-        AnyLongintValue AnyLongintValue { get; }
-        AnyObjectValue AnyObjectValue { get; }
-        AnyArrayValue AnyArrayValue { get; }
-        //===========================================
-
-
         /// <summary>
         /// Create interval of integers
         /// </summary>
@@ -107,6 +90,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created value</returns>
         BooleanValue CreateBool(bool boolean);
         
+        [Obsolete("Use Value.SetInfo instead")]
         /// <summary>
         /// Create info value from given data
         /// NOTE:
@@ -192,12 +176,23 @@ namespace Weverca.AnalysisFramework.Memory
         ReadWriteSnapshotEntryBase GetControlVariable(VariableName variable);
 
         /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling in local context. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="variable">Variable determining control entry</param>
+        /// <returns>Created control entry</returns>
+        ReadWriteSnapshotEntryBase GetLocalControlVariable(VariableName variable);
+
+        /// <summary>
         /// Creates snapshot entry containing given value. Created entry doesn't have
         /// explicit memory storage. But it still can be asked for saving indexes, fields, resolving aliases,... !!!
         /// </summary>
         /// <param name="value">Value wrapped in snapshot entry</param>
         /// <returns>Created value entry</returns>
         ReadSnapshotEntryBase CreateSnapshotEntry(MemoryEntry value);
+
+
 
         #endregion
 

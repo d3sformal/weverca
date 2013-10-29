@@ -24,9 +24,27 @@
         internal ResourceValue() { }
 
         /// <inheritdoc />
+        protected override int getHashCode()
+        {
+            return GetType().GetHashCode();
+        }
+
+        /// <inheritdoc />
+        protected override bool equals(Value obj)
+        {
+            return GetType() == obj.GetType();
+        }
+
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitResourceValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 
@@ -45,7 +63,7 @@
         /// Returns hash code of the type, thou all instances of undefined (or null) type are the same
         /// </summary>
         /// <returns>Hash code of undefined value</returns>
-        public override int GetHashCode()
+        protected override int getHashCode()
         {
             return GetType().GetHashCode();
         }
@@ -55,7 +73,7 @@
         /// </summary>
         /// <param name="obj">The object to compare with the current object</param>
         /// <returns><c>true</c> if object has same type as the current one, otherwise <c>false</c></returns>
-        public override bool Equals(object obj)
+        protected override bool equals(Value obj)
         {
             return GetType() == obj.GetType();
         }
@@ -64,6 +82,12 @@
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitUndefinedValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

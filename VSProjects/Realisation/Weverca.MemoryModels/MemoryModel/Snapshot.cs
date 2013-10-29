@@ -947,5 +947,10 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

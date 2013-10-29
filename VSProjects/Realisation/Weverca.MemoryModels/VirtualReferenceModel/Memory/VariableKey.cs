@@ -21,9 +21,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         /// </summary>
         Local, 
         /// <summary>
-        /// Variable is used for control information
+        /// Variable is used for control information propaggated in global context
         /// </summary>
-        Control,
+        GlobalControl,
+        /// <summary>
+        /// Variable is used for control information propaggated in local context
+        /// </summary>
+        LocalControl,
         /// <summary>
         /// Variable is used for snapshot internal's meta information
         /// </summary>

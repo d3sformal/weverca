@@ -19,6 +19,18 @@ namespace Weverca.AnalysisFramework.Memory
         {
             QualifiedName = name;
         }
+
+        /// <inheritdoc />
+        protected override int getHashCode()
+        {
+            return GetType().GetHashCode();
+        }
+
+        /// <inheritdoc />
+        protected override bool equals(Value obj)
+        {
+            return GetType() == obj.GetType();
+        }
     }
 
     public class TypeValue : TypeValueBase
@@ -34,6 +46,12 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitNativeTypeValue(this);
+        }
+
+        /// <inheritdoc />
+        protected override Value cloneWithStorage(InfoDataStorage storage)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

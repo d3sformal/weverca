@@ -73,6 +73,8 @@
     <Compile Include="Memory\CompoundValues.cs" />
     <Compile Include="Memory\ConcreteValues.cs" />
     <Compile Include="Memory\FunctionValues.cs" />
+    <Compile Include="Memory\InfoDataBase.cs" />
+    <Compile Include="Memory\InfoDataStorage.cs" />
     <Compile Include="Memory\MemberIdentifier.cs" />
     <Compile Include="Memory\ReadWriteSnapshotEntryBase.cs" />
     <Compile Include="Memory\ScalarValues.cs" />
