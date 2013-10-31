@@ -49,9 +49,10 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract bool equals(Value other);
 
         /// <summary>
-        /// Create clone of current value with specified info storage
+        /// Create clone of current value. Use storage as info storage for the clone
+        /// storage should be passed as an argument to the constructor of Value
         /// </summary>
-        /// <param name="storage">Info storage used in created clone</param>
+        /// <param name="storage">Info storage for the clone</param>
         /// <returns>Created clone</returns>
         protected abstract Value cloneWithStorage(InfoDataStorage storage);
 
