@@ -19,7 +19,8 @@ namespace Weverca.AnalysisFramework
         #region Internal methods for transaction handling
 
         /// <summary>
-        /// Determine that output has changed when flow through statement
+        /// Determine that the content commited by the last transaction differs from the content commited by the previous transaction
+        /// Always return false if the transaction is started and not yet commited
         /// </summary>
         internal bool HasChanges { get; private set; }
 
@@ -33,7 +34,10 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <summary>
-        /// Commit transaction of contained snapshot
+        /// Commit started transaction - sets HasChanged to true if the content is different 
+        /// than the content commited by the previous transaction, sets it to false otherwise
+        /// NOTE:
+        ///     Difference is meant in semantic (two objects with different references but same content doesn't mean difference)
         /// </summary>
         internal void CommitTransaction()
         {
