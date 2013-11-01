@@ -62,7 +62,8 @@ namespace Weverca.AnalysisFramework.Expressions
             try
             {
                 thisObject = createdObject;
-                //VisitTypeDecl(typeDeclaration);
+                // TODO: ObjectInitializer is actually disabled
+                // VisitTypeDecl(typeDeclaration);
                 Debug.Assert(thisObject != null, "Initialized object must stay until end of initialization");
             }
             finally
@@ -94,8 +95,14 @@ namespace Weverca.AnalysisFramework.Expressions
                 }
 
                 Debug.Assert(initializationValue != null, "Every field has any initialization value");
-                var index = OutSet.CreateIndex(x.Name.Value);
-                OutSet.SetField(thisObject, index, initializationValue);
+
+                var memoryEntry = new MemoryEntry(thisObject);
+                var objectEntry = OutSet.CreateSnapshotEntry(memoryEntry);
+                var fieldIdentifier = new MemberIdentifier(x.Name.Value);
+
+                var outSnapshot = OutSet.Snapshot;
+                var objectField = objectEntry.ReadIndex(outSnapshot, fieldIdentifier);
+                objectField.WriteMemory(outSnapshot, initializationValue);
             }
             finally
             {

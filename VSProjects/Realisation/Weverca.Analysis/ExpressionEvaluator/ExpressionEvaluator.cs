@@ -190,34 +190,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue,
-            VariableIdentifier aliasedField)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue,
-            MemoryEntry aliasedIndex)
-        {
-            throw new NotImplementedException();
-        }
-
         public void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases)
         {
             var entry = new MemoryEntry(possibleAliases);
             Assign(target, entry);
-        }
-
-        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableIdentifier aliasedField,
-            IEnumerable<AliasValue> possibleAliases)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex,
-            IEnumerable<AliasValue> possibleAliases)
-        {
-            throw new NotImplementedException();
         }
 
         public void Assign(VariableIdentifier target, MemoryEntry entry)

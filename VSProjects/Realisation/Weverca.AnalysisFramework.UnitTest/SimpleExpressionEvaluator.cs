@@ -31,7 +31,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             return arrayValue.ReadIndex(OutSnapshot, index);
         }
 
-
         public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
         {
             target.SetAliases(OutSnapshot, aliasedValue);
@@ -58,7 +57,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             return array;
         }
-
 
         public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
         {
@@ -212,33 +210,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #endregion
 
-        public override IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue, VariableIdentifier aliasedField)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void AliasedFieldAssign(MemoryEntry objectValue, VariableIdentifier fieldEntry, IEnumerable<AliasValue> possibleAliasses)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue, MemoryEntry aliasedIndex)
-        {
-            foreach (AssociativeArray array in arrayValue.PossibleValues)
-            {
-                foreach (ScalarValue indexValue in aliasedIndex.PossibleValues)
-                {
-                    var index = OutSet.CreateIndex(indexValue.RawValue.ToString());
-                    yield return OutSet.CreateIndexAlias(array, index);
-                }
-            }
-        }
-
-        public override void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex, IEnumerable<AliasValue> possibleAliases)
-        {
-            throw new NotImplementedException();
-        }
-
         public override void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable, ReadWriteSnapshotEntryBase valueVariable)
         {
             var values = new HashSet<Value>();
@@ -330,13 +301,15 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 var value = possibleMember as ScalarValue;
                 if (value == null)
+                {
                     continue;
+                }
 
                 possibleNames.Add(value.RawValue.ToString());
             }
+
             return new MemberIdentifier(possibleNames);
         }
-
 
         public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
         {

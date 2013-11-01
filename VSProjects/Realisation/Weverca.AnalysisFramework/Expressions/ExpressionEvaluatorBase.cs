@@ -35,7 +35,7 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// InSet's snapshot
+        /// Gets InSet's snapshot
         /// </summary>
         public SnapshotBase InSnapshot
         {
@@ -43,7 +43,7 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// OutSet's snapshot
+        /// Gets OutSet's snapshot
         /// </summary>
         public SnapshotBase OutSnapshot
         {
@@ -69,7 +69,11 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>Possible variable names</returns>
         public abstract IEnumerable<string> VariableNames(MemoryEntry variableSpecifier);
 
-
+        /// <summary>
+        /// Creates member identifier of possible names from the given values
+        /// </summary>
+        /// <param name="memberRepresentation">List of values used as member</param>
+        /// <returns>Identifier of member created from possible memory entry values</returns>
         public abstract MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation);
 
         /// <summary>
@@ -105,47 +109,11 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index);
 
         /// <summary>
-        /// Resolves alias from given field specifier
-        /// </summary>
-        /// <param name="objectValue">Object containing aliased field</param>
-        /// <param name="aliasedField">Specifier of an field</param>
-        /// <returns>Resolved aliases</returns>
-        public abstract IEnumerable<AliasValue> ResolveAliasedField(MemoryEntry objectValue,
-            VariableIdentifier aliasedField);
-
-        /// <summary>
-        /// Resolves alias from given index specifier
-        /// </summary>
-        /// <param name="arrayValue">Array containing aliased index</param>
-        /// <param name="aliasedIndex">Specifier of an field</param>
-        /// <returns>Resolved aliases</returns>
-        public abstract IEnumerable<AliasValue> ResolveAliasedIndex(MemoryEntry arrayValue,
-            MemoryEntry aliasedIndex);
-
-        /// <summary>
         /// Assign possible aliases to given target
         /// </summary>
         /// <param name="target">Target variable specifier</param>
         /// <param name="aliasedValue">Possible aliases to be assigned</param>
         public abstract void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue);
-
-        /// <summary>
-        /// Assign possible aliases to given object field
-        /// </summary>
-        /// <param name="objectValue">Object containing assigned field</param>
-        /// <param name="aliasedField">Specifier of an field</param>
-        /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasedFieldAssign(MemoryEntry objectValue, VariableIdentifier aliasedField,
-            IEnumerable<AliasValue> possibleAliases);
-
-        /// <summary>
-        /// Assign possible aliases to given array index
-        /// </summary>
-        /// <param name="arrayValue">Array containing assigned index</param>
-        /// <param name="aliasedIndex">Specifier of an index</param>
-        /// <param name="possibleAliases">Possible aliases to be assigned</param>
-        public abstract void AliasedIndexAssign(MemoryEntry arrayValue, MemoryEntry aliasedIndex,
-            IEnumerable<AliasValue> possibleAliases);
 
         /// <summary>
         /// Assign possible values to given target
@@ -261,23 +229,6 @@ namespace Weverca.AnalysisFramework.Expressions
         #region Default implementation of simple routines
 
         /// <summary>
-        /// Resolve alias of given variable specifier
-        /// </summary>
-        /// <param name="variable">Aliased variable specifier</param>
-        /// <returns>Resolved aliases</returns>
-        public virtual IEnumerable<AliasValue> ResolveAlias(VariableIdentifier variable)
-        {
-            var possibleNames = variable.PossibleNames;
-            var aliases = new List<AliasValue>(possibleNames.Length);
-            foreach (var aliasedVariable in possibleNames)
-            {
-                aliases.Add(InSet.CreateAlias(aliasedVariable));
-            }
-
-            return aliases;
-        }
-
-        /// <summary>
         /// Create string representation of given literal
         /// </summary>
         /// <param name="x">Literal value</param>
@@ -337,6 +288,11 @@ namespace Weverca.AnalysisFramework.Expressions
             return new MemoryEntry(OutSet.UndefinedValue);
         }
 
+        /// <summary>
+        /// Creates new objects of type with name that is evaluated from expression (<c>$obj = new $exp;</c>)
+        /// </summary>
+        /// <param name="memoryEntry">Values determining the name of class</param>
+        /// <returns>Memory entry with all new possible objects</returns>
         internal MemoryEntry IndirectCreateObject(MemoryEntry memoryEntry)
         {
             var declarations = new HashSet<TypeValueBase>();
@@ -356,6 +312,11 @@ namespace Weverca.AnalysisFramework.Expressions
             return new MemoryEntry(result.ToArray());
         }
 
+        /// <summary>
+        /// Creates new function implementation without name from lambda declaration
+        /// </summary>
+        /// <param name="lambda">Definition of lambda function</param>
+        /// <returns>New function implementation</returns>
         public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
         {
             return new MemoryEntry(OutSet.CreateFunction(lambda));
@@ -370,24 +331,21 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var newObject = OutSet.CreateObject(type);
 
-            var sourceDeclaration = type as TypeValue;
-            if (sourceDeclaration != null)
+            var typeDeclaration = type as TypeValue;
+            if (typeDeclaration != null)
             {
+                // TODO: Initialize all fields with its default or initialization value
                 var initializer = new ObjectInitializer(this);
-                initializer.InitializeObject(newObject, sourceDeclaration.Declaration);
-            }
-            else
-            {
-                var nativeDeclaration = type as TypeValue;
-                if (nativeDeclaration != null)
-                {
-                    // TODO: Initialize all fields with its default or initialization value
-                }
+                initializer.InitializeObject(newObject, typeDeclaration.Declaration);
             }
 
             return newObject;
         }
 
+        /// <summary>
+        /// Fetches variables of given name from global to local function scope when global keyword is used
+        /// </summary>
+        /// <param name="variables">Variables that are feched from global scope</param>
         public virtual void GlobalStatement(IEnumerable<VariableIdentifier> variables)
         {
             foreach (var variable in variables)
@@ -406,6 +364,5 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             Flow = flow;
         }
-
     }
 }
