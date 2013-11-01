@@ -786,12 +786,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static ObjectValue ToObject(FlowOutputSet outset, AssociativeArray value)
         {
             var objectValue = CreateStandardObject(outset);
+            var objectEntry = GetSnapshotEntry(outset, objectValue);
+            var arrayEntry = GetSnapshotEntry(outset, value);
+
+            var outSnapshot = outset.Snapshot;
+
             var indices = outset.IterateArray(value);
 
             foreach (var index in indices)
             {
-                var entry = outset.GetIndex(value, index);
-                outset.SetField(objectValue, index, entry);
+                var fieldEntry = GetFieldEntry(outSnapshot, objectEntry, index.Identifier);
+                var readValue = fieldEntry.ReadMemory(outSnapshot);
+
+                var indexEntry = GetIndexEntry(outSnapshot, arrayEntry, index.Identifier);
+                indexEntry.WriteMemory(outSnapshot, readValue);
             }
 
             return objectValue;
@@ -817,8 +825,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static ObjectValue ToObject(FlowOutputSet outset, Value value)
         {
             var objectValue = CreateStandardObject(outset);
-            var index = outset.CreateIndex("scalar");
-            outset.SetField(objectValue, index, new MemoryEntry(value));
+            var objectEntry = GetSnapshotEntry(outset, objectValue);
+
+            var outSnapshot = outset.Snapshot;
+            var fieldEntry = GetFieldEntry(outSnapshot, objectEntry, "scalar");
+
+            var valueEntry = new MemoryEntry(value);
+            fieldEntry.WriteMemory(outSnapshot, valueEntry);
+
             return objectValue;
         }
 
@@ -837,16 +851,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
             // TODO: This conversion is quite difficult. It does not convert integer properties, needs to
             // know visibility of every property and needs access to private properties of base classes.
 
-            var array = outset.CreateArray();
+            var arrayValue = outset.CreateArray();
+            var arrayEntry = GetSnapshotEntry(outset, arrayValue);
+            var objectEntry = GetSnapshotEntry(outset, value);
+
+            var outSnapshot = outset.Snapshot;
+
             var indices = outset.IterateObject(value);
 
             foreach (var index in indices)
             {
-                var field = outset.GetField(value, index);
-                outset.SetIndex(array, index, field);
+                var indexEntry = GetIndexEntry(outSnapshot, arrayEntry, index.Identifier);
+                var readValue = indexEntry.ReadMemory(outSnapshot);
+
+                var fieldEntry = GetFieldEntry(outSnapshot, objectEntry, index.Identifier);
+                fieldEntry.WriteMemory(outSnapshot, readValue);
             }
 
-            return array;
+            return arrayValue;
         }
 
         /// <summary>
@@ -868,10 +890,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Array with a single element with the value on position of 0 index</returns>
         public static AssociativeArray ToArray(FlowOutputSet outset, Value value)
         {
-            var array = outset.CreateArray();
-            var index = outset.CreateIndex("0");
-            outset.SetIndex(array, index, new MemoryEntry(value));
-            return array;
+            var arrayValue = outset.CreateArray();
+            var arrayEntry = GetSnapshotEntry(outset, arrayValue);
+
+            var outSnapshot = outset.Snapshot;
+            var indexEntry = GetIndexEntry(outSnapshot, arrayEntry, "0");
+
+            var valueEntry = new MemoryEntry(value);
+            indexEntry.WriteMemory(outSnapshot, valueEntry);
+
+            return arrayValue;
         }
 
         #endregion
@@ -1347,6 +1375,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var enumerator = standardClassType.GetEnumerator();
             enumerator.MoveNext();
             return outset.CreateObject(enumerator.Current as TypeValueBase);
+        }
+
+        private static ReadSnapshotEntryBase GetSnapshotEntry(FlowOutputSet outset, Value value)
+        {
+            var entry = new MemoryEntry(value);
+            return outset.CreateSnapshotEntry(entry);
+        }
+
+        private static ReadWriteSnapshotEntryBase GetFieldEntry(SnapshotBase snapshot,
+            ReadSnapshotEntryBase objectEntry, string index)
+        {
+            var fieldIdentifier = new VariableIdentifier(index);
+            return objectEntry.ReadField(snapshot, fieldIdentifier);
+        }
+
+        private static ReadWriteSnapshotEntryBase GetIndexEntry(SnapshotBase snapshot,
+            ReadSnapshotEntryBase arrayEntry, string index)
+        {
+            var indexIdentifier = new MemberIdentifier(index);
+            return arrayEntry.ReadIndex(snapshot, indexIdentifier);
         }
 
         #endregion

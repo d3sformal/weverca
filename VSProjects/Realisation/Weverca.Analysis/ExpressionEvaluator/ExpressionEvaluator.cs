@@ -18,6 +18,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private StringConverter stringConverter;
         private UnaryOperationEvaluator unaryOperationEvaluator;
         private IncrementDecrementEvaluator incrementDecrementEvaluator;
+        private ArrayIndexEvaluator arrayIndexEvaluator;
         private BinaryOperationVisitor binaryOperationVisitor;
 
         /// <summary>
@@ -28,14 +29,31 @@ namespace Weverca.Analysis.ExpressionEvaluator
             stringConverter = new StringConverter(Flow);
             unaryOperationEvaluator = new UnaryOperationEvaluator(Flow, stringConverter);
             incrementDecrementEvaluator = new IncrementDecrementEvaluator(Flow);
+            arrayIndexEvaluator = new ArrayIndexEvaluator(Flow);
             binaryOperationVisitor = new BinaryOperationVisitor(this);
         }
 
         #region ExpressionEvaluatorBase overrides
 
+        public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
+        {
+            Debug.Assert(memberRepresentation.Count > 0,
+                "Every expresiion in offset must have at least one value");
+
+            // TODO: How to indicate, that index can be illegal, i.e. compound type?
+            bool isAlwaysLegal;
+
+            arrayIndexEvaluator.SetContext(Flow);
+            return arrayIndexEvaluator.EvaluateToIdentifiers(memberRepresentation, out isAlwaysLegal);
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
+        {
+            return OutSet.GetVariable(variable);
+        }
+
         public MemoryEntry ResolveVariable_obsolete(VariableIdentifier variable)
         {
-            throw new NotImplementedException("API has changed");
             MemoryEntry entry;
             bool noValueExists;
 
@@ -94,6 +112,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
             return entry;
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
+        {
+            return objectValue.ReadField(OutSnapshot, field);
         }
 
         public MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
@@ -190,10 +213,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        public void AliasAssign(VariableIdentifier target, IEnumerable<AliasValue> possibleAliases)
+        public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
         {
-            var entry = new MemoryEntry(possibleAliases);
-            Assign(target, entry);
+            target.SetAliases(OutSnapshot, aliasedValue);
+        }
+
+        public override void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry)
+        {
+            target.WriteMemory(OutSnapshot, entry);
         }
 
         public void Assign(VariableIdentifier target, MemoryEntry entry)
@@ -233,6 +260,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
             }
+        }
+
+        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
+        {
+            var fieldEntry = objectValue.ReadField(OutSnapshot, targetField);
+            fieldEntry.WriteMemory(OutSnapshot, assignedValue);
         }
 
         public void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
@@ -353,99 +386,104 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override MemoryEntry ArrayEx(
             IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
         {
-            // TODO: It is not done
+            var array = OutSet.CreateArray();
+            var arrayEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(array));
 
-            var keyCollections = new List<KeyValuePair<MemoryEntry, MemoryEntry>>();
+            var currentIntegerIndices = new HashSet<int>();
+            currentIntegerIndices.Add(0);
+
+            arrayIndexEvaluator.SetContext(Flow);
+
             foreach (var keyValue in keyValuePairs)
             {
-                if (keyValue.Key == null)
-                {
-                    keyCollections.Add(keyValue);
-                    continue;
-                }
+                var indices = new HashSet<string>();
+                bool isAlwaysConcrete;
 
-                var keys = new HashSet<ScalarValue>();
-
-                // TODO: It is too complicated
-                foreach (var key in keyValue.Key.PossibleValues)
+                if (keyValue.Key != null)
                 {
-                    if (key is IntegerValue)
+                    var integerValues = new HashSet<IntegerValue>();
+                    var stringValues = new HashSet<StringValue>();
+
+                    bool isAlwaysInteger;
+                    bool isAlwaysLegal;
+
+                    arrayIndexEvaluator.Evaluate(keyValue.Key, ref integerValues, ref stringValues,
+                        out isAlwaysConcrete, out isAlwaysInteger, out isAlwaysLegal);
+
+                    // Create default indices for next element
+                    var nextIntegerIndices = new HashSet<int>();
+                    foreach (var integerValue in integerValues)
                     {
-                        keys.Add(key as IntegerValue);
-                    }
-                    else if (key is FloatValue)
-                    {
-                        IntegerValue integerValue;
-                        if (TypeConversion.TryConvertToInteger(OutSet, key as FloatValue, out integerValue))
+                        if (integerValue.Value >= 0)
                         {
-                            keys.Add(integerValue);
-                        }
-                    }
-                    else if (key is BooleanValue)
-                    {
-                        keys.Add(TypeConversion.ToInteger(OutSet, key as BooleanValue));
-                    }
-                    else if (key is StringValue)
-                    {
-                        IntegerValue integerValue;
-                        if (TypeConversion.TryConvertToInteger(OutSet, key as StringValue, out integerValue))
-                        {
-                            keys.Add(integerValue);
+                            if (integerValue.Value < int.MaxValue)
+                            {
+                                nextIntegerIndices.Add(integerValue.Value + 1);
+                            }
                         }
                         else
                         {
-                            keys.Add(key as StringValue);
+                            nextIntegerIndices.Add(0);
                         }
                     }
-                    else if (key is UndefinedValue)
+
+                    // If all new indices are integer, previous default indices are rewritten
+                    if (isAlwaysInteger)
                     {
-                        keys.Add(TypeConversion.ToString(OutSet, key as UndefinedValue));
-                    }
-                }
-
-                var entry = new MemoryEntry(keys);
-                keyCollections.Add(new KeyValuePair<MemoryEntry, MemoryEntry>(entry, keyValue.Value));
-            }
-
-            int counter = 0;
-            var array = OutSet.CreateArray();
-            foreach (var keyValue in keyCollections)
-            {
-                ContainerIndex index;
-                if (keyValue.Key != null)
-                {
-                    if (keyValue.Key.Count <= 0)
-                    {
-                        continue;
-                    }
-
-                    // TODO: All possible keys must be evaluated
-                    var enumerator = keyValue.Key.PossibleValues.GetEnumerator();
-                    enumerator.MoveNext();
-
-                    var possibleInteger = enumerator.Current as IntegerValue;
-                    if (possibleInteger != null)
-                    {
-                        if (possibleInteger.Value >= 0)
-                        {
-                            counter = possibleInteger.Value + 1;
-                        }
-                        index = OutSet.CreateIndex(TypeConversion.ToString(counter));
+                        currentIntegerIndices = nextIntegerIndices;
                     }
                     else
                     {
-                        Debug.Assert(enumerator.Current is StringValue);
-                        var stringKey = enumerator.Current as StringValue;
-                        index = OutSet.CreateIndex(stringKey.Value);
+                        currentIntegerIndices.UnionWith(nextIntegerIndices);
+                    }
+
+                    if (isAlwaysConcrete)
+                    {
+                        foreach (var integerValue in integerValues)
+                        {
+                            indices.Add(TypeConversion.ToString(integerValue.Value));
+                        }
+
+                        foreach (var stringValue in stringValues)
+                        {
+                            indices.Add(stringValue.Value);
+                        }
+                    }
+
+                    if (!isAlwaysLegal)
+                    {
+                        SetWarning("Possible illegal offset type in array initilization");
                     }
                 }
                 else
                 {
-                    index = OutSet.CreateIndex(TypeConversion.ToString(counter));
-                    counter = ((counter >= 0) ? (counter + 1) : 0);
+                    isAlwaysConcrete = true;
+
+                    var nextIndices = new HashSet<int>();
+                    foreach (var defaultIndex in currentIntegerIndices)
+                    {
+                        indices.Add(TypeConversion.ToString(defaultIndex));
+                        if (defaultIndex < int.MaxValue)
+                        {
+                            nextIndices.Add(defaultIndex + 1);
+                        }
+                    }
+                    currentIntegerIndices = nextIndices;
                 }
 
-                OutSet.SetIndex(array, index, keyValue.Value);
+                MemberIdentifier indexIdentifier;
+                if (isAlwaysConcrete)
+                {
+                    indexIdentifier = new MemberIdentifier(indices);
+                }
+                else
+                {
+                    // There are some values that cannot be store to exact index, so unknown index is used
+                    indexIdentifier = new MemberIdentifier();
+                }
+
+                var indexEntry = arrayEntry.ReadIndex(OutSnapshot, indexIdentifier);
+                indexEntry.WriteMemory(OutSnapshot, keyValue.Value);
             }
 
             return new MemoryEntry(array);
@@ -457,6 +495,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             // TODO: What should I return if value cannot be converted to concrete string?
             bool isAlwaysConcrete;
+
             stringConverter.SetContext(Flow);
             var stringValues = stringConverter.Evaluate(variableSpecifier, out isAlwaysConcrete);
 
@@ -467,6 +506,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             return names;
+        }
+
+        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index, MemoryEntry assignedValue)
+        {
+            var indexIdentifier = MemberIdentifier(index);
+            var indexEntry = indexedValue.ReadIndex(OutSnapshot, indexIdentifier);
+            indexEntry.WriteMemory(OutSnapshot, assignedValue);
         }
 
         public void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
@@ -533,6 +579,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
             }
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index)
+        {
+            return indexedValue.ReadIndex(OutSnapshot, index);
         }
 
         public MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
@@ -676,13 +727,29 @@ namespace Weverca.Analysis.ExpressionEvaluator
             bool isAlwaysConcrete;
             var arrays = ResolveArraysForIndex(enumeree, out isAlwaysArray, out isAlwaysConcrete);
 
+            var keys = new HashSet<Value>();
             var values = new HashSet<Value>();
+
             foreach (var array in arrays)
             {
+                var arrayEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(array));
+
                 var indices = OutSet.IterateArray(array);
                 foreach (var index in indices)
                 {
-                    var element = OutSet.GetIndex(array, index);
+                    int convertedInteger;
+                    if (TypeConversion.TryConvertToInteger(index.Identifier, out convertedInteger))
+                    {
+                        keys.Add(OutSnapshot.CreateInt(convertedInteger));
+                    }
+                    else
+                    {
+                        keys.Add(OutSnapshot.CreateString(index.Identifier));
+                    }
+
+                    var indexIdentifier = new MemberIdentifier(index.Identifier);
+                    var indexEntry = arrayEntry.ReadIndex(OutSnapshot, indexIdentifier);
+                    var element = indexEntry.ReadMemory(OutSnapshot);
                     values.UnionWith(element.PossibleValues);
                 }
             }
@@ -692,11 +759,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 values.Add(OutSet.AnyValue);
             }
 
-
             // There could be no values because array could have no elements
             // However it is fine because in this case, foreach will not trace to loop body
-            var entry = new MemoryEntry(values);
-            valueVariable.WriteMemory(OutSnapshot, entry);
+            var keyEntry = new MemoryEntry(keys);
+            keyVariable.WriteMemory(OutSnapshot, keyEntry);
+            var valueRntry = new MemoryEntry(values);
+            valueVariable.WriteMemory(OutSnapshot, valueRntry);
 
             if (!isAlwaysArray)
             {
@@ -947,55 +1015,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             return indexes;
-        }
-
-        public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
-        {
-            var possibleNames = new List<string>();
-            foreach (var possibleMember in memberRepresentation.PossibleValues)
-            {
-                var value = possibleMember as ScalarValue;
-                if (value == null)
-                    continue;
-
-                possibleNames.Add(value.RawValue.ToString());
-            }
-            return new MemberIdentifier(possibleNames);
-        }
-
-        public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
-        {
-            return objectValue.ReadField(OutSnapshot, field);
-        }
-
-        public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index)
-        {
-            return indexedValue.ReadIndex(OutSnapshot, index);
-        }
-
-        public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry)
-        {
-            target.WriteMemory(OutSnapshot, entry);
-        }
-
-        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index, MemoryEntry assignedValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
-        {
-            return OutSet.GetVariable(variable);
         }
     }
 }

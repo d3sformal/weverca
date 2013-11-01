@@ -52,6 +52,7 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExpressionEvaluator\ArrayIndexEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\BinaryOperationVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftBooleanOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftFloatOperandVisitor.cs" />
