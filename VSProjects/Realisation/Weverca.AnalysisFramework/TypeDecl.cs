@@ -170,6 +170,8 @@ namespace Weverca.AnalysisFramework
 
     class ClassDeclBuilder
     {
+
+
         public ClassDecl Build()
         {
 
