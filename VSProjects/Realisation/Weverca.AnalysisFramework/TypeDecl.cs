@@ -67,17 +67,17 @@ namespace Weverca.AnalysisFramework
     }
 
     /// <summary>
-    /// Represent info stored for native method
+    /// Represent info stored for modeled method
     /// </summary>
     public class MethodInfo
     {
         /// <summary>
-        /// Name of native method
+        /// Name of modeled method
         /// </summary>
         public readonly Name Name;
 
         /// <summary>
-        /// Native method analyzer
+        /// Modeled method analyzer
         /// </summary>
         public readonly NativeAnalyzerMethod Method;
 
@@ -126,12 +126,12 @@ namespace Weverca.AnalysisFramework
     }
 
     /// <summary>
-    /// Represent native type declaration
+    /// Type declaration
     /// </summary>
     public class ClassDecl
     {
         /// <summary>
-        /// Name of native type
+        /// Name of class
         /// </summary>
         public readonly QualifiedName QualifiedName;
 
@@ -165,6 +165,15 @@ namespace Weverca.AnalysisFramework
             IsFinal = isFinal;
             IsInterface = isInteface;
             IsAbstract = isAbstract;
+        }
+    }
+
+    class ClassDeclBuilder
+    {
+        public ClassDecl Build()
+        {
+
+            return null;
         }
     }
 }
