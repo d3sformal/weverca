@@ -13,17 +13,19 @@ namespace Weverca.AnalysisFramework.UnitTest
     {
         public static ClassDecl CreateType()
         {
-            var methods = new MethodInfo[]{
-                method("__construct",_method___construct),
-            };
+            var methods = new Dictionary<MethodIdentifier, MethodInfo>();
+            var exceptionIdentifier=new QualifiedName(new Name("Exception"));
+            methods.Add(new MethodIdentifier(exceptionIdentifier,new Name("__construct")), method("__construct", _method___construct));
+                
 
-            var declaration = new ClassDecl(new QualifiedName(new Name("Exception")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, false,false);
+            var declaration = new ClassDecl(exceptionIdentifier, methods, new Dictionary<MethodIdentifier,MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), null, false, false, false);
             return declaration;
         }
 
         private static MethodInfo method(string name, NativeAnalyzerMethod analyzer)
         {
-            return new MethodInfo(new Name(name),Visibility.PUBLIC, analyzer,new List<MethodArgument>());
+            var exceptionIdentifier = new QualifiedName(new Name("Exception"));
+            return new MethodInfo(new Name(name), exceptionIdentifier, Visibility.PUBLIC, analyzer, new List<MethodArgument>());
         }
 
         private static void _method___construct(FlowController flow)

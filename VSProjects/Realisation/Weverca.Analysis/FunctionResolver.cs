@@ -282,17 +282,21 @@ namespace Weverca.Analysis
 
         private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDecl type)
         {
-            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
-            sourceCodeMethods.AddRange(type.SourceCodeMethods);
-            List<MethodInfo> modeledMethods = new List<MethodInfo>();
-            modeledMethods.AddRange(type.ModeledMethods);
+            ClassDeclBuilder result = new ClassDeclBuilder();
+            result.TypeName = type.QualifiedName;
+            result.IsInterface = true;
+            result.IsFinal = false;
+            result.IsAbstract = false;
+            result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(type.SourceCodeMethods);
+            result.ModeledMethods = new Dictionary<MethodIdentifier,MethodInfo>(type.ModeledMethods);
+            
 
             if (type.Fields.Count != 0)
             {
                 setWarning("Interface cannot contain fields", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
             }
 
-            foreach (var method in type.SourceCodeMethods)
+            foreach (var method in type.SourceCodeMethods.Values)
             {
                 if (method.Modifiers.HasFlag(PhpMemberAttributes.Private) || method.Modifiers.HasFlag(PhpMemberAttributes.Protected))
                 {
@@ -346,22 +350,22 @@ namespace Weverca.Analysis
                         else
                         {
                             //interface cannot have implement
-                            foreach (var method in value.SourceCodeMethods)
+                            foreach (var method in value.SourceCodeMethods.Values)
                             {
-                                if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     //if arguments doesnt match
-                                    if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                     {
-                                        var match = modeledMethods.Where(a => a.Name == method.Name).First();
+                                        var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
                                         if (!AreMethodsCompatible(match, method))
                                         {
                                             setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
                                         }
                                     }
-                                    else if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                     {
-                                        var match = sourceCodeMethods.Where(a => a.Name == method.Name).First();
+                                        var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
                                         if (!AreMethodsCompatible(match, method))
                                         {
                                             setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
@@ -371,25 +375,25 @@ namespace Weverca.Analysis
                                 }
                                 else
                                 {
-                                    sourceCodeMethods.Add(method);
+                                    result.SourceCodeMethods.Add(new MethodIdentifier(result.TypeName,method.Name),method);
                                 }
                             }
-                            foreach (var method in value.ModeledMethods)
+                            foreach (var method in value.ModeledMethods.Values)
                             {
-                                if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0 || sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     //if arguments doesnt match
-                                    if (modeledMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                     {
-                                        var match = modeledMethods.Where(a => a.Name == method.Name).First();
+                                        var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
                                         if (!AreMethodsCompatible(match, method))
                                         {
                                             setWarning("Can't inherit abstract function " + method.Name, declaration, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
                                         }
                                     }
-                                    else if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() > 0)
+                                    else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                     {
-                                        var match = sourceCodeMethods.Where(a => a.Name == method.Name).First();
+                                        var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
                                         if (!AreMethodsCompatible(match, method))
                                         {
                                             setWarning("Can't inherit abstract function " + method.Name, match, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
@@ -399,15 +403,15 @@ namespace Weverca.Analysis
                                 }
                                 else
                                 {
-                                    modeledMethods.Add(method);
+                                   result.ModeledMethods.Add(new MethodIdentifier(result.TypeName,method.Name),method);
                                 }
                             }
                         }
                     }
                 }
             }
-            ClassDecl t = new ClassDecl(type.QualifiedName, modeledMethods, sourceCodeMethods, new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, true, false);
-            OutSet.DeclareGlobal(OutSet.CreateType(t));
+            
+            OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
         }
 
         private bool AreMethodsCompatible(MethodDecl a, MethodDecl b)
@@ -478,56 +482,61 @@ namespace Weverca.Analysis
 
         private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass, ClassDecl currentClass)
         {
-            List<MethodInfo> modeledMethods = new List<MethodInfo>(baseClass.ModeledMethods);
-            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>(baseClass.SourceCodeMethods);
-            Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>(currentClass.Fields);
-            Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>(currentClass.Constants);
 
-            foreach (var field in baseClass.Fields)
+            ClassDeclBuilder result = new ClassDeclBuilder();
+            result.Fields = new Dictionary<FieldIdentifier, FieldInfo>(baseClass.Fields);
+            result.Constants = new Dictionary<FieldIdentifier, ConstantInfo>(baseClass.Constants);
+            result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(baseClass.SourceCodeMethods);
+            result.ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>(baseClass.ModeledMethods);
+            result.TypeName = currentClass.QualifiedName;
+            result.BaseClassName=baseClass.QualifiedName;
+            result.IsFinal=currentClass.IsFinal;
+            result.IsInterface=currentClass.IsInterface;
+            result.IsAbstract = currentClass.IsAbstract;
+
+            foreach (var field in currentClass.Fields)
             {
-                if (!fields.ContainsKey(field.Key))
+                FieldIdentifier fieldIdentifier=new FieldIdentifier(currentClass.QualifiedName,field.Key.Name);
+                if (!result.Fields.ContainsKey(fieldIdentifier))
                 {
-                    if (field.Value.Visibility != Visibility.PRIVATE)
-                    {
-                        fields.Add(field.Key, field.Value);
-                    }
+                    result.Fields.Add(fieldIdentifier, field.Value);
                 }
                 else
                 {
-                    if (fields[field.Key].IsStatic != field.Value.IsStatic)
+                    if (result.Fields[fieldIdentifier].IsStatic != field.Value.IsStatic)
                     {
+                        var fieldName = result.Fields[fieldIdentifier].Name;
                         if (field.Value.IsStatic)
                         {
-                            setWarning("Cannot redeclare static " + fields[field.Key].Name + " with non static " + fields[field.Key].Name, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            setWarning("Cannot redeclare static " + fieldName + " with non static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
                         }
                         else
                         {
-                            setWarning("Cannot redeclare non static " + fields[field.Key].Name + " with static " + fields[field.Key].Name, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            setWarning("Cannot redeclare non static " + fieldName + " with static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
 
                         }
                     }
                 }
             }
 
-            foreach (var constant in baseClass.Constants)
+            foreach (var constant in currentClass.Constants)
             {
-                if (!constants.ContainsKey(constant.Key))
-                {
-                    constants.Add(constant.Key, constant.Value);
-                }
+                result.Constants.Add(constant.Key, constant.Value);
             }
+            
             //TODO extending methods warnings
-            foreach (var method in currentClass.SourceCodeMethods)
+            foreach (var method in currentClass.SourceCodeMethods.Values)
             {
-                if (sourceCodeMethods.Where(a => a.Name == method.Name).Count() == 0)
+                MethodIdentifier methodIdentifier=new MethodIdentifier(result.TypeName,method.Name);
+                if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() == 0)
                 {
-                    if (modeledMethods.Where(a => a.Name == method.Name).Count() == 0)
+                    if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() == 0)
                     {
-                        sourceCodeMethods.Add(method);
+                        result.SourceCodeMethods.Add(methodIdentifier, method);
                     }
                     else
                     {
-                        if (modeledMethods.Where(a => a.Name == method.Name).First().IsFinal)
+                        if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).First().IsFinal)
                         {
                             setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                         }
@@ -539,7 +548,7 @@ namespace Weverca.Analysis
                 }
                 else
                 {
-                    if (sourceCodeMethods.Where(a => a.Name == method.Name).First().Modifiers.HasFlag(PhpMemberAttributes.Final))
+                    if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First().Modifiers.HasFlag(PhpMemberAttributes.Final))
                     {
                         setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                     }
@@ -549,17 +558,21 @@ namespace Weverca.Analysis
                     //cannot be abstract
                 }
             }
-
-            return new ClassDecl(currentClass.QualifiedName, modeledMethods, sourceCodeMethods, constants, fields, baseClass.QualifiedName, currentClass.IsFinal, currentClass.IsInterface, currentClass.IsAbstract);
+            
+            return result.Build();
         }
 
         private ClassDecl convertToClassDecl(TypeDecl declaration)
         {
+            ClassDeclBuilder result = new ClassDeclBuilder();
+            result.BaseClassName= declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
+
+            result.IsFinal = declaration.Type.IsFinal;
+            result.IsInterface = declaration.Type.IsInterface;
+            result.IsAbstract=declaration.Type.IsAbstract;
+            result.TypeName=new QualifiedName(declaration.Name);
+ 
             
-            List<MethodInfo> modeledMethods = new List<MethodInfo>();
-            List<MethodDecl> sourceCodeMethods = new List<MethodDecl>();
-            Dictionary<VariableName, FieldInfo> fields = new Dictionary<VariableName, FieldInfo>();
-            Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
 
             foreach (var member in declaration.Members)
             {
@@ -582,13 +595,13 @@ namespace Weverca.Analysis
                         }
                         bool isStatic = member.Modifiers.HasFlag(PhpMemberAttributes.Static);
                         //multiple declaration of fields
-                        if (fields.ContainsKey(new VariableName(field.Name.Value)))
+                        if (result.Fields.ContainsKey(new FieldIdentifier(result.TypeName,field.Name)))
                         {
                             setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
                         }
                         else
                         {
-                            fields.Add(new VariableName(field.Name.Value), new FieldInfo(field.Name, "any", visibility, field.Initializer, isStatic));
+                            result.Fields.Add(new FieldIdentifier(result.TypeName, field.Name), new FieldInfo(field.Name,result.TypeName, "any", visibility, field.Initializer, isStatic));
                         }
                     }
 
@@ -597,7 +610,7 @@ namespace Weverca.Analysis
                 {
                     foreach (var constant in (member as ConstDeclList).Constants)
                     {
-                        if (constants.ContainsKey(constant.Name))
+                        if (result.Constants.ContainsKey(new FieldIdentifier(result.TypeName,constant.Name)))
                         {
                             setWarning("Cannot redeclare constant " + constant.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
                         }
@@ -605,15 +618,16 @@ namespace Weverca.Analysis
                         {
                             //in php all object constatns are public
                             Visibility visbility = Visibility.PUBLIC;
-                            constants.Add(constant.Name, new ConstantInfo(constant.Name, visbility, constant.Initializer));
+                            result.Constants.Add(new FieldIdentifier(result.TypeName, constant.Name), new ConstantInfo(constant.Name,result.TypeName, visbility, constant.Initializer));
                         }
                     }
                 }
                 else if (member is MethodDecl)
                 {
-                    if (sourceCodeMethods.Where(a => a.Name == (member as MethodDecl).Name).Count() == 0)
+                    var methosIdentifier = new MethodIdentifier(result.TypeName, (member as MethodDecl).Name);
+                    if (!result.SourceCodeMethods.ContainsKey(methosIdentifier))
                     {
-                        sourceCodeMethods.Add(member as MethodDecl);
+                        result.SourceCodeMethods.Add(methosIdentifier, member as MethodDecl);
                     }
                     else
                     {
@@ -625,13 +639,11 @@ namespace Weverca.Analysis
                     //ignore traits are not supported by AST, only by parser
                 }
             }
-            bool isFinal = declaration.Type.IsFinal;
-            bool isInterface = declaration.Type.IsInterface;
+            
 
             // NativeTypeDecl result=new NativeTypeDecl();
-            Nullable<QualifiedName> baseClass = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
-
-            return new ClassDecl(new QualifiedName(declaration.Name), modeledMethods, sourceCodeMethods, constants, fields, baseClass, isFinal, isInterface, declaration.Type.IsAbstract);
+            
+            return result.Build();
         }
 
         private void applyHints(FlowOutputSet outSet)

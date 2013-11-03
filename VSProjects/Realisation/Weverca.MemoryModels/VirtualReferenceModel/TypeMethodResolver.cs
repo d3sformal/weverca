@@ -47,11 +47,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             {
                 //TODO resolve invoking element
                 //var analyzer = new NativeAnalyzer(methodInfo.Method, new StringLiteral(new PHP.Core.Parsers.Position(),"to be implemented"));
-                var analyzer = new NativeAnalyzer(methodInfo.Method, new StringLiteral(new PHP.Core.Parsers.Position(), nativeDecl.QualifiedName.Name+"::"+methodInfo.Name));
-                _methods.Add(Snapshot.CreateFunction(methodInfo.Name, analyzer));
+                var analyzer = new NativeAnalyzer(methodInfo.Value.Method, new StringLiteral(new PHP.Core.Parsers.Position(), nativeDecl.QualifiedName.Name+"::"+methodInfo.Value.Name));
+                _methods.Add(Snapshot.CreateFunction(methodInfo.Value.Name, analyzer));
             }
 
-            foreach (var methodDecl in nativeDecl.SourceCodeMethods)
+            foreach (var methodDecl in nativeDecl.SourceCodeMethods.Values)
             {
                 _methods.Add(Snapshot.CreateFunction(methodDecl));
             }

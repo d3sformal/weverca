@@ -17,20 +17,18 @@ namespace Weverca.AnalysisFramework.UnitTest
     {
         public static ClassDecl CreateType()
         {
-            var methods = new MethodInfo[]{
-                method("__construct",_method___construct),
-                method("GetValue",_method_GetValue)
-
-            };
-
-            var declaration = new ClassDecl(new QualifiedName(new Name("NativeType")), methods, new List<MethodDecl>(), new Dictionary<VariableName, ConstantInfo>(), new Dictionary<VariableName, FieldInfo>(), null, false, false,false);
+            var nativeType=new QualifiedName(new Name("NativeType"));
+            var methods = new Dictionary<MethodIdentifier, MethodInfo>();
+            methods.Add(new MethodIdentifier(nativeType, new Name("__construct")), method("__construct",_method___construct));
+            methods.Add(new MethodIdentifier(nativeType, new Name("GetValue")), method("GetValue", _method_GetValue));
+            var declaration = new ClassDecl(nativeType, methods, new Dictionary<MethodIdentifier,MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), null, false, false, false);
             return declaration;
         }
 
 
         private static MethodInfo method(string name, NativeAnalyzerMethod analyzer)
         {
-            return new MethodInfo(new Name(name),Visibility.PUBLIC, analyzer,new List<MethodArgument>());
+            return new MethodInfo(new Name(name), new QualifiedName(new Name("NativeType")), Visibility.PUBLIC, analyzer, new List<MethodArgument>());
         }
 
         private static void _method___construct(FlowController flow)

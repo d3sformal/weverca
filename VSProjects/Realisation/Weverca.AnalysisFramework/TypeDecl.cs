@@ -18,6 +18,61 @@ namespace Weverca.AnalysisFramework
         PRIVATE, PUBLIC, PROTECTED
     }
 
+    public class FieldIdentifier
+    {
+        public readonly VariableName Name;
+        public readonly QualifiedName ClassName;
+        public FieldIdentifier(QualifiedName className,VariableName name)
+        { 
+            Name=name;
+            ClassName = className;
+        }
+
+        public override bool Equals(object obj)
+        {
+            FieldIdentifier y= obj as FieldIdentifier;
+            if (obj == null)
+            {
+                return false;
+            }
+            return (Name.Equals(y.Name) && ClassName.Equals(y.ClassName));
+        }
+
+        public override int GetHashCode()
+        {
+            return ClassName.GetHashCode()*13 + Name.GetHashCode();
+        }
+    }
+
+    public class MethodIdentifier
+    {
+        public readonly Name Name;
+        public readonly QualifiedName ClassName;
+
+        public MethodIdentifier(QualifiedName className, Name name)
+        { 
+            Name=name;
+            ClassName = className;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is MethodIdentifier)
+            {
+                return (Name.Equals((obj as MethodIdentifier).Name) && ClassName.Equals((obj as MethodIdentifier).ClassName));
+            }
+            else 
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return ClassName.GetHashCode() * 13 + Name.GetHashCode();
+        }
+    }
+
     public class FieldInfo
     {
 
@@ -33,22 +88,26 @@ namespace Weverca.AnalysisFramework
 
         public readonly Expression Initializer;
 
-        public FieldInfo(VariableName name, string type, Visibility visibility, MemoryEntry value, bool isStatic)
+        public readonly QualifiedName ClassName;
+
+        public FieldInfo(VariableName name,QualifiedName className, string type, Visibility visibility, MemoryEntry value, bool isStatic)
         {
             Name = name;
             Type = type;
             Visibility = visibility;
             IsStatic=isStatic;
             InitValue = value;
+            ClassName = className;
         }
 
-        public FieldInfo(VariableName name, string type, Visibility visibility, Expression initializer, bool isStatic)
+        public FieldInfo(VariableName name, QualifiedName className, string type, Visibility visibility, Expression initializer, bool isStatic)
         {
             Name = name;
             Type = type;
             Visibility = visibility;
             IsStatic = isStatic;
             Initializer = initializer;
+            ClassName = className;
         }
     }
 
@@ -91,7 +150,9 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsAbstract;
 
-        public MethodInfo(Name name, Visibility visibility, NativeAnalyzerMethod method, List<MethodArgument> args, bool isFinal = false, bool isStatic = false, bool isAbstract = false)
+        public readonly QualifiedName ClassName;
+
+        public MethodInfo(Name name,QualifiedName className, Visibility visibility, NativeAnalyzerMethod method, List<MethodArgument> args, bool isFinal = false, bool isStatic = false, bool isAbstract = false)
         {
             Name = name;
             Method = method;
@@ -100,6 +161,7 @@ namespace Weverca.AnalysisFramework
             Visibility = visibility;
             Arguments=new ReadOnlyCollection<MethodArgument>(args);
             IsAbstract = isAbstract;
+            ClassName = className;
         }
     }
 
@@ -109,19 +171,21 @@ namespace Weverca.AnalysisFramework
         public readonly MemoryEntry Value;
         public readonly Expression Initializer;
         public readonly Visibility Visibility;
-
-        public ConstantInfo(VariableName name, Visibility visibility, MemoryEntry value)
+        public readonly QualifiedName ClassName;
+        public ConstantInfo(VariableName name, QualifiedName className, Visibility visibility, MemoryEntry value)
         { 
             Name=name;
             Value=value;
             Visibility = visibility;
+            ClassName = className;
         }
 
-        public ConstantInfo(VariableName name, Visibility visibility, Expression initializer)
+        public ConstantInfo(VariableName name, QualifiedName className, Visibility visibility, Expression initializer)
         {
             Name = name;
             Initializer = initializer;
             Visibility = visibility;
+            ClassName = className;
         }
     }
 
@@ -140,13 +204,13 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly Nullable<QualifiedName> BaseClassName;
 
-        public readonly ReadOnlyDictionary<VariableName, FieldInfo> Fields;
+        public readonly ReadOnlyDictionary<FieldIdentifier, FieldInfo> Fields;
 
-        public readonly ReadOnlyDictionary<VariableName, ConstantInfo> Constants;
+        public readonly ReadOnlyDictionary<FieldIdentifier, ConstantInfo> Constants;
 
-        public readonly ReadOnlyCollection<MethodInfo> ModeledMethods;
+        public readonly ReadOnlyDictionary<MethodIdentifier,MethodInfo> ModeledMethods;
 
-        public readonly ReadOnlyCollection<MethodDecl> SourceCodeMethods;
+        public readonly ReadOnlyDictionary<MethodIdentifier,MethodDecl> SourceCodeMethods;
 
         public readonly bool IsFinal;
 
@@ -154,28 +218,47 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsAbstract;
 
-        public ClassDecl(QualifiedName typeName, IEnumerable<MethodInfo> methods, IEnumerable<MethodDecl> sourceCodeMethods, Dictionary<VariableName, ConstantInfo> constants, Dictionary<VariableName, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface,bool isAbstract)
+        public ClassDecl(QualifiedName typeName, Dictionary<MethodIdentifier,MethodInfo> methods, Dictionary<MethodIdentifier, MethodDecl> sourceCodeMethods, Dictionary<FieldIdentifier, ConstantInfo> constants, Dictionary<FieldIdentifier, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface, bool isAbstract)
         {
             QualifiedName = typeName;
             BaseClassName = baseClassName;
-            ModeledMethods = new ReadOnlyCollection<MethodInfo>(new List<MethodInfo>(methods));
-            SourceCodeMethods = new ReadOnlyCollection<MethodDecl>(new List<MethodDecl>(sourceCodeMethods));
-            Constants = new ReadOnlyDictionary<VariableName, ConstantInfo>(constants);
-            Fields = new ReadOnlyDictionary<VariableName, FieldInfo>(fields);
+            ModeledMethods = new ReadOnlyDictionary<MethodIdentifier, MethodInfo>(methods);
+            SourceCodeMethods = new ReadOnlyDictionary<MethodIdentifier, MethodDecl>(sourceCodeMethods);
+            Constants = new ReadOnlyDictionary<FieldIdentifier, ConstantInfo>(constants);
+            Fields = new ReadOnlyDictionary<FieldIdentifier, FieldInfo>(fields);
             IsFinal = isFinal;
             IsInterface = isInteface;
             IsAbstract = isAbstract;
         }
     }
 
-    class ClassDeclBuilder
+    public class ClassDeclBuilder
     {
-
+        public QualifiedName TypeName;
+        public Dictionary<MethodIdentifier, MethodInfo> ModeledMethods;
+        public Dictionary<MethodIdentifier,MethodDecl> SourceCodeMethods;
+        public Dictionary<FieldIdentifier, ConstantInfo> Constants;
+        public Dictionary<FieldIdentifier, FieldInfo> Fields;
+        public Nullable<QualifiedName> BaseClassName;
+        public bool IsFinal;
+        public bool IsInterface;
+        public bool IsAbstract;
+        
+        public ClassDeclBuilder()
+        {
+            ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>();
+            SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>();
+            Constants = new Dictionary<FieldIdentifier, ConstantInfo>();
+            Fields = new Dictionary<FieldIdentifier, FieldInfo>();
+            BaseClassName = null;
+            IsFinal = false;
+            IsInterface = false;
+            IsAbstract = false;
+        }
 
         public ClassDecl Build()
         {
-
-            return null;
+            return new ClassDecl(TypeName, ModeledMethods, SourceCodeMethods, Constants, Fields, BaseClassName, IsFinal, IsInterface, IsAbstract);
         }
     }
 }

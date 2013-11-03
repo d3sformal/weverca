@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework;
 
 namespace Weverca.Analysis.UnitTest
 {
@@ -29,18 +30,21 @@ namespace Weverca.Analysis.UnitTest
         public void ClassExtend()
         {
             var outset = TestUtils.Analyze(ClassExtendTest);
-            var it = (outset.ResolveType(new QualifiedName(new Name("B"))).GetEnumerator());
+            var classB = new QualifiedName(new Name("B"));
+            var classA = new QualifiedName(new Name("A"));          
+
+            var it = (outset.ResolveType(classB).GetEnumerator());
             it.MoveNext();
             TypeValue B = it.Current as TypeValue;
             Debug.Equals(B.Declaration.Fields.Count, 2);
-            Debug.Assert(B.Declaration.Fields[new VariableName("x")] != null);
-            Debug.Assert(B.Declaration.Fields[new VariableName("y")] != null);
+            Debug.Assert(B.Declaration.Fields[new FieldIdentifier(classA, new VariableName("x"))] != null);
+            Debug.Assert(B.Declaration.Fields[new FieldIdentifier(classB, new VariableName("y"))] != null);
 
-            it = (outset.ResolveType(new QualifiedName(new Name("A"))).GetEnumerator());
+            it = (outset.ResolveType(classA).GetEnumerator());
             it.MoveNext();
             TypeValue A = it.Current as TypeValue;
             Debug.Equals(A.Declaration.Fields.Count, 1);
-            Debug.Assert(A.Declaration.Fields[new VariableName("x")] != null);
+            Debug.Assert(A.Declaration.Fields[new FieldIdentifier(classA, new VariableName("x"))] != null);
 
         }
         

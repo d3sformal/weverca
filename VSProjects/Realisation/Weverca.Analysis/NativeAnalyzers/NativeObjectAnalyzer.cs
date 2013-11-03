@@ -42,122 +42,6 @@ namespace Weverca.Analysis
 
     }
 
-    public class MutableNativeTypeDecl
-    {
-        #region properties
-        /// <summary>
-        /// Name of native type
-        /// </summary>
-        public QualifiedName QualifiedName;
-
-        /// <summary>
-        /// Name of base class
-        /// </summary>
-        public QualifiedName? BaseClassName;
-
-        public Dictionary<VariableName, FieldInfo> Fields;
-
-        public Dictionary<VariableName, ConstantInfo> Constants;
-
-        public List<NativeMethod> Methods;
-
-        public bool IsInterFace;
-
-        public bool IsFinal;
-
-        public Visibility visibility;
-
-        public bool IsAbstract=false;
-
-        #endregion
-
-        #region convert to mutable
-
-        public ClassDecl ConvertToMuttable(NativeObjectAnalyzer analyzer,
-            Dictionary<string, MethodInfo> WevercaImplementedMethods)
-        {
-            var nativeMethodsInfo = new List<MethodInfo>();
-            bool containsConstructor = false;
-            var allreadyDeclaredMethods = new HashSet<QualifiedName>();
-
-            foreach (var method in Methods)
-            {
-                if (WevercaImplementedMethods.ContainsKey(QualifiedName + "." + method))
-                {
-                    nativeMethodsInfo.Add(WevercaImplementedMethods[QualifiedName + "." + method]);
-                }
-                else
-                {
-                    var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
-                    if (method.Name.Name.Value.ToLower() == "__construct")
-                    {
-                        nativeMethodsInfo.Add(new MethodInfo(method.Name.Name, visibility,
-                            helper.Construct, method.ConvertArguments(), method.IsFinal, method.IsStatic, method.IsAbstract));
-                        containsConstructor = true;
-                    }
-                    else
-                    {
-                        nativeMethodsInfo.Add(new MethodInfo(method.Name.Name, visibility,
-                            helper.Analyze, method.ConvertArguments(), method.IsFinal, method.IsStatic,method.IsAbstract));
-                        allreadyDeclaredMethods.Add(method.Name);
-                    }
-                }
-            }
-
-            var baseclassName = BaseClassName;
-            while (baseclassName != null)
-            {
-                var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseclassName.Value];
-                foreach (var method in baseClass.Methods)
-                {
-                    var helper = new NativeObjectsAnalyzerHelper(method, QualifiedName);
-                    if (method.Name.Name.Value.ToLower() == "__construct" && containsConstructor == false)
-                    {
-                        var methodInfo = new MethodInfo(method.Name.Name, visibility, helper.Construct,method.ConvertArguments(),
-                            method.IsFinal, method.IsStatic,method.IsAbstract);
-                        nativeMethodsInfo.Add(methodInfo);
-                        containsConstructor = true;
-                    }
-                    else
-                    {
-                        var newMethod = new MethodInfo(method.Name.Name, visibility,
-                            helper.Analyze, method.ConvertArguments(), method.IsFinal, method.IsStatic, method.IsAbstract);
-                        if (!allreadyDeclaredMethods.Contains(method.Name))
-                        {
-                            nativeMethodsInfo.Add(newMethod);
-                            allreadyDeclaredMethods.Add(method.Name);
-                        }
-                    }
-                }
-
-                foreach (var field in baseClass.Fields)
-                {
-                    if (!Fields.ContainsKey(field.Key))
-                    {
-                        Fields.Add(field.Key, field.Value);
-                    }
-                }
-
-                foreach (var constant in baseClass.Constants)
-                {
-                    if (!Constants.ContainsKey(constant.Key))
-                    {
-                        Constants.Add(constant.Key, constant.Value);
-                    }
-                }
-
-                baseclassName = baseClass.BaseClassName;
-            }
-
-            /* if (containsConstructor == false)
-                 Console.WriteLine(QualifiedName);
-            */
-           return new ClassDecl(QualifiedName, nativeMethodsInfo, new List<MethodDecl>(), Constants, Fields, BaseClassName, IsFinal, IsInterFace,IsAbstract);     
-        }
-
-        #endregion
-    }
-
     public class NativeObjectAnalyzer
     {
         private static NativeObjectAnalyzer instance = null;
@@ -177,10 +61,10 @@ namespace Weverca.Analysis
         {
             var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
             nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
-            NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, MutableNativeTypeDecl>();
+            NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, ClassDeclBuilder>();
 
             var outSet = flow.OutSet;
-            MutableNativeTypeDecl currentClass = null;
+            ClassDeclBuilder currentClass = null;
             NativeMethod currentMethod = null;
             while (reader.Read())
             {
@@ -191,7 +75,7 @@ namespace Weverca.Analysis
                         {
                             case "class":
                             case "interface":
-                                currentClass = new MutableNativeTypeDecl();
+                                currentClass = new ClassDeclBuilder();
                                 var classFinal = reader.GetAttribute("isFinal");
                                 if (classFinal == "true")
                                 {
@@ -201,23 +85,21 @@ namespace Weverca.Analysis
                                 {
                                     currentClass.IsFinal = false;
                                 }
-                                currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
-                                currentClass.Fields = new Dictionary<VariableName, FieldInfo>();
-                                currentClass.Constants = new Dictionary<VariableName, ConstantInfo>();
-                                currentClass.Methods = new List<NativeMethod>();
+                                currentClass.TypeName = new QualifiedName(new Name(reader.GetAttribute("name")));
+
                                 if (reader.GetAttribute("baseClass") != null)
                                 {
                                     currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("baseClass")));
                                 }
 
-                                NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.QualifiedName] = currentClass;
+                                NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.TypeName] = currentClass;
                                 if (reader.Name == "class")
                                 {
-                                    currentClass.IsInterFace = false;
+                                    currentClass.IsInterface = false;
                                 }
                                 else
                                 {
-                                    currentClass.IsInterFace = true;
+                                    currentClass.IsInterface = true;
                                 }
                                 break;
                             case "field":
@@ -227,24 +109,26 @@ namespace Weverca.Analysis
                                 string fieldIsConst = reader.GetAttribute("isConst");
                                 string fieldType = reader.GetAttribute("type");
                                 fieldTypes.Add(fieldType);
+                                Visibility visibility;
+                                switch (fieldVisibility)
+                                {
+                                    case "public":
+                                        visibility = Visibility.PUBLIC;
+                                        break;
+                                    case "protectd":
+                                        visibility = Visibility.PROTECTED;
+                                        break;
+                                    case "private":
+                                        visibility = Visibility.PRIVATE;
+                                        break;
+                                    default:
+                                        visibility = Visibility.PUBLIC;
+                                        break;
+                                }
+                                
                                 if (fieldIsConst == "false")
                                 {
-                                    Visibility visiblity;
-                                    switch (fieldVisibility)
-                                    {
-                                        case "public":
-                                            visiblity = Visibility.PUBLIC;
-                                            break;
-                                        case "protectd":
-                                            visiblity = Visibility.PROTECTED;
-                                            break;
-                                        case "private":
-                                            visiblity = Visibility.PRIVATE;
-                                            break;
-                                        default:
-                                            visiblity = Visibility.PUBLIC;
-                                            break;
-                                    }
+                                    
                                     Value initValue = outSet.UndefinedValue;
                                     string stringValue = reader.GetAttribute("value");
                                     int intValue;
@@ -278,38 +162,39 @@ namespace Weverca.Analysis
                                         initValue = outSet.CreateString(stringValue);
                                     }
 
-                                    currentClass.Fields[new VariableName(fieldName)] = new FieldInfo(new VariableName(fieldName), fieldType, visiblity, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
+                                    currentClass.Fields[new FieldIdentifier(currentClass.TypeName, new VariableName(fieldName))] = new FieldInfo(new VariableName(fieldName), currentClass.TypeName, fieldType, visibility, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
                                 }
                                 else
                                 {
                                     string value = reader.GetAttribute("value");
                                     //resolve constant
                                     VariableName constantName = new VariableName(fieldName);
-                                    Visibility visibility = Visibility.PUBLIC;
+
+                                    var constIdentifier = new FieldIdentifier(currentClass.TypeName, constantName);
                                     switch (fieldType)
                                     {
                                         case "int":
                                         case "integer":
                                             try
                                             {
-                                                currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
                                             }
                                             catch (Exception)
                                             {
-                                                currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             }
                                             break;
                                         case "string":
-                                            currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateString(value)));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateString(value)));
                                             break;
                                         case "boolean":
-                                            currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
                                             break;
                                         case "float":
-                                            currentClass.Constants[constantName] = new ConstantInfo(constantName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             break;
                                         case "NULL":
-                                            currentClass.Constants[constantName] = new ConstantInfo(constantName,visibility, new MemoryEntry(outSet.UndefinedValue));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.UndefinedValue));
                                             break;
                                         default:
                                             break;
@@ -321,7 +206,32 @@ namespace Weverca.Analysis
                                 currentMethod.IsFinal = bool.Parse(reader.GetAttribute("final"));
                                 currentMethod.IsStatic = bool.Parse(reader.GetAttribute("static"));
                                 returnTypes.Add(reader.GetAttribute("returnType"));
-                                currentClass.Methods.Add(currentMethod);
+                                Visibility methodVisibility=Visibility.PUBLIC;
+                                if (reader.GetAttribute("visibility") == "private")
+                                {
+                                    methodVisibility = Visibility.PRIVATE;
+                                }
+                                else if (reader.GetAttribute("visibility") == "protected")
+                                {
+                                    methodVisibility = Visibility.PROTECTED;
+                                }
+                                else 
+                                {
+                                    methodVisibility = Visibility.PUBLIC;
+                                }
+
+
+                                NativeAnalyzerMethod analyzer;
+                                if (currentMethod.Name.Name.Equals(new Name("__construct")))
+                                {
+                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Construct;
+                                }
+                                else 
+                                {
+                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Analyze;
+                                }
+                                MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.TypeName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
+                                currentClass.ModeledMethods[new MethodIdentifier(currentClass.TypeName, methodInfo.Name)]=methodInfo;
                                 break;
                             case "arg":
                                 currentMethod.Arguments.Add(new NativeFunctionArgument(reader.GetAttribute("type"), bool.Parse(reader.GetAttribute("optional")), bool.Parse(reader.GetAttribute("byReference")), bool.Parse(reader.GetAttribute("dots"))));
@@ -346,9 +256,9 @@ namespace Weverca.Analysis
              */
             foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
-                if (nativeObject.QualifiedName != null)
+                if (nativeObject.TypeName != null)
                 {
-                    if (!NativeObjectsAnalyzerHelper.mutableNativeObjects.ContainsKey(nativeObject.QualifiedName))
+                    if (!NativeObjectsAnalyzerHelper.mutableNativeObjects.ContainsKey(nativeObject.TypeName))
                     {
                         throw new Exception();
                     }
@@ -358,7 +268,26 @@ namespace Weverca.Analysis
             //generate result
             foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
-                nativeObjects[nativeObject.QualifiedName] = nativeObject.ConvertToMuttable(this, WevercaImplementedMethods);
+                Nullable<QualifiedName> baseClassName=nativeObject.BaseClassName;
+                if(baseClassName!=null)
+                {
+                    var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseClassName.Value];
+                    foreach(var constant in baseClass.Constants)
+                    {
+                        nativeObject.Constants.Add(constant.Key, constant.Value);
+                    }
+                    foreach (var field in baseClass.Fields)
+                    {
+                        nativeObject.Fields.Add(field.Key, field.Value);
+                    }
+                    foreach (var method in baseClass.ModeledMethods)
+                    {
+                        nativeObject.ModeledMethods.Add(method.Key, method.Value);
+                    }
+                    baseClassName = baseClass.BaseClassName;
+
+                }
+                nativeObjects[nativeObject.TypeName] = nativeObject.Build();
             }
         }
 
@@ -396,7 +325,7 @@ namespace Weverca.Analysis
 
         private QualifiedName ObjectName;
 
-        public static Dictionary<QualifiedName, MutableNativeTypeDecl> mutableNativeObjects;
+        public static Dictionary<QualifiedName, ClassDeclBuilder> mutableNativeObjects;
 
         public NativeObjectsAnalyzerHelper(NativeMethod method, QualifiedName objectName)
         {
