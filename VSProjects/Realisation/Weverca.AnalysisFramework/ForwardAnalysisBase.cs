@@ -98,6 +98,14 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created snapshot</returns>
         protected abstract SnapshotBase createSnapshot();
 
+        /// <summary>
+        /// Create memory assistant, that will be used for initializing created snapshots
+        /// NOTE:
+        ///     * Is called whenever new assistant is needed (every time new assistant has to be created)
+        /// </summary>
+        /// <returns>Created memory assistant</returns>
+        protected abstract MemoryAssistantBase createAssistant();
+
         #endregion
 
         /// <summary>
@@ -187,7 +195,13 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created output set</returns>
         private FlowOutputSet createEmptySet()
         {
-            return new FlowOutputSet(createSnapshot());
+            var snapshot = createSnapshot();
+            var assistant = createAssistant();
+
+            snapshot.InitAssistant(assistant);
+            assistant.InitContext(snapshot);
+
+            return new FlowOutputSet(snapshot);
         }
 
       

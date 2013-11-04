@@ -268,24 +268,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             throw new NotImplementedException();
         }
 
-        //OBSOLETE
-        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override bool objectFieldExists(ObjectValue objectValue, ContainerIndex field)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override bool arrayIndexExists(AssociativeArray array, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
         protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)

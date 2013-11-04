@@ -87,7 +87,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var snapshot = C(context);
             var indexVisitor = new IndexStorageVisitor(this, snapshot, index);
 
-            return new SnapshotStorageEntry(null, indexVisitor.Storages);
+            return indexVisitor.IndexedValue;
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field)

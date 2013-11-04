@@ -30,9 +30,9 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new AnyValue();
         }
     }
 
@@ -67,7 +67,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -103,7 +103,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -127,7 +127,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -151,7 +151,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -175,7 +175,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -211,7 +211,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -235,9 +235,9 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new AnyArrayValue();
         }
     }
 
@@ -259,7 +259,7 @@
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }

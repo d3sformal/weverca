@@ -106,7 +106,7 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -161,7 +161,7 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -191,7 +191,7 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -221,7 +221,7 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }
@@ -249,7 +249,7 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override Value cloneWithStorage(InfoDataStorage storage)
+        protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
         }

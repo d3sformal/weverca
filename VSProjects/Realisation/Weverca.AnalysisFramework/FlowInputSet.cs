@@ -65,24 +65,6 @@ namespace Weverca.AnalysisFramework
             get { return Snapshot.ReturnValue; }
         }
 
-        [Obsolete("Use snapshot entry API instead")]
-        public bool VariableExists(VariableName variable, bool forceGlobalContext = false)
-        {
-            return Snapshot.VariableExists(variable, forceGlobalContext);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field)
-        {
-            return Snapshot.ObjectFieldExists(objectValue, field);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public bool ArrayIndexExists(AssociativeArray array, ContainerIndex index)
-        {
-            return Snapshot.ArrayIndexExists(array, index);
-        }
-
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);

@@ -39,6 +39,11 @@ namespace Weverca.Analysis
             return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
         }
 
+        protected override MemoryAssistantBase createAssistant()
+        {
+            return new MemoryAssistant();
+        }
+
         #endregion
 
         protected void GlobalsInitializer()

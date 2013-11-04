@@ -31,6 +31,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// </summary>
         private bool _isGlobalScope;
 
+        internal MemoryAssistantBase MemoryAssistant { get { return Assistant; } }
+
         public Snapshot()
         {
             _globals = new VariableContainer(VariableKind.Global, this);
@@ -221,7 +223,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return readValue(variable);
         }
 
-        internal IEnumerable<VariableKey> IndexStorages(AssociativeArray array, MemberIdentifier index)
+        internal IEnumerable<VariableKey> IndexStorages(Value array, MemberIdentifier index)
         {
             var storages = new List<VariableKey>();
             foreach (var indexName in index.PossibleNames)
@@ -236,7 +238,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return storages;
         }
 
-        internal IEnumerable<VariableKey> FieldStorages(ObjectValue objectValue, VariableIdentifier field)
+        internal IEnumerable<VariableKey> FieldStorages(Value objectValue, VariableIdentifier field)
         {
             var storages = new List<VariableKey>();
             foreach (var fieldName in field.PossibleNames)
@@ -615,7 +617,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return getMeta("$type:" + typeName);
         }
 
-        private VariableKey getFieldStorage(ObjectValue obj, ContainerIndex field)
+        private VariableKey getFieldStorage(Value obj, ContainerIndex field)
         {
             var name = string.Format("$obj{0}->{1}", obj.UID, field.Identifier);
             return getMeta(name);
@@ -627,7 +629,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return getMeta(name);
         }
 
-        private VariableKey getIndexStorage(AssociativeArray arr, ContainerIndex index)
+        private VariableKey getIndexStorage(Value arr, ContainerIndex index)
         {
             var name = string.Format("$arr{0}[{1}]", arr.UID, index.Identifier);
             return getMeta(name);
@@ -787,7 +789,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
-        
+
 
         //========================OLD API IMPLEMENTATION=======================
         #region OLD API related methods (will be removed after backcompatibility won't be needed)
@@ -836,38 +838,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return createAlias(storage);
         }
 
-        protected override bool variableExists(VariableName variable, bool forceGlobalContext)
-        {
-            var kind = repairKind(VariableKind.Local, forceGlobalContext);
-            var info = getInfo(variable, kind);
-
-            return info != null;
-        }
-
-        private bool variableExists(VariableKey key)
-        {
-            var info = getInfo(key);
-            return info != null;
-        }
-
-        protected override bool objectFieldExists(ObjectValue objectValue, ContainerIndex field)
-        {
-            var storage = getFieldStorage(objectValue, field);
-            return variableExists(storage);
-        }
-
-        protected override bool arrayIndexExists(AssociativeArray array, ContainerIndex index)
-        {
-            var storage = getIndexStorage(array, index);
-            return variableExists(storage);
-        }
-
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
             assign(targetVar, entry, VariableKind.Local);
         }
-
-
 
         protected override MemoryEntry readValue(VariableName sourceVar)
         {

@@ -13,15 +13,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
     class IndexStorageVisitor : AbstractValueVisitor
     {
         private readonly Snapshot _context;
-        private readonly List<VariableKey> _indexStorages = new List<VariableKey>();
+        private readonly List<VariableKey> _indexStorages = new List<VariableKey>();        
         private readonly MemberIdentifier _index;
 
         private AssociativeArray implicitArray;
 
-        internal readonly VariableKey[] Storages;
+
+        internal readonly ReadWriteSnapshotEntryBase IndexedValue;
 
 
-        internal IndexStorageVisitor(ReadWriteSnapshotEntryBase indexedEntry,Snapshot context,MemberIdentifier index)
+        internal IndexStorageVisitor(ReadWriteSnapshotEntryBase indexedEntry, Snapshot context, MemberIdentifier index)
         {
             _context = context;
             _index = index;
@@ -34,7 +35,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             if (implicitArray != null)
                 //TODO replace only undefined values
                 indexedEntry.WriteMemory(context, new MemoryEntry(implicitArray));
-            Storages = _indexStorages.ToArray();
+            IndexedValue = new SnapshotStorageEntry(null, _indexStorages.ToArray());
         }
 
         public override void VisitValue(Value value)
@@ -54,20 +55,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             applyIndex(value);
         }
 
-        public override void VisitAnyArrayValue(AnyArrayValue value)
+        public override void VisitAnyValue(AnyValue value)
         {
-            throw new NotImplementedException("How can be AnyArrayValue indexing implemented in memory model? ");
+            var indexed = _context.MemoryAssistant.ReadIndex(value, _index);
+
+            var storages=_context.IndexStorages(value, _index).ToArray();
+            _context.Write(storages, indexed);
+            _indexStorages.AddRange(storages);
         }
 
         private void applyIndex(AssociativeArray array)
-        {            
-            _indexStorages.AddRange(_context.IndexStorages(array,_index));
+        {
+            _indexStorages.AddRange(_context.IndexStorages(array, _index));
         }
-        
+
         private AssociativeArray getImplicitArray()
         {
             if (implicitArray == null)
-                implicitArray= _context.CreateArray();
+                implicitArray = _context.CreateArray();
 
             return implicitArray;
         }

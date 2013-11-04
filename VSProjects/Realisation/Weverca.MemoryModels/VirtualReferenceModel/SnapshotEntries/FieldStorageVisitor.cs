@@ -55,6 +55,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             applyField(value);
         }
 
+        public override void VisitAnyValue(AnyValue value)
+        {
+            var fielded = _context.MemoryAssistant.ReadField(value, _field);
+
+            var storages = _context.FieldStorages(value, _field).ToArray();
+            _context.Write(storages, fielded);
+            _indexStorages.AddRange(storages);
+        }
+
         private void applyField(ObjectValue objectValue)
         {
             _indexStorages.AddRange(_context.FieldStorages(objectValue, _field));

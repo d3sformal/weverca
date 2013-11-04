@@ -5,9 +5,11 @@ using System.Linq;
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.AnalysisFramework.ProgramPoints;
-using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.ProgramPoints;
+
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -54,6 +56,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
         }
+
+        protected override MemoryAssistantBase createAssistant()
+        {
+            return new SimpleAssistant();
+        }
+
         #endregion
 
         #region Analysis settings routines
@@ -69,15 +77,31 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         #endregion
+
+
     }
 
-    class SimpleInfo
+    class SimpleInfo : InfoDataBase
     {
         internal readonly bool XssSanitized;
 
         internal SimpleInfo(bool xssSanitized)
         {
             XssSanitized = xssSanitized;
+        }
+
+        protected override int getHashCode()
+        {
+            return XssSanitized.GetHashCode();
+        }
+
+        protected override bool equals(InfoDataBase other)
+        {
+            var o = other as SimpleInfo;
+            if (o == null)
+                return false;
+
+            return o.XssSanitized == XssSanitized;
         }
     }
 
@@ -92,6 +116,6 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             InputClass = inputClass;
             CatchStart = catchStart;
-        }        
-    }  
+        }
+    }
 }

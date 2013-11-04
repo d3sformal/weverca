@@ -76,6 +76,7 @@
     <Compile Include="Memory\InfoDataBase.cs" />
     <Compile Include="Memory\InfoDataStorage.cs" />
     <Compile Include="Memory\MemberIdentifier.cs" />
+    <Compile Include="Memory\MemoryAssistantBase.cs" />
     <Compile Include="Memory\ReadWriteSnapshotEntryBase.cs" />
     <Compile Include="Memory\ScalarValues.cs" />
     <Compile Include="Memory\SnapshotBase.cs" />
@@ -84,7 +85,7 @@
     <Compile Include="Memory\ContainerIndex.cs" />
     <Compile Include="Memory\ISnapshotReadonly.cs" />
     <Compile Include="Memory\ISnapshotReadWrite.cs" />
-    <Compile Include="Memory\MemoryEntry.cs" />
+    <Compile Include="Memory\MemoryEntryBase.cs" />
     <Compile Include="Memory\ReadSnapshotEntryBase.cs" />
     <Compile Include="Memory\SnapshotStatistics.cs" />
     <Compile Include="Memory\SpecialValues.cs" />

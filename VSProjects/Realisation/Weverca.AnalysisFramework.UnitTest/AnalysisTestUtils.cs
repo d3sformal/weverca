@@ -19,15 +19,10 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="outSet"></param>
         private static void GLOBAL_ENVIRONMENT_INITIALIZER(FlowOutputSet outSet)
         {
-            var post = new VariableName("_POST");
-            var postInfo = outSet.CreateInfo(new SimpleInfo(
-                xssSanitized: false
-                ));
+            var POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
+            var POST = outSet.AnyArrayValue.SetInfo(new SimpleInfo(xssSanitized: false));
 
-            var value = outSet.AnyArrayValue;
-
-            outSet.Assign(post, new MemoryEntry(value));
-            outSet.SetInfo(value, postInfo);
+            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
         }
 
         internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
@@ -133,7 +128,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal static void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            var variable=outset.ReadVariable(new VariableIdentifier(variableName));
+            var variable = outset.ReadVariable(new VariableIdentifier(variableName));
             var entry = variable.ReadMemory(outset.Snapshot);
 
             var actualValues = (from ScalarValue<T> value in entry.PossibleValues select value.Value).ToArray();
@@ -160,16 +155,14 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void AssertIsXSSDirty(FlowOutputSet outSet, string variableName, string assertMessage)
         {
-            var entry = outSet.ReadValue(new VariableName(variableName));
-            foreach (var value in entry.PossibleValues)
+            var variable = outSet.GetVariable(new VariableIdentifier(variableName));
+            var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
+            foreach (var value in values)
             {
-                var infoValues = outSet.ReadInfo(value);
-                foreach (InfoValue<SimpleInfo> info in infoValues)
+                var info = value.GetInfo<SimpleInfo>();
+                if (info != null && !info.XssSanitized)
                 {
-                    if (!info.Data.XssSanitized)
-                    {
-                        return;
-                    }
+                    return;
                 }
             }
 
@@ -178,12 +171,14 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void AssertIsXSSClean(FlowOutputSet outSet, string variableName, string assertMessage)
         {
-            var entry = outSet.ReadValue(new VariableName(variableName));
-            foreach (var value in entry.PossibleValues)
+            var variable = outSet.GetVariable(new VariableIdentifier(variableName));
+            var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
+            foreach (var value in values)
             {
-                foreach (InfoValue<SimpleInfo> info in outSet.ReadInfo(value))
+                var info = value.GetInfo<SimpleInfo>();
+                if (info != null && !info.XssSanitized)
                 {
-                    Assert.IsTrue(info.Data.XssSanitized, "Variable ${0} with value {1} is not sanitized", variableName, value);
+                    Assert.IsTrue(info.XssSanitized, "Variable ${0} with value {1} is not sanitized", variableName, value);
                 }
             }
         }

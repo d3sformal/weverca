@@ -21,12 +21,12 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Storage for info data objects of value
         /// </summary>
-        private readonly InfoDataStorage _storage;
+        private InfoDataStorage _storage;
 
         /// <summary>
         /// Part of hash that can be precomputed in constructor
         /// </summary>
-        private readonly int _precomputedHash;
+        private int _precomputedHash;
 
         /// <summary>
         /// Unique id for every instance of value
@@ -49,21 +49,15 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract bool equals(Value other);
 
         /// <summary>
-        /// Create clone of current value. Use storage as info storage for the clone
-        /// storage should be passed as an argument to the constructor of Value
+        /// Create clone of current value. Is used for cloning values
+        /// for passing info storage.
         /// </summary>
-        /// <param name="storage">Info storage for the clone</param>
         /// <returns>Created clone</returns>
-        protected abstract Value cloneWithStorage(InfoDataStorage storage);
+        protected abstract Value cloneValue();
 
-        internal Value(InfoDataStorage storage = null)
+        internal Value()
         {
-            if (storage == null)
-                storage = new InfoDataStorage();
-
-            _storage = storage;
-
-            _precomputedHash = storage.GetHashCode();
+            setStorage(new InfoDataStorage());
 
             UID = ++_lastValueUID;
         }
@@ -82,8 +76,8 @@ namespace Weverca.AnalysisFramework.Memory
             var key = typeof(DataKey);
             storage[key] = infoData;
 
-            var clone= cloneWithStorage(storage);
-            Debug.Assert(clone._storage == storage);
+            var clone = cloneValue();
+            clone.setStorage(storage);
 
             return clone;
         }
@@ -106,6 +100,12 @@ namespace Weverca.AnalysisFramework.Memory
         public virtual void Accept(IValueVisitor visitor)
         {
             visitor.VisitValue(this);
+        }
+
+        private void setStorage(InfoDataStorage storage)
+        {
+            _storage = storage;
+            _precomputedHash = _storage.GetHashCode();
         }
 
         #region Standard method overrides

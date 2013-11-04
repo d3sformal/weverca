@@ -60,38 +60,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <value>Variable name of return value storage</value>        
         VariableName ReturnValue { get; }
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Determines whether variable exists in current snapshot
-        /// </summary>
-        /// <remarks>
-        /// If global context is not forced, searches in local context,
-        /// or in global context in snapshot belonging to global code
-        /// </remarks>
-        /// <param name="variable">Tested variable</param>
-        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
-        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
-        bool VariableExists(VariableName variable, bool forceGlobalContext = false);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Determines whether field for the given object exists in current snapshot
-        /// </summary>
-        /// <param name="objectValue">Object which field is resolved</param>
-        /// <param name="field">Field where value will be searched</param>
-        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
-        bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Determines whether element of index for the given array exists in current snapshot
-        /// </summary>
-        /// <param name="array">Array which index is resolved</param>
-        /// <param name="index">Index where value will be searched</param>
-        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
-        bool ArrayIndexExists(AssociativeArray array, ContainerIndex index);
-
+          
         [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Iterates over the given object

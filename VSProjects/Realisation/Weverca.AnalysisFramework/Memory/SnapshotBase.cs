@@ -36,6 +36,11 @@ namespace Weverca.AnalysisFramework.Memory
         private SnapshotStatistics _statistics = new SnapshotStatistics();
 
         /// <summary>
+        /// Assistant helping memory models resolving memory operations
+        /// </summary>
+        protected MemoryAssistantBase Assistant { get; private set; }
+
+        /// <summary>
         /// Determine that transaction of this snapshot is started - updates can be written
         /// </summary>
         public bool IsTransactionStarted { get; private set; }
@@ -48,7 +53,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Always return false if the transaction is started and not yet commited
         /// </summary>
         public bool HasChanged { get; private set; }
-
+        
         #region Implementation of SnapshotEntry based API
 
         /// <summary>
@@ -325,37 +330,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="declaration">Declared type</param>
         protected abstract void declareGlobal(TypeValueBase declaration);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Determines whether variable exists in current snapshot
-        /// </summary>
-        /// <remarks>
-        /// If global context is not forced, searches in local context,
-        /// or in global context in snapshot belonging to global code
-        /// </remarks>
-        /// <param name="variable">Tested variable</param>
-        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
-        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
-        protected abstract bool variableExists(VariableName variable, bool forceGlobalContext);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Determines whether field for the given object exists in current snapshot
-        /// </summary>
-        /// <param name="objectValue">Object which field is resolved</param>
-        /// <param name="field">Field where value will be searched</param>
-        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
-        protected abstract bool objectFieldExists(ObjectValue objectValue, ContainerIndex field);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Determines whether element of index for the given array exists in current snapshot
-        /// </summary>
-        /// <param name="array">Array which index is resolved</param>
-        /// <param name="index">Index where value will be searched</param>
-        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
-        protected abstract bool arrayIndexExists(AssociativeArray array, ContainerIndex index);
-
         /// <summary>
         /// Resolves all possible functions for given functionName
         /// NOTE:
@@ -508,6 +482,14 @@ namespace Weverca.AnalysisFramework.Memory
             IsFrozen = true;
         }
 
+        internal void InitAssistant(MemoryAssistantBase assistant)
+        {
+            if (Assistant != null)
+                throw new NotSupportedException("Cannot set memory assistant twice");
+
+            Assistant = assistant;
+        }
+
         internal void ExtendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
@@ -519,46 +501,6 @@ namespace Weverca.AnalysisFramework.Memory
         #endregion
 
         #region Implementation of ISnapshotReadWrite interface
-
-        /// <summary>
-        /// Determines whether variable exists in current snapshot
-        /// </summary>
-        /// <remarks>
-        /// If global context is not forced, searches in local context,
-        /// or in global context in snapshot belonging to global code
-        /// </remarks>
-        /// <param name="variable">Tested variable</param>
-        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
-        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
-        public bool VariableExists(VariableName variable, bool forceGlobalContext)
-        {
-            _statistics.Report(Statistic.VariableExistSearches);
-            return variableExists(variable, forceGlobalContext);
-        }
-
-        /// <summary>
-        /// Determines whether field for the given object exists in current snapshot
-        /// </summary>
-        /// <param name="objectValue">Object which field is resolved</param>
-        /// <param name="field">Field where value will be searched</param>
-        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
-        public bool ObjectFieldExists(ObjectValue objectValue, ContainerIndex field)
-        {
-            _statistics.Report(Statistic.ObjectFieldExistsSearches);
-            return objectFieldExists(objectValue, field);
-        }
-
-        /// <summary>
-        /// Determines whether element of index for the given array exists in current snapshot
-        /// </summary>
-        /// <param name="array">Array which index is resolved</param>
-        /// <param name="index">Index where value will be searched</param>
-        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
-        public bool ArrayIndexExists(AssociativeArray array, ContainerIndex index)
-        {
-            _statistics.Report(Statistic.ArrayIndexExistsSearches);
-            return arrayIndexExists(array, index);
-        }
 
         #region TODO: Implement as singletons!!!
         public AnyValue AnyValue { get { return new AnyValue(); } }

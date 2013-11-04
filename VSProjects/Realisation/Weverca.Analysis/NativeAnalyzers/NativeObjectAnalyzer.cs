@@ -403,8 +403,8 @@ namespace Weverca.Analysis
                 {
                     var fieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
                     createdFields.AddRange(fieldValues.PossibleValues);
-                    thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
-                    thisVariable.WriteMemory(flow.OutSet.Snapshot, fieldValues);
+                    var fieldEntry=thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                    fieldEntry.WriteMemory(flow.OutSet.Snapshot, fieldValues);
                 }
             }
 

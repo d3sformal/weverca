@@ -72,6 +72,7 @@
     <Compile Include="FlowResolver\VariableVisitor.cs" />
     <Compile Include="ForwardAnalysis.cs" />
     <Compile Include="FunctionResolver.cs" />
+    <Compile Include="MemoryAssistant.cs" />
     <Compile Include="NativeAnalyzers\NativeAnalyzerUtils.cs" />
     <Compile Include="NativeAnalyzers\NativeConstantAnalyzer.cs" />
     <Compile Include="NativeAnalyzers\NativeFunctionAnalyzer.cs" />
