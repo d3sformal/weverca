@@ -16,7 +16,7 @@ namespace Weverca.Analysis
 
         public bool IsFinal;
 
-        public bool IsAbstract=false;
+        public bool IsAbstract = false;
 
         public NativeMethod()
         {
@@ -33,8 +33,8 @@ namespace Weverca.Analysis
         {
             List<MethodArgument> res = new List<MethodArgument>();
             foreach (var arg in Arguments)
-            { 
-                res.Add(new MethodArgument(new VariableName(),arg.ByReference,arg.Optional));
+            {
+                res.Add(new MethodArgument(new VariableName(), arg.ByReference, arg.Optional));
             }
 
             return res;
@@ -125,10 +125,10 @@ namespace Weverca.Analysis
                                         visibility = Visibility.PUBLIC;
                                         break;
                                 }
-                                
+
                                 if (fieldIsConst == "false")
                                 {
-                                    
+
                                     Value initValue = outSet.UndefinedValue;
                                     string stringValue = reader.GetAttribute("value");
                                     int intValue;
@@ -181,20 +181,20 @@ namespace Weverca.Analysis
                                             }
                                             catch (Exception)
                                             {
-                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             }
                                             break;
                                         case "string":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateString(value)));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateString(value)));
                                             break;
                                         case "boolean":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
                                             break;
                                         case "float":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             break;
                                         case "NULL":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName,currentClass.TypeName, visibility, new MemoryEntry(outSet.UndefinedValue));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.UndefinedValue));
                                             break;
                                         default:
                                             break;
@@ -206,32 +206,9 @@ namespace Weverca.Analysis
                                 currentMethod.IsFinal = bool.Parse(reader.GetAttribute("final"));
                                 currentMethod.IsStatic = bool.Parse(reader.GetAttribute("static"));
                                 returnTypes.Add(reader.GetAttribute("returnType"));
-                                Visibility methodVisibility=Visibility.PUBLIC;
-                                if (reader.GetAttribute("visibility") == "private")
-                                {
-                                    methodVisibility = Visibility.PRIVATE;
-                                }
-                                else if (reader.GetAttribute("visibility") == "protected")
-                                {
-                                    methodVisibility = Visibility.PROTECTED;
-                                }
-                                else 
-                                {
-                                    methodVisibility = Visibility.PUBLIC;
-                                }
 
 
-                                NativeAnalyzerMethod analyzer;
-                                if (currentMethod.Name.Name.Equals(new Name("__construct")))
-                                {
-                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Construct;
-                                }
-                                else 
-                                {
-                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Analyze;
-                                }
-                                MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.TypeName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
-                                currentClass.ModeledMethods[new MethodIdentifier(currentClass.TypeName, methodInfo.Name)]=methodInfo;
+
                                 break;
                             case "arg":
                                 currentMethod.Arguments.Add(new NativeFunctionArgument(reader.GetAttribute("type"), bool.Parse(reader.GetAttribute("optional")), bool.Parse(reader.GetAttribute("byReference")), bool.Parse(reader.GetAttribute("dots"))));
@@ -248,6 +225,38 @@ namespace Weverca.Analysis
                     case XmlNodeType.Comment:
                         break;
                     case XmlNodeType.EndElement:
+                        switch (reader.Name)
+                        {
+                            case "method":
+                                Visibility methodVisibility = Visibility.PUBLIC;
+                                if (reader.GetAttribute("visibility") == "private")
+                                {
+                                    methodVisibility = Visibility.PRIVATE;
+                                }
+                                else if (reader.GetAttribute("visibility") == "protected")
+                                {
+                                    methodVisibility = Visibility.PROTECTED;
+                                }
+                                else
+                                {
+                                    methodVisibility = Visibility.PUBLIC;
+                                }
+                                NativeAnalyzerMethod analyzer;
+                                if (currentMethod.Name.Name.Equals(new Name("__construct")))
+                                {
+                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Construct;
+                                }
+                                else
+                                {
+                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Analyze;
+                                }
+                                MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.TypeName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
+                                currentClass.ModeledMethods[new MethodIdentifier(currentClass.TypeName, methodInfo.Name)] = methodInfo;
+
+
+                                break;
+                        }
+
                         break;
                 }
             }
@@ -268,11 +277,11 @@ namespace Weverca.Analysis
             //generate result
             foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
-                Nullable<QualifiedName> baseClassName=nativeObject.BaseClassName;
-                if(baseClassName!=null)
+                Nullable<QualifiedName> baseClassName = nativeObject.BaseClassName;
+                if (baseClassName != null)
                 {
                     var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseClassName.Value];
-                    foreach(var constant in baseClass.Constants)
+                    foreach (var constant in baseClass.Constants)
                     {
                         nativeObject.Constants.Add(constant.Key, constant.Value);
                     }
@@ -347,7 +356,7 @@ namespace Weverca.Analysis
             var arguments = getArguments(flow);
             var allFieldsEntries = new List<MemoryEntry>();
 
-            var thisVariable=flow.OutSet.GetVariable(new VariableIdentifier("this"));
+            var thisVariable = flow.OutSet.GetVariable(new VariableIdentifier("this"));
             var fieldsEntries = new List<MemoryEntry>();
             foreach (FieldInfo field in fields.Values)
             {
@@ -363,8 +372,8 @@ namespace Weverca.Analysis
                 MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
                 ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, newfieldValues);
                 List<Value> addedValues;
-                thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value)).WriteMemory(flow.OutSet.Snapshot,addToEntry(fieldEntry.ReadMemory(flow.OutSet.Snapshot), newfieldValues.PossibleValues, out addedValues));
-                
+                thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value)).WriteMemory(flow.OutSet.Snapshot, addToEntry(fieldEntry.ReadMemory(flow.OutSet.Snapshot), newfieldValues.PossibleValues, out addedValues));
+
                 if (addedValues.Count != 0)
                 {
                     ValueInfoHandler.CopyFlags(flow.OutSet, fieldsEntries, new MemoryEntry(addedValues));
@@ -396,14 +405,14 @@ namespace Weverca.Analysis
 
             var createdFields = new List<Value>();
             var thisVariable = flow.OutSet.GetVariable(new VariableIdentifier("this"));
-                        
+
             foreach (FieldInfo field in fields.Values)
             {
                 if (field.IsStatic == false)
                 {
                     var fieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
                     createdFields.AddRange(fieldValues.PossibleValues);
-                    var fieldEntry=thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                    var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
                     fieldEntry.WriteMemory(flow.OutSet.Snapshot, fieldValues);
                 }
             }
