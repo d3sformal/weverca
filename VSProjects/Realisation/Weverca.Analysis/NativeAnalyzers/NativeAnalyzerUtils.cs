@@ -386,7 +386,7 @@ namespace Weverca.Analysis
 
         private static Value CreateObject(FlowController flow, string type)
         {
-
+            
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(flow);
             QualifiedName typeName = new QualifiedName(new Name(type));
             if (objectAnalyzer.ExistClass(typeName))
@@ -395,6 +395,8 @@ namespace Weverca.Analysis
 
                 var fields = objectAnalyzer.GetClass(typeName).Fields;
                 ObjectValue value = flow.OutSet.CreateObject(flow.OutSet.CreateType(decl));
+                var newObject=flow.OutSet.GetLocalControlVariable(new VariableName(".tmpObject"));
+                newObject.WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(value));
                 if (value is ObjectValue)
                 {
                     var obj = (value as ObjectValue);
@@ -402,12 +404,12 @@ namespace Weverca.Analysis
                     {
                         if (field.IsStatic == false)
                         {
-                            flow.OutSet.SetField(obj, flow.OutSet.CreateIndex(field.Name.Value), (NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow)));
-      
+                            var newField=newObject.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                            newField.WriteMemory(flow.OutSet.Snapshot, NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow));
                         }
                     }
                 }
-                return value;
+                return value; 
             }
             else
             {

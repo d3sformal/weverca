@@ -47,7 +47,7 @@ namespace Weverca.Analysis
         private static NativeObjectAnalyzer instance = null;
 
         private Dictionary<QualifiedName, ClassDecl> nativeObjects;
-
+        
         private Dictionary<string, MethodInfo> WevercaImplementedMethods
             = new Dictionary<string, MethodInfo>();
 
@@ -55,6 +55,7 @@ namespace Weverca.Analysis
         private HashSet<string> methodTypes = new HashSet<string>();
         private HashSet<string> returnTypes = new HashSet<string>();
 
+        
         #region parsing xml
 
         private NativeObjectAnalyzer(FlowController flow)
@@ -336,6 +337,8 @@ namespace Weverca.Analysis
 
         public static Dictionary<QualifiedName, ClassDeclBuilder> mutableNativeObjects;
 
+        public static readonly VariableName returnVariable = new VariableName(".return");
+
         public NativeObjectsAnalyzerHelper(NativeMethod method, QualifiedName objectName)
         {
             Method = method;
@@ -383,7 +386,7 @@ namespace Weverca.Analysis
 
             allFieldsEntries.AddRange(arguments);
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, functionResult);
-            flow.OutSet.GetVariable(new VariableIdentifier(".return")).WriteMemory(flow.OutSet.Snapshot, functionResult);
+            flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, functionResult);
             var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, (new NativeFunction[1] { Method }).ToList());
             ValueInfoHandler.CopyFlags(flow.OutSet, allFieldsEntries, new MemoryEntry(assigned_aliases));
         }

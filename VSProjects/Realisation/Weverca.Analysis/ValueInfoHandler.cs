@@ -31,7 +31,7 @@ namespace Weverca.Analysis
 
         private static Dictionary<DirtyType, bool> MergeAndCreateVariableInfo(FlowOutputSet outSet, Value value)
         {
-
+            //todo este neje iste ze sa bude pouzivate nove api, je mozne ze to bude zabudovane vo viacfazovej analyze
             InfoValue[] infos = outSet.ReadInfo(value);
             Dictionary<DirtyType, bool> dirtyFlags = FlagsInfoValue.CreateDirtyFlags();
 
@@ -68,6 +68,7 @@ namespace Weverca.Analysis
         public static bool isDirty(FlowOutputSet outSet, Value value, DirtyType dirty)
         { 
             bool result=false;
+            
             foreach(InfoValue info in outSet.ReadInfo(value))
             {
                 if (info is InfoValue<FlagsInfoValue>)

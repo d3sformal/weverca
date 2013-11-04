@@ -697,6 +697,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     return _locals;
                 case VariableKind.GlobalControl:
                     return _globalControls;
+                case VariableKind.LocalControl:
+                    return _localControls;
                 case VariableKind.Meta:
                     return _meta;
                 default:

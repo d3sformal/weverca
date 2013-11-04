@@ -18,7 +18,7 @@ namespace Weverca.Analysis
     public class FunctionResolver : FunctionResolverBase
     {
         private static readonly VariableName currentFunctionName = new VariableName("$current_function");
-
+        private VariableName retrunVariable=new VariableName(".return");
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
@@ -113,7 +113,7 @@ namespace Weverca.Analysis
             var functionDeclaration = declaration as FunctionDecl;
             if (functionDeclaration != null)
             {
-                callInput.Assign(currentFunctionName,
+                callInput.GetLocalControlVariable(currentFunctionName).WriteMemory(callInput.Snapshot,
                     new MemoryEntry(callInput.CreateFunction(functionDeclaration)));
             }
             else
@@ -121,7 +121,7 @@ namespace Weverca.Analysis
                 var methodDeclaration = declaration as MethodDecl;
                 if (methodDeclaration != null)
                 {
-                    callInput.Assign(currentFunctionName,
+                    callInput.GetLocalControlVariable(currentFunctionName).WriteMemory(callInput.Snapshot,
                         new MemoryEntry(callInput.CreateFunction(methodDeclaration)));
                 }
             }
@@ -163,7 +163,7 @@ namespace Weverca.Analysis
             {
                 var outSet = calls[0].End.OutSet;
                 applyHints(outSet);
-                return outSet.ReadValue(outSet.ReturnValue);
+                return outSet.GetLocalControlVariable(retrunVariable).ReadMemory(outSet.Snapshot);
             }
             else
             {
@@ -174,7 +174,7 @@ namespace Weverca.Analysis
                 {
                     var outSet = call.End.OutSet;
                     applyHints(outSet);
-                    var returnValue = outSet.ReadValue(outSet.ReturnValue);
+                    var returnValue = outSet.GetLocalControlVariable(retrunVariable).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
                 }
 
@@ -266,6 +266,12 @@ namespace Weverca.Analysis
                     }
                 }
             }
+        }
+
+        public override MemoryEntry Return(MemoryEntry value)
+        {
+            OutSet.GetLocalControlVariable(retrunVariable).WriteMemory(OutSet.Snapshot, value);
+            return value;
         }
 
         #endregion
@@ -648,7 +654,7 @@ namespace Weverca.Analysis
 
         private void applyHints(FlowOutputSet outSet)
         {
-            var currentFunctionEntry = outSet.ReadValue(currentFunctionName);
+            var currentFunctionEntry = outSet.GetLocalControlVariable(currentFunctionName).ReadMemory(outSet.Snapshot);
             if (currentFunctionEntry.Count != 1)
             {
                 return;
@@ -945,6 +951,7 @@ namespace Weverca.Analysis
     }
 
     // TODO: testy treba pockat na priznaky
+    // TODO pravdepodobne sa zmeni praca s priznakmi
     internal class FunctionHints
     {
         private HashSet<DirtyType> returnHints;
