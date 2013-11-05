@@ -16,16 +16,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         bool IsDefined { get; }
 
-        void Next(Snapshot snapshot, PathSegment segment);
+        void Next(PathSegment segment);
     }
 
     abstract class IndexCollector : IIndexCollector
     {
-        public void ProcessPath(Snapshot snapshot, MemoryPath path)
+        public void ProcessPath(MemoryPath path)
         {
             foreach (PathSegment segment in path.PathSegments)
             {
-                Next(snapshot, segment);
+                Next(segment);
             }
         }
 
@@ -34,6 +34,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public abstract int MustIndexesCount { get; }
         public abstract int MayIndexesCount { get; }
         public abstract bool IsDefined { get; protected set; }
-        public abstract void Next(Snapshot snapshot, PathSegment segment);
+        public abstract void Next(PathSegment segment);
     }
 }

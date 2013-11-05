@@ -80,11 +80,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Snapshot snapshot = toSnapshot(context);
 
-            AssignCollector collector = new AssignCollector();
-            collector.ProcessPath(snapshot, path);
+            TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
+            MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
+            mergeWorker.MergeMemoryEntry(temporaryIndex, value);
+
+            AssignCollector collector = new AssignCollector(snapshot);
+            collector.ProcessPath(path);
 
             AssignWorker worker = new AssignWorker(snapshot);
-            worker.Assign(collector, value);
+            worker.Assign(collector, temporaryIndex);
+
+            snapshot.ReleaseTemporary(temporaryIndex);
         }
 
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
@@ -100,8 +106,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Snapshot snapshot = toSnapshot(context);
 
-            ReadCollector collector = new ReadCollector();
-            collector.ProcessPath(snapshot, path);
+            ReadCollector collector = new ReadCollector(snapshot);
+            collector.ProcessPath(path);
 
             return collector.IsDefined;
         }
@@ -115,8 +121,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Snapshot snapshot = toSnapshot(context);
 
-            ReadCollector collector = new ReadCollector();
-            collector.ProcessPath(snapshot, path);
+            ReadCollector collector = new ReadCollector(snapshot);
+            collector.ProcessPath(path);
 
             ReadWorker worker = new ReadWorker(snapshot);
             return worker.ReadValue(collector);
@@ -143,6 +149,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 throw new ArgumentException("Context parametter is not of type Weverca.MemoryModels.CopyMemoryModel.Snapshot");
             }
+        }
+
+        public override string ToString()
+        {
+            return path.ToString();
         }
     }
 }

@@ -16,6 +16,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private Snapshot snapshot;
         private bool isMust;
 
+        private HashSet<ObjectValue> objectValues = new HashSet<ObjectValue>();
+
         public CopyWithinSnapshotWorker(Snapshot snapshot, bool isMust)
         {
             this.snapshot = snapshot;
@@ -29,6 +31,41 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(this, targetIndex);
             visitor.VisitMemoryEntry(entry);
 
+            if (isMust && visitor.GetValuesCount() == 1 && objectValues.Count == 1)
+            {
+                ObjectValueContainerBuilder objectsValues = snapshot.GetObjects(targetIndex).Builder();
+
+                ObjectValue value = objectValues.First();
+                objectsValues.Add(value);
+                snapshot.SetObjects(targetIndex, objectsValues);
+
+                ObjectDescriptorBuilder descriptor = snapshot.GetDescriptor(value).Builder();
+
+                if (descriptor.MustReferences.Contains(sourceIndex))
+                {
+                    descriptor.MustReferences.Add(targetIndex);
+                }
+                else
+                {
+                    descriptor.MayReferences.Add(sourceIndex);
+                }
+
+                snapshot.SetDescriptor(value, descriptor);
+            }
+            else if (objectValues.Count > 0)
+            {
+                ObjectValueContainerBuilder objectsValues = snapshot.GetObjects(targetIndex).Builder();
+                foreach (ObjectValue value in objectValues)
+                {
+                    objectsValues.Add(value);
+
+                    ObjectDescriptorBuilder descriptor = snapshot.GetDescriptor(value).Builder();
+                    descriptor.MayReferences.Add(targetIndex);
+                    snapshot.SetDescriptor(value, descriptor);
+                }
+                snapshot.SetObjects(targetIndex, objectsValues);
+            } 
+            
             if (!isMust)
             {
                 visitor.AddValue(snapshot.UndefinedValue);
@@ -60,21 +97,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal ObjectValue ProcessObjectValue(MemoryIndex targetIndex, ObjectValue value)
         {
-            ObjectValue objectValue = snapshot.CreateObject(targetIndex, isMust);
-            snapshot.SameObjectReference(value, objectValue, isMust);
-
-            ObjectDescriptor sourceDescriptor = snapshot.GetDescriptor(value);
-            ObjectDescriptor targetDescriptor = snapshot.GetDescriptor(objectValue);
-
-            Copy(sourceDescriptor.UnknownField, targetDescriptor.UnknownField);
-
-            foreach (var field in sourceDescriptor.Fields)
-            {
-                MemoryIndex newField = snapshot.CreateField(field.Key, objectValue, false, false);
-                Copy(field.Value, newField);
-            }
-
-            return objectValue;
+            objectValues.Add(value);
+            return value;
         }
     }
 
@@ -88,6 +112,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             this.worker = worker;
             this.index = index;
+        }
+
+        public int GetValuesCount()
+        {
+            return values.Count;
         }
 
         public void AddValue(Value value)

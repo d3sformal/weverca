@@ -21,30 +21,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             this.snapshot = snapshot;
         }
 
-        internal void Assign(AssignCollector collector, MemoryEntry sourceEntry)
+        internal void Assign(AssignCollector collector, MemoryIndex sourceIndex)
         {
             foreach (MemoryIndex mustIndex in collector.MustIndexes)
             {
-                snapshot.SetMemoryEntry(mustIndex, sourceEntry);
+                snapshot.DestroyMemory(mustIndex);
+                CopyWithinSnapshotWorker copyWorker = new CopyWithinSnapshotWorker(snapshot, true);
+                copyWorker.Copy(sourceIndex, mustIndex);
             }
 
             foreach (MemoryIndex mayIndex in collector.MayIndexes)
             {
-                MemoryEntry oldEntry = snapshot.GetMemoryEntry(mayIndex);
-
-                HashSet<Value> values = new HashSet<Value>();
-                foreach (Value value in oldEntry.PossibleValues)
-                {
-                    values.Add(value);
-                }
-
-                foreach (Value value in sourceEntry.PossibleValues)
-                {
-                    values.Add(value);
-                }
-
-                MemoryEntry newEntry = new MemoryEntry(values);
-                snapshot.SetMemoryEntry(mayIndex, newEntry);
+                MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
+                mergeWorker.MergeIndexes(mayIndex, sourceIndex);
             }
         }
     }

@@ -41,7 +41,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             get { return mayIndexes.Count; }
         }
 
-        public override void Next(Snapshot snapshot, PathSegment segment)
+        public override void Next(PathSegment segment)
         {
             throw new NotImplementedException();
         }

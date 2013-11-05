@@ -13,183 +13,99 @@ using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 using Weverca.MemoryModels.CopyMemoryModel;
+using Weverca.MemoryModels.UnitTest.SnapshotTestFramework;
 
 namespace Weverca.MemoryModels.UnitTest.CopyMemoryModel
 {
     [TestClass]
     public class AssignTest
     {
+
         [TestMethod]
         public void assignTest()
         {
-            Snapshot snapshot = new Snapshot();
-            snapshot.StartTransaction();
+            SnapshotTester<Snapshot> tester = new SnapshotTester<Snapshot>();
 
-            StreamWriter writer = new StreamWriter("assignTest.txt");
+            tester.Var("a").Write(1);
 
-            writer.WriteLine("Blank snapshot");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            ReadWriteSnapshotEntryBase snapshotEntry = snapshot.GetVariable(new VariableIdentifier("integer"));
-            snapshotEntry.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(1)));
-
-            writer.WriteLine("$integer = 1");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-
-            writer.Close();
-            snapshot.CommitTransaction();
+            tester.SetLogger(new FileLogger("assignTest.txt"));
+            tester.Test();
         }
 
         [TestMethod]
         public void assignArrayTest()
         {
-            Snapshot snapshot = new Snapshot();
-            snapshot.StartTransaction();
+            SnapshotTester<Snapshot> tester = new SnapshotTester<Snapshot>();
 
-            ReadWriteSnapshotEntryBase seA = snapshot.GetVariable(new VariableIdentifier("a"));
+            tester.Var("a").Index("5").Index().Write(1);
+            tester.Var("a").Index().Index().Write(2);
+            tester.Var("a").Index().Index("3").Write(3);
 
-            ReadWriteSnapshotEntryBase seA5 = seA.ReadIndex(snapshot, new MemberIdentifier(new String[] { "5" }));
-            ReadWriteSnapshotEntryBase seA5U = seA5.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-
-            ReadWriteSnapshotEntryBase seAU = seA.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seAUU = seAU.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seAU3 = seAU.ReadIndex(snapshot, new MemberIdentifier(new String[] { "3" }));
-
-            StreamWriter writer = new StreamWriter("assignArrayTest.txt");
-
-            writer.WriteLine("Empty snapshot");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seA5U.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(1)));
-            writer.WriteLine("$a[5][?] = 1");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seAUU.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(2)));
-            writer.WriteLine("$a[?][?] = 2");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seAU3.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(3)));
-            writer.WriteLine("$a[?][3] = 3");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            writer.Close();
-            snapshot.CommitTransaction();
+            tester.SetLogger(new FileLogger("assignArrayTest.txt"));
+            tester.Test();
         }
 
         [TestMethod]
         public void assignArrayFromUnknownTest()
         {
-            Snapshot snapshot = new Snapshot();
-            snapshot.StartTransaction();
+            SnapshotTester<Snapshot> tester = new SnapshotTester<Snapshot>();
 
-            ReadWriteSnapshotEntryBase seA = snapshot.GetVariable(new VariableIdentifier("a"));
+            tester.Var("a").Index().Index().Write(1);
+            tester.Var("a").Index().Index("3").Write(2);
+            tester.Var("a").Index("5").Index().Write(3);
+            tester.Var("a").Index("5").Index("6").Write(4);
+            tester.Var("a").Index("5").Index("7").Write(7);
+            tester.Var("a").Index("5").Index("8").Index("8").Write(8);
+            tester.Var("a").Index().Write(5);
+            tester.Var("a").Index("5").Index("6").Index("9").Write(6);
 
-            ReadWriteSnapshotEntryBase seA5 = seA.ReadIndex(snapshot, new MemberIdentifier(new String[] { "5" }));
-            ReadWriteSnapshotEntryBase seA5U = seA5.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seA56 = seA5.ReadIndex(snapshot, new MemberIdentifier(new String[] { "6" }));
-
-            ReadWriteSnapshotEntryBase seAU = seA.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seAU3 = seAU.ReadIndex(snapshot, new MemberIdentifier(new String[] { "3" }));
-            ReadWriteSnapshotEntryBase seAUU = seAU.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seAUU9 = seAUU.ReadIndex(snapshot, new MemberIdentifier(new String[] { "9" }));
-
-            StreamWriter writer = new StreamWriter("assignArrayFromUnknownTest.txt");
-
-            writer.WriteLine("Empty snapshot");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seAUU.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(1)));
-            writer.WriteLine("$a[?][?] = 1");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seAU3.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(2)));
-            writer.WriteLine("$a[?][3] = 2");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seA5U.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(3)));
-            writer.WriteLine("$a[5][?] = 3");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seA56.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(4)));
-            writer.WriteLine("$a[5][6] = 4");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seAUU9.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(5)));
-            writer.WriteLine("$a[?][?][9] = 5");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            writer.Close();
-            snapshot.CommitTransaction();
+            tester.SetLogger(new FileLogger("assignArrayFromUnknownTest.txt"));
+            tester.Test();
         }
 
         [TestMethod]
         public void assignArrayConcretizationTest()
         {
-            Snapshot snapshot = new Snapshot();
-            snapshot.StartTransaction();
+            SnapshotTester<Snapshot> tester = new SnapshotTester<Snapshot>();
 
-            ReadWriteSnapshotEntryBase seA = snapshot.GetVariable(new VariableIdentifier("a"));
+            tester.Var("a").Index().Index("2").Index("3").Write(1);
+            tester.Var("a").Index("1").Index().Index("3").Write(2);
+            tester.Var("a").Index("1").Index("2").Index("3").Write(3);
 
-            ReadWriteSnapshotEntryBase seA1 = seA.ReadIndex(snapshot, new MemberIdentifier(new String[] { "1" }));
-            
-            ReadWriteSnapshotEntryBase seA1U = seA1.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seA12 = seA1.ReadIndex(snapshot, new MemberIdentifier(new String[] { "2" }));
-
-            ReadWriteSnapshotEntryBase seA1U3 = seA1U.ReadIndex(snapshot, new MemberIdentifier(new String[] { "3" }));
-            ReadWriteSnapshotEntryBase seA123 = seA12.ReadIndex(snapshot, new MemberIdentifier(new String[] { "3" }));
-
-            ReadWriteSnapshotEntryBase seAU = seA.ReadIndex(snapshot, new MemberIdentifier(new String[] { }));
-            ReadWriteSnapshotEntryBase seAU2 = seAU.ReadIndex(snapshot, new MemberIdentifier(new String[] { "2" }));
-            ReadWriteSnapshotEntryBase seAU23 = seAU2.ReadIndex(snapshot, new MemberIdentifier(new String[] { "3" }));
-
-            StreamWriter writer = new StreamWriter("assignArrayConcretizationTest.txt");
-
-            writer.WriteLine("Empty snapshot");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seAU23.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(1)));
-            writer.WriteLine("$a[?][2][3] = 1");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seA1U3.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(2)));
-            writer.WriteLine("$a[1][?][3] = 2");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-            seA123.WriteMemory(snapshot, new MemoryEntry(snapshot.CreateInt(3)));
-            writer.WriteLine("$a[1][2][3] = 3");
-            writer.WriteLine("------------------------------------------------\n");
-            writer.WriteLine(snapshot.DumpSnapshot());
-            writer.WriteLine("------------------------------------------------");
-
-
-            writer.Close();
-            snapshot.CommitTransaction();
+            tester.SetLogger(new FileLogger("assignArrayConcretizationTest.txt"));
+            tester.Test();
         }
+
+        [TestMethod]
+        public void OverrideArray()
+        {
+            SnapshotTester<Snapshot> tester = new SnapshotTester<Snapshot>();
+
+            tester.Var("a").Index("1").Write(1);
+            tester.Var("a").Index("2").Index("2").Write(2);
+            tester.Var("a").Index("2").Index().Write(3);
+            tester.Var("a").Index("2").Index().Index("4").Write(4);
+            tester.Var("a").Index("5").Write(5);
+            tester.Var("a").Index("6").Write(6);
+            tester.Var("a").Write("OVERRIDE");
+
+            tester.SetLogger(new FileLogger("OverrideArray.txt"));
+            tester.Test();
+        }
+
+        [TestMethod]
+        public void assignObjectTest()
+        {
+            SnapshotTester<Snapshot> tester = new SnapshotTester<Snapshot>();
+
+            tester.Var("a").Index().Field("f").Write(1);
+            tester.Var("a").Index("1").Field("f").Write(2);
+            tester.Var("a").Index("1").Field("g").Write(4);
+            tester.Var("a").Index("2").Field("g").Write(5);
+
+            tester.SetLogger(new FileLogger("assignObjectTest.txt"));
+            tester.Test();
+        }
+
     }
 }

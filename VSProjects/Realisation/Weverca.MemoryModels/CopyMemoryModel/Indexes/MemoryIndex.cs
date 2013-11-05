@@ -4,53 +4,32 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
-{    
+{
+
+    public enum RootIndexType
+    {
+        Variable, Object, Temporary
+    }
+
     /// <summary>
     /// Index to the memory structure
     /// Provides linkink in structure and avoids modification of pointing objecs on change of targeting
     /// </summary>
-    public class MemoryIndex
+    public abstract class MemoryIndex
     {
         public ReadOnlyCollection<IndexSegment> MemoryPath {get; private set; }
         public int Length { get { return MemoryPath.Count; } }
 
-        #region Index Factories
-
-        public static MemoryIndex MakeIndexAnyVariable()
+        protected MemoryIndex()
         {
-            return new MemoryIndex(new IndexSegment(PathType.Variable));
+            List<IndexSegment> path = new List<IndexSegment>();
+            MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
         }
 
-        public static MemoryIndex MakeIndexVariable(string name)
-        {
-            return new MemoryIndex(new IndexSegment(name, PathType.Variable));
-        }
-
-        public static MemoryIndex MakeIndexAnyField(MemoryIndex parentIndex)
-        {
-            return new MemoryIndex(parentIndex, new IndexSegment(PathType.Field));
-        }
-
-        public static MemoryIndex MakeIndexField(MemoryIndex parentIndex, string name)
-        {
-            return new MemoryIndex(parentIndex, new IndexSegment(name, PathType.Field));
-        }
-
-        public static MemoryIndex MakeIndexAnyIndex(MemoryIndex parentIndex)
-        {
-            return new MemoryIndex(parentIndex, new IndexSegment(PathType.Index));
-        }
-
-        public static MemoryIndex MakeIndexIndex(MemoryIndex parentIndex, string name)
-        {
-            return new MemoryIndex(parentIndex, new IndexSegment(name, PathType.Index));
-        }
-
-        #endregion
-
-        private MemoryIndex(IndexSegment pathName)
+        protected MemoryIndex(IndexSegment pathName)
         {
             List<IndexSegment> path = new List<IndexSegment>();
             path.Add(pathName);
@@ -58,11 +37,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
         }
 
-        private MemoryIndex(MemoryIndex parentIndex, IndexSegment pathName)
+        protected MemoryIndex(MemoryIndex parentIndex, IndexSegment pathName)
         {
             List<IndexSegment> path = new List<IndexSegment>(parentIndex.MemoryPath);
             path.Add(pathName);
 
+            MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
+        }
+
+        protected MemoryIndex(List<IndexSegment> path)
+        {
             MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
         }
 
@@ -80,6 +64,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 return false;
             }
 
+            if (otherIndex.GetType() != this.GetType())
+            {
+                return false;
+            }
+
             for (int x = this.Length - 1; x >= 0; x--)
             {
                 if (! this.MemoryPath[x].Equals(otherIndex.MemoryPath[x]))
@@ -93,7 +82,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override int GetHashCode()
         {
-            int hashcode = 0;
+            int hashcode = this.GetType().GetHashCode();
             foreach (IndexSegment name in MemoryPath)
             {
                 uint val = (uint)(hashcode ^ name.GetHashCode());
@@ -115,6 +104,261 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             return builder.ToString();
         }
+
+        public abstract MemoryIndex ToAny();
+
+        public List<IndexSegment> ListToAny()
+        {
+            List<IndexSegment> list = new List<IndexSegment>(MemoryPath);
+            if (list.Count > 0)
+            {
+                list[list.Count - 1] = new IndexSegment();
+            }
+            return list;
+        }
+
+        public abstract MemoryIndex CreateUnknownIndex();
+        public abstract MemoryIndex CreateIndex(string name);
+    }
+
+    public abstract class NamedIndex : MemoryIndex
+    {
+        public IndexSegment MemoryRoot { get; private set; }
+
+        protected NamedIndex(IndexSegment root)
+        {
+            MemoryRoot = root;
+        }
+
+        protected NamedIndex(NamedIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        {
+            MemoryRoot = parentIndex.MemoryRoot;
+        }
+
+        protected NamedIndex(NamedIndex parentIndex, List<IndexSegment> path)
+            : base(path)
+        {
+            MemoryRoot = parentIndex.MemoryRoot;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode() ^ MemoryRoot.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            NamedIndex otherIndex = obj as NamedIndex;
+            if (otherIndex != null)
+            {
+                return MemoryRoot.Equals(otherIndex.MemoryRoot) && base.Equals(obj);
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+
+    public class ObjectIndex : NamedIndex
+    {
+        public ObjectValue Object { get; private set; }
+
+        public ObjectIndex(ObjectValue obj, IndexSegment pathName)
+            : base(pathName)
+        {
+            Object = obj;
+        }
+
+        public ObjectIndex(ObjectIndex parentIndex, IndexSegment pathName)
+            : base(parentIndex, pathName)
+        {
+            Object = parentIndex.Object;
+        }
+
+        public ObjectIndex(ObjectIndex parentIndex, List<IndexSegment> path)
+            : base(parentIndex, path)
+        {
+            Object = parentIndex.Object;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode() ^ Object.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            ObjectIndex otherIndex = obj as ObjectIndex;
+            if (otherIndex != null)
+            {
+                return Object.Equals(otherIndex.Object) && base.Equals(obj);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override MemoryIndex ToAny()
+        {
+            if (MemoryPath.Count == 0)
+            {
+                return new ObjectIndex(Object, new IndexSegment());
+            }
+            else
+            {
+                return new ObjectIndex(this, ListToAny());
+            }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{2}->{0}{1}", MemoryRoot.Name, base.ToString(), Object.UID);
+        }
+
+        public static MemoryIndex CreateUnknown(ObjectValue obj)
+        {
+            return new ObjectIndex(obj, new IndexSegment());
+        }
+
+        public static MemoryIndex Create(ObjectValue obj, string name)
+        {
+            return new ObjectIndex(obj, new IndexSegment(name));
+        }
+
+        public override MemoryIndex CreateUnknownIndex()
+        {
+            return new ObjectIndex(this, new IndexSegment());
+        }
+
+        public override MemoryIndex CreateIndex(string name)
+        {
+            return new ObjectIndex(this, new IndexSegment(name));
+        }
+    }
+
+    public class VariableIndex : NamedIndex
+    {
+        public VariableIndex(IndexSegment root)
+            : base(root)
+        {
+        }
+
+        public VariableIndex(VariableIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        {
+        }
+
+        public VariableIndex(VariableIndex parentIndex, List<IndexSegment> path)
+            : base(parentIndex, path)
+        {
+        }
+
+        public override string ToString()
+        {
+            return String.Format("${0}{1}", MemoryRoot.Name, base.ToString());
+        }
+
+        public override MemoryIndex ToAny()
+        {
+            if (MemoryPath.Count == 0)
+            {
+                return new VariableIndex(new IndexSegment());
+            }
+            else
+            {
+                return new VariableIndex(this, ListToAny());
+            }
+        }
+
+        public static MemoryIndex CreateUnknown()
+        {
+            return new VariableIndex(new IndexSegment());
+        }
+
+        public static MemoryIndex Create(string name)
+        {
+            return new VariableIndex(new IndexSegment(name));
+        }
+
+        public override MemoryIndex CreateUnknownIndex()
+        {
+            return new VariableIndex(this, new IndexSegment());
+        }
+
+        public override MemoryIndex CreateIndex(string name)
+        {
+            return new VariableIndex(this, new IndexSegment(name));
+        }
+    }
+
+    public class TemporaryIndex : MemoryIndex
+    {
+        private static int GLOBAL_ROOT_ID = 0;
+
+        private int rootId;
+
+        public TemporaryIndex()
+        {
+            rootId = GLOBAL_ROOT_ID;
+            GLOBAL_ROOT_ID++;
+        }
+
+        public TemporaryIndex(TemporaryIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        {
+            rootId = parentIndex.rootId;
+        }
+
+        public TemporaryIndex(TemporaryIndex parentIndex, List<IndexSegment> path)
+            : base(path)
+        {
+            rootId = parentIndex.rootId;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode() ^ rootId.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            TemporaryIndex otherIndex = obj as TemporaryIndex;
+            if (otherIndex != null)
+            {
+                return rootId.Equals(otherIndex.rootId) && base.Equals(obj);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override string ToString()
+        {
+            return String.Format("TEMP::${0}{1}", rootId, base.ToString());
+        }
+
+        public override MemoryIndex ToAny()
+        {
+            if (MemoryPath.Count == 0)
+            {
+                throw new Exception("Undefined ANY variable in temporary collection");
+            }
+            else
+            {
+                return new TemporaryIndex(this, ListToAny());
+            }
+        }
+
+        public override MemoryIndex CreateUnknownIndex()
+        {
+            return new TemporaryIndex(this, new IndexSegment());
+        }
+
+        public override MemoryIndex CreateIndex(string name)
+        {
+            return new TemporaryIndex(this, new IndexSegment(name));
+        }
     }
 
     public class IndexSegment
@@ -122,20 +366,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public static string UNDEFINED_STR = "?";
 
         public string Name { get; private set; }
-        public PathType Type { get; private set; }
         public bool IsAny { get; private set; }
 
-        public IndexSegment(String name, PathType type)
+        public IndexSegment(String name)
         {
             Name = name;
-            Type = type;
             IsAny = false;
         }
 
-        public IndexSegment(PathType type)
+        public IndexSegment()
         {
             Name = UNDEFINED_STR;
-            Type = type;
             IsAny = true;
         }
 
@@ -143,7 +384,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             IndexSegment otherPath = obj as IndexSegment;
 
-            if (otherPath == null || otherPath.Type != this.Type || otherPath.IsAny != this.IsAny)
+            if (otherPath == null || otherPath.IsAny != this.IsAny)
             {
                 return false;
             }
@@ -160,30 +401,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             if (IsAny)
             {
-                return Type.GetHashCode();
+                return 0;
             }
             else
             {
-                return Type.GetHashCode() | Name.GetHashCode();
+                return Name.GetHashCode();
             }
         }
 
         public override string ToString()
         {
-            switch (Type)
-            {
-                case PathType.Index:
-                    return String.Format("[{0}]", Name);
-
-                case PathType.Field:
-                    return String.Format("->{0}", Name);
-
-                case PathType.Variable:
-                    return String.Format("${0}", Name);
-
-                default:
-                    return Name;
-            }
+            return String.Format("[{0}]", Name);
         }
     }
 }

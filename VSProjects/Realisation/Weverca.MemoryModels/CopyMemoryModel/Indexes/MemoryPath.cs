@@ -22,35 +22,35 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public static MemoryPath MakePathAnyVariable()
         {
-            return new MemoryPath(new PathSegment(PathType.Variable));
+            return new MemoryPath(new VariablePathSegment());
         }
 
         public static MemoryPath MakePathVariable(IEnumerable<string> names)
         {
-            return new MemoryPath(new PathSegment(names, PathType.Variable));
+            return new MemoryPath(new VariablePathSegment(names));
         }
 
         public static MemoryPath MakePathAnyField(MemoryPath parentPath)
         {
-            return new MemoryPath(parentPath, new PathSegment(PathType.Field));
+            return new MemoryPath(parentPath, new FieldPathSegment());
         }
 
         public static MemoryPath MakePathField(MemoryPath parentPath, IEnumerable<string> names)
         {
-            return new MemoryPath(parentPath, new PathSegment(names, PathType.Field));
+            return new MemoryPath(parentPath, new FieldPathSegment(names));
         }
 
         public static MemoryPath MakePathAnyIndex(MemoryPath parentPath)
         {
-            return new MemoryPath(parentPath, new PathSegment(PathType.Index));
+            return new MemoryPath(parentPath, new IndexPathSegment());
         }
 
         public static MemoryPath MakePathIndex(MemoryPath parentPath, IEnumerable<string> names)
         {
-            return new MemoryPath(parentPath, new PathSegment(names, PathType.Index));
+            return new MemoryPath(parentPath, new IndexPathSegment(names));
         }
 
-        #endregion
+        #endregion*/
 
         private MemoryPath(PathSegment pathSegment)
         {
@@ -84,44 +84,42 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
-    class PathSegment
+    public interface IPathSegmentVisitor
+    {
+        void VisitVariable(VariablePathSegment variableSegment);
+
+        void VisitField(FieldPathSegment fieldSegment);
+
+        void VisitIndex(IndexPathSegment indexSegment);
+    }
+
+    public abstract class PathSegment
     {
         public static string UNDEFINED_STR = "?";
 
         public readonly ReadOnlyCollection<string> Names;
-        public PathType Type { get; private set; }
         public bool IsAny { get; private set; }
         public bool IsDirect { get; private set; }
 
-        public PathSegment(IEnumerable<string> names, PathType type)
+        public abstract void Accept(IPathSegmentVisitor visitor);
+
+        public PathSegment(IEnumerable<string> names)
         {
             Names = new ReadOnlyCollection<string>(new List<String>(names));
-            Type = type;
             IsAny = false;
             IsDirect = Names.Count == 1;
         }
 
-        public PathSegment(PathType type)
+        public PathSegment()
         {
             Names = new ReadOnlyCollection<string>(new List<String>());
-            Type = type;
             IsAny = true;
             IsDirect = false;
         }
 
         public override string ToString()
         {
-            switch (Type)
-            {
-                case PathType.Index:
-                    return String.Format("[{0}]", namesToString());
-
-                case PathType.Field:
-                    return String.Format("->{0}", namesToString());
-
-                default:
-                    return namesToString();
-            }
+            return namesToString();
         }
 
         private string namesToString()
@@ -152,10 +150,78 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
-    public enum PathType
+    public class VariablePathSegment : PathSegment
     {
-        Variable, Field, Index
+        public VariablePathSegment()
+            : base()
+        {
+
+        }
+
+        public VariablePathSegment(IEnumerable<string> names)
+            : base(names)
+        {
+
+        }
+
+        public override void Accept(IPathSegmentVisitor visitor)
+        {
+            visitor.VisitVariable(this);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("${0}", base.ToString());
+        }
     }
 
+    public class FieldPathSegment : PathSegment
+    {
+        public FieldPathSegment()
+            : base()
+        {
 
+        }
+
+        public FieldPathSegment(IEnumerable<string> names)
+            : base(names)
+        {
+
+        }
+
+        public override void Accept(IPathSegmentVisitor visitor)
+        {
+            visitor.VisitField(this);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("->{0}", base.ToString());
+        }
+    }
+
+    public class IndexPathSegment : PathSegment
+    {
+        public IndexPathSegment()
+            : base()
+        {
+
+        }
+
+        public IndexPathSegment(IEnumerable<string> names)
+            : base(names)
+        {
+
+        }
+
+        public override void Accept(IPathSegmentVisitor visitor)
+        {
+            visitor.VisitIndex(this);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("[{0}]", base.ToString());
+        }
+    }
 }

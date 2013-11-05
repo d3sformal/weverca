@@ -12,12 +12,13 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class ReadCollector : IndexCollector
+    class ReadCollector : IndexCollector, IPathSegmentVisitor
     {
         List<MemoryIndex> mustIndexes = new List<MemoryIndex>();
         List<MemoryIndex> mayIndexes = new List<MemoryIndex>();
 
         List<MemoryIndex> mustIndexesProcess = new List<MemoryIndex>();
+        private Snapshot snapshot;
 
         public override bool IsDefined { get; protected set; }
 
@@ -42,27 +43,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             get { return mayIndexes.Count; }
         }
 
-        public ReadCollector()
+        public ReadCollector(Snapshot snapshot)
         {
             IsDefined = true;
+            this.snapshot = snapshot;
         }
 
-        public override void Next(Snapshot snapshot, PathSegment segment)
+        public override void Next(PathSegment segment)
         {
-            switch (segment.Type)
-            {
-                case PathType.Variable:
-                    processVariable(snapshot, segment);
-                    break;
-                case PathType.Field:
-                    processField(snapshot, segment);
-                    break;
-                case PathType.Index:
-                    processIndex(snapshot, segment);
-                    break;
-
-                default: throw new NotImplementedException();
-            }
+            segment.Accept(this);
 
             List<MemoryIndex> mustIndexesSwap = mustIndexes;
             mustIndexes = mustIndexesProcess;
@@ -70,64 +59,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             mustIndexesProcess.Clear();
         }
 
-        private void processVariable(Snapshot snapshot, PathSegment segment)
+        public void VisitVariable(VariablePathSegment variableSegment)
         {
-            if (segment.IsAny)
-            {
-                mustIndexesProcess.Add(snapshot.UnknownVariable);
-                foreach (var variable in snapshot.Variables)
-                {
-                    mustIndexesProcess.Add(variable.Value);
-                }
-            }
-            else
-            {
-                foreach (String name in segment.Names)
-                {
-                    MemoryIndex variable;
-                    if (snapshot.Variables.TryGetValue(name, out variable))
-                    {
-                        mustIndexesProcess.Add(variable);
-                    }
-                    else
-                    {
-                        IsDefined = false;
-                    }
-                }
-            }
+            process(variableSegment, snapshot.Variables);
         }
 
-        private void processField(Snapshot snapshot, PathSegment segment)
+        public void VisitField(FieldPathSegment fieldSegment)
         {
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
-                ObjectValue objectValue;
-                if (snapshot.TryGetObject(parentIndex, out objectValue))
-                {
-                    ObjectDescriptor descriptor = snapshot.GetDescriptor(objectValue);
+                ObjectValueContainer objectValues = snapshot.GetObjects(parentIndex);
 
-                    if (segment.IsAny)
+                if (objectValues.Count > 0)
+                {
+                    foreach (ObjectValue objectValue in objectValues)
                     {
-                        mustIndexesProcess.Add(descriptor.UnknownField);
-                        foreach (var field in descriptor.Fields)
-                        {
-                            mustIndexesProcess.Add(field.Value);
-                        }
-                    }
-                    else
-                    {
-                        foreach (String name in segment.Names)
-                        {
-                            MemoryIndex field;
-                            if (descriptor.Fields.TryGetValue(name, out field))
-                            {
-                                mustIndexesProcess.Add(field);
-                            }
-                            else
-                            {
-                                IsDefined = false;
-                            }
-                        }
+                        ObjectDescriptor descriptor = snapshot.GetDescriptor(objectValue);
+                        process(fieldSegment, descriptor);
                     }
                 }
                 else
@@ -137,7 +85,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        private void processIndex(Snapshot snapshot, PathSegment segment)
+        public void VisitIndex(IndexPathSegment indexSegment)
         {
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
@@ -145,30 +93,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 if (snapshot.TryGetArray(parentIndex, out arrayValue))
                 {
                     ArrayDescriptor descriptor = snapshot.GetDescriptor(arrayValue);
-
-                    if (segment.IsAny)
-                    {
-                        mustIndexesProcess.Add(descriptor.UnknownIndex);
-                        foreach (var index in descriptor.Indexes)
-                        {
-                            mustIndexesProcess.Add(index.Value);
-                        }
-                    }
-                    else
-                    {
-                        foreach (String name in segment.Names)
-                        {
-                            MemoryIndex index;
-                            if (descriptor.Indexes.TryGetValue(name, out index))
-                            {
-                                mustIndexesProcess.Add(index);
-                            }
-                            else
-                            {
-                                IsDefined = false;
-                            }
-                        }
-                    }
+                    process(indexSegment, descriptor);
                 }
                 else
                 {
@@ -176,5 +101,40 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
             }
         }
+
+        private void process(PathSegment segment, ReadonlyIndexContainer container)
+        {
+            if (segment.IsAny)
+            {
+                mustIndexesProcess.Add(container.UnknownIndex);
+                foreach (var index in container.Indexes)
+                {
+                    mustIndexesProcess.Add(index.Value);
+                }
+            }
+            else
+            {
+                bool isUnknown = false;
+                foreach (String name in segment.Names)
+                {
+                    MemoryIndex index;
+                    if (container.Indexes.TryGetValue(name, out index))
+                    {
+                        mustIndexesProcess.Add(index);
+                    }
+                    else
+                    {
+                        isUnknown = true;
+                    }
+                }
+
+                if (isUnknown)
+                {
+                    mustIndexesProcess.Add(container.UnknownIndex);
+                } 
+            }
+        }
+
+
     }
 }

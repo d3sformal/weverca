@@ -11,13 +11,16 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class AssignCollector : IndexCollector
+    class AssignCollector : IndexCollector, IPathSegmentVisitor
     {
         HashSet<MemoryIndex> mustIndexes = new HashSet<MemoryIndex>();
         HashSet<MemoryIndex> mayIndexes = new HashSet<MemoryIndex>();
 
         HashSet<MemoryIndex> mustIndexesProcess = new HashSet<MemoryIndex>();
         HashSet<MemoryIndex> mayIndexesProcess = new HashSet<MemoryIndex>();
+        private Snapshot snapshot;
+
+        private CreatorVisitor creatorVisitor;
 
         public override bool IsDefined { get; protected set; }
 
@@ -42,22 +45,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             get { return mayIndexes.Count; }
         }
 
-        public override void Next(Snapshot snapshot, PathSegment segment)
+        public AssignCollector(Snapshot snapshot)
         {
-            switch (segment.Type)
-            {
-                case PathType.Variable:
-                    processVariable(snapshot, segment);
-                    break;
-                case PathType.Field:
-                    processField(snapshot, segment);
-                    break;
-                case PathType.Index:
-                    processIndex(snapshot, segment);
-                    break;
+            this.snapshot = snapshot;
+            creatorVisitor = new CreatorVisitor(snapshot);
+        }
 
-                default: throw new NotImplementedException();
-            }
+        public override void Next(PathSegment segment)
+        {
+            segment.Accept(this);
 
             //TODO pavel - reseni aliasu
 
@@ -72,45 +68,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             mayIndexesProcess.Clear();
         }
 
-        private void processVariable(Snapshot snapshot, PathSegment segment)
+        public void VisitVariable(VariablePathSegment segment)
         {
-            if (segment.IsAny)
-            {
-                mayIndexesProcess.Add(snapshot.UnknownVariable);
-
-                foreach (var variable in snapshot.Variables)
-                {
-                    mayIndexesProcess.Add(variable.Value);
-                }
-            }
-            else if (segment.Names.Count == 1)
-            {
-                MemoryIndex variable;
-                if (!snapshot.Variables.TryGetValue(segment.Names[0], out variable))
-                {
-                    variable = snapshot.CreateVariable(segment.Names[0]);
-                }
-                mustIndexesProcess.Add(variable);
-            }
-            else
-            {
-                foreach (String name in segment.Names)
-                {
-                    MemoryIndex variable;
-                    if (!snapshot.Variables.TryGetValue(segment.Names[0], out variable))
-                    {
-                        variable = snapshot.CreateVariable(segment.Names[0]);
-                    }
-                    mayIndexesProcess.Add(variable);
-                }
-            }
+            IndexContainer container = snapshot.Variables;
+            processSegment(segment, container);
         }
 
-        private void processField(Snapshot snapshot, PathSegment segment)
+        public void VisitField(FieldPathSegment segment)
         {
-            ReferenceCollector collector = new ReferenceCollector(snapshot, mustIndexes, mayIndexes);
-            collector.Collect();
-
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
                 processField(snapshot, segment, parentIndex, mustIndexesProcess, true);
@@ -122,45 +87,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        private void processField(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
-            HashSet<MemoryIndex> mustTarget, bool isMust)
-        {
-            ObjectValue objectValue = snapshot.GetObject(parentIndex);
-            ObjectDescriptor descriptor = snapshot.GetDescriptor(objectValue);
-
-            if (segment.IsAny)
-            {
-                mayIndexesProcess.Add(descriptor.UnknownField);
-
-                foreach (var field in descriptor.Fields)
-                {
-                    mayIndexesProcess.Add(field.Value);
-                }
-            }
-            else if (segment.Names.Count == 1)
-            {
-                MemoryIndex field;
-                if (!descriptor.Fields.TryGetValue(segment.Names[0], out field))
-                {
-                    field = snapshot.CreateField(segment.Names[0], descriptor, isMust, true);
-                }
-                mustTarget.Add(field);
-            }
-            else
-            {
-                foreach (String name in segment.Names)
-                {
-                    MemoryIndex field;
-                    if (!descriptor.Fields.TryGetValue(segment.Names[0], out field))
-                    {
-                        field = snapshot.CreateField(segment.Names[0], descriptor, isMust, true);
-                    }
-                    mayIndexesProcess.Add(field);
-                }
-            }
-        }
-
-        private void processIndex(Snapshot snapshot, PathSegment segment)
+        public void VisitIndex(IndexPathSegment segment)
         {
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
@@ -173,6 +100,41 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+
+        private void processField(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
+            HashSet<MemoryIndex> mustTarget, bool isMust)
+        {
+            if (!snapshot.HasObjects(parentIndex))
+            {
+                ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
+            }
+            else if (snapshot.IsUndefined(parentIndex))
+            {
+                ObjectValue objectValue = snapshot.CreateObject(parentIndex, false);
+            }
+            
+            if (isMust)
+            {
+                snapshot.ClearForObjects(parentIndex);
+            }
+
+            ObjectValueContainer objectValues = snapshot.GetObjects(parentIndex);
+            foreach (ObjectValue value in objectValues)
+            {
+                ObjectDescriptor descriptor = snapshot.GetDescriptor(value);
+                creatorVisitor.ObjectValue = value;
+                
+                if (isMust && descriptor.MustReferences.Contains(parentIndex))
+                {
+                    processSegment(segment, descriptor);
+                }
+                else
+                {
+                    processSegment(segment, descriptor, false);
+                }
+            }
+        }
+
         private void processIndex(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
             HashSet<MemoryIndex> mustTarget, bool isMust)
         {
@@ -181,150 +143,116 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 arrayValue = snapshot.CreateArray(parentIndex, isMust);
             }
+            else if (isMust)
+            {
+                snapshot.ClearForArray(parentIndex);
+            }
 
             ArrayDescriptor descriptor = snapshot.GetDescriptor(arrayValue);
+            creatorVisitor.ArrayValue = arrayValue;
+            processSegment(segment, descriptor, isMust);
+        }
 
+        private void processSegment(PathSegment segment, ReadonlyIndexContainer container, bool isMust = true)
+        {
             if (segment.IsAny)
             {
-                mayIndexesProcess.Add(descriptor.UnknownIndex);
+                mayIndexesProcess.Add(container.UnknownIndex);
+                addToMay(container.UnknownIndex);
 
-                foreach (var field in descriptor.Indexes)
+                foreach (var index in container.Indexes)
                 {
-                    mayIndexesProcess.Add(field.Value);
+                    addToMay(index.Value);
                 }
             }
             else if (segment.Names.Count == 1)
             {
-                MemoryIndex field;
-                if (!descriptor.Indexes.TryGetValue(segment.Names[0], out field))
+                MemoryIndex processIndex;
+                if (!container.Indexes.TryGetValue(segment.Names[0], out processIndex))
                 {
-                    field = snapshot.CreateIndex(segment.Names[0], descriptor, isMust, true);
+                    creatorVisitor.Name = segment.Names[0];
+                    creatorVisitor.IsMust = isMust;
+                    segment.Accept(creatorVisitor);
+                    processIndex = creatorVisitor.CreatedIndex;
                 }
-                mustTarget.Add(field);
+
+                if (isMust)
+                {
+                    addToMust(processIndex);
+                }
+                else
+                {
+                    addToMay(processIndex);
+                }
             }
             else
             {
+                creatorVisitor.IsMust = false;
+
                 foreach (String name in segment.Names)
                 {
-                    MemoryIndex field;
-                    if (!descriptor.Indexes.TryGetValue(segment.Names[0], out field))
+                    MemoryIndex processIndex;
+                    if (!container.Indexes.TryGetValue(name, out processIndex))
                     {
-                        field = snapshot.CreateIndex(segment.Names[0], descriptor, isMust, true);
+                        creatorVisitor.Name = name;
+                        segment.Accept(creatorVisitor);
+                        processIndex = creatorVisitor.CreatedIndex;
                     }
-                    mayIndexesProcess.Add(field);
+                    addToMay(processIndex);
                 }
             }
         }
 
-
-        private class ReferenceCollector
+        private void addToMust(MemoryIndex index)
         {
-            HashSet<MemoryIndex> mustReferences = new HashSet<MemoryIndex>();
-            HashSet<MemoryIndex> mayReferences = new HashSet<MemoryIndex>();
+            if (!mayIndexesProcess.Contains(index))
+            {
+                mayIndexesProcess.Remove(index);
+            }
+            mustIndexesProcess.Add(index);
+        }
 
-            HashSet<MemoryIndex> mustIndexes;
-            HashSet<MemoryIndex> mayIndexes;
+        private void addToMay(MemoryIndex index)
+        {
+            if (!mustIndexesProcess.Contains(index))
+            {
+                mayIndexesProcess.Add(index);
+            }
+        }
+
+        private class CreatorVisitor : IPathSegmentVisitor
+        {
             private Snapshot snapshot;
+            public MemoryIndex CreatedIndex { get; private set; }
 
-            public ReferenceCollector(Snapshot snapshot, HashSet<MemoryIndex> mustIndexes, HashSet<MemoryIndex> mayIndexes)
+            public string Name { get; set; }
+
+            public bool IsMust { get; set; }
+
+            public AssociativeArray ArrayValue { get; set; }
+
+            public ObjectValue ObjectValue { get; set; }
+
+
+            public CreatorVisitor(Snapshot snapshot)
             {
                 this.snapshot = snapshot;
-                this.mustIndexes = mustIndexes;
-                this.mayIndexes = mayIndexes;
             }
 
-            private ObjectDescriptor createObject(MemoryIndex parentIndex, bool isMust)
+            public void VisitVariable(VariablePathSegment variableSegment)
             {
-                ObjectValue objectValue;
-                if (!snapshot.TryGetObject(parentIndex, out objectValue))
-                {
-                    objectValue = snapshot.CreateObject(parentIndex, true);
-                }
-                return snapshot.GetDescriptor(objectValue);
+                CreatedIndex = snapshot.CreateVariable(Name);
             }
 
-            private void addMustReference(MemoryIndex referenceIndex)
+            public void VisitField(FieldPathSegment fieldSegment)
             {
-                bool isInCollections = mustReferences.Contains(referenceIndex) 
-                    || mustIndexes.Contains(referenceIndex);
-                
-                if (!isInCollections)
-                {
-                    mustReferences.Add(referenceIndex);
-
-                    if (mayIndexes.Contains(referenceIndex))
-                    {
-                        mayIndexes.Remove(referenceIndex);
-                    }
-                }
+                CreatedIndex = snapshot.CreateField(Name, ObjectValue, IsMust, true);
             }
 
-            private void addMayReference(MemoryIndex referenceIndex)
+            public void VisitIndex(IndexPathSegment indexSegment)
             {
-                bool isInCollections = mustReferences.Contains(referenceIndex)
-                    || mustIndexes.Contains(referenceIndex)
-                    || mayReferences.Contains(referenceIndex)
-                    || mayIndexes.Contains(referenceIndex);
-
-                if (!isInCollections)
-                {
-                    mayReferences.Add(referenceIndex);
-                }
-            }
-
-            private void collectReferences()
-            {
-                foreach (MemoryIndex parentIndex in mustIndexes)
-                {
-                    ObjectDescriptor descriptor = createObject(parentIndex, true);
-
-                    foreach (MemoryIndex referenceIndex in descriptor.MustReferences)
-                    {
-                        addMustReference(referenceIndex);
-                    }
-
-                    foreach (MemoryIndex referenceIndex in descriptor.MayReferences)
-                    {
-                        addMayReference(referenceIndex);
-                    }
-                }
-
-                foreach (MemoryIndex parentIndex in mayIndexes)
-                {
-                    ObjectDescriptor descriptor = createObject(parentIndex, false);
-
-                    foreach (MemoryIndex referenceIndex in descriptor.MustReferences)
-                    {
-                        addMayReference(referenceIndex);
-                    }
-
-                    foreach (MemoryIndex referenceIndex in descriptor.MayReferences)
-                    {
-                        addMayReference(referenceIndex);
-                    }
-                }
-            }
-
-            private void moveToIndexess()
-            {
-                foreach (MemoryIndex mustReference in mustReferences)
-                {
-                    mustIndexes.Add(mustReference);
-                }
-
-                foreach (MemoryIndex mayReference in mayReferences)
-                {
-                    mayIndexes.Add(mayReference);
-                }
-            }
-
-            public void Collect()
-            {
-                collectReferences();
-                moveToIndexess();
+                CreatedIndex = snapshot.CreateIndex(Name, ArrayValue, IsMust, true);
             }
         }
     }
-
-    
 }

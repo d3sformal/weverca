@@ -17,6 +17,11 @@
         {
             return this == other;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0} UID: {1}", base.ToString(), UID);
+        }
     }
 
     /// <summary>

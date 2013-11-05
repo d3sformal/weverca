@@ -43,9 +43,12 @@
     <Compile Include="CopyMemoryModel\IndexCollectors\CreateCollector.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\IIndexCollector.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\ReadCollector.cs" />
+    <Compile Include="CopyMemoryModel\MemoryContainers\IndexContainer.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\MemoryAlias.cs" />
+    <Compile Include="CopyMemoryModel\MemoryContainers\ObjectValueContainer.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\AssignWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\CopyWithinSnapshotWorker.cs" />
+    <Compile Include="CopyMemoryModel\MemoryWorkers\MergeWithinSnapshotWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\ReadWorker.cs" />
     <Compile Include="CopyMemoryModel\Indexes\MemoryIndex.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\MemoryInfo.cs" />
@@ -54,6 +57,9 @@
     <Compile Include="CopyMemoryModel\Snapshot\SnapshotEntry.cs" />
     <Compile Include="CopyMemoryModel\Structures\ArrayDescriptor.cs" />
     <Compile Include="CopyMemoryModel\Structures\ObjectDescriptor.cs" />
+    <Compile Include="CopyMemoryModel\ValueVisitor\DestroyArrayVisitor.cs" />
+    <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
+    <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
     <Compile Include="MemoryModel\Structures\ArrayDescriptor.cs" />
     <Compile Include="MemoryModel\ValueVisitors\AssignedAliasVisitor.cs" />
     <Compile Include="MemoryModel\ValueVisitors\DestroyemoryEntryVisitor.cs" />
@@ -94,9 +100,7 @@
       <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="CopyMemoryModel\ValueVisitor\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

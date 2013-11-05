@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,8 +16,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         HashSet<MemoryIndex> memoryIndexes = new HashSet<MemoryIndex>();
 
-        internal MemoryIndex UnknownVariable;
-        internal Dictionary<string, MemoryIndex> Variables = new Dictionary<string, MemoryIndex>();
 
         Dictionary<AssociativeArray, ArrayDescriptor> arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
         Dictionary<ObjectValue, ObjectDescriptor> objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
@@ -28,14 +27,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         Dictionary<MemoryIndex, MemoryInfo> memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
 
         Dictionary<MemoryIndex, AssociativeArray> indexArrays = new Dictionary<MemoryIndex, AssociativeArray>();
-        Dictionary<MemoryIndex, ObjectValue> indexObjects = new Dictionary<MemoryIndex, ObjectValue>();
+        Dictionary<MemoryIndex, ObjectValueContainer> indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>();
+
+
+
+
+        HashSet<TemporaryIndex> temporary = new HashSet<TemporaryIndex>();
+        public IndexContainer Variables { get; private set; }
+        public IndexContainer ContollVariables { get; private set; }
+
+
+
 
         public Snapshot()
         {
-            UnknownVariable = MemoryIndex.MakeIndexAnyVariable();
+            Variables = new IndexContainer(VariableIndex.CreateUnknown());
 
-            memoryIndexes.Add(UnknownVariable);
-            memoryEntries.Add(UnknownVariable, new MemoryEntry(this.UndefinedValue));
+            memoryIndexes.Add(Variables.UnknownIndex);
+            memoryEntries.Add(Variables.UnknownIndex, new MemoryEntry(this.UndefinedValue));
         }
 
         public String DumpSnapshot()
@@ -51,6 +60,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return builder.ToString();
+        }
+
+        public override string ToString()
+        {
+            return DumpSnapshot();
         }
 
         #region AbstractSnapshot Implementation
@@ -75,8 +89,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void initializeObject(ObjectValue createdObject, TypeValueBase type)
         {
-            ObjectDescriptor descriptor = new ObjectDescriptor(createdObject, type);
+            ObjectDescriptor descriptor = new ObjectDescriptor(createdObject, type, ObjectIndex.CreateUnknown(createdObject));
             objectDescriptors[createdObject] = descriptor;
+
+            memoryIndexes.Add(descriptor.UnknownIndex);
+            CreateEmptyEntry(descriptor.UnknownIndex, false);
         }
 
         protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
@@ -270,6 +287,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
+        #region Snapshot Entry API
+
         protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
         {
             return new SnapshotEntry(variable);
@@ -285,16 +304,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             throw new NotImplementedException();
         }
 
-
-
-
-
-
-
-        internal bool TryGetObject(MemoryIndex parentIndex, out ObjectValue objectValue)
+        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
-            return indexObjects.TryGetValue(parentIndex, out objectValue);
+            throw new NotImplementedException();
         }
+
+        #endregion
+
+
+
 
         internal bool TryGetArray(MemoryIndex parentIndex, out AssociativeArray arrayValue)
         {
@@ -310,8 +328,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                Debug.Fail("Missing object descriptor");
-                return null;
+                throw new Exception("Missing object descriptor");
             }
         }
 
@@ -324,54 +341,65 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                Debug.Fail("Missing array descriptor");
-                return null;
+                throw new Exception("Missing array descriptor");
             }
         }
 
         internal MemoryIndex CreateVariable(string variableName)
         {
-            MemoryIndex variableIndex = MemoryIndex.MakeIndexVariable(variableName);
+            MemoryIndex variableIndex = VariableIndex.Create(variableName);
             
             memoryIndexes.Add(variableIndex);
-            Variables.Add(variableName, variableIndex);
+            Variables.Indexes.Add(variableName, variableIndex);
 
-            CopyMemory(UnknownVariable, variableIndex, false);
+            CopyMemory(Variables.UnknownIndex, variableIndex, false);
 
             return variableIndex;
         }
 
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
         {
-            if (indexObjects.ContainsKey(parentIndex))
-            {
-                Debug.Fail("Variable " + parentIndex + " already has associated object value.");
-            }
-
             ObjectValue value = this.CreateObject(null);
-            ObjectDescriptor descriptor = GetDescriptor(value)
-                .Builder()
-                .SetParentVariable(parentIndex)
-                .SetUnknownField(MemoryIndex.MakeIndexAnyField(parentIndex))
-                .Build();
-
-            memoryIndexes.Add(descriptor.UnknownField);
-            CreateEmptyEntry(descriptor.UnknownField, false);
+            ObjectDescriptor descriptor;
 
             if (isMust)
             {
-                destroyMemory(parentIndex);
+                DestroyMemory(parentIndex);
                 memoryEntries[parentIndex] = new MemoryEntry(value);
+
+                descriptor = GetDescriptor(value)
+                    .Builder()
+                    .addMustReference(parentIndex)
+                    .Build();
             }
             else
             {
-                List<Value> values = new List<Value>(memoryEntries[parentIndex].PossibleValues);
+                descriptor = GetDescriptor(value)
+                    .Builder()
+                    .addMayReference(parentIndex)
+                    .Build();
+
+                MemoryEntry oldEntry;
+
+                List<Value> values;
+                if (memoryEntries.TryGetValue(parentIndex, out oldEntry))
+                {
+                    values = new List<Value>(oldEntry.PossibleValues);
+                }
+                else
+                {
+                    values = new List<Value>();
+                }
+
                 values.Add(value);
                 memoryEntries[parentIndex] = new MemoryEntry(values);
             }
 
+            ObjectValueContainerBuilder objectValues = GetObjects(parentIndex).Builder();
+            objectValues.Add(value);
+
+            indexObjects[parentIndex] = objectValues.Build();
             objectDescriptors[value] = descriptor;
-            indexObjects[parentIndex] = value;
 
             return value;
         }
@@ -384,9 +412,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal MemoryIndex CreateField(string fieldName, ObjectDescriptor descriptor, bool isMust, bool copyFromUnknown)
         {
-            Debug.Assert(!descriptor.Fields.ContainsKey(fieldName), "Field " + fieldName + " is already defined");
+            if (descriptor.Indexes.ContainsKey(fieldName)) 
+            {
+                throw new Exception("Field " + fieldName + " is already defined");
+            }
 
-            MemoryIndex fieldIndex = MemoryIndex.MakeIndexField(descriptor.ParentVariable, fieldName);
+            MemoryIndex fieldIndex = ObjectIndex.Create(descriptor.ObjectValue, fieldName);
 
             memoryIndexes.Add(fieldIndex);
 
@@ -397,7 +428,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (copyFromUnknown)
             {
-                CopyMemory(descriptor.UnknownField, fieldIndex, isMust);
+                CopyMemory(descriptor.UnknownIndex, fieldIndex, isMust);
             }
             else
             {
@@ -407,37 +438,58 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return fieldIndex;
         }
 
-        internal AssociativeArray CreateArray(MemoryIndex parentIndex, bool isMust)
+        internal AssociativeArray CreateArray(MemoryIndex parentIndex)
         {
             if (indexArrays.ContainsKey(parentIndex))
             {
-                Debug.Fail("Variable " + parentIndex + " already has associated arraz value.");
+                throw new Exception("Variable " + parentIndex + " already has associated arraz value.");
             }
 
             AssociativeArray value = this.CreateArray();
             ArrayDescriptor descriptor = GetDescriptor(value)
                 .Builder()
                 .SetParentVariable(parentIndex)
-                .SetUnknownField(MemoryIndex.MakeIndexAnyIndex(parentIndex))
+                .SetUnknownField(parentIndex.CreateUnknownIndex())
                 .Build();
 
             memoryIndexes.Add(descriptor.UnknownIndex);
             CreateEmptyEntry(descriptor.UnknownIndex, false);
 
+            arrayDescriptors[value] = descriptor;
+            indexArrays[parentIndex] = value;
+
+            return value;
+        }
+
+        internal AssociativeArray CreateArray(MemoryIndex parentIndex, bool isMust)
+        {
+            AssociativeArray value = CreateArray(parentIndex);
+
             if (isMust)
             {
-                destroyMemory(parentIndex);
+                //TODO - nahlasit warning pri neprazdnem poli, i v MAY
+                /* $x = 1;
+                 * $x[1] = 2;
+                 */
+                DestroyMemory(parentIndex);
                 memoryEntries[parentIndex] = new MemoryEntry(value);
             }
             else
             {
-                List<Value> values = new List<Value>(memoryEntries[parentIndex].PossibleValues);
+                List<Value> values;
+                MemoryEntry oldEntry;
+                if (memoryEntries.TryGetValue(parentIndex, out oldEntry))
+                {
+                    values = new List<Value>(oldEntry.PossibleValues);
+                }
+                else
+                {
+                    values = new List<Value>();
+                }
+
                 values.Add(value);
                 memoryEntries[parentIndex] = new MemoryEntry(values);
             }
-
-            arrayDescriptors[value] = descriptor;
-            indexArrays[parentIndex] = value;
 
             return value;
         }
@@ -449,9 +501,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal MemoryIndex CreateIndex(string indexName, ArrayDescriptor descriptor, bool isMust, bool copyFromUnknown)
         {
-            Debug.Assert(!descriptor.Indexes.ContainsKey(indexName), "Index " + indexName + " is already defined");
+            if (descriptor.Indexes.ContainsKey(indexName))
+            {
+                throw new Exception("Index " + indexName + " is already defined");
+            }
 
-            MemoryIndex indexIndex = MemoryIndex.MakeIndexIndex(descriptor.ParentVariable, indexName);
+            MemoryIndex indexIndex = descriptor.ParentVariable.CreateIndex(indexName);
 
             memoryIndexes.Add(indexIndex);
 
@@ -462,7 +517,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (copyFromUnknown)
             {
-                CopyMemory(descriptor.UnknownIndex, indexIndex, isMust);
+                CopyMemory(descriptor.UnknownIndex, indexIndex, false);
             }
 
             return indexIndex;
@@ -477,8 +532,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                Debug.Fail("Missing memory entry for " + index);
-                return null;
+                throw new Exception("Missing memory entry for " + index);
             }
         }
 
@@ -505,12 +559,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             worker.Copy(sourceIndex, targetIndex);
         }
 
-        private void destroyMemory(MemoryIndex parentIndex)
+        public void DestroyMemory(MemoryIndex parentIndex)
         {
-            if (indexArrays.ContainsKey(parentIndex) || indexObjects.ContainsKey(parentIndex))
+            DestroyMemoryVisitor visitor = new DestroyMemoryVisitor(this, parentIndex);
+
+            if (memoryEntries.ContainsKey(parentIndex))
             {
-                throw new NotImplementedException();
+                visitor.VisitMemoryEntry(GetMemoryEntry(parentIndex));
             }
+
+            memoryEntries[parentIndex] = new MemoryEntry(this.UndefinedValue);
         }
 
 
@@ -519,7 +577,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             memoryEntries[targetIndex] = memoryEntry;
         }
 
-        internal void SameObjectReference(ObjectValue sourceObject, ObjectValue targetObject, bool isMust)
+        /*internal void SameObjectReference(ObjectValue sourceObject, ObjectValue targetObject, bool isMust)
         {
             ObjectDescriptorBuilder sourceDescriptor = GetDescriptor(sourceObject).Builder();
             ObjectDescriptorBuilder targetDescriptor = GetDescriptor(targetObject).Builder();
@@ -569,12 +627,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             objectDescriptors[sourceObject] = sourceDescriptor.Build();
             objectDescriptors[targetObject] = targetDescriptor.Build();
-        }
-
-        internal ObjectValue GetObject(MemoryIndex index)
-        {
-            return indexObjects[index];
-        }
+        }*/
 
         internal void CopyAliases(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
         {
@@ -592,9 +645,163 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
+        internal void SetDescriptor(AssociativeArray arrayValue, ArrayDescriptorBuilder newDescriptor)
         {
-            throw new NotImplementedException();
+            arrayDescriptors[arrayValue] = newDescriptor.Build();
+        }
+
+        internal void SetDescriptor(ObjectValue objectValue, ObjectDescriptorBuilder newDescriptor)
+        {
+            objectDescriptors[objectValue] = newDescriptor.Build();
+        }
+
+        public ObjectValueContainer GetObjects(MemoryIndex parentIndex)
+        {
+            ObjectValueContainer objectValues;
+            if (indexObjects.TryGetValue(parentIndex, out objectValues))
+            {
+                return objectValues;
+            }
+            else
+            {
+                return new ObjectValueContainer();
+            }
+        }
+
+        internal bool HasObjects(MemoryIndex parentIndex)
+        {
+            return indexObjects.ContainsKey(parentIndex);
+        }
+
+        internal void SetObjects(MemoryIndex index, ObjectValueContainerBuilder objectsValues)
+        {
+            indexObjects[index] = objectsValues.Build();
+        }
+
+        internal void ClearForArray(MemoryIndex index)
+        {
+            DestroyObjectsVisitor visitor = new DestroyObjectsVisitor(this, index);
+            visitor.VisitMemoryEntry(GetMemoryEntry(index));
+
+            AssociativeArray array;
+            MemoryEntry entry;
+            if (TryGetArray(index, out array))
+            {
+                entry = new MemoryEntry(array);
+            }
+            else
+            {
+                entry = new MemoryEntry();
+            }
+
+            SetMemoryEntry(index, entry);
+        }
+
+        internal void ClearForObjects(MemoryIndex index)
+        {
+            DestroyArrayVisitor visitor = new DestroyArrayVisitor(this, index);
+            visitor.VisitMemoryEntry(GetMemoryEntry(index));
+
+            ObjectValueContainer objects = GetObjects(index);
+            MemoryEntry entry = new MemoryEntry(objects);
+
+            SetMemoryEntry(index, entry);
+        }
+
+        internal bool IsUndefined(MemoryIndex index)
+        {
+            MemoryEntry entry = GetMemoryEntry(index);
+            return entry.PossibleValues.Contains(this.UndefinedValue);
+        }
+
+        internal void DestroyObject(MemoryIndex parentIndex, ObjectValue value)
+        {
+            ObjectDescriptorBuilder descriptor = GetDescriptor(value).Builder();
+            descriptor.removeMayReference(parentIndex);
+            descriptor.removeMustReference(parentIndex);
+            SetDescriptor(value, descriptor);
+
+            ObjectValueContainerBuilder objects = GetObjects(parentIndex).Builder();
+            objects.Remove(value);
+            SetObjects(parentIndex, objects);
+        }
+
+        internal void DestroyArray(MemoryIndex parentIndex)
+        {
+            AssociativeArray arrayValue;
+            if (!indexArrays.TryGetValue(parentIndex, out arrayValue))
+            {
+                return;
+            }
+
+            ArrayDescriptor descriptor = GetDescriptor(arrayValue);
+            foreach (var index in descriptor.Indexes)
+            {
+                ReleaseMemory(index.Value);
+            }
+
+            ReleaseMemory(descriptor.UnknownIndex);
+
+            arrayDescriptors.Remove(arrayValue);
+            indexArrays.Remove(parentIndex);
+        }
+
+        internal void MakeMustReferenceObject(ObjectValue objectValue, MemoryIndex targetIndex)
+        {
+            ObjectDescriptorBuilder descriptor = GetDescriptor(objectValue).Builder();
+            descriptor.addMustReference(targetIndex);
+            descriptor.removeMayReference(targetIndex);
+            SetDescriptor(objectValue, descriptor);
+
+            ObjectValueContainerBuilder objects = GetObjects(targetIndex).Builder();
+            objects.Add(objectValue);
+            SetObjects(targetIndex, objects);
+        }
+
+        internal void MakeMayReferenceObject(HashSet<ObjectValue> objects, MemoryIndex targetIndex)
+        {
+            ObjectValueContainerBuilder objectsContainer = GetObjects(targetIndex).Builder();
+
+            foreach (ObjectValue objectValue in objects)
+            {
+                ObjectDescriptorBuilder descriptor = GetDescriptor(objectValue).Builder();
+                descriptor.addMayReference(targetIndex);
+                descriptor.removeMustReference(targetIndex);
+                SetDescriptor(objectValue, descriptor);
+
+                objectsContainer.Add(objectValue);
+            }
+
+            SetObjects(targetIndex, objectsContainer);
+        }
+
+        internal TemporaryIndex CreateTemporary()
+        {
+            TemporaryIndex tmp = new TemporaryIndex();
+            memoryIndexes.Add(tmp);
+            temporary.Add(tmp);
+
+            memoryEntries[tmp] = new MemoryEntry(this.UndefinedValue);
+
+            return tmp;
+        }
+
+        internal void ReleaseTemporary(TemporaryIndex temporaryIndex)
+        {
+            ReleaseMemory(temporaryIndex);
+            temporary.Remove(temporaryIndex);
+        }
+
+        internal void ReleaseMemory(MemoryIndex index)
+        {
+            DestroyMemory(index);
+
+            memoryIndexes.Remove(index);
+            memoryEntries.Remove(index);            
+            
+            // TODO - remove temporary from alias structure
+            //memoryAliases.Remove(temporaryIndex);
+            //memoryInfos.Remove(temporaryIndex);
         }
     }
 }

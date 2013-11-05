@@ -15,12 +15,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     ///     For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
-    internal class ArrayDescriptor
+    internal class ArrayDescriptor : ReadonlyIndexContainer
     {
         /// <summary>
         /// List of indexes for the array
         /// </summary>
-        public ReadOnlyDictionary<string, MemoryIndex> Indexes { get; private set; }
+        public IReadOnlyDictionary<string, MemoryIndex> Indexes { get; private set; }
 
         /// <summary>
         /// Variable where the array is stored in
@@ -52,7 +52,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
             ParentVariable = parentVariable;
-            UnknownIndex = MemoryIndex.MakeIndexAnyIndex(parentVariable);
+            UnknownIndex = parentVariable.CreateUnknownIndex();
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// <summary>
     /// Mutable variant of ArrayDescriptor - use for creating new structure
     /// </summary>
-    internal class ArrayDescriptorBuilder
+    internal class ArrayDescriptorBuilder : IWriteableIndexContainer
     {
         /// <summary>
         /// List of variables where the array is stored in
@@ -105,7 +105,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="arrayDescriptor">The array descriptor.</param>
         public ArrayDescriptorBuilder(ArrayDescriptor arrayDescriptor)
         {
-            Indexes = new Dictionary<string, MemoryIndex>(arrayDescriptor.Indexes);
+            IDictionary<string, MemoryIndex> collection = arrayDescriptor.Indexes as IDictionary<string, MemoryIndex>;
+
+            if (collection != null)
+            {
+                Indexes = new Dictionary<string, MemoryIndex>(collection);
+            }
+            else
+            {
+                Indexes = new Dictionary<string, MemoryIndex>();
+            }
+
             ParentVariable = arrayDescriptor.ParentVariable;
             UnknownIndex = arrayDescriptor.UnknownIndex;
             ArrayValue = arrayDescriptor.ArrayValue;

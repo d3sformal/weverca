@@ -36,35 +36,36 @@ namespace Weverca.MemoryModels.UnitTest
         MemoryIndex undefinedIndex;
 
         MemoryIndex doubleIndex;
-        MemoryIndex doubleField;
-
         MemoryIndex indexInField;
-        MemoryIndex fieldInIndex;
 
         public MemoryIndexTest()
         {
-            variableA = MemoryIndex.MakeIndexVariable("a");
-            variableA2 = MemoryIndex.MakeIndexVariable("a");
-            variableB = MemoryIndex.MakeIndexVariable("b");
-            undefinedVariable = MemoryIndex.MakeIndexAnyVariable();
+            Snapshot snapshot = new Snapshot();
+            snapshot.StartTransaction();
+            ObjectValue object1 = snapshot.CreateObject(null);
+            ObjectValue object2 = snapshot.CreateObject(null);
+            snapshot.CommitTransaction();
 
-            fieldA = MemoryIndex.MakeIndexField(variableA, "a");
-            fieldA2 = MemoryIndex.MakeIndexField(variableA, "a");
-            fieldB = MemoryIndex.MakeIndexField(variableA, "b");
-            fieldInDifferentTree = MemoryIndex.MakeIndexField(variableB, "a");
-            undefinedField = MemoryIndex.MakeIndexAnyField(variableA);
+            variableA = VariableIndex.Create("a");
+            variableA2 = VariableIndex.Create("a");
+            variableB = VariableIndex.Create("b");
+            undefinedVariable = VariableIndex.CreateUnknown();
 
-            indexA = MemoryIndex.MakeIndexIndex(variableA, "a");
-            indexA2 = MemoryIndex.MakeIndexIndex(variableA, "a");
-            indexB = MemoryIndex.MakeIndexIndex(variableA, "b");
-            indexInDifferentTree = MemoryIndex.MakeIndexIndex(variableB, "a");
-            undefinedIndex = MemoryIndex.MakeIndexAnyIndex(variableA);
+            fieldA = ObjectIndex.Create(object1, "a");
+            fieldA2 = ObjectIndex.Create(object1, "a");
+            fieldB = ObjectIndex.Create(object1, "b");
+            fieldInDifferentTree = ObjectIndex.Create(object2, "a");
+            undefinedField = ObjectIndex.CreateUnknown(object1);
 
-            doubleIndex = MemoryIndex.MakeIndexIndex(indexA, "1");
-            doubleField = MemoryIndex.MakeIndexField(fieldA, "1");
+            indexA = variableA.CreateIndex("a");
+            indexA2 = variableA.CreateIndex("a");
+            indexB = variableA.CreateIndex("b");
+            indexInDifferentTree = variableB.CreateIndex("a");
+            undefinedIndex = variableA.CreateUnknownIndex();
 
-            indexInField = MemoryIndex.MakeIndexIndex(fieldB, "1");
-            fieldInIndex = MemoryIndex.MakeIndexField(indexB, "1");
+            doubleIndex = indexA.CreateIndex("1");
+
+            indexInField = fieldA.CreateIndex("1");
         }
 
         private void testEquality(MemoryIndex index1, MemoryIndex index2)
@@ -133,13 +134,11 @@ namespace Weverca.MemoryModels.UnitTest
             hashSet.Add(undefinedIndex);
 
             hashSet.Add(doubleIndex);
-            hashSet.Add(doubleField);
 
             hashSet.Add(indexInField);
-            hashSet.Add(fieldInIndex);
 
 
-            Assert.AreEqual(15, hashSet.Count);
+            Assert.AreEqual(13, hashSet.Count);
 
             testHashContains(hashSet, variableA);
             testHashContains(hashSet, variableA2);
@@ -159,10 +158,8 @@ namespace Weverca.MemoryModels.UnitTest
             testHashContains(hashSet, undefinedIndex);
 
             testHashContains(hashSet, doubleIndex);
-            testHashContains(hashSet, doubleField);
 
             testHashContains(hashSet, indexInField);
-            testHashContains(hashSet, fieldInIndex);
         }
 
 
