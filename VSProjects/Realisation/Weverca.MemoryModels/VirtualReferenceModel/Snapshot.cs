@@ -407,10 +407,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return readValue(info);
         }
-
-
-
-
+        
         void assignAlias(VariableInfo target, IEnumerable<ReferenceAliasEntry> aliases)
         {
             var references = new HashSet<VirtualReference>();

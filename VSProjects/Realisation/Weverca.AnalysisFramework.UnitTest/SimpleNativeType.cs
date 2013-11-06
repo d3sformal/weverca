@@ -15,13 +15,16 @@ namespace Weverca.AnalysisFramework.UnitTest
 {
     static class SimpleNativeType
     {
+        readonly static VariableIdentifier thisIdentifier = new VariableIdentifier("this");
+        readonly static VariableIdentifier valueIdentifier = new VariableIdentifier("_value");
+
         public static ClassDecl CreateType()
         {
-            var nativeType=new QualifiedName(new Name("NativeType"));
+            var nativeType = new QualifiedName(new Name("NativeType"));
             var methods = new Dictionary<MethodIdentifier, MethodInfo>();
-            methods.Add(new MethodIdentifier(nativeType, new Name("__construct")), method("__construct",_method___construct));
+            methods.Add(new MethodIdentifier(nativeType, new Name("__construct")), method("__construct", _method___construct));
             methods.Add(new MethodIdentifier(nativeType, new Name("GetValue")), method("GetValue", _method_GetValue));
-            var declaration = new ClassDecl(nativeType, methods, new Dictionary<MethodIdentifier,MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), null, false, false, false);
+            var declaration = new ClassDecl(nativeType, methods, new Dictionary<MethodIdentifier, MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), null, false, false, false);
             return declaration;
         }
 
@@ -34,21 +37,26 @@ namespace Weverca.AnalysisFramework.UnitTest
         private static void _method___construct(FlowController flow)
         {
             var outSet = flow.OutSet;
+            var outSnapshot = outSet.Snapshot;
 
-            var thisEntry = outSet.ReadValue(new VariableName("this"));
-            var thisObj=thisEntry.PossibleValues.First() as ObjectValue;
-            var index=outSet.CreateIndex("_value");
-            outSet.SetField(thisObj, index, outSet.ReadValue(new VariableName(".arg0")));
-            outSet.Assign(outSet.ReturnValue, thisEntry);
+            var arg = outSet.ReadVariable(new VariableIdentifier(".arg0")).ReadMemory(outSnapshot);
+            var thisEntry = outSet.GetVariable(thisIdentifier);
+            var field = thisEntry.ReadField(outSnapshot, valueIdentifier);
+
+            field.WriteMemory(outSnapshot, arg);
+
+            SimpleFunctionResolver.SetReturn(outSet, thisEntry.ReadMemory(outSnapshot));
         }
 
         private static void _method_GetValue(FlowController flow)
         {
-            var outSet=flow.OutSet;
+            var outSet = flow.OutSet;
+            var outSnapshot = outSet.Snapshot;
 
-            var thisObj = outSet.ReadValue(new VariableName("this")).PossibleValues.First() as ObjectValue;
-            var index = outSet.CreateIndex("_value");
-            outSet.Assign(outSet.ReturnValue, outSet.GetField(thisObj,index));
+            var thisEntry = outSet.GetVariable(thisIdentifier);
+            var value = thisEntry.ReadField(outSnapshot, valueIdentifier);
+
+            SimpleFunctionResolver.SetReturn(outSet, value.ReadMemory(outSnapshot));
         }
     }
 }

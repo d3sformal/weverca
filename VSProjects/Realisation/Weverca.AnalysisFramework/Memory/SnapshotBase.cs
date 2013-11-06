@@ -513,7 +513,6 @@ namespace Weverca.AnalysisFramework.Memory
         public AnyArrayValue AnyArrayValue { get { return new AnyArrayValue(); } }
         public AnyResourceValue AnyResourceValue { get { return new AnyResourceValue(); } }
         public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
-        public VariableName ReturnValue { get { return _returnValue; } }
         #endregion
 
         public InfoValue<T> CreateInfo<T>(T data)

@@ -59,12 +59,6 @@ namespace Weverca.AnalysisFramework
         public UndefinedValue UndefinedValue { get { return Snapshot.UndefinedValue; } }
         #endregion
 
-        [Obsolete("Names of variables and their behaviour according to unknown fields etc is up to analysis and wont be handled by framework")]
-        public VariableName ReturnValue
-        {
-            get { return Snapshot.ReturnValue; }
-        }
-
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);

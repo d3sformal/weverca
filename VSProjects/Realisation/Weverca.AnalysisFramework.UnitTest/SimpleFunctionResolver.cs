@@ -15,6 +15,8 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     internal class SimpleFunctionResolver : FunctionResolverBase
     {
+        internal static readonly VariableName ReturnStorage = new VariableName("return");
+
         private readonly EnvironmentInitializer _environmentInitializer;
 
         /// <summary>
@@ -34,6 +36,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private readonly HashSet<string> _sharedFunctionNames = new HashSet<string>();
 
+        #region Internal API for resolver manipulation
+
         internal SimpleFunctionResolver(EnvironmentInitializer initializer)
         {
             _environmentInitializer = initializer;
@@ -43,6 +47,61 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             _sharedFunctionNames.Add(functionName);
         }
+
+        #endregion
+
+        #region Function based storages handling
+
+        /// <summary>
+        /// Get storage for argument at given index
+        /// NOTE:
+        ///     Is used only for native analyzers in Simple analysis
+        /// </summary>
+        /// <param name="index">Index of argument at given storage</param>
+        /// <returns>Storage for argument at given index</returns>
+        private static VariableName argument(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+
+            return new VariableName(".arg" + index);
+        }
+
+        internal static MemoryEntry ReadNumberedArgument(FlowInputSet inSet, int number)
+        {
+            var argId = new VariableIdentifier(argument(number));
+            var argVar = inSet.ReadVariable(argId);
+
+            return argVar.ReadMemory(inSet.Snapshot);
+        }
+
+        internal static ReadWriteSnapshotEntryBase GetNumberedArgument(FlowOutputSet outSet, int number)
+        {
+            var argId = new VariableIdentifier(argument(number));
+            var argVar = outSet.GetVariable(argId);
+
+            return argVar;
+        }
+
+
+        internal static void SetReturn(FlowOutputSet outSet, MemoryEntry returnValue)
+        {
+            var outSnapshot = outSet.Snapshot;
+            var returnVar = outSnapshot.GetControlVariable(ReturnStorage);
+            returnVar.WriteMemory(outSnapshot, returnValue);
+        }
+
+
+        internal static MemoryEntry GetReturn(FlowOutputSet outSet)
+        {
+            var outSnapshot = outSet.Snapshot;
+            var returnVar = outSnapshot.GetControlVariable(ReturnStorage);
+            return returnVar.ReadMemory(outSnapshot);
+        }
+
+        #endregion
 
         #region Call processing
 
@@ -132,15 +191,25 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <returns>Resolved return value</returns>
         public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> calls)
         {
-            var possibleMemoryEntries = from call in calls select call.End.OutSet.ReadValue(call.End.OutSet.ReturnValue).PossibleValues;
-            var flattenValues = possibleMemoryEntries.SelectMany((i) => i);
+            var returnValues = new HashSet<Value>();
+            foreach (var call in calls)
+            {
+                var returnEntry = SimpleFunctionResolver.GetReturn(call.End.OutSet);
+                returnValues.UnionWith(returnEntry.PossibleValues);
+            }
 
-            return new MemoryEntry(flattenValues.ToArray());
+            return new MemoryEntry(returnValues);
         }
 
+        /// <inheritdoc />
+        public override MemoryEntry Return(MemoryEntry value)
+        {
+            SetReturn(OutSet, value);
+            return value;
+        }
+        
         public override void DeclareGlobal(TypeDecl declaration)
         {
-
             var type = OutSet.CreateType(convertToType(declaration));
             OutSet.DeclareGlobal(type);
         }
@@ -181,7 +250,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                         if (result.Fields.ContainsKey(new FieldIdentifier(result.TypeName, field.Name)))
                         {
                             //dont need to set warning in simpleAnalysis
-                           // setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
+                            // setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
                         }
                         else
                         {
@@ -242,11 +311,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="flow"></param>
         private static void _strtolower(FlowController flow)
         {
-            var arg = flow.InSet.ReadValue(argument(0));
+            var arg0 = ReadNumberedArgument(flow.InSet, 0);
 
             var possibleValues = new List<Value>();
 
-            foreach (var possible in arg.PossibleValues)
+            foreach (var possible in arg0.PossibleValues)
             {
                 if (possible is StringValue)
                 {
@@ -261,8 +330,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             var output = new MemoryEntry(possibleValues.ToArray());
 
-            keepArgumentInfo(flow, arg, output);
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
+            keepArgumentInfo(flow, arg0, output);
+            SetReturn(flow.OutSet, output);
         }
 
         /// <summary>
@@ -271,11 +340,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="flow"></param>
         private static void _strtoupper(FlowController flow)
         {
-            var arg = flow.InSet.ReadValue(argument(0));
+            var arg0 = ReadNumberedArgument(flow.InSet, 0);
 
             var possibleValues = new List<StringValue>();
 
-            foreach (StringValue possible in arg.PossibleValues)
+            foreach (StringValue possible in arg0.PossibleValues)
             {
                 var lower = flow.OutSet.CreateString(possible.Value.ToUpper());
                 possibleValues.Add(lower);
@@ -283,14 +352,14 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             var output = new MemoryEntry(possibleValues.ToArray());
 
-            keepArgumentInfo(flow, arg, output);
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, output);
+            keepArgumentInfo(flow, arg0, output);
+            SetReturn(flow.OutSet, output);
         }
 
         private static void _concat(FlowController flow)
         {
-            var arg0 = flow.InSet.ReadValue(argument(0));
-            var arg1 = flow.InSet.ReadValue(argument(1));
+            var arg0 = ReadNumberedArgument(flow.InSet, 0);
+            var arg1 = ReadNumberedArgument(flow.InSet, 1);
 
             var possibleValues = new List<StringValue>();
 
@@ -302,13 +371,14 @@ namespace Weverca.AnalysisFramework.UnitTest
                 }
             }
 
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(possibleValues.ToArray()));
+            var output = new MemoryEntry(possibleValues);
+            SetReturn(flow.OutSet, output);
         }
 
         private static void _define(FlowController flow)
         {
-            var arg0 = flow.InSet.ReadValue(argument(0));
-            var arg1 = flow.InSet.ReadValue(argument(1));
+            var arg0 = ReadNumberedArgument(flow.InSet, 0);
+            var arg1 = ReadNumberedArgument(flow.InSet, 1);
 
             foreach (StringValue constName in arg0.PossibleValues)
             {
@@ -320,17 +390,18 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private static void _abs(FlowController flow)
         {
-            var arg0 = flow.InSet.ReadValue(argument(0));
+            var arg0 = ReadNumberedArgument(flow.InSet, 0);
 
-            flow.OutSet.Assign(flow.OutSet.ReturnValue, new MemoryEntry(flow.OutSet.AnyFloatValue));
+            SetReturn(flow.OutSet, new MemoryEntry(flow.OutSet.AnyFloatValue));
         }
 
         private static void _write_argument(FlowController flow)
         {
-            var arg0 = flow.InSet.ReadValue(argument(0)).PossibleValues.First() as StringValue;
+            var arg0Entry = GetNumberedArgument(flow.OutSet, 0);
+            var arg0 = arg0Entry.ReadMemory(flow.InSet.Snapshot).PossibleValues.First() as StringValue;
 
             var value = new MemoryEntry(flow.OutSet.CreateString(arg0.Value + "_WrittenInArgument"));
-            flow.OutSet.Assign(argument(0), value);
+            arg0Entry.WriteMemory(flow.OutSet.Snapshot, value);
         }
 
         private static void _constructor(FlowController flow)
@@ -342,22 +413,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #region Private helpers
 
-        /// <summary>
-        /// Get storage for argument at given index
-        /// NOTE:
-        ///     Is used only for native analyzers in Simple analysis
-        /// </summary>
-        /// <param name="index">Index of argument at given storage</param>
-        /// <returns>Storage for argument at given index</returns>
-        private static VariableName argument(int index)
-        {
-            if (index < 0)
-            {
-                throw new NotSupportedException("Cannot get argument variable for negative index");
-            }
-
-            return new VariableName(".arg" + index);
-        }
 
         private Signature? getSignature(LangElement declaration)
         {
@@ -492,7 +547,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var param = signature.FormalParams[i];
                 var callParam = callSignature.Value.Parameters[i];
 
-                var argumentVar=callInput.GetVariable(new VariableIdentifier(param.Name));
+                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
 
                 if (callParam.PublicAmpersand)
                 {
@@ -508,7 +563,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
         {
             var argCount = new MemoryEntry(callInput.CreateInt(arguments.Length));
-            var argCountEntry=callInput.GetVariable(new VariableIdentifier(".argument_count"));
+            var argCountEntry = callInput.GetVariable(new VariableIdentifier(".argument_count"));
             argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;

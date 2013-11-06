@@ -18,7 +18,7 @@ namespace Weverca.Analysis
     public class FunctionResolver : FunctionResolverBase
     {
         private static readonly VariableName currentFunctionName = new VariableName("$current_function");
-        private VariableName retrunVariable=new VariableName(".return");
+        private VariableName retrunVariable = new VariableName(".return");
         private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
@@ -279,7 +279,7 @@ namespace Weverca.Analysis
         #region Private helpers
 
         private void checkClass(ClassDecl type)
-        { 
+        {
             //TODO
             //if one method is abstract whole class has to be abstract
             //check implemented interfaces
@@ -294,8 +294,8 @@ namespace Weverca.Analysis
             result.IsFinal = false;
             result.IsAbstract = false;
             result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(type.SourceCodeMethods);
-            result.ModeledMethods = new Dictionary<MethodIdentifier,MethodInfo>(type.ModeledMethods);
-            
+            result.ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>(type.ModeledMethods);
+
 
             if (type.Fields.Count != 0)
             {
@@ -381,7 +381,7 @@ namespace Weverca.Analysis
                                 }
                                 else
                                 {
-                                    result.SourceCodeMethods.Add(new MethodIdentifier(result.TypeName,method.Name),method);
+                                    result.SourceCodeMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
                                 }
                             }
                             foreach (var method in value.ModeledMethods.Values)
@@ -409,14 +409,14 @@ namespace Weverca.Analysis
                                 }
                                 else
                                 {
-                                   result.ModeledMethods.Add(new MethodIdentifier(result.TypeName,method.Name),method);
+                                    result.ModeledMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
                                 }
                             }
                         }
                     }
                 }
             }
-            
+
             OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
         }
 
@@ -495,14 +495,14 @@ namespace Weverca.Analysis
             result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(baseClass.SourceCodeMethods);
             result.ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>(baseClass.ModeledMethods);
             result.TypeName = currentClass.QualifiedName;
-            result.BaseClassName=baseClass.QualifiedName;
-            result.IsFinal=currentClass.IsFinal;
-            result.IsInterface=currentClass.IsInterface;
+            result.BaseClassName = baseClass.QualifiedName;
+            result.IsFinal = currentClass.IsFinal;
+            result.IsInterface = currentClass.IsInterface;
             result.IsAbstract = currentClass.IsAbstract;
 
             foreach (var field in currentClass.Fields)
             {
-                FieldIdentifier fieldIdentifier=new FieldIdentifier(currentClass.QualifiedName,field.Key.Name);
+                FieldIdentifier fieldIdentifier = new FieldIdentifier(currentClass.QualifiedName, field.Key.Name);
                 if (!result.Fields.ContainsKey(fieldIdentifier))
                 {
                     result.Fields.Add(fieldIdentifier, field.Value);
@@ -529,11 +529,11 @@ namespace Weverca.Analysis
             {
                 result.Constants.Add(constant.Key, constant.Value);
             }
-            
+
             //TODO extending methods warnings
             foreach (var method in currentClass.SourceCodeMethods.Values)
             {
-                MethodIdentifier methodIdentifier=new MethodIdentifier(result.TypeName,method.Name);
+                MethodIdentifier methodIdentifier = new MethodIdentifier(result.TypeName, method.Name);
                 if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() == 0)
                 {
                     if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() == 0)
@@ -564,21 +564,21 @@ namespace Weverca.Analysis
                     //cannot be abstract
                 }
             }
-            
+
             return result.Build();
         }
 
         private ClassDecl convertToClassDecl(TypeDecl declaration)
         {
             ClassDeclBuilder result = new ClassDeclBuilder();
-            result.BaseClassName= declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
+            result.BaseClassName = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
 
             result.IsFinal = declaration.Type.IsFinal;
             result.IsInterface = declaration.Type.IsInterface;
-            result.IsAbstract=declaration.Type.IsAbstract;
-            result.TypeName=new QualifiedName(declaration.Name);
- 
-            
+            result.IsAbstract = declaration.Type.IsAbstract;
+            result.TypeName = new QualifiedName(declaration.Name);
+
+
 
             foreach (var member in declaration.Members)
             {
@@ -601,13 +601,13 @@ namespace Weverca.Analysis
                         }
                         bool isStatic = member.Modifiers.HasFlag(PhpMemberAttributes.Static);
                         //multiple declaration of fields
-                        if (result.Fields.ContainsKey(new FieldIdentifier(result.TypeName,field.Name)))
+                        if (result.Fields.ContainsKey(new FieldIdentifier(result.TypeName, field.Name)))
                         {
                             setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
                         }
                         else
                         {
-                            result.Fields.Add(new FieldIdentifier(result.TypeName, field.Name), new FieldInfo(field.Name,result.TypeName, "any", visibility, field.Initializer, isStatic));
+                            result.Fields.Add(new FieldIdentifier(result.TypeName, field.Name), new FieldInfo(field.Name, result.TypeName, "any", visibility, field.Initializer, isStatic));
                         }
                     }
 
@@ -616,7 +616,7 @@ namespace Weverca.Analysis
                 {
                     foreach (var constant in (member as ConstDeclList).Constants)
                     {
-                        if (result.Constants.ContainsKey(new FieldIdentifier(result.TypeName,constant.Name)))
+                        if (result.Constants.ContainsKey(new FieldIdentifier(result.TypeName, constant.Name)))
                         {
                             setWarning("Cannot redeclare constant " + constant.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
                         }
@@ -624,7 +624,7 @@ namespace Weverca.Analysis
                         {
                             //in php all object constatns are public
                             Visibility visbility = Visibility.PUBLIC;
-                            result.Constants.Add(new FieldIdentifier(result.TypeName, constant.Name), new ConstantInfo(constant.Name,result.TypeName, visbility, constant.Initializer));
+                            result.Constants.Add(new FieldIdentifier(result.TypeName, constant.Name), new ConstantInfo(constant.Name, result.TypeName, visbility, constant.Initializer));
                         }
                     }
                 }
@@ -645,10 +645,10 @@ namespace Weverca.Analysis
                     //ignore traits are not supported by AST, only by parser
                 }
             }
-            
+
 
             // NativeTypeDecl result=new NativeTypeDecl();
-            
+
             return result.Build();
         }
 
@@ -1065,11 +1065,13 @@ namespace Weverca.Analysis
         {
             foreach (var type in returnHints)
             {
-                var result = outset.ReadValue(outset.ReturnValue);
+                throw new NotImplementedException("Return value has been removed from API");
+                /*   var result = outset.ReadValue(outset.ReturnValue);
+                
                 foreach (var value in result.PossibleValues)
                 {
                     ValueInfoHandler.setClean(outset, value, type);
-                }
+                }*/
             }
 
             foreach (var variable in argumentHints.Keys)

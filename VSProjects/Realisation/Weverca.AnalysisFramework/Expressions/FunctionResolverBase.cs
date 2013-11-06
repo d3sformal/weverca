@@ -140,11 +140,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="value">Value from return expression</param>
         /// <returns>Returned value</returns>
-        public virtual MemoryEntry Return(MemoryEntry value)
-        {
-            OutSet.Assign(OutSet.ReturnValue, value);
-            return value;
-        }
+        public abstract MemoryEntry Return(MemoryEntry value);
 
         #endregion
 

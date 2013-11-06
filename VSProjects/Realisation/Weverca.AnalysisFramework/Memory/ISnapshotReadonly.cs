@@ -53,14 +53,7 @@ namespace Weverca.AnalysisFramework.Memory
         ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable);
 
         #endregion
-
-        [Obsolete("Names of variables and their behaviour according to unknown fields etc is up to analysis and wont be handled by framework")]
-        /// <summary>
-        /// Gets variable where return value is stored
-        /// </summary>
-        /// <value>Variable name of return value storage</value>        
-        VariableName ReturnValue { get; }
-          
+       
         [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Iterates over the given object
