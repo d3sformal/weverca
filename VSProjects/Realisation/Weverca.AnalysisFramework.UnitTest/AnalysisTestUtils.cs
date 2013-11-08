@@ -136,6 +136,20 @@ namespace Weverca.AnalysisFramework.UnitTest
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
         }
 
+        internal static void AssertUndefined(this FlowOutputSet outset, string variableName, string message)
+        {
+            var variable = outset.ReadVariable(new VariableIdentifier(variableName));
+            var entry = variable.ReadMemory(outset.Snapshot);
+
+            bool hasUndefValue = false;
+            foreach (var value in entry.PossibleValues)
+            {
+                if (value.GetType() == typeof(UndefinedValue)) hasUndefValue = true;
+            }
+
+            if (!hasUndefValue) Assert.Fail("The variable ${0} does not contain undefined value.", variableName);
+        }
+
         internal static TestCase AssertVariable(this string test_CODE, string variableName, string assertMessage = null, string nonDeterministic = "unknown")
         {
             var testCase = new TestCase(test_CODE, variableName, assertMessage);
@@ -248,6 +262,17 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         #region Assert providers
+
+        internal TestCase HasUndefinedValue()
+        {
+            _asserts.Add((output) =>
+            {
+                AnalysisTestUtils.AssertUndefined(output, VariableName, AssertMessage);
+
+            });
+
+            return this;
+        }
 
         internal TestCase HasValues<T>(params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>

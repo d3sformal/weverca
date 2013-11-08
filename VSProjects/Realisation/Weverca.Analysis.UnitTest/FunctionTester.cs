@@ -33,6 +33,23 @@ namespace Weverca.Analysis.UnitTest
             }
         ";
 
+        string ParameterByAliasFunctionAtCalerSideTest = @"
+            function f($arg) {
+               $arg = 2;
+            }
+            f(&$result);
+            ";
+        // TODO: Similar to ParameterByAliasFunctionAtCalerSideTest, but fails. 
+        // Because passing aliases at calee site is not yet implemented.
+        // TODO: if the functionality of passing by alias is implemented at framework,
+        // move this test to Weverca.AnalysisFramework.UnitTest.ForwardAnalysisTest
+        string ParameterByAliasFunctionAtCaleeSideTest = @"
+            function f(&$arg) {
+               $arg = 2;
+            }
+            f($result);
+            ";
+
 
         [TestMethod]
         public void FunctionBeforeDeclarationCall()
@@ -48,6 +65,22 @@ namespace Weverca.Analysis.UnitTest
             var result = TestUtils.ResultTest(MethodBeforeDeclarationCallTest);
             TestUtils.testType(result, typeof(IntegerValue));
             TestUtils.testValue(result, 4);
+        }
+
+        [TestMethod]
+        public void ParameterByAliasFunctionAtCalerSide()
+        {
+            var result = TestUtils.ResultTest(ParameterByAliasFunctionAtCalerSideTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 2);
+        }
+
+        [TestMethod]
+        public void ParameterByAliasFunctionAtCaleeSide()
+        {
+            var result = TestUtils.ResultTest(ParameterByAliasFunctionAtCaleeSideTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 2);
         }
 
     }

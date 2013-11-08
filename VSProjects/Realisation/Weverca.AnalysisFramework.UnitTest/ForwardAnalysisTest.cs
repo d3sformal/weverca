@@ -449,6 +449,47 @@ try{
 ".AssertVariable("result").HasValues("Catched")
 .DeclareType(SimpleExceptionType.CreateType())
 ;
+        // This test fails because the framework creates and initializes in CallPoint local variables for all functions that it is 
+        // possible to call. That is, both local variables  $arg1 and $arg2 are initialized in CallPoint. These variables then flows 
+        // to entry points of both f and g.
+        // This problem should be solved by initializing local variables corresponding to function arguments in entry point of the function, not in call point
+        readonly static TestCase InitializingArgumentsOfOthersCallees_CASE = @"
+function f($arg1) { return $arg1;}
+function g($arg2) { 
+    return $arg1; // $arg1 should be undefined, not initialized
+}
+if ($unknown) $func = 'f';
+else $func = 'g';
+$result = $func(1); // in CallPoint, both f() and g() can be called
+".AssertVariable("result").HasUndefinedValue().HasValues(1)
+;
+        readonly static TestCase ParametersByAliasGlobal_CASE = @"
+function f($arg) {
+    $arg = 2; // changes also value of actual parameter
+    $b = 3;
+    $arg = &$b; // unaliases formal parameter with actual parameter
+    $arg = 4; // does not change the value of actual parameter
+}
+f(&$result);
+".AssertVariable("result").HasValues(2)
+;
+
+        // The same as ParametersByAliasGlobal_CASE, but passes parameter from local scope.
+        readonly static TestCase ParametersByAliasLocal_CASE = @"
+function f($arg) {
+    $arg = 2; // changes also value of actual parameter
+    $b = 3;
+    $arg = &$b; // unaliases formal parameter with actual parameter
+    $arg = 4; // does not change the value of actual parameter
+}
+function local_wrap() {
+    $a = 1;
+    f(&$a);
+    return $a;
+}
+$result = local_wrap();
+".AssertVariable("result").HasValues(2)
+;
 
 
 
@@ -699,5 +740,28 @@ try{
         {
             AnalysisTestUtils.RunTestCase(CrossStackExceptionHandling_CASE);
         }
+
+        #region Function handling tests
+        /// <summary>
+        /// Tests whether the framework initializes only arguments of called function and not also arguments
+        /// of other possible callees.
+        /// </summary>
+        [TestMethod]
+        public void InitializingArgumentsOfOthersCallees()
+        {
+            AnalysisTestUtils.RunTestCase(InitializingArgumentsOfOthersCallees_CASE);
+        }
+
+        [TestMethod]
+        public void ParametersByAliasLocal()
+        {
+            AnalysisTestUtils.RunTestCase(ParametersByAliasLocal_CASE);
+        }
+        [TestMethod]
+        public void ParametersByAliasGlobal()
+        {
+            AnalysisTestUtils.RunTestCase(ParametersByAliasGlobal_CASE);
+        }
+        #endregion
     }
 }
