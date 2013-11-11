@@ -387,7 +387,7 @@ namespace Weverca.Analysis
         private static Value CreateObject(FlowController flow, string type)
         {
             
-            var objectAnalyzer = NativeObjectAnalyzer.GetInstance(flow);
+            var objectAnalyzer = NativeObjectAnalyzer.GetInstance(flow.OutSet);
             QualifiedName typeName = new QualifiedName(new Name(type));
             if (objectAnalyzer.ExistClass(typeName))
             {

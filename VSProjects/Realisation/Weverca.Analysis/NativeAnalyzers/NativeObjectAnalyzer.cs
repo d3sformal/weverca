@@ -58,13 +58,13 @@ namespace Weverca.Analysis
         
         #region parsing xml
 
-        private NativeObjectAnalyzer(FlowController flow)
+        private NativeObjectAnalyzer(FlowOutputSet outSet)
         {
             var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
             nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
             NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, ClassDeclBuilder>();
 
-            var outSet = flow.OutSet;
+
             ClassDeclBuilder currentClass = null;
             NativeMethod currentMethod = null;
             while (reader.Read())
@@ -303,11 +303,11 @@ namespace Weverca.Analysis
 
         #endregion
 
-        public static NativeObjectAnalyzer GetInstance(FlowController flow)
+        public static NativeObjectAnalyzer GetInstance(FlowOutputSet outSet)
         {
             if (instance == null)
             {
-                instance = new NativeObjectAnalyzer(flow);
+                instance = new NativeObjectAnalyzer(outSet);
             }
 
             return instance;
@@ -326,6 +326,11 @@ namespace Weverca.Analysis
         public bool TryGetClass(QualifiedName className, out ClassDecl declaration)
         {
             return nativeObjects.TryGetValue(className, out declaration);
+        }
+
+        public IEnumerable<ClassDecl> GetAllClasses()
+        {
+            return nativeObjects.Values;
         }
     }
 
@@ -352,7 +357,7 @@ namespace Weverca.Analysis
                 NativeAnalyzerUtils.checkArgumentTypes(flow, Method);
             }
 
-            var nativeClass = NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
+            var nativeClass = NativeObjectAnalyzer.GetInstance(flow.OutSet).GetClass(ObjectName);
             var fields = nativeClass.Fields;
 
             var functionResult = NativeAnalyzerUtils.ResolveReturnValue(Method.ReturnType, flow);
@@ -403,7 +408,7 @@ namespace Weverca.Analysis
 
         public void initObject(FlowController flow)
         {
-            var nativeClass = NativeObjectAnalyzer.GetInstance(flow).GetClass(ObjectName);
+            var nativeClass = NativeObjectAnalyzer.GetInstance(flow.OutSet).GetClass(ObjectName);
             var fields = nativeClass.Fields;
 
             var createdFields = new List<Value>();

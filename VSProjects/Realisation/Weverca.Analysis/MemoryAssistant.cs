@@ -12,12 +12,14 @@ namespace Weverca.Analysis
     {
         public override MemoryEntry ReadIndex(AnyValue value, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return new MemoryEntry(Context.AnyValue);
         }
 
         public override MemoryEntry ReadField(AnyValue value, AnalysisFramework.VariableIdentifier field)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+            return new MemoryEntry(Context.AnyValue);
         }
     }
 }

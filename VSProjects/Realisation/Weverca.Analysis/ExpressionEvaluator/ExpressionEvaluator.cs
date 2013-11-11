@@ -860,7 +860,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var types = OutSet.ResolveType(typeName);
             if (!types.GetEnumerator().MoveNext())
             {
-                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
+                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
                 ClassDecl nativeDeclaration;
                 if (objectAnalyzer.TryGetClass(typeName, out nativeDeclaration))
                 {

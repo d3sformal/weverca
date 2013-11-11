@@ -182,11 +182,9 @@ namespace Weverca.Analysis
             }
         }
 
-        //TODO abstract stuff
-        //TODO if implements interface
         public override void DeclareGlobal(TypeDecl declaration)
         {
-            var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow);
+            var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
             ClassDecl type = convertToClassDecl(declaration);
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
@@ -204,8 +202,6 @@ namespace Weverca.Analysis
                 }
                 else
                 {
-                    //TODO dokoncit
-                    //check imterface which are implement
                     if (declaration.BaseClassName != null)
                     {
                         if (objectAnalyzer.ExistClass(declaration.BaseClassName.Value.QualifiedName))
@@ -222,7 +218,7 @@ namespace Weverca.Analysis
                             else
                             {
                                 ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
-                                checkClass(newType);
+                                checkClass(newType, declaration);
                                 OutSet.DeclareGlobal(OutSet.CreateType(newType));
                             }
                         }
@@ -248,7 +244,7 @@ namespace Weverca.Analysis
                                             setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
                                         }
                                         ClassDecl newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
-                                        checkClass(newType);
+                                        checkClass(newType, declaration);
                                         OutSet.DeclareGlobal(OutSet.CreateType(newType));
                                     }
                                     else
@@ -261,7 +257,7 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        checkClass(type);
+                        checkClass(type, declaration);
                         OutSet.DeclareGlobal(OutSet.CreateType(type));
                     }
                 }
@@ -278,12 +274,130 @@ namespace Weverca.Analysis
 
         #region Private helpers
 
-        private void checkClass(ClassDecl type)
+        private void checkClass(ClassDecl type, TypeDecl element)
         {
-            //TODO
-            //if one method is abstract whole class has to be abstract
-            //check implemented interfaces
-            //abstract method cannot have body
+            foreach (var entry in type.SourceCodeMethods)
+            {
+                if (entry.Key.ClassName.Equals(type.QualifiedName))
+                {
+                    MethodDecl method = entry.Value;
+                    if (method.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
+                    {
+                        if (method.Body != null)
+                        {
+                            setWarning("Abstract method cannot have body", element, AnalysisWarningCause.ABSTRACT_METHOD_CANNOT_HAVE_BODY);
+                        }
+                    }
+                    else
+                    {
+                        if (method.Body == null)
+                        {
+                            setWarning("Non abstract method must have body", element, AnalysisWarningCause.NON_ABSTRACT_METHOD_MUST_HAVE_BODY);
+                        }
+                    }
+                }
+            }
+            //cannot contain abstract method
+            if(type.IsAbstract==false)
+            {
+                Dictionary<Name, bool> methods = new Dictionary<Name, bool>();
+
+                foreach (var entry in type.SourceCodeMethods)
+                {
+                    if (methods.ContainsKey(entry.Key.Name))
+                    {
+                        methods[entry.Key.Name] &= entry.Value.Modifiers.HasFlag(PhpMemberAttributes.Abstract);
+                    }
+                    else 
+                    {
+                        methods.Add(entry.Key.Name,entry.Value.Modifiers.HasFlag(PhpMemberAttributes.Abstract));
+                    }
+                }
+
+                foreach (var entry in type.ModeledMethods)
+                {
+                    if (methods.ContainsKey(entry.Key.Name))
+                    {
+                        methods[entry.Key.Name] &= entry.Value.IsAbstract;
+                    }
+                    else
+                    {
+                        methods.Add(entry.Key.Name, entry.Value.IsAbstract);
+                    }
+                }
+
+                foreach(var entry in methods)
+                {
+                    if(entry.Value==true)
+                    {
+                        setWarning("Non abstract class cannot contain abstract method "+entry.Key,element,AnalysisWarningCause.NON_ABSTRACT_CLASS_CONTAINS_ABSTRACT_METHOD);
+                    }
+                }
+            }
+
+            List<ClassDecl> interfaces=getImplementedInterfaces(element);           
+            foreach (var Interface in interfaces)
+            {
+                foreach (var constant in Interface.Constants)
+                { 
+                    var query=type.Constants.Where(a=>a.Key.Name==constant.Key.Name);
+                    if (query.Count() > 0)
+                    {
+                        setWarning("Cannot override interface constant " + constant.Key.Name, element, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT);
+                    }
+                    else 
+                    {
+                        //todo add constant to class and create new classDecl
+                    }
+                }
+
+                foreach (var method in Interface.ModeledMethods)
+                {
+                    if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
+                    {
+                        setWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
+                    }
+                    else 
+                    {
+                        var classMethod=type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
+                        if (method.Value.IsStatic != classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                        { 
+                            //cannot redeclare static method with non static
+                            if (classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                            {
+                                setWarning("Cannot redeclare non static method with static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                            }
+                            else 
+                            {
+                                setWarning("Cannot redeclare static method with non static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                            }
+                        }
+                    }
+                }
+
+                foreach(var method in Interface.SourceCodeMethods)
+                {
+                    if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
+                    {
+                        setWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
+                    }
+                    else 
+                    {
+                        var classMethod = type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
+                        if (method.Value.Modifiers.HasFlag(PhpMemberAttributes.Static) != classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                        {
+                            if (classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                            {
+                                setWarning("Cannot redeclare non static method with static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                            }
+                            else
+                            {
+                                setWarning("Cannot redeclare static method with non static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDecl type)
@@ -318,9 +432,89 @@ namespace Weverca.Analysis
                 }
             }
 
+            List<ClassDecl> interfaces = getImplementedInterfaces(declaration);
+
+            if (interfaces.Count != 0)
+            {
+                foreach (var value in interfaces)
+                {
+                    if (value.IsInterface == false)
+                    {
+                        setWarning("Interface " + value.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                    }
+                    else
+                    {
+                        //interface cannot have implement
+                        foreach (var method in value.SourceCodeMethods.Values)
+                        {
+                            if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
+                            {
+                                //if arguments doesnt match
+                                if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
+                                {
+                                    var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
+                                    if (!AreMethodsCompatible(match, method))
+                                    {
+                                        setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                    }
+                                }
+                                else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
+                                {
+                                    var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
+                                    if (!AreMethodsCompatible(match, method))
+                                    {
+                                        setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                result.SourceCodeMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
+                            }
+                        }
+                        foreach (var method in value.ModeledMethods.Values)
+                        {
+                            if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
+                            {
+                                //if arguments doesnt match
+                                if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
+                                {
+                                    var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
+                                    if (!AreMethodsCompatible(match, method))
+                                    {
+                                        setWarning("Can't inherit abstract function " + method.Name, declaration, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                    }
+                                }
+                                else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
+                                {
+                                    var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
+                                    if (!AreMethodsCompatible(match, method))
+                                    {
+                                        setWarning("Can't inherit abstract function " + method.Name, match, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                result.ModeledMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
+                            }
+                        }
+                    }
+                }
+            }
+            
+
+            OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
+        }
+
+        private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration)
+        {
+            NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
+         List<ClassDecl> interfaces = new List<ClassDecl>();
             foreach (GenericQualifiedName Interface in declaration.ImplementsList)
             {
-                List<ClassDecl> interfaces = new List<ClassDecl>();
                 if (objectAnalyzer.ExistClass(Interface.QualifiedName))
                 {
                     var interfaceType = objectAnalyzer.GetClass(Interface.QualifiedName);
@@ -344,80 +538,8 @@ namespace Weverca.Analysis
                         }
                     }
                 }
-
-                if (interfaces.Count != 0)
-                {
-                    foreach (var value in interfaces)
-                    {
-                        if (value.IsInterface == false)
-                        {
-                            setWarning("Interface " + value.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
-                        }
-                        else
-                        {
-                            //interface cannot have implement
-                            foreach (var method in value.SourceCodeMethods.Values)
-                            {
-                                if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
-                                {
-                                    //if arguments doesnt match
-                                    if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
-                                    {
-                                        var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
-                                        if (!AreMethodsCompatible(match, method))
-                                        {
-                                            setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
-                                        }
-                                    }
-                                    else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
-                                    {
-                                        var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
-                                        if (!AreMethodsCompatible(match, method))
-                                        {
-                                            setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    result.SourceCodeMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
-                                }
-                            }
-                            foreach (var method in value.ModeledMethods.Values)
-                            {
-                                if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
-                                {
-                                    //if arguments doesnt match
-                                    if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
-                                    {
-                                        var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
-                                        if (!AreMethodsCompatible(match, method))
-                                        {
-                                            setWarning("Can't inherit abstract function " + method.Name, declaration, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
-                                        }
-                                    }
-                                    else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
-                                    {
-                                        var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
-                                        if (!AreMethodsCompatible(match, method))
-                                        {
-                                            setWarning("Can't inherit abstract function " + method.Name, match, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
-                                        }
-                                    }
-
-                                }
-                                else
-                                {
-                                    result.ModeledMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
-                                }
-                            }
-                        }
-                    }
-                }
             }
-
-            OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
+            return interfaces;
         }
 
         private bool AreMethodsCompatible(MethodDecl a, MethodDecl b)
@@ -514,11 +636,11 @@ namespace Weverca.Analysis
                         var fieldName = result.Fields[fieldIdentifier].Name;
                         if (field.Value.IsStatic)
                         {
-                            setWarning("Cannot redeclare static " + fieldName + " with non static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            setWarning("Cannot redeclare static " + fieldName + " with non static " + fieldName,  AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
                         }
                         else
                         {
-                            setWarning("Cannot redeclare non static " + fieldName + " with static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            setWarning("Cannot redeclare non static " + fieldName + " with static " + fieldName,  AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
 
                         }
                     }
@@ -530,7 +652,6 @@ namespace Weverca.Analysis
                 result.Constants.Add(constant.Key, constant.Value);
             }
 
-            //TODO extending methods warnings
             foreach (var method in currentClass.SourceCodeMethods.Values)
             {
                 MethodIdentifier methodIdentifier = new MethodIdentifier(result.TypeName, method.Name);
@@ -542,26 +663,59 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).First().IsFinal)
+                        var overridenMethod=result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
+                        if (overridenMethod.IsFinal)
                         {
                             setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                         }
-                        //TODO
-                        //static non static
-                        //arguments has to match
-                        //cannot be abstract
+                        if (overridenMethod.IsStatic != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                        {
+                            if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                            {
+                                setWarning("Cannot redeclare non static method with static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                            }
+                            else
+                            {
+                                setWarning("Cannot redeclare static method with non static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                            }
+                        }
+                        if(!AreMethodsCompatible(overridenMethod,method))
+                        {
+                            setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_REDECLARE_CLASS_FUNCTION);
+                        }
+                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
+                        {
+                            setWarning("Can't override function " + method.Name + ", with abstract function", method,AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);
+
+                        }
                     }
                 }
                 else
                 {
-                    if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First().Modifiers.HasFlag(PhpMemberAttributes.Final))
+                    var overridenMethod=result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
+                    if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Final))
                     {
                         setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                     }
-                    //TODO
-                    //static non static
-                    //arguments has to match
-                    //cannot be abstract
+                    if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Static) != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                    {
+                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                        {
+                            setWarning("Cannot redeclare non static method with static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                        }
+                        else
+                        {
+                            setWarning("Cannot redeclare static method with non static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                        }
+                    }
+                    if (!AreMethodsCompatible(overridenMethod, method))
+                    {
+                        setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_REDECLARE_CLASS_FUNCTION);
+                    }
+                    if (method.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
+                    {
+                        setWarning("Can't override function " + method.Name + ", with abstract function", method, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);
+                    }
                 }
             }
 
@@ -577,8 +731,6 @@ namespace Weverca.Analysis
             result.IsInterface = declaration.Type.IsInterface;
             result.IsAbstract = declaration.Type.IsAbstract;
             result.TypeName = new QualifiedName(declaration.Name);
-
-
 
             foreach (var member in declaration.Members)
             {
@@ -637,7 +789,7 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        setWarning("Cannot redeclare constant " + (member as MethodDecl).Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                        setWarning("Cannot redeclare method " + (member as MethodDecl).Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FUNCTION_DECLARATION);
                     }
                 }
                 else
@@ -645,9 +797,6 @@ namespace Weverca.Analysis
                     //ignore traits are not supported by AST, only by parser
                 }
             }
-
-
-            // NativeTypeDecl result=new NativeTypeDecl();
 
             return result.Build();
         }
@@ -950,6 +1099,7 @@ namespace Weverca.Analysis
         #endregion
     }
 
+    #region function hints 
     // TODO: testy treba pockat na priznaky
     // TODO pravdepodobne sa zmeni praca s priznakmi
     internal class FunctionHints
@@ -1087,4 +1237,5 @@ namespace Weverca.Analysis
             }
         }
     }
+    #endregion
 }

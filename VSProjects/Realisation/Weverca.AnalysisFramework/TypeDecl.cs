@@ -217,7 +217,7 @@ namespace Weverca.AnalysisFramework
         public readonly bool IsInterface;
 
         public readonly bool IsAbstract;
-
+        
         public ClassDecl(QualifiedName typeName, Dictionary<MethodIdentifier,MethodInfo> methods, Dictionary<MethodIdentifier, MethodDecl> sourceCodeMethods, Dictionary<FieldIdentifier, ConstantInfo> constants, Dictionary<FieldIdentifier, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface, bool isAbstract)
         {
             QualifiedName = typeName;
