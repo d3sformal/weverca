@@ -28,17 +28,15 @@ namespace Weverca.AnalysisFramework
     {
         public readonly ProgramPointBase Owner;
 
-        public ExtensionType Type { get; internal set; }
-
         public IEnumerable<object> Keys { get { return _extensions.Keys; } }
 
-        public IEnumerable<ProgramPointGraph> Branches { get { return _extensions.Values; } }
+        public IEnumerable<ExtensionPoint> Branches { get { return _extensions.Values; } }
 
         public bool IsConnected { get { return _extensions.Count > 0; } }
 
         internal readonly ExtensionSinkPoint Sink;
 
-        Dictionary<object, ProgramPointGraph> _extensions = new Dictionary<object, ProgramPointGraph>();
+        Dictionary<object, ExtensionPoint> _extensions = new Dictionary<object, ExtensionPoint>();
 
         internal FlowExtension(ProgramPointBase owner)
         {
@@ -49,12 +47,13 @@ namespace Weverca.AnalysisFramework
                 //Because of avoiding recursion - extension sink is also sink for self
                 Sink = owner as ExtensionSinkPoint;
             }
-            else {
+            else
+            {
                 Sink = new ExtensionSinkPoint(this);
             }
         }
 
-        internal void Add(object key, ProgramPointGraph ppGraph)
+        internal ExtensionPoint Add(object key, ProgramPointGraph ppGraph, ExtensionType type)
         {
             if (!IsConnected)
             {
@@ -62,12 +61,16 @@ namespace Weverca.AnalysisFramework
             }
 
             Owner.Services.SetServices(ppGraph);
+            var extension = new ExtensionPoint(Owner, ppGraph, type);
+            Owner.Services.SetServices(extension);
 
-            _extensions.Add(key, ppGraph);
+            _extensions.Add(key, extension);
 
             //connect ppGraph into current graph
-            Owner.AddFlowChild(ppGraph.Start);
+            Owner.AddFlowChild(extension);
             ppGraph.End.AddFlowChild(Sink);
+
+            return extension;
         }
 
         internal void Remove(object key)
@@ -96,6 +99,6 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        
+
     }
 }

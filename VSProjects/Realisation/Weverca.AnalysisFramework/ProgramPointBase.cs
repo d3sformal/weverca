@@ -123,11 +123,16 @@ namespace Weverca.AnalysisFramework
             checkInitialized();
 
             extendInput();
+            extendOutput();
 
 
+            return true;
+        }
+
+        protected virtual void extendOutput()
+        {
             _outSet.StartTransaction();
             _outSet.Extend(_inSet);
-            return true;
         }
 
         protected virtual void extendInput()
@@ -176,19 +181,9 @@ namespace Weverca.AnalysisFramework
         {
             foreach (var ext in Extension.Branches)
             {
-                var start = ext.Start;
-
-                if (Extension.Type == ExtensionType.ParallelCall)
-                {
-                    _outSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
-                }
-                else
-                {
-                    _outSet.Extend(_inSet);
-                }
-                if (Flow.Arguments == null)
-                    Flow.Arguments = new MemoryEntry[0];
-                Services.FunctionResolver.InitializeCall(_outSet, ext, Flow.Arguments);
+                //pass call info
+                ext.Flow.Arguments = Flow.Arguments;
+                ext.Flow.CalledObject = Flow.CalledObject;
             }
         }
 

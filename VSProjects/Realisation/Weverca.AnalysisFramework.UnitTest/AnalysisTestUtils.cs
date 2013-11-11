@@ -136,6 +136,18 @@ namespace Weverca.AnalysisFramework.UnitTest
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
         }
 
+        internal static void AssertVariableWithUndefined<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
+          where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            var variable = outset.ReadVariable(new VariableIdentifier(variableName));
+            var entry = variable.ReadMemory(outset.Snapshot);
+
+            //filter undefined values
+            var actualValues = (from value in entry.PossibleValues where !(value is UndefinedValue) select ((ScalarValue<T>)value).Value).ToArray();
+
+            CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
+        }
+
         internal static void AssertUndefined(this FlowOutputSet outset, string variableName, string message)
         {
             var variable = outset.ReadVariable(new VariableIdentifier(variableName));
@@ -280,6 +292,16 @@ namespace Weverca.AnalysisFramework.UnitTest
             _asserts.Add((output) =>
             {
                 AnalysisTestUtils.AssertVariable<T>(output, VariableName, AssertMessage, expectedValues);
+            });
+            return this;
+        }
+
+        internal TestCase HasUndefinedOrValues<T>(params T[] expectedValues)
+           where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            _asserts.Add((output) =>
+            {
+                AnalysisTestUtils.AssertVariableWithUndefined<T>(output, VariableName, AssertMessage, expectedValues);
             });
             return this;
         }

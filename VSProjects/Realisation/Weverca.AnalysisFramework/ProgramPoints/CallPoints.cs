@@ -38,6 +38,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 Services.FunctionResolver.MethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot), FunctionCall.QualifiedName, Flow.Arguments);
             }
         }
+
+        protected override void extendOutput()
+        {
+            OutSet.StartTransaction();
+            //TODO change call handling
+            OutSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
+            //  OutSet.ExtendAsCall(InSet, Flow.CalledObject, Flow.Arguments);
+        }
     }
 
 
@@ -71,6 +79,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             {
                 Services.FunctionResolver.IndirectMethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot), Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
             }
+        }
+
+        protected override void extendOutput()
+        {
+            OutSet.StartTransaction();
+            //TODO change call handling
+            OutSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
+            //  OutSet.ExtendAsCall(InSet, Flow.CalledObject, Flow.Arguments);
         }
     }
 

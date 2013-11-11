@@ -55,9 +55,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             return willAssume;
         }
 
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs, ExtensionType callType)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var ends = (from callOutput in dispatchedProgramPointGraphs select callOutput.End.OutSet as ISnapshotReadonly).ToArray();
+            var ends = (from callOutput in dispatchedExtensions select callOutput.Graph.End.OutSet as ISnapshotReadonly).ToArray();
+
+            //TODO determine correct extension type
+            var callType = dispatchedExtensions.First().Type;
 
             switch (callType)
             {
@@ -146,7 +149,6 @@ namespace Weverca.AnalysisFramework.UnitTest
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
             //extend current program point as Include
-            flow.SetExtensionType(ExtensionType.ParallelInclude);
 
             var files = new HashSet<string>();
             foreach (StringValue possibleFile in includeFile.PossibleValues)
@@ -168,7 +170,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
                 var ppGraph = ProgramPointGraph.FromSource(cfg);
-                flow.AddExtension(file, ppGraph);
+                flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
             }
         }
 

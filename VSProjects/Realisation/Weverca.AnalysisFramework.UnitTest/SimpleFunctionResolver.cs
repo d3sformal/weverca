@@ -164,9 +164,9 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="callInput"></param>
         /// <param name="extensionGraph"></param>
         /// <param name="arguments"></param>
-        public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
+        public override void InitializeCall(ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
-            _environmentInitializer(callInput);
+            _environmentInitializer(OutSet);
 
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
@@ -175,12 +175,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             if (hasNamedSignature)
             {
                 //we have names for passed arguments
-                setNamedArguments(callInput, arguments, signature.Value);
+                setNamedArguments(OutSet, arguments, signature.Value);
             }
             else
             {
                 //there are no names - use numbered arguments
-                setOrderedArguments(callInput, arguments);
+                setOrderedArguments(OutSet, arguments);
             }
         }
 
@@ -189,12 +189,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// </summary>
         /// <param name="calls">All calls on dispatch level, which return value is resolved</param>
         /// <returns>Resolved return value</returns>
-        public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> calls)
+        public override MemoryEntry ResolveReturnValue(IEnumerable<ExtensionPoint> calls)
         {
             var returnValues = new HashSet<Value>();
             foreach (var call in calls)
             {
-                var returnEntry = SimpleFunctionResolver.GetReturn(call.End.OutSet);
+                var returnEntry = SimpleFunctionResolver.GetReturn(call.Graph.End.OutSet);
                 returnValues.UnionWith(returnEntry.PossibleValues);
             }
 
@@ -207,7 +207,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             SetReturn(OutSet, value);
             return value;
         }
-        
+
         public override void DeclareGlobal(TypeDecl declaration)
         {
             var type = OutSet.CreateType(convertToType(declaration));
@@ -468,7 +468,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 functionGraph = ProgramPointGraph.From(function);
             }
 
-            Flow.AddExtension(function.DeclaringElement, functionGraph);
+            Flow.AddExtension(function.DeclaringElement, functionGraph, ExtensionType.ParallelCall);
         }
 
         /// <summary>
@@ -537,7 +537,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
-            var callPoint = Flow.ProgramPoint as RCallPoint;
+            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -567,7 +567,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;
-            var callPoint = Flow.ProgramPoint as RCallPoint;
+            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
                 var argVar = argument(index);

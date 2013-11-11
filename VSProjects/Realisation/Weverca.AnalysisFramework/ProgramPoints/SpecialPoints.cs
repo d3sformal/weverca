@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.AnalysisFramework.Memory;
+
 /*
  * Program points that have no corresponding elements in Phalanger AST.
  */
@@ -115,6 +117,58 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     }
 
     /// <summary>
+    /// Point for connecting extensions into program point graphs
+    /// </summary>
+    public class ExtensionPoint : ProgramPointBase
+    {
+        public override LangElement Partial { get { return null; } }
+
+        /// <summary>
+        /// Graph connected via current connect point
+        /// </summary>
+        public readonly ProgramPointGraph Graph;
+
+        /// <summary>
+        /// Type of extension connection
+        /// </summary>
+        public readonly ExtensionType Type;
+
+        public readonly ProgramPointBase Caller;
+
+        internal ExtensionPoint(ProgramPointBase caller, ProgramPointGraph graph, ExtensionType type)
+        {
+            Graph = graph;
+            Type = type;
+            Caller = caller;
+
+            AddFlowChild(Graph.Start);
+        }
+
+        internal void Disconnect()
+        {
+            RemoveFlowChild(Graph.Start);
+        }
+
+        protected override void flowThrough()
+        {
+            if (Type == ExtensionType.ParallelCall)
+            {
+                OutSet.ExtendAsCall(Caller.OutSet, Flow.CalledObject, Flow.Arguments);
+            }
+            else
+            {
+                OutSet.Extend(Caller.OutSet);
+            }
+
+            if (Flow.Arguments == null)
+                Flow.Arguments = new MemoryEntry[0];
+
+
+            Services.FunctionResolver.InitializeCall(Graph, Flow.Arguments);
+        }
+    }
+
+    /// <summary>
     /// Sink for extension results. Merge caller context with call context.
     /// <remarks>Is used as reference to call result</remarks>
     /// </summary>
@@ -135,9 +189,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Services.FlowResolver.CallDispatchMerge(OutSet, OwningExtension.Branches, OwningExtension.Type);
+            Services.FlowResolver.CallDispatchMerge(OutSet, OwningExtension.Branches);
 
-            var returnValue= Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
+            var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
             Value = OutSet.CreateSnapshotEntry(returnValue);
         }
 

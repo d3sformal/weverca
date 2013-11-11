@@ -5,6 +5,7 @@ using System.Linq;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.Analysis.FlowResolver
 {
@@ -38,11 +39,11 @@ namespace Weverca.Analysis.FlowResolver
         /// Is called after each invoked call - has to merge data from dispatched calls into callerOutput
         /// </summary>
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
-        /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
+        /// <param name="dispatchedExtensions">Program point graphs obtained during analysis</param>
         /// <param name="dispatchType">Type of merged call</param>
-        public override void CallDispatchMerge(FlowOutputSet callerOutput,IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs, ExtensionType dispatchType)
+        public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var ends = dispatchedProgramPointGraphs.Select(c => c.End.OutSet).ToArray();
+            var ends = dispatchedExtensions.Select(c => c.Graph.End.OutSet).ToArray();
             callerOutput.MergeWithCallLevel(ends);
         }
 

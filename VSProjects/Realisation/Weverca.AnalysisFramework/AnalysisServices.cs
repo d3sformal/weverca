@@ -75,8 +75,13 @@ namespace Weverca.AnalysisFramework
         {
             foreach (var point in ppGraph.Points)
             {
-                point.SetServices(this);
+                SetServices(point);
             }
+        }
+
+        internal void SetServices(ProgramPointBase point)
+        {
+            point.SetServices(this);
         }
 
         /// <summary>

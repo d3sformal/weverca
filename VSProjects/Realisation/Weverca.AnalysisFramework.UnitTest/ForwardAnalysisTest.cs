@@ -461,7 +461,7 @@ function g($arg2) {
 if ($unknown) $func = 'f';
 else $func = 'g';
 $result = $func(1); // in CallPoint, both f() and g() can be called
-".AssertVariable("result").HasUndefinedValue().HasValues(1)
+".AssertVariable("result").HasUndefinedValue().HasUndefinedOrValues(1)
 ;
         readonly static TestCase ParametersByAliasGlobal_CASE = @"
 function f($arg) {

@@ -110,7 +110,7 @@ namespace Weverca.GraphWalking
 
                 if (point.Extension.IsConnected)
                 {
-                    walkExtension(point.Extension,pointsToVisit,visitedPoints);
+                    walkExtension(point.Extension, pointsToVisit, visitedPoints);
                 }
                 else
                 {
@@ -129,13 +129,13 @@ namespace Weverca.GraphWalking
         {
             foreach (var branch in extension.Branches)
             {
-                switch (extension.Type)
+                switch (branch.Type)
                 {
                     case ExtensionType.ParallelCall:
-                        walkCall(branch);
+                        walkCall(branch.Graph);
                         break;
                     case ExtensionType.ParallelInclude:
-                        visitPoint(branch.Start, pointsToVisit, visitedPoints);
+                        visitPoint(branch.Graph.Start, pointsToVisit, visitedPoints);
                         break;
                     default:
                         throw new NotImplementedException("Walking of this extension type is not implemented yet");
@@ -143,7 +143,7 @@ namespace Weverca.GraphWalking
             }
         }
 
-        
+
 
         /// <summary>
         /// Enqueue point to pointsToVisit if it already hasn't been visited

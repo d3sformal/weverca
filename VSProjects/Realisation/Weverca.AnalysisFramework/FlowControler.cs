@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Flow resolver from analysis services
         /// </summary>
-        internal FlowResolverBase FlowResolver { get { return Services.FlowResolver; } }        
+        internal FlowResolverBase FlowResolver { get { return Services.FlowResolver; } }
 
         /// <summary>
         /// Currently analyzed program point
@@ -65,17 +65,17 @@ namespace Weverca.AnalysisFramework
         ///     Default called object is set by framework (you can override it)
         /// </summary>
         public MemoryEntry CalledObject { get; set; }
-                
-        
+
+
         /// <summary>
         /// Create flow controller for given input and output set
         /// </summary>
-        internal FlowController(AnalysisServices services,ProgramPointBase programPoint)
+        internal FlowController(AnalysisServices services, ProgramPointBase programPoint)
         {
             Services = services;
             ProgramPoint = programPoint;
         }
-              
+
         /// <summary>
         /// Set evaluation log for use by resolvers
         /// </summary>
@@ -91,14 +91,9 @@ namespace Weverca.AnalysisFramework
             ProgramPoint.Extension.Remove(branchKey);
         }
 
-        public void AddExtension(object branchKey, ProgramPointGraph ppGraph)
+        public void AddExtension(object branchKey, ProgramPointGraph ppGraph, ExtensionType type)
         {
-            ProgramPoint.Extension.Add(branchKey, ppGraph);
-        }
-
-        public void SetExtensionType(ExtensionType extensionType)
-        {
-            ProgramPoint.Extension.Type = extensionType;
+            ProgramPoint.Extension.Add(branchKey, ppGraph, type);
         }
     }
 }

@@ -35,7 +35,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             {
                 return LValue;
             }
-            protected set{throw new NotSupportedException("You have to override Value to be able set it");}
+            protected set { throw new NotSupportedException("You have to override Value to be able set it"); }
         }
 
         public override string ToString()
@@ -43,7 +43,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             return LValue.ToString();
         }
     }
-    
+
     public abstract class RCallPoint : ValuePoint
     {
         /// <summary>

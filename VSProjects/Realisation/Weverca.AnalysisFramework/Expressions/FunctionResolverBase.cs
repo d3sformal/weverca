@@ -3,6 +3,7 @@
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.AnalysisFramework.Expressions
@@ -62,17 +63,16 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Resolves return value of given program point graphs
         /// </summary>
-        /// <param name="programPointGraphs">Program point graphs from call dispatch</param>
+        /// <param name="dispatchedExtensions">Program point graphs from call dispatch</param>
         /// <returns>Resolved return value</returns>
-        public abstract MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> programPointGraphs);
+        public abstract MemoryEntry ResolveReturnValue(IEnumerable<ExtensionPoint> dispatchedExtensions);
 
         /// <summary>
         /// Initialization of call of function with given declaration and arguments
         /// </summary>
-        /// <param name="callInput">Input of initialized call</param>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
-        public abstract void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph,
+        public abstract void InitializeCall(ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments);
 
         /// <summary>

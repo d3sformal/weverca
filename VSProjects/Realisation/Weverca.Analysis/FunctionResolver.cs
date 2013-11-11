@@ -92,7 +92,7 @@ namespace Weverca.Analysis
         /// <param name="callInput">Input of initialized call</param>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
-        public override void InitializeCall(FlowOutputSet callInput, ProgramPointGraph extensionGraph,
+        public override void InitializeCall(ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments)
         {
             var declaration = extensionGraph.SourceObject;
@@ -102,27 +102,27 @@ namespace Weverca.Analysis
             if (hasNamedSignature)
             {
                 // We have names for passed arguments
-                setNamedArguments(callInput, arguments, signature.Value);
+                setNamedArguments(OutSet, arguments, signature.Value);
             }
             else
             {
                 // There are no names - use numbered arguments
-                setOrderedArguments(callInput, arguments);
+                setOrderedArguments(OutSet, arguments);
             }
 
             var functionDeclaration = declaration as FunctionDecl;
             if (functionDeclaration != null)
             {
-                callInput.GetLocalControlVariable(currentFunctionName).WriteMemory(callInput.Snapshot,
-                    new MemoryEntry(callInput.CreateFunction(functionDeclaration)));
+                OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
+                    new MemoryEntry(OutSet.CreateFunction(functionDeclaration)));
             }
             else
             {
                 var methodDeclaration = declaration as MethodDecl;
                 if (methodDeclaration != null)
                 {
-                    callInput.GetLocalControlVariable(currentFunctionName).WriteMemory(callInput.Snapshot,
-                        new MemoryEntry(callInput.CreateFunction(methodDeclaration)));
+                    OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
+                        new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
                 }
             }
         }
@@ -153,15 +153,15 @@ namespace Weverca.Analysis
         /// <summary>
         /// Resolve return value from all possible calls. It also applies user hints for flags removal
         /// </summary>
-        /// <param name="callGraphs">All calls on dispatch level, which return value is resolved</param>
+        /// <param name="dispatchedExtensions">All calls on dispatch level, which return value is resolved</param>
         /// <returns>Resolved return value</returns>
-        public override MemoryEntry ResolveReturnValue(IEnumerable<ProgramPointGraph> callGraphs)
+        public override MemoryEntry ResolveReturnValue(IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var calls = callGraphs.ToArray();
+            var calls = dispatchedExtensions.ToArray();
 
             if (calls.Length == 1)
             {
-                var outSet = calls[0].End.OutSet;
+                var outSet = calls[0].Graph.End.OutSet;
                 applyHints(outSet);
                 return outSet.GetLocalControlVariable(retrunVariable).ReadMemory(outSet.Snapshot);
             }
@@ -172,7 +172,7 @@ namespace Weverca.Analysis
                 var values = new HashSet<Value>();
                 foreach (var call in calls)
                 {
-                    var outSet = call.End.OutSet;
+                    var outSet = call.Graph.End.OutSet;
                     applyHints(outSet);
                     var returnValue = outSet.GetLocalControlVariable(retrunVariable).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
@@ -761,7 +761,7 @@ namespace Weverca.Analysis
             {
                 // Create graph for every function - NOTE: We can share pp graphs
                 var ppGraph = ProgramPointGraph.From(function);
-                Flow.AddExtension(function.DeclaringElement, ppGraph);
+                Flow.AddExtension(function.DeclaringElement, ppGraph, ExtensionType.ParallelCall);
             }
         }
 
@@ -893,7 +893,7 @@ namespace Weverca.Analysis
 
         private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
-            var callPoint = Flow.ProgramPoint as RCallPoint;
+            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -923,7 +923,7 @@ namespace Weverca.Analysis
             argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;
-            var callPoint = Flow.ProgramPoint as RCallPoint;
+            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
                 var argVar = argument(index);

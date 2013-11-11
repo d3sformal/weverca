@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -27,9 +28,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Is called after each invoked call - has to merge data from dispatched calls into callerOutput
         /// </summary>
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
-        /// <param name="dispatchedProgramPointGraphs">Program point graphs obtained during analysis</param>
-        /// <param name="dispatchType">Type of merged call</param>
-        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ProgramPointGraph> dispatchedProgramPointGraphs,ExtensionType dispatchType);
+        /// <param name="dispatchedExtensions">Program points connecting dispatched extensions</param>
+        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions);
 
         /// <summary>
         /// Reports about try block scope start
