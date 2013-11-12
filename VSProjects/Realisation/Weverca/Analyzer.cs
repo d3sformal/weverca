@@ -28,7 +28,7 @@ namespace Weverca
 
         internal static ProgramPointGraph Run(ControlFlowGraph.ControlFlowGraph entryMethod)
         {
-            var analysis = new ForwardAnalysis(entryMethod);
+            var analysis = new Weverca.Analysis.ForwardAnalysis(entryMethod, MemoryModels.MemoryModels.VirtualReferenceMM);
 
             analysis.Analyse();
 

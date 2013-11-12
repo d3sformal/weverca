@@ -11,6 +11,88 @@ using Weverca.Parsers;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
+    /// <summary>
+    /// Analyses used for a test case (enumeration class)
+    /// </summary>
+    internal abstract class Analyses
+    {
+        /// <summary>
+        /// Use simple analysis (Weverca.AnalysisFramework.UnitTest.SimpleAnalysis)
+        /// </summary>
+        internal static readonly Analyses SimpleAnalysis = new SimpleAnalysisCl();
+        /// <summary>
+        /// Use main weverca analysis (Weverca.Analysis.ForwardAnalysis)
+        /// </summary>
+        internal static readonly Analyses WevercaAnalysis = new WevercaAnalysisCl();
+
+        /// <summary>
+        /// Creates an instance of ForwardAnalysis corresponding to given enumeration item.
+        /// </summary>
+        /// <returns>an instance of ForwardAnalysis corresponding to given enumeration item</returns>
+        public abstract ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer);
+
+        private Analyses() {}
+
+        private class SimpleAnalysisCl : Analyses
+        {
+            public override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel , EnvironmentInitializer initializer)
+            {
+                return new SimpleAnalysis(entryMethodGraph, memoryModel, initializer);
+            }
+        }
+        private class WevercaAnalysisCl : Analyses
+        {
+            public override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            {
+                return new WevercaAnalysisTest(entryMethodGraph, memoryModel, initializer);
+            }
+        }
+
+
+    }
+
+    #region Weverca.Analysis test implementation
+    internal class WevercaAnalysisTest : Weverca.Analysis.ForwardAnalysis, TestAnalysisSettings
+    {
+        private readonly EnvironmentInitializer _envinronmentInitializer;
+
+        public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel , EnvironmentInitializer initializer)
+            : base(entryMethodGraph, memoryModel) 
+        {
+            _envinronmentInitializer = initializer;
+        }
+
+        public void SetInclude(String filename, string fileCode) 
+        {
+            throw new NotImplementedException();
+        }
+        public void SetFunctionShare(string functionName)
+        {
+            throw new NotImplementedException();
+        }
+        protected override Expressions.FunctionResolverBase createFunctionResolver()
+        {
+            return new WevercaFunctionResolverTest(_envinronmentInitializer);
+        }
+    }
+
+    internal class WevercaFunctionResolverTest : Weverca.Analysis.FunctionResolver 
+    {
+        private readonly EnvironmentInitializer _environmentInitializer;
+
+        public WevercaFunctionResolverTest(EnvironmentInitializer envinronmentInitializer)
+        {
+            _environmentInitializer = envinronmentInitializer;
+        }
+
+        public override void InitializeCall(ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
+        {
+            _environmentInitializer(OutSet);
+            base.InitializeCall(extensionGraph, arguments);
+        }
+    }
+    #endregion
+
     internal static class AnalysisTestUtils
     {
         /// <summary>
@@ -104,12 +186,9 @@ namespace Weverca.AnalysisFramework.UnitTest
             return list.ToArray();
         }
 
-        internal static FlowOutputSet GetEndPointOutSet(TestCase test)
+        internal static FlowOutputSet GetEndPointOutSet(TestCase test, ForwardAnalysisBase analysis)
         {
-            var cfg = AnalysisTestUtils.CreateCFG(test.PhpCode);
-            var analysis = new SimpleAnalysis(cfg, test.EnvironmentInitializer);
-
-            test.IncludeInitializer(analysis);
+            test.IncludeInitializer((TestAnalysisSettings) analysis);
 
             GLOBAL_ENVIRONMENT_INITIALIZER(analysis.EntryInput);
             test.EnvironmentInitializer(analysis.EntryInput);
@@ -120,9 +199,15 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void RunTestCase(TestCase testCase)
         {
-            var output = GetEndPointOutSet(testCase);
+            var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
+            var analyses = testCase.CreateAnalyses(cfg);
 
-            testCase.Assert(output);
+            foreach (var analysis in analyses)
+            {
+                var output = GetEndPointOutSet(testCase, analysis);
+
+                testCase.Assert(output);
+            }
         }
 
         internal static void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
@@ -227,6 +312,9 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
+        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM};
+        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis };
+
         internal TestCase(string phpCode, string variableName, string assertMessage, TestCase previousTest = null)
         {
             PhpCode = phpCode;
@@ -260,6 +348,30 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal TestCase ShareFunctionGraph(string sharedFunctionName)
         {
             _sharedFunctions.Add(sharedFunctionName);
+            return this;
+        }
+
+        /// <summary>
+        /// Set a memory model to be used in the test case.
+        /// </summary>
+        /// <param name="memoryModel">the memory model to be used in the test case</param>
+        /// <returns></returns>
+        internal TestCase MemoryModel(MemoryModels.MemoryModels memoryModel)
+        {
+            _memoryModels.Clear();
+            _memoryModels.Add(memoryModel);
+            return this;
+        }
+
+        /// <summary>
+        /// Set an analysis to be used in the test case.
+        /// </summary>
+        /// <param name="memoryModel">the analysis to be used in the test case</param>
+        /// <returns></returns>
+        internal TestCase Analysis(Analyses analysis)
+        {
+            _analyses.Clear();
+            _analyses.Add(analysis);
             return this;
         }
 
@@ -343,7 +455,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             foreach (var nonDeterministic in _nonDeterminiticVariables)
             {
-                outSet.Assign(new VariableName(nonDeterministic), new MemoryEntry(outSet.AnyValue));
+                outSet.GetVariable(new VariableIdentifier(nonDeterministic)).WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.AnyValue));
             }
 
             foreach (var initializer in _initializers)
@@ -357,7 +469,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        internal void IncludeInitializer(SimpleAnalysis analysis)
+        internal void IncludeInitializer(TestAnalysisSettings analysis)
         {
             foreach (var include in _includedFiles)
             {
@@ -373,6 +485,26 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 PreviousTest.IncludeInitializer(analysis);
             }
+        }
+
+        /// <summary>
+        /// Creates analyses used for the test case.
+        /// </summary>
+        /// <param name="cfg"></param>
+        /// <returns></returns>
+        internal List<ForwardAnalysisBase> CreateAnalyses(ControlFlowGraph.ControlFlowGraph cfg)
+        {
+            var analyses = new List<ForwardAnalysisBase>();
+
+            foreach (var analysis in _analyses)
+            {
+                foreach (var memoryModel in _memoryModels)
+                {
+                    analyses.Add(analysis.createAnalysis(cfg, memoryModel, EnvironmentInitializer));
+                }
+            }
+
+            return analyses;
         }
     }
 }

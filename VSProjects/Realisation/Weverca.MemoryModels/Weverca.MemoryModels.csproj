@@ -39,6 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MemoryModels.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\AssignCollector.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\CreateCollector.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\IIndexCollector.cs" />

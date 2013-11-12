@@ -19,7 +19,26 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// <param name="outSet">Initialized output set</param>
     delegate void EnvironmentInitializer(FlowOutputSet outSet);
 
-    class SimpleAnalysis : ForwardAnalysisBase
+    /// <summary>
+    /// Contains methods that makes it possible to setup an analysis for testing
+    /// </summary>
+    internal interface TestAnalysisSettings
+    {
+        /// <summary>
+        /// Set code included for given file name
+        /// </summary>
+        /// <param name="fileName">>Name of included file</param>
+        /// <param name="fileCode">PHP code of included file</param>
+        void SetInclude(string fileName, string fileCode);
+        /// <summary>
+        /// Set code included for given file name
+        /// </summary>
+        /// <param name="fileName">Name of included file</param>
+        /// <param name="fileCode">PHP code of included file</param>
+        void SetFunctionShare(string functionName);
+    }
+
+    class SimpleAnalysis : ForwardAnalysisBase, TestAnalysisSettings
     {
         private readonly EnvironmentInitializer _initializer;
 
@@ -27,8 +46,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private readonly SimpleFunctionResolver _functionResolver;
 
-        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, EnvironmentInitializer initializer)
-            : base(entryCFG)
+        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, Weverca.MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            : base(entryCFG, memoryModel.CreateSnapshot)
         {
             _initializer = initializer;
             _flowResolver = new SimpleFlowResolver();
@@ -52,11 +71,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             return _functionResolver;
         }
 
-        protected override SnapshotBase createSnapshot()
-        {
-            return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
-        }
-
         protected override MemoryAssistantBase createAssistant()
         {
             return new SimpleAssistant();
@@ -66,12 +80,12 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #region Analysis settings routines
 
-        internal void SetInclude(string fileName, string fileCode)
+        public void SetInclude(string fileName, string fileCode)
         {
             _flowResolver.SetInclude(fileName, fileCode);
         }
 
-        internal void SetFunctionShare(string functionName)
+        public void SetFunctionShare(string functionName)
         {
             _functionResolver.SetFunctionShare(functionName);
         }

@@ -33,7 +33,7 @@ namespace Weverca.Analysis.UnitTest
             parser.Parse();
             var cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
 
-            var analysis = new ForwardAnalysis(cfg);
+            var analysis = new Weverca.Analysis.ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM);
             analysis.Analyse();
 
             return analysis.ProgramPointGraph.End.OutSet;

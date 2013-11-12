@@ -185,6 +185,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
+        protected override void extend(ISnapshotReadonly[] inputs)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region OBSOLETE
@@ -209,18 +219,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         //OBSOLETE
         protected override void assign(VariableName targetVar, MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override void extend(ISnapshotReadonly[] inputs)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -310,8 +308,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         #endregion
-
-
 
 
         internal bool TryGetArray(MemoryIndex parentIndex, out AssociativeArray arrayValue)

@@ -11,8 +11,8 @@ namespace Weverca.Analysis
 {
     public class ForwardAnalysis : ForwardAnalysisBase
     {
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph)
-            : base(entryMethodGraph)
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {
             GlobalsInitializer();
         }
@@ -32,11 +32,6 @@ namespace Weverca.Analysis
         protected override FunctionResolverBase createFunctionResolver()
         {
             return new FunctionResolver();
-        }
-
-        protected override SnapshotBase createSnapshot()
-        {
-            return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
         }
 
         protected override MemoryAssistantBase createAssistant()

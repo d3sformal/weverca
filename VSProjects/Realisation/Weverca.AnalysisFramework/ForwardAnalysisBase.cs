@@ -13,8 +13,20 @@ namespace Weverca.AnalysisFramework
     /// </summary>
     public abstract class ForwardAnalysisBase
     {
+        /// <summary>
+        /// Create snapshot used during analysis
+        /// NOTE:
+        ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
+        /// </summary>
+        /// <returns>Created snapshot</returns>
+        public delegate SnapshotBase CreateSnapshot();
+
         #region Private members
 
+        /// <summary>
+        /// Create snapshot used during analysis
+        /// </summary>
+        private readonly CreateSnapshot _createSnapshotDelegate;
 
         /// <summary>
         /// Available services provided by analysis
@@ -91,14 +103,6 @@ namespace Weverca.AnalysisFramework
         protected abstract FunctionResolverBase createFunctionResolver();
 
         /// <summary>
-        /// Create snapshot used during analysis
-        /// NOTE:
-        ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
-        /// </summary>
-        /// <returns>Created snapshot</returns>
-        protected abstract SnapshotBase createSnapshot();
-
-        /// <summary>
         /// Create memory assistant, that will be used for initializing created snapshots
         /// NOTE:
         ///     * Is called whenever new assistant is needed (every time new assistant has to be created)
@@ -113,8 +117,10 @@ namespace Weverca.AnalysisFramework
         /// Create forward analysis object for given entry method graph.
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph)
+        /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
+        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate)
         {
+            _createSnapshotDelegate = createSnapshotDelegate;
             EntryInput = createEmptySet();
             EntryInput.StartTransaction();
             EntryCFG = entryMethodGraph;
@@ -176,6 +182,17 @@ namespace Weverca.AnalysisFramework
         #endregion
 
         #region Private utilities
+
+        /// <summary>
+        /// Create snapshot used during analysis
+        /// NOTE:
+        ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
+        /// </summary>
+        /// <returns>Created snapshot</returns>
+        private SnapshotBase createSnapshot()
+        {
+            return _createSnapshotDelegate();
+        }
 
         /// <summary>
         /// Initialize all resolvers and services
