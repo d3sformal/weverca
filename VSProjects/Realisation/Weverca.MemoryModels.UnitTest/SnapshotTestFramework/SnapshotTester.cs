@@ -91,5 +91,10 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         {
             AddOperation(new WriteFromMemoryOperation<T>(targetEntry, sourceEntry));
         }
+
+        internal void Merge(params T[] snapshots)
+        {
+            AddOperation(new MergeOperation<T>(snapshots));
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         private Snapshot snapshot;
 
-        private LinkedList<MergeOperation> operationStack = new LinkedList<MergeOperation>();
+        private LinkedList<MergeWithinSnapshotOperation> operationStack = new LinkedList<MergeWithinSnapshotOperation>();
 
         public MergeWithinSnapshotWorker(Snapshot snapshot)
         {
@@ -39,7 +39,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void MergeIndexes(MemoryIndex targetIndex, MemoryIndex sourceIndex)
         {
-            MergeOperation operation = new MergeOperation(targetIndex);
+            MergeWithinSnapshotOperation operation = new MergeWithinSnapshotOperation(targetIndex);
             operation.Add(targetIndex);
             operation.Add(sourceIndex);
             addOperation(operation);
@@ -53,13 +53,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             while (operationStack.Count > 0)
             {
-                MergeOperation operation = getOperation();
+                MergeWithinSnapshotOperation operation = getOperation();
 
                 processMergeOperation(operation);
             }
         }
 
-        private void processMergeOperation(MergeOperation operation)
+        private void processMergeOperation(MergeWithinSnapshotOperation operation)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
 
@@ -145,7 +145,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             ArrayDescriptor newDescriptor = snapshot.GetDescriptor(arrayValue);
             
-            MergeOperation unknownMerge = new MergeOperation(newDescriptor.UnknownIndex);
+            MergeWithinSnapshotOperation unknownMerge = new MergeWithinSnapshotOperation(newDescriptor.UnknownIndex);
             unknownMerge.SetUndefined();
             addOperation(unknownMerge);
 
@@ -163,7 +163,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (string indexName in indexNames)
             {
-                MergeOperation operation = new MergeOperation();
+                MergeWithinSnapshotOperation operation = new MergeWithinSnapshotOperation();
 
                 if (includeUndefined)
                 {
@@ -196,75 +196,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return arrayValue;
         }
 
-        private void addOperation(MergeOperation operation)
+        private void addOperation(MergeWithinSnapshotOperation operation)
         {
             operationStack.AddLast(operation);
         }
 
-        private MergeOperation getOperation()
+        private MergeWithinSnapshotOperation getOperation()
         {
-            MergeOperation operation = operationStack.First.Value;
+            MergeWithinSnapshotOperation operation = operationStack.First.Value;
             operationStack.RemoveFirst();
 
             return operation;
-        }
-    }
-
-    class MergeOperation
-    {
-        public readonly HashSet<MemoryIndex> Indexes = new HashSet<MemoryIndex>();
-
-        public bool IsUndefined { get; private set; }
-        public MemoryIndex TargetIndex { get; private set; }
-
-        public MergeOperation(MemoryIndex targetIndex)
-        {
-            IsUndefined = false;
-            TargetIndex = targetIndex;
-        }
-
-        public MergeOperation()
-        {
-            IsUndefined = false;
-        }
-
-        internal void Add(MemoryIndex memoryIndex)
-        {
-            Indexes.Add(memoryIndex);
-        }
-
-        internal void SetUndefined()
-        {
-            IsUndefined = true;
-        }
-
-        internal void SetTargetIndex(MemoryIndex targetIndex)
-        {
-            TargetIndex = targetIndex;
-        }
-    }
-
-    class CollectComposedValuesVisitor : AbstractValueVisitor
-    {
-        public readonly HashSet<AssociativeArray> Arrays = new HashSet<AssociativeArray>();
-        public readonly HashSet<ObjectValue> Objects = new HashSet<ObjectValue>();
-        public readonly HashSet<Value> Values = new HashSet<Value>();
-
-        public Snapshot Snapshot { get; set; }
-
-        public override void VisitValue(Value value)
-        {
-            Values.Add(value);
-        }
-
-        public override void VisitObjectValue(ObjectValue value)
-        {
-            Objects.Add(value);
-        }
-
-        public override void VisitAssociativeArray(AssociativeArray value)
-        {
-            Arrays.Add(value);
         }
     }
 }

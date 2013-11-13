@@ -67,6 +67,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ArrayValue = arrayDescriptorBuilder.ArrayValue;
         }
 
+        public ArrayDescriptor()
+        {
+            Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
+            ArrayValue = null;
+            ParentVariable = null;
+        }
+
         /// <summary>
         /// Creates new builder to modify this descriptor 
         /// </summary>
@@ -145,6 +152,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal ArrayDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
         {
             ParentVariable = parentIndex;
+            return this;
+        }
+
+        internal ArrayDescriptorBuilder SetArrayValue(AssociativeArray arrayValue)
+        {
+            ArrayValue = arrayValue;
             return this;
         }
 

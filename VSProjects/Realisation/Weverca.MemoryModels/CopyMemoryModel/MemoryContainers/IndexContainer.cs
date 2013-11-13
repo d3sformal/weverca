@@ -30,6 +30,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Indexes = new Dictionary<string, MemoryIndex>();
         }
 
+        public IndexContainer(IndexContainer indexContainer)
+        {
+            UnknownIndex = indexContainer.UnknownIndex;
+            Indexes = new Dictionary<string, MemoryIndex>(indexContainer.Indexes);
+        }
+
         IReadOnlyDictionary<string, MemoryIndex> ReadonlyIndexContainer.Indexes
         {
             get { return Indexes; }

@@ -23,6 +23,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             values = new HashSet<ObjectValue>(builder.Values);
         }
 
+        public ObjectValueContainer(IEnumerable<ObjectValue> values)
+        {
+            this.values = new HashSet<ObjectValue>(values);
+        }
+
         public bool Contains(ObjectValue value)
         {
             return values.Contains(value);

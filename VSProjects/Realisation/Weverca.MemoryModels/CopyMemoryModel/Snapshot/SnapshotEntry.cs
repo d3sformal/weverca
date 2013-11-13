@@ -78,7 +78,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value)
         {
-            Snapshot snapshot = toSnapshot(context);
+            Snapshot snapshot = ToSnapshot(context);
 
             TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
             MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
@@ -104,7 +104,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override bool isDefined(SnapshotBase context)
         {
-            Snapshot snapshot = toSnapshot(context);
+            Snapshot snapshot = ToSnapshot(context);
 
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
@@ -119,7 +119,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            Snapshot snapshot = toSnapshot(context);
+            Snapshot snapshot = ToSnapshot(context);
 
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
@@ -137,7 +137,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
-        private static Snapshot toSnapshot(SnapshotBase context)
+        public static Snapshot ToSnapshot(ISnapshotReadonly context)
         {
             Snapshot snapshot = context as Snapshot;
 

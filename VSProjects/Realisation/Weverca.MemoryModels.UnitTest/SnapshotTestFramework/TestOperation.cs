@@ -89,4 +89,37 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
             logger.WriteLine("------------------------------------------------");
         }
     }
+
+    public class MergeOperation<T>
+        : TestOperation<T>
+        where T : SnapshotBase
+    {
+        private T[] snapshots;
+
+        public MergeOperation(T[] snapshots)
+        {
+            this.snapshots = snapshots;
+        }
+
+
+        public void DoOperation(T snapshot, TestOperationLogger logger)
+        {
+            snapshot.Extend(snapshots);
+
+            int x = 1;
+            foreach (T snap in snapshots)
+            {
+                logger.WriteLine("MERGE: {0}", x++);
+                logger.WriteLine("------------------------------------------------\n");
+                logger.WriteLine(snap.ToString());
+                logger.WriteLine("------------------------------------------------");
+            }
+
+            logger.WriteLine("RESULT:");
+            logger.WriteLine("------------------------------------------------\n");
+            logger.WriteLine(snapshot.ToString());
+            logger.WriteLine("------------------------------------------------");
+
+        }
+    }
 }
