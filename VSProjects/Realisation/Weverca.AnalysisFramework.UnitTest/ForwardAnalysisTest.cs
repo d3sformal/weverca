@@ -21,6 +21,12 @@ if($unknown){
 }
 ".AssertVariable("str").HasValues("f1a", "f1b");
 
+        readonly static TestCase BranchMergeWithUndefined_CASE = @"
+if($unknown){
+    $str='f1a';
+}
+".AssertVariable("str").HasUndefinedValue().HasUndefinedOrValues("f1a");
+
         readonly static TestCase UnaryNegation_CASE = @"
 $result=42;
 $result=-$result;
@@ -175,6 +181,18 @@ if($unknown){
 $ArrayValue=$arr[0];
 ".AssertVariable("ArrayValue").HasValues("ValueA", "ValueB");
 
+        readonly static TestCase ArrayFieldUpdateMultipleArrays_CASE = @"
+if($unknown){
+    $arr[0]='ValueA';
+}else{
+    $arr[0]='ValueB';
+}
+
+$arr[0] = 'NewValue';
+
+$ArrayValue=$arr[0];
+".AssertVariable("ArrayValue").HasValues("NewValue");
+
 
         readonly static TestCase ObjectMethodCallMerge_CASE = @"
 class Obj{
@@ -194,6 +212,166 @@ if($unknown){
 
 $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
+
+        readonly static TestCase ObjectMultipleObjectsInVariableRead_CASE = @"
+class Cl {
+    var $field;
+}
+
+if ($unknown) {
+    $obj = new Cl();
+    $obj->field = 'value';
+} else {
+    $obj = new Cl();
+    $obj->field = 'value';
+}
+$FieldValue = $obj->field;
+".AssertVariable("FieldValue").HasValues("value");
+
+        readonly static TestCase ObjectMultipleObjectsInVariableWrite_CASE = @"
+class Cl {
+    var $field;
+}
+
+if ($unknown) {
+    $obj = new Cl();
+    $obj->field = 'value';
+} else {
+    $obj = new Cl();
+    $obj->field = 'value';
+}
+// $obj->field can be strongly updated because the object stored in a variable $obj is not stored in anay other variable
+// however, in general case the update must be weak (see ObjectMultipleObjectsInVariableMultipleVariablesWeakWrite_CASE)
+$obj->field = 'newValue';
+$FieldValue = $obj->field;
+"
+            .AssertVariable("FieldValue").HasValues("value", "newValue")
+            // more precise implementation would perform strong update:
+            //.AssertVariable("FieldValue").HasValues("newValue")
+            ;
+
+        readonly static TestCase ObjectMultipleObjectsInVariableMultipleVariablesWeakWrite_CASE = @"
+class Cl {
+    var $field;
+}
+
+$a = new Cl();
+$a->field = 'value';
+$b = new Cl();
+$b->field = 'value';
+if ($unknown) {
+    $obj = $a;
+} else {
+    $obj = $b;
+}
+// $a->field and $b->field must be weakly updated
+$obj->field = 'newValue';
+$FieldValueObj = $obj->field;
+$FieldValueA = $a->field;
+$FieldValueB = $b->field;
+// $a->field must be strongly updated, $obj->field should be weakly updated
+$a->field = 'newValue2';
+$FieldValueObj2 = $obj->field;
+$FieldValueA2 = $a->field;
+$FieldValueB2 = $b->field;
+"
+            .AssertVariable("FieldValueObj").HasValues("value", "newValue")
+            .AssertVariable("FieldValueA").HasValues("value", "newValue")
+            .AssertVariable("FieldValueB").HasValues("value", "newValue")
+            .AssertVariable("FieldValueObj2").HasValues("value", "newValue", "newValue2")
+            .AssertVariable("FieldValueA2").HasValues("newValue2")
+            .AssertVariable("FieldValueB2").HasValues("value", "newValue")
+            ;
+
+        readonly static TestCase ObjectMultipleObjectsInVariableDifferentClassRead_CASE = @"
+class ClA {
+    var $field;
+}
+class ClB {
+    var $field;
+}
+
+if ($unknown) {
+    $obj = new ClA();
+    $obj->field = 'value1';
+} else {
+    $obj = new ClB();
+    $obj->field = 'value2';
+}
+$FieldValue = $obj->field;
+".AssertVariable("FieldValue").HasValues("value1", "value2");
+
+        readonly static TestCase ObjectMethodObjectSensitivity_CASE = @"
+class Cl {
+    var $field;
+    function f($arg) {$this->a = $arg;}
+}
+if ($unknown) {
+    $obj = new Cl();
+    $obj->field = 'originalValue';
+}
+else {
+    $obj = new Cl();
+    $obj->field = 'originalValue';
+}
+// it should call Cl::f() two times - each time for single instance of the class Cl being as $this. Both calls strongly update the value of the field to 'newValue'
+$obj->f('newValue');
+$FieldValue = $obj->field;
+".AssertVariable("FieldValue").HasValues("newValue");
+
+        readonly static TestCase ObjectMethodObjectSensitivityMultipleVariables_CASE = @"
+class Cl {
+    var $field;
+    function f($arg) {$this->a = $arg;}
+}
+$a = newCl();
+$a->field = 'valueA';
+$b = newCl();
+$b->field = 'valueB';
+if ($unknown) {
+    $obj = $a;
+}
+else {
+    $obj = $b;
+}
+// it should call Cl::f() two times - each time for single instance of the class Cl being as $this. Both calls strongly update the value of the field to 'newValue'
+$obj->f('newValue');
+$FieldValueObj = $obj->field;
+$FieldValueA = $a->field;
+$FieldValueB = $b->field;
+$a->f('newValue2');
+$FieldValueObj2 = $obj->field;
+$FieldValueA2 = $a->field;
+$FieldValueB2 = $b->field;
+"
+            .AssertVariable("FieldValueObj").HasValues("newValue")
+            .AssertVariable("FieldValueA").HasValues("newValue")
+            .AssertVariable("FieldValueB").HasValues("newValue")
+            .AssertVariable("FieldValueObj2").HasValues("newValue", "newValue2")
+            .AssertVariable("FieldValueA2").HasValues("newValue2")
+            .AssertVariable("FieldValueB2").HasValues("newValue");
+
+        readonly static TestCase ObjectMethodObjectSensitivityDifferentClass_CASE = @"
+class ClA {
+    var $field = 'valueFromClA';
+    function f($arg) {$this->a = $arg;}
+}
+class ClB {
+    var $field = 'valueFromClA';
+    function f($arg) {$this->a = $arg;}
+}
+if ($unknown) {
+    $obj = new ClA();
+    $obj->$field = 'originalValueA';
+}
+else {
+    $obj = new ClB();
+    $obj->$field = 'originalValueB';
+}
+// it should call ClA::f() with $this being the instance of ClA() and ClB::f() with $this being the instance of ClB() => it should perform a strong update
+$obj->f('newValue');
+$FieldValue = $obj->field;
+".AssertVariable("FieldValue").HasValues("newValue");
 
 
         readonly static TestCase DynamicIncludeMerge_CASE = @"
@@ -298,12 +476,44 @@ setLocal();
 
 ".AssertVariable("a").HasValues("ValueA");
 
-
         readonly static TestCase SharedFunction_CASE = @"
 function sharedFn($arg){
     return $arg;
 }
 
+sharedFn(1);
+$resultA=sharedFn(2);
+
+"
+ .AssertVariable("resultA").HasValues(1, 2)
+ .ShareFunctionGraph("sharedFn")
+ ;
+
+        // TODO: this test fails because $resultA=sharedFn('ValueA'); and $resultB=sharedFn('ValueA'); performs weak update of $resultA and $resultB
+        readonly static TestCase SharedFunctionStrongUpdate_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+$resultA = 'InitA';
+$resultB = 'InitB';
+$resultA=sharedFn('ValueA');
+$resultB=sharedFn('ValueB');
+
+"
+ // TODO: .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB") does not fail but it is incorrect (strong update of $resultA should be performed)
+ .AssertVariable("resultA").HasValues("ValueA", "ValueB")
+ .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+ .ShareFunctionGraph("sharedFn")
+ ;
+
+        readonly static TestCase SharedFunctionWithBranching_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+$resultA = 'InitA';
+$resultB = 'InitB';
 if($unknown){
     $resultA=sharedFn('ValueA');
 }else{
@@ -311,10 +521,84 @@ if($unknown){
 }
 
 "
-         .AssertVariable("resultA").HasValues("ValueA", "ValueB")
-         .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+         .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+         .AssertVariable("resultB").HasValues("InitB", "ValueA", "ValueB")
          .ShareFunctionGraph("sharedFn")
          ;
+
+        readonly static TestCase SharedFunctionGlobalVariable_CASE = @"
+function sharedFn(){
+    global $g;
+    return $g;
+}
+
+$g = 1;
+sharedFn();
+$g = 2;
+$result = sharedFn();
+
+"
+ .AssertVariable("result").HasValues(1, 2)
+ .ShareFunctionGraph("sharedFn")
+ ;
+        // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
+        readonly static TestCase SharedFunctionAliasing_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
+}
+
+sharedFn(&$a);
+sharedFn(&$b);
+"
+.AssertVariable("a").HasValues("fromSharedFunc")
+.AssertVariable("b").HasValues("fromSharedFunc")
+.ShareFunctionGraph("sharedFn")
+ ;
+        // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
+        readonly static TestCase SharedFunctionAliasing2_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
+}
+
+$a = 'originalA';
+$b = 'originalB';
+sharedFn(&$a);
+sharedFn(&$b);
+"
+.AssertVariable("a").HasValues("fromSharedFunc")
+.AssertVariable("b").HasValues("fromSharedFunc")
+.ShareFunctionGraph("sharedFn")
+ ;
+
+        // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
+        readonly static TestCase SharedFunctionAliasingTwoArguments_CASE = @"
+function sharedFn($arg, $arg2){
+    $arg = $arg2;
+}
+
+sharedFn(&$a, 'fromCallSite1');
+sharedFn(&$b, 'fromCallSite2');
+"
+.AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("b").HasValues("fromCallSite1", "fromCallSite2")
+.ShareFunctionGraph("sharedFn")
+ ;
+
+        // TODO: fails for the same reason as BranchMergeWithUndefined_CASE
+        readonly static TestCase SharedFunctionAliasingMayTwoArguments_CASE = @"
+function sharedFn($arg, $arg2){
+    $arg = $arg2;
+}
+
+if ($unknown) $c = &$a;
+sharedFn(&$a, 'fromCallSite1');
+sharedFn(&$b, 'fromCallSite2');
+"
+.AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("b").HasValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("c").HasUndefinedValue().HasUndefinedOrValues("fromCallSite1", "fromCallSite2")
+.ShareFunctionGraph("sharedFn")
+ ;
 
         readonly static TestCase WriteArgument_CASE = @"
 $argument=""Value"";
@@ -499,6 +783,11 @@ $result = local_wrap();
             AnalysisTestUtils.RunTestCase(BranchMerge_CASE);
         }
 
+        [TestMethod]
+        public void BranchMergeWithUndefined()
+        {
+            AnalysisTestUtils.RunTestCase(BranchMergeWithUndefined_CASE);
+        }
 
         [TestMethod]
         public void UnaryNegation()
@@ -604,9 +893,57 @@ $result = local_wrap();
         }
 
         [TestMethod]
+        public void ArrayFieldUpdateMultipleArrays()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayFieldUpdateMultipleArrays_CASE);
+        }
+
+        [TestMethod]
         public void ObjectMethodCallMerge()
         {
             AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMultipleObjectsInVariableRead()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMultipleObjectsInVariableRead_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMultipleObjectsInVariableWrite()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMultipleObjectsInVariableWrite_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMultipleObjectsInVariableMultipleVariablesWeakWrite()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMultipleObjectsInVariableMultipleVariablesWeakWrite_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMultipleObjectsInVariableDifferentClassRead()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMultipleObjectsInVariableDifferentClassRead_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMethodObjectSensitivity()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMethodObjectSensitivity_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMethodObjectSensitivityMultipleVariables()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMethodObjectSensitivityMultipleVariables_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMethodObjectSensitivityDifferentClass()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMethodObjectSensitivityDifferentClass_CASE);
         }
 
         [TestMethod]
@@ -670,9 +1007,51 @@ $result = local_wrap();
         }
 
         [TestMethod]
+        public void SharedFunctionWithBranching()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionWithBranching_CASE);
+        }
+
+        [TestMethod]
         public void SharedFunction()
         {
             AnalysisTestUtils.RunTestCase(SharedFunction_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionStrongUpdate()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdate_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionGlobalVariable()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionGlobalVariable_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasing()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasing_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasing2()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasing2_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasingTwoArguments()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasingTwoArguments_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasingMayTwoArguments()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasingMayTwoArguments_CASE);
         }
 
         [TestMethod]

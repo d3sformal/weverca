@@ -523,9 +523,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
             else
             {
-                var thisObj = thisObject.GetSingle<ObjectValue>();
+                var functions = new List<FunctionValue>();
+                foreach (var thisObj in thisObject.PossibleValues)
+                {
+                    functions.AddRange(Flow.OutSet.ResolveMethod((ObjectValue)thisObj, methodName));
+                }
 
-                var functions = Flow.OutSet.ResolveMethod(thisObj, methodName);
                 foreach (var function in functions)
                 {
                     result[function.DeclaringElement] = function;
