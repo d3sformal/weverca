@@ -37,6 +37,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public IndexContainer ContollVariables { get; private set; }
 
 
+        public IEnumerable<MemoryIndex> MemoryIndexes { get { return memoryIndexes; } }
 
 
         public Snapshot()
@@ -124,6 +125,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         #endregion
 
         #region Functions and Calls
+
+        protected override void extend(ISnapshotReadonly[] inputs)
+        {
+            if (inputs.Length == 1)
+            {
+                extendSnapshot(inputs[0]);
+            }
+            else if (inputs.Length > 1)
+            {
+                mergeSnapshots(inputs);
+            }
+        }
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
@@ -799,5 +812,70 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             //memoryAliases.Remove(temporaryIndex);
             //memoryInfos.Remove(temporaryIndex);
         }
+
+
+
+
+
+
+
+
+        private void mergeSnapshots(ISnapshotReadonly[] inputs)
+        {
+            List<Snapshot> snapshots = new List<Snapshot>(inputs.Length);
+            foreach (ISnapshotReadonly input in inputs)
+            {
+                snapshots.Add(SnapshotEntry.ToSnapshot(input));
+            }
+
+            clearDataStructure();
+
+            MergeWorker worker = new MergeWorker(this, snapshots);
+            worker.Merge();
+        }
+
+        private void clearDataStructure()
+        {
+            memoryIndexes = new HashSet<MemoryIndex>();
+            arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
+            objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
+
+            memoryValueInfos = new Dictionary<Value, MemoryInfo>();
+
+            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
+            memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>();
+            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
+
+            indexArrays = new Dictionary<MemoryIndex, AssociativeArray>();
+            indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>();
+
+            temporary = new HashSet<TemporaryIndex>();
+
+            Variables = null;
+        }
+
+        private void extendSnapshot(ISnapshotReadonly input)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+
+            memoryIndexes = new HashSet<MemoryIndex>(snapshot.memoryIndexes);
+            arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(snapshot.arrayDescriptors);
+            objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>(snapshot.objectDescriptors);
+
+            memoryValueInfos = new Dictionary<Value, MemoryInfo>(snapshot.memoryValueInfos);
+
+            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>(snapshot.memoryEntries);
+            memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>(snapshot.memoryAliases);
+            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(snapshot.memoryInfos);
+
+            indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(snapshot.indexArrays);
+            indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(snapshot.indexObjects);
+
+            temporary = new HashSet<TemporaryIndex>(snapshot.temporary);
+            
+            Variables = new IndexContainer(snapshot.Variables);
+            ContollVariables = new IndexContainer(snapshot.ContollVariables);
+        }
+
     }
 }
