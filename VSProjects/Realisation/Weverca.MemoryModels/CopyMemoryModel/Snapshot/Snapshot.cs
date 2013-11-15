@@ -32,9 +32,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
 
 
-        HashSet<TemporaryIndex> temporary = new HashSet<TemporaryIndex>();
+        internal HashSet<TemporaryIndex> temporary = new HashSet<TemporaryIndex>();
         public IndexContainer Variables { get; private set; }
         public IndexContainer ContollVariables { get; private set; }
+
+        internal IEnumerable<KeyValuePair<ObjectValue, ObjectDescriptor>> Objects { get { return objectDescriptors; } }
+        internal IEnumerable<TemporaryIndex> Temporary { get { return temporary; } }
 
 
         public IEnumerable<MemoryIndex> MemoryIndexes { get { return memoryIndexes; } }
@@ -198,10 +201,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
-        protected override void extend(ISnapshotReadonly[] inputs)
-        {
-            throw new NotImplementedException();
-        }
+
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
@@ -259,7 +259,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             throw new NotImplementedException();
         }
-        
+
         //OBSOLETE
         protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
         {
@@ -357,7 +357,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal MemoryIndex CreateVariable(string variableName)
         {
             MemoryIndex variableIndex = VariableIndex.Create(variableName);
-            
+
             memoryIndexes.Add(variableIndex);
             Variables.Indexes.Add(variableName, variableIndex);
 
@@ -421,7 +421,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal MemoryIndex CreateField(string fieldName, ObjectDescriptor descriptor, bool isMust, bool copyFromUnknown)
         {
-            if (descriptor.Indexes.ContainsKey(fieldName)) 
+            if (descriptor.Indexes.ContainsKey(fieldName))
             {
                 throw new Exception("Field " + fieldName + " is already defined");
             }
@@ -806,8 +806,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             DestroyMemory(index);
 
             memoryIndexes.Remove(index);
-            memoryEntries.Remove(index);            
-            
+            memoryEntries.Remove(index);
+
             // TODO - remove temporary from alias structure
             //memoryAliases.Remove(temporaryIndex);
             //memoryInfos.Remove(temporaryIndex);
@@ -828,30 +828,25 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 snapshots.Add(SnapshotEntry.ToSnapshot(input));
             }
 
-            clearDataStructure();
-
             MergeWorker worker = new MergeWorker(this, snapshots);
             worker.Merge();
-        }
 
-        private void clearDataStructure()
-        {
-            memoryIndexes = new HashSet<MemoryIndex>();
-            arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
-            objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
+            memoryIndexes = new HashSet<MemoryIndex>(worker.memoryIndexes);
+            arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(worker.arrayDescriptors);
+            objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>(worker.objectDescriptors);
 
-            memoryValueInfos = new Dictionary<Value, MemoryInfo>();
+            memoryValueInfos = new Dictionary<Value, MemoryInfo>(worker.memoryValueInfos);
 
-            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
-            memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>();
-            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
+            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>(worker.memoryEntries);
+            memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>(worker.memoryAliases);
+            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(worker.memoryInfos);
 
-            indexArrays = new Dictionary<MemoryIndex, AssociativeArray>();
-            indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>();
+            indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(worker.indexArrays);
+            indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(worker.indexObjects);
 
-            temporary = new HashSet<TemporaryIndex>();
+            temporary = new HashSet<TemporaryIndex>(worker.temporary);
 
-            Variables = null;
+            Variables = new IndexContainer(worker.Variables);
         }
 
         private void extendSnapshot(ISnapshotReadonly input)
@@ -872,10 +867,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(snapshot.indexObjects);
 
             temporary = new HashSet<TemporaryIndex>(snapshot.temporary);
-            
+
             Variables = new IndexContainer(snapshot.Variables);
             ContollVariables = new IndexContainer(snapshot.ContollVariables);
         }
 
+
+        internal bool Exists(MemoryIndex memoryIndex)
+        {
+            return memoryIndexes.Contains(memoryIndex);
+        }
+
+
+        internal bool TryGetDescriptor(ObjectValue objectValue, out ObjectDescriptor descriptor)
+        {
+            return objectDescriptors.TryGetValue(objectValue, out descriptor);
+        }
     }
 }
