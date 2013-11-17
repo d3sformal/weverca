@@ -232,7 +232,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 .Builder();
 
             ContainerOperations collectVariables = new ContainerOperations(this, builder, builder.UnknownIndex, builder.UnknownIndex);
-            ReferenceCollector referenceCollector = new ReferenceCollector();
             
             foreach (Snapshot snapshot in sourceSnapshots)
             {
@@ -241,19 +240,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     collectVariables.CollectIndexes(snapshot, builder.UnknownIndex, descriptor);
                     collectTypes(descriptor.Types, builder.Types);
-
-                    referenceCollector.CollectMay(descriptor.MayReferences);
-                    referenceCollector.CollectMust(descriptor.MustReferences);
                 }
                 else
                 {
                     collectVariables.SetUndefined();
-                    referenceCollector.InvalidateMust();
                 }
             }
-
-            referenceCollector.SetMustReferences(builder.MustReferences);
-            referenceCollector.SetMayReferences(builder.MayReferences);
 
             collectVariables.MergeContainer();
             objectDescriptors.Add(objectValue, builder.Build());

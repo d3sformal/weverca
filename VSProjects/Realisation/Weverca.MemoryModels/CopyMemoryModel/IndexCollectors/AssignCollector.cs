@@ -108,7 +108,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
             }
-            else if (snapshot.IsUndefined(parentIndex))
+            else if (!snapshot.ContainsOnlyReferences(parentIndex))
             {
                 ObjectValue objectValue = snapshot.CreateObject(parentIndex, false);
             }
@@ -119,19 +119,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             ObjectValueContainer objectValues = snapshot.GetObjects(parentIndex);
+            if (objectValues.Count == 1 && snapshot.HasMustReference(parentIndex))
+            {
+                ObjectDescriptor descriptor = snapshot.GetDescriptor(objectValues.First());
+                creatorVisitor.ObjectValue = objectValues.First();
+                processSegment(segment, descriptor);
+            }
+
             foreach (ObjectValue value in objectValues)
             {
                 ObjectDescriptor descriptor = snapshot.GetDescriptor(value);
                 creatorVisitor.ObjectValue = value;
-                
-                if (isMust && descriptor.MustReferences.Contains(parentIndex))
-                {
-                    processSegment(segment, descriptor);
-                }
-                else
-                {
-                    processSegment(segment, descriptor, false);
-                }
+                processSegment(segment, descriptor, false);
             }
         }
 

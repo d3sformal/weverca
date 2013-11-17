@@ -369,25 +369,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
         {
             ObjectValue value = this.CreateObject(null);
-            ObjectDescriptor descriptor;
 
             if (isMust)
             {
                 DestroyMemory(parentIndex);
                 memoryEntries[parentIndex] = new MemoryEntry(value);
-
-                descriptor = GetDescriptor(value)
-                    .Builder()
-                    .addMustReference(parentIndex)
-                    .Build();
             }
             else
             {
-                descriptor = GetDescriptor(value)
-                    .Builder()
-                    .addMayReference(parentIndex)
-                    .Build();
-
                 MemoryEntry oldEntry;
 
                 List<Value> values;
@@ -408,7 +397,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             objectValues.Add(value);
 
             indexObjects[parentIndex] = objectValues.Build();
-            objectDescriptors[value] = descriptor;
 
             return value;
         }
@@ -725,11 +713,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal void DestroyObject(MemoryIndex parentIndex, ObjectValue value)
         {
-            ObjectDescriptorBuilder descriptor = GetDescriptor(value).Builder();
-            descriptor.removeMayReference(parentIndex);
-            descriptor.removeMustReference(parentIndex);
-            SetDescriptor(value, descriptor);
-
             ObjectValueContainerBuilder objects = GetObjects(parentIndex).Builder();
             objects.Remove(value);
             SetObjects(parentIndex, objects);
@@ -757,11 +740,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal void MakeMustReferenceObject(ObjectValue objectValue, MemoryIndex targetIndex)
         {
-            ObjectDescriptorBuilder descriptor = GetDescriptor(objectValue).Builder();
-            descriptor.addMustReference(targetIndex);
-            descriptor.removeMayReference(targetIndex);
-            SetDescriptor(objectValue, descriptor);
-
             ObjectValueContainerBuilder objects = GetObjects(targetIndex).Builder();
             objects.Add(objectValue);
             SetObjects(targetIndex, objects);
@@ -773,11 +751,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (ObjectValue objectValue in objects)
             {
-                ObjectDescriptorBuilder descriptor = GetDescriptor(objectValue).Builder();
-                descriptor.addMayReference(targetIndex);
-                descriptor.removeMustReference(targetIndex);
-                SetDescriptor(objectValue, descriptor);
-
                 objectsContainer.Add(objectValue);
             }
 
@@ -882,6 +855,30 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal bool TryGetDescriptor(ObjectValue objectValue, out ObjectDescriptor descriptor)
         {
             return objectDescriptors.TryGetValue(objectValue, out descriptor);
+        }
+
+        internal bool HasMustReference(MemoryIndex parentIndex)
+        {
+            MemoryEntry entry = GetMemoryEntry(parentIndex);
+
+            if (entry.Count == 1)
+            {
+                ObjectValueContainer objects = GetObjects(parentIndex);
+                if (objects.Count == 1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal bool ContainsOnlyReferences(MemoryIndex parentIndex)
+        {
+            MemoryEntry entry = GetMemoryEntry(parentIndex);
+            ObjectValueContainer objects = GetObjects(parentIndex);
+
+            return entry.Count == objects.Count;
         }
     }
 }

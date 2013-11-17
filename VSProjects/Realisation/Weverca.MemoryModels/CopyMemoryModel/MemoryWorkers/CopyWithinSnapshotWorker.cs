@@ -38,19 +38,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 ObjectValue value = objectValues.First();
                 objectsValues.Add(value);
                 snapshot.SetObjects(targetIndex, objectsValues);
-
-                ObjectDescriptorBuilder descriptor = snapshot.GetDescriptor(value).Builder();
-
-                if (descriptor.MustReferences.Contains(sourceIndex))
-                {
-                    descriptor.MustReferences.Add(targetIndex);
-                }
-                else
-                {
-                    descriptor.MayReferences.Add(sourceIndex);
-                }
-
-                snapshot.SetDescriptor(value, descriptor);
             }
             else if (objectValues.Count > 0)
             {
@@ -58,10 +45,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 foreach (ObjectValue value in objectValues)
                 {
                     objectsValues.Add(value);
-
-                    ObjectDescriptorBuilder descriptor = snapshot.GetDescriptor(value).Builder();
-                    descriptor.MayReferences.Add(targetIndex);
-                    snapshot.SetDescriptor(value, descriptor);
                 }
                 snapshot.SetObjects(targetIndex, objectsValues);
             } 

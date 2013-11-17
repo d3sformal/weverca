@@ -31,7 +31,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The must references.
         /// </value>
-        public ReadOnlyCollection<MemoryIndex> MustReferences { get; private set; }
+        //public ReadOnlyCollection<MemoryIndex> MustReferences { get; private set; }
 
         /// <summary>
         /// Gets the may references.
@@ -39,7 +39,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The may references.
         /// </value>
-        public ReadOnlyCollection<MemoryIndex> MayReferences { get; private set; }
+        //public ReadOnlyCollection<MemoryIndex> MayReferences { get; private set; }
 
         /// <summary>
         /// Gets the types.
@@ -68,8 +68,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public ObjectDescriptor(ObjectDescriptorBuilder objectDescriptorBuilder)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(objectDescriptorBuilder.Indexes);
-            MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences.ToList());
-            MayReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MayReferences.ToList());
+            //MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences.ToList());
+            //MayReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MayReferences.ToList());
             Types = new ReadOnlyCollection<TypeValueBase>(objectDescriptorBuilder.Types.ToList());
 
             UnknownIndex = objectDescriptorBuilder.UnknownIndex;
@@ -85,8 +85,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
 
-            MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
+            //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
+            //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
 
             UnknownIndex = unknownIndex;
@@ -102,8 +102,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
 
-            MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
+            //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
+            //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
 
             UnknownIndex = unknownIndex;
@@ -141,7 +141,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The must references.
         /// </value>
-        public HashSet<MemoryIndex> MustReferences { get; private set; }
+        //public HashSet<MemoryIndex> MustReferences { get; private set; }
 
         /// <summary>
         /// Gets the may references.
@@ -149,7 +149,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The may references.
         /// </value>
-        public HashSet<MemoryIndex> MayReferences { get; private set; }
+        //public HashSet<MemoryIndex> MayReferences { get; private set; }
 
         /// <summary>
         /// Gets the types.
@@ -188,8 +188,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 Indexes = new Dictionary<string, MemoryIndex>();
             }
 
-            MustReferences = new HashSet<MemoryIndex>(objectDescriptor.MustReferences);
-            MayReferences = new HashSet<MemoryIndex>(objectDescriptor.MayReferences);
+            //MustReferences = new HashSet<MemoryIndex>(objectDescriptor.MustReferences);
+            //MayReferences = new HashSet<MemoryIndex>(objectDescriptor.MayReferences);
             Types = new HashSet<TypeValueBase>(objectDescriptor.Types);
 
             ParentVariable = objectDescriptor.ParentVariable;
@@ -214,44 +214,44 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="reference">The reference.</param>
         /// <returns></returns>
-        public ObjectDescriptorBuilder addMustReference(MemoryIndex reference)
+        /*public ObjectDescriptorBuilder addMustReference(MemoryIndex reference)
         {
             MustReferences.Add(reference);
             return this;
-        }
+        }*/
 
         /// <summary>
         /// Adds the may reference.
         /// </summary>
         /// <param name="reference">The reference.</param>
         /// <returns></returns>
-        public ObjectDescriptorBuilder addMayReference(MemoryIndex reference)
+        /*public ObjectDescriptorBuilder addMayReference(MemoryIndex reference)
         {
             MayReferences.Add(reference);
             return this;
-        }
+        }*/
 
         /// <summary>
         /// Removes the must reference.
         /// </summary>
         /// <param name="reference">The reference.</param>
         /// <returns></returns>
-        public ObjectDescriptorBuilder removeMustReference(MemoryIndex reference)
+        /*public ObjectDescriptorBuilder removeMustReference(MemoryIndex reference)
         {
             MustReferences.Remove(reference);
             return this;
-        }
+        }*/
 
         /// <summary>
         /// Removes the may reference.
         /// </summary>
         /// <param name="reference">The reference.</param>
         /// <returns></returns>
-        public ObjectDescriptorBuilder removeMayReference(MemoryIndex reference)
+        /*public ObjectDescriptorBuilder removeMayReference(MemoryIndex reference)
         {
             MayReferences.Remove(reference);
             return this;
-        }
+        }*/
 
         /// <summary>
         /// Builds new descriptor object from this instance.
