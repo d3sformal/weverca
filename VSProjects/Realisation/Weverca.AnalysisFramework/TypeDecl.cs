@@ -234,7 +234,7 @@ namespace Weverca.AnalysisFramework
 
     public class ClassDeclBuilder
     {
-        public QualifiedName TypeName;
+        public QualifiedName QualifiedName;
         public Dictionary<MethodIdentifier, MethodInfo> ModeledMethods;
         public Dictionary<MethodIdentifier,MethodDecl> SourceCodeMethods;
         public Dictionary<FieldIdentifier, ConstantInfo> Constants;
@@ -258,7 +258,7 @@ namespace Weverca.AnalysisFramework
 
         public ClassDecl Build()
         {
-            return new ClassDecl(TypeName, ModeledMethods, SourceCodeMethods, Constants, Fields, BaseClassName, IsFinal, IsInterface, IsAbstract);
+            return new ClassDecl(QualifiedName, ModeledMethods, SourceCodeMethods, Constants, Fields, BaseClassName, IsFinal, IsInterface, IsAbstract);
         }
     }
 }

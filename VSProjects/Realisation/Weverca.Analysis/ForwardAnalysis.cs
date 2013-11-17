@@ -65,21 +65,7 @@ namespace Weverca.Analysis
 
             var warnings = new VariableName(".analysisWarning");
             var warningsVariable=EntryInput.GetControlVariable(warnings);
-            warningsVariable.WriteMemory(EntryInput.Snapshot,new MemoryEntry(EntryInput.UndefinedValue));
-
-            
-            //TODO insert static variables
-            /*var staticObject = new VariableName(".staticObjects");
-            var staticObjectVariable = EntryInput.GetControlVariable(staticObject);
-            staticObjectVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateArray()));
-            
-            var nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
-            foreach (ClassDecl classDeclaration in nativeObjectAnalyzer.GetAllClasses())
-            {
-                var field=staticObjectVariable.ReadIndex(EntryInput.Snapshot, new MemberIdentifier(classDeclaration.QualifiedName.Name.LowercaseValue));
-                field.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateArray()));
-
-            }*/
+            warningsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
         }
     }
 }

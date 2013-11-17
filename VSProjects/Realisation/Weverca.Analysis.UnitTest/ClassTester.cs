@@ -48,15 +48,6 @@ namespace Weverca.Analysis.UnitTest
 
         }
         
-        //class having abstract class 
-
-        //class not implementing interface method
-
-        //enxtending final class
-
-        //extending final method
-
-
         //interface tests
 
         string InterfaceContainingFieldTest = @"
@@ -249,7 +240,124 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION)==false);
 
         }
-    
 
+        string InterfaceCannotOverrideConstant = @"
+        interface a 
+        {
+        const a=4;
+        }
+        interface b extends a 
+        {
+        const a=4;
+        }
+
+        ";
+
+        [TestMethod]
+        public void InterfaceCannotOverrideConstantTest()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotOverrideConstant);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT) == true);
+
+        }
+
+        string InterfaceOverridesConstant = @"
+        interface a 
+        {
+        const a=4;
+        }
+        interface b extends a 
+        {
+        const b=4;
+        }
+
+        ";
+
+        [TestMethod]
+        public void InterfaceOverridesConstantTest()
+        {
+            var outset = TestUtils.Analyze(InterfaceOverridesConstant);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT) == false);
+
+        }
+
+
+        string InterfaceCannotOverrideFunctionTest1 = @"
+        interface a 
+        {
+            static function x();
+        }
+        interface b extends a 
+        {
+            function x();
+        }
+
+        ";
+
+        [TestMethod]
+        public void InterfaceCannotOverrideFunction1()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest1);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+        }
+
+        string InterfaceCannotOverrideFunctionTest2 = @"
+        interface a 
+        {
+            static function x();
+        }
+        interface b extends a 
+        {
+            static function x();
+        }
+
+        ";
+
+        [TestMethod]
+        public void InterfaceCannotOverrideFunction2()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC) == false);
+        }
+
+        string InterfaceCannotOverrideFunctionTest3 = @"
+        interface a 
+        {
+            function x();
+        }
+        interface b extends a 
+        {
+            function x();
+        }
+
+        ";
+
+        [TestMethod]
+        public void InterfaceCannotOverrideFunction3()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest3);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC) == false);
+        }
+
+        string InterfaceCannotOverrideFunctionTest4 = @"
+        interface a 
+        {
+             function x();
+        }
+        interface b extends a 
+        {
+            static function x();
+        }
+
+        ";
+
+        [TestMethod]
+        public void InterfaceCannotOverrideFunction4()
+        {
+            var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest4);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+        }
+
+        
     }
 }

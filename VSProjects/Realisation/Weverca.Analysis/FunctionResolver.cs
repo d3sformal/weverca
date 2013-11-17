@@ -185,7 +185,7 @@ namespace Weverca.Analysis
         public override void DeclareGlobal(TypeDecl declaration)
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
-            ClassDecl type = convertToClassDecl(declaration);
+            ClassDeclBuilder type = convertToClassDecl(declaration);
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
                 setWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
@@ -217,9 +217,8 @@ namespace Weverca.Analysis
                             }
                             else
                             {
-                                ClassDecl newType = CopyInfoFromBaseClass(baseClass, type);
-                                checkClass(newType, declaration);
-                                OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                                ClassDeclBuilder newType = CopyInfoFromBaseClass(baseClass, type);
+                                OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(newType, declaration)));
                             }
                         }
                         else
@@ -243,9 +242,8 @@ namespace Weverca.Analysis
                                         {
                                             setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
                                         }
-                                        ClassDecl newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
-                                        checkClass(newType, declaration);
-                                        OutSet.DeclareGlobal(OutSet.CreateType(newType));
+                                        ClassDeclBuilder newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
+                                        OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(newType, declaration)));
                                     }
                                     else
                                     {
@@ -257,8 +255,7 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        checkClass(type, declaration);
-                        OutSet.DeclareGlobal(OutSet.CreateType(type));
+                        OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(type, declaration)));
                     }
                 }
             }
@@ -274,7 +271,7 @@ namespace Weverca.Analysis
 
         #region Private helpers
 
-        private void checkClass(ClassDecl type, TypeDecl element)
+        private ClassDecl checkClassAndCopyConstantsFromInterfaces(ClassDeclBuilder type, TypeDecl element)
         {
             foreach (var entry in type.SourceCodeMethods)
             {
@@ -347,7 +344,7 @@ namespace Weverca.Analysis
                     }
                     else 
                     {
-                        //todo add constant to class and create new classDecl
+                        type.Constants.Add(new FieldIdentifier(Interface.QualifiedName, query.First().Key.Name), query.First().Value);
                     }
                 }
 
@@ -360,18 +357,7 @@ namespace Weverca.Analysis
                     else 
                     {
                         var classMethod=type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
-                        if (method.Value.IsStatic != classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                        { 
-                            //cannot redeclare static method with non static
-                            if (classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                            {
-                                setWarning("Cannot redeclare non static method with static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                            }
-                            else 
-                            {
-                                setWarning("Cannot redeclare static method with non static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                            }
-                        }
+                        checkIfStaticMatch(method.Value, classMethod, element);
                     }
                 }
 
@@ -384,29 +370,35 @@ namespace Weverca.Analysis
                     else 
                     {
                         var classMethod = type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
-                        if (method.Value.Modifiers.HasFlag(PhpMemberAttributes.Static) != classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                        {
-                            if (classMethod.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                            {
-                                setWarning("Cannot redeclare non static method with static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                            }
-                            else
-                            {
-                                setWarning("Cannot redeclare static method with non static", element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                            }
-                        }
+                        checkIfStaticMatch(method.Value, classMethod, element);
+                    }
+                }
+
+                foreach (var constant in Interface.Constants.Values)
+                {
+                    var query = type.Constants.Values.Where(a => a.Name.Equals(constant.Name));
+                    if (query.Count() > 0)
+                    {
+                        setWarning("Cannot override interface constant " + constant.Name, element, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT);
+                    }
+                    else 
+                    {
+                        type.Constants.Add(new FieldIdentifier(type.QualifiedName, constant.Name), constant);
                     }
                 }
             }
+
+            return type.Build();
         }
 
-        private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDecl type)
+        private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDeclBuilder type)
         {
             ClassDeclBuilder result = new ClassDeclBuilder();
-            result.TypeName = type.QualifiedName;
+            result.QualifiedName = type.QualifiedName;
             result.IsInterface = true;
             result.IsFinal = false;
             result.IsAbstract = false;
+            result.Constants = type.Constants;
             result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(type.SourceCodeMethods);
             result.ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>(type.ModeledMethods);
 
@@ -449,56 +441,72 @@ namespace Weverca.Analysis
                         {
                             if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                             {
-                                //if arguments doesnt match
                                 if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
                                     if (!AreMethodsCompatible(match, method))
                                     {
-                                        setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        setWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
                                     }
+                                    checkIfStaticMatch(method, match,declaration);
                                 }
                                 else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
                                     if (!AreMethodsCompatible(match, method))
                                     {
-                                        setWarning("Can't inherit abstract function " + method.Name, method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        setWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", method, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
                                     }
+                                    checkIfStaticMatch(method, match, declaration);
                                 }
 
                             }
                             else
                             {
-                                result.SourceCodeMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
+                                result.SourceCodeMethods.Add(new MethodIdentifier(result.QualifiedName, method.Name), method);
                             }
                         }
                         foreach (var method in value.ModeledMethods.Values)
                         {
                             if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                             {
-                                //if arguments doesnt match
+                                
                                 if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
                                     if (!AreMethodsCompatible(match, method))
                                     {
-                                        setWarning("Can't inherit abstract function " + method.Name, declaration, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        setWarning("Can't inherit abstract function " + method.Name+" beacuse arguments doesn't match", declaration, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
                                     }
+                                    checkIfStaticMatch(method, match, declaration);
                                 }
                                 else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     var match = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
                                     if (!AreMethodsCompatible(match, method))
                                     {
-                                        setWarning("Can't inherit abstract function " + method.Name, match, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
+                                        setWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", match, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION);
                                     }
+                                    checkIfStaticMatch(method, match,declaration);
                                 }
 
                             }
                             else
                             {
-                                result.ModeledMethods.Add(new MethodIdentifier(result.TypeName, method.Name), method);
+                                result.ModeledMethods.Add(new MethodIdentifier(result.QualifiedName, method.Name), method);
+                            }
+                        }
+
+                        foreach (var constant in value.Constants.Values)
+                        {
+                            var query = type.Constants.Values.Where(a => a.Name.Equals(constant.Name));
+                            if (query.Count() > 0)
+                            {
+                                setWarning("Cannot override interface constant " + constant.Name, declaration, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT);
+                            }
+                            else
+                            {
+                                type.Constants.Add(new FieldIdentifier(value.QualifiedName, constant.Name), constant);
                             }
                         }
                     }
@@ -507,6 +515,66 @@ namespace Weverca.Analysis
             
 
             OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
+        }
+
+        private void checkIfStaticMatch(MethodInfo method, MethodDecl overridenMethod,LangElement element)
+        {
+            if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Static) != method.IsStatic)
+            {
+                if (method.IsStatic)
+                {
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+                else
+                {
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+            }
+        }
+
+        private void checkIfStaticMatch(MethodInfo method, MethodInfo overridenMethod, LangElement element)
+        {
+            if (overridenMethod.IsStatic != method.IsStatic)
+            {
+                if (method.IsStatic)
+                {
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+                else
+                {
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+            }
+        }
+
+        private void checkIfStaticMatch(MethodDecl method, MethodDecl overridenMethod, LangElement element)
+        {
+            if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Static) != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+            {
+                if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                {
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+                else
+                {
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+            }
+        }
+
+        private void checkIfStaticMatch(MethodDecl method, MethodInfo overridenMethod, LangElement element)
+        {
+            if (overridenMethod.IsStatic != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+            {
+                if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
+                {
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+                else
+                {
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                }
+            }
         }
 
         private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration)
@@ -608,7 +676,9 @@ namespace Weverca.Analysis
             }
         }
 
-        private ClassDecl CopyInfoFromBaseClass(ClassDecl baseClass, ClassDecl currentClass)
+      
+
+        private ClassDeclBuilder CopyInfoFromBaseClass(ClassDecl baseClass, ClassDeclBuilder currentClass)
         {
 
             ClassDeclBuilder result = new ClassDeclBuilder();
@@ -616,7 +686,7 @@ namespace Weverca.Analysis
             result.Constants = new Dictionary<FieldIdentifier, ConstantInfo>(baseClass.Constants);
             result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(baseClass.SourceCodeMethods);
             result.ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>(baseClass.ModeledMethods);
-            result.TypeName = currentClass.QualifiedName;
+            result.QualifiedName = currentClass.QualifiedName;
             result.BaseClassName = baseClass.QualifiedName;
             result.IsFinal = currentClass.IsFinal;
             result.IsInterface = currentClass.IsInterface;
@@ -654,7 +724,7 @@ namespace Weverca.Analysis
 
             foreach (var method in currentClass.SourceCodeMethods.Values)
             {
-                MethodIdentifier methodIdentifier = new MethodIdentifier(result.TypeName, method.Name);
+                MethodIdentifier methodIdentifier = new MethodIdentifier(result.QualifiedName, method.Name);
                 if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() == 0)
                 {
                     if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() == 0)
@@ -668,17 +738,8 @@ namespace Weverca.Analysis
                         {
                             setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                         }
-                        if (overridenMethod.IsStatic != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                        {
-                            if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                            {
-                                setWarning("Cannot redeclare non static method with static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                            }
-                            else
-                            {
-                                setWarning("Cannot redeclare static method with non static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                            }
-                        }
+                        checkIfStaticMatch(method, overridenMethod, method);
+                      
                         if(!AreMethodsCompatible(overridenMethod,method))
                         {
                             setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_REDECLARE_CLASS_FUNCTION);
@@ -697,17 +758,9 @@ namespace Weverca.Analysis
                     {
                         setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                     }
-                    if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Static) != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                    {
-                        if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
-                        {
-                            setWarning("Cannot redeclare non static method with static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                        }
-                        else
-                        {
-                            setWarning("Cannot redeclare static method with non static", method, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                        }
-                    }
+
+                    checkIfStaticMatch(method, overridenMethod, method);
+
                     if (!AreMethodsCompatible(overridenMethod, method))
                     {
                         setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_REDECLARE_CLASS_FUNCTION);
@@ -719,10 +772,10 @@ namespace Weverca.Analysis
                 }
             }
 
-            return result.Build();
+            return result;
         }
 
-        private ClassDecl convertToClassDecl(TypeDecl declaration)
+        private ClassDeclBuilder convertToClassDecl(TypeDecl declaration)
         {
             ClassDeclBuilder result = new ClassDeclBuilder();
             result.BaseClassName = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
@@ -730,7 +783,7 @@ namespace Weverca.Analysis
             result.IsFinal = declaration.Type.IsFinal;
             result.IsInterface = declaration.Type.IsInterface;
             result.IsAbstract = declaration.Type.IsAbstract;
-            result.TypeName = new QualifiedName(declaration.Name);
+            result.QualifiedName = new QualifiedName(declaration.Name);
 
             foreach (var member in declaration.Members)
             {
@@ -753,13 +806,13 @@ namespace Weverca.Analysis
                         }
                         bool isStatic = member.Modifiers.HasFlag(PhpMemberAttributes.Static);
                         //multiple declaration of fields
-                        if (result.Fields.ContainsKey(new FieldIdentifier(result.TypeName, field.Name)))
+                        if (result.Fields.ContainsKey(new FieldIdentifier(result.QualifiedName, field.Name)))
                         {
                             setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
                         }
                         else
                         {
-                            result.Fields.Add(new FieldIdentifier(result.TypeName, field.Name), new FieldInfo(field.Name, result.TypeName, "any", visibility, field.Initializer, isStatic));
+                            result.Fields.Add(new FieldIdentifier(result.QualifiedName, field.Name), new FieldInfo(field.Name, result.QualifiedName, "any", visibility, field.Initializer, isStatic));
                         }
                     }
 
@@ -768,7 +821,7 @@ namespace Weverca.Analysis
                 {
                     foreach (var constant in (member as ConstDeclList).Constants)
                     {
-                        if (result.Constants.ContainsKey(new FieldIdentifier(result.TypeName, constant.Name)))
+                        if (result.Constants.ContainsKey(new FieldIdentifier(result.QualifiedName, constant.Name)))
                         {
                             setWarning("Cannot redeclare constant " + constant.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
                         }
@@ -776,13 +829,13 @@ namespace Weverca.Analysis
                         {
                             //in php all object constatns are public
                             Visibility visbility = Visibility.PUBLIC;
-                            result.Constants.Add(new FieldIdentifier(result.TypeName, constant.Name), new ConstantInfo(constant.Name, result.TypeName, visbility, constant.Initializer));
+                            result.Constants.Add(new FieldIdentifier(result.QualifiedName, constant.Name), new ConstantInfo(constant.Name, result.QualifiedName, visbility, constant.Initializer));
                         }
                     }
                 }
                 else if (member is MethodDecl)
                 {
-                    var methosIdentifier = new MethodIdentifier(result.TypeName, (member as MethodDecl).Name);
+                    var methosIdentifier = new MethodIdentifier(result.QualifiedName, (member as MethodDecl).Name);
                     if (!result.SourceCodeMethods.ContainsKey(methosIdentifier))
                     {
                         result.SourceCodeMethods.Add(methosIdentifier, member as MethodDecl);
@@ -798,7 +851,7 @@ namespace Weverca.Analysis
                 }
             }
 
-            return result.Build();
+            return result;
         }
 
         private void applyHints(FlowOutputSet outSet)

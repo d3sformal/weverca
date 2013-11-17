@@ -86,14 +86,14 @@ namespace Weverca.Analysis
                                 {
                                     currentClass.IsFinal = false;
                                 }
-                                currentClass.TypeName = new QualifiedName(new Name(reader.GetAttribute("name")));
+                                currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
 
                                 if (reader.GetAttribute("baseClass") != null)
                                 {
                                     currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("baseClass")));
                                 }
 
-                                NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.TypeName] = currentClass;
+                                NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.QualifiedName] = currentClass;
                                 if (reader.Name == "class")
                                 {
                                     currentClass.IsInterface = false;
@@ -163,7 +163,7 @@ namespace Weverca.Analysis
                                         initValue = outSet.CreateString(stringValue);
                                     }
 
-                                    currentClass.Fields[new FieldIdentifier(currentClass.TypeName, new VariableName(fieldName))] = new FieldInfo(new VariableName(fieldName), currentClass.TypeName, fieldType, visibility, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
+                                    currentClass.Fields[new FieldIdentifier(currentClass.QualifiedName, new VariableName(fieldName))] = new FieldInfo(new VariableName(fieldName), currentClass.QualifiedName, fieldType, visibility, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
                                 }
                                 else
                                 {
@@ -171,31 +171,31 @@ namespace Weverca.Analysis
                                     //resolve constant
                                     VariableName constantName = new VariableName(fieldName);
 
-                                    var constIdentifier = new FieldIdentifier(currentClass.TypeName, constantName);
+                                    var constIdentifier = new FieldIdentifier(currentClass.QualifiedName, constantName);
                                     switch (fieldType)
                                     {
                                         case "int":
                                         case "integer":
                                             try
                                             {
-                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
                                             }
                                             catch (Exception)
                                             {
-                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             }
                                             break;
                                         case "string":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateString(value)));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateString(value)));
                                             break;
                                         case "boolean":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
                                             break;
                                         case "float":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
                                             break;
                                         case "NULL":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.TypeName, visibility, new MemoryEntry(outSet.UndefinedValue));
+                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.UndefinedValue));
                                             break;
                                         default:
                                             break;
@@ -245,14 +245,14 @@ namespace Weverca.Analysis
                                 NativeAnalyzerMethod analyzer;
                                 if (currentMethod.Name.Name.Equals(new Name("__construct")))
                                 {
-                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Construct;
+                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Construct;
                                 }
                                 else
                                 {
-                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.TypeName).Analyze;
+                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Analyze;
                                 }
-                                MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.TypeName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
-                                currentClass.ModeledMethods[new MethodIdentifier(currentClass.TypeName, methodInfo.Name)] = methodInfo;
+                                MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.QualifiedName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
+                                currentClass.ModeledMethods[new MethodIdentifier(currentClass.QualifiedName, methodInfo.Name)] = methodInfo;
 
 
                                 break;
@@ -266,9 +266,9 @@ namespace Weverca.Analysis
              */
             foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
-                if (nativeObject.TypeName != null)
+                if (nativeObject.QualifiedName != null)
                 {
-                    if (!NativeObjectsAnalyzerHelper.mutableNativeObjects.ContainsKey(nativeObject.TypeName))
+                    if (!NativeObjectsAnalyzerHelper.mutableNativeObjects.ContainsKey(nativeObject.QualifiedName))
                     {
                         throw new Exception();
                     }
@@ -297,7 +297,7 @@ namespace Weverca.Analysis
                     baseClassName = baseClass.BaseClassName;
 
                 }
-                nativeObjects[nativeObject.TypeName] = nativeObject.Build();
+                nativeObjects[nativeObject.QualifiedName] = nativeObject.Build();
             }
         }
 
