@@ -10,7 +10,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class SnapshotEntry : ReadWriteSnapshotEntryBase
+    class SnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
     {
         MemoryPath path;
 
@@ -95,7 +95,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            throw new NotImplementedException();
+            Snapshot snapshot = ToSnapshot(context);
+
+            ICopyModelSnapshotEntry entry = ToEntry(aliasedEntry);
+            AliasData data = entry.CreateAliasToEntry(snapshot);
+
+            AssignCollector collector = new AssignCollector(snapshot);
+            collector.AddAliases = false;
+            collector.ProcessPath(path);
+
+            AssignAliasWorker worker = new AssignAliasWorker(snapshot);
+            worker.AssignAlias(collector, data);
+
+            data.Release(snapshot);
         }
 
         #endregion
@@ -151,9 +163,48 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        public static ICopyModelSnapshotEntry ToEntry(ReadSnapshotEntryBase entry)
+        {
+            ICopyModelSnapshotEntry copyEntry = entry as ICopyModelSnapshotEntry;
+
+            if (copyEntry != null)
+            {
+                return copyEntry;
+            }
+            else
+            {
+                throw new ArgumentException("Entry parametter is not of type Weverca.MemoryModels.CopyMemoryModel.ICopyModelSnapshotEntry");
+            }
+        }
+
         public override string ToString()
         {
             return path.ToString();
+        }
+
+        public AliasData CreateAliasToEntry(Snapshot snapshot)
+        {
+            //Collect alias indexes
+            AssignCollector indexesCollector = new AssignCollector(snapshot);
+            indexesCollector.ProcessPath(path);
+
+            //Memory locations where to get data from
+            ReadCollector valueCollector = new ReadCollector(snapshot);
+            valueCollector.ProcessPath(path);
+
+            //Get data from locations
+            ReadWorker worker = new ReadWorker(snapshot);
+            MemoryEntry value = worker.ReadValue(valueCollector);
+
+            //Makes deep copy of data to prevent changes after assign alias
+            TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
+            MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
+            mergeWorker.MergeMemoryEntry(temporaryIndex, value);
+
+            AliasData data = new AliasData(indexesCollector.MustIndexes, indexesCollector.MayIndexes, temporaryIndex);
+            data.TemporaryIndexToRealease(temporaryIndex);
+
+            return data;
         }
     }
 }

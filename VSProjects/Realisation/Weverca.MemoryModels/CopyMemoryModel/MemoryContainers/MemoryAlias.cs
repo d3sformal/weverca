@@ -48,8 +48,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="builder">The builder.</param>
         internal MemoryAlias(MemoryAliasBuilder builder)
         {
-            MayAliasses = new ReadOnlyCollection<MemoryIndex>(builder.MayAliasses);
-            MustAliasses = new ReadOnlyCollection<MemoryIndex>(builder.MustAliasses);
+            MayAliasses = new ReadOnlyCollection<MemoryIndex>(builder.MayAliasses.ToList());
+            MustAliasses = new ReadOnlyCollection<MemoryIndex>(builder.MustAliasses.ToList());
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The may aliasses.
         /// </value>
-        public List<MemoryIndex> MayAliasses { get; private set; }
+        public HashSet<MemoryIndex> MayAliasses { get; private set; }
 
         /// <summary>
         /// Gets the must aliasses.
@@ -81,7 +81,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The must aliasses.
         /// </value>
-        public List<MemoryIndex> MustAliasses { get; private set; }
+        public HashSet<MemoryIndex> MustAliasses { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MemoryAliasBuilder"/> class.
@@ -89,8 +89,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="MemoryAlias">The memory information.</param>
         public MemoryAliasBuilder(MemoryAlias MemoryAlias)
         {
-            MayAliasses = new List<MemoryIndex>(MemoryAlias.MayAliasses);
-            MustAliasses = new List<MemoryIndex>(MemoryAlias.MustAliasses);
+            MayAliasses = new HashSet<MemoryIndex>(MemoryAlias.MayAliasses);
+            MustAliasses = new HashSet<MemoryIndex>(MemoryAlias.MustAliasses);
+        }
+
+        public MemoryAliasBuilder()
+        {
+            MayAliasses = new HashSet<MemoryIndex>();
+            MustAliasses = new HashSet<MemoryIndex>();
         }
 
         /// <summary>
@@ -144,6 +150,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             MayAliasses.Add(index);
             return this;
+        }
+
+        internal void AddMayAlias(IEnumerable<MemoryIndex> aliases)
+        {
+            HashSetTools.AddAll(MayAliasses, aliases);
+        }
+
+        internal void AddMustAlias(IEnumerable<MemoryIndex> aliases)
+        {
+            HashSetTools.AddAll(MustAliasses, aliases);
         }
     }
 }

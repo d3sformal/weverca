@@ -24,6 +24,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override bool IsDefined { get; protected set; }
 
+        public bool AddAliases { get; set; }
+
         public override IEnumerable<MemoryIndex> MustIndexes
         {
             get { return mustIndexes; }
@@ -49,13 +51,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             this.snapshot = snapshot;
             creatorVisitor = new CreatorVisitor(snapshot);
+
+            AddAliases = true;
         }
 
         public override void Next(PathSegment segment)
         {
             segment.Accept(this);
 
-            //TODO pavel - reseni aliasu
+            if (AddAliases)
+            {
+                addAliasesToIndexes();
+            }
 
             HashSet<MemoryIndex> indexSwap = mustIndexes;
             mustIndexes = mustIndexesProcess;
@@ -66,6 +73,65 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             mayIndexes = mayIndexesProcess;
             mayIndexesProcess = indexSwap;
             mayIndexesProcess.Clear();
+        }
+
+        private void addAliasesToIndexes()
+        {
+            HashSet<MemoryIndex> mustAliases = new HashSet<MemoryIndex>();
+            foreach (MemoryIndex index in mustIndexesProcess)
+            {
+                MemoryAlias alias;
+                if (snapshot.TryGetAliases(index, out alias))
+                {
+                    HashSetTools.AddAll(mustAliases, alias.MustAliasses);
+
+                    foreach (MemoryIndex mayIndex in alias.MayAliasses)
+                    {
+                        addToMay(index);
+                    }
+                }
+            }
+
+            foreach (MemoryIndex index in mustAliases)
+            {
+                addToMust(index);    
+            
+                MemoryAlias alias;
+                if (snapshot.TryGetAliases(index, out alias))
+                {
+                    foreach (MemoryIndex mayIndex in alias.MayAliasses)
+                    {
+                        addToMay(index);
+                    }
+                }
+            }
+
+            LinkedList<MemoryIndex> mayAliases = new LinkedList<MemoryIndex>();
+            foreach (MemoryIndex index in mayIndexesProcess)
+            {
+                MemoryAlias alias;
+                if (snapshot.TryGetAliases(index, out alias))
+                {
+                    HashSetTools.AddAll(mayAliases, alias.MustAliasses);
+                    HashSetTools.AddAll(mayAliases, alias.MayAliasses);
+                }
+            }
+
+            while (mayAliases.Count > 0)
+            {
+                MemoryIndex index = mayAliases.First.Value;
+                if (addToMay(mayAliases.First.Value))
+                {
+                    MemoryAlias alias;
+                    if (snapshot.TryGetAliases(index, out alias))
+                    {
+                        HashSetTools.AddAll(mayAliases, alias.MustAliasses);
+                        HashSetTools.AddAll(mayAliases, alias.MayAliasses);
+                    }
+                }
+
+                mayAliases.RemoveFirst();
+            }
         }
 
         public void VisitVariable(VariablePathSegment segment)
@@ -211,11 +277,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             mustIndexesProcess.Add(index);
         }
 
-        private void addToMay(MemoryIndex index)
+        private bool addToMay(MemoryIndex index)
         {
             if (!mustIndexesProcess.Contains(index))
             {
                 mayIndexesProcess.Add(index);
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 

@@ -880,5 +880,140 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             return entry.Count == objects.Count;
         }
+
+        internal void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        {
+            DestroyAliases(index);
+
+            MemoryAliasBuilder builder = new MemoryAliasBuilder();
+            builder.AddMustAlias(mustAliases);
+            builder.AddMayAlias(mayAliases);
+
+            memoryAliases.Add(index, builder.Build());
+        }
+
+        internal void MaySetAliases(MemoryIndex index, HashSet<MemoryIndex> mayAliases)
+        {
+            MemoryAliasBuilder builder;
+            MemoryAlias oldAlias;
+            if (TryGetAliases(index, out oldAlias))
+            {
+                builder = oldAlias.Builder();
+                convertAliasesToMay(index, builder);
+            }
+            else
+            {
+                builder = new MemoryAliasBuilder();
+            }
+
+            builder.AddMayAlias(mayAliases);
+            memoryAliases.Add(index, builder.Build());
+        }
+
+        internal void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        {
+            MemoryAliasBuilder alias;
+            MemoryAlias oldAlias;
+            if (TryGetAliases(index, out oldAlias))
+            {
+                alias = oldAlias.Builder();
+            }
+            else
+            {
+                alias = new MemoryAliasBuilder();
+            }
+
+            if (mustAliases != null)
+            {
+                alias.AddMustAlias(mustAliases);
+            }
+            if (mayAliases != null)
+            {
+                alias.AddMayAlias(mayAliases);
+            }
+
+            foreach (MemoryIndex mustIndex in alias.MustAliasses)
+            {
+                if (alias.MayAliasses.Contains(mustIndex))
+                {
+                    alias.MayAliasses.Remove(mustIndex);
+                }
+            }
+
+            memoryAliases.Add(index, alias.Build());
+        }
+
+        internal void DestroyAliases(MemoryIndex index)
+        {
+            MemoryAlias aliases;
+            if (!TryGetAliases(index, out aliases))
+            {
+                return;
+            }
+
+            foreach (MemoryIndex mustIndex in aliases.MustAliasses)
+            {
+                MemoryAlias alias = getAliases(mustIndex);
+                if (alias.MustAliasses.Count == 1 && alias.MayAliasses.Count == 0)
+                {
+                    memoryAliases.Remove(mustIndex);
+                }
+                else
+                {
+                    MemoryAliasBuilder builder = getAliases(mustIndex).Builder();
+                    builder.RemoveMustAlias(index);
+                    memoryAliases[mustIndex] = builder.Build();
+                }
+            }
+
+            foreach (MemoryIndex mayIndex in aliases.MayAliasses)
+            {
+                MemoryAlias alias = getAliases(mayIndex);
+                if (alias.MustAliasses.Count == 0 && alias.MayAliasses.Count == 1)
+                {
+                    memoryAliases.Remove(mayIndex);
+                }
+                else
+                {
+                    MemoryAliasBuilder builder = getAliases(mayIndex).Builder();
+                    builder.RemoveMayAlias(index);
+                    memoryAliases[mayIndex] = builder.Build();
+                }
+            }
+        }
+
+        private void convertAliasesToMay(MemoryIndex index, MemoryAliasBuilder builder)
+        {
+            foreach (MemoryIndex mustIndex in builder.MustAliasses)
+            {
+                MemoryAlias alias = getAliases(mustIndex);
+
+                MemoryAliasBuilder mustBuilder = getAliases(mustIndex).Builder();
+                builder.RemoveMustAlias(index);
+                builder.AddMayAlias(index);
+                memoryAliases[mustIndex] = builder.Build();
+            }
+
+            builder.AddMayAlias(builder.MustAliasses);
+            builder.MustAliasses.Clear();
+        }
+
+        private MemoryAlias getAliases(MemoryIndex index)
+        {
+            MemoryAlias aliases;
+            if (memoryAliases.TryGetValue(index, out aliases))
+            {
+                return aliases;
+            }
+            else 
+            {
+                throw new Exception("Missing alias value for " + index);
+            }
+        }
+
+        internal bool TryGetAliases(MemoryIndex index, out MemoryAlias aliases)
+        {
+            return memoryAliases.TryGetValue(index, out aliases);
+        }
     }
 }

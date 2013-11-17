@@ -11,10 +11,17 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    enum CopyAliasState
+    {
+        NotCopy, OnlyAliases, LinkWithIndex
+    }
+
     class CopyWithinSnapshotWorker
     {
         private Snapshot snapshot;
         private bool isMust;
+
+        public CopyAliasState AliasState { get; set; }
 
         private HashSet<ObjectValue> objectValues = new HashSet<ObjectValue>();
 
@@ -22,6 +29,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             this.snapshot = snapshot;
             this.isMust = isMust;
+
+            AliasState = CopyAliasState.OnlyAliases;
         }
 
         public void Copy(MemoryIndex sourceIndex, MemoryIndex targetIndex)
@@ -53,7 +62,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 visitor.AddValue(snapshot.UndefinedValue);
             }
-
+            
             snapshot.CopyAliases(sourceIndex, targetIndex, isMust);
             snapshot.CopyInfos(sourceIndex, targetIndex, isMust);
 
@@ -67,14 +76,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ArrayDescriptor sourceDescriptor = snapshot.GetDescriptor(value);
             ArrayDescriptor targetDescriptor = snapshot.GetDescriptor(arrayValue);
 
+            CopyAliasState oldState = AliasState;
+
+            AliasState = CopyAliasState.OnlyAliases;
             Copy(sourceDescriptor.UnknownIndex, targetDescriptor.UnknownIndex);
 
+            AliasState = CopyAliasState.LinkWithIndex;
             foreach (var index in sourceDescriptor.Indexes)
             {
                 MemoryIndex newIndex = snapshot.CreateIndex(index.Key, arrayValue, false, false);
                 Copy(index.Value, newIndex);
             }
 
+            AliasState = oldState;
             return arrayValue;
         }
 

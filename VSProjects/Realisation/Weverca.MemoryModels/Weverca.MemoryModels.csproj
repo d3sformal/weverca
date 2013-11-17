@@ -39,7 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyMemoryModel\MemoryWorkers\AssignAliasWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\MergeOperation.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\ICopyModelSnapshotEntry.cs" />
+    <Compile Include="CopyMemoryModel\Tools\HashSetTools.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\CollectComposedValuesVisitor.cs" />
     <Compile Include="MemoryModels.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\AssignCollector.cs" />

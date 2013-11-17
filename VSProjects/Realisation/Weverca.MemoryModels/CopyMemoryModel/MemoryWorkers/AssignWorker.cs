@@ -21,7 +21,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             this.snapshot = snapshot;
         }
 
-        internal void Assign(AssignCollector collector, MemoryIndex sourceIndex)
+        internal void Assign(IIndexCollector collector, MemoryIndex sourceIndex)
         {
             foreach (MemoryIndex mustIndex in collector.MustIndexes)
             {
