@@ -66,6 +66,8 @@ namespace Weverca.Analysis
             var warnings = new VariableName(".analysisWarning");
             var warningsVariable=EntryInput.GetControlVariable(warnings);
             warningsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
+
+            this.WideningLimit = 10;
         }
     }
 }
