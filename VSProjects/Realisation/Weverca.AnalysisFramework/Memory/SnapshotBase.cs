@@ -103,6 +103,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Start snapshot transaction - changes can be proceeded only when transaction is started
         /// </summary>
         protected abstract void startTransaction();
+
         /// <summary>
         /// Commit started transaction - must return true if the content of the snapshot is different 
         /// than the content commited by the previous transaction, false otherwise
@@ -111,6 +112,16 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
         protected abstract bool commitTransaction();
+
+        /// <summary>
+        /// Widen current transaction and process commit.
+        /// Commit started transaction - must return true if the content of the snapshot is different 
+        /// than the content commited by the previous transaction, false otherwise
+        /// NOTE:
+        ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
+        /// </summary>
+        /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
+        protected abstract bool widenAndCommitTransaction();
 
         /// <summary>
         /// Initialize object of given type
@@ -455,6 +466,18 @@ namespace Weverca.AnalysisFramework.Memory
             IsTransactionStarted = false;
 
             HasChanged = commitTransaction();
+        }
+
+        public void WidenAndCommitTransaction()
+        {
+            checkFrozenState();
+            if (!IsTransactionStarted)
+            {
+                throw new NotSupportedException("Cannot commit and widen because no transaction has been started yet");
+            }
+            IsTransactionStarted = false;
+
+            HasChanged = widenAndCommitTransaction();
         }
 
         /// <summary>

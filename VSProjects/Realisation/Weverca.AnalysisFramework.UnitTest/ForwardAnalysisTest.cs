@@ -501,7 +501,7 @@ $resultA=sharedFn('ValueA');
 $resultB=sharedFn('ValueB');
 
 "
- // TODO: .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB") does not fail but it is incorrect (strong update of $resultA should be performed)
+            // TODO: .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB") does not fail but it is incorrect (strong update of $resultA should be performed)
  .AssertVariable("resultA").HasValues("ValueA", "ValueB")
  .AssertVariable("resultB").HasValues("ValueA", "ValueB")
  .ShareFunctionGraph("sharedFn")
@@ -775,6 +775,17 @@ $result = local_wrap();
 ".AssertVariable("result").HasValues(2)
 ;
 
+        readonly static TestCase LongLoopWidening_CASE = @"
+$test='NotAffected';
+
+$i=0;
+while($i<1000){
+    ++$i;
+}
+
+".AssertVariable("test").HasValues("NotAffected")
+ .WideningLimit(20)
+;
 
 
         [TestMethod]
@@ -1118,6 +1129,12 @@ $result = local_wrap();
         public void CrossStackExceptionHandling()
         {
             AnalysisTestUtils.RunTestCase(CrossStackExceptionHandling_CASE);
+        }
+
+        [TestMethod]
+        public void LongLoopWidening()
+        {
+            AnalysisTestUtils.RunTestCase(LongLoopWidening_CASE);
         }
 
         #region Function handling tests

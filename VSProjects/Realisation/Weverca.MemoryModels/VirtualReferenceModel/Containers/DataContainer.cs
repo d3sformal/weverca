@@ -101,6 +101,39 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
             _data[reference] = entry;
         }
 
+        internal void WidenWith(MemoryAssistantBase assistant)
+        {
+            foreach (var oldData in _oldData)
+            {
+                MemoryEntry widenedEntry = null;
+
+                MemoryEntry currEntry;
+                REPORT(Statistic.SimpleHashSearches);
+                if (_data.TryGetValue(oldData.Key, out currEntry))
+                {
+                    REPORT(Statistic.MemoryEntryComparisons);
+                    if (!currEntry.Equals(oldData.Value))
+                    {
+                        //differ in stored data
+                        widenedEntry = assistant.Widen(oldData.Value, currEntry);
+                    }
+                }
+                else
+                {
+                    //differ in presence of some reference
+                    REPORT(Statistic.MemoryEntryCreation);
+                    widenedEntry = assistant.Widen(new MemoryEntry(), currEntry);
+                }
+
+                if (widenedEntry == null)
+                    //there is no widening
+                    continue;
+
+                //apply widening
+                _data[oldData.Key] = widenedEntry;
+            }
+        }
+
         #region Extension handling (TODO needs refactoring)
 
         internal void ExtendBy(DataContainer dataContainer, bool directExtend)
@@ -147,5 +180,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
         }
 
         #endregion
+
+
     }
 }

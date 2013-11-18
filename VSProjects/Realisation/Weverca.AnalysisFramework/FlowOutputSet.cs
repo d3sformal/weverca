@@ -25,12 +25,15 @@ namespace Weverca.AnalysisFramework
         internal bool HasChanges { get; private set; }
 
         private int _commitCount = 0;
-        
-        internal FlowOutputSet(SnapshotBase snapshot) :
+
+        private readonly int _widenLimit;
+
+        internal FlowOutputSet(SnapshotBase snapshot, int widenLimit = int.MaxValue) :
             base(snapshot)
         {
             //because new snapshot has been initialized
             HasChanges = true;
+            _widenLimit = widenLimit;
         }
 
         /// <summary>
@@ -41,9 +44,16 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal void CommitTransaction()
         {
-            Snapshot.CommitTransaction();
+            if (shouldWiden())
+            {
+                Snapshot.WidenAndCommitTransaction();
+            }
+            else
+            {
+                Snapshot.CommitTransaction();
+            }
 
-            HasChanges = Snapshot.HasChanged || _commitCount==0;
+            HasChanges = Snapshot.HasChanged || _commitCount == 0;
             ++_commitCount;
         }
 
@@ -75,11 +85,11 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
-        
+
         #region Snapshot API wrapping
 
-     
-        
+
+
         public StringValue CreateString(string literal)
         {
             return Snapshot.CreateString(literal);
@@ -117,7 +127,7 @@ namespace Weverca.AnalysisFramework
 
         public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
         {
-            return Snapshot.CreateFunction(name,analyzer);
+            return Snapshot.CreateFunction(name, analyzer);
         }
 
         public FunctionValue CreateFunction(LambdaFunctionExpr expression)
@@ -154,7 +164,7 @@ namespace Weverca.AnalysisFramework
         {
             return Snapshot.CreateFloatInterval(start, end);
         }
-                
+
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return Snapshot.CreateInfo(data);
@@ -254,6 +264,12 @@ namespace Weverca.AnalysisFramework
 
         #region Private helpers
 
+
+        private bool shouldWiden()
+        {
+            return _widenLimit < _commitCount;
+        }
+
         /// <summary>
         /// Convert FlowInput sets info AbstractSnapshots
         /// </summary>
@@ -286,7 +302,7 @@ namespace Weverca.AnalysisFramework
 
         public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
-            return Snapshot.GetVariable(variable,forceGlobalContext);
+            return Snapshot.GetVariable(variable, forceGlobalContext);
         }
 
         public ReadSnapshotEntryBase CreateSnapshotEntry(MemoryEntry value)

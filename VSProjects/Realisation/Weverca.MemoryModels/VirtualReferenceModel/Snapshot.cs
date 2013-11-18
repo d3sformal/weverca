@@ -62,14 +62,26 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override bool commitTransaction()
         {
+            return commit();
+        }
+
+
+        protected override bool widenAndCommitTransaction()
+        {
+            _data.WidenWith(Assistant);
+            return commit();
+        }
+
+        private bool commit()
+        {
             if (
-                _locals.DifferInCount ||
-                _meta.DifferInCount ||
-                _globals.DifferInCount ||
-                _localControls.DifferInCount ||
-                _globalControls.DifferInCount ||
-                _data.DifferInCount
-                )
+            _locals.DifferInCount ||
+            _meta.DifferInCount ||
+            _globals.DifferInCount ||
+            _localControls.DifferInCount ||
+            _globalControls.DifferInCount ||
+            _data.DifferInCount
+            )
             {
                 //there is some difference in size of containers
                 //it means that there is change according to previous transaction
@@ -407,7 +419,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return readValue(info);
         }
-        
+
         void assignAlias(VariableInfo target, IEnumerable<ReferenceAliasEntry> aliases)
         {
             var references = new HashSet<VirtualReference>();
@@ -1011,6 +1023,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
+
 
     }
 }

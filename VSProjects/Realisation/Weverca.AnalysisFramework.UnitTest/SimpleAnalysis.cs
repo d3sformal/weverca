@@ -36,6 +36,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="fileName">Name of included file</param>
         /// <param name="fileCode">PHP code of included file</param>
         void SetFunctionShare(string functionName);
+
+        /// <summary>
+        /// Set limit count of commits for single snapshot, when widening start to be processed
+        /// </summary>
+        /// <param name="limit">Count of commits</param>
+        void SetWideningLimit(int limit);
     }
 
     class SimpleAnalysis : ForwardAnalysisBase, TestAnalysisSettings
@@ -90,9 +96,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             _functionResolver.SetFunctionShare(functionName);
         }
 
+        public void SetWideningLimit(int limit)
+        {
+            WideningLimit = limit;
+        }
+
         #endregion
-
-
     }
 
     class SimpleInfo : InfoDataBase

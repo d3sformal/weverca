@@ -21,5 +21,10 @@ namespace Weverca.Analysis
             //throw new NotImplementedException();
             return new MemoryEntry(Context.AnyValue);
         }
+
+        public override MemoryEntry Widen(MemoryEntry old, MemoryEntry current)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

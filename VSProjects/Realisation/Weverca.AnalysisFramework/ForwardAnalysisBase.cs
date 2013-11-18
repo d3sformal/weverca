@@ -74,6 +74,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly FlowOutputSet EntryInput;
 
+        /// <summary>
+        /// Determine count of commits on single flow set that is needed to start widening
+        /// </summary>
+        public int WideningLimit { get; protected set; }
+
         #endregion
 
         #region Template methods for obtaining resolvers
@@ -121,6 +126,7 @@ namespace Weverca.AnalysisFramework
         public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
+            WideningLimit = int.MaxValue;
             EntryInput = createEmptySet();
             EntryInput.StartTransaction();
             EntryCFG = entryMethodGraph;
@@ -218,7 +224,7 @@ namespace Weverca.AnalysisFramework
             snapshot.InitAssistant(assistant);
             assistant.InitContext(snapshot);
 
-            return new FlowOutputSet(snapshot);
+            return new FlowOutputSet(snapshot,WideningLimit);
         }
 
       

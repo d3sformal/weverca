@@ -40,6 +40,14 @@ namespace Weverca.AnalysisFramework.Memory
         public abstract MemoryEntry ReadField(AnyValue value, VariableIdentifier field);
 
         /// <summary>
+        /// Widening operation between old and current memory entries
+        /// </summary>
+        /// <param name="old">Initial value before transaction has been started</param>
+        /// <param name="current">Value computed during transaction</param>
+        /// <returns>Widened memory entry</returns>
+        public abstract MemoryEntry Widen(MemoryEntry old, MemoryEntry current);
+
+        /// <summary>
         /// Initialize context snapshot for current assistant
         /// </summary>
         /// <param name="context">Context snapshot for current memory assistant</param>

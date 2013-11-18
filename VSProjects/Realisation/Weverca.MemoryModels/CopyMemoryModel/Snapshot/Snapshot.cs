@@ -1015,5 +1015,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return memoryAliases.TryGetValue(index, out aliases);
         }
+
+        protected override bool widenAndCommitTransaction()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

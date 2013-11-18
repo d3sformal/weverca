@@ -24,5 +24,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             var indexed = Context.AnyValue.SetInfo(info);
             return new MemoryEntry(indexed);
         }
+
+        public override MemoryEntry Widen(MemoryEntry old, MemoryEntry current)
+        {
+            return new MemoryEntry(Context.AnyValue);
+        }
     }
 }

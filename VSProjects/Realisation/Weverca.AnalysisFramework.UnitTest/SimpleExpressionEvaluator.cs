@@ -79,6 +79,10 @@ namespace Weverca.AnalysisFramework.UnitTest
                     return add(leftOperand, rightOperand);
                 case Operations.Sub:
                     return sub(leftOperand, rightOperand);
+                case Operations.GreaterThan:
+                    return gte(leftOperand, rightOperand);
+                case Operations.LessThan:
+                    return gte(rightOperand, leftOperand);
                 default:
                     throw new NotImplementedException();
             }
@@ -106,9 +110,13 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             var values = new List<Value>();
 
-            foreach (IntegerValue incremented in incrementedValue.PossibleValues)
+            foreach (var incremented in incrementedValue.PossibleValues)
             {
-                var result = OutSet.CreateInt(incremented.Value + inc);
+                var integer = incremented as IntegerValue;
+                if (integer == null)
+                    return new MemoryEntry(OutSet.AnyValue);
+
+                var result = OutSet.CreateInt(integer.Value + inc);
                 values.Add(result);
             }
 
@@ -146,6 +154,47 @@ namespace Weverca.AnalysisFramework.UnitTest
             var rightValue = right.PossibleValues.First() as IntegerValue;
 
             return new MemoryEntry(OutSet.CreateInt(leftValue.Value - rightValue.Value));
+        }
+
+        private MemoryEntry gte(MemoryEntry left, MemoryEntry right)
+        {
+            var canBeTrue = false;
+            var canBeFalse = false;
+            foreach (var leftVal in left.PossibleValues)
+            {
+                var leftInt = leftVal as IntegerValue;
+                if (leftInt== null)
+                    canBeTrue = canBeFalse = true;
+
+                if (canBeTrue && canBeFalse)
+                    //no need for continuation
+                    break;
+
+                foreach (var rightVal in right.PossibleValues)
+                {
+                    var rightInt = rightVal as IntegerValue;
+
+                    if (rightInt == null)
+                    {
+                        canBeTrue = canBeFalse = true;
+                        break;
+                    }
+
+                    if (leftInt.Value > rightInt.Value)
+                        canBeTrue = true;
+                    else
+                        canBeFalse = true;
+                }
+            }
+
+            var values = new List<Value>();
+            if (canBeTrue)
+                values.Add(OutSet.CreateBool(true));
+
+            if (canBeFalse)
+                values.Add(OutSet.CreateBool(false));
+
+            return new MemoryEntry(values);
         }
 
         private void keepParentInfo(MemoryEntry parent, MemoryEntry child)

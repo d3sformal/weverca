@@ -31,11 +31,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <returns>an instance of ForwardAnalysis corresponding to given enumeration item</returns>
         public abstract ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer);
 
-        private Analyses() {}
+        private Analyses() { }
 
         private class SimpleAnalysisCl : Analyses
         {
-            public override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel , EnvironmentInitializer initializer)
+            public override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
             {
                 return new SimpleAnalysis(entryMethodGraph, memoryModel, initializer);
             }
@@ -56,13 +56,13 @@ namespace Weverca.AnalysisFramework.UnitTest
     {
         private readonly EnvironmentInitializer _envinronmentInitializer;
 
-        public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel , EnvironmentInitializer initializer)
-            : base(entryMethodGraph, memoryModel) 
+        public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            : base(entryMethodGraph, memoryModel)
         {
             _envinronmentInitializer = initializer;
         }
 
-        public void SetInclude(String filename, string fileCode) 
+        public void SetInclude(String filename, string fileCode)
         {
             throw new NotImplementedException();
         }
@@ -74,9 +74,14 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             return new WevercaFunctionResolverTest(_envinronmentInitializer);
         }
+
+        public void SetWideningLimit(int limit)
+        {
+            throw new NotImplementedException();
+        }
     }
 
-    internal class WevercaFunctionResolverTest : Weverca.Analysis.FunctionResolver 
+    internal class WevercaFunctionResolverTest : Weverca.Analysis.FunctionResolver
     {
         private readonly EnvironmentInitializer _environmentInitializer;
 
@@ -188,7 +193,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static FlowOutputSet GetEndPointOutSet(TestCase test, ForwardAnalysisBase analysis)
         {
-            test.IncludeInitializer((TestAnalysisSettings) analysis);
+            test.ApplyTestSettings((TestAnalysisSettings)analysis);
 
             GLOBAL_ENVIRONMENT_INITIALIZER(analysis.EntryInput);
             test.EnvironmentInitializer(analysis.EntryInput);
@@ -315,6 +320,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM };
         private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis };
 
+        /// <summary>
+        /// Values below zero means that there is no limit
+        /// </summary>
+        private int _wideningLimit = -1;
+
         internal TestCase(string phpCode, string variableName, string assertMessage, TestCase previousTest = null)
         {
             PhpCode = phpCode;
@@ -350,6 +360,13 @@ namespace Weverca.AnalysisFramework.UnitTest
             _sharedFunctions.Add(sharedFunctionName);
             return this;
         }
+
+        internal TestCase WideningLimit(int limit)
+        {
+            _wideningLimit = limit;
+            return this;
+        }
+
 
         /// <summary>
         /// Set a memory model to be used in the test case.
@@ -469,7 +486,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        internal void IncludeInitializer(TestAnalysisSettings analysis)
+        internal void ApplyTestSettings(TestAnalysisSettings analysis)
         {
             foreach (var include in _includedFiles)
             {
@@ -481,9 +498,12 @@ namespace Weverca.AnalysisFramework.UnitTest
                 analysis.SetFunctionShare(share);
             }
 
+            if (_wideningLimit > 0)
+                analysis.SetWideningLimit(_wideningLimit);
+
             if (PreviousTest != null)
             {
-                PreviousTest.IncludeInitializer(analysis);
+                PreviousTest.ApplyTestSettings(analysis);
             }
         }
 

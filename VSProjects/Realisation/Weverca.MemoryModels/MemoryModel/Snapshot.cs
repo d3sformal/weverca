@@ -938,5 +938,10 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override bool widenAndCommitTransaction()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
