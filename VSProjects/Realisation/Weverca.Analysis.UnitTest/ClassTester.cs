@@ -135,7 +135,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotInheritFunction()
         {
             var outset = TestUtils.Analyze(InterfaceCannotInheritFunctionTest);
-            if (TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION) == true) {
+            if (TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION) == true) {
                 Debug.Fail();
             }
         }
@@ -158,7 +158,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotInheritFunction2()
         {
             var outset = TestUtils.Analyze(InterfaceCannotInheritFunctionTest2);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION));
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION));
             
         }
 
@@ -223,7 +223,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotInheritMehodTrue()
         {
             var outset = TestUtils.Analyze(InterfaceCannotInheritMehodTrueTest);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION));
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION));
 
         }
 
@@ -237,7 +237,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotInheritMehodFalse()
         {
             var outset = TestUtils.Analyze(InterfaceCannotInheritMehodFalseTest);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.INTERFACE_CANNOT_OVER_WRITE_FUNCTION)==false);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION)==false);
 
         }
 
@@ -357,6 +357,246 @@ namespace Weverca.Analysis.UnitTest
             var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest4);
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
         }
+
+
+        string ClassMultipleFieldDeclarationTest=@"
+            class a
+            {
+                private $a,$a;
+            }
+        ";
+        [TestMethod]
+        public void ClassMultipleFieldDeclaration()
+        {
+            var outset = TestUtils.Analyze(ClassMultipleFieldDeclarationTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION));
+        }
+
+        string ClassMultipleConstDeclarationTest = @"
+            class a
+            {
+                const a=4;
+                const a=4;
+            }
+        ";
+        [TestMethod]
+        public void ClassMultipleConstDeclaration()
+        {
+            var outset = TestUtils.Analyze(ClassMultipleConstDeclarationTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION));
+        }
+
+        string ClassMultipleFunctionDeclarationTest = @"
+            class a
+            {
+               static function a()
+               {
+               }
+               function a()
+               {
+               } 
+            }
+        ";
+        [TestMethod]
+        public void ClassMultipleFunctionDeclaration()
+        {
+            var outset = TestUtils.Analyze(ClassMultipleFunctionDeclarationTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CLASS_MULTIPLE_FUNCTION_DECLARATION));
+        }
+
+        string ClassAbstractFunctionWithBodyTest = @"
+            abstract class a
+            {
+               abstract function a()
+               {
+               } 
+            }
+        ";
+        [TestMethod]
+        public void ClassAbstractFunctionWithBody()
+        {
+            var outset = TestUtils.Analyze(ClassAbstractFunctionWithBodyTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.ABSTRACT_METHOD_CANNOT_HAVE_BODY));
+        }
+
+        string ClassFunctionWithoutBodyTest = @"
+            class a
+            {
+                function a();
+
+            }
+        ";
+        [TestMethod]
+        public void ClasFunctionWithoutBody()
+        {
+            var outset = TestUtils.Analyze(ClassFunctionWithoutBodyTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.NON_ABSTRACT_METHOD_MUST_HAVE_BODY));
+        }
+
+        string ClassWithAbstractFunctionTest = @"
+            class a
+            {
+                abstract function a();
+
+            }
+        ";
+        [TestMethod]
+        public void ClassWithAbstractFunction()
+        {
+            var outset = TestUtils.Analyze(ClassWithAbstractFunctionTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.NON_ABSTRACT_CLASS_CONTAINS_ABSTRACT_METHOD));
+        }
+
+        string ClassInheritingConstantsFromInterfaceTest = @"
+            interface b
+            {
+                const a=4;
+            }
+            class a implements b
+            {
+                const a=4;
+            }
+        ";
+        [TestMethod]
+        public void ClassInheritingConstantsFromInterface()
+        {
+            var outset = TestUtils.Analyze(ClassInheritingConstantsFromInterfaceTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT));
+        }
+
+        string ClassInheritingConstantsFromInterfaceTest2 = @"
+            interface b
+            {
+                const a=4;
+            }
+            class a implements b
+            {
+                const b=4;
+            }
+        ";
+        [TestMethod]
+        public void ClassInheritingConstantsFromInterface2()
+        {
+            var outset = TestUtils.Analyze(ClassInheritingConstantsFromInterfaceTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT)==false);
+        }
+
+        string ClassExtendedInheritingConstantsFromInterfaceTest = @"
+            interface b
+            {
+                const a=4;
+            }
+            class base
+            {
+                const a=4;
+            }
+            class a extends base implements b
+            {
+                
+            }
+        ";
+        [TestMethod]
+        public void ClassExtendedInheritingConstantsFromInterface()
+        {
+            var outset = TestUtils.Analyze(ClassExtendedInheritingConstantsFromInterfaceTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT));
+        }
+
+        string ClassDoenstImplementAllFromInterfaceTest = @"
+            interface i
+            {
+                function f();
+            }
+            class a implements i
+            {
+
+            }
+        ";
+        [TestMethod]
+        public void ClassDoenstImplementAllFromInterface()
+        {
+            var outset = TestUtils.Analyze(ClassDoenstImplementAllFromInterfaceTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS));
+        }
+
+        string ClassDoenstCorrectlyImplementInterfaceTest = @"
+            interface i
+            {
+                function f();
+            }
+            class a implements i
+            {
+                static  function f(){}
+            }
+        ";
+        [TestMethod]
+        public void ClassDoenstCorrectlyImplementInterface()
+        {
+            var outset = TestUtils.Analyze(ClassDoenstCorrectlyImplementInterfaceTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+        }
+
+        string ClassDoenstCorrectlyImplementInterfaceTest2 = @"
+            interface i
+            {
+                function f();
+            }
+            class a implements i
+            {
+                function f($x,$y){}
+            }
+        ";
+        [TestMethod]
+        public void ClassDoenstCorrectlyImplementInterface2()
+        {
+            var outset = TestUtils.Analyze(ClassDoenstCorrectlyImplementInterfaceTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION));
+        }
+
+        string ClassAllreadyExistsTest = @"
+            class Exception
+            {
+               
+            }
+        ";
+        [TestMethod]
+        public void ClassAllreadyExists()
+        {
+            var outset = TestUtils.Analyze(ClassAllreadyExistsTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CLASS_ALLREADY_EXISTS));
+        }
+
+        string ClassDoesntExistTest = @"
+            class x extends aan
+            {
+               
+            }
+        ";
+        [TestMethod]
+        public void ClassDoesntExist()
+        {
+            var outset = TestUtils.Analyze(ClassDoesntExistTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+        }
+
+        string ClassCannotExtendFinalClassTest = @"
+            final class aan
+            {
+
+            }
+
+            class x extends aan
+            {
+               
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotExtendFinalClass()
+        {
+            var outset = TestUtils.Analyze(ClassCannotExtendFinalClassTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED));
+        }
+
 
         
     }
