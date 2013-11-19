@@ -494,6 +494,33 @@ function sharedFn($arg){
     return $arg;
 }
 
+function local_wrap() {
+    $result[1] = 'InitA';
+    $result[2] = 'InitB';
+    $result[1]=sharedFn('ValueA');
+    $result[2]=sharedFn('ValueB');
+    return $result;
+}
+
+$resultG = local_wrap();
+$resultA = $resultG[1];
+$resultB = $resultG[2];
+
+"
+ .AssertVariable("resultA").HasValues("ValueA", "ValueB")
+ // The following assertion holds but it is not correct
+ //.AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+ .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+ 
+ .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+ .ShareFunctionGraph("sharedFn")
+ ;
+
+        readonly static TestCase SharedFunctionStrongUpdateGlobal_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
 $resultA = 'InitA';
 $resultB = 'InitB';
 $resultA=sharedFn('ValueA');
@@ -551,23 +578,79 @@ function sharedFn($arg){
     $arg = 'fromSharedFunc';
 }
 
-sharedFn(&$a);
-sharedFn(&$b);
+function local_wrap() {
+    sharedFn(&$a);
+    sharedFn(&$b);   
+
+    $res[1] = $a;
+    $res[2] = $b;
+    return $res;
+}
+
+$result = local_wrap();
+$a = $result[1];
+$b = $result[2];
 "
 .AssertVariable("a").HasValues("fromSharedFunc")
 .AssertVariable("b").HasValues("fromSharedFunc")
 .ShareFunctionGraph("sharedFn")
  ;
+
+        readonly static TestCase SharedFunctionAliasingGlobal_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
+}
+
+sharedFn(&$a);
+sharedFn(&$b);
+"
+.AssertVariable("a").HasUndefinedValue().HasUndefinedOrValues("fromSharedFunc")
+// The following assertion holds but it is strange
+//.AssertVariable("a").HasValues("fromSharedFunc")
+.AssertVariable("b").HasValues("fromSharedFunc")
+// The following assertion holds but it is not correct - the variable $b should be strongly updated 
+// the same way as in SharedFunctionStrongUpdateGlobal_CASE
+//.AssertVariable("b").HasUndefinedValue().HasUndefinedOrValues("fromSharedFunc")
+.ShareFunctionGraph("sharedFn")
+ ;
+        readonly static TestCase SharedFunctionAliasingGlobal2_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
+}
+
+$a = 'initA';
+$b = 'initB';
+sharedFn(&$a);
+sharedFn(&$b);
+"
+.AssertVariable("a").HasValues("initA", "fromSharedFunc")
+.AssertVariable("b").HasValues("fromSharedFunc")
+// The following assertion holds but it is not correct - the variable $b should be strongly updated 
+// the same way as in SharedFunctionStrongUpdateGlobal_CASE
+//.AssertVariable("b").HasValues("initB", "fromSharedFunc")
+.ShareFunctionGraph("sharedFn")
+ ;
+
         // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
         readonly static TestCase SharedFunctionAliasing2_CASE = @"
 function sharedFn($arg){
     $arg = 'fromSharedFunc';
 }
 
-$a = 'originalA';
-$b = 'originalB';
-sharedFn(&$a);
-sharedFn(&$b);
+function local_wrap() {
+    $a = 'originalA';
+    $b = 'originalB';
+    sharedFn(&$a);
+    sharedFn(&$b);
+
+    $res[1] = $a;
+    $res[2] = $b;
+    return $res;
+}
+
+$result = local_wrap();
+$a = $result[1];
+$b = $result[2];
 "
 .AssertVariable("a").HasValues("fromSharedFunc")
 .AssertVariable("b").HasValues("fromSharedFunc")
@@ -580,8 +663,20 @@ function sharedFn($arg, $arg2){
     $arg = $arg2;
 }
 
-sharedFn(&$a, 'fromCallSite1');
-sharedFn(&$b, 'fromCallSite2');
+function local_wrap() {
+    sharedFn(&$a, 'fromCallSite1');
+    sharedFn(&$b, 'fromCallSite2');
+
+    $res[1] = $a;
+    $res[2] = $b;
+    return $res;
+}
+
+$result = local_wrap();
+$a = $result[1];
+$b = $result[2];
+
+
 "
 .AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("b").HasValues("fromCallSite1", "fromCallSite2")
@@ -594,9 +689,19 @@ function sharedFn($arg, $arg2){
     $arg = $arg2;
 }
 
-if ($unknown) $c = &$a;
-sharedFn(&$a, 'fromCallSite1');
-sharedFn(&$b, 'fromCallSite2');
+function local_wrap() {
+    if ($unknown) $c = &$a;
+    sharedFn(&$a, 'fromCallSite1');
+    sharedFn(&$b, 'fromCallSite2');
+
+    $res[1] = $a;
+    $res[2] = $b;
+    return $res;
+}
+
+$result = local_wrap();
+$a = $result[1];
+$b = $result[2];
 "
 .AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("b").HasValues("fromCallSite1", "fromCallSite2")
@@ -1040,6 +1145,12 @@ while($i<1000){
         }
 
         [TestMethod]
+        public void SharedFunctionStrongUpdateGlobal()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateGlobal_CASE);
+        }
+
+        [TestMethod]
         public void SharedFunctionGlobalVariable()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionGlobalVariable_CASE);
@@ -1049,6 +1160,18 @@ while($i<1000){
         public void SharedFunctionAliasing()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasing_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasingGlobal()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasingGlobal_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasingGlobal2()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasingGlobal2_CASE);
         }
 
         [TestMethod]
