@@ -3,8 +3,8 @@
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework.Expressions
 {
@@ -35,7 +35,7 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// InSet's snapshot
+        /// Gets InSet's snapshot
         /// </summary>
         public SnapshotBase InSnapshot
         {
@@ -43,7 +43,7 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// OutSet's snapshot
+        /// Gets OutSet's snapshot
         /// </summary>
         public SnapshotBase OutSnapshot
         {
@@ -93,7 +93,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Builds program point extension for indirect call of given name and arguments via flow controller
         /// </summary>
-        /// <param name="name">Name of called function</param>
+        /// <param name="name">Values indirectly representing name of called function</param>
         /// <param name="arguments">Arguments of call</param>
         public abstract void IndirectCall(MemoryEntry name, MemoryEntry[] arguments);
 
@@ -111,9 +111,29 @@ namespace Weverca.AnalysisFramework.Expressions
         /// via flow controller
         /// </summary>
         /// <param name="calledObject">Object which method is called</param>
-        /// <param name="name">Name of called method</param>
+        /// <param name="name">Values indirectly representing name of called method</param>
         /// <param name="arguments">Arguments of call</param>
         public abstract void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name,
+            MemoryEntry[] arguments);
+
+        /// <summary>
+        /// Builds program point extension for static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="typeName">Name of type where the static method is defined</param>
+        /// <param name="name">Name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
+        public abstract void StaticMethodCall(QualifiedName typeName, Name name,
+            MemoryEntry[] arguments);
+
+        /// <summary>
+        /// Builds program point extension for indirect static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="typeName">Name of type where the static method is defined</param>
+        /// <param name="name">Values indirectly representing name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
+        public abstract void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name,
             MemoryEntry[] arguments);
 
         /// <summary>

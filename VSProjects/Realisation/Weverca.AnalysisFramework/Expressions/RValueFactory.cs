@@ -16,7 +16,7 @@ namespace Weverca.AnalysisFramework.Expressions
     /// Creates RValue points (created values has stack edges connected, but no flow edges)
     /// <remarks>RValuePoint provides MemoryEntry as result</remarks>
     /// </summary>
-    class RValueFactory : TreeVisitor
+    internal class RValueFactory : TreeVisitor
     {
         /// <summary>
         /// Here is stored result of CreateValue operation
@@ -45,7 +45,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
             el.VisitMe(this);
             //assert that result has been set
-            Debug.Assert(_resultPoint != null);
+            Debug.Assert(_resultPoint != null, "Visiting of rvalue element must have a result");
 
             //empty result because of incorrect use
             var result = _resultPoint;
@@ -60,6 +60,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Visit element, which doesn't accept any values and it's value is constant during whole computation
         /// </summary>
         /// <param name="e">Visited element</param>
+        /// <param name="provider"></param>
         private void visitConstantNularyElement(LangElement e, ConstantProvider provider)
         {
             Result(new ConstantProgramPoint(e, provider));
@@ -98,7 +99,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Create argument rvalues according to given signature
         /// </summary>
-        /// <param name="signature">Signature whicha arguments will be created</param>
+        /// <param name="signature">Signature which arguments will be created</param>
         /// <returns>Created arguments</returns>
         private ValuePoint[] CreateArguments(CallSignature signature)
         {
@@ -113,6 +114,8 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         #endregion
+
+        #region TreeVisitor implementation
 
         public override void VisitElement(LangElement element)
         {
@@ -245,6 +248,46 @@ namespace Weverca.AnalysisFramework.Expressions
             Result(new IncDecExPoint(x, variable));
         }
 
+        public override void VisitInstanceOfEx(InstanceOfEx x)
+        {
+            var expression = CreateRValue(x.Expression);
+
+            ValuePoint name = null;
+            if (!(x.ClassNameRef is DirectTypeRef))
+            {
+                name = CreateRValue(x.ClassNameRef);
+            }
+
+            Result(new InstanceOfExPoint(x, expression, name));
+        }
+
+        public override void VisitIssetEx(IssetEx x)
+        {
+            var variables = new List<LValuePoint>();
+            foreach (var varItem in x.VarList)
+            {
+                var lValue = CreateLValue(varItem);
+
+                variables.Add(lValue);
+            }
+
+            Result(new IssetPoint(x, variables.ToArray()));
+        }
+
+        public override void VisitEmptyEx(EmptyEx x)
+        {
+            var lValue = CreateLValue(x.Variable);
+
+            Result(new EmptyExPoint(x, lValue));
+        }
+
+        public override void VisitExitEx(ExitEx x)
+        {
+            var resultValue = CreateRValue(x.ResulExpr);
+
+            Result(new ExitExPoint(x, resultValue));
+        }
+
         public override void VisitValueAssignEx(ValueAssignEx x)
         {
             var rValue = CreateRValue(x.RValue);
@@ -252,7 +295,7 @@ namespace Weverca.AnalysisFramework.Expressions
             {
                 case Operations.AssignAppend:
                 case Operations.AssignPrepend:
-                    var concatedValue=CreateRValue(x.LValue);
+                    var concatedValue = CreateRValue(x.LValue);
                     Result(new AssignConcatPoint(x, concatedValue, rValue));
                     return;
                 case Operations.AssignValue:
@@ -298,10 +341,28 @@ namespace Weverca.AnalysisFramework.Expressions
             Result(new IndirectFunctionCallPoint(x, name, thisObj, arguments));
         }
 
+        public override void VisitDirectStMtdCall(DirectStMtdCall x)
+        {
+            var arguments = CreateArguments(x.CallSignature);
+
+            Debug.Assert(x.IsMemberOf == null, "Static method cannot be called on object");
+
+            Result(new StaticMethodCallPoint(x, arguments));
+        }
+
+        public override void VisitIndirectStMtdCall(IndirectStMtdCall x)
+        {
+            var arguments = CreateArguments(x.CallSignature);
+            var name = CreateRValue(x.MethodNameVar);
+
+            Debug.Assert(x.IsMemberOf == null, "Indirect static method cannot be called on object");
+
+            Result(new IndirectStaticMethodCallPoint(x, name, arguments));
+        }
+
         public override void VisitIncludingEx(IncludingEx x)
         {
             var possibleFiles = CreateRValue(x.Target);
-
 
             Result(new IncludingExPoint(x, possibleFiles));
         }
@@ -321,7 +382,6 @@ namespace Weverca.AnalysisFramework.Expressions
                 name = CreateRValue(x.ClassNameRef);
             }
 
-
             Result(new NewExPoint(x, name, arguments));
         }
 
@@ -340,7 +400,6 @@ namespace Weverca.AnalysisFramework.Expressions
             var index = CreateRValue(x.Index);
 
             Result(new ItemUsePoint(x, array, index));
-
         }
 
         public override void VisitArrayEx(ArrayEx x)
@@ -349,7 +408,6 @@ namespace Weverca.AnalysisFramework.Expressions
 
             foreach (var item in x.Items)
             {
-
                 ValuePoint index = null;
                 if (item.Index != null)
                 {
@@ -380,8 +438,9 @@ namespace Weverca.AnalysisFramework.Expressions
 
             Result(new ArrayExPoint(x, operands));
         }
+
         #endregion
 
-
+        #endregion
     }
 }

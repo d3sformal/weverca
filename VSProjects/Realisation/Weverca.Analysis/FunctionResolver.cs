@@ -54,9 +54,9 @@ namespace Weverca.Analysis
             var methodNames = getSubroutineNames(name);
             var objectValues = resolveObjectsForMember(calledObject);
 
-            foreach (var functionName in methodNames)
+            foreach (var methodName in methodNames)
             {
-                var resolvedMethods = resolveMethod(objectValues, functionName, arguments);
+                var resolvedMethods = resolveMethod(objectValues, methodName, arguments);
                 foreach (var resolvedMethod in resolvedMethods)
                 {
                     methods[resolvedMethod.Key] = resolvedMethod.Value;
@@ -81,6 +81,17 @@ namespace Weverca.Analysis
             }
 
             setCallBranching(functions);
+        }
+
+        public override void StaticMethodCall(QualifiedName typeName, Name name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IndirectStaticMethodCall(QualifiedName typeName,
+            MemoryEntry name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

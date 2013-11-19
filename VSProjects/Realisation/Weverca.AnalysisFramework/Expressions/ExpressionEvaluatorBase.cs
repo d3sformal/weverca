@@ -98,7 +98,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="objectValue">Object value which field is resolved</param>
         /// <param name="field">Specifier of resolved field</param>
         /// <returns>Possible values obtained from resolving given field</returns>
-        public abstract ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field);
+        public abstract ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue,
+            VariableIdentifier field);
 
         /// <summary>
         /// Resolves value at indexedValue[index]
@@ -106,14 +107,16 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="indexedValue">Value which index is resolved</param>
         /// <param name="index">Specifier of an index</param>
         /// <returns>Possible values obtained from resolving given index</returns>
-        public abstract ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index);
+        public abstract ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue,
+            MemberIdentifier index);
 
         /// <summary>
         /// Assign possible aliases to given target
         /// </summary>
         /// <param name="target">Target variable specifier</param>
         /// <param name="aliasedValue">Possible aliases to be assigned</param>
-        public abstract void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue);
+        public abstract void AliasAssign(ReadWriteSnapshotEntryBase target,
+            ReadSnapshotEntryBase aliasedValue);
 
         /// <summary>
         /// Assign possible values to given target
@@ -204,6 +207,31 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract void Echo(EchoStmt echo, MemoryEntry[] entries);
 
         /// <summary>
+        /// Determine whether all variables are set and are not-NULL.
+        /// </summary>
+        /// <param name="variables">Variables to be checked</param>
+        /// <returns>
+        /// <c>true</c> whether all variables are defined and no value is <c>null</c>, <c>false</c> whether
+        /// at least one variable is undefined or has one <c>null</c> value and otherwise any boolean value.
+        /// </returns>
+        public abstract MemoryEntry IssetEx(IEnumerable<VariableIdentifier> variables);
+
+        /// <summary>
+        /// Determine whether a variable is considered to be empty (i.e. null, false, 0, 0.0, "" etc.)
+        /// </summary>
+        /// <param name="variable">A variable to be checked</param>
+        /// <returns><c>true</c> whether a variable is empty, otherwise <c>false</c></returns>
+        public abstract MemoryEntry EmptyEx(VariableIdentifier variable);
+
+        /// <summary>
+        /// Terminates execution of the PHP code. It gives order to analysis to jump at the end of program.
+        /// </summary>
+        /// <param name="exit"><c>exit</c> expression</param>
+        /// <param name="status">Exit status printed if it is string or returned if it is integer</param>
+        /// <returns>Anything, return value is ignored</returns>
+        public abstract MemoryEntry Exit(ExitEx exit, MemoryEntry status);
+
+        /// <summary>
         /// Get value representation of given constant
         /// </summary>
         /// <param name="x">Constant representation</param>
@@ -221,8 +249,37 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Create object value of given type
         /// </summary>
         /// <param name="typeName">Object type specifier</param>
-        /// <returns>Created object</returns>
+        /// <returns>Memory entry with all new possible objects</returns>
         public abstract MemoryEntry CreateObject(QualifiedName typeName);
+
+        /// <summary>
+        /// Create new objects of type with name that is evaluated from expression (<c>$obj = new $exp;</c>)
+        /// </summary>
+        /// <param name="possibleNames">Values determining the name of class</param>
+        /// <returns>Memory entry with all new possible objects</returns>
+        public abstract MemoryEntry IndirectCreateObject(MemoryEntry possibleNames);
+
+        /// <summary>
+        /// Determine whether an expression is instance of a class or interface
+        /// </summary>
+        /// <param name="expression">Expression to be determined whether it is instance of a class</param>
+        /// <param name="typeName"> Name of the type that the expression is checked to</param>
+        /// <returns>
+        /// <c>true</c> whether all values are objects inherited from the type, <c>false</c> whether
+        /// values are not objects or not instances of the type and otherwise any boolean value.
+        /// </returns>
+        public abstract MemoryEntry InstanceOfEx(MemoryEntry expression, QualifiedName typeName);
+
+        /// <summary>
+        /// Determine whether an expression is instance of indirectly resolved class or interface
+        /// </summary>
+        /// <param name="expression">Expression to be determined whether it is instance of a class</param>
+        /// <param name="possibleNames">Possible names of type determined by values of an expression</param>
+        /// <returns>
+        /// <c>true</c> whether all values are objects inherited from the types, <c>false</c> whether
+        /// values are not objects or not instances of the types and otherwise any boolean value.
+        /// </returns>
+        public abstract MemoryEntry IndirectInstanceOfEx(MemoryEntry expression, MemoryEntry possibleNames);
 
         #endregion
 
@@ -289,30 +346,6 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// Creates new objects of type with name that is evaluated from expression (<c>$obj = new $exp;</c>)
-        /// </summary>
-        /// <param name="memoryEntry">Values determining the name of class</param>
-        /// <returns>Memory entry with all new possible objects</returns>
-        internal MemoryEntry IndirectCreateObject(MemoryEntry memoryEntry)
-        {
-            var declarations = new HashSet<TypeValueBase>();
-
-            foreach (StringValue name in memoryEntry.PossibleValues)
-            {
-                var qualifiedName = new QualifiedName(new Name(name.Value));
-                declarations.UnionWith(OutSet.ResolveType(qualifiedName));
-            }
-
-            var result = new List<ObjectValue>();
-            foreach (var declaration in declarations)
-            {
-                result.Add(OutSet.CreateObject(declaration));
-            }
-
-            return new MemoryEntry(result.ToArray());
-        }
-
-        /// <summary>
         /// Creates new function implementation without name from lambda declaration
         /// </summary>
         /// <param name="lambda">Definition of lambda function</param>
@@ -345,7 +378,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Fetches variables of given name from global to local function scope when global keyword is used
         /// </summary>
-        /// <param name="variables">Variables that are feched from global scope</param>
+        /// <param name="variables">Variables that are fetched from global scope</param>
         public virtual void GlobalStatement(IEnumerable<VariableIdentifier> variables)
         {
             foreach (var variable in variables)

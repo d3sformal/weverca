@@ -36,26 +36,26 @@ namespace Weverca.AnalysisFramework.UnitTest
             target.SetAliases(OutSnapshot, aliasedValue);
         }
 
-        public override MemoryEntry ResolveIndexedVariable(VariableIdentifier entry)
+        public override MemoryEntry ResolveIndexedVariable(VariableIdentifier variable)
         {
-            if (!entry.IsDirect)
-            {
-                throw new NotImplementedException();
-            }
+            var snapshotEntry = ResolveVariable(variable);
+            var entry = snapshotEntry.ReadMemory(OutSnapshot);
+            Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
 
-            var array = OutSet.ReadValue(entry.DirectName);
-            //NOTE there should be precise resolution of multiple values
-
-            var arrayValue = array.PossibleValues.First();
-            if (arrayValue is UndefinedValue)
+            // NOTE: there should be precise resolution of multiple values
+            var arrayValue = entry.PossibleValues.First();
+            var undefinedValue = arrayValue as UndefinedValue;
+            if (undefinedValue != null)
             {
-                //new array is implicitly created
                 arrayValue = OutSet.CreateArray();
-                array = new MemoryEntry(arrayValue);
-                OutSet.Assign(entry.DirectName, array);
+                var newEntry = new MemoryEntry(arrayValue);
+                snapshotEntry.WriteMemory(OutSnapshot, newEntry);
+                return newEntry;
             }
-
-            return array;
+            else
+            {
+                return entry;
+            }
         }
 
         public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
@@ -163,7 +163,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             foreach (var leftVal in left.PossibleValues)
             {
                 var leftInt = leftVal as IntegerValue;
-                if (leftInt== null)
+                if (leftInt == null)
                     canBeTrue = canBeFalse = true;
 
                 if (canBeTrue && canBeFalse)
@@ -259,16 +259,21 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #endregion
 
-        public override void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable, ReadWriteSnapshotEntryBase valueVariable)
+        public override void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable,
+            ReadWriteSnapshotEntryBase valueVariable)
         {
             var values = new HashSet<Value>();
 
             var array = enumeree.PossibleValues.First() as AssociativeArray;
-            var indexes = OutSet.IterateArray(array);
+            var arrayEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(array));
 
+            var indexes = OutSet.IterateArray(array);
             foreach (var index in indexes)
             {
-                values.UnionWith(OutSet.GetIndex(array, index).PossibleValues);
+                var indexIdentifier = new MemberIdentifier(index.Identifier);
+                var indexEntry = arrayEntry.ReadIndex(OutSnapshot, indexIdentifier);
+                var element = indexEntry.ReadMemory(OutSnapshot);
+                values.UnionWith(element.PossibleValues);
             }
 
             valueVariable.WriteMemory(OutSnapshot, new MemoryEntry(values));
@@ -324,6 +329,36 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
+        public override MemoryEntry IssetEx(IEnumerable<VariableIdentifier> variables)
+        {
+            Debug.Assert(variables.GetEnumerator().MoveNext(),
+                "isset expression must have at least one parameter");
+
+            foreach (var variable in variables)
+            {
+                var snapshotEntry = OutSet.GetVariable(variable);
+                if (!snapshotEntry.IsDefined(OutSnapshot))
+                {
+                    return new MemoryEntry(OutSet.CreateBool(false));
+                }
+            }
+
+            return new MemoryEntry(OutSet.CreateBool(true));
+        }
+
+        public override MemoryEntry EmptyEx(VariableIdentifier variable)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
+        {
+            // TODO: It must jump to the end of program and print status, if it is a string
+
+            // Exit expression never returns, but it is still expression so it must return something
+            return new MemoryEntry(OutSet.AnyValue);
+        }
+
         public override MemoryEntry CreateObject(QualifiedName typeName)
         {
             var types = OutSet.ResolveType(typeName);
@@ -341,6 +376,43 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
 
             return new MemoryEntry(values);
+        }
+
+        public override MemoryEntry IndirectCreateObject(MemoryEntry possibleNames)
+        {
+            var declarations = new HashSet<TypeValueBase>();
+
+            foreach (StringValue name in possibleNames.PossibleValues)
+            {
+                var qualifiedName = new QualifiedName(new Name(name.Value));
+                var types = OutSet.ResolveType(qualifiedName);
+                if (!types.GetEnumerator().MoveNext())
+                {
+                    // TODO: If no type is resolved, exception should be thrown
+                    Debug.Fail("No type resolved");
+                }
+
+                declarations.UnionWith(types);
+            }
+
+            var values = new List<ObjectValue>();
+            foreach (var declaration in declarations)
+            {
+                var newObject = CreateInitializedObject(declaration);
+                values.Add(newObject);
+            }
+
+            return new MemoryEntry(values);
+        }
+
+        public override MemoryEntry InstanceOfEx(MemoryEntry expression, QualifiedName className)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MemoryEntry IndirectInstanceOfEx(MemoryEntry expression, MemoryEntry possibleNames)
+        {
+            throw new NotImplementedException();
         }
 
         public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)

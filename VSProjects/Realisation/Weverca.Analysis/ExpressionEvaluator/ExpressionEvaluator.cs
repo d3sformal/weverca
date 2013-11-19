@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -15,10 +14,29 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// </summary>
     public class ExpressionEvaluator : ExpressionEvaluatorBase
     {
+        /// <summary>
+        /// Convertor of values to strings used by evaluator
+        /// </summary>
         private StringConverter stringConverter;
+
+        /// <summary>
+        /// The partial evaluator of one unary operation
+        /// </summary>
         private UnaryOperationEvaluator unaryOperationEvaluator;
+
+        /// <summary>
+        /// The partial evaluator of one prefix or postfix increment or decrement operation
+        /// </summary>
         private IncrementDecrementEvaluator incrementDecrementEvaluator;
+
+        /// <summary>
+        /// The partial evaluator of values that can be used as index of array
+        /// </summary>
         private ArrayIndexEvaluator arrayIndexEvaluator;
+
+        /// <summary>
+        /// The partial evaluator of one binary operation
+        /// </summary>
         private BinaryOperationVisitor binaryOperationVisitor;
 
         /// <summary>
@@ -35,6 +53,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region ExpressionEvaluatorBase overrides
 
+        /// <inheritdoc />
         public override MemberIdentifier MemberIdentifier(MemoryEntry memberRepresentation)
         {
             Debug.Assert(memberRepresentation.Count > 0,
@@ -47,314 +66,41 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return arrayIndexEvaluator.EvaluateToIdentifiers(memberRepresentation, out isAlwaysLegal);
         }
 
+        /// <inheritdoc />
         public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
         {
             return OutSet.GetVariable(variable);
         }
 
-        public MemoryEntry ResolveVariable_obsolete(VariableIdentifier variable)
-        {
-            MemoryEntry entry;
-            bool noValueExists;
-
-            if (variable.IsDirect)
-            {
-                // Special case of direct access is $this variable. It has always just one value
-                // Variable $this is absolutely valid outside method, if it does not access to any member.
-                // It behaves as undefined value, thus it returns null with warning.
-                noValueExists = !OutSet.TryReadValue(variable.DirectName, out entry);
-            }
-            else
-            {
-                var names = variable.PossibleNames;
-                Debug.Assert(names.Length > 0, "Every variable must have at least one name");
-
-                noValueExists = true;
-                var valueAlwaysExists = true;
-                var values = new HashSet<Value>();
-
-                foreach (var name in names)
-                {
-                    MemoryEntry variableEntry;
-                    if (OutSet.TryReadValue(name, out variableEntry))
-                    {
-                        if (noValueExists)
-                        {
-                            noValueExists = false;
-                        }
-                    }
-                    else
-                    {
-                        if (valueAlwaysExists)
-                        {
-                            valueAlwaysExists = false;
-                        }
-                    }
-
-                    values.UnionWith(variableEntry.PossibleValues);
-                }
-
-                if (!(valueAlwaysExists || noValueExists))
-                {
-                    SetWarning("Reading of possible undefined variable, null is included",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-
-                entry = new MemoryEntry(values);
-            }
-
-            if (noValueExists)
-            {
-                // Undefined value means that variable was not initialized, we report that.
-                SetWarning("Reading of undefined variable, null is returned",
-                    AnalysisWarningCause.UNDEFINED_VALUE);
-            }
-
-            Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
-            return entry;
-        }
-
-        public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue, VariableIdentifier field)
+        /// <inheritdoc />
+        public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue,
+            VariableIdentifier field)
         {
             return objectValue.ReadField(OutSnapshot, field);
         }
 
-        public MemoryEntry ResolveField(MemoryEntry objectValue, VariableIdentifier field)
-        {
-            Debug.Assert(field.PossibleNames.Length > 0, "Every field variable must have at least one name");
-
-            var indices = new HashSet<ContainerIndex>();
-            foreach (var fieldName in field.PossibleNames)
-            {
-                if (fieldName.Value.Length > 0)
-                {
-                    indices.Add(OutSet.CreateIndex(fieldName.Value));
-                }
-                else
-                {
-                    // Everything, that can be converted to empty string ("", null, false etc.),
-                    // produce empty property that does not represent any memory storage
-                    // TODO: This must be fatal error
-                    SetWarning("Cannot access empty property");
-                }
-            }
-
-            Debug.Assert(objectValue.Count > 0, "Every object entry must have at least one value");
-
-            bool isAlwaysObject;
-            bool isAlwaysConcrete;
-            var objectValues = ResolveObjectsForMember(objectValue, out isAlwaysObject, out isAlwaysConcrete);
-
-            var noValueExists = true;
-            var valueAlwaysExists = isAlwaysConcrete;
-            var values = new HashSet<Value>();
-
-            foreach (var objectInstance in objectValues)
-            {
-                foreach (var index in indices)
-                {
-                    MemoryEntry entry;
-                    if (OutSet.TryGetField(objectInstance, index, out entry))
-                    {
-                        if (noValueExists)
-                        {
-                            noValueExists = false;
-                        }
-                    }
-                    else
-                    {
-                        if (valueAlwaysExists)
-                        {
-                            valueAlwaysExists = false;
-                        }
-                    }
-
-                    values.UnionWith(entry.PossibleValues);
-                }
-            }
-
-            if (!isAlwaysObject)
-            {
-                if ((objectValues.Count > 0) || (!isAlwaysConcrete))
-                {
-                    SetWarning("Trying to get property of possible non-object variable",
-                        AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                    values.Add(OutSet.UndefinedValue);
-                }
-                else
-                {
-                    SetWarning("Trying to get property of non-object variable",
-                        AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                    return new MemoryEntry(OutSet.UndefinedValue);
-                }
-            }
-
-            if (!isAlwaysConcrete)
-            {
-                values.Add(OutSet.AnyValue);
-            }
-
-            if (!valueAlwaysExists)
-            {
-                // Undefined value means that property was not initializes, we report that.
-                if (noValueExists)
-                {
-                    SetWarning("Reading of undefined property, null is returned",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-                else
-                {
-                    SetWarning("Reading of possible undefined property, null is included",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-            }
-
-            Debug.Assert(values.Count > 0, "Every resolved field must give at least one value");
-            return new MemoryEntry(values);
-        }
-
-        public override void AliasAssign(ReadWriteSnapshotEntryBase target, ReadSnapshotEntryBase aliasedValue)
+        /// <inheritdoc />
+        public override void AliasAssign(ReadWriteSnapshotEntryBase target,
+            ReadSnapshotEntryBase aliasedValue)
         {
             target.SetAliases(OutSnapshot, aliasedValue);
         }
 
+        /// <inheritdoc />
         public override void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry)
         {
             target.WriteMemory(OutSnapshot, entry);
         }
 
-        public void Assign(VariableIdentifier target, MemoryEntry entry)
-        {
-            Debug.Assert(entry.Count > 0, "Memory entry assigned to variable must have at least one value");
-
-            if (target.IsDirect)
-            {
-                var name = target.DirectName;
-                if (name.IsThisVariableName)
-                {
-                    // TODO: This must be fatal error
-                    SetWarning("Re-assigning of $this variable");
-                }
-                else
-                {
-                    OutSet.Assign(name, entry);
-                }
-            }
-            else
-            {
-                var names = target.PossibleNames;
-                Debug.Assert(names.Length > 0, "Every variable must have at least one name");
-
-                // When saving to multiple variables, only one variable is changed. Others retain
-                // their original value. Thus, the value is appended, not assigned, to the current values.
-                foreach (var name in names)
-                {
-                    if (name.IsThisVariableName)
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Possible re-assigning of $this variable");
-                    }
-                    else
-                    {
-                        AppendValue(name, entry);
-                    }
-                }
-            }
-        }
-
-        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
+        /// <inheritdoc />
+        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField,
+            MemoryEntry assignedValue)
         {
             var fieldEntry = objectValue.ReadField(OutSnapshot, targetField);
             fieldEntry.WriteMemory(OutSnapshot, assignedValue);
         }
 
-        public void FieldAssign(MemoryEntry objectValue, VariableIdentifier targetField,
-            MemoryEntry entry)
-        {
-            var isOneEntry = (objectValue.Count == 1) && targetField.IsDirect;
-            if (isOneEntry)
-            {
-                var enumerator = objectValue.PossibleValues.GetEnumerator();
-                enumerator.MoveNext();
-                Debug.Assert(!(enumerator.Current is UndefinedValue), "Undefined value has been changed to object");
-
-                var objectInstance = enumerator.Current as ObjectValue;
-                if (objectInstance != null)
-                {
-                    string fieldName = targetField.DirectName.Value;
-                    if (fieldName.Length > 0)
-                    {
-                        var index = OutSet.CreateIndex(fieldName);
-                        OutSet.SetField(objectInstance, index, entry);
-                    }
-                    else
-                    {
-                        // Everything, that can be converted to empty string ("", null, false etc.),
-                        // produce empty property that does not represent any memory storage
-                        // TODO: This must be fatal error
-                        SetWarning("Cannot access empty property");
-                    }
-                }
-                else
-                {
-                    SetWarning("Attempt to assign property of non-object",
-                        AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                }
-            }
-            else
-            {
-                Debug.Assert(targetField.PossibleNames.Length > 0,
-                    "Every field variable must have at least one name");
-
-                var indices = new HashSet<ContainerIndex>();
-                foreach (var fieldName in targetField.PossibleNames)
-                {
-                    if (fieldName.Value.Length > 0)
-                    {
-                        indices.Add(OutSet.CreateIndex(fieldName.Value));
-                    }
-                    else
-                    {
-                        // Everything, that can be converted to empty string ("", null, false etc.),
-                        // produce empty property that does not represent any memory storage
-                        // TODO: This must be fatal error
-                        SetWarning("Cannot access empty property");
-                    }
-                }
-
-                Debug.Assert(objectValue.Count > 0, "Every object entry must have at least one value");
-
-                bool isAlwaysObject;
-                bool isAlwaysConcrete;
-                var objectValues = ResolveObjectsForMember(objectValue, out isAlwaysObject, out isAlwaysConcrete);
-
-                // When saving to multiple object or multiple fields of one object (or both), only
-                // one memory place is changed. Others retain thier original value. Thus, the value
-                // is appended, not assigned, to the current values of all fields of all objects.
-                foreach (var objectInstance in objectValues)
-                {
-                    foreach (var index in indices)
-                    {
-                        FieldAppendValue(objectInstance, index, entry);
-                    }
-                }
-
-                if (!isAlwaysObject)
-                {
-                    if ((objectValues.Count > 0) || (!isAlwaysConcrete))
-                    {
-                        SetWarning("Possible attempt to assign property of non-object",
-                            AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                    }
-                    else
-                    {
-                        SetWarning("Attempt to assign property of non-object",
-                            AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
-                    }
-                }
-            }
-        }
-
+        /// <inheritdoc />
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
             MemoryEntry rightOperand)
         {
@@ -371,18 +117,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
+        /// <inheritdoc />
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
             unaryOperationEvaluator.SetContext(Flow);
             return unaryOperationEvaluator.Evaluate(operation, operand);
         }
 
+        /// <inheritdoc />
         public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
         {
             incrementDecrementEvaluator.SetContext(Flow);
             return incrementDecrementEvaluator.Evaluate(operation.Inc, incrementedValue);
         }
 
+        /// <inheritdoc />
         public override MemoryEntry ArrayEx(
             IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
         {
@@ -468,6 +217,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             nextIndices.Add(defaultIndex + 1);
                         }
                     }
+
                     currentIntegerIndices = nextIndices;
                 }
 
@@ -489,6 +239,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(array);
         }
 
+        /// <inheritdoc />
         public override IEnumerable<string> VariableNames(MemoryEntry variableSpecifier)
         {
             Debug.Assert(variableSpecifier.Count > 0, "Every variable must have at least one name");
@@ -508,214 +259,72 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return names;
         }
 
-        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index, MemoryEntry assignedValue)
+        /// <inheritdoc />
+        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index,
+            MemoryEntry assignedValue)
         {
             var indexIdentifier = MemberIdentifier(index);
             var indexEntry = indexedValue.ReadIndex(OutSnapshot, indexIdentifier);
             indexEntry.WriteMemory(OutSnapshot, assignedValue);
         }
 
-        public void IndexAssign(MemoryEntry array, MemoryEntry index, MemoryEntry assignedValue)
-        {
-            // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
-            // The problem is that we do not know the name of variable and we cannot detect it.
-
-            Debug.Assert(index.Count > 0, "Every index entry must have at least one value");
-
-            var indexNames = VariableNames(index);
-            var indices = CreateContainterIndexes(indexNames);
-
-            var isOneEntry = (array.Count == 1) && (index.Count == 1);
-            if (isOneEntry)
-            {
-                var arrayEnumerator = array.PossibleValues.GetEnumerator();
-                arrayEnumerator.MoveNext();
-                Debug.Assert(!(arrayEnumerator.Current is UndefinedValue), "Undefined value has been changed to array");
-
-                var arrayValue = arrayEnumerator.Current as AssociativeArray;
-                if (arrayValue != null)
-                {
-                    var indexEnumerator = indices.GetEnumerator();
-                    indexEnumerator.MoveNext();
-                    OutSet.SetIndex(arrayValue, indexEnumerator.Current, assignedValue);
-                }
-                else
-                {
-                    // TODO: String can be accessed by index too
-                    SetWarning("Cannot assign using a key to variable different from array",
-                        AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
-                }
-            }
-            else
-            {
-                Debug.Assert(array.Count > 0, "Every array entry must have at least one value");
-
-                bool isAlwaysObject;
-                bool isAlwaysConcrete;
-                var arrayValues = ResolveArraysForIndex(array, out isAlwaysObject, out isAlwaysConcrete);
-
-                // When saving to multiple array or multiple array elements (or both), only
-                // one memory place is changed. Others retain thier original value. Thus, the value
-                // is appended, not assigned, to the current values of all elements of all arrays.
-                foreach (var arrayValue in arrayValues)
-                {
-                    foreach (var containerIndex in indices)
-                    {
-                        IndexAppendValue(arrayValue, containerIndex, assignedValue);
-                    }
-                }
-
-                if (!isAlwaysObject)
-                {
-                    if ((arrayValues.Count > 0) || (!isAlwaysConcrete))
-                    {
-                        SetWarning("Cannot assign using a key to variable possibly different from array",
-                            AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
-                    }
-                    else
-                    {
-                        SetWarning("Cannot assign using a key to variable different from array",
-                            AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
-                    }
-                }
-            }
-        }
-
-        public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue, MemberIdentifier index)
+        /// <inheritdoc />
+        public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase indexedValue,
+            MemberIdentifier index)
         {
             return indexedValue.ReadIndex(OutSnapshot, index);
         }
 
-        public MemoryEntry ResolveIndex(MemoryEntry array, MemoryEntry index)
-        {
-            Debug.Assert(index.Count > 0, "Every index entry must have at least one value");
-
-            var indexNames = VariableNames(index);
-            var indices = CreateContainterIndexes(indexNames);
-
-            Debug.Assert(array.Count > 0, "Every array entry must have at least one value");
-
-            bool isAlwaysObject;
-            bool isAlwaysConcrete;
-            var arrayValues = ResolveArraysForIndex(array, out isAlwaysObject, out isAlwaysConcrete);
-
-            var noValueExists = true;
-            var valueAlwaysExists = isAlwaysConcrete;
-            var values = new HashSet<Value>();
-
-            foreach (var arrayValue in arrayValues)
-            {
-                foreach (var containerIndex in indices)
-                {
-                    MemoryEntry entry;
-                    if (OutSet.TryGetIndex(arrayValue, containerIndex, out entry))
-                    {
-                        if (noValueExists)
-                        {
-                            noValueExists = false;
-                        }
-                    }
-                    else
-                    {
-                        if (valueAlwaysExists)
-                        {
-                            valueAlwaysExists = false;
-                        }
-                    }
-
-                    values.UnionWith(entry.PossibleValues);
-                }
-            }
-
-            if (!isAlwaysObject)
-            {
-                if ((arrayValues.Count > 0) || (!isAlwaysConcrete))
-                {
-                    SetWarning("Trying to get element of possible non-array variable",
-                        AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
-                    values.Add(OutSet.UndefinedValue);
-                }
-                else
-                {
-                    SetWarning("Trying to get element of non-array variable",
-                        AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
-                    return new MemoryEntry(OutSet.UndefinedValue);
-                }
-            }
-
-            if (!isAlwaysConcrete)
-            {
-                values.Add(OutSet.AnyArrayValue);
-            }
-
-            if (!valueAlwaysExists)
-            {
-                // Undefined value means that property was not initializes, we report that.
-                if (noValueExists)
-                {
-                    SetWarning("Undefined array offset, null is included",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-                else
-                {
-                    SetWarning("Possible undefined array offset, null is returned",
-                        AnalysisWarningCause.UNDEFINED_VALUE);
-                }
-            }
-
-            Debug.Assert(values.Count > 0, "Every resolved element must give at least one value");
-            return new MemoryEntry(values);
-        }
-
+        /// <inheritdoc />
         public override MemoryEntry ResolveIndexedVariable(VariableIdentifier variable)
         {
-            var names = variable.PossibleNames;
-            Debug.Assert(names.Length > 0, "Every variable must have at least one name");
-
-            var allValues = new HashSet<Value>();
-            foreach (var name in names)
+            foreach (var name in variable.PossibleNames)
             {
-                var entry = OutSet.ReadValue(name);
-                Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
-
-                var values = new List<Value>();
-                var isEntryUnchanged = true;
-                foreach (var value in entry.PossibleValues)
+                if (name.IsThisVariableName)
                 {
-                    var undefined = value as UndefinedValue;
-                    if ((undefined != null) && isEntryUnchanged)
-                    {
-                        if (name.IsThisVariableName)
-                        {
-                            // Variable $this cannot be assigned even if it is an object or null
-                            // TODO: This must be error
-                            SetWarning("Trying to create array in $this variable");
-                        }
-                        else
-                        {
-                            var arrayValue = OutSet.CreateArray();
-                            values.Add(arrayValue);
-                            isEntryUnchanged = false;
-                        }
-                    }
-                    else
-                    {
-                        values.Add(value);
-                    }
+                    // Variable $this cannot be assigned even if it is an object or null
+                    // TODO: This must be error
+                    SetWarning("Trying to create array in $this variable");
                 }
-
-                if (!isEntryUnchanged)
-                {
-                    var newEntry = new MemoryEntry(values);
-                    OutSet.Assign(name, newEntry);
-                }
-
-                allValues.UnionWith(values);
             }
 
-            return new MemoryEntry(allValues);
+            var snapshotEntry = ResolveVariable(variable);
+            var entry = snapshotEntry.ReadMemory(OutSnapshot);
+            Debug.Assert(entry.Count > 0, "Every resolved variable must give at least one value");
+
+            var values = new List<Value>();
+            var isEntryUnchanged = true;
+            foreach (var value in entry.PossibleValues)
+            {
+                var undefinedValue = value as UndefinedValue;
+                if (undefinedValue != null)
+                {
+                    if (isEntryUnchanged)
+                    {
+                        var arrayValue = OutSet.CreateArray();
+                        values.Add(arrayValue);
+                        isEntryUnchanged = false;
+                    }
+                }
+                else
+                {
+                    values.Add(value);
+                }
+            }
+
+            if (isEntryUnchanged)
+            {
+                return entry;
+            }
+            else
+            {
+                var newEntry = new MemoryEntry(values);
+                snapshotEntry.WriteMemory(OutSnapshot, newEntry);
+                return newEntry;
+            }
         }
 
+        /// <inheritdoc />
         public override void Foreach(MemoryEntry enumeree, ReadWriteSnapshotEntryBase keyVariable,
             ReadWriteSnapshotEntryBase valueVariable)
         {
@@ -779,9 +388,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <inheritdoc />
         public override MemoryEntry Concat(IEnumerable<MemoryEntry> parts)
         {
-            // TODO: Optimalize
             MemoryEntry leftOperand = null;
 
             foreach (var part in parts)
@@ -796,10 +405,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
 
-            Debug.Assert(leftOperand != null);
+            Debug.Assert(leftOperand != null, "There must be at least one operand to concat");
             return leftOperand;
         }
 
+        /// <inheritdoc />
         public override void Echo(EchoStmt echo, MemoryEntry[] entries)
         {
             // TODO: Optimalize, implementation is provided only for faultless progress and testing
@@ -812,6 +422,153 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <inheritdoc />
+        public override MemoryEntry IssetEx(IEnumerable<VariableIdentifier> variables)
+        {
+            Debug.Assert(variables.GetEnumerator().MoveNext(),
+                "isset expression must have at least one parameter");
+
+            var isAlwaysDefined = true;
+
+            foreach (var variable in variables)
+            {
+                var snapshotEntry = OutSet.GetVariable(variable);
+                if (snapshotEntry.IsDefined(OutSnapshot))
+                {
+                    var entry = snapshotEntry.ReadMemory(OutSnapshot);
+                    Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
+                        "Memory entry must always have at least one value");
+
+                    var isOnlyUndefined = true;
+                    foreach (var value in entry.PossibleValues)
+                    {
+                        var undefinedValue = value as UndefinedValue;
+                        if (undefinedValue != null)
+                        {
+                            if (isAlwaysDefined)
+                            {
+                                isAlwaysDefined = false;
+                                if (!isOnlyUndefined)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (isOnlyUndefined)
+                            {
+                                isOnlyUndefined = false;
+                                if (!isAlwaysDefined)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (isOnlyUndefined)
+                    {
+                        return new MemoryEntry(OutSet.CreateBool(false));
+                    }
+                }
+                else
+                {
+                    return new MemoryEntry(OutSet.CreateBool(false));
+                }
+            }
+
+            if (isAlwaysDefined)
+            {
+                return new MemoryEntry(OutSet.CreateBool(true));
+            }
+            else
+            {
+                return new MemoryEntry(OutSet.AnyBooleanValue);
+            }
+        }
+
+        /// <inheritdoc />
+        public override MemoryEntry EmptyEx(VariableIdentifier variable)
+        {
+            var snapshotEntry = OutSet.GetVariable(variable);
+            if (snapshotEntry.IsDefined(OutSnapshot))
+            {
+                var entry = snapshotEntry.ReadMemory(OutSnapshot);
+                Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
+                    "Memory entry must always have at least one value");
+
+                unaryOperationEvaluator.SetContext(Flow);
+
+                var isAlwaysEmpty = true;
+                var isNeverEmpty = true;
+
+                foreach (var value in entry.PossibleValues)
+                {
+                    var convertedValue = unaryOperationEvaluator.Evaluate(Operations.BoolCast, value);
+
+                    var booleanValue = convertedValue as BooleanValue;
+                    if (booleanValue != null)
+                    {
+                        if (booleanValue.Value)
+                        {
+                            if (isAlwaysEmpty)
+                            {
+                                isAlwaysEmpty = false;
+                                if (!isNeverEmpty)
+                                {
+                                    return new MemoryEntry(OutSet.AnyBooleanValue);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (isNeverEmpty)
+                            {
+                                isNeverEmpty = false;
+                                if (!isAlwaysEmpty)
+                                {
+                                    return new MemoryEntry(OutSet.AnyBooleanValue);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var anyBooleanValue = convertedValue as AnyBooleanValue;
+                        Debug.Assert(anyBooleanValue != null,
+                            "Casting to boolean can result only to boolean value");
+
+                        return new MemoryEntry(OutSet.AnyBooleanValue);
+                    }
+                }
+
+                if (isAlwaysEmpty)
+                {
+                    return new MemoryEntry(OutSet.CreateBool(true));
+                }
+                else
+                {
+                    Debug.Assert(isNeverEmpty, "Undecidable cases are solved inside loop");
+                    return new MemoryEntry(OutSet.CreateBool(false));
+                }
+            }
+            else
+            {
+                return new MemoryEntry(OutSet.CreateBool(true));
+            }
+        }
+
+        /// <inheritdoc />
+        public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
+        {
+            // TODO: It must jump to the end of program and print status, if it is a string
+
+            // Exit expression never returns, but it is still expression so it must return something
+            return new MemoryEntry(OutSet.AnyValue);
+        }
+
+        /// <inheritdoc />
         public override MemoryEntry Constant(GlobalConstUse x)
         {
             var constantAnalyzer = NativeConstantAnalyzer.Create(OutSet);
@@ -844,103 +601,85 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <inheritdoc />
         public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
         {
             var name = new QualifiedName(new Name(x.Name.Value));
             UserDefinedConstantHandler.insertConstant(OutSet, name, constantValue, false);
         }
 
-        /// <summary>
-        /// Create object value of given type
-        /// </summary>
-        /// <param name="typeName">Object type specifier</param>
-        /// <returns>Created object</returns>
+        /// <inheritdoc />
         public override MemoryEntry CreateObject(QualifiedName typeName)
         {
-            var types = OutSet.ResolveType(typeName);
-            if (!types.GetEnumerator().MoveNext())
-            {
-                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
-                ClassDecl nativeDeclaration;
-                if (objectAnalyzer.TryGetClass(typeName, out nativeDeclaration))
-                {
-                    var type = OutSet.CreateType(nativeDeclaration);
-                    OutSet.DeclareGlobal(type);
-                    var newTypes = new List<TypeValueBase>();
-                    newTypes.Add(type);
-                    types = newTypes;
-                }
-                else
-                {
-                    // TODO: This must be error
-                    SetWarning("Class not found");
-                }
-            }
+            var typeNames = new QualifiedName[] { typeName };
+            return CreateObjectFromNames(typeNames);
+        }
 
-            var values = new List<ObjectValue>();
-            foreach (var type in types)
+        /// <inheritdoc />
+        public override MemoryEntry IndirectCreateObject(MemoryEntry possibleNames)
+        {
+            var typeNames = ResolveTypeNames(possibleNames);
+            if (typeNames != null)
             {
-                var newObject = CreateInitializedObject(type);
-                values.Add(newObject);
+                return CreateObjectFromNames(typeNames);
             }
+            else
+            {
+                SetWarning("Class name cannot be resolved when new object is created indirectly");
+                return new MemoryEntry(OutSet.AnyObjectValue);
+            }
+        }
 
-            return new MemoryEntry(values);
+        /// <inheritdoc />
+        public override MemoryEntry InstanceOfEx(MemoryEntry expression, QualifiedName typeName)
+        {
+            var typeNames = new QualifiedName[] { typeName };
+            return InstanceOfTypeNames(expression, typeNames);
+        }
+
+        /// <inheritdoc />
+        public override MemoryEntry IndirectInstanceOfEx(MemoryEntry expression, MemoryEntry possibleNames)
+        {
+            var typeNames = ResolveTypeNames(possibleNames);
+            if (typeNames != null)
+            {
+                return InstanceOfTypeNames(expression, typeNames);
+            }
+            else
+            {
+                SetWarning("Class name cannot be resolved when using instanceof construct");
+                return new MemoryEntry(OutSet.AnyBooleanValue);
+            }
         }
 
         #endregion
 
+        /// <summary>
+        /// Generates a warning with the given message
+        /// </summary>
+        /// <param name="message">Text of warning</param>
         public void SetWarning(string message)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
         }
 
+        /// <summary>
+        /// Generates a warning of the proper type and with the given message
+        /// </summary>
+        /// <param name="message">Text of warning</param>
+        /// <param name="cause">More specific warning type</param>
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
 
-        private static List<ObjectValue> ResolveObjectsForMember(MemoryEntry entry,
-            out bool isAlwaysObject, out bool isAlwaysConcrete)
-        {
-            Debug.Assert(entry.Count > 0, "Every object entry must have at least one value");
-
-            var objectValues = new List<ObjectValue>();
-            isAlwaysObject = true;
-            isAlwaysConcrete = true;
-
-            foreach (var value in entry.PossibleValues)
-            {
-                // TODO: Inside method, $this variable is an object, otherwise a runtime error has occurred.
-                // The problem is that we do not know the name of variable and we cannot detect it.
-
-                var objectInstance = value as ObjectValue;
-                if (objectInstance != null)
-                {
-                    objectValues.Add(objectInstance);
-                }
-                else
-                {
-                    var anyObjectInstance = value as AnyObjectValue;
-                    if (anyObjectInstance != null)
-                    {
-                        if (isAlwaysConcrete)
-                        {
-                            isAlwaysConcrete = false;
-                        }
-                    }
-                    else
-                    {
-                        if (isAlwaysObject)
-                        {
-                            isAlwaysObject = false;
-                        }
-                    }
-                }
-            }
-
-            return objectValues;
-        }
-
+        /// <summary>
+        /// Find all arrays in list of universal values
+        /// </summary>
+        /// <param name="entry">Memory entry of values to resolve to arrays</param>
+        /// <param name="isAlwaysArray">Indicates whether all values are array</param>
+        /// <param name="isAlwaysConcrete">Indicates whether all values are concrete array</param>
+        /// <returns>All resolved concrete arrays</returns>
         private static List<AssociativeArray> ResolveArraysForIndex(MemoryEntry entry,
             out bool isAlwaysArray, out bool isAlwaysConcrete)
         {
@@ -984,37 +723,200 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return arrayValues;
         }
 
-        private void AppendValue(VariableName variable, MemoryEntry entry)
+        /// <summary>
+        /// Resolve source or native type from name
+        /// </summary>
+        /// <param name="typeName">Name of type to resolve</param>
+        /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>
+        private IEnumerable<TypeValueBase> ResolveSourceOrNativeType(QualifiedName typeName)
         {
-            var currentValue = OutSet.ReadValue(variable);
-            var newValue = MemoryEntry.Merge(currentValue, entry);
-            OutSet.Assign(variable, newValue);
-        }
-
-        private void FieldAppendValue(ObjectValue objectValue, ContainerIndex index, MemoryEntry entry)
-        {
-            var currentValue = OutSet.GetField(objectValue, index);
-            var newValue = MemoryEntry.Merge(currentValue, entry);
-            OutSet.SetField(objectValue, index, newValue);
-        }
-
-        private void IndexAppendValue(AssociativeArray arrayValue, ContainerIndex index, MemoryEntry entry)
-        {
-            var currentValue = OutSet.GetIndex(arrayValue, index);
-            var newValue = MemoryEntry.Merge(currentValue, entry);
-            OutSet.SetIndex(arrayValue, index, newValue);
-        }
-
-        private List<ContainerIndex> CreateContainterIndexes(IEnumerable<string> indexNames)
-        {
-            var indexes = new List<ContainerIndex>();
-            foreach (var indexName in indexNames)
+            var typeValues = OutSet.ResolveType(typeName);
+            if (!typeValues.GetEnumerator().MoveNext())
             {
-                var index = OutSet.CreateIndex(indexName);
-                indexes.Add(index);
+                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
+                ClassDecl nativeDeclaration;
+                if (objectAnalyzer.TryGetClass(typeName, out nativeDeclaration))
+                {
+                    var type = OutSet.CreateType(nativeDeclaration);
+                    OutSet.DeclareGlobal(type);
+                    var newTypes = new List<TypeValueBase>();
+                    newTypes.Add(type);
+                    typeValues = newTypes;
+                }
+                else
+                {
+                    // TODO: This must be error
+                    SetWarning("Class not found when creating new object");
+                    return null;
+                }
             }
 
-            return indexes;
+            return typeValues;
+        }
+
+        /// <summary>
+        /// Resolve names from values
+        /// </summary>
+        /// <param name="possibleNames">Memory entry of values to resolve to type names</param>
+        /// <returns><c>null</c> whether any value cannot be resolved to string, otherwise names</returns>
+        private List<QualifiedName> ResolveTypeNames(MemoryEntry possibleNames)
+        {
+            Debug.Assert(possibleNames.Count > 0, "Every memory entry must have at least one value");
+            var declarations = new HashSet<TypeValueBase>();
+
+            stringConverter.SetContext(Flow);
+            bool isAlwaysConcrete;
+            var names = stringConverter.Evaluate(possibleNames, out isAlwaysConcrete);
+
+            if (isAlwaysConcrete)
+            {
+                var typeNames = new List<QualifiedName>();
+                foreach (var name in names)
+                {
+                    typeNames.Add(new QualifiedName(new Name(name.Value)));
+                }
+
+                return typeNames;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Creates new objects of specified type names, directly and indirectly too
+        /// </summary>
+        /// <param name="typeNames">Possible names of classes or interfaces</param>
+        /// <returns>Memory entry with all new possible objects</returns>
+        private MemoryEntry CreateObjectFromNames(IEnumerable<QualifiedName> typeNames)
+        {
+            var values = new List<ObjectValue>();
+            var isTypeAlwaysDefined = true;
+
+            foreach (var typeName in typeNames)
+            {
+                var typeValues = ResolveSourceOrNativeType(typeName);
+                if (typeValues != null)
+                {
+                    foreach (var type in typeValues)
+                    {
+                        var newObject = CreateInitializedObject(type);
+                        values.Add(newObject);
+                    }
+                }
+                else
+                {
+                    // TODO: This must be error
+                    SetWarning("Class not found when creating new object");
+
+                    if (isTypeAlwaysDefined)
+                    {
+                        isTypeAlwaysDefined = false;
+                    }
+                }
+            }
+
+            // TODO: If type does not exist, exceptiom must raise, but it must return something for now
+            if ((!isTypeAlwaysDefined) && (values.Count <= 0))
+            {
+                return new MemoryEntry(OutSet.AnyObjectValue);
+            }
+
+            return new MemoryEntry(values);
+        }
+
+        /// <summary>
+        /// Determine whether an expression is instance of directly or indirectly resolved class or interface
+        /// </summary>
+        /// <param name="expression">Expression to be determined whether it is instance of a class</param>
+        /// <param name="typeNames">Possible names of classes or interfaces</param>
+        /// <returns>
+        /// <c>true</c> whether expression is instance of all the specified types,
+        /// <c>false</c> whether it is not instance of any of types and otherwise any boolean value
+        /// </returns>
+        private MemoryEntry InstanceOfTypeNames(MemoryEntry expression, IEnumerable<QualifiedName> typeNames)
+        {
+            var isAlwaysInstanceOf = true;
+            var isNeverInstanceOf = true;
+
+            foreach (var typeName in typeNames)
+            {
+                var typeValues = ResolveSourceOrNativeType(typeName);
+                if (typeValues == null)
+                {
+                    // TODO: This must be error
+                    SetWarning("Class not found when creating new object");
+                    continue;
+                }
+
+                foreach (var value in expression.PossibleValues)
+                {
+                    var objectValue = value as ObjectValue;
+                    if (objectValue != null)
+                    {
+                        // TODO: Resolving of type inheritance
+                        // var typeValue = OutSet.ObjectType(objectValue);
+                        var isInstanceOf = OutSet.AnyBooleanValue as Value;
+
+                        var booleanValue = isInstanceOf as BooleanValue;
+                        if (booleanValue != null)
+                        {
+                            if (booleanValue.Value)
+                            {
+                                if (isNeverInstanceOf)
+                                {
+                                    isNeverInstanceOf = false;
+                                    if (!isAlwaysInstanceOf)
+                                    {
+                                        return new MemoryEntry(OutSet.AnyBooleanValue);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (isAlwaysInstanceOf)
+                                {
+                                    isAlwaysInstanceOf = false;
+                                    if (!isNeverInstanceOf)
+                                    {
+                                        return new MemoryEntry(OutSet.AnyBooleanValue);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            var anyBooleanValue = isInstanceOf as AnyBooleanValue;
+                            Debug.Assert(anyBooleanValue != null,
+                                "Casting to boolean can result only to boolean value");
+
+                            return new MemoryEntry(anyBooleanValue);
+                        }
+                    }
+                    else
+                    {
+                        if (isAlwaysInstanceOf)
+                        {
+                            isAlwaysInstanceOf = false;
+                            if (!isNeverInstanceOf)
+                            {
+                                return new MemoryEntry(OutSet.AnyBooleanValue);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (isAlwaysInstanceOf)
+            {
+                return new MemoryEntry(OutSet.CreateBool(true));
+            }
+            else
+            {
+                Debug.Assert(isNeverInstanceOf, "Undecidable cases are solved inside loop");
+                return new MemoryEntry(OutSet.CreateBool(false));
+            }
         }
     }
 }

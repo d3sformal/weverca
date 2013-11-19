@@ -4,24 +4,70 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.Analysis.ExpressionEvaluator;
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis
 {
-    class MemoryAssistant : MemoryAssistantBase
+    /// <inheritdoc />
+    internal class MemoryAssistant : MemoryAssistantBase
     {
+        #region MemoryAssistantBase overrides
+
+        /// <inheritdoc />
         public override MemoryEntry ReadIndex(AnyValue value, MemberIdentifier index)
         {
-            //todo copy info
-            return new MemoryEntry(Context.AnyValue);
+            // TODO: Copy info
+            if (value is AnyStringValue)
+            {
+                // Element of string is one charachter but since PHP has no character type,
+                // it returns string with one character. The character do not need to be initialized
+                SetWarning("Possibly uninitialized string offset");
+                return new MemoryEntry(Context.AnyStringValue);
+            }
+            else if ((value is AnyNumericValue) || (value is AnyBooleanValue) || (value is AnyResourceValue))
+            {
+                SetWarning("Trying to get element of scalar value",
+                    AnalysisWarningCause.ELEMENT_OF_NON_ARRAY_VARIABLE);
+                return new MemoryEntry(Context.UndefinedValue);
+            }
+            else if (value is AnyObjectValue)
+            {
+                // TODO: This must be error
+                SetWarning("Cannot use object as array");
+                return new MemoryEntry(Context.AnyValue);
+            }
+            else
+            {
+                // This is case of AnyArrayValue, AnyValue and possibly others.
+                // If value is AnyValue, it can be any object too, so it can cause an error.
+                return new MemoryEntry(Context.AnyValue);
+            }
         }
 
-        public override MemoryEntry ReadField(AnyValue value, AnalysisFramework.VariableIdentifier field)
+        /// <inheritdoc />
+        public override MemoryEntry ReadField(AnyValue value, VariableIdentifier field)
         {
-            //todo copy info
-            return new MemoryEntry(Context.AnyValue);
+            // TODO: Copy info
+            if (value is AnyObjectValue)
+            {
+                SetWarning("Possibly undefined property");
+                return new MemoryEntry(Context.AnyValue);
+            }
+            else if ((value is AnyScalarValue) || (value is AnyArrayValue) || (value is AnyResourceValue))
+            {
+                SetWarning("Trying to get property of non-object",
+                    AnalysisWarningCause.PROPERTY_OF_NON_OBJECT_VARIABLE);
+                return new MemoryEntry(Context.UndefinedValue);
+            }
+            else
+            {
+                // This is case of AnyValue and possibly others.
+                return new MemoryEntry(Context.AnyValue);
+            }
         }
 
+        /// <inheritdoc />
         public override MemoryEntry Widen(MemoryEntry old, MemoryEntry current)
         {
             //todo copy info
@@ -86,7 +132,7 @@ namespace Weverca.Analysis
                 {
                     return new MemoryEntry(Context.AnyLongintValue);
                 }
-                else 
+                else
                 {
                     return new MemoryEntry(Context.AnyIntegerValue);
                 }
@@ -97,6 +143,27 @@ namespace Weverca.Analysis
             }
 
             return new MemoryEntry(Context.AnyValue);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Generates a warning with the given message
+        /// </summary>
+        /// <param name="message">Text of warning</param>
+        public void SetWarning(string message)
+        {
+            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+        }
+
+        /// <summary>
+        /// Generates a warning of the proper type and with the given message
+        /// </summary>
+        /// <param name="message">Text of warning</param>
+        /// <param name="cause">More specific warning type</param>
+        public void SetWarning(string message, AnalysisWarningCause cause)
+        {
+            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
     }
 }

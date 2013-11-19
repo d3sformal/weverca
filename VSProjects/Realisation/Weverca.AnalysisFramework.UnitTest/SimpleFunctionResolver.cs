@@ -154,6 +154,16 @@ namespace Weverca.AnalysisFramework.UnitTest
             setCallBranching(functions);
         }
 
+        public override void StaticMethodCall(QualifiedName typeName, Name name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Initialize call into callInput.
         /// 
