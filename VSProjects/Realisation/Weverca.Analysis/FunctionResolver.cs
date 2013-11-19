@@ -622,11 +622,11 @@ namespace Weverca.Analysis
             {
                 if (method.IsStatic)
                 {
-                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC);
                 }
                 else
                 {
-                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
             }
         }
@@ -637,11 +637,11 @@ namespace Weverca.Analysis
             {
                 if (method.IsStatic)
                 {
-                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC);
                 }
                 else
                 {
-                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
             }
         }
@@ -652,11 +652,11 @@ namespace Weverca.Analysis
             {
                 if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
                 {
-                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC);
                 }
                 else
                 {
-                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
             }
         }
@@ -667,11 +667,11 @@ namespace Weverca.Analysis
             {
                 if (method.Modifiers.HasFlag(PhpMemberAttributes.Static))
                 {
-                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC);
                 }
                 else
                 {
-                    setWarning("Cannot redeclare static method with non static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
+                    setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
             }
         }

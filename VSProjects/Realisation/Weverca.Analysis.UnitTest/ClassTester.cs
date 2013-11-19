@@ -294,11 +294,17 @@ namespace Weverca.Analysis.UnitTest
 
         ";
 
+        private bool staticRedeclarationCorrect(FlowOutputSet outset, bool nonStaticWithStatic, bool staticWithNonStatic)
+        {
+            return TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC) == nonStaticWithStatic &&
+                TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC) == staticWithNonStatic;
+        }
+
         [TestMethod]
         public void InterfaceCannotOverrideFunction1()
         {
             var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest1);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+            Debug.Assert(staticRedeclarationCorrect(outset, false, true));
         }
 
         string InterfaceCannotOverrideFunctionTest2 = @"
@@ -317,7 +323,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotOverrideFunction2()
         {
             var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest2);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC) == false);
+            Debug.Assert(staticRedeclarationCorrect(outset, false, false));
         }
 
         string InterfaceCannotOverrideFunctionTest3 = @"
@@ -336,7 +342,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotOverrideFunction3()
         {
             var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest3);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC) == false);
+            Debug.Assert(staticRedeclarationCorrect(outset, false, false));
         }
 
         string InterfaceCannotOverrideFunctionTest4 = @"
@@ -355,7 +361,7 @@ namespace Weverca.Analysis.UnitTest
         public void InterfaceCannotOverrideFunction4()
         {
             var outset = TestUtils.Analyze(InterfaceCannotOverrideFunctionTest4);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+            Debug.Assert(staticRedeclarationCorrect(outset, true, false));
         }
 
 
@@ -533,7 +539,7 @@ namespace Weverca.Analysis.UnitTest
         public void ClassDoenstCorrectlyImplementInterface()
         {
             var outset = TestUtils.Analyze(ClassDoenstCorrectlyImplementInterfaceTest);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+            Debug.Assert(staticRedeclarationCorrect(outset, true, false));
         }
 
         string ClassDoenstCorrectlyImplementInterfaceTest2 = @"
