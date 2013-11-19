@@ -39,13 +39,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
-        protected override void extendOutput()
+    /*    protected override void extendOutput()
         {
             OutSet.StartTransaction();
             //TODO change call handling
             OutSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
             //  OutSet.ExtendAsCall(InSet, Flow.CalledObject, Flow.Arguments);
-        }
+        }*/
     }
 
 
@@ -81,13 +81,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
-        protected override void extendOutput()
+     /*   protected override void extendOutput()
         {
             OutSet.StartTransaction();
             //TODO change call handling
             OutSet.ExtendAsCall(_inSet, Flow.CalledObject, Flow.Arguments);
             //  OutSet.ExtendAsCall(InSet, Flow.CalledObject, Flow.Arguments);
-        }
+        }*/
     }
 
 }

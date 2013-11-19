@@ -28,7 +28,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value)
         {
-            C(context).Write(_storages, value);
+            C(context).Write(_storages, value, _storages.Length > 1);
         }
 
         protected override bool isDefined(SnapshotBase context)

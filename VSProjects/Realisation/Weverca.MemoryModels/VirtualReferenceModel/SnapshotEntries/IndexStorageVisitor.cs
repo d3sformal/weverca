@@ -60,7 +60,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var indexed = _context.MemoryAssistant.ReadIndex(value, _index);
 
             var storages=_context.IndexStorages(value, _index).ToArray();
-            _context.Write(storages, indexed);
+            _context.Write(storages, indexed, _index.PossibleNames.Count()>1);
             _indexStorages.AddRange(storages);
         }
 

@@ -223,6 +223,9 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             var actualValues = (from ScalarValue<T> value in entry.PossibleValues select value.Value).ToArray();
 
+            if (message == null)
+                message = string.Format(" in variable ${0}", variableName);
+
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
         }
 

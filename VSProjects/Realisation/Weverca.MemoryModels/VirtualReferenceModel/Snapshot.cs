@@ -203,13 +203,26 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region API for Snapshot entries
 
-        internal void Write(VariableKey[] storages, MemoryEntry value)
+        internal void Write(VariableKey[] storages, MemoryEntry value, bool weak)
         {
             foreach (var storage in storages)
             {
                 //translation because of memory model cross-contexts
                 var variable = getOrCreateInfo(storage);
-                assign(variable, value);
+
+             /*   if (weak)
+                {
+                    //weak update
+                    var oldValue = readValue(variable);
+
+                    REPORT(Statistic.MemoryEntryMerges);
+                    var merged = MemoryEntry.Merge(oldValue, value);
+                    assign(variable, merged);
+                }
+                else*/
+                {
+                    assign(variable, value);
+                }
             }
         }
 
@@ -270,7 +283,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// <param name="statistic">Reported statistic</param>
         internal void ReportStatistic(Statistic statistic)
         {
-            Report(statistic);
+            REPORT(statistic);
         }
 
         #endregion

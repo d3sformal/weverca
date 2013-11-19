@@ -122,7 +122,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                 {
                     //differ in presence of some reference
                     REPORT(Statistic.MemoryEntryCreation);
-                    widenedEntry = assistant.Widen(new MemoryEntry(), currEntry);
+                    widenedEntry = assistant.Widen(new MemoryEntry(_owner.UndefinedValue), currEntry);
                 }
 
                 if (widenedEntry == null)
@@ -163,9 +163,23 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                 }
                 else
                 {
-                    //copy reference, because its immutable
-                    REPORT(Statistic.SimpleHashSearches);
-                    _data[dataPair.Key] = dataPair.Value;
+                    //data are missed in some branch - needs to be filled with undefined value
+
+              /*      MemoryEntry merged;
+                    if (directExtend)
+                    {
+                        merged = dataPair.Value;
+                    }
+                    else
+                    {
+                        REPORT(Statistic.MemoryEntryCreation);
+                        REPORT(Statistic.MemoryEntryMerges);
+                        merged = MemoryEntry.Merge(dataPair.Value, new MemoryEntry(_owner.UndefinedValue));
+                    }*/
+                    var merged = dataPair.Value;
+
+                    REPORT(Statistic.SimpleHashAssigns);
+                    _data[dataPair.Key] = merged;
                 }
             }
         }

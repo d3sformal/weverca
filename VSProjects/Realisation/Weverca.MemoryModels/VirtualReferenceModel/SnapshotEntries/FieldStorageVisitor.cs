@@ -60,7 +60,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var fielded = _context.MemoryAssistant.ReadField(value, _field);
 
             var storages = _context.FieldStorages(value, _field).ToArray();
-            _context.Write(storages, fielded);
+            _context.Write(storages, fielded, _field.PossibleNames.Count() > 1);
             _indexStorages.AddRange(storages);
         }
 

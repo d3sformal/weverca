@@ -376,7 +376,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="statistic">Statistic to be reported</param>
         /// <param name="value">Value that will increase reported statistic</param>
-        protected void Report(Statistic statistic, int value = 1)
+        protected void REPORT(Statistic statistic, int value = 1)
         {
             _statistics.Report(statistic, value);
         }
