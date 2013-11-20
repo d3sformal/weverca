@@ -42,6 +42,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             MergeWithinSnapshotOperation operation = new MergeWithinSnapshotOperation(targetIndex);
             operation.Add(targetIndex);
             operation.Add(sourceIndex);
+            operation.IsRoot = true;
             addOperation(operation);
 
             arrayCount = 2;
@@ -62,14 +63,40 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private void processMergeOperation(MergeWithinSnapshotOperation operation)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
+            ReferenceCollector references = new ReferenceCollector();
 
             foreach (var index in operation.Indexes)
             {
                 MemoryEntry entry = snapshot.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
+                MemoryAlias aliases;
+                if (snapshot.TryGetAliases(index, out aliases))
+                {
+                    references.CollectMust(aliases.MustAliasses);
+                    references.CollectMay(aliases.MayAliasses);
+                }
+                else
+                {
+                    references.InvalidateMust();
+                }
+
                 //TODO - merge aliases, infos
             }
+
+            if (references.HasAliases && !operation.IsRoot)
+            {
+                if (!operation.IsUndefined && operation.Indexes.Count == 1 && references.HasMustAliases)
+                {
+                    references.AddMustAlias(operation.Indexes.First());
+                }
+                else
+                {
+                    references.CollectMay(operation.Indexes);
+                }
+            }
+
+            references.SetAliases(operation.TargetIndex, snapshot, !operation.IsUndefined);
 
             HashSet<Value> values = getValues(operation.TargetIndex, visitor, operation.IsUndefined);
 

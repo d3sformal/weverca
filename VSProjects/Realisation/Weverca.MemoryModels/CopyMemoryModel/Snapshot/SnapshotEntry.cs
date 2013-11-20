@@ -101,7 +101,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             AliasData data = entry.CreateAliasToEntry(snapshot);
 
             AssignCollector collector = new AssignCollector(snapshot);
-            collector.AddAliases = false;
+            collector.AliasesProcessing = AliasesProcessing.BeforeCollecting;
             collector.ProcessPath(path);
 
             AssignAliasWorker worker = new AssignAliasWorker(snapshot);

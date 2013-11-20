@@ -62,5 +62,10 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         {
             tester.Write(getEntry(), value);
         }
+
+        internal void Alias(SnapshotEntryFactory<T> source)
+        {
+            tester.Alias(getEntry(), source.snapshotEntry);
+        }
     }
 }

@@ -41,7 +41,9 @@
   <ItemGroup>
     <Compile Include="CopyMemoryModel\MemoryWorkers\AssignAliasWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\MergeOperation.cs" />
+    <Compile Include="CopyMemoryModel\MemoryWorkers\ReferenceCollector.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\ICopyModelSnapshotEntry.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\IReferenceHolder.cs" />
     <Compile Include="CopyMemoryModel\Tools\HashSetTools.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\CollectComposedValuesVisitor.cs" />
     <Compile Include="MemoryModels.cs" />

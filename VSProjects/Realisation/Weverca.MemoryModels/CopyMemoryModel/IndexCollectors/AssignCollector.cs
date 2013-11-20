@@ -11,6 +11,11 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    enum AliasesProcessing
+    {
+        AfterCollecting, BeforeCollecting, None
+    }
+
     class AssignCollector : IndexCollector, IPathSegmentVisitor
     {
         HashSet<MemoryIndex> mustIndexes = new HashSet<MemoryIndex>();
@@ -24,7 +29,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override bool IsDefined { get; protected set; }
 
-        public bool AddAliases { get; set; }
+        public AliasesProcessing AliasesProcessing { get; set; }
 
         public override IEnumerable<MemoryIndex> MustIndexes
         {
@@ -52,14 +57,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             this.snapshot = snapshot;
             creatorVisitor = new CreatorVisitor(snapshot);
 
-            AddAliases = true;
+            AliasesProcessing = AliasesProcessing.AfterCollecting;
         }
 
         public override void Next(PathSegment segment)
         {
+            if (AliasesProcessing == CopyMemoryModel.AliasesProcessing.BeforeCollecting)
+            {
+                addAliasesToIndexes();
+            }
+
             segment.Accept(this);
 
-            if (AddAliases)
+            if (AliasesProcessing == CopyMemoryModel.AliasesProcessing.AfterCollecting)
             {
                 addAliasesToIndexes();
             }
@@ -78,6 +88,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private void addAliasesToIndexes()
         {
             HashSet<MemoryIndex> mustAliases = new HashSet<MemoryIndex>();
+            HashSet<MemoryIndex> mayAliases = new HashSet<MemoryIndex>();
             foreach (MemoryIndex index in mustIndexesProcess)
             {
                 MemoryAlias alias;
@@ -87,26 +98,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                     foreach (MemoryIndex mayIndex in alias.MayAliasses)
                     {
-                        addToMay(index);
+                        mayAliases.Add(mayIndex);
                     }
                 }
             }
 
             foreach (MemoryIndex index in mustAliases)
             {
-                addToMust(index);    
-            
-                MemoryAlias alias;
-                if (snapshot.TryGetAliases(index, out alias))
-                {
-                    foreach (MemoryIndex mayIndex in alias.MayAliasses)
-                    {
-                        addToMay(index);
-                    }
-                }
+                addToMust(index);
             }
 
-            LinkedList<MemoryIndex> mayAliases = new LinkedList<MemoryIndex>();
             foreach (MemoryIndex index in mayIndexesProcess)
             {
                 MemoryAlias alias;
@@ -116,21 +117,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     HashSetTools.AddAll(mayAliases, alias.MayAliasses);
                 }
             }
-
-            while (mayAliases.Count > 0)
+            foreach (MemoryIndex index in mayAliases)
             {
-                MemoryIndex index = mayAliases.First.Value;
-                if (addToMay(mayAliases.First.Value))
-                {
-                    MemoryAlias alias;
-                    if (snapshot.TryGetAliases(index, out alias))
-                    {
-                        HashSetTools.AddAll(mayAliases, alias.MustAliasses);
-                        HashSetTools.AddAll(mayAliases, alias.MayAliasses);
-                    }
-                }
-
-                mayAliases.RemoveFirst();
+                addToMay(index);
             }
         }
 

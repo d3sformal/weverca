@@ -90,6 +90,32 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         }
     }
 
+    public class AliasOperation<T>
+        : TestOperation<T>
+        where T : SnapshotBase
+    {
+        private ReadWriteSnapshotEntryBase targetEntry;
+        private ReadWriteSnapshotEntryBase sourceEntry;
+
+        public AliasOperation(ReadWriteSnapshotEntryBase targetEntry, ReadWriteSnapshotEntryBase sourceEntry)
+        {
+            this.targetEntry = targetEntry;
+            this.sourceEntry = sourceEntry;
+        }
+
+        public void DoOperation(T snapshot, TestOperationLogger logger)
+        {
+            MemoryEntry entry = sourceEntry.ReadMemory(snapshot);
+            targetEntry.SetAliases(snapshot, sourceEntry);
+
+            logger.WriteLine("ALIAS: {0} = &{1}", targetEntry, sourceEntry);
+            logger.WriteLine("VALUES: {0}", entry);
+            logger.WriteLine("------------------------------------------------\n");
+            logger.WriteLine(snapshot.ToString());
+            logger.WriteLine("------------------------------------------------");
+        }
+    }
+
     public class MergeOperation<T>
         : TestOperation<T>
         where T : SnapshotBase

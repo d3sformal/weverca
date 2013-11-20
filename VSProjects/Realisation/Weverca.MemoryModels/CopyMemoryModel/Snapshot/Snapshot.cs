@@ -12,7 +12,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    public class Snapshot : SnapshotBase
+    public class Snapshot : SnapshotBase, IReferenceHolder
     {
         HashSet<MemoryIndex> memoryIndexes = new HashSet<MemoryIndex>();
 
@@ -60,6 +60,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 builder.Append(index.ToString());
                 builder.Append("\n");
                 builder.Append(GetMemoryEntry(index).ToString());
+
+                MemoryAlias alias;
+                if (TryGetAliases(index, out alias))
+                {
+                    alias.ToString(builder);
+                }
+
                 builder.Append("\n\n");
             }
 
@@ -628,9 +635,37 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal void CopyAliases(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
         {
-            if (memoryAliases.ContainsKey(sourceIndex))
+            MemoryAlias aliases;
+            if (TryGetAliases(sourceIndex, out aliases))
             {
-                throw new NotImplementedException();
+                MemoryAliasBuilder builder = new MemoryAliasBuilder();
+                foreach (MemoryIndex mustAlias in aliases.MustAliasses)
+                {
+                    MemoryAliasBuilder mustBuilder = GetAliases(mustAlias).Builder();
+                    if (isMust)
+                    {
+                        builder.AddMustAlias(mustAlias);
+                        mustBuilder.AddMustAlias(targetIndex);
+                    }
+                    else
+                    {
+                        builder.AddMayAlias(mustAlias);
+                        mustBuilder.AddMayAlias(targetIndex);
+                    }
+                    memoryAliases[mustAlias] = mustBuilder.Build();
+                }
+
+                foreach (MemoryIndex mayAlias in aliases.MayAliasses)
+                {
+                    MemoryAliasBuilder mayBuilder = GetAliases(mayAlias).Builder();
+
+                    builder.AddMayAlias(mayAlias);
+                    mayBuilder.AddMayAlias(targetIndex);
+
+                    memoryAliases[mayAlias] = mayBuilder.Build();
+                }
+
+                memoryAliases[targetIndex] = builder.Build();
             }
         }
 
@@ -777,6 +812,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal void ReleaseMemory(MemoryIndex index)
         {
             DestroyMemory(index);
+            DestroyAliases(index);
 
             memoryIndexes.Remove(index);
             memoryEntries.Remove(index);
@@ -811,7 +847,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             memoryValueInfos = new Dictionary<Value, MemoryInfo>(worker.memoryValueInfos);
 
             memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>(worker.memoryEntries);
-            memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>(worker.memoryAliases);
+            memoryAliases = worker.GetMemoryAliases();
             memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(worker.memoryInfos);
 
             indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(worker.indexArrays);
@@ -881,7 +917,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return entry.Count == objects.Count;
         }
 
-        internal void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
         {
             DestroyAliases(index);
 
@@ -889,10 +925,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             builder.AddMustAlias(mustAliases);
             builder.AddMayAlias(mayAliases);
 
-            memoryAliases.Add(index, builder.Build());
+            memoryAliases[index] = builder.Build();
         }
 
-        internal void MaySetAliases(MemoryIndex index, HashSet<MemoryIndex> mayAliases)
+        public void MaySetAliases(MemoryIndex index, HashSet<MemoryIndex> mayAliases)
         {
             MemoryAliasBuilder builder;
             MemoryAlias oldAlias;
@@ -907,10 +943,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             builder.AddMayAlias(mayAliases);
-            memoryAliases.Add(index, builder.Build());
+            memoryAliases[index] = builder.Build();
         }
 
-        internal void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        public void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
         {
             MemoryAliasBuilder alias;
             MemoryAlias oldAlias;
@@ -940,7 +976,38 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
             }
 
-            memoryAliases.Add(index, alias.Build());
+            memoryAliases[index] = alias.Build();
+        }
+
+        public void AddAlias(MemoryIndex index, MemoryIndex mustAlias, MemoryIndex mayAlias)
+        {
+            MemoryAliasBuilder alias;
+            MemoryAlias oldAlias;
+            if (TryGetAliases(index, out oldAlias))
+            {
+                alias = oldAlias.Builder();
+            }
+            else
+            {
+                alias = new MemoryAliasBuilder();
+            }
+
+            if (mustAlias != null)
+            {
+                alias.AddMustAlias(mustAlias);
+
+                if (alias.MayAliasses.Contains(mustAlias))
+                {
+                    alias.MayAliasses.Remove(mustAlias);
+                }
+            }
+
+            if (mayAlias != null && !alias.MustAliasses.Contains(mayAlias))
+            {
+                alias.AddMayAlias(mayAlias);
+            }
+
+            memoryAliases[index] = alias.Build();
         }
 
         internal void DestroyAliases(MemoryIndex index)
@@ -953,14 +1020,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (MemoryIndex mustIndex in aliases.MustAliasses)
             {
-                MemoryAlias alias = getAliases(mustIndex);
+                MemoryAlias alias = GetAliases(mustIndex);
                 if (alias.MustAliasses.Count == 1 && alias.MayAliasses.Count == 0)
                 {
                     memoryAliases.Remove(mustIndex);
                 }
                 else
                 {
-                    MemoryAliasBuilder builder = getAliases(mustIndex).Builder();
+                    MemoryAliasBuilder builder = GetAliases(mustIndex).Builder();
                     builder.RemoveMustAlias(index);
                     memoryAliases[mustIndex] = builder.Build();
                 }
@@ -968,14 +1035,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (MemoryIndex mayIndex in aliases.MayAliasses)
             {
-                MemoryAlias alias = getAliases(mayIndex);
+                MemoryAlias alias = GetAliases(mayIndex);
                 if (alias.MustAliasses.Count == 0 && alias.MayAliasses.Count == 1)
                 {
                     memoryAliases.Remove(mayIndex);
                 }
                 else
                 {
-                    MemoryAliasBuilder builder = getAliases(mayIndex).Builder();
+                    MemoryAliasBuilder builder = GetAliases(mayIndex).Builder();
                     builder.RemoveMayAlias(index);
                     memoryAliases[mayIndex] = builder.Build();
                 }
@@ -986,19 +1053,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             foreach (MemoryIndex mustIndex in builder.MustAliasses)
             {
-                MemoryAlias alias = getAliases(mustIndex);
+                MemoryAlias alias = GetAliases(mustIndex);
 
-                MemoryAliasBuilder mustBuilder = getAliases(mustIndex).Builder();
-                builder.RemoveMustAlias(index);
-                builder.AddMayAlias(index);
-                memoryAliases[mustIndex] = builder.Build();
+                MemoryAliasBuilder mustBuilder = GetAliases(mustIndex).Builder();
+                mustBuilder.RemoveMustAlias(index);
+                mustBuilder.AddMayAlias(index);
+                memoryAliases[mustIndex] = mustBuilder.Build();
             }
 
             builder.AddMayAlias(builder.MustAliasses);
             builder.MustAliasses.Clear();
         }
 
-        private MemoryAlias getAliases(MemoryIndex index)
+        internal MemoryAlias GetAliases(MemoryIndex index)
         {
             MemoryAlias aliases;
             if (memoryAliases.TryGetValue(index, out aliases))

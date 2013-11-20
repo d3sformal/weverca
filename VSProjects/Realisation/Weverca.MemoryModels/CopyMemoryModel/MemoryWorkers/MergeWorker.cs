@@ -11,7 +11,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    public class MergeWorker
+    public class MergeWorker : IReferenceHolder
     {
         internal HashSet<MemoryIndex> memoryIndexes = new HashSet<MemoryIndex>();
 
@@ -21,7 +21,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal Dictionary<Value, MemoryInfo> memoryValueInfos = new Dictionary<Value, MemoryInfo>();
 
         internal Dictionary<MemoryIndex, MemoryEntry> memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
-        internal Dictionary<MemoryIndex, MemoryAlias> memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>();
+        internal Dictionary<MemoryIndex, MemoryAliasBuilder> memoryAliases = new Dictionary<MemoryIndex, MemoryAliasBuilder>();
         internal Dictionary<MemoryIndex, MemoryInfo> memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>();
 
         internal Dictionary<MemoryIndex, AssociativeArray> indexArrays = new Dictionary<MemoryIndex, AssociativeArray>();
@@ -77,6 +77,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private void processMergeOperation(MergeOperation operation)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
+            ReferenceCollector references = new ReferenceCollector();
 
             foreach (var operationData in operation.Indexes)
             {
@@ -86,8 +87,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryEntry entry = snapshot.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
+                MemoryAlias aliases;
+                if (snapshot.TryGetAliases(index, out aliases))
+                {
+                    references.CollectMust(aliases.MustAliasses);
+                    references.CollectMay(aliases.MayAliasses);
+                }
+                else
+                {
+                    references.InvalidateMust();
+                }
+
                 //TODO - merge aliases, infos
+
             }
+
+            references.SetAliases(operation.TargetIndex, this, !operation.IsUndefined);
 
             HashSet<Value> values = getValues(operation, visitor);
 
@@ -273,6 +288,72 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             return operation;
         }
+
+        public void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        {
+            MemoryAliasBuilder alias;
+            if (!memoryAliases.TryGetValue(index, out alias))
+            {
+                alias = new MemoryAliasBuilder();
+            }
+
+            if (mustAliases != null)
+            {
+                alias.AddMustAlias(mustAliases);
+            }
+            if (mayAliases != null)
+            {
+                alias.AddMayAlias(mayAliases);
+            }
+
+            foreach (MemoryIndex mustIndex in alias.MustAliasses)
+            {
+                if (alias.MayAliasses.Contains(mustIndex))
+                {
+                    alias.MayAliasses.Remove(mustIndex);
+                }
+            }
+
+            memoryAliases[index] = alias;
+        }
+
+        public void AddAlias(MemoryIndex index, MemoryIndex mustAlias, MemoryIndex mayAlias)
+        {
+            MemoryAliasBuilder alias;
+            if (!memoryAliases.TryGetValue(index, out alias))
+            {
+                alias = new MemoryAliasBuilder();
+            }
+
+            if (mustAlias != null)
+            {
+                alias.AddMustAlias(mustAlias);
+
+                if (alias.MayAliasses.Contains(mustAlias))
+                {
+                    alias.MayAliasses.Remove(mustAlias);
+                }
+            }
+
+            if (mayAlias != null && !alias.MustAliasses.Contains(mayAlias))
+            {
+                alias.AddMayAlias(mayAlias);
+            }
+
+            memoryAliases[index] = alias;
+        }
+
+        internal Dictionary<MemoryIndex, MemoryAlias> GetMemoryAliases()
+        {
+            Dictionary<MemoryIndex, MemoryAlias> aliases = new Dictionary<MemoryIndex, MemoryAlias>();
+
+            foreach (var alias in memoryAliases)
+            {
+                aliases[alias.Key] = alias.Value.Build();
+            }
+
+            return aliases;
+        }
     }
 
     class ContainerOperations
@@ -375,60 +456,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
-    class ReferenceCollector
-    {
-        HashSet<MemoryIndex> mustReferences = new HashSet<MemoryIndex>();
-        HashSet<MemoryIndex> allReferences = new HashSet<MemoryIndex>();
-
-        public void SetMustReferences(HashSet<MemoryIndex> references)
-        {
-            foreach (MemoryIndex index in mustReferences)
-            {
-                references.Add(index);
-            }
-        }
-
-        public void SetMayReferences(HashSet<MemoryIndex> references)
-        {
-            foreach (MemoryIndex index in allReferences)
-            {
-                if (!mustReferences.Contains(index))
-                {
-                    references.Add(index);
-                }
-            }
-        }
-
-        public void CollectMust(IEnumerable<MemoryIndex> references)
-        {
-            HashSet<MemoryIndex> newMust = new HashSet<MemoryIndex>();
-            foreach (MemoryIndex index in references)
-            {
-                if (mustReferences.Contains(index))
-                {
-                    newMust.Add(index);
-                }
-
-                allReferences.Add(index);
-            }
-
-            mustReferences = newMust;
-        }
-
-        public void CollectMay(IEnumerable<MemoryIndex> references)
-        {
-            foreach (MemoryIndex index in references)
-            {
-                allReferences.Add(index);
-            }
-        }
-
-        public void InvalidateMust()
-        {
-            mustReferences.Clear();
-        }
-    }
-
+    
     class CollectValuesVisitor : AbstractValueVisitor
     {
         public readonly HashSet<Value> Values = new HashSet<Value>();

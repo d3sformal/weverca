@@ -96,5 +96,10 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         {
             AddOperation(new MergeOperation<T>(snapshots));
         }
+
+        internal void Alias(ReadWriteSnapshotEntryBase targetEntry, ReadWriteSnapshotEntryBase sourceEntry)
+        {
+            AddOperation(new AliasOperation<T>(targetEntry, sourceEntry));
+        }
     }
 }

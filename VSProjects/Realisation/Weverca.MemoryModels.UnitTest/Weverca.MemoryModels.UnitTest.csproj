@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CopyMemoryModel\AssignAlias.cs" />
     <Compile Include="CopyMemoryModel\AssignFromMemoryTest.cs" />
     <Compile Include="CopyMemoryModel\AssignTest.cs" />
     <Compile Include="CopyMemoryModel\MemoryIndexTest.cs" />

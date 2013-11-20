@@ -82,5 +82,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             TargetIndex = targetIndex;
         }
+
+        public bool IsRoot { get; set; }
     }
 }

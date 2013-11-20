@@ -60,6 +60,29 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return new MemoryAliasBuilder(this);
         }
+        
+        internal void ToString(StringBuilder builder)
+        {
+            if (MustAliasses.Count > 0)
+            {
+                builder.Append("\n MUST ALIASES: ");
+                foreach (MemoryIndex alias in MustAliasses)
+                {
+                    builder.Append(alias.ToString());
+                    builder.Append(" | ");
+                }
+            }
+
+            if (MayAliasses.Count > 0)
+            {
+                builder.Append("\n MAY ALIASES: ");
+                foreach (MemoryIndex alias in MayAliasses)
+                {
+                    builder.Append(alias.ToString());
+                    builder.Append(" | ");
+                }
+            }
+        }
     }
 
     /// <summary>
