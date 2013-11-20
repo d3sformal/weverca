@@ -842,7 +842,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             temporary = new HashSet<TemporaryIndex>(snapshot.temporary);
 
             Variables = new IndexContainer(snapshot.Variables);
-            ContollVariables = new IndexContainer(snapshot.ContollVariables);
+            //ContollVariables = new IndexContainer(snapshot.ContollVariables);
         }
 
 
