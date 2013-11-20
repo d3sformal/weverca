@@ -136,10 +136,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
 
         #region Extension handling (TODO needs refactoring)
 
-        internal void ExtendBy(DataContainer dataContainer, bool directExtend)
+        internal void ExtendBy(DataContainer dataContainer, bool directExtend, VariableKind includedKinds)
         {
             foreach (var dataPair in dataContainer._data)
             {
+                var reference = dataPair.Key;
+                if (!includedKinds.HasFlag(reference.Kind))
+                {
+                    //this dataPair wont be included
+                    continue;
+                }
+
                 MemoryEntry oldEntry;
 
                 REPORT(Statistic.SimpleHashSearches);
@@ -165,8 +172,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                 {
                     //data are missed in some branch - needs to be filled with undefined value
 
-              /*      MemoryEntry merged;
-                    if (directExtend)
+                    MemoryEntry merged;
+                    if (directExtend | reference.Kind == VariableKind.Meta)
                     {
                         merged = dataPair.Value;
                     }
@@ -175,8 +182,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                         REPORT(Statistic.MemoryEntryCreation);
                         REPORT(Statistic.MemoryEntryMerges);
                         merged = MemoryEntry.Merge(dataPair.Value, new MemoryEntry(_owner.UndefinedValue));
-                    }*/
-                    var merged = dataPair.Value;
+                    }
 
                     REPORT(Statistic.SimpleHashAssigns);
                     _data[dataPair.Key] = merged;

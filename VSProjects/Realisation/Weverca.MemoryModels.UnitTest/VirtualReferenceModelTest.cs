@@ -63,7 +63,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         public void AliasAssign()
         {
             var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1, false);
-            var testVar1Entry = readVariable(testVar1,snapshot1);
+            var testVar1Entry = readVariable(testVar1, snapshot1);
             var testVar2Entry = getVariable(testVar2, snapshot1);
 
             testVar2Entry.SetAliases(snapshot1, testVar1Entry);
@@ -123,7 +123,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             var testVar1Entry = getVariable(testVar1, snapshot2);
             var testVar2Entry = readVariable(testVar2, snapshot2);
 
-            testVar1Entry.SetAliases(snapshot2,testVar2Entry);
+            testVar1Entry.SetAliases(snapshot2, testVar2Entry);
             snapshot2.CommitTransaction();
 
             var mergedSnapshot = new Snapshot();
@@ -177,7 +177,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             where T : Value
         {
             var entry = snapshot.ReadValue(variable);
-            var castedEnumerable = entry.PossibleValues.AsEnumerable().Cast<T>();
+            var castedEnumerable = entry.PossibleValues.Where(val => !(val is UndefinedValue)).Cast<T>();
             return castedEnumerable.ToArray();
         }
 

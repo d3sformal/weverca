@@ -20,15 +20,19 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         /// </summary>
         private readonly VariableIdentifier _identifier;
 
-        internal SnapshotStorageEntry(VariableIdentifier identifier, params VariableKey[] storage)
+        internal readonly bool IsWeak;
+
+        internal SnapshotStorageEntry(VariableIdentifier identifier, bool weak, params VariableKey[] storage)
         {
             _identifier = identifier;
             _storages = storage;
+            IsWeak = weak;
         }
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value)
         {
-            C(context).Write(_storages, value, _storages.Length > 1);
+            //TODO resolve weak updates more precisely
+            C(context).Write(_storages, value, IsWeak);
         }
 
         protected override bool isDefined(SnapshotBase context)
@@ -95,7 +99,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var snapshot = C(context);
             var fieldVisitor = new FieldStorageVisitor(this, snapshot, field);
 
-            return new SnapshotStorageEntry(null, fieldVisitor.Storages);
+            return new SnapshotStorageEntry(null, fieldVisitor.IsWeak, fieldVisitor.Storages);
         }
 
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)

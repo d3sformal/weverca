@@ -21,6 +21,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         internal readonly VariableKey[] Storages;
 
+        internal readonly bool IsWeak;
+
         internal FieldStorageVisitor(ReadWriteSnapshotEntryBase fieldedEntry, Snapshot context, VariableIdentifier field)
         {
             _context = context;
@@ -36,6 +38,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                 //TODO replace only undefined values
                 fieldedEntry.WriteMemory(context, new MemoryEntry(_implicitObject));
 
+            IsWeak = fieldedValues.Count > 1;
             Storages = _indexStorages.ToArray();
         }
 

@@ -115,8 +115,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             _globals.ExtendBy(input._globals);
             _meta.ExtendBy(input._meta);
             _globalControls.ExtendBy(input._globalControls);
-            _data.ExtendBy(input._data, true);
-
+            _data.ExtendBy(input._data, true, VariableKind.CallExtends);
 
             if (thisObject != null)
             {
@@ -144,7 +143,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 _localControls.ExtendBy(input._localControls);
                 _meta.ExtendBy(input._meta);
 
-                _data.ExtendBy(input._data, isFirst);
+                _data.ExtendBy(input._data, isFirst, VariableKind.AllExtends);
 
                 _isGlobalScope &= input._isGlobalScope;
                 isFirst = false;
@@ -161,7 +160,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 _meta.ExtendBy(callInput._meta);
                 _globalControls.ExtendBy(callInput._globalControls);
 
-                _data.ExtendBy(callInput._data, isFirst);
+                _data.ExtendBy(callInput._data, isFirst, VariableKind.CallExtends);
                 isFirst = false;
             }
         }
@@ -181,17 +180,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 storages.Add(key);
             }
 
-            return new SnapshotStorageEntry(variable, storages.ToArray());
+            return new SnapshotStorageEntry(variable, !variable.IsDirect, storages.ToArray());
         }
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
-            return new SnapshotStorageEntry(new VariableIdentifier(name), new[] { getOrCreateKey(name, VariableKind.GlobalControl) });
+            return new SnapshotStorageEntry(new VariableIdentifier(name), false, new[] { getOrCreateKey(name, VariableKind.GlobalControl) });
         }
 
         protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
-            return new SnapshotStorageEntry(new VariableIdentifier(name), new[] { getOrCreateKey(name, VariableKind.LocalControl) });
+            return new SnapshotStorageEntry(new VariableIdentifier(name), false, new[] { getOrCreateKey(name, VariableKind.LocalControl) });
         }
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
@@ -210,7 +209,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 //translation because of memory model cross-contexts
                 var variable = getOrCreateInfo(storage);
 
-             /*   if (weak)
+          /*      if (weak)
                 {
                     //weak update
                     var oldValue = readValue(variable);
@@ -589,12 +588,21 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             var info = getObjectInfoStorage(objectValue);
             var objectInfo = readValue(info);
-            Debug.Assert(objectInfo.Count == 1, "Object is always instance of just one type");
 
-            var enumerator = objectInfo.PossibleValues.GetEnumerator();
-            enumerator.MoveNext();
-            var type = enumerator.Current as TypeValueBase;
-            Debug.Assert(type != null, "The value read from object info storage is a type");
+            TypeValueBase type = null;
+            foreach (var typeInfo in objectInfo.PossibleValues)
+            {
+                if (!(typeInfo is TypeValueBase))
+                    continue;
+
+                if (type != null)
+                    Debug.Fail("Object cannot have more than one type");
+
+                type = typeInfo as TypeValueBase;
+            }
+
+            if (type == null)
+                Debug.Fail("Object has to have exactly one type");
 
             return type;
         }

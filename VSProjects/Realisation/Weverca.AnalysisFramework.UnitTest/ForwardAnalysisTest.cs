@@ -105,22 +105,22 @@ if($$Var==$Value){
     $OutputA=$VarA;
     $OutputB=$VarB;
 }
-".AssertVariable("OutputA").HasValues("Value1", "Value2")
- .AssertVariable("OutputB").HasValues("Value1", "Value2")
+".AssertVariable("OutputA").HasUndefinedOrValues("Value1", "Value2")
+ .AssertVariable("OutputB").HasUndefinedOrValues("Value1", "Value2")
  .SetNonDeterministic("VarA", "VarB");
 
         readonly static TestCase CallEqualsAssumption_CASE = @"
 if($unknown==strtolower(""TestValue"")){
     $Output=$unknown;
 }
-".AssertVariable("Output").HasValues("testvalue");
+".AssertVariable("Output").HasUndefinedOrValues("testvalue");
 
         readonly static TestCase ReverseCallEqualsAssumption_CASE = @"
 if(abs($unknown)==5){
     $Output=$unknown;
 }
 
-".AssertVariable("Output").HasValues(5, -5);
+".AssertVariable("Output").HasUndefinedOrValues(5, -5);
 
 
         readonly static TestCase IndirectVarAssign_CASE = @"
@@ -172,6 +172,18 @@ $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
 
         readonly static TestCase ArrayFieldMerge_CASE = @"
+$arr[0]='init';
+if($unknown){
+    $arr[0]='ValueA';
+}else{
+    $arr[0]='ValueB';
+}
+
+$ArrayValue=$arr[0];
+".AssertVariable("ArrayValue").HasValues("ValueA", "ValueB");
+
+
+        readonly static TestCase ImplicitArrayFieldMerge_CASE = @"
 if($unknown){
     $arr[0]='ValueA';
 }else{
@@ -245,7 +257,7 @@ if ($unknown) {
 $obj->field = 'newValue';
 $FieldValue = $obj->field;
 "
-           // .AssertVariable("FieldValue").HasValues("value", "newValue")
+            // .AssertVariable("FieldValue").HasValues("value", "newValue")
             // more precise implementation would perform strong update:
             .AssertVariable("FieldValue").HasValues("newValue")
             ;
@@ -446,12 +458,14 @@ $arr[0]='val1';
 $arr[1]='val2';
 $arr[2]='val3';
 
+$test='init';
+
 foreach($arr as $value){
     if($unknown ==  $value){
         $test=$value;
     }
 }
-".AssertVariable("test").HasValues("val1", "val2", "val3");
+".AssertVariable("test").HasValues("init", "val1", "val2", "val3");
 
         readonly static TestCase NativeObjectUsage_CASE = @"
     $obj=new NativeType('TestValue');
@@ -508,11 +522,31 @@ $resultB = $resultG[2];
 
 "
  .AssertVariable("resultA").HasValues("ValueA", "ValueB")
- // The following assertion holds but it is not correct
- //.AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+            // The following assertion holds but it is not correct
+            //.AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
  .AssertVariable("resultB").HasValues("ValueA", "ValueB")
- 
- .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+
+ .ShareFunctionGraph("sharedFn");
+
+
+
+        readonly static TestCase SharedFunctionStrongUpdateLocal_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+function local_wrap() {
+    $a = 'InitA';
+    $b = 'InitB';
+    $a=sharedFn('ValueA');
+    $b=sharedFn('ValueB');
+    return $a;
+}
+
+$result = local_wrap();
+"
+ .AssertVariable("result").HasValues("ValueA", "ValueB")
+
  .ShareFunctionGraph("sharedFn")
  ;
 
@@ -529,10 +563,10 @@ $resultB=sharedFn('ValueB');
 "
 
 // NOTE: Shared graphs cannot distinct between global contexts in places where theire called
-// so the second sharedFn call in second iteration will merge these global contexts 
-// {resultA: 'InitA', resultB: 'InitB'} {resultA: 'ValueA','ValueB', resultB: 'ValueA','ValueB'}
-// after the merge, resultB assign is processed.
-// .AssertVariable("resultA").HasValues("ValueA", "ValueB") This is incorrect because of global contexts cannot be distinguished
+            // so the second sharedFn call in second iteration will merge these global contexts 
+            // {resultA: 'InitA', resultB: 'InitB'} {resultA: 'ValueA','ValueB', resultB: 'ValueA','ValueB'}
+            // after the merge, resultB assign is processed.
+            // .AssertVariable("resultA").HasValues("ValueA", "ValueB") This is incorrect because of global contexts cannot be distinguished
  .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
  .AssertVariable("resultB").HasValues("ValueA", "ValueB")
  .ShareFunctionGraph("sharedFn")
@@ -605,12 +639,12 @@ sharedFn(&$a);
 sharedFn(&$b);
 "
 .AssertVariable("a").HasUndefinedValue().HasUndefinedOrValues("fromSharedFunc")
-// The following assertion holds but it is strange
-//.AssertVariable("a").HasValues("fromSharedFunc")
+            // The following assertion holds but it is strange
+            //.AssertVariable("a").HasValues("fromSharedFunc")
 .AssertVariable("b").HasValues("fromSharedFunc")
-// The following assertion holds but it is not correct - the variable $b should be strongly updated 
-// the same way as in SharedFunctionStrongUpdateGlobal_CASE
-//.AssertVariable("b").HasUndefinedValue().HasUndefinedOrValues("fromSharedFunc")
+            // The following assertion holds but it is not correct - the variable $b should be strongly updated 
+            // the same way as in SharedFunctionStrongUpdateGlobal_CASE
+            //.AssertVariable("b").HasUndefinedValue().HasUndefinedOrValues("fromSharedFunc")
 .ShareFunctionGraph("sharedFn")
  ;
         readonly static TestCase SharedFunctionAliasingGlobal2_CASE = @"
@@ -625,9 +659,9 @@ sharedFn(&$b);
 "
 .AssertVariable("a").HasValues("initA", "fromSharedFunc")
 .AssertVariable("b").HasValues("fromSharedFunc")
-// The following assertion holds but it is not correct - the variable $b should be strongly updated 
-// the same way as in SharedFunctionStrongUpdateGlobal_CASE
-//.AssertVariable("b").HasValues("initB", "fromSharedFunc")
+            // The following assertion holds but it is not correct - the variable $b should be strongly updated 
+            // the same way as in SharedFunctionStrongUpdateGlobal_CASE
+            //.AssertVariable("b").HasValues("initB", "fromSharedFunc")
 .ShareFunctionGraph("sharedFn")
  ;
 
@@ -1013,6 +1047,12 @@ while($i<1000){
         }
 
         [TestMethod]
+        public void ImplicitArrayFieldMerge()
+        {
+            AnalysisTestUtils.RunTestCase(ImplicitArrayFieldMerge_CASE);
+        }
+
+        [TestMethod]
         public void ArrayFieldUpdateMultipleArrays()
         {
             AnalysisTestUtils.RunTestCase(ArrayFieldUpdateMultipleArrays_CASE);
@@ -1142,6 +1182,12 @@ while($i<1000){
         public void SharedFunctionStrongUpdate()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdate_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionStrongUpdateLocal()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateLocal_CASE);
         }
 
         [TestMethod]

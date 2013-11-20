@@ -8,30 +8,37 @@ using PHP.Core;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
+
     /// <summary>
     /// Determine kind of variable
     /// </summary>
-    public enum VariableKind { 
+    [Flags]
+    public enum VariableKind
+    {
         /// <summary>
         /// Variable is available in global scope
         /// </summary>
-        Global, 
+        Global = 1,
         /// <summary>
         /// Variable is available in local scope
         /// </summary>
-        Local, 
+        Local = 2,
         /// <summary>
         /// Variable is used for control information propaggated in global context
         /// </summary>
-        GlobalControl,
+        GlobalControl = 4,
         /// <summary>
         /// Variable is used for control information propaggated in local context
         /// </summary>
-        LocalControl,
+        LocalControl = 8,
         /// <summary>
         /// Variable is used for snapshot internal's meta information
         /// </summary>
-        Meta 
+        Meta = 16,
+
+        CallExtends = Global | GlobalControl | Meta,
+
+        AllExtends = CallExtends | Local | LocalControl
     }
 
     class VariableKey
