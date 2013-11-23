@@ -458,6 +458,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Converts the native string value to corresponding native integer value.
+        /// </summary>
+        /// <param name="value">Native string to convert</param>
+        /// <returns>Integer representation of string if it can be converted, otherwise 0</returns>
+        public static int ToInteger(string value)
+        {
+            int convertedValue;
+            TryConvertToInteger(value, out convertedValue);
+            return convertedValue;
+        }
+
+        /// <summary>
         /// Tries to convert the string value to corresponding integer value.
         /// </summary>
         /// <remarks>

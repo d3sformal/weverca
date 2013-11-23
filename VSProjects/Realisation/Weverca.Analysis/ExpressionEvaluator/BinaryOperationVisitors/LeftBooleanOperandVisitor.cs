@@ -3,177 +3,60 @@
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
-    internal class LeftBooleanOperandVisitor : LeftOperandVisitor
+    /// <summary>
+    /// Evaluates one binary operation with fixed boolean value as the left operand
+    /// </summary>
+    /// <remarks>
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// </remarks>
+    public class LeftBooleanOperandVisitor : GenericLeftOperandVisitor<BooleanValue>
     {
-        private BooleanValue leftOperand;
-
-        internal LeftBooleanOperandVisitor(BooleanValue value, ExpressionEvaluator expressionEvaluator)
-            : base(expressionEvaluator)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftBooleanOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point</param>
+        public LeftBooleanOperandVisitor(FlowController flowController)
+            : base(flowController)
         {
-            leftOperand = value;
         }
 
-        #region IValueVisitor Members
+        #region AbstractValueVisitor Members
 
-        public override void VisitUndefinedValue(UndefinedValue value)
-        {
-            switch (Operation)
-            {
-                case Operations.NotEqual:
-                case Operations.GreaterThan:
-                case Operations.Or:
-                case Operations.Xor:
-                    Result = OutSet.CreateBool(leftOperand.Value);
-                    break;
-                case Operations.Equal:
-                case Operations.LessThanOrEqual:
-                    Result = OutSet.CreateBool(!leftOperand.Value);
-                    break;
-                case Operations.Identical:
-                case Operations.LessThan:
-                case Operations.And:
-                    Result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                case Operations.GreaterThanOrEqual:
-                    Result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Concat:
-                    Result = TypeConversion.ToString(OutSet, leftOperand);
-                    break;
-                case Operations.Mul:
-                case Operations.BitAnd:
-                    Result = OutSet.CreateInt(0);
-                    break;
-                case Operations.Add:
-                case Operations.Sub:
-                case Operations.BitOr:
-                case Operations.BitXor:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    Result = TypeConversion.ToInteger(OutSet, leftOperand);
-                    break;
-                case Operations.Div:
-                case Operations.Mod:
-                    evaluator.SetWarning("Division by zero (converted from null)",
-                        AnalysisWarningCause.DIVISION_BY_ZERO);
-                    // Division by null returns false boolean value
-                    Result = OutSet.CreateBool(false);
-                    break;
-                default:
-                    base.VisitUndefinedValue(value);
-                    break;
-            }
-        }
+        #region Concrete values
 
-        public override void VisitFloatValue(FloatValue value)
-        {
-            int rightInteger;
+        #region Scalar values
 
-            switch (Operation)
-            {
-                case Operations.Identical:
-                    Result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                    Result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Mod:
-                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
-                    {
-                        if (rightInteger != 0)
-                        {
-                            Result = OutSet.CreateInt((leftOperand.Value && (rightInteger != 1)
-                                && (rightInteger != -1)) ? 1 : 0);
-                        }
-                        else
-                        {
-                            evaluator.SetWarning("Division by floating-point zero",
-                                AnalysisWarningCause.DIVISION_BY_ZERO);
-                            // Division by floating-point zero does not return NaN, but false boolean value
-                            Result = OutSet.CreateBool(false);
-                        }
-                    }
-                    else
-                    {
-                        // As right operant can has any value, can be 0 too
-                        // That causes division by zero and returns false
-                        evaluator.SetWarning("Division by any integer, possible division by zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        Result = OutSet.AnyValue;
-                    }
-                    break;
-                case Operations.Concat:
-                    Result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
-                    break;
-                default:
-                    var rightBoolean = TypeConversion.ToBoolean(value.Value);
-                    if (ComparisonOperation(leftOperand.Value, rightBoolean))
-                    {
-                        break;
-                    }
-
-                    if (ArithmeticOperation(TypeConversion.ToFloat(leftOperand.Value), value.Value))
-                    {
-                        break;
-                    }
-
-                    if (LogicalOperation(leftOperand.Value, rightBoolean))
-                    {
-                        break;
-                    }
-
-                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
-                    {
-                        if (BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), rightInteger))
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (IsOperationBitwise())
-                        {
-                            Result = OutSet.AnyIntegerValue;
-                            break;
-                        }
-                    }
-
-                    base.VisitFloatValue(value);
-                    break;
-            }
-        }
-
+        /// <inheritdoc />
         public override void VisitBooleanValue(BooleanValue value)
         {
-            switch (Operation)
+            switch (operation)
             {
                 case Operations.Identical:
-                    Result = OutSet.CreateBool(leftOperand.Value == value.Value);
+                    result = OutSet.CreateBool(leftOperand.Value == value.Value);
                     break;
                 case Operations.NotIdentical:
-                    Result = OutSet.CreateBool(leftOperand.Value != value.Value);
+                    result = OutSet.CreateBool(leftOperand.Value != value.Value);
                     break;
                 case Operations.Mod:
                     if (value.Value)
                     {
                         // Modulo by 1 (true) is always 0
-                        Result = OutSet.CreateInt(0);
+                        result = OutSet.CreateInt(0);
                     }
                     else
                     {
-                        evaluator.SetWarning("Division by zero (converted from boolean false)",
+                        SetWarning("Division by zero (converted from boolean false)",
                             AnalysisWarningCause.DIVISION_BY_ZERO);
                         // Division by false returns false boolean value
-                        Result = OutSet.CreateBool(false);
+                        result = OutSet.CreateBool(false);
                     }
                     break;
                 case Operations.Concat:
-                    Result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
+                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
                         + TypeConversion.ToString(value.Value));
                     break;
                 default:
@@ -204,21 +87,231 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override void VisitStringValue(StringValue value)
+        #region Numeric values
+
+        /// <inheritdoc />
+        public override void VisitGenericNumericValue<T>(NumericValue<T> value)
         {
-            switch (Operation)
+            switch (operation)
             {
                 case Operations.Identical:
-                    Result = OutSet.CreateBool(false);
+                    result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
-                    Result = OutSet.CreateBool(true);
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    base.VisitGenericNumericValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntegerValue(IntegerValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Add:
+                    // Result of addition can overflow
+                    if (leftOperand.Value && (value.Value >= int.MaxValue))
+                    {
+                        // If aritmetic overflows, result is double
+                        result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value)
+                            + TypeConversion.ToFloat(value.Value));
+                    }
+                    else
+                    {
+                        result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value) + value.Value);
+                    }
+                    break;
+                case Operations.Sub:
+                    // Result of subtraction can overflow
+                    if (value.Value > (int.MinValue + TypeConversion.ToInteger(leftOperand.Value)))
+                    {
+                        result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value) - value.Value);
+                    }
+                    else
+                    {
+                        // If aritmetic overflows, result is double
+                        result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value)
+                            - TypeConversion.ToFloat(value.Value));
+                    }
+                    break;
+                case Operations.Mul:
+                    if (leftOperand.Value)
+                    {
+                        result = OutSet.CreateInt(value.Value);
+                    }
+                    else
+                    {
+                        result = OutSet.CreateInt(0);
+                    }
+                    break;
+                case Operations.Div:
+                    if (value.Value != 0)
+                    {
+                        if ((value.Value == 1) || (value.Value == -1))
+                        {
+                            result = OutSet.CreateInt(leftOperand.Value ? value.Value : 0);
+                        }
+                        else
+                        {
+                            result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value)
+                                / TypeConversion.ToFloat(value.Value));
+                        }
+                    }
+                    else
+                    {
+                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by zero returns false boolean value
+                        result = OutSet.CreateBool(false);
+                    }
                     break;
                 case Operations.Mod:
-                    // TODO: There is a problem with conversion
-                    throw new NotImplementedException();
+                    if (value.Value != 0)
+                    {
+                        result = OutSet.CreateInt((leftOperand.Value && (value.Value != 1)
+                            && (value.Value != -1)) ? 1 : 0);
+                    }
+                    else
+                    {
+                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by zero returns false boolean value
+                        result = OutSet.CreateBool(false);
+                    }
+                    break;
                 case Operations.Concat:
-                    Result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value) + value.Value);
+                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
+                        + TypeConversion.ToString(value.Value));
+                    break;
+                default:
+                    var rightBoolean = TypeConversion.ToBoolean(value.Value);
+                    if (ComparisonOperation(leftOperand.Value, rightBoolean))
+                    {
+                        break;
+                    }
+
+                    if (LogicalOperation(leftOperand.Value, rightBoolean))
+                    {
+                        break;
+                    }
+
+                    if (BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), value.Value))
+                    {
+                        break;
+                    }
+
+                    base.VisitIntegerValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitFloatValue(FloatValue value)
+        {
+            int rightInteger;
+
+            switch (operation)
+            {
+                case Operations.Mod:
+                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
+                    {
+                        if (rightInteger != 0)
+                        {
+                            result = OutSet.CreateInt((leftOperand.Value && (rightInteger != 1)
+                                && (rightInteger != -1)) ? 1 : 0);
+                        }
+                        else
+                        {
+                            SetWarning("Division by floating-point zero",
+                                AnalysisWarningCause.DIVISION_BY_ZERO);
+                            // Division by floating-point zero does not return NaN, but false boolean value
+                            result = OutSet.CreateBool(false);
+                        }
+                    }
+                    else
+                    {
+                        // As right operant can has any value, can be 0 too
+                        // That causes division by zero and returns false
+                        SetWarning("Division by any integer, possible division by zero",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+                        result = OutSet.AnyValue;
+                    }
+                    break;
+                case Operations.Concat:
+                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
+                        + TypeConversion.ToString(value.Value));
+                    break;
+                default:
+                    var rightBoolean = TypeConversion.ToBoolean(value.Value);
+                    if (ComparisonOperation(leftOperand.Value, rightBoolean))
+                    {
+                        break;
+                    }
+
+                    if (ArithmeticOperation(TypeConversion.ToFloat(leftOperand.Value), value.Value))
+                    {
+                        break;
+                    }
+
+                    if (LogicalOperation(leftOperand.Value, rightBoolean))
+                    {
+                        break;
+                    }
+
+                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
+                    {
+                        if (BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), rightInteger))
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (IsOperationBitwise())
+                        {
+                            result = OutSet.AnyIntegerValue;
+                            break;
+                        }
+                    }
+
+                    base.VisitFloatValue(value);
+                    break;
+            }
+        }
+
+        #endregion
+
+        /// <inheritdoc />
+        public override void VisitStringValue(StringValue value)
+        {
+            int integerValue;
+
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    TypeConversion.TryConvertToInteger(value.Value, out integerValue);
+                    if (integerValue != 0)
+                    {
+                        result = OutSet.CreateInt((leftOperand.Value && (integerValue != 1)
+                            && (integerValue != -1)) ? 1 : 0);
+                    }
+                    else
+                    {
+                        SetWarning("Division by zero (converted from string)",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by zero returns false boolean value
+                        result = OutSet.CreateBool(false);
+                    }
+                    break;
+                case Operations.Concat:
+                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value) + value.Value);
                     break;
                 default:
                     var booleanValue = TypeConversion.ToBoolean(value.Value);
@@ -234,7 +327,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     var leftInteger = TypeConversion.ToInteger(leftOperand.Value);
 
-                    int integerValue;
                     double floatValue;
                     bool isInteger;
                     bool isHexadecimal;
@@ -275,7 +367,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         // If at least one operand can not be recognized, result can be any integer value.
                         if (IsOperationBitwise())
                         {
-                            Result = OutSet.AnyIntegerValue;
+                            result = OutSet.AnyIntegerValue;
                             break;
                         }
                     }
@@ -285,110 +377,61 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public override void VisitIntegerValue(IntegerValue value)
+        #endregion
+
+        /// <inheritdoc />
+        public override void VisitUndefinedValue(UndefinedValue value)
         {
-            switch (Operation)
+            switch (operation)
             {
+                case Operations.NotEqual:
+                case Operations.GreaterThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.CreateBool(leftOperand.Value);
+                    break;
+                case Operations.Equal:
+                case Operations.LessThanOrEqual:
+                    result = OutSet.CreateBool(!leftOperand.Value);
+                    break;
                 case Operations.Identical:
-                    Result = OutSet.CreateBool(false);
+                case Operations.LessThan:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
-                    Result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Add:
-                    // Result of addition can overflow
-                    if (leftOperand.Value && (value.Value >= int.MaxValue))
-                    {
-                        // If aritmetic overflows, result is double
-                        Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value)
-                            + TypeConversion.ToFloat(value.Value));
-                    }
-                    else
-                    {
-                        Result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value) + value.Value);
-                    }
-                    break;
-                case Operations.Sub:
-                    // Result of subtraction can overflow
-                    if (value.Value > (int.MinValue + TypeConversion.ToInteger(leftOperand.Value)))
-                    {
-                        Result = OutSet.CreateInt(TypeConversion.ToInteger(leftOperand.Value) - value.Value);
-                    }
-                    else
-                    {
-                        // If aritmetic overflows, result is double
-                        Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value)
-                            - TypeConversion.ToFloat(value.Value));
-                    }
-                    break;
-                case Operations.Mul:
-                    if (leftOperand.Value)
-                    {
-                        Result = OutSet.CreateInt(value.Value);
-                    }
-                    else
-                    {
-                        Result = OutSet.CreateInt(0);
-                    }
-                    break;
-                case Operations.Div:
-                    if (value.Value != 0)
-                    {
-                        if ((value.Value == 1) || (value.Value == -1))
-                        {
-                            Result = OutSet.CreateInt(leftOperand.Value ? value.Value : 0);
-                        }
-                        else
-                        {
-                            Result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand.Value)
-                                / TypeConversion.ToFloat(value.Value));
-                        }
-                    }
-                    else
-                    {
-                        evaluator.SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        Result = OutSet.CreateBool(false);
-                    }
-                    break;
-                case Operations.Mod:
-                    if (value.Value != 0)
-                    {
-                        Result = OutSet.CreateInt((leftOperand.Value && (value.Value != 1)
-                            && (value.Value != -1)) ? 1 : 0);
-                    }
-                    else
-                    {
-                        evaluator.SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        Result = OutSet.CreateBool(false);
-                    }
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Concat:
-                    Result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
+                    result = TypeConversion.ToString(OutSet, leftOperand);
+                    break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = TypeConversion.ToInteger(OutSet, leftOperand);
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    SetWarning("Division by zero (converted from null)",
+                        AnalysisWarningCause.DIVISION_BY_ZERO);
+                    // Division by null returns false boolean value
+                    result = OutSet.CreateBool(false);
                     break;
                 default:
-                    var rightBoolean = TypeConversion.ToBoolean(value.Value);
-                    if (ComparisonOperation(leftOperand.Value, rightBoolean))
-                    {
-                        break;
-                    }
-
-                    if (LogicalOperation(leftOperand.Value, rightBoolean))
-                    {
-                        break;
-                    }
-
-                    if (!BitwiseOperation(TypeConversion.ToInteger(leftOperand.Value), value.Value))
-                    {
-                        break;
-                    }
-
-                    base.VisitIntegerValue(value);
+                    base.VisitUndefinedValue(value);
                     break;
             }
         }
+
+        #endregion
 
         #endregion
     }

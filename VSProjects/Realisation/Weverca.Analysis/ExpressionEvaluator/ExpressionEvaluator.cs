@@ -48,7 +48,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             unaryOperationEvaluator = new UnaryOperationEvaluator(Flow, stringConverter);
             incrementDecrementEvaluator = new IncrementDecrementEvaluator(Flow);
             arrayIndexEvaluator = new ArrayIndexEvaluator(Flow);
-            binaryOperationVisitor = new BinaryOperationVisitor(this);
+            binaryOperationVisitor = new BinaryOperationVisitor(Flow);
         }
 
         #region ExpressionEvaluatorBase overrides
@@ -104,17 +104,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
             MemoryEntry rightOperand)
         {
-            var values = new HashSet<Value>();
-
-            foreach (var leftValue in leftOperand.PossibleValues)
-            {
-                foreach (var rightValue in rightOperand.PossibleValues)
-                {
-                    values.Add(binaryOperationVisitor.Evaluate(leftValue, operation, rightValue));
-                }
-            }
-
-            return new MemoryEntry(values);
+            binaryOperationVisitor.SetContext(Flow);
+            return binaryOperationVisitor.Evaluate(leftOperand, operation, rightOperand);
         }
 
         /// <inheritdoc />
