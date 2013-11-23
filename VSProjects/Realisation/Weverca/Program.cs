@@ -8,7 +8,10 @@ using Weverca.Output;
 
 namespace Weverca
 {
-    class Program
+    /// <summary>
+    /// The program class including <see cref="Main"/> entry point and parsing of command-line arguments
+    /// </summary>
+    internal class Program
     {
         /// <summary>
         /// Relative path to the trunk folder in SVN
@@ -25,13 +28,13 @@ namespace Weverca
         /// Startup method for Weverca
         /// </summary>
         /// <param name="args">TODO: Specification of arguments</param>
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            if (args.Count() < 2)
+            if (args.Length < 2)
             {
                 Console.WriteLine("Missing argument");
-                Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php ");
-                Console.WriteLine(@"-sa");
+                Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
+                Console.WriteLine(@"-sa FILENAME [FILENAME]...");
                 Console.WriteLine(@"  Static analysis");
                 Console.WriteLine(@"-cmide [-options_cmide]");
                 Console.WriteLine(@"  Code metrics for IDE integration");
@@ -42,43 +45,72 @@ namespace Weverca
                 Console.ReadKey();
                 return;
             }
-            
-            //TODO: Resolve entry file
-            var analysisType = args[0];
-            var analyzedFile = args[args.Length-1];
 
-            switch (analysisType)
+            switch (args[0])
             {
                 case "-sa":
-                    RunStaticAnalysis(analyzedFile);
+                    var analysisFiles = new string[args.Length - 1];
+                    Array.Copy(args, 1, analysisFiles, 0, args.Length - 1);
+                    RunStaticAnalysis(analysisFiles);
                     break;
                 case "-cmide":
-                    string[] metricsArgs = new string[args.Length-3];
+                    var metricsArgs = new string[args.Length - 3];
                     Array.Copy(args, 2, metricsArgs, 0, args.Length - 3);
-                    MetricsForIDEIntegration.Run(args[1], analyzedFile, metricsArgs);
+                    MetricsForIDEIntegration.Run(args[1], args[args.Length - 1], metricsArgs);
+                    break;
+                default:
+                    Console.WriteLine("Unknown option: \"{0}\"", args[0]);
                     break;
             }
         }
 
-        static private void RunStaticAnalysis(string analyzedFile) 
+        /// <summary>
+        /// Execute the static analysis and print results
+        /// </summary>
+        /// <param name="filenames">List of file name patterns from command line</param>
+        private static void RunStaticAnalysis(string[] filenames)
         {
-            //TODO: this is for time consumption analyzing only
-            //Analyze twice - because of omitting .NET initialization we get better analysis time
-            Analyzer.Run(analyzedFile);
+            foreach (var argument in filenames)
+            {
+                var filesInfo = Analyzer.GetFileNames(argument);
+                if (filesInfo == null)
+                {
+                    Console.WriteLine("Path \"{0}\" cannot be recognized", argument);
+                    Console.ReadKey();
+                    Console.WriteLine();
+                    continue;
+                }
+                else if (filesInfo.Length <= 0)
+                {
+                    Console.WriteLine("Path pattern \"{0}\" does not match any file", argument);
+                    Console.ReadKey();
+                    Console.WriteLine();
+                    continue;
+                }
 
-            //Process analysis
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var ppGraph = Analyzer.Run(analyzedFile);
-            watch.Stop();
+                foreach (var fileInfo in filesInfo)
+                {
+                    // TODO: This is for time consumption analyzing only
+                    // Analyze twice - because of omitting .NET initialization we get better analysis time
+                    Analyzer.Run(fileInfo);
 
-            //Build output
-            var console = new ConsoleOutput();
-            var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
-            console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+                    // Process analysis
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    var ppGraph = Analyzer.Run(fileInfo);
+                    watch.Stop();
 
-            graphWalker.Run(console);
-            console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
-            Console.ReadKey();
+                    // Build output
+                    var console = new ConsoleOutput();
+                    console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+                    var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
+                    console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+
+                    graphWalker.Run(console);
+                    console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+                    Console.ReadKey();
+                    Console.WriteLine();
+                }
+            }
         }
     }
 }
