@@ -64,7 +64,7 @@ namespace Weverca.Analysis
             nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
             NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, ClassDeclBuilder>();
 
-
+            Visibility methodVisibility = Visibility.PUBLIC;
             ClassDeclBuilder currentClass = null;
             NativeMethod currentMethod = null;
             while (reader.Read())
@@ -102,6 +102,7 @@ namespace Weverca.Analysis
                                 {
                                     currentClass.IsInterface = true;
                                 }
+                                
                                 break;
                             case "field":
                                 string fieldName = reader.GetAttribute("name");
@@ -207,8 +208,38 @@ namespace Weverca.Analysis
                                 currentMethod.IsFinal = bool.Parse(reader.GetAttribute("final"));
                                 currentMethod.IsStatic = bool.Parse(reader.GetAttribute("static"));
                                 returnTypes.Add(reader.GetAttribute("returnType"));
+                                if(currentMethod.Name==new QualifiedName(new Name("getLastErrors")))
+                                {
+                                
+                                }
+                                methodVisibility = Visibility.PUBLIC;
+                                if (reader.GetAttribute("visibility") == "private")
+                                {
+                                    methodVisibility = Visibility.PRIVATE;
+                                }
+                                else if (reader.GetAttribute("visibility") == "protected")
+                                {
+                                    methodVisibility = Visibility.PROTECTED;
+                                }
+                                else
+                                {
+                                    methodVisibility = Visibility.PUBLIC;
+                                }
 
-
+                                if (reader.IsEmptyElement)
+                                {
+                                    NativeAnalyzerMethod analyzer;
+                                    if (currentMethod.Name.Name.Equals(new Name("__construct")))
+                                    {
+                                        analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Construct;
+                                    }
+                                    else
+                                    {
+                                        analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Analyze;
+                                    }
+                                    MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.QualifiedName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
+                                    currentClass.ModeledMethods[new MethodIdentifier(currentClass.QualifiedName, methodInfo.Name)] = methodInfo;
+                                }
 
                                 break;
                             case "arg":
@@ -229,19 +260,7 @@ namespace Weverca.Analysis
                         switch (reader.Name)
                         {
                             case "method":
-                                Visibility methodVisibility = Visibility.PUBLIC;
-                                if (reader.GetAttribute("visibility") == "private")
-                                {
-                                    methodVisibility = Visibility.PRIVATE;
-                                }
-                                else if (reader.GetAttribute("visibility") == "protected")
-                                {
-                                    methodVisibility = Visibility.PROTECTED;
-                                }
-                                else
-                                {
-                                    methodVisibility = Visibility.PUBLIC;
-                                }
+                                
                                 NativeAnalyzerMethod analyzer;
                                 if (currentMethod.Name.Name.Equals(new Name("__construct")))
                                 {

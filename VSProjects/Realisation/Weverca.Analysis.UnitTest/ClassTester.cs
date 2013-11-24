@@ -603,7 +603,202 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED));
         }
 
+        string ClassCannotRedeclareStaticFieldTest = @"
+            class a
+            {
+                public $x;
+            }
 
-        
+            class b extends a
+            {
+                static $x;
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotRedeclareStaticField()
+        {
+            var outset = TestUtils.Analyze(ClassCannotRedeclareStaticFieldTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC));
+        }
+
+        string ClassCannotRedeclareStaticFieldTest2 = @"
+            class a
+            {
+                public static $x;
+            }
+
+            class b extends a
+            {
+                public $x;
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotRedeclareStaticField2()
+        {
+            var outset = TestUtils.Analyze(ClassCannotRedeclareStaticFieldTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_FIELD_WITH_NON_STATIC));
+        }
+
+        string ClassCannotInheritFinalMethodTest = @"
+            class a
+            {
+                public final function x(){}
+            }
+
+            class b extends a
+            {
+                public function x(){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotInheritFinalMethod()
+        {
+            var outset = TestUtils.Analyze(ClassCannotInheritFinalMethodTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD));
+        }
+
+
+        string ClassCannotInheritFinalMethodTest2 = @"
+            class b extends Exception 
+            {
+                public function getPrevious(){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotInheritFinalMethod2()
+        {
+            var outset = TestUtils.Analyze(ClassCannotInheritFinalMethodTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD));
+        }
+
+        string ClassCannotOverrideMethodWithAbstractTest = @"
+            class a
+            {
+                 function x(){}
+            }
+
+            abstract class b extends a
+            {
+                abstract function x();
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideMethodWithAbstract()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideMethodWithAbstractTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT));
+        }
+
+        string ClassCannotOverrideMethodWithAbstractTest2 = @"
+           
+            abstract class b extends DAtetime
+            {
+                abstract function getOffset();
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideMethodWithAbstract2()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideMethodWithAbstractTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT));
+        }
+
+        string ClassCannotOverrideMethodTest = @"
+            class a
+            {
+                 function x($a){}
+            }
+
+            class b extends a
+            {
+                function x(&$a){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideMethod()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideMethodTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION));
+        }
+
+        string ClassCannotOverrideMethodTest2 = @"
+           
+            class b extends DAtetime
+            {
+                function getOffset($a){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideMethod2()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideMethodTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION));
+        }
+
+
+        string ClassCannotOverrideStaticMethodWithNonStaticTest = @"
+            class a
+            {
+                 static function x($a){}
+            }
+
+            class b extends a
+            {
+                function x($a){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideStaticMethodWithNonStatic()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideStaticMethodWithNonStaticTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+        }
+
+        string ClassCannotOverrideStaticMethodWithNonStaticTest2 = @"
+           
+            class b extends DAtetime
+            {
+                function getLastErrors(){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideStaticMethodWithNonStatic2()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideStaticMethodWithNonStaticTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC));
+        }
+
+        string ClassCannotOverrideNonStaticMethodWithStaticTest = @"
+            class a
+            {
+                  function x($a){}
+            }
+
+            class b extends a
+            {
+                static function x($a){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideNonStaticMethodWithStatic()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideNonStaticMethodWithStaticTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC));
+        }
+
+        string ClassCannotOverrideNonStaticMethodWithStaticTest2 = @"
+           
+            class b extends DAtetime
+            {
+                static function moDify ($x ){}
+            }
+        ";
+        [TestMethod]
+        public void ClassCannotOverrideNonStaticMethodWithStatic2()
+        {
+            var outset = TestUtils.Analyze(ClassCannotOverrideNonStaticMethodWithStaticTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC));
+        }
+
     }
 }

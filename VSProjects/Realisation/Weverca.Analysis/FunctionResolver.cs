@@ -703,25 +703,31 @@ namespace Weverca.Analysis
 
             foreach (var field in currentClass.Fields)
             {
-                FieldIdentifier fieldIdentifier = new FieldIdentifier(currentClass.QualifiedName, field.Key.Name);
-                if (!result.Fields.ContainsKey(fieldIdentifier))
+                var query = result.Fields.Keys.Where(a => a.Name == field.Key.Name);
+                FieldIdentifier newFieldIdentifier = new FieldIdentifier(result.QualifiedName, field.Key.Name);
+                if (query.Count()==0)
                 {
-                    result.Fields.Add(fieldIdentifier, field.Value);
+                    result.Fields.Add(newFieldIdentifier, field.Value);
                 }
                 else
                 {
+                    FieldIdentifier fieldIdentifier = query.First();
                     if (result.Fields[fieldIdentifier].IsStatic != field.Value.IsStatic)
                     {
                         var fieldName = result.Fields[fieldIdentifier].Name;
                         if (field.Value.IsStatic)
                         {
-                            setWarning("Cannot redeclare static " + fieldName + " with non static " + fieldName,  AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            setWarning("Cannot redeclare non static " + fieldName + " with static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
                         }
                         else
                         {
-                            setWarning("Cannot redeclare non static " + fieldName + " with static " + fieldName,  AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            setWarning("Cannot redeclare static " + fieldName + " with non static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_FIELD_WITH_NON_STATIC);
 
                         }
+                    }
+                    else 
+                    {
+                        result.Fields.Add(newFieldIdentifier, field.Value);
                     }
                 }
             }
@@ -730,7 +736,7 @@ namespace Weverca.Analysis
             {
                 result.Constants.Add(constant.Key, constant.Value);
             }
-
+            //todo test method overriding
             foreach (var method in currentClass.SourceCodeMethods.Values)
             {
                 MethodIdentifier methodIdentifier = new MethodIdentifier(result.QualifiedName, method.Name);
@@ -751,7 +757,7 @@ namespace Weverca.Analysis
                       
                         if(!AreMethodsCompatible(overridenMethod,method))
                         {
-                            setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_REDECLARE_CLASS_FUNCTION);
+                            setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                         }
                         if (method.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
                         {
@@ -772,7 +778,7 @@ namespace Weverca.Analysis
 
                     if (!AreMethodsCompatible(overridenMethod, method))
                     {
-                        setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_REDECLARE_CLASS_FUNCTION);
+                        setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                     }
                     if (method.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
                     {

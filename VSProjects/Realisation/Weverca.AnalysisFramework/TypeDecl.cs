@@ -157,7 +157,7 @@ namespace Weverca.AnalysisFramework
             Name = name;
             Method = method;
             IsFinal = isFinal;
-            isStatic = IsStatic;
+            IsStatic = isStatic;
             Visibility = visibility;
             Arguments=new ReadOnlyCollection<MethodArgument>(args);
             IsAbstract = isAbstract;
