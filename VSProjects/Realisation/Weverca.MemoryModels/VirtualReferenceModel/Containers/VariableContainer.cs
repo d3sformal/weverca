@@ -225,7 +225,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                 {
                     result.AppendFormat("{0}: {{", variableInfo);
 
-                    var entry = _owner.ReadValue(new VariableKey(variableInfo.Kind, variableInfo.Name));
+                    var entry = _owner.ReadValue(new VariableKey(variableInfo.Kind, variableInfo.Name, _owner.CurrentContextStamp));
                     foreach (var value in entry.PossibleValues)
                     {
                         result.AppendFormat("'{0}', ", value);

@@ -47,10 +47,18 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 
         internal readonly VariableName Name;
 
-        internal VariableKey(VariableKind kind, VariableName name)
+        internal readonly int ContextStamp;
+
+        internal VariableKey(VariableKind kind, VariableName name, int contextStamp)
         {
             Kind = kind;
             Name = name;
+            if (
+                kind.HasFlag(VariableKind.Global) |
+                kind.HasFlag(VariableKind.GlobalControl)
+                ) contextStamp = 0;
+
+            ContextStamp = contextStamp;
         }
     }
 }

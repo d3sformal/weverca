@@ -47,10 +47,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            foreach (var storage in _storages)
-            {
-                yield return new ReferenceAliasEntry(storage);
-            }
+            return C(context).Aliases(_storages);
         }
 
         protected override MemoryEntry readMemory(SnapshotBase context)

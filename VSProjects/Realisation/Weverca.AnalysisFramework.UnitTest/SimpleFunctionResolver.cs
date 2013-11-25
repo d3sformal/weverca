@@ -89,7 +89,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal static void SetReturn(FlowOutputSet outSet, MemoryEntry returnValue)
         {
             var outSnapshot = outSet.Snapshot;
-            var returnVar = outSnapshot.GetControlVariable(ReturnStorage);
+            var returnVar = outSnapshot.GetLocalControlVariable(ReturnStorage);
             returnVar.WriteMemory(outSnapshot, returnValue);
         }
 
@@ -97,7 +97,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal static MemoryEntry GetReturn(FlowOutputSet outSet)
         {
             var outSnapshot = outSet.Snapshot;
-            var returnVar = outSnapshot.GetControlVariable(ReturnStorage);
+            var returnVar = outSnapshot.GetLocalControlVariable(ReturnStorage);
             return returnVar.ReadMemory(outSnapshot);
         }
 

@@ -17,25 +17,35 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         /// </summary>
         internal readonly VariableName OriginatedVariable;
 
+        /// <summary>
+        /// Kind determining variable storage
+        /// </summary>
         internal readonly VariableKind Kind;
+
+        /// <summary>
+        /// Stamp determining call context, where reference has been created
+        /// </summary>
+        internal readonly int ContextStamp;
+
         /// <summary>
         /// Create virtual reference according to originatedVariable
         /// </summary>
         /// <param name="originatedVariable">Variable determining reference target</param>
-        internal VirtualReference(VariableName originatedVariable, VariableKind kind)
+        internal VirtualReference(VariableName originatedVariable, VariableKind kind, int stamp)
         {
             OriginatedVariable = originatedVariable;
             Kind = kind;
+            ContextStamp = stamp;
         }
 
-        internal VirtualReference(VariableInfo info)
-            : this(info.Name, info.Kind)
+        internal VirtualReference(VariableInfo info, int stamp)
+            : this(info.Name, info.Kind, stamp)
         {
         }
 
         public override int GetHashCode()
         {
-            return OriginatedVariable.GetHashCode() + (int)Kind;
+            return OriginatedVariable.GetHashCode() + (int)Kind + ContextStamp;
         }
 
 
@@ -47,14 +57,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             }
 
             var o = obj as VirtualReference;
-
             if (o == null)
             {
                 return false;
             }
 
+            return o.OriginatedVariable == this.OriginatedVariable && o.Kind == this.Kind && o.ContextStamp == ContextStamp;
+        }
 
-            return o.OriginatedVariable == this.OriginatedVariable && o.Kind == this.Kind;
+        public override string ToString()
+        {
+            return string.Format("Ref: {0}-{1}|{2}", OriginatedVariable, ContextStamp, Kind);
         }
     }
 }

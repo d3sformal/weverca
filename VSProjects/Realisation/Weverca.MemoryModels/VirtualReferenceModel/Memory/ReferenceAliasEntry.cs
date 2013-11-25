@@ -12,9 +12,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
     {
         internal readonly VariableKey Key;
 
-        public ReferenceAliasEntry(VariableKey key)
+        internal readonly int ContextStamp;
+
+        public ReferenceAliasEntry(VariableKey key, int stamp)
         {
             Key = key;
+            ContextStamp = stamp;
         }
     }
 }

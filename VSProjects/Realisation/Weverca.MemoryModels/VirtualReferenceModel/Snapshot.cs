@@ -18,6 +18,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
     /// </summary>
     public class Snapshot : SnapshotBase
     {
+        /// <summary>
+        /// Hold unique id for every snapshot. The id is used
+        /// for storing info about snapshot sequences.
+        /// </summary>
+        private static int _uniqueStamp = 1;
+
         private VariableContainer _locals;
         private VariableContainer _globals;
         private VariableContainer _meta;
@@ -27,9 +33,19 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private DataContainer _data;
 
         /// <summary>
+        /// Unique stamp for current snapshot
+        /// </summary>
+        internal readonly int SnapshotStamp = ++_uniqueStamp;
+
+        /// <summary>
+        /// Determine stamp of snapshot that is leader of current call context
+        /// </summary>
+        internal int CurrentContextStamp { get; private set; }
+
+        /// <summary>
         /// Determine that this snapshot is pointed to global scope
         /// </summary>
-        private bool _isGlobalScope;
+        internal bool IsGlobalScope { get { return CurrentContextStamp == 0; } }
 
         internal MemoryAssistantBase MemoryAssistant { get { return Assistant; } }
 
@@ -57,7 +73,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
 
             // when not extend as call or from non global snapshot, context is global
-            _isGlobalScope = true;
+            CurrentContextStamp = 0;
         }
 
         protected override bool commitTransaction()
@@ -107,15 +123,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            // called context cannot be global scope
-            _isGlobalScope = false;
+            // called context is extended only at begining of call
+            CurrentContextStamp = SnapshotStamp;
 
             var input = callerContext as Snapshot;
 
             _globals.ExtendBy(input._globals);
             _meta.ExtendBy(input._meta);
             _globalControls.ExtendBy(input._globalControls);
-            _data.ExtendBy(input._data, true, VariableKind.CallExtends);
+            _data.ExtendBy(input._data, true);
 
             if (thisObject != null)
             {
@@ -143,9 +159,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 _localControls.ExtendBy(input._localControls);
                 _meta.ExtendBy(input._meta);
 
-                _data.ExtendBy(input._data, isFirst, VariableKind.AllExtends);
+                _data.ExtendBy(input._data, isFirst);
 
-                _isGlobalScope &= input._isGlobalScope;
+                //all context stamps on extend level should be same
+                CurrentContextStamp = input.CurrentContextStamp;
                 isFirst = false;
             }
         }
@@ -160,7 +177,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 _meta.ExtendBy(callInput._meta);
                 _globalControls.ExtendBy(callInput._globalControls);
 
-                _data.ExtendBy(callInput._data, isFirst, VariableKind.CallExtends);
+                _data.ExtendBy(callInput._data, isFirst);
                 isFirst = false;
             }
         }
@@ -209,19 +226,27 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 //translation because of memory model cross-contexts
                 var variable = getOrCreateInfo(storage);
 
-          /*      if (weak)
-                {
-                    //weak update
-                    var oldValue = readValue(variable);
+                /*      if (weak)
+                      {
+                          //weak update
+                          var oldValue = readValue(variable);
 
-                    REPORT(Statistic.MemoryEntryMerges);
-                    var merged = MemoryEntry.Merge(oldValue, value);
-                    assign(variable, merged);
-                }
-                else*/
+                          REPORT(Statistic.MemoryEntryMerges);
+                          var merged = MemoryEntry.Merge(oldValue, value);
+                          assign(variable, merged);
+                      }
+                      else*/
                 {
                     assign(variable, value);
                 }
+            }
+        }
+
+        internal IEnumerable<ReferenceAliasEntry> Aliases(VariableKey[] storages)
+        {
+            foreach (var storage in storages)
+            {
+                yield return new ReferenceAliasEntry(storage, storage.ContextStamp);
             }
         }
 
@@ -244,6 +269,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         internal MemoryEntry ReadValue(VariableKey key)
         {
             var variable = getOrCreateInfo(key);
+         
             return readValue(variable);
         }
 
@@ -392,7 +418,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             {
                 case 0:
                     //reserve new virtual reference
-                    var allocatedReference = new VirtualReference(info.Name, info.Kind);
+                    var allocatedReference = new VirtualReference(info.Name, info.Kind, CurrentContextStamp);
                     info.References.Add(allocatedReference);
 
                     setEntry(allocatedReference, entry);
@@ -441,7 +467,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
                 if (contextVariable.References.Count == 0)
                 {
-                    var implicitRef = new VirtualReference(contextVariable);
+                    var implicitRef = new VirtualReference(contextVariable, alias.ContextStamp);
                     contextVariable.References.Add(implicitRef);
                 }
 
@@ -500,7 +526,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private VariableInfo getOrCreateInfo(VariableName name, VariableKind kind)
         {
             //convert kind according to current scope
-            kind = repairKind(kind, _isGlobalScope);
+            kind = repairKind(kind, IsGlobalScope);
 
             VariableInfo result;
             var storage = getVariableContainer(kind);
@@ -668,7 +694,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private VariableKey getThisObjectStorage()
         {
             //TODO this should be control (but it has different scope propagation)
-            return new VariableKey(VariableKind.Local, new VariableName("this"));
+            return new VariableKey(VariableKind.Local, new VariableName("this"), CurrentContextStamp);
         }
 
         private VariableKey getArrayInfoStorage(AssociativeArray arr)
@@ -679,7 +705,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableKey getMeta(string variableName)
         {
-            return new VariableKey(VariableKind.Meta, new VariableName(variableName));
+            return new VariableKey(VariableKind.Meta, new VariableName(variableName), CurrentContextStamp);
         }
 
         #endregion
@@ -690,9 +716,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             var info = getInfo(name, kind);
             if (info != null)
-                return new VariableKey(info.Kind, info.Name);
+                return new VariableKey(info.Kind, info.Name, CurrentContextStamp);
 
-            return new VariableKey(kind, name);
+            return new VariableKey(kind, name, CurrentContextStamp);
         }
 
 
@@ -710,7 +736,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             if (kind == VariableKind.Meta)
                 return kind;
 
-            if (forceGlobal || _isGlobalScope)
+            if (forceGlobal || IsGlobalScope)
                 return VariableKind.Global;
 
             return kind;
@@ -718,7 +744,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableContainer getVariableContainer(VariableKind kind)
         {
-            kind = repairKind(kind, _isGlobalScope);
+            kind = repairKind(kind, IsGlobalScope);
             switch (kind)
             {
                 case VariableKind.Global:
@@ -769,7 +795,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             var result = new StringBuilder();
 
-            if (!_isGlobalScope)
+            if (!IsGlobalScope)
             {
                 result.AppendLine("===LOCALS===");
                 result.AppendLine(_locals.ToString());
@@ -883,7 +909,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {
             var kind = repairKind(VariableKind.Local, forceGlobalContext);
-            return tryReadValue(new VariableKey(kind, sourceVar), out entry);
+            return tryReadValue(new VariableKey(kind, sourceVar, CurrentContextStamp), out entry);
         }
 
         private bool tryReadValue(VariableKey key, out MemoryEntry entry)
