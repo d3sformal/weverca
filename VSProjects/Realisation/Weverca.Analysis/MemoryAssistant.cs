@@ -71,53 +71,50 @@ namespace Weverca.Analysis
         public override MemoryEntry Widen(MemoryEntry old, MemoryEntry current)
         {
             //todo copy info
-
+            var visitor = new WidenningVisitor();
 
             //todo maybe make more precise
             List<Value> allValues = new List<Value>(old.PossibleValues);
             allValues.AddRange(current.PossibleValues);
-            bool containsFloat = false;
-            bool containsLong = false;
-            bool containsOnlyBool = true;
-            bool containsOnlyNumvericValues = true;
-            bool containsOnlyString = true;
+           
             foreach (var value in allValues)
             {
-                if (ValueTypeResolver.IsBool(value))
-                {
-                    containsOnlyNumvericValues = false;
-                    containsOnlyString = false;
-                }
-                else if (ValueTypeResolver.IsInt(value))
-                {
-                    containsOnlyBool = false;
-                    containsOnlyString = false;
-                }
-                else if (ValueTypeResolver.IsLong(value))
-                {
-                    containsLong = true;
-                    containsOnlyBool = false;
-                    containsOnlyString = false;
-                }
-                else if (ValueTypeResolver.IsFloat(value))
-                {
-                    containsFloat = true;
-                    containsOnlyBool = false;
-                    containsOnlyString = false;
-                }
-                else if (ValueTypeResolver.IsString(value))
-                {
-                    containsOnlyNumvericValues = false;
-                    containsOnlyBool = false;
-                }
-                else
-                {
-                    containsOnlyBool = false;
-                    containsOnlyString = false;
-                    containsOnlyNumvericValues = false;
-                }
+                value.Accept(visitor); 
             }
+            return visitor.getResult(Context);          
+        }
 
+        #endregion
+
+        /// <summary>
+        /// Generates a warning with the given message
+        /// </summary>
+        /// <param name="message">Text of warning</param>
+        public void SetWarning(string message)
+        {
+            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+        }
+
+        /// <summary>
+        /// Generates a warning of the proper type and with the given message
+        /// </summary>
+        /// <param name="message">Text of warning</param>
+        /// <param name="cause">More specific warning type</param>
+        public void SetWarning(string message, AnalysisWarningCause cause)
+        {
+            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+        }
+    }
+
+    public class WidenningVisitor : AbstractValueVisitor
+    {
+        bool containsFloat = false;
+        bool containsLong = false;
+        bool containsOnlyBool = true;
+        bool containsOnlyNumvericValues = true;
+        bool containsOnlyString = true;
+        public MemoryEntry getResult(SnapshotBase Context)
+        {
             if (containsOnlyBool)
             {
                 return new MemoryEntry(Context.AnyBooleanValue);
@@ -145,25 +142,102 @@ namespace Weverca.Analysis
             return new MemoryEntry(Context.AnyValue);
         }
 
-        #endregion
-
-        /// <summary>
-        /// Generates a warning with the given message
-        /// </summary>
-        /// <param name="message">Text of warning</param>
-        public void SetWarning(string message)
+        public override void VisitValue(Value value)
         {
-            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+            containsOnlyBool = false;
+            containsOnlyString = false;
+            containsOnlyNumvericValues = false;
         }
 
-        /// <summary>
-        /// Generates a warning of the proper type and with the given message
-        /// </summary>
-        /// <param name="message">Text of warning</param>
-        /// <param name="cause">More specific warning type</param>
-        public void SetWarning(string message, AnalysisWarningCause cause)
+        public override void VisitBooleanValue(BooleanValue value)
         {
-            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+            booleanFound();
         }
+
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            booleanFound();
+        }
+
+        private void booleanFound()
+        {
+            containsOnlyNumvericValues = false;
+            containsOnlyString = false;
+        }
+
+        public override void VisitStringValue(StringValue value)
+        {
+            stringFound();
+        }
+
+        public override void VisitAnyStringValue(AnyStringValue value)
+        {
+            stringFound();
+        }
+
+        private void stringFound()
+        {
+            containsOnlyNumvericValues = false;
+            containsOnlyBool = false;
+        }
+
+        public override void VisitIntegerValue(IntegerValue value)
+        {
+            numberFound();
+        }
+
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            numberFound();
+        }
+
+        public override void VisitAnyIntegerValue(AnyIntegerValue value)
+        {
+            numberFound();
+        }
+
+        public override void VisitLongintValue(LongintValue value)
+        {
+            numberFound();
+            containsLong = true;
+        }
+
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            numberFound();
+            containsLong = true;
+        }
+
+        public override void VisitAnyLongintValue(AnyLongintValue value)
+        {
+            numberFound();
+            containsLong = true;
+        }
+
+        public override void VisitFloatValue(FloatValue value)
+        {
+            numberFound();
+            containsFloat = true;
+        }
+
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            numberFound();
+            containsFloat = true;
+        }
+
+        public override void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            numberFound();
+            containsFloat = true;
+        }
+
+        private void numberFound()
+        {
+            containsOnlyBool = false;
+            containsOnlyString = false;
+        }
+
     }
+
 }
