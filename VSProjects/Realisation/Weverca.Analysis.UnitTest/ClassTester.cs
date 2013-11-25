@@ -800,5 +800,62 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC));
         }
 
+
+
+        string ClassListOfInheritedClassesTest = @"
+        class a {}
+        class b extends a{}
+        class c extends b{}
+        class d extends c{}
+        class e extends d{}
+        ";
+        [TestMethod]
+        public void ClassListOfInheritedClasses()
+        {
+            var outset = TestUtils.Analyze(ClassListOfInheritedClassesTest);
+            var a = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("a"))))[0] as TypeValue;
+            Debug.Assert(a.Declaration.BaseClasses.Count == 0);
+            var b = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("b"))))[0] as TypeValue;
+            Debug.Assert(b.Declaration.BaseClasses.Count == 1);
+            var c = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("c"))))[0] as TypeValue;
+            Debug.Assert(c.Declaration.BaseClasses.Count == 2);
+            var d = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("d"))))[0] as TypeValue;
+            Debug.Assert(d.Declaration.BaseClasses.Count == 3);
+            var e = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("e"))))[0] as TypeValue;
+            Debug.Assert(e.Declaration.BaseClasses.Count == 4);
+       
+        }
+
+        string ClassListOfInheritedClassesTest2 = @"
+        class a extends BadFunctionCallException{}
+        class b extends a{}
+        class c extends b{}
+        class d extends c{}
+        class e extends d{}
+        ";
+        [TestMethod]
+        public void ClassListOfInheritedClasses2()
+        {
+            var outset = TestUtils.Analyze(ClassListOfInheritedClassesTest2);
+            var a = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("a"))))[0] as TypeValue;
+            Debug.Assert(a.Declaration.BaseClasses.Count == 3);
+            var e = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("e"))))[0] as TypeValue;
+            Debug.Assert(e.Declaration.BaseClasses.Count == 7);
+           
+        }
+        string ClassListOfInheritedClassesTest3 = @"
+        class a extends PharData{}
+        ";
+        [TestMethod]
+        public void ClassListOfInheritedClasses3()
+        {
+            var outset = TestUtils.Analyze(ClassListOfInheritedClassesTest3);
+            var a = new List<TypeValueBase>(outset.ResolveType(new QualifiedName(new Name("a"))))[0] as TypeValue;
+            Debug.Assert(a.Declaration.BaseClasses.Count == 6);
+           
+        }
+
+
+        
     }
 }

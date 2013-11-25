@@ -229,6 +229,7 @@ namespace Weverca.Analysis
                             else
                             {
                                 ClassDeclBuilder newType = CopyInfoFromBaseClass(baseClass, type);
+                                insetConstantsIntoMM(newType);
                                 OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(newType, declaration)));
                             }
                         }
@@ -254,6 +255,7 @@ namespace Weverca.Analysis
                                             setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
                                         }
                                         ClassDeclBuilder newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
+                                        insetConstantsIntoMM(newType);
                                         OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(newType, declaration)));
                                     }
                                     else
@@ -266,6 +268,7 @@ namespace Weverca.Analysis
                     }
                     else
                     {
+                        insetConstantsIntoMM(type);
                         OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(type, declaration)));
                     }
                 }
@@ -522,10 +525,12 @@ namespace Weverca.Analysis
                     }
                 }
             }
-            
 
+            insetConstantsIntoMM(result);
             OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
         }
+
+       
       
         private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration)
         {
@@ -696,7 +701,8 @@ namespace Weverca.Analysis
             result.SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>(baseClass.SourceCodeMethods);
             result.ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>(baseClass.ModeledMethods);
             result.QualifiedName = currentClass.QualifiedName;
-            result.BaseClassName = baseClass.QualifiedName;
+            result.BaseClasses = new List<QualifiedName>(baseClass.BaseClasses);
+            result.BaseClasses.Add(baseClass.QualifiedName);
             result.IsFinal = currentClass.IsFinal;
             result.IsInterface = currentClass.IsInterface;
             result.IsAbstract = currentClass.IsAbstract;
@@ -793,8 +799,11 @@ namespace Weverca.Analysis
         private ClassDeclBuilder convertToClassDecl(TypeDecl declaration)
         {
             ClassDeclBuilder result = new ClassDeclBuilder();
-            result.BaseClassName = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
-
+            result.BaseClasses = new List<QualifiedName>();
+            if (declaration.BaseClassName.HasValue)
+            {
+                result.BaseClasses.Add(declaration.BaseClassName.Value.QualifiedName);
+            }
             result.IsFinal = declaration.Type.IsFinal;
             result.IsInterface = declaration.Type.IsInterface;
             result.IsAbstract = declaration.Type.IsAbstract;
@@ -867,6 +876,41 @@ namespace Weverca.Analysis
             }
 
             return result;
+        }
+
+        private void insetConstantsIntoMM(ClassDeclBuilder result)
+        {
+            Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
+            List<QualifiedName> classes = new List<QualifiedName>(result.BaseClasses);
+            classes.Add(result.QualifiedName);
+
+            foreach (var currentClass in classes)
+            {
+                foreach (var constant in result.Constants.Values.Where(a => a.ClassName==currentClass))
+                {
+                    constants[constant.Name] = constant;
+                }
+            }
+
+            foreach (var constant in constants.Values)
+            {
+                var variable = OutSet.GetControlVariable(new VariableName(constant.ClassName.Name.LowercaseValue+".."+constant.Name.Value));
+                List<Value> constantValues = new List<Value>();
+                if (variable.IsDefined(OutSet.Snapshot))
+                {
+                    constantValues.AddRange(variable.ReadMemory(OutSet.Snapshot).PossibleValues);
+                }
+                if (constant.Value != null)
+                {
+                    constantValues.AddRange(constant.Value.PossibleValues);
+                }
+                else
+                {
+                    //todo 
+                   // constantValues.AddRange(constant.Initializer);
+                }
+                variable.WriteMemory(OutSet.Snapshot,new MemoryEntry(constantValues));
+            }
         }
 
         #endregion

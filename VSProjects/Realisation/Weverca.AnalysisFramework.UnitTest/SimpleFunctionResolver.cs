@@ -227,7 +227,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         private ClassDecl convertToType(TypeDecl declaration)
         {
             ClassDeclBuilder result = new ClassDeclBuilder();
-            result.BaseClassName = declaration.BaseClassName.HasValue ? new Nullable<QualifiedName>(declaration.BaseClassName.Value.QualifiedName) : null;
+            result.BaseClasses = new List<QualifiedName>();
+            if(declaration.BaseClassName.HasValue)
+            {
+                result.BaseClasses.Add(declaration.BaseClassName.Value.QualifiedName);
+            }
 
             result.IsFinal = declaration.Type.IsFinal;
             result.IsInterface = declaration.Type.IsInterface;

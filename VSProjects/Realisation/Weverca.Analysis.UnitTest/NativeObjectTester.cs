@@ -54,15 +54,5 @@ $a->read($result,0);";
             var result = TestUtils.ResultTest(ObjectParameterByReferenceTest);
             TestUtils.testType(result, typeof(AnyStringValue));
         }
-
-
-    /*    [TestMethod]
-        public void ObjectMethod2()
-        {
-            var outset = TestUtils.Analyze(ObjectMethodTest2);
-            var t=outset.ReadValue(new VariableName("result")).PossibleValues.GetEnumerator().Current;
-           
-        }*/
-
     }
 }

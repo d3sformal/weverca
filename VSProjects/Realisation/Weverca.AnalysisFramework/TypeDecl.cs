@@ -202,7 +202,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Name of base class
         /// </summary>
-        public readonly Nullable<QualifiedName> BaseClassName;
+        public readonly ReadOnlyCollection<QualifiedName> BaseClasses;
 
         public readonly ReadOnlyDictionary<FieldIdentifier, FieldInfo> Fields;
 
@@ -218,10 +218,10 @@ namespace Weverca.AnalysisFramework
 
         public readonly bool IsAbstract;
         
-        public ClassDecl(QualifiedName typeName, Dictionary<MethodIdentifier,MethodInfo> methods, Dictionary<MethodIdentifier, MethodDecl> sourceCodeMethods, Dictionary<FieldIdentifier, ConstantInfo> constants, Dictionary<FieldIdentifier, FieldInfo> fields, Nullable<QualifiedName> baseClassName, bool isFinal, bool isInteface, bool isAbstract)
+        public ClassDecl(QualifiedName typeName, Dictionary<MethodIdentifier,MethodInfo> methods, Dictionary<MethodIdentifier, MethodDecl> sourceCodeMethods, Dictionary<FieldIdentifier, ConstantInfo> constants, Dictionary<FieldIdentifier, FieldInfo> fields, List<QualifiedName> baseClassName, bool isFinal, bool isInteface, bool isAbstract)
         {
             QualifiedName = typeName;
-            BaseClassName = baseClassName;
+            BaseClasses = new ReadOnlyCollection<QualifiedName>(baseClassName);
             ModeledMethods = new ReadOnlyDictionary<MethodIdentifier, MethodInfo>(methods);
             SourceCodeMethods = new ReadOnlyDictionary<MethodIdentifier, MethodDecl>(sourceCodeMethods);
             Constants = new ReadOnlyDictionary<FieldIdentifier, ConstantInfo>(constants);
@@ -239,7 +239,7 @@ namespace Weverca.AnalysisFramework
         public Dictionary<MethodIdentifier,MethodDecl> SourceCodeMethods;
         public Dictionary<FieldIdentifier, ConstantInfo> Constants;
         public Dictionary<FieldIdentifier, FieldInfo> Fields;
-        public Nullable<QualifiedName> BaseClassName;
+        public List<QualifiedName> BaseClasses;
         public bool IsFinal;
         public bool IsInterface;
         public bool IsAbstract;
@@ -250,7 +250,7 @@ namespace Weverca.AnalysisFramework
             SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>();
             Constants = new Dictionary<FieldIdentifier, ConstantInfo>();
             Fields = new Dictionary<FieldIdentifier, FieldInfo>();
-            BaseClassName = null;
+            BaseClasses = new List<QualifiedName>();
             IsFinal = false;
             IsInterface = false;
             IsAbstract = false;
@@ -258,7 +258,7 @@ namespace Weverca.AnalysisFramework
 
         public ClassDecl Build()
         {
-            return new ClassDecl(QualifiedName, ModeledMethods, SourceCodeMethods, Constants, Fields, BaseClassName, IsFinal, IsInterface, IsAbstract);
+            return new ClassDecl(QualifiedName, ModeledMethods, SourceCodeMethods, Constants, Fields, BaseClasses, IsFinal, IsInterface, IsAbstract);
         }
     }
 }

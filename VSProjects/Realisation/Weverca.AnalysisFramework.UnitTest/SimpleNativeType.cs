@@ -24,7 +24,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             var methods = new Dictionary<MethodIdentifier, MethodInfo>();
             methods.Add(new MethodIdentifier(nativeType, new Name("__construct")), method("__construct", _method___construct));
             methods.Add(new MethodIdentifier(nativeType, new Name("GetValue")), method("GetValue", _method_GetValue));
-            var declaration = new ClassDecl(nativeType, methods, new Dictionary<MethodIdentifier, MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), null, false, false, false);
+            var declaration = new ClassDecl(nativeType, methods, new Dictionary<MethodIdentifier, MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), new List<QualifiedName>(), false, false, false);
             return declaration;
         }
 

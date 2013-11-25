@@ -90,7 +90,12 @@ namespace Weverca.Analysis
 
                                 if (reader.GetAttribute("baseClass") != null)
                                 {
-                                    currentClass.BaseClassName = new QualifiedName(new Name(reader.GetAttribute("baseClass")));
+                                    currentClass.BaseClasses = new List<QualifiedName>();
+                                    currentClass.BaseClasses.Add(new QualifiedName(new Name(reader.GetAttribute("baseClass"))));
+                                }
+                                else
+                                {
+                                    currentClass.BaseClasses = null;
                                 }
 
                                 NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.QualifiedName] = currentClass;
@@ -297,25 +302,38 @@ namespace Weverca.Analysis
             //generate result
             foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
-                Nullable<QualifiedName> baseClassName = nativeObject.BaseClassName;
-                if (baseClassName != null)
+                List<QualifiedName> newBaseClasses = new List<QualifiedName>();
+                if(nativeObject.BaseClasses!=null)
                 {
-                    var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseClassName.Value];
-                    foreach (var constant in baseClass.Constants)
+                    QualifiedName baseClassName=nativeObject.BaseClasses.Last();
+                    while (true)
                     {
-                        nativeObject.Constants.Add(constant.Key, constant.Value);
+                        newBaseClasses.Add(baseClassName);
+                        var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseClassName];
+                        foreach (var constant in baseClass.Constants)
+                        {
+                            nativeObject.Constants[constant.Key]=constant.Value;
+                        }
+                        foreach (var field in baseClass.Fields)
+                        {
+                            nativeObject.Fields[field.Key]=field.Value;
+                        }
+                        foreach (var method in baseClass.ModeledMethods)
+                        {
+                            nativeObject.ModeledMethods[method.Key]=method.Value;
+                        }
+                        if (baseClass.BaseClasses != null && baseClass.BaseClasses.Count > 0)
+                        {
+                            baseClassName = baseClass.BaseClasses.Last();
+                        }
+                        else 
+                        {
+                            break;
+                        }
                     }
-                    foreach (var field in baseClass.Fields)
-                    {
-                        nativeObject.Fields.Add(field.Key, field.Value);
-                    }
-                    foreach (var method in baseClass.ModeledMethods)
-                    {
-                        nativeObject.ModeledMethods.Add(method.Key, method.Value);
-                    }
-                    baseClassName = baseClass.BaseClassName;
-
                 }
+                newBaseClasses.Reverse();
+                nativeObject.BaseClasses = newBaseClasses;
                 nativeObjects[nativeObject.QualifiedName] = nativeObject.Build();
             }
         }
