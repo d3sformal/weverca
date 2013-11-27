@@ -73,8 +73,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryAlias aliases;
                 if (snapshot.TryGetAliases(index, out aliases))
                 {
-                    references.CollectMust(aliases.MustAliasses);
-                    references.CollectMay(aliases.MayAliasses);
+                    references.CollectMust(aliases.MustAliasses, snapshot.CallLevel);
+                    references.CollectMay(aliases.MayAliasses, snapshot.CallLevel);
                 }
                 else
                 {
@@ -92,7 +92,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
                 else
                 {
-                    references.CollectMay(operation.Indexes);
+                    references.CollectMay(operation.Indexes, snapshot.CallLevel);
                 }
             }
 

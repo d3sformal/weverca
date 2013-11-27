@@ -61,7 +61,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void VisitVariable(VariablePathSegment variableSegment)
         {
-            process(variableSegment, snapshot.Variables);
+            switch (Global)
+            {
+                case GlobalContext.LocalOnly:
+                    process(variableSegment, snapshot.Variables.Local);
+                    break;
+                case GlobalContext.GlobalOnly:
+                    process(variableSegment, snapshot.Variables.Global);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void VisitControl(ControlPathSegment controlPathSegment)
+        {
+            switch (Global)
+            {
+                case GlobalContext.LocalOnly:
+                    process(controlPathSegment, snapshot.ContolVariables.Local);
+                    break;
+                case GlobalContext.GlobalOnly:
+                    process(controlPathSegment, snapshot.ContolVariables.Global);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void VisitField(FieldPathSegment fieldSegment)
@@ -134,7 +159,5 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 } 
             }
         }
-
-
     }
 }

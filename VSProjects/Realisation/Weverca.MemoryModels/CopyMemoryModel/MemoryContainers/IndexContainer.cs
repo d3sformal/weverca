@@ -19,7 +19,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         Dictionary<string, MemoryIndex> Indexes { get; }
     }
 
-    public class IndexContainer : IWriteableIndexContainer, ReadonlyIndexContainer
+    public class IndexContainer : IWriteableIndexContainer, ReadonlyIndexContainer, IGenericCloneable<IndexContainer>
     {
         public MemoryIndex UnknownIndex { get; private set; }
         public Dictionary<string, MemoryIndex> Indexes { get; private set; }
@@ -39,6 +39,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         IReadOnlyDictionary<string, MemoryIndex> ReadonlyIndexContainer.Indexes
         {
             get { return Indexes; }
+        }
+
+        public IndexContainer Clone()
+        {
+            return new IndexContainer(this);
         }
     }
 }

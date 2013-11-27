@@ -46,10 +46,10 @@ namespace Weverca.MemoryModels.UnitTest
             ObjectValue object2 = snapshot.CreateObject(null);
             snapshot.CommitTransaction();
 
-            variableA = VariableIndex.Create("a");
-            variableA2 = VariableIndex.Create("a");
-            variableB = VariableIndex.Create("b");
-            undefinedVariable = VariableIndex.CreateUnknown();
+            variableA = VariableIndex.Create("a", 0);
+            variableA2 = VariableIndex.Create("a", 0);
+            variableB = VariableIndex.Create("b", 0);
+            undefinedVariable = VariableIndex.CreateUnknown(0);
 
             fieldA = ObjectIndex.Create(object1, "a");
             fieldA2 = ObjectIndex.Create(object1, "a");

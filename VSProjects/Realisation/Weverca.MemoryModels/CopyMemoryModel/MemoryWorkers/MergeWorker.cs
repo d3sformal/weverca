@@ -27,9 +27,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal Dictionary<MemoryIndex, AssociativeArray> indexArrays = new Dictionary<MemoryIndex, AssociativeArray>();
         internal Dictionary<MemoryIndex, ObjectValueContainer> indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>();
 
-        internal HashSet<TemporaryIndex> temporary = new HashSet<TemporaryIndex>();
-        internal IndexContainer Variables { get; private set; }
-        internal IndexContainer ContollVariables { get; private set; }
+        internal MemoryStack<IndexSet<TemporaryIndex>> Temporary { get; private set; }
+        internal MemoryStack<IndexContainer> Variables { get; private set; }
+        internal MemoryStack<IndexContainer> ContolVariables { get; private set; }
+
+        internal DeclarationContainer<FunctionValue> FunctionDecl { get; private set; }
+        internal DeclarationContainer<TypeValueBase> ClassDecl { get; private set; }
 
         internal Snapshot targetSnapshot;
         internal List<Snapshot> sourceSnapshots;
@@ -43,25 +46,68 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
 
-            Variables = new IndexContainer(VariableIndex.CreateUnknown());
+            Variables = new MemoryStack<IndexContainer>(targetSnapshot.CallLevel);
+            ContolVariables = new MemoryStack<IndexContainer>(targetSnapshot.CallLevel);
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(targetSnapshot.CallLevel);
+
+            FunctionDecl = new DeclarationContainer<FunctionValue>();
+            ClassDecl = new DeclarationContainer<TypeValueBase>();
         }
 
         internal void Merge()
         {
-            ContainerOperations collectVariables = new ContainerOperations(this, Variables, Variables.UnknownIndex, Variables.UnknownIndex);
+            ContainerOperations[] collectVariables = new ContainerOperations[targetSnapshot.CallLevel + 1];
+            ContainerOperations[] collectControl = new ContainerOperations[targetSnapshot.CallLevel + 1];
+
+            for (int x = 0; x <= targetSnapshot.CallLevel; x++)
+            {
+                IndexContainer variables = new IndexContainer(VariableIndex.CreateUnknown(x));
+                Variables[x] = variables;
+                collectVariables[x] = new ContainerOperations(this, variables, variables.UnknownIndex, variables.UnknownIndex);
+
+                IndexContainer control = new IndexContainer(ControlIndex.CreateUnknown(x));
+                ContolVariables[x] = control;
+                collectControl[x] = new ContainerOperations(this, control, control.UnknownIndex, control.UnknownIndex);
+
+                Temporary[x] = new IndexSet<TemporaryIndex>();
+            }
 
             foreach (Snapshot snapshot in sourceSnapshots)
             {
                 collectObjects(snapshot);
-                collectTemporary(snapshot);
-                collectVariables.CollectIndexes(snapshot, Variables.UnknownIndex, snapshot.Variables);
+
+                for (int x = 0; x <= targetSnapshot.CallLevel; x++)
+                {
+                    collectVariables[x].CollectIndexes(snapshot, Variables[x].UnknownIndex, snapshot.Variables[x]);
+                    collectControl[x].CollectIndexes(snapshot, ContolVariables[x].UnknownIndex, snapshot.ContolVariables[x]);
+                    collectTemporary(snapshot, x);
+                }
+
+                mergeDeclarations(FunctionDecl, snapshot.FunctionDecl);
+                mergeDeclarations(ClassDecl, snapshot.ClassDecl);
             }
 
             mergeObjects();
-            mergeTemporary();
-            collectVariables.MergeContainer();
+
+            for (int x = 0; x <= targetSnapshot.CallLevel; x++)
+            {
+                collectVariables[x].MergeContainer();
+                collectControl[x].MergeContainer();
+                mergeTemporary(x);
+            }
 
             processMerge();
+        }
+
+        private void mergeDeclarations<T>(DeclarationContainer<T> target, DeclarationContainer<T> source)
+        {
+            foreach (var name in source.GetNames())
+            {
+                foreach (var decl in source.GetValue(name))
+                {
+                    target.Add(name, decl);
+                }
+            }
         }
 
         private void processMerge()
@@ -90,8 +136,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryAlias aliases;
                 if (snapshot.TryGetAliases(index, out aliases))
                 {
-                    references.CollectMust(aliases.MustAliasses);
-                    references.CollectMay(aliases.MayAliasses);
+                    references.CollectMust(aliases.MustAliasses, targetSnapshot.CallLevel);
+                    references.CollectMay(aliases.MayAliasses, targetSnapshot.CallLevel);
                 }
                 else
                 {
@@ -185,20 +231,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Temporary
 
-        private void collectTemporary(Snapshot snapshot)
+        private void collectTemporary(Snapshot snapshot, int index)
         {
-            foreach (TemporaryIndex temp in snapshot.Temporary)
+            foreach (TemporaryIndex temp in snapshot.Temporary[index])
             {
-                if (!temporary.Contains(temp))
+                if (!Temporary[index].Contains(temp))
                 {
-                    temporary.Add(temp);
+                    Temporary[index].Add(temp);
                 }
             }
         }
 
-        private void mergeTemporary()
+        private void mergeTemporary(int index)
         {
-            foreach (var temp in temporary)
+            foreach (var temp in Temporary[index])
             {
                 MergeOperation operation = new MergeOperation(temp);
                 addOperation(operation);

@@ -10,31 +10,51 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+
+
     class SnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
     {
         MemoryPath path;
+        private AnalysisFramework.VariableIdentifier variableId;
+
+        internal static ReadWriteSnapshotEntryBase CreateVariableEntry(AnalysisFramework.VariableIdentifier variable, GlobalContext global)
+        {
+            MemoryPath path;
+            if (variable.IsUnknown)
+            {
+                path = MemoryPath.MakePathAnyVariable(global);
+            }
+            else
+            {
+                var names = from name in variable.PossibleNames select name.Value;
+                path = MemoryPath.MakePathVariable(names, global);
+            }
+
+            return new SnapshotEntry(path, variable);
+        }
+
+        internal static ReadWriteSnapshotEntryBase CreateControlEntry(VariableName name, GlobalContext global)
+        {
+            MemoryPath path = MemoryPath.MakePathControl(new string[]{name.ToString()}, global);
+            return new SnapshotEntry(path);
+        }
 
         public SnapshotEntry()
-            : this(MemoryPath.MakePathAnyVariable())
+            : this(MemoryPath.MakePathAnyVariable(GlobalContext.LocalOnly))
         {
         }
 
         public SnapshotEntry(MemoryPath path)
         {
             this.path = path;
+
+            this.variableId = null;
         }
 
-        public SnapshotEntry(AnalysisFramework.VariableIdentifier variable)
+        private SnapshotEntry(MemoryPath path, AnalysisFramework.VariableIdentifier variableId)
         {
-            if (variable.IsUnknown)
-            {
-                path = MemoryPath.MakePathAnyVariable();
-            }
-            else
-            {
-                var names = from name in variable.PossibleNames select name.Value;
-                path = MemoryPath.MakePathVariable(names);
-            }
+            this.path = path;
+            this.variableId = variableId;
         }
 
         #region ReadWriteSnapshotEntryBase Implementation
@@ -53,7 +73,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 newPath = MemoryPath.MakePathIndex(path, index.PossibleNames);
             }
 
-            return new SnapshotEntry(newPath);
+            return new SnapshotEntry(newPath, variableId);
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
@@ -69,7 +89,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 newPath = MemoryPath.MakePathField(path, names);
             }
 
-            return new SnapshotEntry(newPath);
+            return new SnapshotEntry(newPath, variableId);
         }
 
         #endregion
@@ -142,7 +162,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override AnalysisFramework.VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            if (variableId != null)
+            {
+                return variableId;
+            }
+            else
+            {
+                throw new Exception("No variable identifier set for this object.");
+            }
         }
 
         #endregion

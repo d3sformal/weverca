@@ -14,6 +14,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     public class Snapshot : SnapshotBase, IReferenceHolder
     {
+        public static readonly int GLOBAL_CALL_LEVEL = 0;
+
         HashSet<MemoryIndex> memoryIndexes = new HashSet<MemoryIndex>();
 
 
@@ -30,25 +32,48 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         Dictionary<MemoryIndex, ObjectValueContainer> indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>();
 
 
+        internal DeclarationContainer<FunctionValue> FunctionDecl { get; private set; }
+        internal DeclarationContainer<TypeValueBase> ClassDecl { get; private set; }
 
-
-        internal HashSet<TemporaryIndex> temporary = new HashSet<TemporaryIndex>();
-        public IndexContainer Variables { get; private set; }
-        public IndexContainer ContollVariables { get; private set; }
+        internal MemoryStack<IndexSet<TemporaryIndex>> Temporary { get; private set; }
+        internal MemoryStack<IndexContainer> Variables { get; private set; }
+        internal MemoryStack<IndexContainer> ContolVariables { get; private set; }
 
         internal IEnumerable<KeyValuePair<ObjectValue, ObjectDescriptor>> Objects { get { return objectDescriptors; } }
-        internal IEnumerable<TemporaryIndex> Temporary { get { return temporary; } }
 
 
         public IEnumerable<MemoryIndex> MemoryIndexes { get { return memoryIndexes; } }
-
+        
+        internal int CallLevel { get; private set; }
+        internal MemoryEntry ThisObject { get; private set; }
+        Snapshot callerContext;
 
         public Snapshot()
         {
-            Variables = new IndexContainer(VariableIndex.CreateUnknown());
+            callerContext = null;
+            ThisObject = null;
+            CallLevel = GLOBAL_CALL_LEVEL;
 
-            memoryIndexes.Add(Variables.UnknownIndex);
-            memoryEntries.Add(Variables.UnknownIndex, new MemoryEntry(this.UndefinedValue));
+            Variables = createMemoryStack(VariableIndex.CreateUnknown(CallLevel));
+            ContolVariables = createMemoryStack(ControlIndex.CreateUnknown(CallLevel));
+            FunctionDecl = new DeclarationContainer<FunctionValue>();
+            ClassDecl = new DeclarationContainer<TypeValueBase>();
+
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(new IndexSet<TemporaryIndex>());
+        }
+
+        private MemoryStack<IndexContainer> createMemoryStack(MemoryIndex unknownIndex)
+        {
+            return new MemoryStack<IndexContainer>(createIndexContainer(unknownIndex));
+        }
+
+        private IndexContainer createIndexContainer(MemoryIndex unknownIndex)
+        {
+            IndexContainer container = new IndexContainer(unknownIndex);
+            memoryIndexes.Add(unknownIndex);
+            memoryEntries.Add(unknownIndex, new MemoryEntry(this.UndefinedValue));
+
+            return container;
         }
 
         public String DumpSnapshot()
@@ -80,8 +105,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region AbstractSnapshot Implementation
 
-
-
         #region Transaction
 
         protected override void startTransaction()
@@ -92,6 +115,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override bool commitTransaction()
         {
             return true;
+        }
+
+        protected override bool widenAndCommitTransaction()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -134,7 +162,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
-        #region Functions and Calls
+        #region Merge Calls and Globals
 
         protected override void extend(ISnapshotReadonly[] inputs)
         {
@@ -148,14 +176,109 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
+        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            throw new NotImplementedException();
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(callerContext);
+
+            this.callerContext = snapshot;
+            CallLevel = snapshot.CallLevel + 1;
+            ThisObject = thisObject;
+
+            memoryIndexes = new HashSet<MemoryIndex>(snapshot.memoryIndexes);
+            arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(snapshot.arrayDescriptors);
+            objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>(snapshot.objectDescriptors);
+
+            memoryValueInfos = new Dictionary<Value, MemoryInfo>(snapshot.memoryValueInfos);
+
+            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>(snapshot.memoryEntries);
+            memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>(snapshot.memoryAliases);
+            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(snapshot.memoryInfos);
+
+            indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(snapshot.indexArrays);
+            indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(snapshot.indexObjects);
+
+            IndexSet<TemporaryIndex> localTemporary = new IndexSet<TemporaryIndex>();
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(snapshot.Temporary, localTemporary);
+
+            IndexContainer localVar = createIndexContainer(VariableIndex.CreateUnknown(CallLevel));
+            Variables = new MemoryStack<IndexContainer>(snapshot.Variables, localVar);
+
+            IndexContainer localctrl = createIndexContainer(ControlIndex.CreateUnknown(CallLevel));
+            ContolVariables = new MemoryStack<IndexContainer>(snapshot.ContolVariables, localVar);
+
+            FunctionDecl = new DeclarationContainer<FunctionValue>(snapshot.FunctionDecl);
+            ClassDecl = new DeclarationContainer<TypeValueBase>(snapshot.ClassDecl);
         }
 
-        protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
+        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
-            throw new NotImplementedException();
+            Snapshot parentCallerContext = null;
+
+            List<Snapshot> snapshots = new List<Snapshot>(callOutputs.Length);
+            foreach (ISnapshotReadonly input in callOutputs)
+            {
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+                snapshots.Add(snapshot);
+
+                if (parentCallerContext == null)
+                {
+                    parentCallerContext = snapshot.callerContext;
+                }
+                else if (snapshot.callerContext != parentCallerContext)
+                {
+                    throw new Exception("Call outputs don't have the same call context.");
+                }
+            }
+
+            this.callerContext = parentCallerContext.callerContext;
+            CallLevel = parentCallerContext.CallLevel;
+            ThisObject = parentCallerContext.ThisObject;
+
+            MergeWorker worker = new MergeWorker(this, snapshots);
+            worker.Merge();
+
+            memoryIndexes = new HashSet<MemoryIndex>(worker.memoryIndexes);
+            arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(worker.arrayDescriptors);
+            objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>(worker.objectDescriptors);
+
+            memoryValueInfos = new Dictionary<Value, MemoryInfo>(worker.memoryValueInfos);
+
+            memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>(worker.memoryEntries);
+            memoryAliases = worker.GetMemoryAliases();
+            memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(worker.memoryInfos);
+
+            indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(worker.indexArrays);
+            indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(worker.indexObjects);
+
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(worker.Temporary);
+            Variables = new MemoryStack<IndexContainer>(worker.Variables);
+            ContolVariables = new MemoryStack<IndexContainer>(worker.ContolVariables);
+
+            FunctionDecl = new DeclarationContainer<FunctionValue>(worker.FunctionDecl);
+            ClassDecl = new DeclarationContainer<TypeValueBase>(worker.ClassDecl);
+        }
+
+        protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
+        {
+            foreach (VariableName name in variables)
+            {
+                ReadWriteSnapshotEntryBase localEntry = getVariable(new VariableIdentifier(name), false);
+                ReadWriteSnapshotEntryBase globalEntry = getVariable(new VariableIdentifier(name), true);
+
+                localEntry.SetAliases(this, globalEntry);
+            }
+        }
+
+        protected override IEnumerable<VariableName> getGlobalVariables()
+        {
+            List<VariableName> names = new List<VariableName>();
+
+            foreach (var variable in Variables.Global.Indexes)
+            {
+                names.Add(new VariableName(variable.Key));
+            }
+
+            return names;
         }
 
         #endregion
@@ -184,36 +307,51 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
-        #region Globals
+        #region Functions and Classes
 
-        protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
+        protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override IEnumerable<VariableName> getGlobalVariables()
-        {
-            throw new NotImplementedException();
+            if (!FunctionDecl.ContainsKey(functionName))
+            {
+                return FunctionDecl.GetValue(functionName);
+            }
+            else
+            {
+                throw new Exception("Function " + functionName + " is not defined in this context.");
+            }
         }
 
         protected override void declareGlobal(FunctionValue declaration)
         {
-            throw new NotImplementedException();
+            QualifiedName name = new QualifiedName(declaration.Name);
+
+            if (!FunctionDecl.ContainsKey(name))
+            {
+                FunctionDecl.Add(name, declaration);
+            }
+            else
+            {
+                throw new Exception("Function " + name + " is already defined in this context.");
+            }
         }
 
         protected override void declareGlobal(TypeValueBase declaration)
         {
-            throw new NotImplementedException();
+            QualifiedName name = declaration.QualifiedName;
+
+            if (!ClassDecl.ContainsKey(name))
+            {
+                ClassDecl.Add(name, declaration);
+            }
+            else
+            {
+                throw new Exception("Class " + name + " is already defined in this context.");
+            }
         }
 
         #endregion
 
 
-
-        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion
 
@@ -309,22 +447,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
         {
-            return new SnapshotEntry(variable);
+            GlobalContext global = forceGlobalContext ? GlobalContext.GlobalOnly : GlobalContext.LocalOnly;
+            return SnapshotEntry.CreateVariableEntry(variable, global);
         }
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
-            throw new NotImplementedException();
+            return SnapshotEntry.CreateControlEntry(name, GlobalContext.GlobalOnly);
         }
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
-            throw new NotImplementedException();
+            return new DataSnapshotEntry(entry);
         }
 
         protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
-            throw new NotImplementedException();
+            return SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly);
         }
 
         #endregion
@@ -363,14 +502,26 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal MemoryIndex CreateVariable(string variableName)
         {
-            MemoryIndex variableIndex = VariableIndex.Create(variableName);
+            MemoryIndex variableIndex = VariableIndex.Create(variableName, CallLevel);
 
             memoryIndexes.Add(variableIndex);
-            Variables.Indexes.Add(variableName, variableIndex);
+            Variables.Local.Indexes.Add(variableName, variableIndex);
 
-            CopyMemory(Variables.UnknownIndex, variableIndex, false);
+            CopyMemory(Variables.Local.UnknownIndex, variableIndex, false);
 
             return variableIndex;
+        }
+
+        internal MemoryIndex CreateControll(string variableName)
+        {
+            MemoryIndex ctrlIndex = ControlIndex.Create(variableName, CallLevel);
+
+            memoryIndexes.Add(ctrlIndex);
+            ContolVariables.Local.Indexes.Add(variableName, ctrlIndex);
+
+            CopyMemory(Variables.Local.UnknownIndex, ctrlIndex, false);
+
+            return ctrlIndex;
         }
 
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
@@ -794,9 +945,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal TemporaryIndex CreateTemporary()
         {
-            TemporaryIndex tmp = new TemporaryIndex();
+            TemporaryIndex tmp = new TemporaryIndex(CallLevel);
             memoryIndexes.Add(tmp);
-            temporary.Add(tmp);
+            Temporary.Local.Add(tmp);
 
             memoryEntries[tmp] = new MemoryEntry(this.UndefinedValue);
 
@@ -806,7 +957,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal void ReleaseTemporary(TemporaryIndex temporaryIndex)
         {
             ReleaseMemory(temporaryIndex);
-            temporary.Remove(temporaryIndex);
+            Temporary.Local.Remove(temporaryIndex);
         }
 
         internal void ReleaseMemory(MemoryIndex index)
@@ -831,11 +982,42 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private void mergeSnapshots(ISnapshotReadonly[] inputs)
         {
+            bool inputSet = false;
+            Snapshot callerContext = null;
+            int callLevel = 0;
+            MemoryEntry thisObject = null;
+
             List<Snapshot> snapshots = new List<Snapshot>(inputs.Length);
             foreach (ISnapshotReadonly input in inputs)
             {
-                snapshots.Add(SnapshotEntry.ToSnapshot(input));
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+                snapshots.Add(snapshot);
+
+                if (!inputSet)
+                {
+                    callerContext = snapshot.callerContext;
+                    callLevel = snapshot.CallLevel;
+                    thisObject = snapshot.ThisObject;
+
+                    inputSet = true;
+                }
+                else if (snapshot.callerContext != callerContext)
+                {
+                    throw new Exception("Merged snapshots don't have the same call context.");
+                }
+                else if (snapshot.CallLevel != callLevel)
+                {
+                    throw new Exception("Merged snapshots don't have the same call level.");
+                }
+                else if (snapshot.ThisObject != thisObject)
+                {
+                    throw new Exception("Merged snapshots don't have the same this object value.");
+                }
             }
+
+            this.callerContext = callerContext;
+            CallLevel = callLevel;
+            ThisObject = thisObject;
 
             MergeWorker worker = new MergeWorker(this, snapshots);
             worker.Merge();
@@ -853,14 +1035,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(worker.indexArrays);
             indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(worker.indexObjects);
 
-            temporary = new HashSet<TemporaryIndex>(worker.temporary);
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(worker.Temporary);
+            Variables = new MemoryStack<IndexContainer>(worker.Variables);
+            ContolVariables = new MemoryStack<IndexContainer>(worker.ContolVariables);
 
-            Variables = new IndexContainer(worker.Variables);
+            FunctionDecl = new DeclarationContainer<FunctionValue>(worker.FunctionDecl);
+            ClassDecl = new DeclarationContainer<TypeValueBase>(worker.ClassDecl);
         }
 
         private void extendSnapshot(ISnapshotReadonly input)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+
+            this.callerContext = snapshot.callerContext;
+            CallLevel = snapshot.CallLevel;
+            ThisObject = snapshot.ThisObject;
 
             memoryIndexes = new HashSet<MemoryIndex>(snapshot.memoryIndexes);
             arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(snapshot.arrayDescriptors);
@@ -875,10 +1064,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             indexArrays = new Dictionary<MemoryIndex, AssociativeArray>(snapshot.indexArrays);
             indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>(snapshot.indexObjects);
 
-            temporary = new HashSet<TemporaryIndex>(snapshot.temporary);
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(snapshot.Temporary);
 
-            Variables = new IndexContainer(snapshot.Variables);
-            //ContollVariables = new IndexContainer(snapshot.ContollVariables);
+            Variables = new MemoryStack<IndexContainer>(snapshot.Variables);
+            ContolVariables = new MemoryStack<IndexContainer>(snapshot.ContolVariables);
+
+            FunctionDecl = new DeclarationContainer<FunctionValue>(snapshot.FunctionDecl);
+            ClassDecl = new DeclarationContainer<TypeValueBase>(snapshot.ClassDecl);
         }
 
 
@@ -1081,11 +1273,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal bool TryGetAliases(MemoryIndex index, out MemoryAlias aliases)
         {
             return memoryAliases.TryGetValue(index, out aliases);
-        }
-
-        protected override bool widenAndCommitTransaction()
-        {
-            throw new NotImplementedException();
         }
     }
 }

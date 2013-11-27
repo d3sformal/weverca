@@ -32,12 +32,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        public void CollectMust(IEnumerable<MemoryIndex> references)
+        public void CollectMust(IEnumerable<MemoryIndex> references, int callLevel)
         {
             if (!mustSet)
             {
-                HashSetTools.AddAll(mustReferences, references);
-                HashSetTools.AddAll(allReferences, references);
+                foreach (MemoryIndex index in references)
+                {
+                    if (index.CallLevel <= callLevel)
+                    {
+                        mustReferences.Add(index);
+                        allReferences.Add(index);
+                    }
+                }
                 mustSet = true;
             }
             else
@@ -45,23 +51,29 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 HashSet<MemoryIndex> newMust = new HashSet<MemoryIndex>();
                 foreach (MemoryIndex index in references)
                 {
-                    if (mustReferences.Contains(index))
+                    if (index.CallLevel <= callLevel)
                     {
-                        newMust.Add(index);
-                    }
+                        if (mustReferences.Contains(index))
+                        {
+                            newMust.Add(index);
+                        }
 
-                    allReferences.Add(index);
+                        allReferences.Add(index);
+                    }
                 }
                 mustReferences = newMust;
             }
 
         }
 
-        public void CollectMay(IEnumerable<MemoryIndex> references)
+        public void CollectMay(IEnumerable<MemoryIndex> references, int callLevel)
         {
             foreach (MemoryIndex index in references)
             {
-                allReferences.Add(index);
+                if (index.CallLevel <= callLevel)
+                {
+                    allReferences.Add(index);
+                }
             }
         }
 

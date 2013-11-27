@@ -125,8 +125,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void VisitVariable(VariablePathSegment segment)
         {
-            IndexContainer container = snapshot.Variables;
-            processSegment(segment, container);
+            switch (Global)
+            {
+                case GlobalContext.LocalOnly:
+                    processSegment(segment, snapshot.Variables.Local);
+                    break;
+                case GlobalContext.GlobalOnly:
+                    processSegment(segment, snapshot.Variables.Global);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        public void VisitControl(ControlPathSegment segment)
+        {
+            switch (Global)
+            {
+                case GlobalContext.LocalOnly:
+                    processSegment(segment, snapshot.ContolVariables.Local);
+                    break;
+                case GlobalContext.GlobalOnly:
+                    processSegment(segment, snapshot.ContolVariables.Global);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void VisitField(FieldPathSegment segment)
@@ -303,6 +327,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 CreatedIndex = snapshot.CreateVariable(Name);
             }
 
+            public void VisitControl(ControlPathSegment controlPathSegment)
+            {
+                CreatedIndex = snapshot.CreateControll(Name);
+            }
+
             public void VisitField(FieldPathSegment fieldSegment)
             {
                 CreatedIndex = snapshot.CreateField(Name, ObjectValue, IsMust, true);
@@ -313,5 +342,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 CreatedIndex = snapshot.CreateIndex(Name, ArrayValue, IsMust, true);
             }
         }
+
+
     }
 }

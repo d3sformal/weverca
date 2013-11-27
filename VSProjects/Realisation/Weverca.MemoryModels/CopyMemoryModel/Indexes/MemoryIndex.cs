@@ -22,15 +22,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         public ReadOnlyCollection<IndexSegment> MemoryPath {get; private set; }
         public int Length { get { return MemoryPath.Count; } }
+        public int CallLevel { get; private set; }
 
-        protected MemoryIndex()
+        protected MemoryIndex(int callLevel)
         {
+            CallLevel = callLevel;
             List<IndexSegment> path = new List<IndexSegment>();
             MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
         }
 
-        protected MemoryIndex(IndexSegment pathName)
+        protected MemoryIndex(IndexSegment pathName, int callLevel)
         {
+            CallLevel = callLevel;
             List<IndexSegment> path = new List<IndexSegment>();
             path.Add(pathName);
 
@@ -39,14 +42,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected MemoryIndex(MemoryIndex parentIndex, IndexSegment pathName)
         {
+            CallLevel = parentIndex.CallLevel;
             List<IndexSegment> path = new List<IndexSegment>(parentIndex.MemoryPath);
             path.Add(pathName);
 
             MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
         }
 
-        protected MemoryIndex(List<IndexSegment> path)
+        protected MemoryIndex(List<IndexSegment> path, int callLevel)
         {
+            CallLevel = callLevel;
             MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
         }
 
@@ -64,7 +69,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 return false;
             }
 
-            if (otherIndex.GetType() != this.GetType())
+            if (otherIndex.GetType() != this.GetType() || otherIndex.CallLevel != this.CallLevel)
             {
                 return false;
             }
@@ -82,7 +87,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override int GetHashCode()
         {
-            int hashcode = this.GetType().GetHashCode();
+            int hashcode = this.GetType().GetHashCode() + CallLevel;
             foreach (IndexSegment name in MemoryPath)
             {
                 uint val = (uint)(hashcode ^ name.GetHashCode());
@@ -125,7 +130,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         public IndexSegment MemoryRoot { get; private set; }
 
-        protected NamedIndex(IndexSegment root)
+        protected NamedIndex(IndexSegment root, int callLevel)
+            : base(callLevel)
         {
             MemoryRoot = root;
         }
@@ -136,7 +142,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         protected NamedIndex(NamedIndex parentIndex, List<IndexSegment> path)
-            : base(path)
+            : base(path, parentIndex.CallLevel)
         {
             MemoryRoot = parentIndex.MemoryRoot;
         }
@@ -165,7 +171,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public ObjectValue Object { get; private set; }
 
         public ObjectIndex(ObjectValue obj, IndexSegment pathName)
-            : base(pathName)
+            : base(pathName, Snapshot.GLOBAL_CALL_LEVEL)
         {
             Object = obj;
         }
@@ -240,8 +246,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
     public class VariableIndex : NamedIndex
     {
-        public VariableIndex(IndexSegment root)
-            : base(root)
+        public VariableIndex(IndexSegment root, int callLevel)
+            : base(root, callLevel)
         {
         }
 
@@ -263,7 +269,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             if (MemoryPath.Count == 0)
             {
-                return new VariableIndex(new IndexSegment());
+                return new VariableIndex(new IndexSegment(), this.CallLevel);
             }
             else
             {
@@ -271,14 +277,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        public static MemoryIndex CreateUnknown()
+        public static MemoryIndex CreateUnknown(int callLevel)
         {
-            return new VariableIndex(new IndexSegment());
+            return new VariableIndex(new IndexSegment(), callLevel);
         }
 
-        public static MemoryIndex Create(string name)
+        public static MemoryIndex Create(string name, int callLevel)
         {
-            return new VariableIndex(new IndexSegment(name));
+            return new VariableIndex(new IndexSegment(name), callLevel);
         }
 
         public override MemoryIndex CreateUnknownIndex()
@@ -298,7 +304,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private int rootId;
 
-        public TemporaryIndex()
+        public TemporaryIndex(int callLevel)
+            : base(callLevel)
         {
             rootId = GLOBAL_ROOT_ID;
             GLOBAL_ROOT_ID++;
@@ -310,7 +317,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         public TemporaryIndex(TemporaryIndex parentIndex, List<IndexSegment> path)
-            : base(path)
+            : base(path, parentIndex.CallLevel)
         {
             rootId = parentIndex.rootId;
         }
@@ -358,6 +365,60 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override MemoryIndex CreateIndex(string name)
         {
             return new TemporaryIndex(this, new IndexSegment(name));
+        }
+    }
+
+    public class ControlIndex : NamedIndex
+    {
+        public ControlIndex(IndexSegment root, int callLevel)
+            : base(root, callLevel)
+        {
+        }
+
+        public ControlIndex(ControlIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        {
+        }
+
+        public ControlIndex(ControlIndex parentIndex, List<IndexSegment> path)
+            : base(parentIndex, path)
+        {
+        }
+
+        public override string ToString()
+        {
+            return String.Format("CTRL${0}{1}", MemoryRoot.Name, base.ToString());
+        }
+
+        public override MemoryIndex ToAny()
+        {
+            if (MemoryPath.Count == 0)
+            {
+                return new ControlIndex(new IndexSegment(), this.CallLevel);
+            }
+            else
+            {
+                return new ControlIndex(this, ListToAny());
+            }
+        }
+
+        public static MemoryIndex CreateUnknown(int callLevel)
+        {
+            return new ControlIndex(new IndexSegment(), callLevel);
+        }
+
+        public static MemoryIndex Create(string name, int callLevel)
+        {
+            return new ControlIndex(new IndexSegment(name), callLevel);
+        }
+
+        public override MemoryIndex CreateUnknownIndex()
+        {
+            return new ControlIndex(this, new IndexSegment());
+        }
+
+        public override MemoryIndex CreateIndex(string name)
+        {
+            return new ControlIndex(this, new IndexSegment(name));
         }
     }
 

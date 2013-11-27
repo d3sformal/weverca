@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    enum GlobalContext
+    {
+        LocalOnly, GlobalOnly
+    }
+    
     /// <summary>
     /// Represents memory path from variable thru fields and indexes 
     /// Imutable class
@@ -17,17 +22,28 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public int Length { get { return PathSegments.Count; } }
 
         public bool IsDirect { get; private set; }
+        public GlobalContext Global { get; private set; }
 
         #region Path Factories
 
-        public static MemoryPath MakePathAnyVariable()
+        public static MemoryPath MakePathAnyVariable(GlobalContext global)
         {
-            return new MemoryPath(new VariablePathSegment());
+            return new MemoryPath(new VariablePathSegment(), global);
         }
 
-        public static MemoryPath MakePathVariable(IEnumerable<string> names)
+        public static MemoryPath MakePathVariable(IEnumerable<string> names, GlobalContext global)
         {
-            return new MemoryPath(new VariablePathSegment(names));
+            return new MemoryPath(new VariablePathSegment(names), global);
+        }
+
+        public static MemoryPath MakePathAnyControl(GlobalContext global)
+        {
+            return new MemoryPath(new ControlPathSegment(), global);
+        }
+
+        public static MemoryPath MakePathControl(IEnumerable<string> names, GlobalContext global)
+        {
+            return new MemoryPath(new ControlPathSegment(names), global);
         }
 
         public static MemoryPath MakePathAnyField(MemoryPath parentPath)
@@ -52,12 +68,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion*/
 
-        private MemoryPath(PathSegment pathSegment)
+        private MemoryPath(PathSegment pathSegment, GlobalContext global)
         {
             List<PathSegment> path = new List<PathSegment>();
             path.Add(pathSegment);
 
             IsDirect = pathSegment.IsDirect;
+            Global = global;
 
             PathSegments = new ReadOnlyCollection<PathSegment>(path);
         }
@@ -68,6 +85,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             path.Add(pathSegment);
 
             IsDirect = parentPath.IsDirect && pathSegment.IsDirect;
+            Global = parentPath.Global;
 
             PathSegments = new ReadOnlyCollection<PathSegment>(path);
         }
@@ -91,6 +109,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         void VisitField(FieldPathSegment fieldSegment);
 
         void VisitIndex(IndexPathSegment indexSegment);
+
+        void VisitControl(ControlPathSegment controlPathSegment);
     }
 
     public abstract class PathSegment
@@ -150,6 +170,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
+
+
     public class VariablePathSegment : PathSegment
     {
         public VariablePathSegment()
@@ -174,6 +196,33 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return String.Format("${0}", base.ToString());
         }
     }
+
+    public class ControlPathSegment : PathSegment
+    {
+        public ControlPathSegment()
+            : base()
+        {
+
+        }
+
+        public ControlPathSegment(IEnumerable<string> names)
+            : base(names)
+        {
+
+        }
+
+        public override void Accept(IPathSegmentVisitor visitor)
+        {
+            visitor.VisitControl(this);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("CTRL${0}", base.ToString());
+        }
+    }
+
+
 
     public class FieldPathSegment : PathSegment
     {
