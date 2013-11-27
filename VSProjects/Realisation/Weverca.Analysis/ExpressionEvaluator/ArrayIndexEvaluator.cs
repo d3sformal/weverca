@@ -22,13 +22,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// called unknown index which represent possibly every index. Compound values are reported as illegal
     /// values for indices and they are ignored by PHP with warning.
     /// </remarks>
-    public class ArrayIndexEvaluator : AbstractValueVisitor
+    public class ArrayIndexEvaluator : PartialExpressionEvaluator
     {
-        /// <summary>
-        /// Flow controller of program point providing data for evaluation (output set, position etc.)
-        /// </summary>
-        private FlowController flow;
-
         /// <summary>
         /// Value which can be converted from any value into integer index
         /// </summary>
@@ -54,17 +49,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
         public ArrayIndexEvaluator(FlowController flowController)
-        {
-            SetContext(flowController);
-        }
-
-        /// <summary>
-        /// Gets output set of a program point
-        /// </summary>
-        public FlowOutputSet OutSet
-        {
-            get { return flow.OutSet; }
-        }
+            : base(flowController) { }
 
         /// <summary>
         /// Evaluates all values to integer or string index of array if it is possible
@@ -194,22 +179,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        /// <summary>
-        /// Set current evaluation context.
-        /// </summary>
-        /// <param name="flowController">Flow controller of program point available for evaluation</param>
-        public void SetContext(FlowController flowController)
-        {
-            flow = flowController;
-        }
-
         #region AbstractValueVisitor Members
-
-        /// <inheritdoc />
-        public override void VisitValue(Value value)
-        {
-            throw new ArgumentException("Type of value is not valid index value type");
-        }
 
         #region Concrete values
 
@@ -279,7 +249,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             VisitGenericNumericValue(value);
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -290,7 +260,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             VisitGenericScalarValue(value);
         }
 
-        #endregion
+        #endregion Scalar values
 
         #region Compound values
 
@@ -303,7 +273,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             isCompoundValue = true;
         }
 
-        #endregion
+        #endregion Compound values
 
         /// <inheritdoc />
         public override void VisitResourceValue(ResourceValue value)
@@ -323,7 +293,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             isCompoundValue = false;
         }
 
-        #endregion
+        #endregion Concrete values
 
         #region Interval values
 
@@ -336,7 +306,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             isCompoundValue = false;
         }
 
-        #endregion
+        #endregion Interval values
 
         #region Abstract values
 
@@ -379,7 +349,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             VisitAnyScalarValue(value);
         }
 
-        #endregion
+        #endregion Abstract numeric values
 
         /// <inheritdoc />
         public override void VisitAnyStringValue(AnyStringValue value)
@@ -388,7 +358,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             VisitAnyScalarValue(value);
         }
 
-        #endregion
+        #endregion Abstract scalar values
 
         #region Abstract compound values
 
@@ -401,7 +371,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             isNotConvertibleToInteger = true;
         }
 
-        #endregion
+        #endregion Abstract compound values
 
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
@@ -412,19 +382,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             isNotConvertibleToInteger = true;
         }
 
-        #endregion
+        #endregion Abstract values
 
-        #region Function values
-
-        /// <inheritdoc />
-        public override void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            // TODO: There is no special lambda type, it is implemented as Closure object with __invoke()
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #endregion
+        #endregion AbstractValueVisitor Members
     }
 }

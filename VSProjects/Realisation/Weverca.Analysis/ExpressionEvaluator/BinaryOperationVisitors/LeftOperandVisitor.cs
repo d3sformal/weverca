@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -37,16 +38,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <item><term><see cref="Operations.BitXor" /></term></item>
     /// <item><term><see cref="Operations.ShiftLeft" /></term></item>
     /// <item><term><see cref="Operations.ShiftRight" /></term></item>
-    /// <item><term><see cref="Operations.Concat" /></term></item>
     /// </list>
+    /// The <see cref="Operations.Concat" /> is provided by <see cref="StringConverter" />
     /// </remarks>
-    public abstract class LeftOperandVisitor : AbstractValueVisitor
+    public abstract class LeftOperandVisitor : PartialExpressionEvaluator
     {
-        /// <summary>
-        /// Flow controller of program point providing data for evaluation (output set, position etc.)
-        /// </summary>
-        protected FlowController flow;
-
         /// <summary>
         /// Binary operation that determines the proper action with operands
         /// </summary>
@@ -62,17 +58,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
         public LeftOperandVisitor(FlowController flowController)
-        {
-            SetContext(flowController);
-        }
-
-        /// <summary>
-        /// Gets output set of a program point
-        /// </summary>
-        public FlowOutputSet OutSet
-        {
-            get { return flow.OutSet; }
-        }
+            : base(flowController) { }
 
         /// <summary>
         /// Evaluates binary operation with left operand of this visitor and the given right operand
@@ -120,37 +106,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        /// <summary>
-        /// Set current evaluation context.
-        /// </summary>
-        /// <param name="flowController">Flow controller of program point available for evaluation</param>
-        public void SetContext(FlowController flowController)
-        {
-            flow = flowController;
-        }
-
-        /// <summary>
-        /// Report a warning for the position of current expression
-        /// </summary>
-        /// <param name="message">Message of the warning</param>
-        protected void SetWarning(string message)
-        {
-            var warning = new AnalysisWarning(message, flow.CurrentPartial);
-            AnalysisWarningHandler.SetWarning(OutSet, warning);
-        }
-
-        /// <summary>
-        /// Report a warning for the position of current expression
-        /// </summary>
-        /// <param name="message">Message of the warning</param>
-        /// <param name="cause">Cause of the warning</param>
-        protected void SetWarning(string message, AnalysisWarningCause cause)
-        {
-            var warning = new AnalysisWarning(message, flow.CurrentPartial, cause);
-            AnalysisWarningHandler.SetWarning(OutSet, warning);
-        }
-
-        #region IValueVisitor Members
+        #region AbstractValueVisitor Members
 
         /// <inheritdoc />
         public override void VisitValue(Value value)
@@ -158,7 +114,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new InvalidOperationException("Resolving of non-binary operation");
         }
 
-        #endregion
+        #endregion AbstractValueVisitor Members
 
         #region Helper methods
 
@@ -190,27 +146,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         protected bool ComparisonOperation(bool leftOperand, bool rightOperand)
         {
-            var outSet = OutSet;
-
             switch (operation)
             {
                 case Operations.Equal:
-                    result = outSet.CreateBool(leftOperand == rightOperand);
+                    result = OutSet.CreateBool(leftOperand == rightOperand);
                     return true;
                 case Operations.NotEqual:
-                    result = outSet.CreateBool(leftOperand != rightOperand);
+                    result = OutSet.CreateBool(leftOperand != rightOperand);
                     return true;
                 case Operations.LessThan:
-                    result = outSet.CreateBool((!leftOperand) && rightOperand);
+                    result = OutSet.CreateBool((!leftOperand) && rightOperand);
                     return true;
                 case Operations.LessThanOrEqual:
-                    result = outSet.CreateBool((!leftOperand) || rightOperand);
+                    result = OutSet.CreateBool((!leftOperand) || rightOperand);
                     return true;
                 case Operations.GreaterThan:
-                    result = outSet.CreateBool(leftOperand && (!rightOperand));
+                    result = OutSet.CreateBool(leftOperand && (!rightOperand));
                     return true;
                 case Operations.GreaterThanOrEqual:
-                    result = outSet.CreateBool(leftOperand || (!rightOperand));
+                    result = OutSet.CreateBool(leftOperand || (!rightOperand));
                     return true;
                 default:
                     return false;
@@ -219,27 +173,136 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         protected bool ComparisonOperation(int leftOperand, int rightOperand)
         {
-            var outSet = OutSet;
-
             switch (operation)
             {
                 case Operations.Equal:
-                    result = outSet.CreateBool(leftOperand == rightOperand);
+                    result = OutSet.CreateBool(leftOperand == rightOperand);
                     return true;
                 case Operations.NotEqual:
-                    result = outSet.CreateBool(leftOperand != rightOperand);
+                    result = OutSet.CreateBool(leftOperand != rightOperand);
                     return true;
                 case Operations.LessThan:
-                    result = outSet.CreateBool(leftOperand < rightOperand);
+                    result = OutSet.CreateBool(leftOperand < rightOperand);
                     return true;
                 case Operations.LessThanOrEqual:
-                    result = outSet.CreateBool(leftOperand <= rightOperand);
+                    result = OutSet.CreateBool(leftOperand <= rightOperand);
                     return true;
                 case Operations.GreaterThan:
-                    result = outSet.CreateBool(leftOperand > rightOperand);
+                    result = OutSet.CreateBool(leftOperand > rightOperand);
                     return true;
                 case Operations.GreaterThanOrEqual:
-                    result = outSet.CreateBool(leftOperand >= rightOperand);
+                    result = OutSet.CreateBool(leftOperand >= rightOperand);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        protected bool ComparisonOperation(IntegerIntervalValue leftOperand, int rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                    if ((leftOperand.Start <= rightOperand) && (leftOperand.End >= rightOperand))
+                    {
+                        if ((leftOperand.Start == rightOperand) && (leftOperand.End == rightOperand))
+                        {
+                            result = OutSet.CreateBool(true);
+                        }
+                        else
+                        {
+                            result = OutSet.AnyBooleanValue;
+                        }
+                    }
+                    else
+                    {
+                        result = OutSet.CreateBool(false);
+                    }
+                    return true;
+                case Operations.NotEqual:
+                    if ((leftOperand.Start > rightOperand) || (leftOperand.End < rightOperand))
+                    {
+                        result = OutSet.CreateBool(true);
+                    }
+                    else
+                    {
+                        if ((leftOperand.Start == rightOperand) && (leftOperand.End == rightOperand))
+                        {
+                            result = OutSet.CreateBool(false);
+                        }
+                        else
+                        {
+                            result = OutSet.AnyBooleanValue;
+                        }
+                    }
+                    return true;
+                case Operations.LessThan:
+                    if (leftOperand.End < rightOperand)
+                    {
+                        result = OutSet.CreateBool(true);
+                    }
+                    else
+                    {
+                        if (leftOperand.Start >= rightOperand)
+                        {
+                            result = OutSet.CreateBool(false);
+                        }
+                        else
+                        {
+                            result = OutSet.AnyBooleanValue;
+                        }
+                    }
+                    return true;
+                case Operations.LessThanOrEqual:
+                    if (leftOperand.End <= rightOperand)
+                    {
+                        result = OutSet.CreateBool(true);
+                    }
+                    else
+                    {
+                        if (leftOperand.Start > rightOperand)
+                        {
+                            result = OutSet.CreateBool(false);
+                        }
+                        else
+                        {
+                            result = OutSet.AnyBooleanValue;
+                        }
+                    }
+                    return true;
+                case Operations.GreaterThan:
+                    if (leftOperand.Start > rightOperand)
+                    {
+                        result = OutSet.CreateBool(true);
+                    }
+                    else
+                    {
+                        if (leftOperand.End <= rightOperand)
+                        {
+                            result = OutSet.CreateBool(false);
+                        }
+                        else
+                        {
+                            result = OutSet.AnyBooleanValue;
+                        }
+                    }
+                    return true;
+                case Operations.GreaterThanOrEqual:
+                    if (leftOperand.Start >= rightOperand)
+                    {
+                        result = OutSet.CreateBool(true);
+                    }
+                    else
+                    {
+                        if (leftOperand.End < rightOperand)
+                        {
+                            result = OutSet.CreateBool(false);
+                        }
+                        else
+                        {
+                            result = OutSet.AnyBooleanValue;
+                        }
+                    }
                     return true;
                 default:
                     return false;
@@ -248,29 +311,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         protected bool ComparisonOperation(double leftOperand, double rightOperand)
         {
-            var outSet = OutSet;
-
             switch (operation)
             {
                 case Operations.Equal:
                     SetWarning("Comparing floating-point numbers directly for equality");
-                    result = outSet.CreateBool(leftOperand == rightOperand);
+                    result = OutSet.CreateBool(leftOperand == rightOperand);
                     return true;
                 case Operations.NotEqual:
                     SetWarning("Comparing floating-point numbers directly for non-equality");
-                    result = outSet.CreateBool(leftOperand != rightOperand);
+                    result = OutSet.CreateBool(leftOperand != rightOperand);
                     return true;
                 case Operations.LessThan:
-                    result = outSet.CreateBool(leftOperand < rightOperand);
+                    result = OutSet.CreateBool(leftOperand < rightOperand);
                     return true;
                 case Operations.LessThanOrEqual:
-                    result = outSet.CreateBool(leftOperand <= rightOperand);
+                    result = OutSet.CreateBool(leftOperand <= rightOperand);
                     return true;
                 case Operations.GreaterThan:
-                    result = outSet.CreateBool(leftOperand > rightOperand);
+                    result = OutSet.CreateBool(leftOperand > rightOperand);
                     return true;
                 case Operations.GreaterThanOrEqual:
-                    result = outSet.CreateBool(leftOperand >= rightOperand);
+                    result = OutSet.CreateBool(leftOperand >= rightOperand);
                     return true;
                 default:
                     return false;
@@ -279,27 +340,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         protected bool ComparisonOperation(string leftOperand, string rightOperand)
         {
-            var outSet = OutSet;
-
             switch (operation)
             {
                 case Operations.Equal:
-                    result = outSet.CreateBool(leftOperand == rightOperand);
+                    result = OutSet.CreateBool(leftOperand == rightOperand);
                     return true;
                 case Operations.NotEqual:
-                    result = outSet.CreateBool(leftOperand != rightOperand);
+                    result = OutSet.CreateBool(leftOperand != rightOperand);
                     return true;
                 case Operations.LessThan:
-                    result = outSet.CreateBool(String.Compare(leftOperand, rightOperand) < 0);
+                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) < 0);
                     return true;
                 case Operations.LessThanOrEqual:
-                    result = outSet.CreateBool(String.Compare(leftOperand, rightOperand) <= 0);
+                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) <= 0);
                     return true;
                 case Operations.GreaterThan:
-                    result = outSet.CreateBool(String.Compare(leftOperand, rightOperand) > 0);
+                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) > 0);
                     return true;
                 case Operations.GreaterThanOrEqual:
-                    result = outSet.CreateBool(String.Compare(leftOperand, rightOperand) >= 0);
+                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) >= 0);
                     return true;
                 default:
                     return false;
@@ -339,10 +398,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Mul:
                     // Result of addition can overflow or underflow
                     // TODO: Find more cleaner solution ((a * b <= c) <==> (a <= c / b))
-                    var product = System.Convert.ToInt64(leftOperand) * rightOperand;
+                    var product = System.Convert.ToInt64(leftOperand,
+                        CultureInfo.InvariantCulture) * rightOperand;
                     if ((product >= int.MinValue) && (product <= int.MaxValue))
                     {
-                        result = OutSet.CreateInt(System.Convert.ToInt32(product));
+                        result = OutSet.CreateInt(System.Convert.ToInt32(product,
+                            CultureInfo.InvariantCulture));
                     }
                     else
                     {
@@ -405,26 +466,40 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        protected void ModuloOperation(int leftOperand, int rightOperand)
+        {
+            if (rightOperand != 0)
+            {
+                // Value has the same sign as dividend
+                result = OutSet.CreateInt(leftOperand % rightOperand);
+            }
+            else
+            {
+                SetWarning("Division (modulo) by zero",
+                    AnalysisWarningCause.DIVISION_BY_ZERO);
+                // Division (modulo) by zero returns false boolean value
+                result = OutSet.CreateBool(false);
+            }
+        }
+
         protected bool BitwiseOperation(int leftOperand, int rightOperand)
         {
-            var outSet = OutSet;
-
             switch (operation)
             {
                 case Operations.BitAnd:
-                    result = outSet.CreateInt(leftOperand & rightOperand);
+                    result = OutSet.CreateInt(leftOperand & rightOperand);
                     return true;
                 case Operations.BitOr:
-                    result = outSet.CreateInt(leftOperand | rightOperand);
+                    result = OutSet.CreateInt(leftOperand | rightOperand);
                     return true;
                 case Operations.BitXor:
-                    result = outSet.CreateInt(leftOperand ^ rightOperand);
+                    result = OutSet.CreateInt(leftOperand ^ rightOperand);
                     return true;
                 case Operations.ShiftLeft:
-                    result = outSet.CreateInt(leftOperand << rightOperand);
+                    result = OutSet.CreateInt(leftOperand << rightOperand);
                     return true;
                 case Operations.ShiftRight:
-                    result = outSet.CreateInt(leftOperand >> rightOperand);
+                    result = OutSet.CreateInt(leftOperand >> rightOperand);
                     return true;
                 default:
                     return false;
@@ -433,25 +508,65 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         protected bool LogicalOperation(bool leftOperand, bool rightOperand)
         {
-            var outSet = OutSet;
-
             switch (operation)
             {
                 case Operations.And:
-                    result = outSet.CreateBool(leftOperand && rightOperand);
+                    result = OutSet.CreateBool(leftOperand && rightOperand);
                     return true;
                 case Operations.Or:
-                    result = outSet.CreateBool(leftOperand || rightOperand);
+                    result = OutSet.CreateBool(leftOperand || rightOperand);
                     return true;
                 case Operations.Xor:
-                    result = outSet.CreateBool(leftOperand != rightOperand);
+                    result = OutSet.CreateBool(leftOperand != rightOperand);
                     return true;
                 default:
                     return false;
             }
         }
 
-        #endregion
+        protected bool LogicalOperation<T>(bool leftOperand, IntervalValue<T> rightOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+
+            switch (operation)
+            {
+                case Operations.And:
+                    if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
+                    {
+                        result = OutSet.CreateBool(leftOperand && convertedValue);
+                    }
+                    else
+                    {
+                        result = OutSet.AnyBooleanValue;
+                    }
+                    return true;
+                case Operations.Or:
+                    if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
+                    {
+                        result = OutSet.CreateBool(leftOperand || convertedValue);
+                    }
+                    else
+                    {
+                        result = OutSet.AnyBooleanValue;
+                    }
+                    return true;
+                case Operations.Xor:
+                    if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
+                    {
+                        result = OutSet.CreateBool(leftOperand != convertedValue);
+                    }
+                    else
+                    {
+                        result = OutSet.AnyBooleanValue;
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        #endregion Helper methods
     }
 
     /// <summary>
@@ -469,7 +584,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         protected T leftOperand;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="GenericLeftOperandVisitor" /> class.
+        /// Initializes a new instance of the <see cref="GenericLeftOperandVisitor{T}" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
         public GenericLeftOperandVisitor(FlowController flowController)

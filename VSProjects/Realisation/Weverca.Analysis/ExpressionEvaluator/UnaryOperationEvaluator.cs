@@ -48,13 +48,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <item><term><see cref="Operations.UnicodeCast" /></term></item>
     /// </list>
     /// </remarks>
-    public class UnaryOperationEvaluator : AbstractValueVisitor
+    public class UnaryOperationEvaluator : PartialExpressionEvaluator
     {
-        /// <summary>
-        /// Flow controller of program point providing data for evaluation (output set, position etc.)
-        /// </summary>
-        private FlowController flow;
-
         /// <summary>
         /// String converter used for casting values to string
         /// </summary>
@@ -76,17 +71,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="flowController">Flow controller of program point</param>
         /// <param name="stringConverter">Converter for string casting</param>
         public UnaryOperationEvaluator(FlowController flowController, StringConverter stringConverter)
+            : base(flowController)
         {
             converter = stringConverter;
-            SetContext(flowController);
-        }
-
-        /// <summary>
-        /// Gets output set of a program point
-        /// </summary>
-        public FlowOutputSet OutSet
-        {
-            get { return flow.OutSet; }
         }
 
         /// <summary>
@@ -100,15 +87,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if ((unaryOperation == Operations.StringCast)
                 || (unaryOperation == Operations.UnicodeCast))
             {
-                var stringValue = converter.Evaluate(operand);
-                if (stringValue != null)
-                {
-                    return stringValue;
-                }
-                else
-                {
-                    return OutSet.AnyStringValue;
-                }
+                converter.SetContext(flow);
+                return converter.Evaluate(operand);
             }
 
             // Sets current operation
@@ -131,46 +111,30 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Resulting entry after performing the unary operation on all possible operands</returns>
         public MemoryEntry Evaluate(Operations unaryOperation, MemoryEntry entry)
         {
+            if ((unaryOperation == Operations.StringCast)
+                || (unaryOperation == Operations.UnicodeCast))
+            {
+                converter.SetContext(flow);
+                return converter.Evaluate(entry);
+            }
+
+            // Sets current operation
+            operation = unaryOperation;
+
             var values = new HashSet<Value>();
 
             foreach (var value in entry.PossibleValues)
             {
-                var result = Evaluate(unaryOperation, value);
+                // Gets type of operand and evaluate expression for given operation
+                result = null;
+                value.Accept(this);
+
+                // Returns result of unary operation
+                Debug.Assert(result != null, "The result must be assigned after visiting the value");
                 values.Add(result);
             }
 
             return new MemoryEntry(values);
-        }
-
-        /// <summary>
-        /// Set current evaluation context.
-        /// </summary>
-        /// <param name="flowController">Flow controller of program point available for evaluation</param>
-        public void SetContext(FlowController flowController)
-        {
-            flow = flowController;
-            converter.SetContext(flowController);
-        }
-
-        /// <summary>
-        /// Report a warning for the position of current expression
-        /// </summary>
-        /// <param name="message">Message of the warning</param>
-        private void SetWarning(string message)
-        {
-            var warning = new AnalysisWarning(message, flow.CurrentPartial);
-            AnalysisWarningHandler.SetWarning(OutSet, warning);
-        }
-
-        /// <summary>
-        /// Report a warning for the position of current expression
-        /// </summary>
-        /// <param name="message">Message of the warning</param>
-        /// <param name="cause">Cause of the warning</param>
-        private void SetWarning(string message, AnalysisWarningCause cause)
-        {
-            var warning = new AnalysisWarning(message, flow.CurrentPartial, cause);
-            AnalysisWarningHandler.SetWarning(OutSet, warning);
         }
 
         #region AbstractValueVisitor Members
@@ -181,7 +145,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Since it is the last visitor method in the hierarchy, it can detect invalid operation.
         /// </remarks>
         /// <exception cref="NotSupportedException">Thrown when operation is not supported</exception>
-        /// <exception cref="NotSupportedException">Thrown when operation is not unary</exception>
+        /// <exception cref="InvalidOperationException">Thrown when operation is not unary</exception>
         public override void VisitValue(Value value)
         {
             switch (operation)
@@ -339,7 +303,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue"/>
+                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
                         result = OutSet.CreateDouble(-(TypeConversion.ToFloat(value.Value)));
                     }
                     break;
@@ -418,7 +382,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -452,7 +416,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         }
                         else
                         {
-                            // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue"/>
+                            // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
                             result = OutSet.CreateDouble(-TypeConversion.ToFloat(integerValue));
                         }
                     }
@@ -489,7 +453,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Scalar values
 
         #region Compound values
 
@@ -546,10 +510,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     // to resolve the entire expression. Instead, the false value is returned.
                     // TODO: This is a quest for tainted analysis
                     result = OutSet.CreateBool(false);
-                    // TODO: Object can by converted only if it has __toString magic method implemented
+                    // TODO: Object can be converted only if it has __toString magic method implemented
                     break;
                 case Operations.Clone:
-                    // TODO: Object can by converted only if it has __clone magic method implemented
+                    // TODO: Object can be converted only if it has __clone magic method implemented
                     result = OutSet.AnyObjectValue;
                     break;
                 case Operations.ObjectCast:
@@ -620,7 +584,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Compound values
 
         /// <inheritdoc />
         public override void VisitResourceValue(ResourceValue value)
@@ -706,7 +670,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Concrete values
 
         #region Interval values
 
@@ -730,15 +694,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.BoolCast:
-                    BooleanValue booleanValue;
-                    if (TypeConversion.TryConvertToBoolean<T>(OutSet, value, out booleanValue))
-                    {
-                        result = booleanValue;
-                    }
-                    else
-                    {
-                        result = OutSet.AnyBooleanValue;
-                    }
+                    result = TypeConversion.ToBoolean<T>(OutSet, value);
                     break;
                 case Operations.StringCast:
                 case Operations.UnicodeCast:
@@ -772,7 +728,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue"/>
+                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
                         result = OutSet.CreateFloatInterval(-TypeConversion.ToFloat(value.End),
                             -TypeConversion.ToFloat(value.Start));
                     }
@@ -813,7 +769,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue"/>
+                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
                         result = OutSet.CreateFloatInterval(-TypeConversion.ToFloat(value.End),
                             -TypeConversion.ToFloat(value.Start));
                     }
@@ -889,7 +845,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Interval values
 
         #region Abstract values
 
@@ -1074,7 +1030,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Abstract numeric values
 
         /// <inheritdoc />
         public override void VisitAnyStringValue(AnyStringValue value)
@@ -1102,7 +1058,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Abstract scalar values
 
         #region Abstract compound values
 
@@ -1233,7 +1189,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Abstract compound values
 
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
@@ -1278,46 +1234,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Abstract values
 
-        #region Function values
-
-        /// <inheritdoc />
-        public override void VisitFunctionValue(FunctionValue value)
-        {
-            throw new ArgumentException("Unary operation is not supported for function type");
-        }
-
-        /// <inheritdoc />
-        public override void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            // TODO: There is no special lambda type, it is implemented as Closure object with __invoke()
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region Type values
-
-        /// <inheritdoc />
-        public override void VisitTypeValue(TypeValueBase value)
-        {
-            throw new ArgumentException("Unary operation is not supported for types");
-        }
-
-        #endregion
-
-        #region Special values
-
-        /// <inheritdoc />
-        public override void VisitSpecialValue(SpecialValue value)
-        {
-            throw new ArgumentException("Unary operation is not supported for special values");
-        }
-
-        #endregion
-
-        #endregion
+        #endregion AbstractValueVisitor Members
 
         #region Helper methods
 
@@ -1352,6 +1271,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Helper methods
     }
 }

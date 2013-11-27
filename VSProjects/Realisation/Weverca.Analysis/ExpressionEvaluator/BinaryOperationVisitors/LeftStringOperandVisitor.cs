@@ -1,9 +1,7 @@
-using System;
-
 using PHP.Core.AST;
 
-using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
@@ -53,9 +51,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         // Division by false returns false boolean value
                         result = OutSet.CreateBool(false);
                     }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(leftOperand.Value + TypeConversion.ToString(value.Value));
                     break;
                 default:
                     var booleanValue = TypeConversion.ToBoolean(leftOperand.Value);
@@ -162,9 +157,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result = OutSet.CreateBool(false);
                     }
                     break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(leftOperand.Value + TypeConversion.ToString(value.Value));
-                    break;
                 default:
                     if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
                         TypeConversion.ToBoolean(value.Value)))
@@ -266,9 +258,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result = OutSet.AnyValue;
                     }
                     break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(leftOperand.Value + TypeConversion.ToString(value.Value));
-                    break;
                 default:
                     if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
                         TypeConversion.ToBoolean(value.Value)))
@@ -322,7 +311,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -370,9 +359,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     // Bit operations are defined for every character, not for the entire string
                     // TODO: Implement. PHP string is stored as array of bytes, but printed in UTF8 encoding
                     result = OutSet.AnyStringValue;
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(leftOperand.Value + value.Value);
                     break;
                 default:
                     if (ComparisonOperation(leftOperand.Value, value.Value))
@@ -449,7 +435,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Scalar values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -512,9 +498,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.ShiftRight:
                     result = TypeConversion.ToInteger(OutSet, leftOperand);
                     break;
-                case Operations.Concat:
-                    result = leftOperand;
-                    break;
                 default:
                     if (ComparisonOperation(leftOperand.Value, string.Empty))
                     {
@@ -526,8 +509,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Concrete values
 
-        #endregion
+        #endregion AbstractValueVisitor Members
     }
 }

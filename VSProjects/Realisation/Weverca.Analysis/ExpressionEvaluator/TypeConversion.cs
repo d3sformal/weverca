@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 using PHP.Core;
 
@@ -265,6 +266,33 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Converts possible interval of numbers to an equivalent concrete or abstract boolean value.
+        /// </summary>
+        /// <typeparam name="T">Type of values represented by interval</typeparam>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Value representing interval of numbers to convert</param>
+        /// <returns>Concrete boolean value if it is possible, otherwise abstract boolean value</returns>
+        public static Value ToBoolean<T>(FlowOutputSet outset, IntervalValue<T> value)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            if ((value.Start.CompareTo(value.Zero) <= 0) && (value.End.CompareTo(value.Zero) >= 0))
+            {
+                if (value.Start.Equals(value.Zero) && value.End.Equals(value.Zero))
+                {
+                    return outset.CreateBool(false);
+                }
+                else
+                {
+                    return outset.AnyBooleanValue;
+                }
+            }
+            else
+            {
+                return outset.CreateBool(true);
+            }
+        }
+
+        /// <summary>
         /// Tries to convert possible interval of numbers to an equivalent boolean value.
         /// </summary>
         /// <typeparam name="T">Type of values represented by interval</typeparam>
@@ -339,7 +367,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return false;
         }
 
-        #endregion
+        #endregion ToBoolean
 
         #region ToInteger
 
@@ -361,7 +389,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>The number 1 if value is <c>true</c>, otherwise 0</returns>
         public static int ToInteger(bool value)
         {
-            return System.Convert.ToInt32(value);
+            return System.Convert.ToInt32(value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -395,7 +423,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return false;
             }
 
-            convertedValue = System.Convert.ToInt32(value);
+            convertedValue = System.Convert.ToInt32(value, CultureInfo.InvariantCulture);
             return true;
         }
 
@@ -403,7 +431,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the value of floating-point number to an equivalent integer value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)"/>
+        /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Floating-point number to convert</param>
@@ -440,7 +468,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return false;
             }
 
-            convertedValue = System.Convert.ToInt32(truncated);
+            convertedValue = System.Convert.ToInt32(truncated, CultureInfo.InvariantCulture);
             return true;
         }
 
@@ -473,7 +501,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the string value to corresponding integer value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)"/>
+        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
@@ -534,10 +562,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Always 0 value</returns>
         public static IntegerValue ToInteger(FlowOutputSet outset, UndefinedValue value)
         {
-            return outset.CreateInt(0);
+            return outset.CreateInt(ToInteger(value));
         }
 
-        #endregion
+        /// <summary>
+        /// Converts an undefined value to an equivalent native integer value.
+        /// </summary>
+        /// <param name="value">Undefined value</param>
+        /// <returns>Always 0 value</returns>
+        public static int ToInteger(UndefinedValue value)
+        {
+            return 0;
+        }
+
+        #endregion ToInteger
 
         #region ToFloat
 
@@ -559,7 +597,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>The number 1.0 if value is <c>true</c>, otherwise 0.0</returns>
         public static double ToFloat(bool value)
         {
-            return System.Convert.ToDouble(value);
+            return System.Convert.ToDouble(value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -580,7 +618,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>A floating-point number that is equivalent to native long integer value.</returns>
         public static double ToFloat(long value)
         {
-            return System.Convert.ToDouble(value);
+            return System.Convert.ToDouble(value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -600,7 +638,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the string value to corresponding floating-point number.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out double)"/>
+        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out double)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">String to convert</param>
@@ -638,7 +676,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Determines floating-point number from content of the array value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.ToInteger(FlowOutputSet, AssociativeArray)"/>
+        /// <seealso cref="TypeConversion.ToInteger(FlowOutputSet, AssociativeArray)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
@@ -661,7 +699,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.CreateDouble(0.0);
         }
 
-        #endregion
+        #endregion ToFloat
 
         #region ToString
 
@@ -704,7 +742,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>The string representation of native integer value</returns>
         public static string ToString(int value)
         {
-            return System.Convert.ToString(value);
+            return System.Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -715,7 +753,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>The string representation of long integer value</returns>
         public static StringValue ToString(FlowOutputSet outset, LongintValue value)
         {
-            return outset.CreateString(System.Convert.ToString(value.Value));
+            return outset.CreateString(System.Convert.ToString(value.Value, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -736,7 +774,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>The string representation of native floating-point number</returns>
         public static string ToString(double value)
         {
-            return System.Convert.ToString(value);
+            return System.Convert.ToString(value, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -785,7 +823,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.CreateString(string.Empty);
         }
 
-        #endregion
+        #endregion ToString
 
         #region ToObject
 
@@ -848,7 +886,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return objectValue;
         }
 
-        #endregion
+        #endregion ToObject
 
         #region ToArray
 
@@ -914,7 +952,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return arrayValue;
         }
 
-        #endregion
+        #endregion ToArray
 
         #region ToIntegerInterval
 
@@ -941,7 +979,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the interval of floating-point numbers to an equivalent integer interval.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(FlowOutputSet, double, out int)"/>
+        /// <seealso cref="TypeConversion.TryConvertToInteger(FlowOutputSet, double, out int)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Floating-point number to convert</param>
@@ -959,7 +997,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return isConverted;
         }
 
-        #endregion
+        #endregion ToIntegerInterval
 
         #region ToNumber
 
@@ -1211,7 +1249,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 if (convertedLong > int.MaxValue)
                 {
                     integerValue = 0;
-                    floatValue = System.Convert.ToDouble(convertedLong);
+                    floatValue = System.Convert.ToDouble(convertedLong, CultureInfo.InvariantCulture);
 
                     ++index;
                     for (; index < value.Length; ++index)
@@ -1231,7 +1269,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
 
-            integerValue = System.Convert.ToInt32(convertedLong);
+            integerValue = System.Convert.ToInt32(convertedLong, CultureInfo.InvariantCulture);
             floatValue = integerValue;
             return true;
         }
@@ -1372,7 +1410,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return false;
         }
 
-        #endregion
+        #endregion ToNumber
 
         #region Helper methods
 
@@ -1409,7 +1447,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return arrayEntry.ReadIndex(snapshot, indexIdentifier);
         }
 
-        #endregion
+        #endregion Helper methods
     }
 
     public class ValueTypeResolver

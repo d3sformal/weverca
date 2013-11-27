@@ -72,9 +72,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Sub:
                     result = OutSet.CreateInt(-TypeConversion.ToInteger(value.Value));
                     break;
-                case Operations.Concat:
-                    result = TypeConversion.ToString(OutSet, leftOperand);
-                    break;
                 case Operations.Mul:
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
@@ -88,18 +85,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    if (value.Value)
-                    {
-                        // 0 (null) modulo or divided by 1 (true) is always 0
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero (converted from boolean false)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by false returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
+                    DivisionOfNullOperation(value.Value);
                     break;
                 default:
                     base.VisitBooleanValue(value);
@@ -139,12 +125,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue"/>
+                        // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
                         result = OutSet.CreateDouble(-(TypeConversion.ToFloat(value.Value)));
                     }
-                    break;
-                case Operations.Concat:
-                    result = TypeConversion.ToString(OutSet, leftOperand);
                     break;
                 case Operations.Mul:
                 case Operations.BitAnd:
@@ -159,17 +142,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    if (value.Value != 0)
-                    {
-                        // 0 (null) modulo or divided by any integer is always 0
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
+                    DivisionOfNullOperation(value.Value != 0);
                     break;
                 default:
                     base.VisitIntegerValue(value);
@@ -201,9 +174,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.LessThanOrEqual:
                     result = OutSet.CreateBool(true);
                     break;
-                case Operations.Concat:
-                    result = TypeConversion.ToString(OutSet, leftOperand);
-                    break;
                 case Operations.Add:
                     result = OutSet.CreateDouble(value.Value);
                     break;
@@ -230,34 +200,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Div:
-                    if (value.Value != 0.0)
-                    {
-                        // 0.0 (null) divided by any float is always (+/-)0.0
-                        result = OutSet.CreateDouble((value.Value >= 0.0) ? 0.0 : -0.0);
-                    }
-                    else
-                    {
-                        SetWarning("Division by floating-point zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by floating-point zero does not return NaN, but false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
+                    DivisionOfNullOperation(value.Value);
                     break;
                 case Operations.Mod:
                     if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
                     {
-                        if (rightInteger != 0)
-                        {
-                            // 0 (null) modulo by any float is always 0
-                            result = OutSet.CreateInt(0);
-                        }
-                        else
-                        {
-                            SetWarning("Division by floating-point zero",
-                                AnalysisWarningCause.DIVISION_BY_ZERO);
-                            // Division by floating-point zero does not return NaN, but false boolean value
-                            result = OutSet.CreateBool(false);
-                        }
+                        DivisionOfNullOperation(rightInteger != 0);
                     }
                     else
                     {
@@ -274,7 +222,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -293,7 +241,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.Add:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue, out floatValue, out isInteger);
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
                     if (isInteger)
                     {
                         result = OutSet.CreateInt(integerValue);
@@ -304,7 +253,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Sub:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue, out floatValue, out isInteger);
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
                     if (isInteger)
                     {
                         // Result of subtraction can overflow
@@ -314,8 +264,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         }
                         else
                         {
-                            // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue"/>
-                            result = OutSet.CreateDouble(-(TypeConversion.ToFloat(integerValue)));
+                            // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
+                            result = OutSet.CreateDouble(-TypeConversion.ToFloat(integerValue));
                         }
                     }
                     else
@@ -324,7 +274,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Mul:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue, out floatValue, out isInteger);
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
                     if (isInteger)
                     {
                         result = OutSet.CreateInt(0);
@@ -335,38 +286,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Div:
-                case Operations.Mod:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue, out floatValue, out isInteger);
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
                     if (isInteger)
                     {
-                        if (integerValue != 0)
-                        {
-                            // 0 (null) modulo or divided by any integer is always 0
-                            result = OutSet.CreateInt(0);
-                        }
-                        else
-                        {
-                            SetWarning("Division by zero (converted from string)",
-                                AnalysisWarningCause.DIVISION_BY_ZERO);
-                            // Division by zero returns false boolean value
-                            result = OutSet.CreateBool(false);
-                        }
+                        DivisionOfNullOperation(integerValue != 0);
                     }
                     else
                     {
-                        if (floatValue != 0.0)
-                        {
-                            // 0 (null) modulo or divided by any float is always 0
-                            result = OutSet.CreateDouble(0.0);
-                        }
-                        else
-                        {
-                            SetWarning("Division by zero (converted from string)",
-                                AnalysisWarningCause.DIVISION_BY_ZERO);
-                            // Division by zero returns false boolean value
-                            result = OutSet.CreateBool(false);
-                        }
+                        DivisionOfNullOperation(floatValue);
                     }
+                    break;
+                case Operations.Mod:
+                    TypeConversion.TryConvertToInteger(value.Value, out integerValue);
+                    DivisionOfNullOperation(integerValue != 0);
                     break;
                 case Operations.BitOr:
                 case Operations.BitXor:
@@ -376,9 +309,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
                     result = OutSet.CreateInt(0);
-                    break;
-                case Operations.Concat:
-                    result = value;
                     break;
                 default:
                     if (ComparisonOperation(string.Empty, value.Value))
@@ -391,7 +321,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Scalar values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -412,9 +342,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Or:
                 case Operations.Xor:
                     result = OutSet.CreateBool(false);
-                    break;
-                case Operations.Concat:
-                    result = TypeConversion.ToString(OutSet, value);
                     break;
                 case Operations.Add:
                 case Operations.Sub:
@@ -439,8 +366,51 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Concrete values
 
-        #endregion
+        #endregion AbstractValueVisitor Members
+
+        #region Helper methods
+
+        /// <summary>
+        /// Depending on <paramref name="isRightOperandNotZero" />, set 0 or report division by zero
+        /// </summary>
+        /// <param name="isRightOperandNotZero">Indicates whether the right operand is not zero</param>
+        private void DivisionOfNullOperation(bool isRightOperandNotZero)
+        {
+            if (isRightOperandNotZero)
+            {
+                // 0 (null) modulo or divided by anything is always 0
+                result = OutSet.CreateInt(0);
+            }
+            else
+            {
+                SetWarning("Division or modulo by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+                // Division by false returns false boolean value
+                result = OutSet.CreateBool(false);
+            }
+        }
+
+        /// <summary>
+        /// Set (+/-)0.0 as result or, if divisor is 0.0, report division by zero
+        /// </summary>
+        /// <param name="divisor">Divisor of division operation</param>
+        private void DivisionOfNullOperation(double divisor)
+        {
+            if (divisor != 0.0)
+            {
+                // 0.0 (null) divided by any float is always (+/-)0.0
+                result = OutSet.CreateDouble((divisor >= 0.0) ? 0.0 : -0.0);
+            }
+            else
+            {
+                SetWarning("Division by floating-point zero",
+                    AnalysisWarningCause.DIVISION_BY_ZERO);
+                // Division by floating-point zero does not return NaN, but false boolean value
+                result = OutSet.CreateBool(false);
+            }
+        }
+
+        #endregion Helper methods
     }
 }

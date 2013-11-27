@@ -1,9 +1,7 @@
-﻿using System;
+﻿using PHP.Core.AST;
 
-using PHP.Core.AST;
-
-using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
@@ -103,10 +101,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result = OutSet.CreateBool(false);
                     }
                     break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
-                    break;
                 default:
                     var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
                     if (ComparisonOperation(leftBoolean, value.Value))
@@ -143,21 +137,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(leftOperand.Value != value.Value);
                     break;
                 case Operations.Mod:
-                    if (value.Value != 0)
-                    {
-                        // Value has the same sign as dividend
-                        result = OutSet.CreateInt(leftOperand.Value % value.Value);
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
+                    ModuloOperation(leftOperand.Value, value.Value);
                     break;
                 default:
                     if (ComparisonOperation(leftOperand.Value, value.Value))
@@ -202,18 +182,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Mod:
                     if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
                     {
-                        if (rightInteger != 0)
-                        {
-                            // Value has the same sign as dividend
-                            result = OutSet.CreateInt(leftOperand.Value % rightInteger);
-                        }
-                        else
-                        {
-                            SetWarning("Division by floating-point zero",
-                                AnalysisWarningCause.DIVISION_BY_ZERO);
-                            // Division by floating-point zero does not return NaN, but false boolean value
-                            result = OutSet.CreateBool(false);
-                        }
+                        ModuloOperation(leftOperand.Value, rightInteger);
                     }
                     else
                     {
@@ -223,10 +192,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             AnalysisWarningCause.DIVISION_BY_ZERO);
                         result = OutSet.AnyValue;
                     }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
                     break;
                 default:
                     if (ComparisonOperation(leftOperand.Value, value.Value))
@@ -266,7 +231,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -283,20 +248,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Mod:
                     TypeConversion.TryConvertToInteger(value.Value, out integerValue);
-                    if (integerValue != 0)
-                    {
-                        result = OutSet.CreateInt(leftOperand.Value % integerValue);
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero (converted from string)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value) + value.Value);
+                    ModuloOperation(leftOperand.Value, integerValue);
                     break;
                 default:
                     if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
@@ -365,7 +317,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Scalar values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -390,9 +342,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                 case Operations.GreaterThanOrEqual:
                     result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Concat:
-                    result = TypeConversion.ToString(OutSet, leftOperand);
                     break;
                 case Operations.Mul:
                 case Operations.BitAnd:
@@ -419,8 +368,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Concrete values
 
-        #endregion
+        #endregion AbstractValueVisitor Members
     }
 }

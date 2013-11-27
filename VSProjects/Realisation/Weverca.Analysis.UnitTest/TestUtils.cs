@@ -18,25 +18,55 @@ namespace Weverca.Analysis.UnitTest
     internal class TestUtils
     {
         /// <summary>
-        /// Analyzes the source code and return the resulting FlowOutputSet
+        /// Create new <see cref="ProgramPointGraph"/> object from PHP source code
         /// </summary>
-        /// <param name="code">The source code without &lt;?php </param>
-        /// <returns>FlowOutputSet from last program point of analysis</returns>
-        public static FlowOutputSet Analyze(string code)
+        /// <param name="code">The source code without &lt;?php and ?&gt;</param>
+        /// <returns><see cref="ProgramPointGraph"/> that contains CFG and memory model</returns>
+        public static ForwardAnalysis GenerateForwardAnalysis(string code)
         {
             var fileName = "./cfg_test.php";
             var fullPath = new FullPath(Path.GetDirectoryName(fileName));
             var sourceFile = new PhpSourceFile(fullPath, new FullPath(fileName));
-            code = "<?php \n" + code + "?>";
+            code = "<?php\n" + code + "\n?>";
 
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
             var cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
 
-            var analysis = new Weverca.Analysis.ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM);
-            analysis.Analyse();
+            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM);
+        }
 
-            return analysis.ProgramPointGraph.End.OutSet;
+        /// <summary>
+        /// Analyzes the forward analysis and return the resulting <see cref="ProgramPointGraph"/>
+        /// </summary>
+        /// <param name="analysis"><see cref="ProgramPointGraph"/> that contains CFG and memory model</param>
+        /// <returns><see cref="ProgramPointGraph"/> generated during the analysis</returns>
+        public static ProgramPointGraph GeneratePpg(ForwardAnalysis analysis)
+        {
+            analysis.Analyse();
+            return analysis.ProgramPointGraph;
+        }
+
+        /// <summary>
+        /// Get output set of the last program point, where are the results of program execution
+        /// </summary>
+        /// <param name="ppg"><see cref="ProgramPointGraph"/> generated during the analysis</param>
+        /// <returns>Output set of analysis</returns>
+        public static FlowOutputSet GetResultOutputSet(ProgramPointGraph ppg)
+        {
+            return ppg.End.OutSet;
+        }
+
+        /// <summary>
+        /// Analyzes the source code and return the resulting FlowOutputSet
+        /// </summary>
+        /// <param name="code">The source code without &lt;?php and ?&gt;</param>
+        /// <returns>FlowOutputSet from last program point of analysis</returns>
+        public static FlowOutputSet Analyze(string code)
+        {
+            var analysis = GenerateForwardAnalysis(code);
+            var ppg = GeneratePpg(analysis);
+            return GetResultOutputSet(ppg);
         }
 
         /// <summary>
@@ -81,7 +111,10 @@ namespace Weverca.Analysis.UnitTest
         /// <returns>First value of variable result from the last program point</returns>
         public static Value ResultTest(string code)
         {
-            return Analyze(code).ReadValue(new VariableName("result")).PossibleValues.ElementAt(0);
+            var outSet = Analyze(code);
+            var snapshotEntry = outSet.GetVariable(new VariableIdentifier("result"));
+            var entry = snapshotEntry.ReadMemory(outSet.Snapshot);
+            return entry.PossibleValues.First();
         }
 
         /// <summary>

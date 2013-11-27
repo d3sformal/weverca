@@ -37,7 +37,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// The partial evaluator of one binary operation
         /// </summary>
-        private BinaryOperationVisitor binaryOperationVisitor;
+        private BinaryOperationEvaluator binaryOperationVisitor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionEvaluator" /> class.
@@ -48,7 +48,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             unaryOperationEvaluator = new UnaryOperationEvaluator(Flow, stringConverter);
             incrementDecrementEvaluator = new IncrementDecrementEvaluator(Flow);
             arrayIndexEvaluator = new ArrayIndexEvaluator(Flow);
-            binaryOperationVisitor = new BinaryOperationVisitor(Flow);
+            binaryOperationVisitor = new BinaryOperationEvaluator(Flow, stringConverter);
         }
 
         #region ExpressionEvaluatorBase overrides
@@ -384,11 +384,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             MemoryEntry leftOperand = null;
 
+            stringConverter.SetContext(Flow);
             foreach (var part in parts)
             {
                 if (leftOperand != null)
                 {
-                    leftOperand = BinaryEx(leftOperand, Operations.Concat, part);
+                    leftOperand = stringConverter.EvaluateConcatenation(leftOperand, part);
                 }
                 else
                 {
@@ -643,7 +644,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion ExpressionEvaluatorBase overrides
 
         /// <summary>
         /// Generates a warning with the given message

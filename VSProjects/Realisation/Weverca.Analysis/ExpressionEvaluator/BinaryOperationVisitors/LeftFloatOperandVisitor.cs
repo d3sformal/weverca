@@ -1,9 +1,7 @@
-﻿using System;
+﻿using PHP.Core.AST;
 
-using PHP.Core.AST;
-
-using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
@@ -62,10 +60,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         // Division by false returns false boolean value
                         result = OutSet.CreateBool(false);
                     }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
                     break;
                 default:
                     var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
@@ -140,10 +134,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         // Division by floating-point zero does not return NaN, but false boolean value
                         result = OutSet.CreateBool(false);
                     }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
                     break;
                 default:
                     if (ComparisonOperation(leftOperand.Value, value.Value))
@@ -230,10 +220,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result = OutSet.AnyValue;
                     }
                     break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value)
-                        + TypeConversion.ToString(value.Value));
-                    break;
                 default:
                     if (ComparisonOperation(leftOperand.Value, value.Value))
                     {
@@ -273,7 +259,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -310,9 +296,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         // Division by zero returns false boolean value
                         result = OutSet.CreateBool(false);
                     }
-                    break;
-                case Operations.Concat:
-                    result = OutSet.CreateString(TypeConversion.ToString(leftOperand.Value) + value.Value);
                     break;
                 default:
                     if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
@@ -367,7 +350,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Scalar values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -392,9 +375,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                 case Operations.GreaterThanOrEqual:
                     result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Concat:
-                    result = TypeConversion.ToString(OutSet, leftOperand);
                     break;
                 case Operations.Add:
                 case Operations.Sub:
@@ -433,8 +413,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Concrete values
 
-        #endregion
+        #endregion AbstractValueVisitor Members
     }
 }

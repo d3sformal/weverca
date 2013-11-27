@@ -413,7 +413,7 @@ namespace Weverca.Analysis
                 {
                     var stringConverter = new StringConverter(flow);
                     // TODO: arg0Retyped can be null if cannot be converted to StringValue
-                    var arg0Retyped = stringConverter.Evaluate(arg0);
+                    var arg0Retyped = stringConverter.EvaluateToString(arg0);
                     string constantName = "";
 
                     // TODO: It cannot never be null
@@ -477,7 +477,7 @@ namespace Weverca.Analysis
                 {
                     var stringConverter = new StringConverter(flow);
                     // TODO: arg0Retyped can be null if cannot be converted to StringValue
-                    var arg0Retyped = stringConverter.Evaluate(arg0);
+                    var arg0Retyped = stringConverter.EvaluateToString(arg0);
                     List<Value> values = new List<Value>();
                     NativeConstantAnalyzer constantAnalyzer = NativeConstantAnalyzer.Create(flow.OutSet);
                     QualifiedName name = new QualifiedName(new Name(arg0Retyped.Value));

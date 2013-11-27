@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -9,12 +8,26 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
-    public class BinaryOperationVisitor : AbstractValueVisitor
+    /// <summary>
+    /// Evaluates one binary operation during the analysis
+    /// </summary>
+    /// <remarks>
+    /// Every evaluator must determine type of the value in the expression. Double dispatch is
+    /// the solution of this problem and visitor pattern is the way to achieve it. However,
+    /// binary operations need to know a type of two values to perform the calculation. We need
+    /// triple dispatch, thus two layers of visitor patterns. The first level visitor finds the type of
+    /// the left operand. For every operand type, the proper evaluator of the resolved type is selected.
+    /// The second level visitor derived from <see cref="LeftOperandVisitor" /> contains internal left
+    /// operand of very known type. This visitor can now perform an evaluation by the same way as
+    /// one operand operation, i.e. using double dispatch, because the typed left operand is part of it.
+    /// There should exist a left operand visitor for every value type.
+    /// </remarks>
+    public class BinaryOperationEvaluator : PartialExpressionEvaluator
     {
         /// <summary>
-        /// Flow controller of program point providing data for evaluation (output set, position etc.)
+        /// String converter used for concatenation of values to strings
         /// </summary>
-        private FlowController flow;
+        private StringConverter converter;
 
         /// <summary>
         /// Visitor of left operand that has concrete boolean value
@@ -42,21 +55,30 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private LeftNullOperandVisitor nullVisitor;
 
         /// <summary>
+        /// Visitor of left operand that has interval of integer values
+        /// </summary>
+        private LeftIntegerIntervalOperandVisitor integerIntervaVisitor;
+
+        /// <summary>
         /// Selected visitor of left operand that performs binary operations with the given right operand
         /// </summary>
         private LeftOperandVisitor visitor;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryOperationVisitor" /> class.
+        /// Initializes a new instance of the <see cref="BinaryOperationEvaluator" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public BinaryOperationVisitor(FlowController flowController)
+        /// <param name="stringConverter">String converter for concatenation</param>
+        public BinaryOperationEvaluator(FlowController flowController, StringConverter stringConverter)
+            : base(flowController)
         {
+            converter = stringConverter;
             booleanVisitor = new LeftBooleanOperandVisitor(flowController);
             integerVisitor = new LeftIntegerOperandVisitor(flowController);
             floatVisitor = new LeftFloatOperandVisitor(flowController);
             stringVisitor = new LeftStringOperandVisitor(flowController);
             nullVisitor = new LeftNullOperandVisitor(flowController);
+            integerIntervaVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
         }
 
         /// <summary>
@@ -68,6 +90,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Result of performing the binary operation on the operands</returns>
         public Value Evaluate(Value leftOperand, Operations binaryOperation, Value rightOperand)
         {
+            if (binaryOperation == Operations.Concat)
+            {
+                converter.SetContext(flow);
+                return converter.EvaluateConcatenation(leftOperand, rightOperand);
+            }
+
             // Gets visitor of left operand
             leftOperand.Accept(this);
             Debug.Assert(visitor != null, "Visiting of left operand must return its visitor");
@@ -86,6 +114,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public MemoryEntry Evaluate(MemoryEntry leftOperand, Operations binaryOperation,
             MemoryEntry rightOperand)
         {
+            if (binaryOperation == Operations.Concat)
+            {
+                converter.SetContext(flow);
+                return converter.EvaluateConcatenation(leftOperand, rightOperand);
+            }
+
             var values = new HashSet<Value>();
 
             foreach (var leftValue in leftOperand.PossibleValues)
@@ -102,23 +136,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        /// <summary>
-        /// Set current evaluation context.
-        /// </summary>
-        /// <param name="flowController">Flow controller of program point available for evaluation</param>
-        public void SetContext(FlowController flowController)
-        {
-            flow = flowController;
-        }
-
-        #region IValueVisitor Members
-
-        /// <inheritdoc />
-        public override void VisitValue(Value value)
-        {
-            throw new NotSupportedException(
-                "The value with its type cannot be left operand of any binary operation");
-        }
+        #region AbstractValueVisitor Members
 
         #region Concrete values
 
@@ -147,7 +165,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             visitor = floatVisitor;
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -156,7 +174,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             visitor = stringVisitor;
         }
 
-        #endregion
+        #endregion Scalar values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -165,8 +183,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
             visitor = nullVisitor;
         }
 
-        #endregion
+        #endregion Concrete values
 
-        #endregion
+        #region Interval values
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            integerIntervaVisitor.SetLeftOperand(value);
+            visitor = integerIntervaVisitor;
+        }
+
+        #endregion Interval values
+
+        #endregion AbstractValueVisitor Members
     }
 }

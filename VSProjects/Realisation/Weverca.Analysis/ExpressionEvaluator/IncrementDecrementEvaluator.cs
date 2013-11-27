@@ -14,13 +14,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <remarks>
     /// Increment or decrement is defined by operation <see cref="Operations.IncDec" />
     /// </remarks>
-    public class IncrementDecrementEvaluator : AbstractValueVisitor
+    public class IncrementDecrementEvaluator : PartialExpressionEvaluator
     {
-        /// <summary>
-        /// Flow controller of program point providing data for evaluation (output set, position etc.)
-        /// </summary>
-        private FlowController flow;
-
         /// <summary>
         /// Determines whether operation is increment, otherwise it is decrement
         /// </summary>
@@ -36,17 +31,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
         public IncrementDecrementEvaluator(FlowController flowController)
-        {
-            SetContext(flowController);
-        }
-
-        /// <summary>
-        /// Gets output set of a program point
-        /// </summary>
-        public FlowOutputSet OutSet
-        {
-            get { return flow.OutSet; }
-        }
+            : base(flowController) { }
 
         /// <summary>
         /// Evaluates prefix or postfix increment or decrement of the value
@@ -87,26 +72,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(values);
         }
 
-        /// <summary>
-        /// Set current evaluation context.
-        /// </summary>
-        /// <param name="flowController">Flow controller of program point available for evaluation</param>
-        public void SetContext(FlowController flowController)
-        {
-            flow = flowController;
-        }
-
         #region AbstractValueVisitor Members
-
-        /// <inheritdoc />
-        /// <remarks>
-        /// Since it is the last visitor method in the hierarchy, operation is performing on wrong operand.
-        /// </remarks>
-        /// <exception cref="ArgumentException">Thrown always</exception>
-        public override void VisitValue(Value value)
-        {
-            throw new ArgumentException("Increment or decrement operation is not supported for this type");
-        }
 
         #region Concrete values
 
@@ -187,7 +153,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
@@ -203,7 +169,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Scalar values
 
         #region Compound values
 
@@ -213,7 +179,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = value;
         }
 
-        #endregion
+        #endregion Compound values
 
         /// <inheritdoc />
         public override void VisitResourceValue(ResourceValue value)
@@ -234,7 +200,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Concrete values
 
         #region Interval values
 
@@ -309,7 +275,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Interval values
 
         #region Abstract values
 
@@ -319,7 +285,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = value;
         }
 
-        #region Abstract primitive values
+        #region Abstract scalar values
 
         /// <inheritdoc />
         public override void VisitAnyBooleanValue(AnyBooleanValue value)
@@ -347,7 +313,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = value;
         }
 
-        #endregion
+        #endregion Abstract numeric values
 
         /// <inheritdoc />
         public override void VisitAnyStringValue(AnyStringValue value)
@@ -355,7 +321,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = value;
         }
 
-        #endregion
+        #endregion Abstract scalar values
 
         #region Abstract compound values
 
@@ -365,7 +331,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = value;
         }
 
-        #endregion
+        #endregion Abstract compound values
 
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
@@ -373,19 +339,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = value;
         }
 
-        #endregion
+        #endregion Abstract values
 
-        #region Function values
-
-        /// <inheritdoc />
-        public override void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            // TODO: There is no special lambda type, it is implemented as Closure object with __invoke()
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #endregion
+        #endregion AbstractValueVisitor Members
     }
 }
