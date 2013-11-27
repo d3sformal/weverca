@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using PHP.Core;
+using PHP.Core.Parsers;
 using PHP.Core.AST;
 using PHP.Core.Reflection;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.ProgramPoints;
+using System.IO;
+using Weverca.Parsers;
 
 namespace Weverca.Analysis
 {
@@ -23,7 +26,7 @@ namespace Weverca.Analysis
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
             = new Dictionary<FunctionDecl, FunctionHints>();
-
+        public GlobalCode globalCode { get; set; }
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
         /// </summary>
@@ -312,7 +315,7 @@ namespace Weverca.Analysis
                 }
             }
             //cannot contain abstract method
-            if(type.IsAbstract==false)
+            if (type.IsAbstract == false)
             {
                 Dictionary<Name, bool> methods = new Dictionary<Name, bool>();
 
@@ -322,9 +325,9 @@ namespace Weverca.Analysis
                     {
                         methods[entry.Key.Name] &= entry.Value.Modifiers.HasFlag(PhpMemberAttributes.Abstract);
                     }
-                    else 
+                    else
                     {
-                        methods.Add(entry.Key.Name,entry.Value.Modifiers.HasFlag(PhpMemberAttributes.Abstract));
+                        methods.Add(entry.Key.Name, entry.Value.Modifiers.HasFlag(PhpMemberAttributes.Abstract));
                     }
                 }
 
@@ -340,26 +343,26 @@ namespace Weverca.Analysis
                     }
                 }
 
-                foreach(var entry in methods)
+                foreach (var entry in methods)
                 {
-                    if(entry.Value==true)
+                    if (entry.Value == true)
                     {
-                        setWarning("Non abstract class cannot contain abstract method "+entry.Key,element,AnalysisWarningCause.NON_ABSTRACT_CLASS_CONTAINS_ABSTRACT_METHOD);
+                        setWarning("Non abstract class cannot contain abstract method " + entry.Key, element, AnalysisWarningCause.NON_ABSTRACT_CLASS_CONTAINS_ABSTRACT_METHOD);
                     }
                 }
             }
 
-            List<ClassDecl> interfaces=getImplementedInterfaces(element);           
+            List<ClassDecl> interfaces = getImplementedInterfaces(element);
             foreach (var Interface in interfaces)
             {
                 foreach (var constant in Interface.Constants)
-                { 
-                    var query=type.Constants.Where(a=>a.Key.Name==constant.Key.Name);
+                {
+                    var query = type.Constants.Where(a => a.Key.Name == constant.Key.Name);
                     if (query.Count() > 0)
                     {
                         setWarning("Cannot override interface constant " + constant.Key.Name, element, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT);
                     }
-                    else 
+                    else
                     {
                         type.Constants.Add(new FieldIdentifier(type.QualifiedName, constant.Key.Name), constant.Value);
                     }
@@ -371,9 +374,9 @@ namespace Weverca.Analysis
                     {
                         setWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
                     }
-                    else 
+                    else
                     {
-                        var classMethod=type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
+                        var classMethod = type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
                         checkIfStaticMatch(method.Value, classMethod, element);
                         if (!AreMethodsCompatible(classMethod, method.Value))
                         {
@@ -382,16 +385,16 @@ namespace Weverca.Analysis
                     }
                 }
 
-                foreach(var method in Interface.SourceCodeMethods)
+                foreach (var method in Interface.SourceCodeMethods)
                 {
                     if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
                     {
                         setWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
                     }
-                    else 
+                    else
                     {
                         var classMethod = type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
-                       
+
                         checkIfStaticMatch(method.Value, classMethod, element);
                         if (!AreMethodsCompatible(classMethod, method.Value))
                         {
@@ -461,7 +464,7 @@ namespace Weverca.Analysis
                                     {
                                         setWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                                     }
-                                    checkIfStaticMatch(method, match,declaration);
+                                    checkIfStaticMatch(method, match, declaration);
                                 }
                                 else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
@@ -483,13 +486,13 @@ namespace Weverca.Analysis
                         {
                             if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0 || result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                             {
-                                
+
                                 if (result.ModeledMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
                                     var match = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
                                     if (!AreMethodsCompatible(match, method))
                                     {
-                                        setWarning("Can't inherit abstract function " + method.Name+" beacuse arguments doesn't match", declaration, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                                        setWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", declaration, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                                     }
                                     checkIfStaticMatch(method, match, declaration);
                                 }
@@ -500,7 +503,7 @@ namespace Weverca.Analysis
                                     {
                                         setWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", match, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                                     }
-                                    checkIfStaticMatch(method, match,declaration);
+                                    checkIfStaticMatch(method, match, declaration);
                                 }
 
                             }
@@ -530,12 +533,12 @@ namespace Weverca.Analysis
             OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
         }
 
-       
-      
+
+
         private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration)
         {
             NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
-         List<ClassDecl> interfaces = new List<ClassDecl>();
+            List<ClassDecl> interfaces = new List<ClassDecl>();
             foreach (GenericQualifiedName Interface in declaration.ImplementsList)
             {
                 if (objectAnalyzer.ExistClass(Interface.QualifiedName))
@@ -711,7 +714,7 @@ namespace Weverca.Analysis
             {
                 var query = result.Fields.Keys.Where(a => a.Name == field.Key.Name);
                 FieldIdentifier newFieldIdentifier = new FieldIdentifier(result.QualifiedName, field.Key.Name);
-                if (query.Count()==0)
+                if (query.Count() == 0)
                 {
                     result.Fields.Add(newFieldIdentifier, field.Value);
                 }
@@ -731,7 +734,7 @@ namespace Weverca.Analysis
 
                         }
                     }
-                    else 
+                    else
                     {
                         result.Fields.Add(newFieldIdentifier, field.Value);
                     }
@@ -754,27 +757,27 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        var overridenMethod=result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
+                        var overridenMethod = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
                         if (overridenMethod.IsFinal)
                         {
                             setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
                         }
                         checkIfStaticMatch(method, overridenMethod, method);
-                      
-                        if(!AreMethodsCompatible(overridenMethod,method))
+
+                        if (!AreMethodsCompatible(overridenMethod, method))
                         {
                             setWarning("Can't inherit function " + method.Name + ", beacuse arguments doesn't match", method, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                         }
                         if (method.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
                         {
-                            setWarning("Can't override function " + method.Name + ", with abstract function", method,AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);
+                            setWarning("Can't override function " + method.Name + ", with abstract function", method, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);
 
                         }
                     }
                 }
                 else
                 {
-                    var overridenMethod=result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
+                    var overridenMethod = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
                     if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Final))
                     {
                         setWarning("Cannot redeclare final method " + method.Name, method, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
@@ -883,18 +886,19 @@ namespace Weverca.Analysis
             Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
             List<QualifiedName> classes = new List<QualifiedName>(result.BaseClasses);
             classes.Add(result.QualifiedName);
-
+            List<string> indices = new List<string>();
             foreach (var currentClass in classes)
             {
-                foreach (var constant in result.Constants.Values.Where(a => a.ClassName==currentClass))
+                foreach (var constant in result.Constants.Values.Where(a => a.ClassName == currentClass))
                 {
                     constants[constant.Name] = constant;
                 }
             }
-
+            string code = "function _static_intialization_of_" + result .QualifiedName+ "(){$res=array();";
             foreach (var constant in constants.Values)
             {
-                var variable = OutSet.GetControlVariable(new VariableName(constant.ClassName.Name.LowercaseValue+".."+constant.Name.Value));
+                
+                var variable = OutSet.GetControlVariable(new VariableName(constant.ClassName.Name.LowercaseValue + ".." + constant.Name.Value));
                 List<Value> constantValues = new List<Value>();
                 if (variable.IsDefined(OutSet.Snapshot))
                 {
@@ -906,10 +910,32 @@ namespace Weverca.Analysis
                 }
                 else
                 {
-                    //todo 
-                   // constantValues.AddRange(constant.Initializer);
+                    string index=".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name + ")";
+                    code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(constant.Initializer.Position) + ";\n";
+                    indices.Add(index); 
                 }
-                variable.WriteMemory(OutSet.Snapshot,new MemoryEntry(constantValues));
+            }
+            NativeFunctionAnalyzer.indices = indices;
+            string key = "staticInit" + result.QualifiedName.Name.LowercaseValue;
+            if (!Flow.ExtensionKeys.Contains(key))
+            {
+                var fileName = "./cfg_test.php";
+                var fullPath = new FullPath(Path.GetDirectoryName(fileName));
+                var sourceFile = new PhpSourceFile(fullPath, new FullPath(fileName));
+                code = @"<?php "+code+ " } ?>";
+               
+                var parser = new SyntaxParser(sourceFile, code);
+                parser.Parse();
+               
+                var function = (parser.Ast.Statements[0] as FunctionDecl);
+                var parameters=new List<ActualParam>();
+                parameters.Add(new ActualParam(Position.Invalid,new DirectVarUse(Position.Invalid,"res") ,false));
+                function.Body.Add(new ExpressionStmt(Position.Invalid,
+                new DirectFcnCall(Position.Invalid, new QualifiedName(new Name(".initStaticProperties")), null, Position.Invalid, parameters, new List<TypeRef>())));
+
+                var ppGraph = ProgramPointGraph.From(OutSet.CreateFunction(function));
+
+                Flow.AddExtension(key, ppGraph, ExtensionType.ParallelCall);
             }
         }
 
@@ -1156,7 +1182,14 @@ namespace Weverca.Analysis
 
         private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
+
             var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
+
+            if (callPoint == null)
+            {
+                return;
+            }
+            
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -1213,7 +1246,7 @@ namespace Weverca.Analysis
         #endregion
     }
 
-    #region function hints 
+    #region function hints
     // TODO: testy treba pockat na priznaky
     // TODO pravdepodobne sa zmeni praca s priznakmi
     internal class FunctionHints

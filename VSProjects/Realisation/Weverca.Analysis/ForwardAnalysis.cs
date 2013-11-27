@@ -31,7 +31,9 @@ namespace Weverca.Analysis
 
         protected override FunctionResolverBase createFunctionResolver()
         {
-            return new FunctionResolver();
+            var functionResolver = new FunctionResolver();
+            functionResolver.globalCode = EntryCFG.globalCode;
+            return functionResolver;
         }
 
         protected override MemoryAssistantBase createAssistant()

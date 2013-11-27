@@ -253,6 +253,10 @@ namespace Weverca.Analysis
         
         public bool existNativeFunction(QualifiedName name)
         {
+            if(name==new QualifiedName(new Name(".initStaticProperties")))
+            {
+                return true;
+            }
             return allNativeFunctions.ContainsKey(name);
         }
         public QualifiedName[] getNativeFunctions()
@@ -264,6 +268,11 @@ namespace Weverca.Analysis
             if (!existNativeFunction(name))
             {
                 return null;
+            }
+
+            if(name==new QualifiedName(new Name(".initStaticProperties")))
+            {
+                return new NativeAnalyzerMethod(InsetStaticPropertiesIntoMemoryModel);
             }
 
             if (wevercaImplementedFunctions.Keys.Contains(name))
@@ -286,6 +295,20 @@ namespace Weverca.Analysis
             }
             //doesnt exist
             return null;
+        }
+        public static List<string> indices;
+        public void InsetStaticPropertiesIntoMemoryModel(FlowController flow)
+        {
+            //todo replace with iterate array
+            var res=flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0));
+            foreach (string index in indices)
+            {
+                var mmValue=res.ReadIndex(flow.OutSet.Snapshot, new MemberIdentifier(index));
+                flow.OutSet.GetControlVariable(new VariableName(index)).WriteMemory(flow.OutSet.Snapshot,mmValue.ReadMemory(flow.OutSet.Snapshot));
+                
+
+            }
+
         }
     }
 

@@ -21,7 +21,7 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Lang element used for storing native analyzers in ProgramPointGraphs
     /// </summary>
-    public class NativeAnalyzer:LangElement
+    public class NativeAnalyzer : LangElement
     {
         /// <summary>
         /// Stored native analyzer
