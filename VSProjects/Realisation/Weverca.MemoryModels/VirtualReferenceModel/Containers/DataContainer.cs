@@ -19,6 +19,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
 
         internal bool DifferInCount { get { return _oldData.Count != _data.Count; } }
 
+        internal string Representation { get { return ToString(); } }
+
         internal DataContainer(Snapshot owner)
         {
             _owner = owner;
@@ -200,6 +202,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
 
         #endregion
 
+
+        public override string ToString()
+        {
+            var output = new StringBuilder();
+            foreach(var pair in _data){
+                output.AppendFormat("{0}: {{{1}}}\n",pair.Key,pair.Value);
+            }
+
+            return output.ToString();
+        }
 
     }
 }

@@ -128,9 +128,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var input = callerContext as Snapshot;
 
-            _globals.ExtendBy(input._globals);
-            _meta.ExtendBy(input._meta);
-            _globalControls.ExtendBy(input._globalControls);
+            _globals.ExtendBy(input._globals, true);
+            _meta.ExtendBy(input._meta, true);
+            _globalControls.ExtendBy(input._globalControls, true);
             _data.ExtendBy(input._data, true);
 
             if (thisObject != null)
@@ -153,11 +153,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             foreach (Snapshot input in inputs)
             {
                 //merge info from extending inputs
-                _globals.ExtendBy(input._globals);
-                _globalControls.ExtendBy(input._globalControls);
-                _locals.ExtendBy(input._locals);
-                _localControls.ExtendBy(input._localControls);
-                _meta.ExtendBy(input._meta);
+                _globals.ExtendBy(input._globals, isFirst);
+                _globalControls.ExtendBy(input._globalControls, isFirst);
+                _locals.ExtendBy(input._locals, isFirst);
+                _localControls.ExtendBy(input._localControls, isFirst);
+                _meta.ExtendBy(input._meta, isFirst);
 
                 _data.ExtendBy(input._data, isFirst);
 
@@ -173,9 +173,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             foreach (Snapshot callInput in callOutput)
             {
                 //Local variables are not extended
-                _globals.ExtendBy(callInput._globals);
-                _meta.ExtendBy(callInput._meta);
-                _globalControls.ExtendBy(callInput._globalControls);
+                _globals.ExtendBy(callInput._globals, isFirst);
+                _meta.ExtendBy(callInput._meta, isFirst);
+                _globalControls.ExtendBy(callInput._globalControls, isFirst);
 
                 _data.ExtendBy(callInput._data, isFirst);
                 isFirst = false;
@@ -269,8 +269,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         internal MemoryEntry ReadValue(VariableKey key)
         {
             var variable = getOrCreateInfo(key);
-         
-            return readValue(variable);
+
+            if (variable.References.Count == 0)
+            {
+                //implicit reference creation, because of possible cross call aliases
+                variable.References.Add(new VirtualReference(variable, key.ContextStamp));
+            }
+
+            var value = readValue(variable);
+            return value;
         }
 
         internal IEnumerable<VariableKey> IndexStorages(Value array, MemberIdentifier index)

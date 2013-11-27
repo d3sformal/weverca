@@ -221,10 +221,16 @@ namespace Weverca.AnalysisFramework.UnitTest
             var variable = outset.ReadVariable(new VariableIdentifier(variableName));
             var entry = variable.ReadMemory(outset.Snapshot);
 
+            foreach (var value in entry.PossibleValues)
+            {
+                if (value is UndefinedValue)
+                    Assert.Fail("Undefined value is not allowed for variable ${0} in {1}", variableName, entry);
+            }
+
             var actualValues = (from ScalarValue<T> value in entry.PossibleValues select value.Value).ToArray();
 
             if (message == null)
-                message = string.Format(" in variable ${0}", variableName);
+                message = string.Format(" in variable ${0} containing {1}", variableName, entry);
 
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
         }
@@ -436,6 +442,12 @@ namespace Weverca.AnalysisFramework.UnitTest
                 AnalysisTestUtils.AssertVariableWithUndefined<T>(output, VariableName, AssertMessage, expectedValues);
             });
             return this;
+        }
+
+        internal TestCase HasUndefinedAndValues<T>(params T[] expectedValues)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            return HasUndefinedValue().HasUndefinedOrValues(expectedValues);
         }
 
         internal TestCase IsXSSDirty()

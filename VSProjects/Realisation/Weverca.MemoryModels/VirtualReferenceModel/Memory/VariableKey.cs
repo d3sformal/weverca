@@ -60,5 +60,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 
             ContextStamp = contextStamp;
         }
+
+        public override string ToString()
+        {
+            return string.Format("{0}-{1}|{2}", Name, ContextStamp, Kind);
+        }
     }
 }

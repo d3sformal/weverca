@@ -60,7 +60,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override ReadWriteSnapshotEntryBase ResolveVariable(VariableIdentifier variable)
         {
-            return OutSet.GetVariable(variable);
+            var value = OutSet.GetVariable(variable);
+            return value;
         }
 
         public override IEnumerable<string> VariableNames(MemoryEntry value)
