@@ -55,7 +55,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public AssignCollector(Snapshot snapshot)
         {
             this.snapshot = snapshot;
-            creatorVisitor = new CreatorVisitor(snapshot);
+            creatorVisitor = new CreatorVisitor(snapshot, Global);
 
             AliasesProcessing = AliasesProcessing.AfterCollecting;
         }
@@ -306,6 +306,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private class CreatorVisitor : IPathSegmentVisitor
         {
             private Snapshot snapshot;
+            private GlobalContext global;
             public MemoryIndex CreatedIndex { get; private set; }
 
             public string Name { get; set; }
@@ -316,20 +317,40 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             public ObjectValue ObjectValue { get; set; }
 
-
-            public CreatorVisitor(Snapshot snapshot)
+            public CreatorVisitor(Snapshot snapshot, GlobalContext Global)
             {
                 this.snapshot = snapshot;
+                this.global = Global;
             }
 
             public void VisitVariable(VariablePathSegment variableSegment)
             {
-                CreatedIndex = snapshot.CreateVariable(Name);
+                switch (global)
+                {
+                    case GlobalContext.LocalOnly:
+                        CreatedIndex = snapshot.CreateVariable(Name);
+                        break;
+                    case GlobalContext.GlobalOnly:
+                        CreatedIndex = snapshot.CreateGlobalVariable(Name);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             public void VisitControl(ControlPathSegment controlPathSegment)
             {
-                CreatedIndex = snapshot.CreateControll(Name);
+                switch (global)
+                {
+                    case GlobalContext.LocalOnly:
+                        CreatedIndex = snapshot.CreateControll(Name);
+                        break;
+                    case GlobalContext.GlobalOnly:
+                        CreatedIndex = snapshot.CreateGlobalControll(Name);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             public void VisitField(FieldPathSegment fieldSegment)

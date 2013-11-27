@@ -524,6 +524,30 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return ctrlIndex;
         }
 
+        internal MemoryIndex CreateGlobalVariable(string variableName)
+        {
+            MemoryIndex variableIndex = VariableIndex.Create(variableName, GLOBAL_CALL_LEVEL);
+
+            memoryIndexes.Add(variableIndex);
+            Variables.Global.Indexes.Add(variableName, variableIndex);
+
+            CopyMemory(Variables.Global.UnknownIndex, variableIndex, false);
+
+            return variableIndex;
+        }
+
+        internal MemoryIndex CreateGlobalControll(string variableName)
+        {
+            MemoryIndex ctrlIndex = ControlIndex.Create(variableName, CallLevel);
+
+            memoryIndexes.Add(ctrlIndex);
+            ContolVariables.Global.Indexes.Add(variableName, ctrlIndex);
+
+            CopyMemory(Variables.Global.UnknownIndex, ctrlIndex, false);
+
+            return ctrlIndex;
+        }
+
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
         {
             ObjectValue value = this.CreateObject(null);
