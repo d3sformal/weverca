@@ -65,9 +65,9 @@ $VarA=&$VarB;
 ".AssertVariable("VarA").HasValues("ValueB");
 
         /// <summary>
-        /// This is virtual reference model specific test
+        /// This is virtual reference memory model specific test
         /// </summary>
-        readonly static TestCase MayAliasAssign_CASE = @"
+        readonly static TestCase MayAliasAssignVirtualRefMM_CASE = @"
 $VarA='ValueA';
 $VarB='ValueB';
 $VarC='ValueC';
@@ -79,7 +79,26 @@ if($unknown){
 $VarA='Assigned';
 ".AssertVariable("VarA").HasValues("ValueB", "ValueC", "Assigned")
  .AssertVariable("VarB").HasValues("ValueB", "Assigned")
- .AssertVariable("VarC").HasValues("ValueC", "Assigned");
+ .AssertVariable("VarC").HasValues("ValueC", "Assigned").
+ MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
+
+        /// <summary>
+        /// This is copy memory model specific test
+        /// </summary>
+        readonly static TestCase MayAliasAssignCopyMM_CASE = @"
+$VarA='ValueA';
+$VarB='ValueB';
+$VarC='ValueC';
+if($unknown){
+    $VarA=&$VarB;
+}else{
+    $VarA=&$VarC;
+}
+$VarA='Assigned';
+".AssertVariable("VarA").HasValues("Assigned")
+ .AssertVariable("VarB").HasValues("ValueB", "Assigned")
+ .AssertVariable("VarC").HasValues("ValueC", "Assigned").
+ MemoryModel(MemoryModels.MemoryModels.CopyMM);
 
         readonly static TestCase EqualsAssumption_CASE = @"
 $Var='init';
@@ -527,29 +546,6 @@ $resultB = $resultG[2];
 
  .ShareFunctionGraph("sharedFn");
 
-
-
-        readonly static TestCase SharedFunctionStrongUpdateLocal_CASE = @"
-function sharedFn($arg){
-    return $arg;
-}
-
-function local_wrap() {
-    $a = 'InitA';
-    $b = 'InitB';
-    $a=sharedFn('ValueA');
-    $b=sharedFn('ValueB');
-    return $a;
-}
-
-$result = local_wrap();
-"
-            //InitA because of merging contexts as in SharedFunctionAliasing2
- .AssertVariable("result").HasValues("InitA", "ValueA", "ValueB")
-
- .ShareFunctionGraph("sharedFn")
- ;
-
         readonly static TestCase SharedFunctionStrongUpdateGlobal_CASE = @"
 function sharedFn($arg){
     return $arg;
@@ -703,6 +699,35 @@ function sharedFn($arg, $arg2){
 }
 
 function local_wrap() {
+    $a = 'initA';
+    $b = 'initB';
+    sharedFn(&$a, 'fromCallSite1');
+    sharedFn(&$b, 'fromCallSite2');
+
+    $res[1] = $a;
+    $res[2] = $b;
+    return $res;
+}
+
+$result = local_wrap();
+$a = $result[1];
+$b = $result[2];
+
+
+"
+.AssertVariable("a").HasValues("initA", "fromCallSite1", "fromCallSite2")
+            //undefined because of weak update as in SharedFunctionAliasing
+.AssertVariable("b").HasValues("initB", "fromCallSite1", "fromCallSite2")
+.ShareFunctionGraph("sharedFn")
+ ;
+
+        // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
+        readonly static TestCase SharedFunctionAliasingTwoArgumentsUndef_CASE = @"
+function sharedFn($arg, $arg2){
+    $arg = $arg2;
+}
+
+function local_wrap() {
     sharedFn(&$a, 'fromCallSite1');
     sharedFn(&$b, 'fromCallSite2');
 
@@ -745,8 +770,8 @@ $b = $result[2];
 $c=  $result[3];
 "
 .AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
-.AssertVariable("b").HasValues("fromCallSite1", "fromCallSite2")
-.AssertVariable("c").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("b").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("c").HasValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
  ;
 
@@ -994,9 +1019,15 @@ while($i<1000){
 
 
         [TestMethod]
-        public void MayAliasAssign()
+        public void MayAliasAssignVirtualRefMM()
         {
-            AnalysisTestUtils.RunTestCase(MayAliasAssign_CASE);
+            AnalysisTestUtils.RunTestCase(MayAliasAssignVirtualRefMM_CASE);
+        }
+
+        [TestMethod]
+        public void MayAliasAssignCopyMM()
+        {
+            AnalysisTestUtils.RunTestCase(MayAliasAssignCopyMM_CASE);
         }
 
         [TestMethod]
@@ -1192,12 +1223,6 @@ while($i<1000){
         }
 
         [TestMethod]
-        public void SharedFunctionStrongUpdateLocal()
-        {
-            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateLocal_CASE);
-        }
-
-        [TestMethod]
         public void SharedFunctionStrongUpdateGlobal()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateGlobal_CASE);
@@ -1237,6 +1262,12 @@ while($i<1000){
         public void SharedFunctionAliasingTwoArguments()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingTwoArguments_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasingTwoArgumentsUndef()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasingTwoArgumentsUndef_CASE);
         }
 
         [TestMethod]

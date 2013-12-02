@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core;
 
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
 using Weverca.Parsers;
 
 namespace Weverca.AnalysisFramework.UnitTest
@@ -73,6 +74,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         protected override Expressions.FunctionResolverBase createFunctionResolver()
         {
             return new WevercaFunctionResolverTest(_envinronmentInitializer);
+        }
+        protected override FlowResolverBase createFlowResolver()
+        {
+            return new Weverca.Analysis.FlowResolver.FlowResolver();
+            //return new SimpleFlowResolver();
         }
 
         public void SetWideningLimit(int limit)
@@ -326,7 +332,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
-        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM };
+        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM};
         private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis };
 
         /// <summary>

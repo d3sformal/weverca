@@ -13,7 +13,7 @@ namespace Weverca.Analysis.FlowResolver
     /// This class is used for evaluating conditions and assumptions.
     /// According to the result of the assumption the environment inside of the code block is set up.
     /// </summary>
-    class FlowResolver : FlowResolverBase
+    public class FlowResolver : FlowResolverBase
     {
         #region FlowResolverBase overrides
 
