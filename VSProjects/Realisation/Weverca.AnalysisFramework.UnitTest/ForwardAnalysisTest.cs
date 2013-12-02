@@ -509,6 +509,21 @@ setLocal();
 
 ".AssertVariable("a").HasValues("ValueA");
 
+/// <summary>
+/// Tests for cases where the program points of a function are shared among different calls of such function.
+/// This is used to implement context-insensitivity of functions.
+/// 
+/// 
+/// Note that virtual reference memory model propagates also local data (not local variables, just data) 
+/// of caller function to called function and thus merges also local contexts. This is done to implement
+/// propagating of changes to local variables of caller that are aliased with arguments of called function.
+/// 
+/// TODO: test correct work with arrays and objects.
+/// Arrays, objects passed as parameters, indices of arrays, objects passed as parameters, objects in global / local context.
+/// 
+/// </summary>
+/// 
+#region Shared functions
         readonly static TestCase SharedFunction_CASE = @"
 function sharedFn($arg){
     return $arg;
@@ -522,7 +537,98 @@ $resultA=sharedFn(2);
  .ShareFunctionGraph("sharedFn")
  ;
 
-        readonly static TestCase SharedFunctionStrongUpdate_CASE = @"
+
+
+    /// <summary>
+    /// If a function is shared, global context and parameters passed by all callers are merged and the function
+    /// works with this merged context. Consequently, this can lead to weak updates of global variables.
+    /// </summary>
+    #region Shared functions merging global context
+        readonly static TestCase SharedFunctionGlobalVariable_CASE = @"
+function sharedFn(){
+    global $g;
+    return $g;
+}
+
+$g = 1;
+sharedFn();
+$g = 2;
+$result = sharedFn();
+
+"
+ .AssertVariable("result").HasValues(1, 2)
+ .ShareFunctionGraph("sharedFn")
+ ;
+
+        readonly static TestCase SharedFunctionStrongUpdateGlobal_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+$resultA = 'InitA';
+$resultB = 'InitB';
+$resultA=sharedFn('ValueA');
+$resultB=sharedFn('ValueB');
+
+"
+// NOTE: Shared graphs cannot distinct between global contexts in places where theire called
+            // so the second sharedFn call in second iteration will merge these global contexts 
+            // {resultA: 'InitA', resultB: 'InitB'} {resultA: 'ValueA','ValueB', resultB: 'ValueA','ValueB'}
+            // after the merge, resultB assign is processed.
+            // .AssertVariable("resultA").HasValues("ValueA", "ValueB") This is incorrect because of global contexts cannot be distinguished
+.AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+.AssertVariable("resultB").HasValues("ValueA", "ValueB")
+.ShareFunctionGraph("sharedFn")
+;
+
+        readonly static TestCase SharedFunctionStrongUpdateGlobalUndef_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+$resultA=sharedFn('ValueA');
+$resultB=sharedFn('ValueB');
+
+"
+.AssertVariable("resultA").HasUndefinedAndValues("ValueA", "ValueB")
+.AssertVariable("resultB").HasValues("ValueA", "ValueB")
+.ShareFunctionGraph("sharedFn")
+;
+
+        readonly static TestCase SharedFunctionWithBranchingGlobal_CASE = @"
+function sharedFn($arg){
+    return $arg;
+}
+
+$resultA = 'InitA';
+$resultB = 'InitB';
+if($unknown){
+    $resultA=sharedFn('ValueA');
+}else{
+    $resultB=sharedFn('ValueB');
+}
+
+"
+         .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+         .AssertVariable("resultB").HasValues("InitB", "ValueA", "ValueB")
+         .ShareFunctionGraph("sharedFn")
+         ;
+    #endregion
+
+    /// <summary>
+    /// If a function is shared, local contexts do not need to be merged.
+    /// 
+    /// However, virtual reference memory model propagates also local data (not local variables, just data) 
+    /// of caller function to called function and thus merges also local contexts. This is done to implement
+    /// propagating of changes to local variables of caller that are aliased with arguments of called function.
+    /// Note that this is not case of undefined value - undefined value is not propagated.
+    /// to local variables.
+    /// 
+    /// TODO: tests for CopyMM
+    /// </summary>
+    #region Shared functions merging local context
+        // Illustrates propagating local data to functions in VirtualReferenceMM
+        readonly static TestCase SharedFunctionStrongUpdateLocal_CASE = @"
 function sharedFn($arg){
     return $arg;
 }
@@ -544,68 +650,99 @@ $resultB = $resultG[2];
 
 "
             //initA because of merging contexts on memory representation level in Virtual Reference model
- .AssertVariable("resultA").HasValues("InitA","ValueA", "ValueB")
- .AssertVariable("resultB").HasValues("ValueA", "ValueB")
-
- .ShareFunctionGraph("sharedFn");
-
-        readonly static TestCase SharedFunctionStrongUpdateGlobal_CASE = @"
-function sharedFn($arg){
-    return $arg;
-}
-
-$resultA = 'InitA';
-$resultB = 'InitB';
-$resultA=sharedFn('ValueA');
-$resultB=sharedFn('ValueB');
-
-"
-
-// NOTE: Shared graphs cannot distinct between global contexts in places where theire called
-            // so the second sharedFn call in second iteration will merge these global contexts 
-            // {resultA: 'InitA', resultB: 'InitB'} {resultA: 'ValueA','ValueB', resultB: 'ValueA','ValueB'}
-            // after the merge, resultB assign is processed.
-            // .AssertVariable("resultA").HasValues("ValueA", "ValueB") This is incorrect because of global contexts cannot be distinguished
  .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
  .AssertVariable("resultB").HasValues("ValueA", "ValueB")
  .ShareFunctionGraph("sharedFn")
- ;
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
-        readonly static TestCase SharedFunctionWithBranching_CASE = @"
+        // Illustrates not propagating undefined value in VirtualReferenceMM
+        readonly static TestCase SharedFunctionStrongUpdateLocalUndef_CASE = @"
 function sharedFn($arg){
     return $arg;
 }
 
-$resultA = 'InitA';
-$resultB = 'InitB';
-if($unknown){
-    $resultA=sharedFn('ValueA');
-}else{
-    $resultB=sharedFn('ValueB');
+function local_wrap() {
+    $a=sharedFn('ValueA');    
+    $b=sharedFn('ValueB');
+
+    $result[1]=$a;
+    $result[2]=$b;
+    return $result;
 }
 
+$resultG = local_wrap();
+$resultA = $resultG[1];
+$resultB = $resultG[2];
+
 "
-         .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
-         .AssertVariable("resultB").HasValues("InitB", "ValueA", "ValueB")
-         .ShareFunctionGraph("sharedFn")
+            //undef is not present because of optimalization in Virtual reference model
+ .AssertVariable("resultA").HasValues("ValueA", "ValueB")
+ .AssertVariable("resultB").HasValues("ValueA", "ValueB")
+ .ShareFunctionGraph("sharedFn")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
+
+    #endregion
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    #region Shared functions aliasing global context
+        readonly static TestCase SharedFunctionAliasingGlobal_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
+}
+
+$a = 'initA';
+$b = 'initB';
+sharedFn(&$a);
+sharedFn(&$b);
+"
+        .AssertVariable("a").HasValues("initA", "fromSharedFunc")
+            //b has undefined value because weak update must be performed
+        .AssertVariable("b").HasValues("initB", "fromSharedFunc")
+
+        .ShareFunctionGraph("sharedFn")
          ;
 
-        readonly static TestCase SharedFunctionGlobalVariable_CASE = @"
-function sharedFn(){
-    global $g;
-    return $g;
+        readonly static TestCase SharedFunctionAliasingGlobalUndef_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
 }
 
-$g = 1;
-sharedFn();
-$g = 2;
-$result = sharedFn();
-
+sharedFn(&$a);
+sharedFn(&$b);
 "
- .AssertVariable("result").HasValues(1, 2)
- .ShareFunctionGraph("sharedFn")
- ;
+            //There is no undefined value in $a because of optimalization of virtual reference model
+        .AssertVariable("a").HasValues("fromSharedFunc")
+            //b has undefined value because weak update must be performed
+        .AssertVariable("b").HasUndefinedAndValues("fromSharedFunc")
 
+        .ShareFunctionGraph("sharedFn")
+         ;
+
+        readonly static TestCase SharedFunctionAliasingGlobal2_CASE = @"
+function sharedFn($arg){
+    $arg = 'fromSharedFunc';
+}
+
+$a = 'initA';
+$b = 'initB';
+sharedFn(&$a);
+sharedFn(&$b);
+"
+            //initA because of merging contexts as in SharedFunctionAliasing2
+.AssertVariable("a").HasValues("initA", "fromSharedFunc")
+
+//undefined because of weak update as in SharedFunctionAliasing
+.AssertVariable("b").HasValues("initB", "fromSharedFunc")
+.ShareFunctionGraph("sharedFn")
+ ;
+    #endregion
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    #region Shared functions aliasing local context
         readonly static TestCase SharedFunctionAliasing_CASE = @"
 function sharedFn($arg){
     $arg = 'fromSharedFunc';
@@ -632,39 +769,8 @@ $b = $result[2];
 .ShareFunctionGraph("sharedFn")
  ;
 
-        readonly static TestCase SharedFunctionAliasingGlobal_CASE = @"
-function sharedFn($arg){
-    $arg = 'fromSharedFunc';
-}
 
-sharedFn(&$a);
-sharedFn(&$b);
-"
-            //There is no undefined value in $a because after weak update of $a in second call, 
-            //both possible values are same - so theire merged
-.AssertVariable("a").HasValues("fromSharedFunc")
-            //b has undefined value because of same reason as in SharedFunctionAliasing
-.AssertVariable("b").HasUndefinedAndValues("fromSharedFunc")
 
-.ShareFunctionGraph("sharedFn")
- ;
-        readonly static TestCase SharedFunctionAliasingGlobal2_CASE = @"
-function sharedFn($arg){
-    $arg = 'fromSharedFunc';
-}
-
-$a = 'initA';
-$b = 'initB';
-sharedFn(&$a);
-sharedFn(&$b);
-"
-            //initA because of merging contexts as in SharedFunctionAliasing2
-.AssertVariable("a").HasValues("initA", "fromSharedFunc")
-
-//undefined because of weak update as in SharedFunctionAliasing
-.AssertVariable("b").HasValues("initB", "fromSharedFunc")
-.ShareFunctionGraph("sharedFn")
- ;
 
         // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
         readonly static TestCase SharedFunctionAliasing2_CASE = @"
@@ -777,6 +883,12 @@ $c=  $result[3];
 .AssertVariable("c").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
  ;
+
+    #endregion
+
+#endregion
+
+        
 
         readonly static TestCase WriteArgument_CASE = @"
 $argument=""Value"";
@@ -965,6 +1077,27 @@ while($i<1000){
  .WideningLimit(20)
 ;
 
+        readonly static TestCase FunctionTest_CASE = @"
+function f($arg) {
+    $b = 3;
+    g(2);
+    return $b;    
+}
+
+function g($arg2) {
+    $b = 4;
+}
+
+$a = 2;
+$a = f(1);
+".AssertVariable("a").HasValues(3)
+;
+
+        [TestMethod]
+        public void FunctionTest()
+        {
+            AnalysisTestUtils.RunTestCase(FunctionTest_CASE);
+        }
 
         [TestMethod]
         public void BranchMerge()
@@ -1208,9 +1341,9 @@ while($i<1000){
         }
 
         [TestMethod]
-        public void SharedFunctionWithBranching()
+        public void SharedFunctionWithBranchingGlobal()
         {
-            AnalysisTestUtils.RunTestCase(SharedFunctionWithBranching_CASE);
+            AnalysisTestUtils.RunTestCase(SharedFunctionWithBranchingGlobal_CASE);
         }
 
         [TestMethod]
@@ -1220,15 +1353,27 @@ while($i<1000){
         }
 
         [TestMethod]
-        public void SharedFunctionStrongUpdate()
+        public void SharedFunctionStrongUpdateLocal()
         {
-            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdate_CASE);
+            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateLocal_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionStrongUpdateLocalUndef()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateLocalUndef_CASE);
         }
 
         [TestMethod]
         public void SharedFunctionStrongUpdateGlobal()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateGlobal_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionStrongUpdateGlobaUndef()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateGlobalUndef_CASE);
         }
 
         [TestMethod]
@@ -1247,6 +1392,12 @@ while($i<1000){
         public void SharedFunctionAliasingGlobal()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingGlobal_CASE);
+        }
+
+        [TestMethod]
+        public void SharedFunctionAliasingGlobalUndef()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionAliasingGlobalUndef_CASE);
         }
 
         [TestMethod]
