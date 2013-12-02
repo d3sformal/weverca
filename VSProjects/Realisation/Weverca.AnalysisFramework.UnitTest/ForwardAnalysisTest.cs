@@ -528,10 +528,13 @@ function sharedFn($arg){
 }
 
 function local_wrap() {
-    $result[1] = 'InitA';
-    $result[2] = 'InitB';
-    $result[1]=sharedFn('ValueA');
-    $result[2]=sharedFn('ValueB');
+    $a = 'InitA';
+    $b = 'InitB';
+    $a=sharedFn('ValueA');    
+    $b=sharedFn('ValueB');
+
+    $result[1]=$a;
+    $result[2]=$b;
     return $result;
 }
 
@@ -540,8 +543,8 @@ $resultA = $resultG[1];
 $resultB = $resultG[2];
 
 "
-            //initA because of merging contexts as in SharedFunctionAliasing2
- .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+            //initA because of merging contexts on memory representation level in Virtual Reference model
+ .AssertVariable("resultA").HasValues("InitA","ValueA", "ValueB")
  .AssertVariable("resultB").HasValues("ValueA", "ValueB")
 
  .ShareFunctionGraph("sharedFn");
@@ -771,7 +774,7 @@ $c=  $result[3];
 "
 .AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("b").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
-.AssertVariable("c").HasValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("c").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
  ;
 

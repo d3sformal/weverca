@@ -150,7 +150,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
 
         #region Extension handling (TODO needs refactoring)
 
-        internal void ExtendBy(VariableContainer variableContainer,bool directExtend)
+        internal void ExtendBy(VariableContainer variableContainer, bool directExtend)
         {
             foreach (var varPair in variableContainer._variables)
             {
@@ -167,13 +167,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                     }
                     else
                     {
-                        var clone= varPair.Value.Clone();
-             /*           if (!directExtend)                        
+                        var clone = varPair.Value.Clone();
+                        if (!directExtend)
                         {
                             //undefined branch
-                            clone.References.Add(new VirtualReference(clone, _owner.CurrentContextStamp));
+                            var reference = new VirtualReference(clone, _owner.CurrentContextStamp);
+
+                            if (!clone.References.Contains(reference))
+                                clone.References.Add(reference);
                         }
-                        */
+
                         _variables[varPair.Key] = clone;
                     }
                 }

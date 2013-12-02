@@ -149,20 +149,27 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             RemoveFlowChild(Graph.Start);
         }
 
-        protected override void flowThrough()
+        protected override void extendInput()
         {
+            _inSet.StartTransaction();
+
             if (Type == ExtensionType.ParallelCall)
             {
-                OutSet.ExtendAsCall(Caller.OutSet, Flow.CalledObject, Flow.Arguments);
+                _inSet.ExtendAsCall(Caller.OutSet, Flow.CalledObject, Flow.Arguments);
             }
             else
             {
-                OutSet.Extend(Caller.OutSet);
+                _inSet.Extend(Caller.OutSet);
             }
 
+            _inSet.CommitTransaction();
+        }
+
+
+        protected override void flowThrough()
+        {
             if (Flow.Arguments == null)
                 Flow.Arguments = new MemoryEntry[0];
-
 
             Services.FunctionResolver.InitializeCall(Graph, Flow.Arguments);
         }
@@ -187,24 +194,30 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             OwningExtension = owningExtension;
         }
 
+        protected override void extendInput()
+        {
+            _inSet.StartTransaction();
+            _inSet.Extend(OwningExtension.Owner.OutSet);
+            Services.FlowResolver.CallDispatchMerge(_inSet, OwningExtension.Branches);
+            _inSet.CommitTransaction();
+        }
+
         protected override void flowThrough()
         {
-            Services.FlowResolver.CallDispatchMerge(OutSet, OwningExtension.Branches);
-
             var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
             Value = OutSet.CreateSnapshotEntry(returnValue);
         }
 
-        /// <summary>
-        /// Input for sink is pre call set of owner - it cause merging caller context with call context
-        /// </summary>
-        protected override void extendInput()
-        {
-            _inSet.StartTransaction();
-            //skip outset because of it belongs into call context
-            _inSet.Extend(OwningExtension.Owner.InSet);
-            _inSet.CommitTransaction();
-        }
+        /*     /// <summary>
+             /// Input for sink is pre call set of owner - it cause merging caller context with call context
+             /// </summary>
+             protected override void extendInput()
+             {
+                 _inSet.StartTransaction();
+                 //skip outset because of it belongs into call context
+                 _inSet.Extend(OwningExtension.Owner.InSet);
+                 _inSet.CommitTransaction();
+             }*/
     }
 
     /// <summary>
