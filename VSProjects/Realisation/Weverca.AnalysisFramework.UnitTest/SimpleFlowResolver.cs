@@ -287,7 +287,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             if (lValue != null && value != null)
             {
-                lValue.WriteMemory(_outSet.Snapshot, value);
+                lValue.WriteMemory(_outSet.Snapshot, value, true);
             }
         }
 

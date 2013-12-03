@@ -13,14 +13,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
     {
         internal readonly MemoryEntry WrappedEntry;
 
-        internal bool IsWeak { get { return WrappedEntry.Count > 1; } }
+        internal bool ForceStrong { get { return WrappedEntry.Count > 1; } }
 
         internal SnapshotMemoryEntry(MemoryEntry wrappedEntry)
         {
             WrappedEntry = wrappedEntry;
         }
 
-        protected override void writeMemory(SnapshotBase context, MemoryEntry value)
+        protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             throw new NotImplementedException();
         }
@@ -69,7 +69,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                 }
             }
 
-            return new SnapshotStorageEntry(null, IsWeak, allKeys.ToArray());
+            return new SnapshotStorageEntry(null, ForceStrong, allKeys.ToArray());
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context,
@@ -96,7 +96,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                 }
             }
 
-            return new SnapshotStorageEntry(null, IsWeak, allKeys.ToArray());
+            return new SnapshotStorageEntry(null, ForceStrong, allKeys.ToArray());
         }
 
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)

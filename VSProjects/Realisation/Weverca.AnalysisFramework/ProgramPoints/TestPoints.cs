@@ -69,7 +69,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             memory = entry;
         }
 
-        protected override void writeMemory(SnapshotBase context, MemoryEntry value)
+        protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             throw new NotImplementedException();
         }

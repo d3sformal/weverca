@@ -96,7 +96,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Update
 
-        protected override void writeMemory(SnapshotBase context, MemoryEntry value)
+        protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             Snapshot snapshot = ToSnapshot(context);
 

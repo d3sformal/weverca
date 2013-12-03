@@ -27,8 +27,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             _context = context;
             _index = index;
             var indexedValues = indexedEntry.ReadMemory(context);
+
+            var hasOnlyArrays = true;
             foreach (var indexedValue in indexedValues.PossibleValues)
             {
+                if (!(indexedValue is AssociativeArray))
+                    hasOnlyArrays = false;
+
                 indexedValue.Accept(this);
             }
 
@@ -36,7 +41,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                 //TODO replace only undefined values
                 indexedEntry.WriteMemory(context, new MemoryEntry(implicitArray));
 
-            IndexedValue = new SnapshotStorageEntry(null, indexedEntry.IsWeak, _indexStorages.ToArray());
+            var forceStrong = indexedEntry.ForceStrong;
+
+            if (hasOnlyArrays && indexedEntry.HasDirectIdentifier && index.IsDirect)
+                forceStrong = true;
+
+            IndexedValue = new SnapshotStorageEntry(null, forceStrong, _indexStorages.ToArray());
         }
 
         public override void VisitValue(Value value)

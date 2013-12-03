@@ -1201,7 +1201,7 @@ namespace Weverca.Analysis
 
                 var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
 
-                if (callParam.PublicAmpersand)
+                if (callParam.PublicAmpersand || param.PassedByRef)
                 {
                     argumentVar.SetAliases(callInput.Snapshot, enumerator.Current.Value);
                 }

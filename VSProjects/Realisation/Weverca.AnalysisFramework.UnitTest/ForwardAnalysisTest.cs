@@ -124,8 +124,8 @@ if($$Var==$Value){
     $OutputA=$VarA;
     $OutputB=$VarB;
 }
-".AssertVariable("OutputA").HasUndefinedOrValues("Value1", "Value2")
- .AssertVariable("OutputB").HasUndefinedOrValues("Value1", "Value2")
+".AssertVariable("OutputA").HasUndefinedAndValues("Value1", "Value2")
+ .AssertVariable("OutputB").HasUndefinedAndValues("Value1", "Value2")
  .SetNonDeterministic("VarA", "VarB");
 
         readonly static TestCase CallEqualsAssumption_CASE = @"
@@ -276,9 +276,10 @@ if ($unknown) {
 $obj->field = 'newValue';
 $FieldValue = $obj->field;
 "
-            // .AssertVariable("FieldValue").HasValues("value", "newValue")
+            //virtual reference model doesnt support write read semantics
+            .AssertVariable("FieldValue").HasValues("value", "newValue")
             // more precise implementation would perform strong update:
-            .AssertVariable("FieldValue").HasValues("newValue")
+            //.AssertVariable("FieldValue").HasValues("newValue")
             ;
 
         readonly static TestCase ObjectMultipleObjectsInVariableMultipleVariablesWeakWrite_CASE = @"

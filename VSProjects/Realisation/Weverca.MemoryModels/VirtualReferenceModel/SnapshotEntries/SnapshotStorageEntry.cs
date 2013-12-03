@@ -20,19 +20,22 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         /// </summary>
         private readonly VariableIdentifier _identifier;
 
-        internal readonly bool IsWeak;
+        internal readonly bool ForceStrong;
 
-        internal SnapshotStorageEntry(VariableIdentifier identifier, bool weak, params VariableKey[] storage)
+        internal bool HasDirectIdentifier { get { return _identifier != null && _identifier.IsDirect; } }
+
+        internal SnapshotStorageEntry(VariableIdentifier identifier, bool forceStrong, params VariableKey[] storage)
         {
             _identifier = identifier;
             _storages = storage;
-            IsWeak = weak;
+            ForceStrong = forceStrong;
         }
 
-        protected override void writeMemory(SnapshotBase context, MemoryEntry value)
+        protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            //TODO resolve weak updates more precisely
-            C(context).Write(_storages, value, IsWeak);
+            forceStrongWrite |= ForceStrong;
+
+            C(context).Write(_storages, value, forceStrongWrite);
         }
 
         protected override bool isDefined(SnapshotBase context)
@@ -86,6 +89,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
             var snapshot = C(context);
+                    
             var indexVisitor = new IndexStorageVisitor(this, snapshot, index);
 
             return indexVisitor.IndexedValue;
@@ -96,7 +100,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var snapshot = C(context);
             var fieldVisitor = new FieldStorageVisitor(this, snapshot, field);
 
-            return new SnapshotStorageEntry(null, fieldVisitor.IsWeak, fieldVisitor.Storages);
+            var forceStrong = false;
+            if (HasDirectIdentifier && _identifier.DirectName == "this")
+                forceStrong = true;
+
+            return new SnapshotStorageEntry(null, forceStrong, fieldVisitor.Storages);
         }
 
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)

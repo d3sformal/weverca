@@ -247,8 +247,21 @@ namespace Weverca.AnalysisFramework.UnitTest
             var variable = outset.ReadVariable(new VariableIdentifier(variableName));
             var entry = variable.ReadMemory(outset.Snapshot);
 
-            //filter undefined values
-            var actualValues = (from value in entry.PossibleValues where !(value is UndefinedValue) select ((ScalarValue<T>)value).Value).ToArray();
+
+            var actualValues = new List<T>();
+            foreach (var value in entry.PossibleValues) {
+                //filter undefined values
+                if (value is UndefinedValue)
+                    continue;
+
+                if (!(value is ScalarValue<T>))
+                    Assert.Fail("Cannot convert {0} to {1} for variable ${2} in {3}. {4}", value, typeof(T), variableName, entry, message);
+
+                actualValues.Add((value as ScalarValue<T>).Value);
+            }
+
+            if (message == null)
+                message = string.Format(" in variable ${0} containing {1}", variableName, entry);
 
             CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
         }

@@ -197,7 +197,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 storages.Add(key);
             }
 
-            return new SnapshotStorageEntry(variable, !variable.IsDirect, storages.ToArray());
+            return new SnapshotStorageEntry(variable, false, storages.ToArray());
         }
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
@@ -219,27 +219,41 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region API for Snapshot entries
 
-        internal void Write(VariableKey[] storages, MemoryEntry value, bool weak)
+        internal void Write(VariableKey[] storages, MemoryEntry value, bool forceStrongWrite)
         {
+            var references = new List<VirtualReference>();
+
             foreach (var storage in storages)
             {
                 //translation because of memory model cross-contexts
                 var variable = getOrCreateInfo(storage);
 
-                /*      if (weak)
-                      {
-                          //weak update
-                          var oldValue = readValue(variable);
-
-                          REPORT(Statistic.MemoryEntryMerges);
-                          var merged = MemoryEntry.Merge(oldValue, value);
-                          assign(variable, merged);
-                      }
-                      else*/
+                if (variable.References.Count == 0)
                 {
-                    assign(variable, value);
+                    //reserve new virtual reference for assigning
+                    var allocatedReference = new VirtualReference(variable.Name, variable.Kind, storage.ContextStamp);
+                    variable.References.Add(allocatedReference);
+                }
+
+                foreach (var reference in variable.References)
+                {
+                    if (references.Contains(reference))
+                        continue;
+
+                    if (forceStrongWrite)
+                        setEntry(reference, value);
+
+                    references.Add(reference);
                 }
             }
+
+            if (forceStrongWrite)
+            {
+                //references has already been set while collecting references
+                return;
+            }
+
+            assign(references, value);
         }
 
         internal IEnumerable<ReferenceAliasEntry> Aliases(VariableKey[] storages)
@@ -429,6 +443,23 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     info.References.Add(allocatedReference);
 
                     setEntry(allocatedReference, entry);
+                    break;
+                case 1:
+                    setEntry(references[0], entry);
+                    break;
+
+                default:
+                    weakUpdate(references, entry);
+                    break;
+            }
+        }
+
+        private void assign(List<VirtualReference> references, MemoryEntry entry)
+        {
+            switch (references.Count)
+            {
+                case 0:
+                    //there is no place where to set the value
                     break;
                 case 1:
                     setEntry(references[0], entry);

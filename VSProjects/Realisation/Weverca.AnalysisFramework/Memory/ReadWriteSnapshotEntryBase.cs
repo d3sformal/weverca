@@ -17,7 +17,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="value">Written value</param>
         /// <param name="context">Context snapshot where operation is proceeded</param>
-        protected abstract void writeMemory(SnapshotBase context, MemoryEntry value);
+        /// <param name="forceStrongWrite">Determine that current write should be processed as strong</param>
+        protected abstract void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite);
 
         /// <summary>
         /// Set aliases to current snapshot entry. Aliases can be set even to those entries
@@ -32,10 +33,11 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="value">Written value</param>
         /// <param name="context">Context snapshot where operation is proceeded</param>
-        public void WriteMemory(SnapshotBase context, MemoryEntry value)
+        /// <param name="forceStrongWrite">Determine that current write should be processed as strong</param>
+        public void WriteMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite = false)
         {
             //TODO statistics reporting
-            writeMemory(context, value);
+            writeMemory(context, value, forceStrongWrite);
         }
 
         /// <summary>
