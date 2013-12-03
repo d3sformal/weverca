@@ -1424,7 +1424,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var standardClassType = outset.ResolveType(standardClass);
             var enumerator = standardClassType.GetEnumerator();
             enumerator.MoveNext();
-            return outset.CreateObject(enumerator.Current as TypeValueBase);
+            return outset.CreateObject(enumerator.Current as TypeValue);
         }
 
         private static ReadSnapshotEntryBase GetSnapshotEntry(FlowOutputSet outset, Value value)

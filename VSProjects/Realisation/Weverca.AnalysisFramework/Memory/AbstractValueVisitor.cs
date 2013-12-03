@@ -284,7 +284,7 @@ namespace Weverca.AnalysisFramework.Memory
         #region Type values
 
         /// <inheritdoc />
-        public virtual void VisitTypeValue(TypeValueBase value)
+        public virtual void VisitTypeValue(TypeValue value)
         {
             VisitValue(value);
         }

@@ -47,7 +47,7 @@ namespace Weverca.MemoryModels.MemoryModel
         /// <value>
         /// The types.
         /// </value>
-        public ReadOnlyCollection<TypeValueBase> Types { get; private set; }
+        public ReadOnlyCollection<TypeValue> Types { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class from the builder object.
@@ -58,20 +58,20 @@ namespace Weverca.MemoryModels.MemoryModel
             Fields = new ReadOnlyDictionary<ContainerIndex, MemoryIndex>(objectDescriptorBuilder.Fields);
             MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences);
             MayReferences = new ReadOnlyCollection<ObjectValue>(objectDescriptorBuilder.MayReferences);
-            Types = new ReadOnlyCollection<TypeValueBase>(objectDescriptorBuilder.Types);
+            Types = new ReadOnlyCollection<TypeValue>(objectDescriptorBuilder.Types);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class.
         /// </summary>
         /// <param name="type">The type of object.</param>
-        public ObjectDescriptor(TypeValueBase type)
+        public ObjectDescriptor(TypeValue type)
         {
             Fields = new ReadOnlyDictionary<ContainerIndex, MemoryIndex>(new Dictionary<ContainerIndex, MemoryIndex>());
 
             MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             MayReferences = new ReadOnlyCollection<ObjectValue>(new List<ObjectValue>());
-            Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
+            Types = new ReadOnlyCollection<TypeValue>(new List<TypeValue>() { type });
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Weverca.MemoryModels.MemoryModel
         /// <value>
         /// The types.
         /// </value>
-        public List<TypeValueBase> Types { get; private set; }
+        public List<TypeValue> Types { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectDescriptorBuilder"/> class from the given object descriptor.
@@ -130,7 +130,7 @@ namespace Weverca.MemoryModels.MemoryModel
             Fields = new Dictionary<ContainerIndex, MemoryIndex>(objectDescriptor.Fields);
             MustReferences = new List<MemoryIndex>(objectDescriptor.MustReferences);
             MayReferences = new List<ObjectValue>(objectDescriptor.MayReferences);
-            Types = new List<TypeValueBase>(objectDescriptor.Types);
+            Types = new List<TypeValue>(objectDescriptor.Types);
         }
 
         /// <summary>

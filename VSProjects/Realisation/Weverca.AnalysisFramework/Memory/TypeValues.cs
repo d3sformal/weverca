@@ -9,37 +9,15 @@ using PHP.Core.AST;
 
 namespace Weverca.AnalysisFramework.Memory
 {
-    public abstract class TypeValueBase : Value
-    {
-        public readonly QualifiedName QualifiedName;
-
-        public abstract override void Accept(IValueVisitor visitor);
-
-        internal TypeValueBase(QualifiedName name)
-        {
-            QualifiedName = name;
-        }
-
-        /// <inheritdoc />
-        protected override int getHashCode()
-        {
-            return GetType().GetHashCode();
-        }
-
-        /// <inheritdoc />
-        protected override bool equals(Value obj)
-        {
-            return GetType() == obj.GetType();
-        }
-    }
-
-    public class TypeValue : TypeValueBase
+    public class TypeValue : Value
     {
         public readonly ClassDecl Declaration;
 
+        public readonly QualifiedName QualifiedName;
+
         internal TypeValue(ClassDecl declaration)
-            :base(declaration.QualifiedName)
         {
+            QualifiedName = declaration.QualifiedName;
             Declaration = declaration;
         }
 
@@ -52,6 +30,18 @@ namespace Weverca.AnalysisFramework.Memory
         protected override Value cloneValue()
         {
             throw new System.NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        protected override int getHashCode()
+        {
+            return GetType().GetHashCode();
+        }
+
+        /// <inheritdoc />
+        protected override bool equals(Value obj)
+        {
+            return GetType() == obj.GetType();
         }
     }
 }

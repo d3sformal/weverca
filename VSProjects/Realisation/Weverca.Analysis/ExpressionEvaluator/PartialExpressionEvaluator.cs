@@ -75,7 +75,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         /// <inheritdoc />
         /// <exception cref="ArgumentException">Thrown always since type value is not valid</exception>
-        public override void VisitTypeValue(TypeValueBase value)
+        public override void VisitTypeValue(TypeValue value)
         {
             throw new ArgumentException("Expression cannot contain any type value");
         }

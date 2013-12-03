@@ -128,7 +128,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="declaration">Native type declaration</param>
         /// <returns>Created value</returns>
-        TypeValueBase CreateType(ClassDecl declaration);        
+        TypeValue CreateType(ClassDecl declaration);        
 
         /// <summary>
         /// Create function value from given expression
@@ -147,7 +147,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Create object of given type
         /// </summary>   
         /// <param name="type">Desired type of created object</param>
-        ObjectValue CreateObject(TypeValueBase type);
+        ObjectValue CreateObject(TypeValue type);
 
         #endregion
 
@@ -277,7 +277,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Declare type into global scope
         /// </summary>
         /// <param name="type">Declared type</param>
-        void DeclareGlobal(TypeValueBase type);
+        void DeclareGlobal(TypeValue type);
 
         /// <summary>
         /// Fetch variables from global context into current context

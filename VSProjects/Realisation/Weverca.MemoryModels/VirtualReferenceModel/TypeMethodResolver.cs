@@ -21,7 +21,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             Snapshot = snapshot;
         }
 
-        internal static IEnumerable<FunctionValue> ResolveMethods(TypeValueBase type,SnapshotBase snapshot)
+        internal static IEnumerable<FunctionValue> ResolveMethods(TypeValue type,SnapshotBase snapshot)
         {
             var resolver = new TypeMethodResolver(snapshot);
             type.Accept(resolver);
@@ -34,7 +34,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             throw new NotSupportedException("Given value has not supported type");
         }
 
-        public override void VisitTypeValue(TypeValueBase typeValue)
+        public override void VisitTypeValue(TypeValue typeValue)
         {
             throw new NotImplementedException("Visiting given typeValue has not been implemented yet");
         }

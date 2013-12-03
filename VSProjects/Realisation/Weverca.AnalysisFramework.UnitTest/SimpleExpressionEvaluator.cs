@@ -381,7 +381,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override MemoryEntry IndirectCreateObject(MemoryEntry possibleNames)
         {
-            var declarations = new HashSet<TypeValueBase>();
+            var declarations = new HashSet<TypeValue>();
 
             foreach (StringValue name in possibleNames.PossibleValues)
             {

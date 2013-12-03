@@ -720,7 +720,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="typeName">Name of type to resolve</param>
         /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>
-        private IEnumerable<TypeValueBase> ResolveSourceOrNativeType(QualifiedName typeName)
+        private IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName)
         {
             var typeValues = OutSet.ResolveType(typeName);
             if (!typeValues.GetEnumerator().MoveNext())
@@ -731,7 +731,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     var type = OutSet.CreateType(nativeDeclaration);
                     OutSet.DeclareGlobal(type);
-                    var newTypes = new List<TypeValueBase>();
+                    var newTypes = new List<TypeValue>();
                     newTypes.Add(type);
                     typeValues = newTypes;
                 }
@@ -754,7 +754,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private List<QualifiedName> ResolveTypeNames(MemoryEntry possibleNames)
         {
             Debug.Assert(possibleNames.Count > 0, "Every memory entry must have at least one value");
-            var declarations = new HashSet<TypeValueBase>();
+            var declarations = new HashSet<TypeValue>();
 
             stringConverter.SetContext(Flow);
             bool isAlwaysConcrete;

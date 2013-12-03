@@ -122,7 +122,7 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
             throw new NotImplementedException();
         }
 
-        public void VisitTypeValue(TypeValueBase typeValue)
+        public void VisitTypeValue(TypeValue typeValue)
         {
             throw new NotImplementedException();
         }

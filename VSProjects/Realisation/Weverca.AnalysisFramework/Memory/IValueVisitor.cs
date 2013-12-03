@@ -276,7 +276,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Visits <see cref="TypeValueBase"/>
         /// </summary>
         /// <param name="value"></param>
-        void VisitTypeValue(TypeValueBase value);
+        void VisitTypeValue(TypeValue value);
 
         /// <summary>
         /// Visits <see cref="TypeValue"/>

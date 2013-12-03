@@ -135,7 +135,7 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateFunction(expression);
         }
 
-        public TypeValueBase CreateType(ClassDecl declaration)
+        public TypeValue CreateType(ClassDecl declaration)
         {
             return Snapshot.CreateType(declaration);
         }
@@ -145,7 +145,7 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateArray();
         }
 
-        public ObjectValue CreateObject(TypeValueBase type)
+        public ObjectValue CreateObject(TypeValue type)
         {
             return Snapshot.CreateObject(type);
         }
@@ -213,7 +213,7 @@ namespace Weverca.AnalysisFramework
             Snapshot.DeclareGlobal(declaration);
         }
 
-        public void DeclareGlobal(TypeValueBase declaration)
+        public void DeclareGlobal(TypeValue declaration)
         {
             Snapshot.DeclareGlobal(declaration);
         }

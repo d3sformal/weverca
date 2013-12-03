@@ -33,7 +33,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
 
         internal DeclarationContainer<FunctionValue> FunctionDecl { get; private set; }
-        internal DeclarationContainer<TypeValueBase> ClassDecl { get; private set; }
+        internal DeclarationContainer<TypeValue> ClassDecl { get; private set; }
 
         internal MemoryStack<IndexSet<TemporaryIndex>> Temporary { get; private set; }
         internal MemoryStack<IndexContainer> Variables { get; private set; }
@@ -57,7 +57,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Variables = createMemoryStack(VariableIndex.CreateUnknown(CallLevel));
             ContolVariables = createMemoryStack(ControlIndex.CreateUnknown(CallLevel));
             FunctionDecl = new DeclarationContainer<FunctionValue>();
-            ClassDecl = new DeclarationContainer<TypeValueBase>();
+            ClassDecl = new DeclarationContainer<TypeValue>();
 
             Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(new IndexSet<TemporaryIndex>());
         }
@@ -126,7 +126,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Objects
 
-        protected override void initializeObject(ObjectValue createdObject, TypeValueBase type)
+        protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             ObjectDescriptor descriptor = new ObjectDescriptor(createdObject, type, ObjectIndex.CreateUnknown(createdObject));
             objectDescriptors[createdObject] = descriptor;
@@ -140,7 +140,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             throw new NotImplementedException();
         }
 
-        protected override TypeValueBase objectType(ObjectValue objectValue)
+        protected override TypeValue objectType(ObjectValue objectValue)
         {
             throw new NotImplementedException();
         }
@@ -207,7 +207,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ContolVariables = new MemoryStack<IndexContainer>(snapshot.ContolVariables, localVar);
 
             FunctionDecl = new DeclarationContainer<FunctionValue>(snapshot.FunctionDecl);
-            ClassDecl = new DeclarationContainer<TypeValueBase>(snapshot.ClassDecl);
+            ClassDecl = new DeclarationContainer<TypeValue>(snapshot.ClassDecl);
         }
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
@@ -255,7 +255,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ContolVariables = new MemoryStack<IndexContainer>(worker.ContolVariables);
 
             FunctionDecl = new DeclarationContainer<FunctionValue>(worker.FunctionDecl);
-            ClassDecl = new DeclarationContainer<TypeValueBase>(worker.ClassDecl);
+            ClassDecl = new DeclarationContainer<TypeValue>(worker.ClassDecl);
         }
 
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
@@ -335,7 +335,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        protected override void declareGlobal(TypeValueBase declaration)
+        protected override void declareGlobal(TypeValue declaration)
         {
             QualifiedName name = declaration.QualifiedName;
 
@@ -436,7 +436,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         //OBSOLETE
-        protected override IEnumerable<TypeValueBase> resolveType(QualifiedName typeName)
+        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             throw new NotImplementedException();
         }
@@ -1064,7 +1064,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ContolVariables = new MemoryStack<IndexContainer>(worker.ContolVariables);
 
             FunctionDecl = new DeclarationContainer<FunctionValue>(worker.FunctionDecl);
-            ClassDecl = new DeclarationContainer<TypeValueBase>(worker.ClassDecl);
+            ClassDecl = new DeclarationContainer<TypeValue>(worker.ClassDecl);
         }
 
         private void extendSnapshot(ISnapshotReadonly input)
@@ -1094,7 +1094,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ContolVariables = new MemoryStack<IndexContainer>(snapshot.ContolVariables);
 
             FunctionDecl = new DeclarationContainer<FunctionValue>(snapshot.FunctionDecl);
-            ClassDecl = new DeclarationContainer<TypeValueBase>(snapshot.ClassDecl);
+            ClassDecl = new DeclarationContainer<TypeValue>(snapshot.ClassDecl);
         }
 
 

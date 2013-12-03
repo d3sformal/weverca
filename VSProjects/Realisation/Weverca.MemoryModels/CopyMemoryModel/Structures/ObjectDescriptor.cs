@@ -47,7 +47,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The types.
         /// </value>
-        public ReadOnlyCollection<TypeValueBase> Types { get; private set; }
+        public ReadOnlyCollection<TypeValue> Types { get; private set; }
 
         /// <summary>
         /// List of variables where the object is stored in
@@ -70,7 +70,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(objectDescriptorBuilder.Indexes);
             //MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences.ToList());
             //MayReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MayReferences.ToList());
-            Types = new ReadOnlyCollection<TypeValueBase>(objectDescriptorBuilder.Types.ToList());
+            Types = new ReadOnlyCollection<TypeValue>(objectDescriptorBuilder.Types.ToList());
 
             UnknownIndex = objectDescriptorBuilder.UnknownIndex;
             ParentVariable = objectDescriptorBuilder.ParentVariable;
@@ -81,13 +81,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class.
         /// </summary>
         /// <param name="type">The type of object.</param>
-        public ObjectDescriptor(ObjectValue objectValue, TypeValueBase type, MemoryIndex unknownIndex)
+        public ObjectDescriptor(ObjectValue objectValue, TypeValue type, MemoryIndex unknownIndex)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
 
             //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
+            Types = new ReadOnlyCollection<TypeValue>(new List<TypeValue>() { type });
 
             UnknownIndex = unknownIndex;
 
@@ -98,13 +98,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class.
         /// </summary>
         /// <param name="type">The type of object.</param>
-        public ObjectDescriptor(ObjectValue objectValue, MemoryIndex parentVariable, TypeValueBase type, MemoryIndex unknownIndex)
+        public ObjectDescriptor(ObjectValue objectValue, MemoryIndex parentVariable, TypeValue type, MemoryIndex unknownIndex)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
 
             //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            Types = new ReadOnlyCollection<TypeValueBase>(new List<TypeValueBase>() { type });
+            Types = new ReadOnlyCollection<TypeValue>(new List<TypeValue>() { type });
 
             UnknownIndex = unknownIndex;
             ParentVariable = parentVariable;
@@ -157,7 +157,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The types.
         /// </value>
-        public HashSet<TypeValueBase> Types { get; private set; }
+        public HashSet<TypeValue> Types { get; private set; }
 
         /// <summary>
         /// List of variables where the object is stored in
@@ -190,7 +190,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             //MustReferences = new HashSet<MemoryIndex>(objectDescriptor.MustReferences);
             //MayReferences = new HashSet<MemoryIndex>(objectDescriptor.MayReferences);
-            Types = new HashSet<TypeValueBase>(objectDescriptor.Types);
+            Types = new HashSet<TypeValue>(objectDescriptor.Types);
 
             ParentVariable = objectDescriptor.ParentVariable;
             UnknownIndex = objectDescriptor.UnknownIndex;

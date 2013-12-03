@@ -116,7 +116,7 @@ namespace Weverca.AnalysisFramework
             return Snapshot.ResolveMethod(objectValue, methodName);
         }
 
-        public IEnumerable<TypeValueBase> ResolveType(QualifiedName typeName)
+        public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             return Snapshot.ResolveType(typeName);
         }
@@ -139,7 +139,7 @@ namespace Weverca.AnalysisFramework
             return Snapshot.GetIndex(value, index);
         }
 
-        public TypeValueBase ObjectType(ObjectValue objectValue)
+        public TypeValue ObjectType(ObjectValue objectValue)
         {
             return Snapshot.ObjectType(objectValue);
         }

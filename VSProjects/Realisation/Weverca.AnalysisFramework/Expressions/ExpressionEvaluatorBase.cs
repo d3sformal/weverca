@@ -360,7 +360,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="type">Type that is always needed when creating new object</param>
         /// <returns>New initialized object</returns>
-        protected ObjectValue CreateInitializedObject(TypeValueBase type)
+        protected ObjectValue CreateInitializedObject(TypeValue type)
         {
             var newObject = OutSet.CreateObject(type);
 

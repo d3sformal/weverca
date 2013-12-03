@@ -32,7 +32,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal MemoryStack<IndexContainer> ContolVariables { get; private set; }
 
         internal DeclarationContainer<FunctionValue> FunctionDecl { get; private set; }
-        internal DeclarationContainer<TypeValueBase> ClassDecl { get; private set; }
+        internal DeclarationContainer<TypeValue> ClassDecl { get; private set; }
 
         internal Snapshot targetSnapshot;
         internal List<Snapshot> sourceSnapshots;
@@ -51,7 +51,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(targetSnapshot.CallLevel);
 
             FunctionDecl = new DeclarationContainer<FunctionValue>();
-            ClassDecl = new DeclarationContainer<TypeValueBase>();
+            ClassDecl = new DeclarationContainer<TypeValue>();
         }
 
         internal void Merge()
@@ -312,7 +312,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             objectDescriptors.Add(objectValue, builder.Build());
         }
 
-        private void collectTypes(IEnumerable<TypeValueBase> sourceTypes, HashSet<TypeValueBase> targetTypes)
+        private void collectTypes(IEnumerable<TypeValue> sourceTypes, HashSet<TypeValue> targetTypes)
         {
             foreach (var type in sourceTypes)
             {

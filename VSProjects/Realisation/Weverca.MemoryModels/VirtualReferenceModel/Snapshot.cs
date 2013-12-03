@@ -350,7 +350,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return _globals.VariableNames;
         }
 
-        protected override void declareGlobal(TypeValueBase declaration)
+        protected override void declareGlobal(TypeValue declaration)
         {
             var storage = getTypeStorage(declaration.QualifiedName.Name.Value);
 
@@ -392,17 +392,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        protected override IEnumerable<TypeValueBase> resolveType(QualifiedName typeName)
+        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             var storage = getTypeStorage(typeName.Name.Value);
 
             MemoryEntry entry;
             if (tryReadValue(storage, out entry))
             {
-                var types = new List<TypeValueBase>(entry.Count);
+                var types = new List<TypeValue>(entry.Count);
                 foreach (var value in entry.PossibleValues)
                 {
-                    var type = value as TypeValueBase;
+                    var type = value as TypeValue;
                     Debug.Assert(type != null, "Every value read from type storage is a type");
                     types.Add(type);
                 }
@@ -411,7 +411,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
             else
             {
-                return new List<TypeValueBase>(0);
+                return new List<TypeValue>(0);
             }
         }
 
@@ -640,7 +640,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #region Object operations
 
 
-        protected override void initializeObject(ObjectValue createdObject, TypeValueBase type)
+        protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             var info = getObjectInfoStorage(createdObject);
             //TODO set info
@@ -648,21 +648,21 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(info, new MemoryEntry(type));
         }
 
-        protected override TypeValueBase objectType(ObjectValue objectValue)
+        protected override TypeValue objectType(ObjectValue objectValue)
         {
             var info = getObjectInfoStorage(objectValue);
             var objectInfo = readValue(info);
 
-            TypeValueBase type = null;
+            TypeValue type = null;
             foreach (var typeInfo in objectInfo.PossibleValues)
             {
-                if (!(typeInfo is TypeValueBase))
+                if (!(typeInfo is TypeValue))
                     continue;
 
                 if (type != null)
                     Debug.Fail("Object cannot have more than one type");
 
-                type = typeInfo as TypeValueBase;
+                type = typeInfo as TypeValue;
             }
 
             if (type == null)
