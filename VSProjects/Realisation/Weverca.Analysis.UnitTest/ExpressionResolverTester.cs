@@ -342,7 +342,7 @@ namespace Weverca.Analysis.UnitTest
                 enumerator.MoveNext();
                 var value = enumerator.Current as Value;
 
-                Assert.IsTrue(value.Equals(results[i]));
+                Assert.AreEqual(results[i], value);
             }
         }
     }

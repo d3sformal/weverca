@@ -510,21 +510,21 @@ setLocal();
 
 ".AssertVariable("a").HasValues("ValueA");
 
-/// <summary>
-/// Tests for cases where the program points of a function are shared among different calls of such function.
-/// This is used to implement context-insensitivity of functions.
-/// 
-/// 
-/// Note that virtual reference memory model propagates also local data (not local variables, just data) 
-/// of caller function to called function and thus merges also local contexts. This is done to implement
-/// propagating of changes to local variables of caller that are aliased with arguments of called function.
-/// 
-/// TODO: test correct work with arrays and objects.
-/// Arrays, objects passed as parameters, indices of arrays, objects passed as parameters, objects in global / local context.
-/// 
-/// </summary>
-/// 
-#region Shared functions
+        /// <summary>
+        /// Tests for cases where the program points of a function are shared among different calls of such function.
+        /// This is used to implement context-insensitivity of functions.
+        /// 
+        /// 
+        /// Note that virtual reference memory model propagates also local data (not local variables, just data) 
+        /// of caller function to called function and thus merges also local contexts. This is done to implement
+        /// propagating of changes to local variables of caller that are aliased with arguments of called function.
+        /// 
+        /// TODO: test correct work with arrays and objects.
+        /// Arrays, objects passed as parameters, indices of arrays, objects passed as parameters, objects in global / local context.
+        /// 
+        /// </summary>
+        /// 
+        #region Shared functions
         readonly static TestCase SharedFunction_CASE = @"
 function sharedFn($arg){
     return $arg;
@@ -540,11 +540,11 @@ $resultA=sharedFn(2);
 
 
 
-    /// <summary>
-    /// If a function is shared, global context and parameters passed by all callers are merged and the function
-    /// works with this merged context. Consequently, this can lead to weak updates of global variables.
-    /// </summary>
-    #region Shared functions merging global context
+        /// <summary>
+        /// If a function is shared, global context and parameters passed by all callers are merged and the function
+        /// works with this merged context. Consequently, this can lead to weak updates of global variables.
+        /// </summary>
+        #region Shared functions merging global context
         readonly static TestCase SharedFunctionGlobalVariable_CASE = @"
 function sharedFn(){
     global $g;
@@ -572,7 +572,7 @@ $resultA=sharedFn('ValueA');
 $resultB=sharedFn('ValueB');
 
 "
-// NOTE: Shared graphs cannot distinct between global contexts in places where theire called
+            // NOTE: Shared graphs cannot distinct between global contexts in places where theire called
             // so the second sharedFn call in second iteration will merge these global contexts 
             // {resultA: 'InitA', resultB: 'InitB'} {resultA: 'ValueA','ValueB', resultB: 'ValueA','ValueB'}
             // after the merge, resultB assign is processed.
@@ -614,20 +614,20 @@ if($unknown){
          .AssertVariable("resultB").HasValues("InitB", "ValueA", "ValueB")
          .ShareFunctionGraph("sharedFn")
          ;
-    #endregion
+        #endregion
 
-    /// <summary>
-    /// If a function is shared, local contexts do not need to be merged.
-    /// 
-    /// However, virtual reference memory model propagates also local data (not local variables, just data) 
-    /// of caller function to called function and thus merges also local contexts. This is done to implement
-    /// propagating of changes to local variables of caller that are aliased with arguments of called function.
-    /// Note that this is not case of undefined value - undefined value is not propagated.
-    /// to local variables.
-    /// 
-    /// TODO: tests for CopyMM
-    /// </summary>
-    #region Shared functions merging local context
+        /// <summary>
+        /// If a function is shared, local contexts do not need to be merged.
+        /// 
+        /// However, virtual reference memory model propagates also local data (not local variables, just data) 
+        /// of caller function to called function and thus merges also local contexts. This is done to implement
+        /// propagating of changes to local variables of caller that are aliased with arguments of called function.
+        /// Note that this is not case of undefined value - undefined value is not propagated.
+        /// to local variables.
+        /// 
+        /// TODO: tests for CopyMM
+        /// </summary>
+        #region Shared functions merging local context
         // Illustrates propagating local data to functions in VirtualReferenceMM
         readonly static TestCase SharedFunctionStrongUpdateLocal_CASE = @"
 function sharedFn($arg){
@@ -682,12 +682,12 @@ $resultB = $resultG[2];
  .ShareFunctionGraph("sharedFn")
  .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
-    #endregion
+        #endregion
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    #region Shared functions aliasing global context
+        /// <summary>
+        /// TODO
+        /// </summary>
+        #region Shared functions aliasing global context
         readonly static TestCase SharedFunctionAliasingGlobal_CASE = @"
 function sharedFn($arg){
     $arg = 'fromSharedFunc';
@@ -738,12 +738,12 @@ sharedFn(&$b);
 .AssertVariable("b").HasValues("initB", "fromSharedFunc")
 .ShareFunctionGraph("sharedFn")
  ;
-    #endregion
+        #endregion
 
-    /// <summary>
-    /// TODO
-    /// </summary>
-    #region Shared functions aliasing local context
+        /// <summary>
+        /// TODO
+        /// </summary>
+        #region Shared functions aliasing local context
         readonly static TestCase SharedFunctionAliasing_CASE = @"
 function sharedFn($arg){
     $arg = 'fromSharedFunc';
@@ -885,11 +885,11 @@ $c=  $result[3];
 .ShareFunctionGraph("sharedFn")
  ;
 
-    #endregion
+        #endregion
 
-#endregion
+        #endregion
 
-        
+
 
         readonly static TestCase WriteArgument_CASE = @"
 $argument=""Value"";
@@ -1093,6 +1093,43 @@ $a = 2;
 $a = f(1);
 ".AssertVariable("a").HasValues(3)
 ;
+
+        readonly static TestCase ArrayCopySemantic_CASE = @"
+$a[0]='initial';
+
+$b=$a;
+//because of copy a is not affected
+$b[0]='valueB';
+
+
+$c=&$b;
+//because of alias b is affected
+$c[1]='valueC';
+
+$resA=$a[0];
+$resB=$b[0];
+$resC=$b[1];
+"
+            .AssertVariable("resA").HasValues("initial")
+            .AssertVariable("resB").HasValues("valueB")
+            .AssertVariable("resC").HasValues("valueC")
+            ;
+
+        readonly static TestCase TransitiveAliasResolving_CASE = @"
+$a='valueA';
+$b='valueB';
+
+$c=&$a;
+$a=&$b;
+
+$d=&$a;
+"
+            .AssertVariable("a").HasValues("valueB")
+            .AssertVariable("b").HasValues("valueB")
+            .AssertVariable("c").HasValues("valueA")
+            .AssertVariable("d").HasValues("valueB")
+            ;
+
 
         [TestMethod]
         public void FunctionTest()
@@ -1525,5 +1562,18 @@ $a = f(1);
             AnalysisTestUtils.RunTestCase(ParametersByAliasGlobal_CASE);
         }
         #endregion
+
+        [TestMethod]
+        public void ArrayCopySemantic()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayCopySemantic_CASE);
+        }
+
+        [TestMethod]
+        public void TransitiveAliasResolving()
+        {
+            AnalysisTestUtils.RunTestCase(TransitiveAliasResolving_CASE);
+        }
+
     }
 }

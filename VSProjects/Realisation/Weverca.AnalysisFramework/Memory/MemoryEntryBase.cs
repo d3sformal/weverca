@@ -22,6 +22,11 @@ namespace Weverca.AnalysisFramework.Memory
         public readonly int Count;
 
         /// <summary>
+        /// Determine that memory entry contains at least one value that is AssociativeArray
+        /// </summary>
+        public readonly bool ContainsAssociativeArray;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MemoryEntry" /> class.
         /// Create memory entry from given values.
         /// NOTE:
@@ -62,6 +67,15 @@ namespace Weverca.AnalysisFramework.Memory
 
             PossibleValues = new ReadOnlyCollection<Value>(values);
             Count = values.Length;
+
+            foreach (var value in values)
+            {
+                if (value is AssociativeArray)
+                {
+                    ContainsAssociativeArray = true;
+                    return;
+                }
+            }
         }
 
         /// <summary>

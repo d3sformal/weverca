@@ -39,7 +39,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             if (implicitArray != null)
                 //TODO replace only undefined values
-                indexedEntry.WriteMemory(context, new MemoryEntry(implicitArray));
+                indexedEntry.WriteMemory(context, new MemoryEntry(implicitArray), true);
 
             var forceStrong = indexedEntry.ForceStrong;
 

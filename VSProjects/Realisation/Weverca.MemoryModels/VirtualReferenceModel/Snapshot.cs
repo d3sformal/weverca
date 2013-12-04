@@ -219,9 +219,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region API for Snapshot entries
 
+        private void writeDirect(VariableKey storage, MemoryEntry value)
+        {
+            var variable = getOrCreateInfo(storage);
+            assign(variable, value);
+        }
+
         internal void Write(VariableKey[] storages, MemoryEntry value, bool forceStrongWrite)
         {
             var references = new List<VirtualReference>();
+            var copiedValue = forceStrongWrite ? value : copyArrays(value);
 
             foreach (var storage in storages)
             {
@@ -241,7 +248,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                         continue;
 
                     if (forceStrongWrite)
-                        setEntry(reference, value);
+                        setEntry(reference, copiedValue);
 
                     references.Add(reference);
                 }
@@ -253,7 +260,31 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 return;
             }
 
-            assign(references, value);
+            assign(references, copiedValue);
+        }
+
+        internal MemoryEntry copyArrays(MemoryEntry input, Dictionary<AssociativeArray, AssociativeArray> closure = null)
+        {
+            if (!input.ContainsAssociativeArray)
+                return input;
+
+
+            var values = new List<Value>();
+            foreach (var value in input.PossibleValues)
+            {
+                if (value is AssociativeArray)
+                {
+                    var copy = deepArrayCopy(value as AssociativeArray, closure);
+                    values.Add(copy);
+                }
+                else
+                {
+                    values.Add(value);
+                }
+            }
+
+            REPORT(Statistic.MemoryEntryCreation);
+            return new MemoryEntry(values);
         }
 
         internal IEnumerable<ReferenceAliasEntry> Aliases(VariableKey[] storages)
@@ -697,6 +728,63 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(info, new MemoryEntry());
         }
 
+        private AssociativeArray deepArrayCopy(AssociativeArray array, Dictionary<AssociativeArray, AssociativeArray> closure = null)
+        {
+            AssociativeArray copy;
+
+            if (closure == null)
+            {
+                closure = new Dictionary<AssociativeArray, AssociativeArray>();
+            }
+            else
+            {
+                if (closure.TryGetValue(array, out copy))
+                {
+                    //array is already copied
+                    return copy;
+                }
+            }
+
+            copy = CreateArray();
+            closure[array] = copy;
+
+            var indexes = getArrayIndexes(array);
+            foreach (var index in indexes)
+            {
+                var indexKey = getIndex(array, index);
+                var targetIndexKey = getIndex(copy, index);
+
+                var value = readValue(indexKey);
+                writeDirect(targetIndexKey, value);
+            }
+
+            return copy;
+        }
+
+        /// <summary>
+        /// TODO: This is very inefficient - store indexes in meta info
+        /// </summary>
+        /// <param name="iteratedArray"></param>
+        /// <returns></returns>
+        private IEnumerable<string> getArrayIndexes(AssociativeArray iteratedArray)
+        {
+            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
+            var indexes = new List<string>();
+            foreach (var varName in _meta.VariableIdentifiers)
+            {
+                if (!varName.StartsWith(arrayPrefix))
+                {
+                    continue;
+                }
+
+                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
+
+                indexes.Add(indexIdentifier);
+            }
+
+            return indexes;
+        }
+
         #endregion
 
         #region Special storages
@@ -725,7 +813,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private VariableKey getIndexStorage(Value arr, ContainerIndex index)
         {
-            var name = string.Format("$arr{0}[{1}]", arr.UID, index.Identifier);
+            return getIndex(arr, index.Identifier);
+        }
+
+        private VariableKey getIndex(Value arr, string indexIdentifier)
+        {
+            var name = string.Format("$arr{0}[{1}]", arr.UID, indexIdentifier);
             return getMeta(name);
         }
 
