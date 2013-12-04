@@ -66,7 +66,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return new MemoryPath(parentPath, new IndexPathSegment(names));
         }
 
-        #endregion*/
+        public static MemoryPath MakePathTemporary(TemporaryIndex temporaryIndex)
+        {
+            return new MemoryPath(new TemporaryPathSegment(temporaryIndex), GlobalContext.LocalOnly);
+        }
+
+        #endregion
 
         private MemoryPath(PathSegment pathSegment, GlobalContext global)
         {
@@ -111,6 +116,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         void VisitIndex(IndexPathSegment indexSegment);
 
         void VisitControl(ControlPathSegment controlPathSegment);
+
+        void VisitTemporary(TemporaryPathSegment temporaryPathSegment);
     }
 
     public abstract class PathSegment
@@ -219,6 +226,26 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override string ToString()
         {
             return String.Format("CTRL${0}", base.ToString());
+        }
+    }
+
+    public class TemporaryPathSegment : PathSegment
+    {
+        public TemporaryIndex TemporaryIndex { get; private set; }
+
+        public TemporaryPathSegment(TemporaryIndex temporaryIndex)
+        {
+            this.TemporaryIndex = temporaryIndex;
+        }
+
+        public override void Accept(IPathSegmentVisitor visitor)
+        {
+            visitor.VisitTemporary(this);
+        }
+
+        public override string ToString()
+        {
+            return TemporaryIndex.ToString();
         }
     }
 

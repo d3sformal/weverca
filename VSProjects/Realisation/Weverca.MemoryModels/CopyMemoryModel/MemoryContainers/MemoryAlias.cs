@@ -83,6 +83,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
             }
         }
+
+        internal bool DataEquals(MemoryAlias other)
+        {
+            if (this.MayAliasses.Count != other.MayAliasses.Count
+                || this.MustAliasses.Count != other.MustAliasses.Count)
+            {
+                return false;
+            }
+
+            return HashSetTools.EqualsSet(this.MustAliasses, other.MustAliasses) 
+                || HashSetTools.EqualsSet(this.MayAliasses, other.MayAliasses);
+        }
     }
 
     /// <summary>

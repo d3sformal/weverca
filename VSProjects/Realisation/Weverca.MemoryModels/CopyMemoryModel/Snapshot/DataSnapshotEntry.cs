@@ -10,10 +10,35 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     class DataSnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
     {
         MemoryEntry dataEntry;
-
+        SnapshotEntry temporaryLocation = null;
+        TemporaryIndex temporaryIndex = null;
+        
         public DataSnapshotEntry(MemoryEntry entry)
         {
             dataEntry = entry;
+        }
+
+        private SnapshotEntry getTemporary(SnapshotBase context)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+
+            if (temporaryLocation == null)
+            {
+                temporaryIndex = snapshot.CreateTemporary();
+                MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
+                mergeWorker.MergeMemoryEntry(temporaryIndex, dataEntry);
+
+                temporaryLocation = new SnapshotEntry(MemoryPath.MakePathTemporary(temporaryIndex));
+            }
+
+            return temporaryLocation;
+        }
+
+        private bool isTemporarySet(SnapshotBase context)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+
+            return temporaryIndex != null && snapshot.IsTemporarySet(temporaryIndex);
         }
 
         #region ReadWriteSnapshotEntryBase Implementation
@@ -22,12 +47,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            return getTemporary(context).ReadIndex(context, index);
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
         {
-            throw new NotImplementedException();
+            return getTemporary(context).ReadField(context, field);
         }
 
         #endregion
@@ -36,12 +61,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            throw new NotImplementedException();
+            getTemporary(context).WriteMemory(context, value, forceStrongWrite);
         }
 
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            throw new NotImplementedException();
+            getTemporary(context).SetAliases(context, aliasedEntry);
         }
 
         #endregion
@@ -50,17 +75,39 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override bool isDefined(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            if (isTemporarySet(context))
+            {
+                return temporaryLocation.IsDefined(context);
+            }
+            else
+            {
+                return true;
+            }
         }
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            throw new NotImplementedException();
+
+            if (isTemporarySet(context))
+            {
+                return temporaryLocation.Aliases(context);
+            }
+            else
+            {
+                return new AliasEntry[] { };
+            }
         }
 
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            return dataEntry;
+            if (isTemporarySet(context))
+            {
+                return temporaryLocation.ReadMemory(context);
+            }
+            else
+            {
+                return dataEntry;
+            }
         }
 
         protected override AnalysisFramework.VariableIdentifier getVariableIdentifier(SnapshotBase context)
@@ -74,7 +121,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public AliasData CreateAliasToEntry(Snapshot snapshot)
         {
-            throw new NotImplementedException();
+            return getTemporary(snapshot).CreateAliasToEntry(snapshot);
         }
     }
 }

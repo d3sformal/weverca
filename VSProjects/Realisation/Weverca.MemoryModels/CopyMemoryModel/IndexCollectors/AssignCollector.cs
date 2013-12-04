@@ -92,7 +92,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             foreach (MemoryIndex index in mustIndexesProcess)
             {
                 MemoryAlias alias;
-                if (snapshot.TryGetAliases(index, out alias))
+                if (snapshot.Data.TryGetAliases(index, out alias))
                 {
                     HashSetTools.AddAll(mustAliases, alias.MustAliasses);
 
@@ -111,7 +111,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             foreach (MemoryIndex index in mayIndexesProcess)
             {
                 MemoryAlias alias;
-                if (snapshot.TryGetAliases(index, out alias))
+                if (snapshot.Data.TryGetAliases(index, out alias))
                 {
                     HashSetTools.AddAll(mayAliases, alias.MustAliasses);
                     HashSetTools.AddAll(mayAliases, alias.MayAliasses);
@@ -128,10 +128,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    processSegment(segment, snapshot.Variables.Local);
+                    processSegment(segment, snapshot.Data.Variables.Local);
                     break;
                 case GlobalContext.GlobalOnly:
-                    processSegment(segment, snapshot.Variables.Global);
+                    processSegment(segment, snapshot.Data.Variables.Global);
                     break;
                 default:
                     break;
@@ -143,14 +143,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    processSegment(segment, snapshot.ContolVariables.Local);
+                    processSegment(segment, snapshot.Data.ContolVariables.Local);
                     break;
                 case GlobalContext.GlobalOnly:
-                    processSegment(segment, snapshot.ContolVariables.Global);
+                    processSegment(segment, snapshot.Data.ContolVariables.Global);
                     break;
                 default:
                     break;
             }
+        }
+
+        public void VisitTemporary(TemporaryPathSegment temporaryPathSegment)
+        {
+            addToMust(temporaryPathSegment.TemporaryIndex);
         }
 
         public void VisitField(FieldPathSegment segment)
@@ -183,7 +188,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private void processField(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
             HashSet<MemoryIndex> mustTarget, bool isMust)
         {
-            if (!snapshot.HasObjects(parentIndex))
+            if (!snapshot.Data.HasObjects(parentIndex))
             {
                 ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
             }
@@ -197,17 +202,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 snapshot.ClearForObjects(parentIndex);
             }
 
-            ObjectValueContainer objectValues = snapshot.GetObjects(parentIndex);
+            ObjectValueContainer objectValues = snapshot.Data.GetObjects(parentIndex);
             if (objectValues.Count == 1 && snapshot.HasMustReference(parentIndex))
             {
-                ObjectDescriptor descriptor = snapshot.GetDescriptor(objectValues.First());
+                ObjectDescriptor descriptor = snapshot.Data.GetDescriptor(objectValues.First());
                 creatorVisitor.ObjectValue = objectValues.First();
                 processSegment(segment, descriptor);
             }
 
             foreach (ObjectValue value in objectValues)
             {
-                ObjectDescriptor descriptor = snapshot.GetDescriptor(value);
+                ObjectDescriptor descriptor = snapshot.Data.GetDescriptor(value);
                 creatorVisitor.ObjectValue = value;
                 processSegment(segment, descriptor, false);
             }
@@ -217,7 +222,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<MemoryIndex> mustTarget, bool isMust)
         {
             AssociativeArray arrayValue;
-            if (!snapshot.TryGetArray(parentIndex, out arrayValue))
+            if (!snapshot.Data.TryGetArray(parentIndex, out arrayValue))
             {
                 arrayValue = snapshot.CreateArray(parentIndex, isMust);
             }
@@ -226,7 +231,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 snapshot.ClearForArray(parentIndex);
             }
 
-            ArrayDescriptor descriptor = snapshot.GetDescriptor(arrayValue);
+            ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(arrayValue);
             creatorVisitor.ArrayValue = arrayValue;
             processSegment(segment, descriptor, isMust);
         }
@@ -328,7 +333,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 switch (global)
                 {
                     case GlobalContext.LocalOnly:
-                        CreatedIndex = snapshot.CreateVariable(Name);
+                        CreatedIndex = snapshot.CreateLocalVariable(Name);
                         break;
                     case GlobalContext.GlobalOnly:
                         CreatedIndex = snapshot.CreateGlobalVariable(Name);
@@ -353,6 +358,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
             }
 
+            public void VisitTemporary(TemporaryPathSegment temporaryPathSegment)
+            {
+                throw new Exception("Acces to undefined temporary variable.");
+            }
+
             public void VisitField(FieldPathSegment fieldSegment)
             {
                 CreatedIndex = snapshot.CreateField(Name, ObjectValue, IsMust, true);
@@ -365,5 +375,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
 
+
+        internal void SetAllToMust()
+        {
+            HashSetTools.AddAll(mustIndexes, mayIndexes);
+            mayIndexes.Clear();
+        }
     }
 }

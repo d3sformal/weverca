@@ -11,6 +11,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         private Dictionary<QualifiedName, HashSet<T>> declarations;
 
+        public int Count { get { return declarations.Count; } }
+
         public DeclarationContainer()
         {
             declarations = new Dictionary<QualifiedName, HashSet<T>>();
@@ -62,6 +64,27 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public IEnumerable<QualifiedName> GetNames()
         {
             return declarations.Keys;
+        }
+
+        internal bool DataEquals(DeclarationContainer<T> other)
+        {
+            foreach (var decl in this.declarations)
+            {
+                HashSet<T> otherDecl;
+                if (other.declarations.TryGetValue(decl.Key, out otherDecl))
+                {
+                    if (!HashSetTools.EqualsSet(decl.Value, otherDecl))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

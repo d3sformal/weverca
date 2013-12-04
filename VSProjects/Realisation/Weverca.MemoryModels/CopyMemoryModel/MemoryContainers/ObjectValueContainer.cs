@@ -47,6 +47,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return values.GetEnumerator();
         }
+
+        internal bool DataEquals(ObjectValueContainer other)
+        {
+            if (this.values.Count != other.values.Count)
+            {
+                return false;
+            }
+
+            foreach (ObjectValue value in values)
+            {
+                if (!other.values.Contains(value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     public class ObjectValueContainerBuilder : IEnumerable<ObjectValue>

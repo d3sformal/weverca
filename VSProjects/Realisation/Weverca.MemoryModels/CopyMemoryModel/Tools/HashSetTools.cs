@@ -15,5 +15,28 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 targetSet.Add(value);
             }
         }
+
+        public static bool EqualsSet<T>(ICollection<T> setA, ICollection<T> setB)
+        {
+            if (setA == setB)
+            {
+                return true;
+            }
+
+            if (setA.Count != setB.Count)
+            {
+                return false;
+            }
+
+            foreach (T value in setA)
+            {
+                if (!setB.Contains(value))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 }

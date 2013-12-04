@@ -34,7 +34,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             processMerge();
 
-            snapshot.SetMemoryEntry(targetIndex, new MemoryEntry(values));
+            snapshot.Data.SetMemoryEntry(targetIndex, new MemoryEntry(values));
         }
 
         public void MergeIndexes(MemoryIndex targetIndex, MemoryIndex sourceIndex)
@@ -71,7 +71,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 visitor.VisitMemoryEntry(entry);
 
                 MemoryAlias aliases;
-                if (snapshot.TryGetAliases(index, out aliases))
+                if (snapshot.Data.TryGetAliases(index, out aliases))
                 {
                     references.CollectMust(aliases.MustAliasses, snapshot.CallLevel);
                     references.CollectMay(aliases.MayAliasses, snapshot.CallLevel);
@@ -105,7 +105,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 values.Add(snapshot.UndefinedValue);
             }
 
-            snapshot.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            snapshot.Data.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
         }
 
         private HashSet<Value> getValues(MemoryIndex targetIndex, CollectComposedValuesVisitor visitor, bool includeUndefined)
@@ -166,11 +166,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             bool includeUndefined)
         {
             AssociativeArray arrayValue;
-            if (!snapshot.TryGetArray(targetIndex, out arrayValue))
+            if (!snapshot.Data.TryGetArray(targetIndex, out arrayValue))
             {
                 arrayValue = snapshot.CreateArray(targetIndex);
             }
-            ArrayDescriptor newDescriptor = snapshot.GetDescriptor(arrayValue);
+            ArrayDescriptor newDescriptor = snapshot.Data.GetDescriptor(arrayValue);
             
             MergeWithinSnapshotOperation unknownMerge = new MergeWithinSnapshotOperation(newDescriptor.UnknownIndex);
             unknownMerge.SetUndefined();
@@ -179,7 +179,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<string> indexNames = new HashSet<string>();
             foreach (var array in arrays)
             {
-                ArrayDescriptor descriptor = snapshot.GetDescriptor(array);
+                ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(array);
                 unknownMerge.Add(descriptor.UnknownIndex);
 
                 foreach (var index in descriptor.Indexes)
@@ -199,7 +199,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 foreach (var array in arrays)
                 {
-                    ArrayDescriptor descriptor = snapshot.GetDescriptor(array);
+                    ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(array);
                     MemoryIndex sourceIndex;
                     if (descriptor.Indexes.TryGetValue(indexName, out sourceIndex))
                     {

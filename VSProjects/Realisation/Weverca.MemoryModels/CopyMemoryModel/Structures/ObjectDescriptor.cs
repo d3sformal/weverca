@@ -47,7 +47,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The types.
         /// </value>
-        public ReadOnlyCollection<TypeValue> Types { get; private set; }
+        public TypeValue Type { get; private set; }
 
         /// <summary>
         /// List of variables where the object is stored in
@@ -70,7 +70,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(objectDescriptorBuilder.Indexes);
             //MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences.ToList());
             //MayReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MayReferences.ToList());
-            Types = new ReadOnlyCollection<TypeValue>(objectDescriptorBuilder.Types.ToList());
+            Type = objectDescriptorBuilder.Type;
 
             UnknownIndex = objectDescriptorBuilder.UnknownIndex;
             ParentVariable = objectDescriptorBuilder.ParentVariable;
@@ -87,7 +87,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            Types = new ReadOnlyCollection<TypeValue>(new List<TypeValue>() { type });
+            Type = type;
 
             UnknownIndex = unknownIndex;
 
@@ -104,7 +104,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            Types = new ReadOnlyCollection<TypeValue>(new List<TypeValue>() { type });
+            Type = type;
 
             UnknownIndex = unknownIndex;
             ParentVariable = parentVariable;
@@ -157,7 +157,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The types.
         /// </value>
-        public HashSet<TypeValue> Types { get; private set; }
+        public TypeValue Type { get; set; }
 
         /// <summary>
         /// List of variables where the object is stored in
@@ -190,7 +190,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             //MustReferences = new HashSet<MemoryIndex>(objectDescriptor.MustReferences);
             //MayReferences = new HashSet<MemoryIndex>(objectDescriptor.MayReferences);
-            Types = new HashSet<TypeValue>(objectDescriptor.Types);
+            Type = objectDescriptor.Type;
 
             ParentVariable = objectDescriptor.ParentVariable;
             UnknownIndex = objectDescriptor.UnknownIndex;

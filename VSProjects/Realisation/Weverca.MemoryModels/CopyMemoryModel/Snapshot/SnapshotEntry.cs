@@ -107,6 +107,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             AssignCollector collector = new AssignCollector(snapshot);
             collector.ProcessPath(path);
 
+            if (forceStrongWrite)
+            {
+                collector.SetAllToMust();
+            }
+
             AssignWorker worker = new AssignWorker(snapshot);
             worker.Assign(collector, temporaryIndex);
 
@@ -144,6 +149,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return collector.IsDefined;
         }
 
+        //TODO - zeptat se Mirka k cemu to je
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
             throw new NotImplementedException();

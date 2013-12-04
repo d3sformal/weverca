@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="CopyMemoryModel\MemoryContainers\DeclarationContainer.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\ICloneable.cs" />
+    <Compile Include="CopyMemoryModel\MemoryContainers\IndexData.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\IndexSet.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\MemoryStack.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\AssignAliasWorker.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="CopyMemoryModel\Snapshot\DataSnapshotEntry.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\ICopyModelSnapshotEntry.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\IReferenceHolder.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\SnapshotData.cs" />
     <Compile Include="CopyMemoryModel\Tools\HashSetTools.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\CollectComposedValuesVisitor.cs" />
     <Compile Include="MemoryModels.cs" />
