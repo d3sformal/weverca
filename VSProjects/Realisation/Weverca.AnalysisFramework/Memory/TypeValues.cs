@@ -29,7 +29,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new TypeValue(Declaration);
         }
 
         /// <inheritdoc />

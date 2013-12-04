@@ -60,10 +60,10 @@ namespace Weverca.Analysis
             getVariable.WriteMemory(EntryInput.Snapshot , new MemoryEntry(getValue));
             ValueInfoHandler.setDirty(EntryInput, getValue);
 
-            var contants = new VariableName(".constants");
-            var constValue = EntryInput.CreateArray();
-            var contantVariable = EntryInput.GetControlVariable(contants);
-            contantVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(constValue));
+            var staticVariables = new VariableName(".staticVariables");
+            var staticVariablesArray = EntryInput.CreateArray();
+            var staticVariable = EntryInput.GetControlVariable(staticVariables);
+            staticVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(staticVariablesArray));
 
             var warnings = new VariableName(".analysisWarning");
             var warningsVariable=EntryInput.GetControlVariable(warnings);

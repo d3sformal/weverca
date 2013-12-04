@@ -232,8 +232,9 @@ namespace Weverca.Analysis
                             else
                             {
                                 ClassDeclBuilder newType = CopyInfoFromBaseClass(baseClass, type);
-                                insetConstantsIntoMM(newType);
-                                OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(newType, declaration)));
+                                ClassDecl finalNewType= checkClassAndCopyConstantsFromInterfaces(newType, declaration);
+                                insetStaticVariablesIntoMM(finalNewType);
+                                OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
                             }
                         }
                         else
@@ -258,8 +259,9 @@ namespace Weverca.Analysis
                                             setWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
                                         }
                                         ClassDeclBuilder newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
-                                        insetConstantsIntoMM(newType);
-                                        OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(newType, declaration)));
+                                        ClassDecl finalNewType = checkClassAndCopyConstantsFromInterfaces(newType, declaration);
+                                        insetStaticVariablesIntoMM(finalNewType);
+                                        OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
                                     }
                                     else
                                     {
@@ -271,8 +273,9 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        insetConstantsIntoMM(type);
-                        OutSet.DeclareGlobal(OutSet.CreateType(checkClassAndCopyConstantsFromInterfaces(type, declaration)));
+                        ClassDecl finalType = checkClassAndCopyConstantsFromInterfaces(type, declaration);
+                        insetStaticVariablesIntoMM(finalType);
+                        OutSet.DeclareGlobal(OutSet.CreateType(finalType));
                     }
                 }
             }
@@ -364,7 +367,7 @@ namespace Weverca.Analysis
                     }
                     else
                     {
-                        type.Constants.Add(new FieldIdentifier(type.QualifiedName, constant.Key.Name), constant.Value);
+                        type.Constants.Add(new FieldIdentifier(type.QualifiedName, constant.Key.Name), constant.Value.CloneWithNewQualifiedName(type.QualifiedName));
                     }
                 }
 
@@ -529,11 +532,10 @@ namespace Weverca.Analysis
                 }
             }
 
-            insetConstantsIntoMM(result);
-            OutSet.DeclareGlobal(OutSet.CreateType(result.Build()));
+            var finalResult = result.Build();
+            insetStaticVariablesIntoMM(finalResult);
+            OutSet.DeclareGlobal(OutSet.CreateType(finalResult));
         }
-
-
 
         private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration)
         {
@@ -881,12 +883,13 @@ namespace Weverca.Analysis
             return result;
         }
 
-        private void insetConstantsIntoMM(ClassDeclBuilder result)
+        private void insetStaticVariablesIntoMM(ClassDecl result)
         {
             Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
             List<QualifiedName> classes = new List<QualifiedName>(result.BaseClasses);
             classes.Add(result.QualifiedName);
             List<string> indices = new List<string>();
+
             foreach (var currentClass in classes)
             {
                 foreach (var constant in result.Constants.Values.Where(a => a.ClassName == currentClass))
@@ -897,8 +900,8 @@ namespace Weverca.Analysis
             string code = "function _static_intialization_of_" + result .QualifiedName+ "(){$res=array();";
             foreach (var constant in constants.Values)
             {
-                
-                var variable = OutSet.GetControlVariable(new VariableName(constant.ClassName.Name.LowercaseValue + ".." + constant.Name.Value));
+
+                var variable = OutSet.GetControlVariable(new VariableName(".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name+")"));
                 List<Value> constantValues = new List<Value>();
                 if (variable.IsDefined(OutSet.Snapshot))
                 {
@@ -907,6 +910,7 @@ namespace Weverca.Analysis
                 if (constant.Value != null)
                 {
                     constantValues.AddRange(constant.Value.PossibleValues);
+                    variable.WriteMemory(OutSet.Snapshot, new MemoryEntry(constantValues));
                 }
                 else
                 {
@@ -914,6 +918,56 @@ namespace Weverca.Analysis
                     code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(constant.Initializer.Position) + ";\n";
                     indices.Add(index); 
                 }
+            }
+            if (result.IsInterface == false)
+            {
+                var staticVariables = OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(OutSet.Snapshot, new MemberIdentifier(result.QualifiedName.Name.LowercaseValue));
+                ReadWriteSnapshotEntryBase publicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("public"));
+                publicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+                ReadWriteSnapshotEntryBase nonPublicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("non-public"));
+                nonPublicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+
+                foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.QualifiedName)))
+                {
+                    if (field.Initializer != null)
+                    {
+                        string index="";
+                        if(field.Visibility==Visibility.PUBLIC)
+                        {
+                            index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->publicfield@" + field.Name + "@";
+                        }
+                        else
+                        {
+                            index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->nonpublicfield(" + field.Name + "@";
+                        }
+                        indices.Add(index); 
+                        code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(field.Initializer.Position) + ";\n";
+                    }
+                    else   
+                    {
+                        MemoryEntry fieldValue;
+                        if (field.InitValue != null)
+                        {
+                            fieldValue = field.InitValue;
+                        }
+                        else 
+                        {
+                            fieldValue = new MemoryEntry(OutSet.UndefinedValue);
+                        }
+
+                        ReadWriteSnapshotEntryBase container = null;
+                        if (field.Visibility == Visibility.PUBLIC)
+                        {
+                            container = publicContainer;
+                        }
+                        else 
+                        {
+                            container = nonPublicContainer; 
+                        }
+                        container.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, fieldValue);
+                    }
+                }
+
             }
             NativeFunctionAnalyzer.indices = indices;
             string key = "staticInit" + result.QualifiedName.Name.LowercaseValue;

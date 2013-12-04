@@ -1222,17 +1222,17 @@
     </method>
   </class>
   <class name="DateTime" isFinal="false" implements="DateTimeInterface,">
-    <field name="ATOM" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;Y-m-d\TH:i:sP&quot;"/>
-    <field name="COOKIE" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;l, d-M-y H:i:s T&quot;"/>
-    <field name="ISO8601" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;Y-m-d\TH:i:sO&quot;"/>
-    <field name="RFC822" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;D, d M y H:i:s O&quot;"/>
-    <field name="RFC850" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;l, d-M-y H:i:s T&quot;"/>
-    <field name="RFC1036" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;D, d M y H:i:s O&quot;"/>
-    <field name="RFC1123" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;D, d M Y H:i:s O&quot;"/>
-    <field name="RFC2822" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;D, d M Y H:i:s O&quot;"/>
-    <field name="RFC3339" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;Y-m-d\TH:i:sP&quot;"/>
-    <field name="RSS" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;D, d M Y H:i:s O&quot;"/>
-    <field name="W3C" type="string" visibility="public" isStatic="false" isConst="true" value="&quot;Y-m-d\TH:i:sP&quot;"/>
+    <field name="ATOM" type="string" visibility="public" isStatic="false" isConst="true" value="Y-m-d\TH:i:sP"/>
+    <field name="COOKIE" type="string" visibility="public" isStatic="false" isConst="true" value="l, d-M-y H:i:s T"/>
+    <field name="ISO8601" type="string" visibility="public" isStatic="false" isConst="true" value="Y-m-d\TH:i:sO"/>
+    <field name="RFC822" type="string" visibility="public" isStatic="false" isConst="true" value="D, d M y H:i:s O"/>
+    <field name="RFC850" type="string" visibility="public" isStatic="false" isConst="true" value="l, d-M-y H:i:s T"/>
+    <field name="RFC1036" type="string" visibility="public" isStatic="false" isConst="true" value="D, d M y H:i:s O"/>
+    <field name="RFC1123" type="string" visibility="public" isStatic="false" isConst="true" value="D, d M Y H:i:s O"/>
+    <field name="RFC2822" type="string" visibility="public" isStatic="false" isConst="true" value="D, d M Y H:i:s O"/>
+    <field name="RFC3339" type="string" visibility="public" isStatic="false" isConst="true" value="Y-m-d\TH:i:sP"/>
+    <field name="RSS" type="string" visibility="public" isStatic="false" isConst="true" value="D, d M Y H:i:s O"/>
+    <field name="W3C" type="string" visibility="public" isStatic="false" isConst="true" value="Y-m-d\TH:i:sP"/>
     <method static="false" final="false" visibility="public" name="__construct" returnType="none">
       <arg type="string" optional="true" byReference="false" dots="false" value="&quot;now&quot;"/>
       <arg type="DateTimeZone" optional="true" byReference="false" dots="false" value="NULL"/>

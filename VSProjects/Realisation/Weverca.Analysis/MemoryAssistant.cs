@@ -81,7 +81,7 @@ namespace Weverca.Analysis
             {
                 value.Accept(visitor); 
             }
-            return visitor.getResult(Context);          
+            return visitor.GetResult(Context);          
         }
 
         #endregion
@@ -106,6 +106,8 @@ namespace Weverca.Analysis
         }
     }
 
+
+
     public class WidenningVisitor : AbstractValueVisitor
     {
         bool containsFloat = false;
@@ -113,7 +115,7 @@ namespace Weverca.Analysis
         bool containsOnlyBool = true;
         bool containsOnlyNumvericValues = true;
         bool containsOnlyString = true;
-        public MemoryEntry getResult(SnapshotBase Context)
+        public MemoryEntry GetResult(SnapshotBase Context)
         {
             if (containsOnlyBool)
             {

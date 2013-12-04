@@ -15,6 +15,7 @@ using Weverca.Parsers;
 using PHP.Core.Parsers;
 using PHP.Core.AST;
 using Weverca.Analysis.ExpressionEvaluator;
+using System.Text.RegularExpressions;
 
 namespace Weverca.Analysis
 {
@@ -303,12 +304,52 @@ namespace Weverca.Analysis
             var res=flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0));
             foreach (string index in indices)
             {
-                var mmValue=res.ReadIndex(flow.OutSet.Snapshot, new MemberIdentifier(index));
-                flow.OutSet.GetControlVariable(new VariableName(index)).WriteMemory(flow.OutSet.Snapshot,mmValue.ReadMemory(flow.OutSet.Snapshot));
-                
+                if (index.StartsWith("."))
+                {
+                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, new MemberIdentifier(index));
+                    List<Value> valueToWrite = new List<Value>();
+                    valueToWrite.AddRange(mmValue.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
+                    if (flow.OutSet.GetControlVariable(new VariableName(index)).IsDefined(flow.OutSet.Snapshot))
+                    {
+                        valueToWrite.AddRange(flow.OutSet.GetControlVariable(new VariableName(index)).ReadMemory(flow.OutSet.Snapshot).PossibleValues);
+                    }
 
+                    flow.OutSet.GetControlVariable(new VariableName(index)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(valueToWrite));
+                }
+                else 
+                {
+                    var publicFieldPattern = @"^@class@(.*)@->publicfield@(.*)@$";
+                    var nonPublicFieldPattern = @"^@class@(.*)@->nonpublicfield@(.*)@$";
+                    var publicRegularExpression = new Regex(publicFieldPattern, RegexOptions.None);
+                    var nonPublicRegularExpression = new Regex(nonPublicFieldPattern, RegexOptions.None);
+                    var match = publicRegularExpression.Match(index);
+                    
+                    string visibility="";
+                    if (!match.Success)
+                    {
+                        match = nonPublicRegularExpression.Match(index);
+                        visibility = "nonpublic";
+                    }
+                    else 
+                    {
+                        visibility = "public";
+                    }
+
+                    string className = match.Groups[1].Value;
+                    string fieldname = match.Groups[2].Value;
+                    SnapshotBase snapshot = flow.OutSet.Snapshot;
+                    var staticField = flow.OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(snapshot, new MemberIdentifier(className)).ReadIndex(snapshot, new MemberIdentifier(visibility)).ReadIndex(snapshot, new MemberIdentifier(fieldname));
+                    List<Value> values = new List<Value>();
+                    if (staticField.IsDefined(snapshot))
+                    {
+                        values.AddRange(staticField.ReadMemory(snapshot).PossibleValues);
+                    }
+                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, new MemberIdentifier(index));
+                    values.AddRange(mmValue.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
+                    staticField.WriteMemory(snapshot, new MemoryEntry(values));
+                    //store static variable
+                }
             }
-
         }
     }
 

@@ -187,6 +187,18 @@ namespace Weverca.AnalysisFramework
             Visibility = visibility;
             ClassName = className;
         }
+
+        public ConstantInfo CloneWithNewQualifiedName(QualifiedName className)
+        {
+            if (Initializer == null)
+            {
+                return new ConstantInfo(Name, className, Visibility, Value);
+            }
+            else 
+            {
+                return new ConstantInfo(Name, className, Visibility, Initializer);
+            }
+        }
     }
 
     /// <summary>
