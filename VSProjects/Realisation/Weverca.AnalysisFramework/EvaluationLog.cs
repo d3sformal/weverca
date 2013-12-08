@@ -136,6 +136,11 @@ namespace Weverca.AnalysisFramework
         #region Public methods for retrieving associations for partials
 
 
+        /// <summary>
+        /// Reads the snapshot entry. It is similar to <see cref="GetSnapshotEntry"/> but intended for read-only access.
+        /// </summary>
+        /// <param name="partial">Partial which variable will be returned</param>
+        /// <returns>Associated variable, or null if there is no associated variable</returns>
         public ReadSnapshotEntryBase ReadSnapshotEntry(LangElement partial)
         {
             ValuePoint rValue;
@@ -152,7 +157,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="partial">Partial which variable will be returned</param>
         /// <returns>Associated variable, or null if there is no associated variable</returns>
-        public ReadWriteSnapshotEntryBase GetVariable(LangElement partial)
+        public ReadWriteSnapshotEntryBase GetSnapshotEntry(LangElement partial)
         {
             LValuePoint varLike;
             if (_lValues.TryGetValue(partial, out varLike))

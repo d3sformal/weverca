@@ -276,12 +276,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             if (call != null && call.QualifiedName.Name.Value == "abs")
             {
                 var absParam = call.CallSignature.Parameters[0];
-                lValue = _log.GetVariable(absParam.Expression);
+                lValue = _log.GetSnapshotEntry(absParam.Expression);
                 value = getReverse_abs(_log.GetValue(right));
             }
             else
             {
-                lValue = _log.GetVariable(left);
+                lValue = _log.GetSnapshotEntry(left);
                 value = _log.GetValue(right);
             }
 
