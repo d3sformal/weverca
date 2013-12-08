@@ -52,9 +52,9 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="flow">Flow controller where include extensions can be stored</param>
         /// <param name="includeFile">File argument of include statement</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
+            //TODO: deal with includes
             throw new NotImplementedException();
         }
 
@@ -63,9 +63,9 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="outSet"></param>
         /// <param name="catchBlockStarts">Catch blocks associated with starting try block</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
+            //TODO
             throw new NotImplementedException();
         }
 
@@ -74,9 +74,9 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="outSet"></param>
         /// <param name="catchBlockStarts">Catch blocks associated with ending try block</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
+            //TODO
             throw new NotImplementedException();
         }
 
@@ -89,7 +89,6 @@ namespace Weverca.Analysis.FlowResolver
         /// <returns>
         /// All possible catch block starts
         /// </returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, PHP.Core.AST.ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             throw new NotImplementedException();

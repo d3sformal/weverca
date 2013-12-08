@@ -19,7 +19,7 @@ namespace Weverca.Analysis.FlowResolver
         #region Members
 
         EvaluationLog log;
-        ISnapshotReadWrite valueFactory;
+        SnapshotBase valueFactory;
 
         Dictionary<VariableName, List<Value>> variableValues = new Dictionary<VariableName, List<Value>>();
 
@@ -32,7 +32,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="log">Evaluation log used for evaluating variables which are not yet in the memoryContext.</param>
         /// <param name="valueFactory">ValueFactory used for creating value classes instances.</param>
-        public MemoryContext(EvaluationLog log, ISnapshotReadWrite valueFactory)
+        public MemoryContext(EvaluationLog log, SnapshotBase valueFactory)
         {
             this.log = log;
             this.valueFactory = valueFactory;
@@ -46,14 +46,13 @@ namespace Weverca.Analysis.FlowResolver
         /// Assigns the variable values held in this class to the flowOutputSet.
         /// </summary>
         /// <param name="flowOutputSet">The flow output set where the values will be assigned.</param>
-        public void AssignToSnapshot(ISnapshotReadWrite flowOutputSet)
+        public void AssignToSnapshot(SnapshotBase flowOutputSet)
         {
             foreach (var variableValue in variableValues)
             {
-                foreach (var value in variableValue.Value)
-                {
-                    flowOutputSet.Assign(variableValue.Key, value);
-                }
+                var variableInfo = flowOutputSet.GetVariable(new VariableIdentifier(variableValue.Key));
+                MemoryEntry values = new MemoryEntry(variableValue.Value.ToArray());
+                variableInfo.WriteMemory(flowOutputSet, values);
             }
         }
 
@@ -109,11 +108,14 @@ namespace Weverca.Analysis.FlowResolver
             if (!variableValues.ContainsKey(variableName))
             {
                 variableValues.Add(variableName, new List<Value>());
-
-                MemoryEntry memoryEntry = log.GetValue(element);
-                if (memoryEntry != null && memoryEntry.PossibleValues != null)
+                var variableInfo = log.ReadSnapshotEntry(element);
+                if (variableInfo != null)
                 {
-                    variableValues[variableName].AddRange(memoryEntry.PossibleValues);
+                    MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory);
+                    if (memoryEntry != null && memoryEntry.PossibleValues != null)
+                    {
+                        variableValues[variableName].AddRange(memoryEntry.PossibleValues);
+                    }
                 }
             }
 

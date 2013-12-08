@@ -7,7 +7,7 @@ using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
-using MemoryModel = Weverca.MemoryModels.MemoryModel;
+using MemoryModel = Weverca.MemoryModels.VirtualReferenceModel;
 
 namespace Weverca.Analysis.UnitTest.FlowResolverTests
 {
@@ -75,7 +75,8 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
                 FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
                 foreach (var association in variableAssociations)
                 {
-                    flowOutputSet.Assign(new VariableName(association.Key), association.Value);
+                    //flowOutputSet.Assign(new VariableName(association.Key), association.Value);
+                    flowOutputSet.GetVariable(new VariableIdentifier(new VariableName(association.Key))).WriteMemory(flowOutputSet.Snapshot, new MemoryEntry(association.Value));
                 }
 
                 //This change is because of new API for retrieving values
@@ -84,10 +85,12 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
                 foreach (var part in conditions.Parts)
                 {
                     log.AssociateValue(part.SourceElement, testResult.ConditionsEvaluations[index]);
+                    //log.GetSnapshotEntry(part.SourceElement).WriteMemory(flowOutputSet.Snapshot, testResult.ConditionsEvaluations[index]);
                 }
                 foreach (var association in associations)
                 {
                     log.AssociateValue(association.Key, new MemoryEntry(association.Value));
+                    //log.GetSnapshotEntry(association.Key).WriteMemory(flowOutputSet.Snapshot, new MemoryEntry(association.Value));
                 }
 
                 bool assume = flowResolver.ConfirmAssumption(flowOutputSet, conditions, log);

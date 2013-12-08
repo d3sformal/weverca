@@ -65,10 +65,10 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="conditionPart">The definition of the part of the condition.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
-        public ConditionPart(LangElement conditionPart, EvaluationLog log)
+        public ConditionPart(LangElement conditionPart, EvaluationLog log, SnapshotBase flowOutputSet)
         {
             this.conditionPart = conditionPart;
-            this.evaluatedPart = log.GetValue(conditionPart);
+            this.evaluatedPart = log.ReadSnapshotEntry(conditionPart).ReadMemory(flowOutputSet);
             this.log = log;
 
             ConditionResult = GetConditionResult();
@@ -83,7 +83,7 @@ namespace Weverca.Analysis.FlowResolver
         /// According to the possible results of the condition the state of the inner block will be set up.
         /// </summary>
         /// <param name="memoryContext">The flow output set.</param>
-        public void AssumeCondition(ConditionForm conditionForm, MemoryContext memoryContext, ISnapshotReadWrite flowOutputSet)
+        public void AssumeCondition(ConditionForm conditionForm, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             var variables = GetVariables();
             if (variables.Count() == 0)
@@ -192,7 +192,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
         /// </exception>
-        void AssumeTrue(LangElement langElement, MemoryContext memoryContext, ISnapshotReadWrite flowOutputSet)
+        void AssumeTrue(LangElement langElement, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
@@ -260,11 +260,12 @@ namespace Weverca.Analysis.FlowResolver
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
-                AssumeTrueDirectVarUse(directVarUse, memoryContext);
+                AssumeTrueDirectVarUse(directVarUse, memoryContext, flowOutputSet);
             }
             else
             {
                 throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", langElement.GetType().Name));
+                //TODO: deal with IssetEx
             }
         }
 
@@ -273,7 +274,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
         /// </exception>
-        void AssumeFalse(LangElement langElement, MemoryContext memoryContext, ISnapshotReadWrite flowOutputSet)
+        void AssumeFalse(LangElement langElement, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
@@ -341,7 +342,7 @@ namespace Weverca.Analysis.FlowResolver
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
-                AssumeFalseDirectVarUse(directVarUse, memoryContext);
+                AssumeFalseDirectVarUse(directVarUse, memoryContext, flowOutputSet);
             }
             else
             {
@@ -423,6 +424,7 @@ namespace Weverca.Analysis.FlowResolver
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
+                    //TODO: deal with DirectVarUse on the right
                 }
             }
             else
@@ -551,18 +553,18 @@ namespace Weverca.Analysis.FlowResolver
             }
         }
 
-        void AssumeTrueDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext)
+        void AssumeTrueDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            MemoryEntry memoryEntry = log.GetValue(directVarUse);
+            MemoryEntry memoryEntry = log.ReadSnapshotEntry(directVarUse).ReadMemory(flowOutputSet);
             if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
             {
                 memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(true));
             }
         }
 
-        void AssumeFalseDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext)
+        void AssumeFalseDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            MemoryEntry memoryEntry = log.GetValue(directVarUse);
+            MemoryEntry memoryEntry = log.ReadSnapshotEntry(directVarUse).ReadMemory(flowOutputSet);
             if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
             {
                 memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(false));

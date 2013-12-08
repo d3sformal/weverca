@@ -89,7 +89,7 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
         {
             foreach (var result in results)
             {
-                var values = flowOutputSet.ReadValue(new VariableName(result.Key));
+                var values = flowOutputSet.ReadVariable(new VariableIdentifier(new VariableName(result.Key))).ReadMemory(flowOutputSet.Snapshot);
 
                 ConfirmValues(result.Value.ToArray(), values.PossibleValues.ToArray());
             }

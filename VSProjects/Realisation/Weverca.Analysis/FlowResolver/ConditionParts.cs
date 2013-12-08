@@ -19,7 +19,7 @@ namespace Weverca.Analysis.FlowResolver
 
         List<ConditionPart> conditionParts = new List<ConditionPart>();
 
-        ISnapshotReadWrite flowOutputSet;
+        SnapshotBase flowOutputSet;
         ConditionForm conditionForm;
         EvaluationLog log;
 
@@ -62,8 +62,8 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="langElements">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, params LangElement[] langElements)
-            : this(conditionForm, flowOutputSet, log, langElements.Select(a => new ConditionPart(a, log)))
+        public ConditionParts(ConditionForm conditionForm, SnapshotBase flowOutputSet, EvaluationLog log, params LangElement[] langElements)
+            : this(conditionForm, flowOutputSet, log, langElements.Select(a => new ConditionPart(a, log, flowOutputSet)))
         { }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, SnapshotBase flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
             : this(conditionForm, flowOutputSet, log, conditionParts.Select(a => a.SourceElement).ToArray())
         { }
 
@@ -84,7 +84,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, ISnapshotReadWrite flowOutputSet, EvaluationLog log, IEnumerable<ConditionPart> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, SnapshotBase flowOutputSet, EvaluationLog log, IEnumerable<ConditionPart> conditionParts)
         {
             this.flowOutputSet = flowOutputSet;
             this.conditionParts.AddRange(conditionParts);
