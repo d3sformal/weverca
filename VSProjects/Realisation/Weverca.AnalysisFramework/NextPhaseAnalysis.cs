@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
 
 namespace Weverca.AnalysisFramework
 {
-    /// <summary>
-    /// Create snapshot used during analysis
-    /// NOTE:
-    ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
-    /// </summary>
-    /// <returns>Created snapshot</returns>
-    public delegate SnapshotBase CreateSnapshot();
+    public enum AnalysisDirection
+    {
+        /// <summary>
+        /// After point change its children are processed
+        /// </summary>
+        Forward,
+
+        /// <summary>
+        /// After point change its parents are processed
+        /// </summary>
+        Backward
+    }
+
 
     /// <summary>
-    /// Provide forward CFG analysis API.
+    /// TODO: How to resolve steps (it cause many duplications with forward resolvers)
     /// </summary>
-    public abstract class ForwardAnalysisBase
+    public abstract class NextPhaseAnalysis
     {
 
         #region Private members
@@ -53,14 +61,20 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
 
+        /// <summary>
+        /// Mapping used for mapping between program point graph snapshots and current analysis snaphots
+        /// </summary>
+        private SnapshotMapping _mapping;
+
         #endregion
 
         #region Analysis result API
 
         /// <summary>
-        /// Forward analysis has always forward direction
+        /// Determine direction of analysis, that can be
+        /// determined while analysis is constructed
         /// </summary>
-        public const AnalysisDirection Direction = AnalysisDirection.Forward;
+        public readonly AnalysisDirection Direction;
 
         /// <summary>
         /// Gets a value indicating whether analysis has already finished.
@@ -70,12 +84,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Gets root output from analysis
         /// </summary>
-        public ProgramPointGraph ProgramPointGraph { get; private set; }
-
-        /// <summary>
-        /// Gets control flow graph of method which is entry point of analysis.
-        /// </summary>
-        public Weverca.ControlFlowGraph.ControlFlowGraph EntryCFG { get; private set; }
+        public ProgramPointGraph AnalyzedProgramPointGraph { get; private set; }
 
         /// <summary>
         /// Input which is used only once when starting analysis - can be modified only before analysing
@@ -131,13 +140,15 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
-        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate)
+        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, CreateSnapshot createSnapshotDelegate, AnalysisDirection direction)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
+
+            Direction = direction;
+            AnalyzedProgramPointGraph = analyzedPPG;
             WideningLimit = int.MaxValue;
             EntryInput = createEmptySet();
             EntryInput.StartTransaction();
-            EntryCFG = entryMethodGraph;
         }
 
         /// <summary>
@@ -151,8 +162,6 @@ namespace Weverca.AnalysisFramework
             IsAnalysed = true;
         }
 
-        
-
         #region Analysis routines
 
         /// <summary>
@@ -162,14 +171,8 @@ namespace Weverca.AnalysisFramework
         {
             EntryInput.CommitTransaction();
 
-            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG);
-            _services.SetServices(ProgramPointGraph);
+            enqueue(AnalyzedProgramPointGraph.Start);
 
-            var output=_services.CreateEmptySet();            
-            ProgramPointGraph.Start.Initialize(EntryInput, output);
-
-            enqueue(ProgramPointGraph.Start);
-            
 
             //fix point computation
             while (_workQueue.Count > 0)
@@ -177,12 +180,9 @@ namespace Weverca.AnalysisFramework
                 var point = _workQueue.Dequeue();
 
                 //during flow through are enqueued all needed flow children
-                point.FlowThrough();
+                throw new NotImplementedException("Flowing through point in another way as in forward analysis");
             }
-
-            //because of avoid incorrect use
-            _services.UnSetServices(ProgramPointGraph);
-        }            
+        }
 
         private void enqueue(ProgramPointBase point)
         {
@@ -217,7 +217,8 @@ namespace Weverca.AnalysisFramework
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
 
-            _services = new AnalysisServices(_workQueue,_functionResolver,_expressionEvaluator,createEmptySet,  _flowResolver);
+            _mapping = new SnapshotMapping(AnalyzedProgramPointGraph);
+            _services = new AnalysisServices(_workQueue, _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver);
         }
 
         /// <summary>
@@ -232,10 +233,10 @@ namespace Weverca.AnalysisFramework
             snapshot.InitAssistant(assistant);
             assistant.InitContext(snapshot);
 
-            return new FlowOutputSet(snapshot,WideningLimit);
+            return new FlowOutputSet(snapshot, WideningLimit);
         }
 
-      
+
         /// <summary>
         /// Throws exception when analyze has been already proceeded
         /// </summary>

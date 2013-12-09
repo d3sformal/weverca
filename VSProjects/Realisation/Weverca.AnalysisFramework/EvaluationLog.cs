@@ -35,19 +35,6 @@ namespace Weverca.AnalysisFramework
             associatePoint(point);
         }
 
-        /// <summary>
-        /// Associate variable for given partial. The variable was computed for given partial.
-        /// <remarks>This is only workaround because of old "API" back compatibility</remarks>
-        /// </summary>
-        /// <param name="partial">Partial which variable is associated</param>
-        /// <param name="value">Associated variable</param>
-        [Obsolete("Use constructor with specified expression parts instead)")]
-        internal void AssociateVariable(LangElement partial, VariableIdentifier variable)
-        {
-            var point = new TestVariablePoint(partial, variable);
-            associatePoint(point);
-        }
-
         #endregion
         
 
@@ -58,20 +45,6 @@ namespace Weverca.AnalysisFramework
             _owner.Initialize(new FlowOutputSet(null), new FlowOutputSet(null));
         }
 
-        /// <summary>
-        /// Get value associated (computed during analysis) for given partial.         
-        /// </summary>
-        /// <param name="partial">Partial which value will be returned</param>
-        /// <returns>Associated value, or null if there is no associated value</returns>
-        [Obsolete("Use read snapshot entry instead. (Change because of new Snapshot access API)")]
-        public MemoryEntry GetValue(LangElement partial)
-        {
-            var entry = ReadSnapshotEntry(partial);
-            if (entry == null)
-                return null;
-
-            return entry.ReadMemory(_owner.InSnapshot);
-        }
         //====================================
 
         #region Partial associations members
@@ -153,10 +126,10 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <summary>
-        /// Get variable associated (computed during analysis) for given partial.         
+        /// Get LValue associated (computed during analysis) for given partial.         
         /// </summary>
-        /// <param name="partial">Partial which variable will be returned</param>
-        /// <returns>Associated variable, or null if there is no associated variable</returns>
+        /// <param name="partial">Partial which LValue will be returned</param>
+        /// <returns>Associated LValue, or null if there is no associated LValue</returns>
         public ReadWriteSnapshotEntryBase GetSnapshotEntry(LangElement partial)
         {
             LValuePoint varLike;
@@ -168,11 +141,12 @@ namespace Weverca.AnalysisFramework
             ProgramPointBase point;
             if (_points.TryGetValue(partial, out point))
             {
-                var lValue = point as LValuePoint;
+                var lValuePoint = point as LValuePoint;
 
-                if (lValue != null)
+                if (lValuePoint != null)
                 {
-                    throw new NotSupportedException("Requested point allows assigning, but not directly via variable - request for API change");
+                    //associated program point hasn't been used as LValue, but can be assigned to
+                    return lValuePoint.LValue;
                 }
             }
 

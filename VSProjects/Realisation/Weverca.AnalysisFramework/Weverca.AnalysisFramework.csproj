@@ -35,7 +35,8 @@
   <ItemGroup>
     <Compile Include="Expressions\AliasValueFactory.cs" />
     <Compile Include="AnalysisServices.cs" />
-    <Compile Include="BackwardAnalysisBase.cs" />
+    <Compile Include="Memory\SnapshotMapping.cs" />
+    <Compile Include="NextPhaseAnalysis.cs" />
     <Compile Include="Expressions\LiteralValueFactory.cs" />
     <Compile Include="Expressions\ObjectInitializer.cs" />
     <Compile Include="FlowExtension.cs" />

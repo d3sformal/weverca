@@ -272,17 +272,21 @@ namespace Weverca.AnalysisFramework.UnitTest
             ReadWriteSnapshotEntryBase lValue;
             MemoryEntry value;
 
+            var paramValue = _log.ReadSnapshotEntry(right).ReadMemory(_outSet.Snapshot);
             var call = left as DirectFcnCall;
             if (call != null && call.QualifiedName.Name.Value == "abs")
             {
                 var absParam = call.CallSignature.Parameters[0];
                 lValue = _log.GetSnapshotEntry(absParam.Expression);
-                value = getReverse_abs(_log.GetValue(right));
+
+                
+
+                value = getReverse_abs(paramValue);
             }
             else
             {
                 lValue = _log.GetSnapshotEntry(left);
-                value = _log.GetValue(right);
+                value = paramValue;
             }
 
             if (lValue != null && value != null)
