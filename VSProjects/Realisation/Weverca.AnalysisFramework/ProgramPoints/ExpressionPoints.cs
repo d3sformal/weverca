@@ -60,7 +60,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             var beforeIncrementValue = IncrementedValue.Value.ReadMemory(InSet.Snapshot);
             var afterIncrementValue = Services.Evaluator.IncDecEx(IncDecEx, beforeIncrementValue);
-            Services.Evaluator.Assign(IncrementTarget.LValue, afterIncrementValue);
+            IncrementTarget.LValue.WriteMemoryWithoutCopy(OutSnapshot, afterIncrementValue);
 
             if (IncDecEx.Post)
             {

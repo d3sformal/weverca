@@ -108,5 +108,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             throw new NotImplementedException();
         }
+
+        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

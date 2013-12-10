@@ -126,7 +126,7 @@ namespace Weverca.AnalysisFramework.Memory
         public ReadWriteSnapshotEntryBase ReadIndex(SnapshotBase context, MemberIdentifier index)
         {
             //TODO statistics reporting
-            return readIndex(context,index);
+            return readIndex(context, index);
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Weverca.AnalysisFramework.Memory
         public ReadWriteSnapshotEntryBase ReadField(SnapshotBase context, VariableIdentifier field)
         {
             //TODO statistics reporting
-            return readField(context,field);
+            return readField(context, field);
         }
     }
 }

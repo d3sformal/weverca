@@ -39,7 +39,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             if (implicitArray != null)
                 //TODO replace only undefined values
-                indexedEntry.WriteMemory(context, new MemoryEntry(implicitArray), true);
+                indexedEntry.WriteMemoryWithoutCopy(context, new MemoryEntry(implicitArray));
 
             var forceStrong = indexedEntry.ForceStrong;
 
@@ -71,7 +71,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var indexed = _context.MemoryAssistant.ReadIndex(value, _index);
 
             var storages = _context.IndexStorages(value, _index).ToArray();
-            _context.Write(storages, indexed, false);
+            _context.Write(storages, indexed, false, false);
             _indexStorages.AddRange(storages);
         }
 

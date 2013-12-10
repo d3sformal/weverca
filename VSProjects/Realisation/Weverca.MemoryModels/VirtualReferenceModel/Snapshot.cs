@@ -225,10 +225,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(variable, value);
         }
 
-        internal void Write(VariableKey[] storages, MemoryEntry value, bool forceStrongWrite)
+        internal void Write(VariableKey[] storages, MemoryEntry value, bool forceStrongWrite, bool noArrayCopy)
         {
             var references = new List<VirtualReference>();
-            var copiedValue = forceStrongWrite ? value : copyArrays(value);
+            var copiedValue = noArrayCopy ? value : copyArrays(value);
 
             foreach (var storage in storages)
             {

@@ -25,6 +25,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             throw new NotImplementedException();
         }
 
+        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            throw new NotImplementedException();
+        }
+
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             throw new NotImplementedException();

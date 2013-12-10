@@ -326,7 +326,7 @@ namespace Weverca.Analysis.UnitTest
             {
                 var identifier = new VariableIdentifier(inputVariables[i]);
                 var snapshotEntry = entryInput.GetVariable(identifier, true);
-                snapshotEntry.WriteMemory(entryInput.Snapshot, new MemoryEntry(inputValues[i]));
+                snapshotEntry.WriteMemoryWithoutCopy(entryInput.Snapshot, new MemoryEntry(inputValues[i]));
             }
         }
 

@@ -10,8 +10,6 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-
-
     class SnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
     {
         MemoryPath path;
@@ -238,6 +236,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             data.TemporaryIndexToRealease(temporaryIndex);
 
             return data;
+        }
+
+        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            throw new NotImplementedException();
         }
     }
 }

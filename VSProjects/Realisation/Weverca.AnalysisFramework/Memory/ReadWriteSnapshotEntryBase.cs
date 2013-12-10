@@ -21,6 +21,14 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite);
 
         /// <summary>
+        /// Write given value at memory represented by snapshot entry and doesn't process any
+        /// array copy. Is needed for correct increment/decrement semantic.
+        /// </summary>
+        /// <param name="value">Written value</param>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        protected abstract void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value);
+
+        /// <summary>
         /// Set aliases to current snapshot entry. Aliases can be set even to those entries
         /// that doesn't belongs to any variable, field,..
         /// </summary>
@@ -38,6 +46,12 @@ namespace Weverca.AnalysisFramework.Memory
         {
             //TODO statistics reporting
             writeMemory(context, value, forceStrongWrite);
+        }
+
+        public void WriteMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            //TODO statistics reporting
+            writeMemoryWithoutCopy(context, value);
         }
 
         /// <summary>

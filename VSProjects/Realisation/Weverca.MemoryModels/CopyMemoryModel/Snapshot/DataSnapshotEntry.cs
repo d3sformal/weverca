@@ -123,5 +123,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return getTemporary(snapshot).CreateAliasToEntry(snapshot);
         }
+
+        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

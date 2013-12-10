@@ -35,7 +35,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         {
             forceStrongWrite |= ForceStrong;
 
-            C(context).Write(_storages, value, forceStrongWrite);
+            C(context).Write(_storages, value, forceStrongWrite, false);
+        }
+
+        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            C(context).Write(_storages, value, false, true);
         }
 
         protected override bool isDefined(SnapshotBase context)
@@ -89,7 +94,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
             var snapshot = C(context);
-                    
+
             var indexVisitor = new IndexStorageVisitor(this, snapshot, index);
 
             return indexVisitor.IndexedValue;

@@ -20,7 +20,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         private ObjectValue _implicitObject;
 
         internal readonly VariableKey[] Storages;
-        
+
         internal FieldStorageVisitor(ReadWriteSnapshotEntryBase fieldedEntry, Snapshot context, VariableIdentifier field)
         {
             _context = context;
@@ -60,7 +60,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var fielded = _context.MemoryAssistant.ReadField(value, _field);
 
             var storages = _context.FieldStorages(value, _field).ToArray();
-            _context.Write(storages, fielded, false);
+            _context.Write(storages, fielded, false, false);
             _indexStorages.AddRange(storages);
         }
 
