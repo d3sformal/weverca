@@ -27,6 +27,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         private AnyStringValue abstractResult;
 
+        public void setFlowController(FlowController flow) 
+        {
+            this.flow = flow;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="StringConverter" /> class.
         /// </summary>
@@ -62,8 +67,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="value">Value to convert</param>
         /// <returns>Concrete string value if conversion is successful, otherwise <c>null</c></returns>
-        public StringValue EvaluateToString(Value value)
+        public StringValue EvaluateToString(FlowController flow, Value value)
         {
+            this.flow = flow;
+
             // Gets type of value and convert to string
             value.Accept(this);
 

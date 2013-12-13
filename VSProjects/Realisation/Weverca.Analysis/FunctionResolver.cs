@@ -22,7 +22,7 @@ namespace Weverca.Analysis
     {
         private static readonly VariableName currentFunctionName = new VariableName("$current_function");
         private VariableName retrunVariable = new VariableName(".return");
-        private NativeFunctionAnalyzer nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
+        private NativeFunctionAnalyzer nativeFunctionAnalyzer;
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
             = new Dictionary<FunctionDecl, FunctionHints>();
@@ -32,6 +32,7 @@ namespace Weverca.Analysis
         /// </summary>
         public FunctionResolver()
         {
+            nativeFunctionAnalyzer = NativeFunctionAnalyzer.CreateInstance();
         }
 
         #region FunctionResolverBase overrides

@@ -1269,6 +1269,10 @@
 <arg type="mixed" optional="false" byReference="false" dots="false"  />
 <arg type="mixed" optional="true" byReference="false" dots="true"  />
 </function>
+<function name="concat" returnType="string">
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+</function>
 <function name="connection_aborted" returnType="int">
 </function>
 <function name="connection_status" returnType="int">

@@ -88,6 +88,10 @@
     <Compile Include="Warnings.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\ClassLibrary\ClassLibrary.csproj">
+      <Project>{d515e8f4-357c-4caf-87c1-97d64c5f865a}</Project>
+      <Name>ClassLibrary</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
       <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
       <Name>Core</Name>
