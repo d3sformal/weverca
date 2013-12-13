@@ -1,4 +1,4 @@
-﻿using PHP.Core.AST;
+using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
@@ -44,14 +44,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Mod:
                     if (value.Value)
                     {
-                        if (TypeConversion.TryConvertToInteger(leftOperand.Value, out leftInteger))
-                        {
-                            result = OutSet.CreateInt(0);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyIntegerValue;
-                        }
+                        result = OutSet.CreateInt(0);
                     }
                     else
                     {
@@ -63,7 +56,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
-                    if (ComparisonOperation(leftBoolean, value.Value))
+                    result = Comparison.Compare(OutSet, operation, leftBoolean, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -73,7 +67,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (LogicalOperation(leftBoolean, value.Value))
+                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -115,39 +110,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    if (value.Value != 0)
-                    {
-                        if (TypeConversion.TryConvertToInteger(leftOperand.Value, out leftInteger))
-                        {
-                            // Value has the same sign as dividend
-                            result = OutSet.CreateInt(leftInteger % value.Value);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyIntegerValue;
-                        }
-                    }
-                    else
-                    {
-                        SetWarning("Division by floating-point zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by floating-point zero does not return NaN, but false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
                     break;
                 default:
-                    if (ComparisonOperation(leftOperand.Value, value.Value))
+                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, value.Value))
-                    {
-                        break;
-                    }
-
-                    if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToBoolean(value.Value)))
+                    if (ArithmeticOperation(leftOperand.Value, TypeConversion.ToFloat(value.Value)))
                     {
                         break;
                     }
@@ -166,6 +138,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             result = OutSet.AnyIntegerValue;
                             break;
                         }
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
+                    {
+                        break;
                     }
 
                     base.VisitIntegerValue(value);
@@ -189,50 +168,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(leftOperand.Value != value.Value);
                     break;
                 case Operations.Mod:
-                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
-                    {
-                        if (rightInteger != 0)
-                        {
-                            if (TypeConversion.TryConvertToInteger(leftOperand.Value, out leftInteger))
-                            {
-                                // Value has the same sign as dividend
-                                result = OutSet.CreateInt(leftInteger % rightInteger);
-                            }
-                            else
-                            {
-                                result = OutSet.AnyIntegerValue;
-                            }
-                        }
-                        else
-                        {
-                            SetWarning("Division by floating-point zero",
-                                AnalysisWarningCause.DIVISION_BY_ZERO);
-                            // Division by floating-point zero does not return NaN, but false boolean value
-                            result = OutSet.CreateBool(false);
-                        }
-                    }
-                    else
-                    {
-                        // As right operant can has any value, can be 0 too
-                        // That causes division by zero and returns false
-                        SetWarning("Division by any integer, possible division by zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        result = OutSet.AnyValue;
-                    }
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
                     break;
                 default:
-                    if (ComparisonOperation(leftOperand.Value, value.Value))
+                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
 
                     if (ArithmeticOperation(leftOperand.Value, value.Value))
-                    {
-                        break;
-                    }
-
-                    if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToBoolean(value.Value)))
                     {
                         break;
                     }
@@ -252,6 +197,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             result = OutSet.AnyIntegerValue;
                             break;
                         }
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
+                    {
+                        break;
                     }
 
                     base.VisitFloatValue(value);
@@ -276,30 +228,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    TypeConversion.TryConvertToInteger(value.Value, out integerValue);
-                    if (integerValue != 0)
-                    {
-                        if (TypeConversion.TryConvertToInteger(leftOperand.Value, out leftInteger))
-                        {
-                            // Value has the same sign as dividend
-                            result = OutSet.CreateInt(leftInteger % integerValue);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyIntegerValue;
-                        }
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero (converted from string)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
                     break;
                 default:
-                    if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToBoolean(value.Value)))
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -310,7 +244,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var isSuccessful = TypeConversion.TryConvertToNumber(value.Value, true,
                         out integerValue, out floatValue, out isInteger, out isHexadecimal);
 
-                    if (ComparisonOperation(leftOperand.Value, floatValue))
+                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, floatValue);
+                    if (result != null)
                     {
                         break;
                     }
@@ -357,23 +292,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.NotEqual:
-                case Operations.GreaterThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, leftOperand);
                     break;
-                case Operations.Equal:
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(leftOperand.Value));
-                    break;
                 case Operations.Identical:
-                case Operations.LessThan:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
-                case Operations.GreaterThanOrEqual:
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Add:
@@ -381,7 +308,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateDouble(leftOperand.Value);
                     break;
                 case Operations.Mul:
-                    result = OutSet.CreateDouble((leftOperand.Value >= 0.0) ? 0.0 : -0.0);
+                    result = OutSet.CreateDouble((leftOperand.Value > 0.0) ? 0.0
+                        : ((leftOperand.Value < -0.0) ? -0.0 : leftOperand.Value));
                     break;
                 case Operations.BitAnd:
                     result = OutSet.CreateInt(0);
@@ -408,12 +336,66 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(false);
                     break;
                 default:
+                    result = Comparison.Compare(OutSet, operation,
+                        leftOperand.Value, TypeConversion.ToInteger(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
                     base.VisitUndefinedValue(value);
                     break;
             }
         }
 
         #endregion Concrete values
+
+        #region Interval values
+
+        /// <inheritdoc />
+        public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+        {
+            if (!BitwiseOperation())
+            {
+                base.VisitGenericIntervalValue(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value);
+                    break;
+                default:
+                    result = Comparison.IntervalCompare(OutSet, operation,
+                        leftOperand.Value, TypeConversion.ToFloatInterval(OutSet, value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        #endregion Interval values
 
         #endregion AbstractValueVisitor Members
     }

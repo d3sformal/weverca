@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 
 using PHP.Core;
@@ -999,6 +999,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion ToIntegerInterval
 
+        #region ToFloatInterval
+
+        /// <summary>
+        /// Extends integer interval into floating-point interval of the same range.
+        /// </summary>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Integer interval to extend</param>
+        /// <returns>Floating-point interval extended from integer interval</returns>
+        public static FloatIntervalValue ToFloatInterval(FlowOutputSet outset, IntegerIntervalValue value)
+        {
+            return outset.CreateFloatInterval(value.Start, value.End);
+        }
+
+        #endregion ToFloatInterval
+
         #region ToNumber
 
         /// <summary>
@@ -1122,7 +1137,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 integerValue = 0;
                 bool isSuccessful;
 
-                // We identify a coorect floating-point number format
+                // We identify a correct floating-point number format
                 if ((start == 0) && (end == value.Length))
                 {
                     isSuccessful = double.TryParse(value, out floatValue);

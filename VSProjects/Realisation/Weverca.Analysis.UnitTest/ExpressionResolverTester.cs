@@ -1,4 +1,5 @@
-﻿using System.Text;
+using System;
+using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
@@ -284,6 +285,192 @@ namespace Weverca.Analysis.UnitTest
             TestEvaluation(unaryOperationCode);
         }
 
+        [TestMethod]
+        public void ModuloOperationEvaluator()
+        {
+            var dividends = new Value[]
+            {
+                new IntegerIntervalValue(2, 17),
+                new IntegerIntervalValue(9, 14),
+                new IntegerIntervalValue(94, 113),
+                new IntegerIntervalValue(98, 105),
+                new IntegerIntervalValue(228, 239),
+                new IntegerIntervalValue(517, 530),
+                new IntegerIntervalValue(7, 158),
+                new IntegerIntervalValue(123, 598),
+                new IntegerIntervalValue(16, 16),
+                new IntegerIntervalValue(498, 498),
+                new IntegerIntervalValue(13, 1271),
+                new IntegerIntervalValue(-17, -2),
+                new IntegerIntervalValue(-14, -9),
+                new IntegerIntervalValue(-113, -94),
+                new IntegerIntervalValue(-105, -98),
+                new IntegerIntervalValue(-239, -228),
+                new IntegerIntervalValue(-530, -517),
+                new IntegerIntervalValue(-158, -7),
+                new IntegerIntervalValue(-598, -123),
+                new IntegerIntervalValue(-10, -10),
+                new IntegerIntervalValue(-339, -339),
+                new IntegerIntervalValue(-1271, -13),
+                new IntegerIntervalValue(int.MinValue, -723),
+                new IntegerIntervalValue(int.MinValue, int.MinValue),
+                new IntegerIntervalValue(-17, 9),
+                new IntegerIntervalValue(-14, 2),
+                new IntegerIntervalValue(-7, 98),
+                new IntegerIntervalValue(-12, 94),
+                new IntegerIntervalValue(-239, 18),
+                new IntegerIntervalValue(-530, 27),
+                new IntegerIntervalValue(-347, 789),
+                new IntegerIntervalValue(-568, 478),
+                new IntegerIntervalValue(-2547, 1271),
+                new IntegerIntervalValue(int.MinValue, int.MaxValue),
+                new IntegerValue(0),
+                new IntegerValue(13),
+                new IntegerValue(-13),
+                new IntegerValue(13),
+                new IntegerValue(-13),
+                new IntegerValue(48),
+                new IntegerValue(17),
+                new IntegerValue(-17),
+                new IntegerValue(17),
+                new IntegerValue(-17),
+                new IntegerValue(31),
+                new IntegerValue(-31),
+                new IntegerValue(31),
+                new IntegerValue(-31),
+                new IntegerValue(31),
+                new IntegerValue(-31),
+                new IntegerValue(31),
+                new IntegerValue(-31),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(0),
+            };
+
+            var divisors = new Value[]
+            {
+                new IntegerValue(67),
+                new IntegerValue(-67),
+                new IntegerValue(29),
+                new IntegerValue(-29),
+                new IntegerValue(29),
+                new IntegerValue(-29),
+                new IntegerValue(23),
+                new IntegerValue(-23),
+                new IntegerValue(1568),
+                new IntegerValue(-1568),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(67),
+                new IntegerValue(-67),
+                new IntegerValue(29),
+                new IntegerValue(-29),
+                new IntegerValue(29),
+                new IntegerValue(-29),
+                new IntegerValue(23),
+                new IntegerValue(-23),
+                new IntegerValue(1568),
+                new IntegerValue(-1568),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(67),
+                new IntegerValue(-67),
+                new IntegerValue(29),
+                new IntegerValue(-29),
+                new IntegerValue(29),
+                new IntegerValue(-29),
+                new IntegerValue(51),
+                new IntegerValue(-51),
+                new IntegerValue(int.MinValue),
+                new IntegerValue(int.MinValue),
+                new IntegerIntervalValue(15, 4785),
+                new IntegerIntervalValue(28, 478),
+                new IntegerIntervalValue(28, 478),
+                new IntegerIntervalValue(-658, -41),
+                new IntegerIntervalValue(-658, -41),
+                new IntegerIntervalValue(-12, 17),
+                new IntegerIntervalValue(7, 26),
+                new IntegerIntervalValue(7, 26),
+                new IntegerIntervalValue(-26, -7),
+                new IntegerIntervalValue(-26, -7),
+                new IntegerIntervalValue(4, 25),
+                new IntegerIntervalValue(4, 25),
+                new IntegerIntervalValue(-25, -4),
+                new IntegerIntervalValue(-25, -4),
+                new IntegerIntervalValue(4, 12),
+                new IntegerIntervalValue(4, 12),
+                new IntegerIntervalValue(-12, -4),
+                new IntegerIntervalValue(-12, -4),
+                new IntegerIntervalValue(-246, 547),
+                new IntegerIntervalValue(157, 5478),
+                new IntegerIntervalValue((int.MinValue / 2) - 100, -5478),
+                new IntegerIntervalValue(5, 1457),
+            };
+
+            var results = new Value[]
+            {
+                new IntegerIntervalValue(2, 17),
+                new IntegerIntervalValue(9, 14),
+                new IntegerIntervalValue(7, 26),
+                new IntegerIntervalValue(11, 18),
+                new IntegerIntervalValue(0, 28),
+                new IntegerIntervalValue(0, 28),
+                new IntegerIntervalValue(0, 22),
+                new IntegerIntervalValue(0, 22),
+                new IntegerValue(16),
+                new IntegerValue(498),
+                new IntegerIntervalValue(13, 1271),
+                new IntegerIntervalValue(-17, -2),
+                new IntegerIntervalValue(-14, -9),
+                new IntegerIntervalValue(-26, -7),
+                new IntegerIntervalValue(-18, -11),
+                new IntegerIntervalValue(-28, 0),
+                new IntegerIntervalValue(-28, 0),
+                new IntegerIntervalValue(-22, 0),
+                new IntegerIntervalValue(-22, 0),
+                new IntegerValue(-10),
+                new IntegerValue(-339),
+                new IntegerIntervalValue(-1271, -13),
+                new IntegerIntervalValue(int.MinValue + 1, 0),
+                new IntegerValue(0),
+                new IntegerIntervalValue(-17, 9),
+                new IntegerIntervalValue(-14, 2),
+                new IntegerIntervalValue(-7, 28),
+                new IntegerIntervalValue(-12, 28),
+                new IntegerIntervalValue(-28, 18),
+                new IntegerIntervalValue(-28, 27),
+                new IntegerIntervalValue(-50, 50),
+                new IntegerIntervalValue(-50, 50),
+                new IntegerIntervalValue(-2547, 1271),
+                new IntegerIntervalValue(int.MinValue + 1, int.MaxValue),
+                new IntegerValue(0),
+                new IntegerValue(13),
+                new IntegerValue(-13),
+                new IntegerValue(13),
+                new IntegerValue(-13),
+                new AnyValue(),
+                new IntegerIntervalValue(0, 17),
+                new IntegerIntervalValue(-17, 0),
+                new IntegerIntervalValue(0, 17),
+                new IntegerIntervalValue(-17, 0),
+                new IntegerIntervalValue(0, 15),
+                new IntegerIntervalValue(-15, 0),
+                new IntegerIntervalValue(0, 15),
+                new IntegerIntervalValue(-15, 0),
+                new IntegerIntervalValue(0, 11),
+                new IntegerIntervalValue(-11, 0),
+                new IntegerIntervalValue(0, 11),
+                new IntegerIntervalValue(-11, 0),
+                new AnyValue(),
+                new IntegerIntervalValue(-5477, 0),
+                new IntegerIntervalValue((int.MinValue / 2) + 1, 0),
+                new IntegerValue(0),
+            };
+
+            TestEvaluationResults("$result{0} = $left{0} % $right{0};\n", dividends, divisors, results);
+        }
+
         private static void TestEvaluationResults(string pattern, Value[] results)
         {
             var code = GenerateProgramCode(pattern);
@@ -293,7 +480,25 @@ namespace Weverca.Analysis.UnitTest
             var ppg = TestUtils.GeneratePpg(analysis);
             var outSet = TestUtils.GetResultOutputSet(ppg);
 
-            TestVariableResults(outSet, results);
+            TestVariableResults(outSet, results, GetInputVariableName);
+        }
+
+        private static void TestEvaluationResults(string pattern, Value[] leftOperands,
+            Value[] rightOperands, Value[] results)
+        {
+            Debug.Assert(leftOperands.Length == rightOperands.Length,
+                "Number of left and right operands is the same");
+            Debug.Assert(leftOperands.Length == results.Length,
+                "Number of operands and results is the same");
+
+            var code = GenerateProgramCode(pattern, results.Length);
+            var analysis = TestUtils.GenerateForwardAnalysis(code);
+            SetInputOperands(analysis.EntryInput, leftOperands, rightOperands);
+
+            var ppg = TestUtils.GeneratePpg(analysis);
+            var outSet = TestUtils.GetResultOutputSet(ppg);
+
+            TestVariableResults(outSet, results, GenerateResultVariableName);
         }
 
         private static void TestEvaluation(string code)
@@ -310,11 +515,25 @@ namespace Weverca.Analysis.UnitTest
 
         private static string GenerateProgramCode(string pattern)
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
 
             foreach (var name in inputVariables)
             {
                 builder.AppendFormat(pattern, name);
+            }
+
+            return builder.ToString();
+        }
+
+        private static string GenerateProgramCode(string pattern, int lineCount)
+        {
+            Debug.Assert(lineCount > 0, "We must generate at least one code line");
+
+            var builder = new StringBuilder();
+
+            for (var i = 0; i < lineCount; ++i)
+            {
+                builder.AppendFormat(pattern, i);
             }
 
             return builder.ToString();
@@ -330,11 +549,30 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
-        private static void TestVariableResults(FlowOutputSet outSet, Value[] results)
+        private static void SetInputOperands(FlowOutputSet entryInput, Value[] leftOperands,
+            Value[] rightOperands)
         {
-            for (var i = 0; i < inputVariables.Length; ++i)
+            Debug.Assert(leftOperands.Length == rightOperands.Length,
+                "Number of left and right operands is the same");
+
+            for (var i = 0; i < leftOperands.Length; ++i)
             {
-                var identifier = new VariableIdentifier(inputVariables[i]);
+                var identifier = new VariableIdentifier(string.Concat("left", i.ToString()));
+                var snapshotEntry = entryInput.GetVariable(identifier, true);
+                snapshotEntry.WriteMemoryWithoutCopy(entryInput.Snapshot, new MemoryEntry(leftOperands[i]));
+
+                identifier = new VariableIdentifier(string.Concat("right", i.ToString()));
+                snapshotEntry = entryInput.GetVariable(identifier, true);
+                snapshotEntry.WriteMemoryWithoutCopy(entryInput.Snapshot, new MemoryEntry(rightOperands[i]));
+            }
+        }
+
+        private static void TestVariableResults(FlowOutputSet outSet, Value[] results,
+            Func<int, string> nameGenerator)
+        {
+            for (var i = 0; i < results.Length; ++i)
+            {
+                var identifier = new VariableIdentifier(nameGenerator(i));
                 var snapshotEntry = outSet.GetVariable(identifier, true);
 
                 var entry = snapshotEntry.ReadMemory(outSet.Snapshot);
@@ -344,6 +582,19 @@ namespace Weverca.Analysis.UnitTest
 
                 Assert.AreEqual(results[i], value);
             }
+        }
+
+        private static string GetInputVariableName(int i)
+        {
+            Debug.Assert((i >= 0) && (i < inputVariables.Length),
+                "Parameter must be an index into input variables array");
+
+            return inputVariables[i];
+        }
+
+        private static string GenerateResultVariableName(int i)
+        {
+            return string.Concat("result", i.ToString());
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using PHP.Core.AST;
+using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
@@ -24,43 +24,58 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region AbstractValueVisitor Members
 
-        /// <inheritdoc />
-        public override void VisitValue(Value value)
-        {
-            switch (operation)
-            {
-                case Operations.BitAnd:
-                case Operations.BitOr:
-                case Operations.BitXor:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    // Realize that objects cannot be converted to integer and we suppress warning
-                    result = OutSet.AnyIntegerValue;
-                    break;
-                default:
-                    base.VisitValue(value);
-                    break;
-            }
-        }
-
         #region Concrete values
 
         #region Scalar values
 
         /// <inheritdoc />
+        public override void VisitScalarValue(ScalarValue value)
+        {
+            if (!BitwiseOperation())
+            {
+                base.VisitScalarValue(value);
+            }
+        }
+
+        /// <inheritdoc />
         public override void VisitBooleanValue(BooleanValue value)
         {
-            // TODO: Implement
-
             switch (operation)
             {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    if (value.Value)
+                    {
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        SetWarning("Division by zero (converted from boolean false)",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by false returns false boolean value
+                        result = OutSet.CreateBool(false);
+                    }
+                    break;
                 default:
-                    if (ComparisonOperation(leftOperand, TypeConversion.ToInteger(value.Value)))
+                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
 
-                    if (LogicalOperation<int>(value.Value, leftOperand))
+                    var rightInteger = TypeConversion.ToInteger(value.Value);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, rightInteger);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    if (ArithmeticOperation(leftOperand, rightInteger))
                     {
                         break;
                     }
@@ -75,17 +90,32 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitIntegerValue(IntegerValue value)
         {
-            // TODO: Implement
-
             switch (operation)
             {
+                case Operations.Identical:
+                    result = Comparison.Equal(OutSet, leftOperand, value.Value);
+                    break;
+                case Operations.NotIdentical:
+                    result = Comparison.NotEqual(OutSet, leftOperand, value.Value);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
+                    break;
                 default:
-                    if (ComparisonOperation(leftOperand, value.Value))
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
 
-                    if (LogicalOperation<int>(TypeConversion.ToBoolean(value.Value), leftOperand))
+                    if (ArithmeticOperation(leftOperand, value.Value))
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
+                        TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -98,12 +128,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
-            // TODO: Implement
-
             switch (operation)
             {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
+                    break;
                 default:
-                    if (LogicalOperation<int>(TypeConversion.ToBoolean(value.Value), leftOperand))
+                    result = Comparison.IntervalCompare(OutSet, operation,
+                        TypeConversion.ToFloatInterval(OutSet, leftOperand), value.Value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
+                        TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -118,14 +164,47 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
         {
-            // TODO: Implement
-
             switch (operation)
             {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
+                    break;
                 default:
-                    if (LogicalOperation<int>(TypeConversion.ToBoolean(value.Value), leftOperand))
+                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
+                        TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
                     {
                         break;
+                    }
+
+                    int integerValue;
+                    double floatValue;
+                    bool isInteger;
+                    var isSuccessful = TypeConversion.TryConvertToNumber(value.Value, true,
+                        out integerValue, out floatValue, out isInteger);
+
+                    if (isInteger)
+                    {
+                        result = Comparison.IntervalCompare(OutSet, operation, leftOperand, integerValue);
+                        if (result != null)
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        result = Comparison.IntervalCompare(OutSet, operation,
+                            TypeConversion.ToFloatInterval(OutSet, leftOperand), floatValue);
+                        if (result != null)
+                        {
+                            break;
+                        }
                     }
 
                     base.VisitStringValue(value);
@@ -138,17 +217,42 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
-            // TODO: Implement
-
             switch (operation)
             {
+                case Operations.Identical:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Or:
+                case Operations.Xor:
+                    result = TypeConversion.ToBoolean(OutSet, leftOperand);
+                    break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = leftOperand;
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    SetWarning("Division by zero (converted from null)",
+                        AnalysisWarningCause.DIVISION_BY_ZERO);
+                    // Division by null returns false boolean value
+                    result = OutSet.CreateBool(false);
+                    break;
                 default:
-                    if (ComparisonOperation(leftOperand, TypeConversion.ToInteger(value)))
-                    {
-                        break;
-                    }
-
-                    if (LogicalOperation<int>(TypeConversion.ToBoolean(value), leftOperand))
+                    result = Comparison.IntervalCompare(OutSet, operation,
+                        leftOperand, TypeConversion.ToInteger(value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -159,6 +263,51 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Concrete values
+
+        #region Interval values
+
+        /// <inheritdoc />
+        public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+        {
+            if (!BitwiseOperation())
+            {
+                base.VisitGenericIntervalValue(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = Comparison.Equal(OutSet, leftOperand, value);
+                    break;
+                case Operations.NotIdentical:
+                    result = Comparison.NotEqual(OutSet, leftOperand, value);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand, value);
+                    break;
+                default:
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        #endregion Interval values
 
         #endregion AbstractValueVisitor Members
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -144,235 +144,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 || (operation == Operations.Xor);
         }
 
-        protected bool ComparisonOperation(bool leftOperand, bool rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                    result = OutSet.CreateBool(leftOperand == rightOperand);
-                    return true;
-                case Operations.NotEqual:
-                    result = OutSet.CreateBool(leftOperand != rightOperand);
-                    return true;
-                case Operations.LessThan:
-                    result = OutSet.CreateBool((!leftOperand) && rightOperand);
-                    return true;
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool((!leftOperand) || rightOperand);
-                    return true;
-                case Operations.GreaterThan:
-                    result = OutSet.CreateBool(leftOperand && (!rightOperand));
-                    return true;
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(leftOperand || (!rightOperand));
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool ComparisonOperation(int leftOperand, int rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                    result = OutSet.CreateBool(leftOperand == rightOperand);
-                    return true;
-                case Operations.NotEqual:
-                    result = OutSet.CreateBool(leftOperand != rightOperand);
-                    return true;
-                case Operations.LessThan:
-                    result = OutSet.CreateBool(leftOperand < rightOperand);
-                    return true;
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(leftOperand <= rightOperand);
-                    return true;
-                case Operations.GreaterThan:
-                    result = OutSet.CreateBool(leftOperand > rightOperand);
-                    return true;
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(leftOperand >= rightOperand);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool ComparisonOperation(IntegerIntervalValue leftOperand, int rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                    if ((leftOperand.Start <= rightOperand) && (leftOperand.End >= rightOperand))
-                    {
-                        if ((leftOperand.Start == rightOperand) && (leftOperand.End == rightOperand))
-                        {
-                            result = OutSet.CreateBool(true);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyBooleanValue;
-                        }
-                    }
-                    else
-                    {
-                        result = OutSet.CreateBool(false);
-                    }
-                    return true;
-                case Operations.NotEqual:
-                    if ((leftOperand.Start > rightOperand) || (leftOperand.End < rightOperand))
-                    {
-                        result = OutSet.CreateBool(true);
-                    }
-                    else
-                    {
-                        if ((leftOperand.Start == rightOperand) && (leftOperand.End == rightOperand))
-                        {
-                            result = OutSet.CreateBool(false);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyBooleanValue;
-                        }
-                    }
-                    return true;
-                case Operations.LessThan:
-                    if (leftOperand.End < rightOperand)
-                    {
-                        result = OutSet.CreateBool(true);
-                    }
-                    else
-                    {
-                        if (leftOperand.Start >= rightOperand)
-                        {
-                            result = OutSet.CreateBool(false);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyBooleanValue;
-                        }
-                    }
-                    return true;
-                case Operations.LessThanOrEqual:
-                    if (leftOperand.End <= rightOperand)
-                    {
-                        result = OutSet.CreateBool(true);
-                    }
-                    else
-                    {
-                        if (leftOperand.Start > rightOperand)
-                        {
-                            result = OutSet.CreateBool(false);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyBooleanValue;
-                        }
-                    }
-                    return true;
-                case Operations.GreaterThan:
-                    if (leftOperand.Start > rightOperand)
-                    {
-                        result = OutSet.CreateBool(true);
-                    }
-                    else
-                    {
-                        if (leftOperand.End <= rightOperand)
-                        {
-                            result = OutSet.CreateBool(false);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyBooleanValue;
-                        }
-                    }
-                    return true;
-                case Operations.GreaterThanOrEqual:
-                    if (leftOperand.Start >= rightOperand)
-                    {
-                        result = OutSet.CreateBool(true);
-                    }
-                    else
-                    {
-                        if (leftOperand.End < rightOperand)
-                        {
-                            result = OutSet.CreateBool(false);
-                        }
-                        else
-                        {
-                            result = OutSet.AnyBooleanValue;
-                        }
-                    }
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool ComparisonOperation(double leftOperand, double rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                    SetWarning("Comparing floating-point numbers directly for equality");
-                    result = OutSet.CreateBool(leftOperand == rightOperand);
-                    return true;
-                case Operations.NotEqual:
-                    SetWarning("Comparing floating-point numbers directly for non-equality");
-                    result = OutSet.CreateBool(leftOperand != rightOperand);
-                    return true;
-                case Operations.LessThan:
-                    result = OutSet.CreateBool(leftOperand < rightOperand);
-                    return true;
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(leftOperand <= rightOperand);
-                    return true;
-                case Operations.GreaterThan:
-                    result = OutSet.CreateBool(leftOperand > rightOperand);
-                    return true;
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(leftOperand >= rightOperand);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool ComparisonOperation(string leftOperand, string rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                    result = OutSet.CreateBool(leftOperand == rightOperand);
-                    return true;
-                case Operations.NotEqual:
-                    result = OutSet.CreateBool(leftOperand != rightOperand);
-                    return true;
-                case Operations.LessThan:
-                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) < 0);
-                    return true;
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) <= 0);
-                    return true;
-                case Operations.GreaterThan:
-                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) > 0);
-                    return true;
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(string.Compare(leftOperand, rightOperand) >= 0);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
         protected bool ArithmeticOperation(int leftOperand, int rightOperand)
         {
             switch (operation)
             {
                 case Operations.Add:
                     // Result of addition can overflow or underflow
-                    if (((rightOperand >= 0) && (leftOperand <= int.MaxValue - rightOperand))
-                        || ((rightOperand < 0) && (leftOperand >= int.MinValue - rightOperand)))
+                    if ((rightOperand >= 0) ? (leftOperand <= int.MaxValue - rightOperand)
+                        : (leftOperand >= int.MinValue - rightOperand))
                     {
                         result = OutSet.CreateInt(leftOperand + rightOperand);
                     }
@@ -384,8 +163,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return true;
                 case Operations.Sub:
                     // Result of addition can underflow or underflow
-                    if (((rightOperand >= 0) && (leftOperand >= int.MinValue + rightOperand))
-                        || ((rightOperand < 0) && (leftOperand <= int.MaxValue + rightOperand)))
+                    if ((rightOperand >= 0) ? (leftOperand >= int.MinValue + rightOperand)
+                        : (leftOperand <= int.MaxValue + rightOperand))
                     {
                         result = OutSet.CreateInt(leftOperand - rightOperand);
                     }
@@ -397,18 +176,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return true;
                 case Operations.Mul:
                     // Result of addition can overflow or underflow
-                    // TODO: Find more cleaner solution ((a * b <= c) <==> (a <= c / b))
-                    var product = System.Convert.ToInt64(leftOperand,
-                        CultureInfo.InvariantCulture) * rightOperand;
-                    if ((product >= int.MinValue) && (product <= int.MaxValue))
+                    if ((rightOperand == 0) || (((leftOperand >= 0) == (rightOperand >= 0))
+                        ? (leftOperand <= int.MaxValue / rightOperand)
+                        : (leftOperand <= int.MinValue / rightOperand)))
                     {
-                        result = OutSet.CreateInt(System.Convert.ToInt32(product,
-                            CultureInfo.InvariantCulture));
+                        result = OutSet.CreateInt(leftOperand * rightOperand);
                     }
                     else
                     {
                         // If aritmetic overflows or underflows, result is double
-                        result = OutSet.CreateDouble(TypeConversion.ToFloat(product));
+                        result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) * rightOperand);
                     }
                     return true;
                 case Operations.Div:
@@ -422,6 +199,101 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         {
                             result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) / rightOperand);
                         }
+                    }
+                    else
+                    {
+                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+                        // Division by zero returns false boolean value
+                        result = OutSet.CreateBool(false);
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        protected bool ArithmeticOperation(IntegerIntervalValue leftOperand, int rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Add:
+                    // Result of addition can overflow or underflow
+                    if ((rightOperand >= 0) ? (leftOperand.End <= int.MaxValue - rightOperand)
+                        : (leftOperand.Start >= int.MinValue - rightOperand))
+                    {
+                        result = OutSet.CreateIntegerInterval(leftOperand.Start + rightOperand,
+                            leftOperand.End + rightOperand);
+                    }
+                    else
+                    {
+                        // If aritmetic overflows or underflows, result is double
+                        double rightFloat = TypeConversion.ToFloat(rightOperand);
+                        result = OutSet.CreateFloatInterval(leftOperand.Start + rightFloat,
+                            leftOperand.End + rightFloat);
+                    }
+                    return true;
+                case Operations.Sub:
+                    // Result of addition can underflow or underflow
+                    if ((rightOperand >= 0) ? (leftOperand.Start >= int.MinValue + rightOperand)
+                        : (leftOperand.End <= int.MaxValue + rightOperand))
+                    {
+                        result = OutSet.CreateIntegerInterval(leftOperand.Start - rightOperand,
+                            leftOperand.End - rightOperand);
+                    }
+                    else
+                    {
+                        // If aritmetic overflows or underflows, result is double
+                        double rightFloat = TypeConversion.ToFloat(rightOperand);
+                        result = OutSet.CreateFloatInterval(leftOperand.Start - rightFloat,
+                            leftOperand.End - rightFloat);
+                    }
+                    return true;
+                case Operations.Mul:
+                    // Result of addition can overflow or underflow
+                    var isRightOperandNonNegative = rightOperand >= 0;
+                    var maxLeftOperand = int.MaxValue / rightOperand;
+                    var minLeftOperand = int.MinValue / rightOperand;
+                    if ((((leftOperand.Start >= 0) == isRightOperandNonNegative)
+                        ? (leftOperand.Start <= maxLeftOperand)
+                        : (leftOperand.Start >= minLeftOperand))
+                        && (((leftOperand.End >= 0) == isRightOperandNonNegative)
+                        ? (leftOperand.End <= maxLeftOperand)
+                        : (leftOperand.End >= minLeftOperand)))
+                    {
+                        if (isRightOperandNonNegative)
+                        {
+                            result = OutSet.CreateIntegerInterval(leftOperand.Start * rightOperand,
+                                leftOperand.End * rightOperand);
+                        }
+                        else
+                        {
+                            result = OutSet.CreateIntegerInterval(leftOperand.End * rightOperand,
+                                leftOperand.Start * rightOperand);
+                        }
+                    }
+                    else
+                    {
+                        // If aritmetic overflows or underflows, result is double
+                        double rightFloat = TypeConversion.ToFloat(rightOperand);
+                        if (isRightOperandNonNegative)
+                        {
+                            result = OutSet.CreateFloatInterval(leftOperand.Start * rightFloat,
+                                leftOperand.End * rightFloat);
+                        }
+                        else
+                        {
+                            result = OutSet.CreateFloatInterval(leftOperand.End * rightFloat,
+                                leftOperand.Start * rightFloat);
+                        }
+                    }
+                    return true;
+                case Operations.Div:
+                    if (rightOperand != 0)
+                    {
+                        // Not divisible numbers result to floating-point number
+                        double rightFloat = TypeConversion.ToFloat(rightOperand);
+                        result = OutSet.CreateFloatInterval(leftOperand.Start / rightFloat,
+                            leftOperand.End / rightFloat);
                     }
                     else
                     {
@@ -466,22 +338,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        protected void ModuloOperation(int leftOperand, int rightOperand)
-        {
-            if (rightOperand != 0)
-            {
-                // Value has the same sign as dividend
-                result = OutSet.CreateInt(leftOperand % rightOperand);
-            }
-            else
-            {
-                SetWarning("Division (modulo) by zero",
-                    AnalysisWarningCause.DIVISION_BY_ZERO);
-                // Division (modulo) by zero returns false boolean value
-                result = OutSet.CreateBool(false);
-            }
-        }
-
         protected bool BitwiseOperation(int leftOperand, int rightOperand)
         {
             switch (operation)
@@ -506,60 +362,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        protected bool LogicalOperation(bool leftOperand, bool rightOperand)
+        protected bool BitwiseOperation()
         {
             switch (operation)
             {
-                case Operations.And:
-                    result = OutSet.CreateBool(leftOperand && rightOperand);
-                    return true;
-                case Operations.Or:
-                    result = OutSet.CreateBool(leftOperand || rightOperand);
-                    return true;
-                case Operations.Xor:
-                    result = OutSet.CreateBool(leftOperand != rightOperand);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool LogicalOperation<T>(bool leftOperand, IntervalValue<T> rightOperand)
-            where T : IComparable, IComparable<T>, IEquatable<T>
-        {
-            bool convertedValue;
-
-            switch (operation)
-            {
-                case Operations.And:
-                    if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
-                    {
-                        result = OutSet.CreateBool(leftOperand && convertedValue);
-                    }
-                    else
-                    {
-                        result = OutSet.AnyBooleanValue;
-                    }
-                    return true;
-                case Operations.Or:
-                    if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
-                    {
-                        result = OutSet.CreateBool(leftOperand || convertedValue);
-                    }
-                    else
-                    {
-                        result = OutSet.AnyBooleanValue;
-                    }
-                    return true;
-                case Operations.Xor:
-                    if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
-                    {
-                        result = OutSet.CreateBool(leftOperand != convertedValue);
-                    }
-                    else
-                    {
-                        result = OutSet.AnyBooleanValue;
-                    }
+                case Operations.BitAnd:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    // Realize that objects cannot be converted to integer and we suppress warning
+                    result = OutSet.AnyIntegerValue;
                     return true;
                 default:
                     return false;

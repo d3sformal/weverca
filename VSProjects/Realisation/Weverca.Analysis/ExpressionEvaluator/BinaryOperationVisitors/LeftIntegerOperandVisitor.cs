@@ -1,4 +1,4 @@
-﻿using PHP.Core.AST;
+using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
@@ -103,12 +103,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
-                    if (ComparisonOperation(leftBoolean, value.Value))
+                    result = Comparison.Compare(OutSet, operation, leftBoolean, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
 
-                    if (LogicalOperation(leftBoolean, value.Value))
+                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -137,10 +139,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(leftOperand.Value != value.Value);
                     break;
                 case Operations.Mod:
-                    ModuloOperation(leftOperand.Value, value.Value);
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
                     break;
                 default:
-                    if (ComparisonOperation(leftOperand.Value, value.Value))
+                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -150,13 +153,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToBoolean(value.Value)))
+                    if (BitwiseOperation(leftOperand.Value, value.Value))
                     {
                         break;
                     }
 
-                    if (BitwiseOperation(leftOperand.Value, value.Value))
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -169,8 +173,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
-            int rightInteger;
-
             switch (operation)
             {
                 case Operations.Identical:
@@ -180,21 +182,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
-                    {
-                        ModuloOperation(leftOperand.Value, rightInteger);
-                    }
-                    else
-                    {
-                        // As right operant can has any value, can be 0 too
-                        // That causes division by zero and returns false
-                        SetWarning("Division by any integer, possible division by zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        result = OutSet.AnyValue;
-                    }
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
                     break;
                 default:
-                    if (ComparisonOperation(leftOperand.Value, value.Value))
+                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -204,12 +196,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToBoolean(value.Value)))
-                    {
-                        break;
-                    }
-
+                    int rightInteger;
                     if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
                     {
                         if (BitwiseOperation(leftOperand.Value, rightInteger))
@@ -226,6 +213,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         }
                     }
 
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
                     base.VisitFloatValue(value);
                     break;
             }
@@ -236,8 +230,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
         {
-            int integerValue;
-
             switch (operation)
             {
                 case Operations.Identical:
@@ -247,16 +239,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    TypeConversion.TryConvertToInteger(value.Value, out integerValue);
-                    ModuloOperation(leftOperand.Value, integerValue);
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
                     break;
                 default:
-                    if (LogicalOperation(TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToBoolean(value.Value)))
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
 
+                    int integerValue;
                     double floatValue;
                     bool isInteger;
                     bool isHexadecimal;
@@ -265,7 +258,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (isInteger)
                     {
-                        if (ComparisonOperation(leftOperand.Value, integerValue))
+                        result = Comparison.Compare(OutSet, operation,
+                            leftOperand.Value, integerValue);
+                        if (result != null)
                         {
                             break;
                         }
@@ -277,7 +272,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        if (ComparisonOperation(leftOperand.Value, floatValue))
+                        result = Comparison.Compare(OutSet, operation, leftOperand.Value, floatValue);
+                        if (result != null)
                         {
                             break;
                         }
@@ -324,24 +320,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.NotEqual:
-                case Operations.GreaterThan:
-                case Operations.Or:
-                case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, leftOperand);
-                    break;
-                case Operations.Equal:
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(leftOperand.Value));
-                    break;
                 case Operations.Identical:
-                case Operations.LessThan:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
-                case Operations.GreaterThanOrEqual:
                     result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Or:
+                case Operations.Xor:
+                    result = TypeConversion.ToBoolean(OutSet, leftOperand);
                     break;
                 case Operations.Mul:
                 case Operations.BitAnd:
@@ -353,7 +341,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.BitXor:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
-                    result = OutSet.CreateInt(leftOperand.Value);
+                    result = leftOperand;
                     break;
                 case Operations.Div:
                 case Operations.Mod:
@@ -363,12 +351,65 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(false);
                     break;
                 default:
+                    result = Comparison.Compare(OutSet, operation,
+                        leftOperand.Value, TypeConversion.ToInteger(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
                     base.VisitUndefinedValue(value);
                     break;
             }
         }
 
         #endregion Concrete values
+
+        #region Interval values
+
+        /// <inheritdoc />
+        public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+        {
+            if (!BitwiseOperation())
+            {
+                base.VisitGenericIntervalValue(value);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = Comparison.Equal(OutSet, leftOperand.Value, value);
+                    break;
+                case Operations.NotIdentical:
+                    result = Comparison.NotEqual(OutSet, leftOperand.Value, value);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value);
+                    break;
+                default:
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand.Value, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        #endregion
 
         #endregion AbstractValueVisitor Members
     }

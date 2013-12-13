@@ -100,22 +100,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.NotEqual:
-                case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
                     break;
-                case Operations.Equal:
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(value.Value));
-                    break;
-                case Operations.GreaterThan:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
-                    break;
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Sub:
                     // Result of subtraction can overflow
@@ -138,13 +128,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Add:
                 case Operations.BitOr:
                 case Operations.BitXor:
-                    result = OutSet.CreateInt(value.Value);
+                    result = value;
                     break;
                 case Operations.Div:
                 case Operations.Mod:
                     DivisionOfNullOperation(value.Value != 0);
                     break;
                 default:
+                    result = Comparison.Compare(OutSet, operation,
+                        TypeConversion.ToInteger(leftOperand), value.Value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
                     base.VisitIntegerValue(value);
                     break;
             }
@@ -157,22 +154,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             switch (operation)
             {
-                case Operations.NotEqual:
-                case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
                     break;
-                case Operations.Equal:
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(value.Value));
-                    break;
-                case Operations.GreaterThan:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
-                    break;
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Add:
                     result = OutSet.CreateDouble(value.Value);
@@ -181,7 +168,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateDouble(-value.Value);
                     break;
                 case Operations.Mul:
-                    result = OutSet.CreateDouble((value.Value >= 0.0) ? 0.0 : -0.0);
+                    result = OutSet.CreateDouble((value.Value > 0.0) ? 0.0
+                        : ((value.Value < -0.0) ? -0.0 : value.Value));
                     break;
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
@@ -203,20 +191,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     DivisionOfNullOperation(value.Value);
                     break;
                 case Operations.Mod:
-                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
-                    {
-                        DivisionOfNullOperation(rightInteger != 0);
-                    }
-                    else
-                    {
-                        // As right operant can has any value, can be 0 too
-                        // That causes division by zero and returns false
-                        SetWarning("Division by any integer, possible division by zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        result = OutSet.AnyValue;
-                    }
+                    result = ModuloOperation.Modulo(flow,
+                        TypeConversion.ToInteger(leftOperand), value.Value);
                     break;
                 default:
+                    result = Comparison.Compare(OutSet, operation,
+                        TypeConversion.ToInteger(leftOperand), value.Value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
                     base.VisitFloatValue(value);
                     break;
             }
@@ -298,8 +283,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Mod:
-                    TypeConversion.TryConvertToInteger(value.Value, out integerValue);
-                    DivisionOfNullOperation(integerValue != 0);
+                    result = ModuloOperation.Modulo(flow,
+                        TypeConversion.ToInteger(leftOperand), value.Value);
                     break;
                 case Operations.BitOr:
                 case Operations.BitXor:
@@ -311,7 +296,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateInt(0);
                     break;
                 default:
-                    if (ComparisonOperation(string.Empty, value.Value))
+                    result = Comparison.Compare(OutSet, operation, string.Empty, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -368,6 +354,80 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion Concrete values
 
+        #region Interval values
+
+        /// <inheritdoc />
+        public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    base.VisitGenericIntervalValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Or:
+                case Operations.Xor:
+                    result = TypeConversion.ToBoolean(OutSet, value);
+                    break;
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.Sub:
+                    throw new NotImplementedException();
+                case Operations.Mul:
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = value;
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    if ((value.Start > 0) || (value.End < 0))
+                    {
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        // As right operant can has any value, can be 0 too
+                        // That causes division by zero and returns false
+                        SetWarning("Division by any integer, possible division by zero",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+                        result = OutSet.AnyValue;
+                    }
+                    break;
+                default:
+                    result = Comparison.IntervalCompare(OutSet, operation,
+                        TypeConversion.ToInteger(leftOperand), value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        #endregion Interval values
+
         #endregion AbstractValueVisitor Members
 
         #region Helper methods
@@ -400,7 +460,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (divisor != 0.0)
             {
                 // 0.0 (null) divided by any float is always (+/-)0.0
-                result = OutSet.CreateDouble((divisor >= 0.0) ? 0.0 : -0.0);
+                result = OutSet.CreateDouble((divisor > 0.0) ? 0.0 : ((divisor < -0.0) ? -0.0 : divisor));
             }
             else
             {

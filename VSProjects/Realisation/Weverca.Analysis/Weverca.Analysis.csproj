@@ -53,7 +53,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExpressionEvaluator\ArrayIndexEvaluator.cs" />
-    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\BinaryOperationEvaluator.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationEvaluator.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperations\LogicalOperation.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperations\Comparison.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperations\ModuloOperation.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftBooleanOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftFloatOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftIntegerOperandVisitor.cs" />
