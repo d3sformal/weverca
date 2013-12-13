@@ -185,70 +185,70 @@ namespace Weverca.Analysis
 
 
             QualifiedName defineName = new QualifiedName(new Name("define"));
-            SpecialFunctionsAnalyzerHelper analyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[defineName]);
+            SpecialFunctionsImplementations analyzer = new SpecialFunctionsImplementations(typeModeledFunctions[defineName]);
             specialFunctions.Add(defineName, new NativeAnalyzerMethod(analyzer._define));
 
             QualifiedName constantName = new QualifiedName(new Name("constant"));
-            SpecialFunctionsAnalyzerHelper constantAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[constantName]);
+            SpecialFunctionsImplementations constantAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[constantName]);
             specialFunctions.Add(constantName, new NativeAnalyzerMethod(constantAnalyzer._constant));
 
             QualifiedName is_arrayName = new QualifiedName(new Name("is_array"));
-            SpecialFunctionsAnalyzerHelper is_arrayAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_arrayName]);
+            SpecialFunctionsImplementations is_arrayAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_arrayName]);
             specialFunctions.Add(is_arrayName, new NativeAnalyzerMethod(is_arrayAnalyzer._is_array));
 
             QualifiedName is_boolName = new QualifiedName(new Name("is_bool"));
-            SpecialFunctionsAnalyzerHelper is_boolAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_boolName]);
+            SpecialFunctionsImplementations is_boolAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_boolName]);
             specialFunctions.Add(is_boolName, new NativeAnalyzerMethod(is_boolAnalyzer._is_bool));
 
             QualifiedName is_doubleName = new QualifiedName(new Name("is_double"));
-            SpecialFunctionsAnalyzerHelper is_doubleAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_doubleName]);
+            SpecialFunctionsImplementations is_doubleAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_doubleName]);
             specialFunctions.Add(is_doubleName, new NativeAnalyzerMethod(is_doubleAnalyzer._is_double));
 
             QualifiedName is_floatName = new QualifiedName(new Name("is_float"));
-            SpecialFunctionsAnalyzerHelper is_floatAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_floatName]);
+            SpecialFunctionsImplementations is_floatAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_floatName]);
             specialFunctions.Add(is_floatName, new NativeAnalyzerMethod(is_floatAnalyzer._is_double));
 
             QualifiedName is_intName = new QualifiedName(new Name("is_int"));
-            SpecialFunctionsAnalyzerHelper is_intAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_intName]);
+            SpecialFunctionsImplementations is_intAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_intName]);
             specialFunctions.Add(is_intName, new NativeAnalyzerMethod(is_intAnalyzer._is_int));
 
             QualifiedName is_integerName = new QualifiedName(new Name("is_integer"));
-            SpecialFunctionsAnalyzerHelper is_integerAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_integerName]);
+            SpecialFunctionsImplementations is_integerAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_integerName]);
             specialFunctions.Add(is_integerName, new NativeAnalyzerMethod(is_integerAnalyzer._is_int));
 
             QualifiedName is_longName = new QualifiedName(new Name("is_long"));
-            SpecialFunctionsAnalyzerHelper is_longAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_longName]);
+            SpecialFunctionsImplementations is_longAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_longName]);
             specialFunctions.Add(is_longName, new NativeAnalyzerMethod(is_longAnalyzer._is_int));
 
             QualifiedName is_nullName = new QualifiedName(new Name("is_null"));
-            SpecialFunctionsAnalyzerHelper is_nullAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_nullName]);
+            SpecialFunctionsImplementations is_nullAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_nullName]);
             specialFunctions.Add(is_nullName, new NativeAnalyzerMethod(is_nullAnalyzer._is_null));
 
             QualifiedName is_numericName = new QualifiedName(new Name("is_numeric"));
-            SpecialFunctionsAnalyzerHelper is_numericAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_numericName]);
+            SpecialFunctionsImplementations is_numericAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_numericName]);
             specialFunctions.Add(is_numericName, new NativeAnalyzerMethod(is_numericAnalyzer._is_numeric));
 
             QualifiedName is_objectName = new QualifiedName(new Name("is_object"));
-            SpecialFunctionsAnalyzerHelper is_objectAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_objectName]);
+            SpecialFunctionsImplementations is_objectAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_objectName]);
             specialFunctions.Add(is_objectName, new NativeAnalyzerMethod(is_objectAnalyzer._is_object));
 
             QualifiedName is_realName = new QualifiedName(new Name("is_real"));
-            SpecialFunctionsAnalyzerHelper is_realAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_realName]);
+            SpecialFunctionsImplementations is_realAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_realName]);
             specialFunctions.Add(is_realName, new NativeAnalyzerMethod(is_realAnalyzer._is_double));
 
             QualifiedName is_resourceName = new QualifiedName(new Name("is_resource"));
-            SpecialFunctionsAnalyzerHelper is_resourceAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_resourceName]);
+            SpecialFunctionsImplementations is_resourceAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_resourceName]);
             specialFunctions.Add(is_resourceName, new NativeAnalyzerMethod(is_resourceAnalyzer._is_resource)); 
 
             QualifiedName is_scalarName = new QualifiedName(new Name("is_scalar"));
-            SpecialFunctionsAnalyzerHelper is_scalarAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_scalarName]);
+            SpecialFunctionsImplementations is_scalarAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_scalarName]);
             specialFunctions.Add(is_scalarName, new NativeAnalyzerMethod(is_scalarAnalyzer._is_scalar));
 
             QualifiedName is_stringName = new QualifiedName(new Name("is_string"));
-            SpecialFunctionsAnalyzerHelper is_stringAnalyzer = new SpecialFunctionsAnalyzerHelper(typeModeledFunctions[is_stringName]);
+            SpecialFunctionsImplementations is_stringAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_stringName]);
             specialFunctions.Add(is_stringName, new NativeAnalyzerMethod(is_stringAnalyzer._is_string));
 
-            ConcreteFunctions.InitConcreteFunctions(typeModeledFunctions, concreteFunctions);
+            NativeFunctionsConcreteImplementations.AddConcreteFunctions(typeModeledFunctions, concreteFunctions);
         
         }
 
@@ -518,12 +518,12 @@ namespace Weverca.Analysis
         
     }
 
-    class SpecialFunctionsAnalyzerHelper
+    class SpecialFunctionsImplementations
     {
         private List<NativeFunction> nativeFunctions;
         private static readonly VariableName returnVariable = new VariableName(".return");
 
-        public SpecialFunctionsAnalyzerHelper(List<NativeFunction> nativeFunctions)
+        public SpecialFunctionsImplementations(List<NativeFunction> nativeFunctions)
         {
             this.nativeFunctions = nativeFunctions;
         }
@@ -791,51 +791,6 @@ namespace Weverca.Analysis
         }
 
         #endregion
-    }
-
-    static class ConcreteFunctions
-    {
-        private static readonly StringConverter stringConverter = new StringConverter(null);
-        private static Dictionary<string, ConcreteFunctionDelegate> functions = new Dictionary<string, ConcreteFunctionDelegate>() 
-        {
-            { "strtolower", _strtolower },
-            { "strtoupper", _strtoupper },
-            { "concat", _concat }
-        };
-
-        public static void InitConcreteFunctions(Dictionary<QualifiedName, List<NativeFunction>> typeModeledFunctions, Dictionary<QualifiedName, NativeAnalyzerMethod> concreteFunctions)
-        {
-            foreach (var methodName in functions.Keys)
-            {
-                var qualifiedName = new QualifiedName(new Name(methodName));
-                concreteFunctions.Add(qualifiedName, new NativeAnalyzerMethod(new ConcreteFunctionAnalyzerHelper(typeModeledFunctions[qualifiedName], functions[methodName]).analyze));
-            }
-        }
-
-        
-
-        private static Value _strtolower(FlowController flow, Value[] arguments)
-        {
-            return flow.OutSet.CreateString(
-                PHP.Library.PhpStrings.ToLower(
-                    stringConverter.EvaluateToString(flow, arguments[0]).Value)
-                );
-        }
-
-        private static Value _strtoupper(FlowController flow, Value[] arguments)
-        {
-            return flow.OutSet.CreateString(
-                PHP.Library.PhpStrings.ToUpper(
-                    stringConverter.EvaluateToString(flow, arguments[0]).Value)
-                );
-        }
-
-        private static Value _concat(FlowController flow, Value[] arguments)
-        {
-            stringConverter.SetContext(flow);
-            return stringConverter.EvaluateConcatenation(arguments[0], arguments[1]);
-        }
-
     }
 
 }

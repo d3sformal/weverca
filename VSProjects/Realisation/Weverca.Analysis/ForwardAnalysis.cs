@@ -11,8 +11,6 @@ namespace Weverca.Analysis
 {
     public class ForwardAnalysis : ForwardAnalysisBase
     {
-        private FlowController flowController = null;
-
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
             : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {
