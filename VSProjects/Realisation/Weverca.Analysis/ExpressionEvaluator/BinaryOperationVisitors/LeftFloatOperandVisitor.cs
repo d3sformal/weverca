@@ -62,7 +62,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, TypeConversion.ToFloat(value.Value)))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value,
+                        TypeConversion.ToFloat(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -119,7 +121,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, TypeConversion.ToFloat(value.Value)))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -177,7 +180,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, value.Value))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -250,7 +254,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, floatValue))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, floatValue);
+                    if (result != null)
                     {
                         break;
                     }
@@ -376,8 +381,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.Modulo(flow, leftOperand.Value, value);
                     break;
                 default:
-                    result = Comparison.IntervalCompare(OutSet, operation,
-                        leftOperand.Value, TypeConversion.ToFloatInterval(OutSet, value));
+                    var floatInterval = TypeConversion.ToFloatInterval(OutSet, value);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand.Value, floatInterval);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation,
+                        leftOperand.Value, floatInterval);
                     if (result != null)
                     {
                         break;

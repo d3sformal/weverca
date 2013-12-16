@@ -75,19 +75,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     var rightInteger = TypeConversion.ToInteger(value.Value);
 
-                    if (isInteger)
+                    result = isInteger
+                        ? ArithmeticOperation.Arithmetic(flow, operation, integerValue, rightInteger)
+                        : ArithmeticOperation.Arithmetic(flow, operation, floatValue, rightInteger);
+
+                    if (result != null)
                     {
-                        if (ArithmeticOperation(integerValue, rightInteger))
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (ArithmeticOperation(floatValue, rightInteger))
-                        {
-                            break;
-                        }
+                        break;
                     }
 
                     // If string has hexadecimal format, the first zero is recognized.
@@ -170,7 +164,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             break;
                         }
 
-                        if (ArithmeticOperation(integerValue, value.Value))
+                        result = ArithmeticOperation.Arithmetic(flow, operation, integerValue, value.Value);
+                        if (result != null)
                         {
                             break;
                         }
@@ -183,7 +178,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             break;
                         }
 
-                        if (ArithmeticOperation(floatValue, value.Value))
+                        result = ArithmeticOperation.Arithmetic(flow, operation, floatValue, value.Value);
+                        if (result != null)
                         {
                             break;
                         }
@@ -249,7 +245,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(floatValue, value.Value))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, floatValue, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -336,19 +333,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var isRightSuccessful = TypeConversion.TryConvertToNumber(leftOperand.Value, true,
                         out rightInteger, out rightFloat, out isRightInteger, out isRightHexadecimal);
 
-                    if (isLeftInteger && isRightInteger)
+                    result = (isLeftInteger && isRightInteger)
+                        ? ArithmeticOperation.Arithmetic(flow, operation, leftInteger, rightInteger)
+                        : ArithmeticOperation.Arithmetic(flow, operation, leftFloat, rightFloat);
+
+                    if (result != null)
                     {
-                        if (ArithmeticOperation(leftInteger, rightInteger))
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (ArithmeticOperation(leftFloat, rightFloat))
-                        {
-                            break;
-                        }
+                        break;
                     }
 
                     // If string has hexadecimal format, the first zero is recognized.
@@ -413,7 +404,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Add:
                 case Operations.Sub:
-                    TypeConversion.TryConvertToNumber(leftOperand.Value, true, out integerValue, out floatValue, out isInteger);
+                    TypeConversion.TryConvertToNumber(leftOperand.Value, true, out integerValue,
+                        out floatValue, out isInteger);
                     if (isInteger)
                     {
                         result = OutSet.CreateInt(integerValue);
@@ -424,7 +416,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Mul:
-                    TypeConversion.TryConvertToNumber(leftOperand.Value, true, out integerValue, out floatValue, out isInteger);
+                    TypeConversion.TryConvertToNumber(leftOperand.Value, true, out integerValue,
+                        out floatValue, out isInteger);
                     if (isInteger)
                     {
                         result = OutSet.CreateInt(0);
@@ -500,7 +493,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     int integerValue;
                     double floatValue;
                     bool isInteger;
-                    var isSuccessful = TypeConversion.TryConvertToNumber(leftOperand.Value, true,
+                    TypeConversion.TryConvertToNumber(leftOperand.Value, true,
                         out integerValue, out floatValue, out isInteger);
 
                     if (isInteger)
@@ -510,11 +503,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         {
                             break;
                         }
+
+                        result = ArithmeticOperation.Arithmetic(flow, operation, integerValue, value);
+                        if (result != null)
+                        {
+                            break;
+                        }
                     }
                     else
                     {
-                        result = Comparison.IntervalCompare(OutSet, operation,
-                            floatValue, TypeConversion.ToFloatInterval(OutSet, value));
+                        var floatInterval = TypeConversion.ToFloatInterval(OutSet, value);
+
+                        result = Comparison.IntervalCompare(OutSet, operation, floatValue, floatInterval);
+                        if (result != null)
+                        {
+                            break;
+                        }
+
+                        result = ArithmeticOperation.Arithmetic(flow, operation, floatValue, floatInterval);
                         if (result != null)
                         {
                             break;

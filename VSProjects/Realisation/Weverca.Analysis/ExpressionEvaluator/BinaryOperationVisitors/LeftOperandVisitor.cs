@@ -57,7 +57,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Initializes a new instance of the <see cref="LeftOperandVisitor" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public LeftOperandVisitor(FlowController flowController)
+        protected LeftOperandVisitor(FlowController flowController)
             : base(flowController) { }
 
         /// <summary>
@@ -144,200 +144,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 || (operation == Operations.Xor);
         }
 
-        protected bool ArithmeticOperation(int leftOperand, int rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Add:
-                    // Result of addition can overflow or underflow
-                    if ((rightOperand >= 0) ? (leftOperand <= int.MaxValue - rightOperand)
-                        : (leftOperand >= int.MinValue - rightOperand))
-                    {
-                        result = OutSet.CreateInt(leftOperand + rightOperand);
-                    }
-                    else
-                    {
-                        // If aritmetic overflows or underflows, result is double
-                        result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) + rightOperand);
-                    }
-                    return true;
-                case Operations.Sub:
-                    // Result of addition can underflow or underflow
-                    if ((rightOperand >= 0) ? (leftOperand >= int.MinValue + rightOperand)
-                        : (leftOperand <= int.MaxValue + rightOperand))
-                    {
-                        result = OutSet.CreateInt(leftOperand - rightOperand);
-                    }
-                    else
-                    {
-                        // If aritmetic overflows or underflows, result is double
-                        result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) - rightOperand);
-                    }
-                    return true;
-                case Operations.Mul:
-                    // Result of addition can overflow or underflow
-                    if ((rightOperand == 0) || (((leftOperand >= 0) == (rightOperand >= 0))
-                        ? (leftOperand <= int.MaxValue / rightOperand)
-                        : (leftOperand <= int.MinValue / rightOperand)))
-                    {
-                        result = OutSet.CreateInt(leftOperand * rightOperand);
-                    }
-                    else
-                    {
-                        // If aritmetic overflows or underflows, result is double
-                        result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) * rightOperand);
-                    }
-                    return true;
-                case Operations.Div:
-                    if (rightOperand != 0)
-                    {
-                        if ((leftOperand % rightOperand) == 0)
-                        {
-                            result = OutSet.CreateInt(leftOperand / rightOperand);
-                        }
-                        else
-                        {
-                            result = OutSet.CreateDouble(TypeConversion.ToFloat(leftOperand) / rightOperand);
-                        }
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool ArithmeticOperation(IntegerIntervalValue leftOperand, int rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Add:
-                    // Result of addition can overflow or underflow
-                    if ((rightOperand >= 0) ? (leftOperand.End <= int.MaxValue - rightOperand)
-                        : (leftOperand.Start >= int.MinValue - rightOperand))
-                    {
-                        result = OutSet.CreateIntegerInterval(leftOperand.Start + rightOperand,
-                            leftOperand.End + rightOperand);
-                    }
-                    else
-                    {
-                        // If aritmetic overflows or underflows, result is double
-                        double rightFloat = TypeConversion.ToFloat(rightOperand);
-                        result = OutSet.CreateFloatInterval(leftOperand.Start + rightFloat,
-                            leftOperand.End + rightFloat);
-                    }
-                    return true;
-                case Operations.Sub:
-                    // Result of addition can underflow or underflow
-                    if ((rightOperand >= 0) ? (leftOperand.Start >= int.MinValue + rightOperand)
-                        : (leftOperand.End <= int.MaxValue + rightOperand))
-                    {
-                        result = OutSet.CreateIntegerInterval(leftOperand.Start - rightOperand,
-                            leftOperand.End - rightOperand);
-                    }
-                    else
-                    {
-                        // If aritmetic overflows or underflows, result is double
-                        double rightFloat = TypeConversion.ToFloat(rightOperand);
-                        result = OutSet.CreateFloatInterval(leftOperand.Start - rightFloat,
-                            leftOperand.End - rightFloat);
-                    }
-                    return true;
-                case Operations.Mul:
-                    // Result of addition can overflow or underflow
-                    var isRightOperandNonNegative = rightOperand >= 0;
-                    var maxLeftOperand = int.MaxValue / rightOperand;
-                    var minLeftOperand = int.MinValue / rightOperand;
-                    if ((((leftOperand.Start >= 0) == isRightOperandNonNegative)
-                        ? (leftOperand.Start <= maxLeftOperand)
-                        : (leftOperand.Start >= minLeftOperand))
-                        && (((leftOperand.End >= 0) == isRightOperandNonNegative)
-                        ? (leftOperand.End <= maxLeftOperand)
-                        : (leftOperand.End >= minLeftOperand)))
-                    {
-                        if (isRightOperandNonNegative)
-                        {
-                            result = OutSet.CreateIntegerInterval(leftOperand.Start * rightOperand,
-                                leftOperand.End * rightOperand);
-                        }
-                        else
-                        {
-                            result = OutSet.CreateIntegerInterval(leftOperand.End * rightOperand,
-                                leftOperand.Start * rightOperand);
-                        }
-                    }
-                    else
-                    {
-                        // If aritmetic overflows or underflows, result is double
-                        double rightFloat = TypeConversion.ToFloat(rightOperand);
-                        if (isRightOperandNonNegative)
-                        {
-                            result = OutSet.CreateFloatInterval(leftOperand.Start * rightFloat,
-                                leftOperand.End * rightFloat);
-                        }
-                        else
-                        {
-                            result = OutSet.CreateFloatInterval(leftOperand.End * rightFloat,
-                                leftOperand.Start * rightFloat);
-                        }
-                    }
-                    return true;
-                case Operations.Div:
-                    if (rightOperand != 0)
-                    {
-                        // Not divisible numbers result to floating-point number
-                        double rightFloat = TypeConversion.ToFloat(rightOperand);
-                        result = OutSet.CreateFloatInterval(leftOperand.Start / rightFloat,
-                            leftOperand.End / rightFloat);
-                    }
-                    else
-                    {
-                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by zero returns false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool ArithmeticOperation(double leftOperand, double rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.Add:
-                    result = OutSet.CreateDouble(leftOperand + rightOperand);
-                    return true;
-                case Operations.Sub:
-                    result = OutSet.CreateDouble(leftOperand - rightOperand);
-                    return true;
-                case Operations.Mul:
-                    result = OutSet.CreateDouble(leftOperand * rightOperand);
-                    return true;
-                case Operations.Div:
-                    if (rightOperand != 0.0)
-                    {
-                        result = OutSet.CreateDouble(leftOperand / rightOperand);
-                    }
-                    else
-                    {
-                        SetWarning("Division by floating-point zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by floating-point zero does not return NaN, but false boolean value
-                        result = OutSet.CreateBool(false);
-                    }
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
         protected bool BitwiseOperation(int leftOperand, int rightOperand)
         {
             switch (operation)
@@ -400,7 +206,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Initializes a new instance of the <see cref="GenericLeftOperandVisitor{T}" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public GenericLeftOperandVisitor(FlowController flowController)
+        protected GenericLeftOperandVisitor(FlowController flowController)
             : base(flowController)
         {
         }

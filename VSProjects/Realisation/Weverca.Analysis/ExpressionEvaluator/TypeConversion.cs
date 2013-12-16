@@ -601,6 +601,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Converts the value of integer value to an equivalent floating-point number.
+        /// </summary>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Integer value to convert</param>
+        /// <returns>A floating-point number that is equivalent to integer value.</returns>
+        public static FloatValue ToFloat(FlowOutputSet outset, IntegerValue value)
+        {
+            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+        }
+
+        /// <summary>
+        /// Converts the value of native integer value to an equivalent native floating-point number.
+        /// </summary>
+        /// <param name="value">Native integer value to convert</param>
+        /// <returns>A floating-point number that is equivalent to native integer value.</returns>
+        public static double ToFloat(int value)
+        {
+            return System.Convert.ToDouble(value, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
         /// Converts the value of long integer value to an equivalent floating-point number.
         /// </summary>
         /// <param name="outset">Output set of a program point</param>
@@ -798,7 +819,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </returns>
         public static StringValue ToString(FlowOutputSet outset, ResourceValue value)
         {
-            return outset.CreateString(string.Concat("Resource id #", value.UID.ToString()));
+            return outset.CreateString(string.Concat("Resource id #",
+                value.UID.ToString(CultureInfo.InvariantCulture)));
         }
 
         /// <summary>
@@ -1465,7 +1487,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Helper methods
     }
 
-    public class ValueTypeResolver
+    public static class ValueTypeResolver
     {
         public static bool IsBool(Value value)
         {

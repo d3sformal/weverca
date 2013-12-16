@@ -75,7 +75,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand, rightInteger))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, rightInteger);
+                    if (result != null)
                     {
                         break;
                     }
@@ -108,7 +109,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand, value.Value))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -142,6 +144,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 default:
                     result = Comparison.IntervalCompare(OutSet, operation,
                         TypeConversion.ToFloatInterval(OutSet, leftOperand), value.Value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, value.Value);
                     if (result != null)
                     {
                         break;
@@ -186,7 +194,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     int integerValue;
                     double floatValue;
                     bool isInteger;
-                    var isSuccessful = TypeConversion.TryConvertToNumber(value.Value, true,
+                    TypeConversion.TryConvertToNumber(value.Value, true,
                         out integerValue, out floatValue, out isInteger);
 
                     if (isInteger)
@@ -196,11 +204,23 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         {
                             break;
                         }
+
+                        result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, integerValue);
+                        if (result != null)
+                        {
+                            break;
+                        }
                     }
                     else
                     {
-                        result = Comparison.IntervalCompare(OutSet, operation,
-                            TypeConversion.ToFloatInterval(OutSet, leftOperand), floatValue);
+                        var floatInterval = TypeConversion.ToFloatInterval(OutSet, leftOperand);
+                        result = Comparison.IntervalCompare(OutSet, operation, floatInterval, floatValue);
+                        if (result != null)
+                        {
+                            break;
+                        }
+
+                        result = ArithmeticOperation.Arithmetic(flow, operation, floatInterval, floatValue);
                         if (result != null)
                         {
                             break;
@@ -291,6 +311,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     result = Comparison.IntervalCompare(OutSet, operation, leftOperand, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, value);
                     if (result != null)
                     {
                         break;

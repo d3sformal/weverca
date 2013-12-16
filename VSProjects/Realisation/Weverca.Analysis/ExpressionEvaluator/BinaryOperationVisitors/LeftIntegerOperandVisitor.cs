@@ -148,7 +148,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, value.Value))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -191,7 +192,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(leftOperand.Value, value.Value))
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -265,7 +267,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             break;
                         }
 
-                        if (ArithmeticOperation(leftOperand.Value, integerValue))
+                        result = ArithmeticOperation.Arithmetic(flow, operation,
+                            leftOperand.Value, integerValue);
+                        if (result != null)
                         {
                             break;
                         }
@@ -278,7 +282,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             break;
                         }
 
-                        if (ArithmeticOperation(leftOperand.Value, floatValue))
+                        result = ArithmeticOperation.Arithmetic(flow, operation,
+                            leftOperand.Value, floatValue);
+                        if (result != null)
                         {
                             break;
                         }
@@ -392,6 +398,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     result = Comparison.IntervalCompare(OutSet, operation, leftOperand.Value, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, value);
                     if (result != null)
                     {
                         break;

@@ -385,20 +385,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
-                case Operations.Sub:
-                    throw new NotImplementedException();
-                case Operations.Mul:
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
                     result = OutSet.CreateInt(0);
                     break;
-                case Operations.Add:
                 case Operations.BitOr:
                 case Operations.BitXor:
                     result = value;
                     break;
-                case Operations.Div:
                 case Operations.Mod:
                     if ((value.Start > 0) || (value.End < 0))
                     {
@@ -414,8 +409,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 default:
-                    result = Comparison.IntervalCompare(OutSet, operation,
-                        TypeConversion.ToInteger(leftOperand), value);
+                    var leftInteger = TypeConversion.ToInteger(leftOperand);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftInteger, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftInteger, value);
                     if (result != null)
                     {
                         break;

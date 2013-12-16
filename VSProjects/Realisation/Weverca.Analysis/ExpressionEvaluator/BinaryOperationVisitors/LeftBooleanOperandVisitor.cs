@@ -68,7 +68,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     var leftInteger = TypeConversion.ToInteger(leftOperand.Value);
                     var rightInteger = TypeConversion.ToInteger(value.Value);
-                    if (ArithmeticOperation(leftInteger, rightInteger))
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftInteger, rightInteger);
+                    if (result != null)
                     {
                         break;
                     }
@@ -218,7 +220,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation(TypeConversion.ToFloat(leftOperand.Value), value.Value))
+                    result = ArithmeticOperation.Arithmetic(flow, operation,
+                        TypeConversion.ToFloat(leftOperand.Value), value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -286,19 +290,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var isSuccessful = TypeConversion.TryConvertToNumber(value.Value, true,
                         out integerValue, out floatValue, out isInteger, out isHexadecimal);
 
-                    if (isInteger)
+                    result = isInteger
+                        ? ArithmeticOperation.Arithmetic(flow, operation, leftInteger, integerValue)
+                        : ArithmeticOperation.Arithmetic(flow, operation, leftInteger, floatValue);
+
+                    if (result != null)
                     {
-                        if (ArithmeticOperation(leftInteger, integerValue))
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (ArithmeticOperation(leftInteger, floatValue))
-                        {
-                            break;
-                        }
+                        break;
                     }
 
                     // If string has hexadecimal format, the first zero is recognized.
@@ -418,6 +416,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     var leftInteger = TypeConversion.ToInteger(leftOperand.Value);
                     result = Comparison.IntervalCompare(OutSet, operation, leftInteger, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftInteger, value);
                     if (result != null)
                     {
                         break;
