@@ -67,7 +67,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (var index in operation.Indexes)
             {
-                MemoryEntry entry = snapshot.GetMemoryEntry(index);
+                MemoryEntry entry = snapshot.Data.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
                 MemoryAlias aliases;

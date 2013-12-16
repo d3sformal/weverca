@@ -75,19 +75,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return container;
         }
 
-        public bool DataEquals(SnapshotData compare)
+        public bool WidenNotEqual(SnapshotData compare, MemoryAssistantBase assistant)
         {
             bool funcCount = this.FunctionDecl.Count == compare.FunctionDecl.Count;
             bool classCount = this.ClassDecl.Count == compare.ClassDecl.Count;
-            bool indexCount = this.IndexData.Count == compare.IndexData.Count;
 
-            if (funcCount && classCount && funcCount)
+            if (!widenNotEqualData(compare, assistant))
             {
-                if (!compareData(compare))
-                {
-                    return false;
-                }
+                return false;
+            }
 
+            if (classCount && funcCount)
+            {
                 if (!this.FunctionDecl.DataEquals(compare.FunctionDecl))
                 {
                     return false;
@@ -100,6 +99,71 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return true;
+        }
+
+        public bool DataEquals(SnapshotData oldValue)
+        {
+            bool funcCount = this.FunctionDecl.Count == oldValue.FunctionDecl.Count;
+            bool classCount = this.ClassDecl.Count == oldValue.ClassDecl.Count;
+            bool indexCount = this.IndexData.Count == oldValue.IndexData.Count;
+
+            if (indexCount && classCount && funcCount)
+            {
+                if (!compareData(oldValue))
+                {
+                    return false;
+                }
+
+                if (!this.FunctionDecl.DataEquals(oldValue.FunctionDecl))
+                {
+                    return false;
+                }
+
+                if (!this.ClassDecl.DataEquals(oldValue.ClassDecl))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool widenNotEqualData(SnapshotData oldValue, MemoryAssistantBase assistant)
+        {
+            HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
+            HashSetTools.AddAll(indexes, this.IndexData.Keys);
+            HashSetTools.AddAll(indexes, oldValue.IndexData.Keys);
+
+            bool areEqual = true;
+            foreach (MemoryIndex index in indexes)
+            {
+                IndexData newData = null;
+                IndexData oldData = null;
+                if (this.IndexData.TryGetValue(index, out newData)
+                    && oldValue.IndexData.TryGetValue(index, out oldData))
+                {
+                    if (!newData.DataEquals(oldData))
+                    {
+                        MemoryEntry newEntry = assistant.Widen(oldData.MemoryEntry, newData.MemoryEntry);
+                        this.SetMemoryEntry(index, newEntry);
+
+                        areEqual = false;
+                    }
+                }
+                else if (newData != null && oldData == null)
+                {
+                    MemoryEntry newEntry = assistant.Widen(new MemoryEntry(Snapshot.UndefinedValue), newData.MemoryEntry);
+                    this.SetMemoryEntry(index, newEntry);
+
+                    areEqual = false;
+                }
+                else
+                {
+                    areEqual = false;
+                }
+            }
+
+            return areEqual;
         }
 
         private bool compareData(SnapshotData compare)
@@ -140,6 +204,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal void RemoveIndex(MemoryIndex index)
         {
             IndexData.Remove(index);
+        }
+
+        internal bool TryGetIndexData(MemoryIndex index, out IndexData data)
+        {
+            return IndexData.TryGetValue(index, out data);
+        }
+
+        internal IndexData GetIndexData(MemoryIndex index)
+        {
+            IndexData data;
+            if (IndexData.TryGetValue(index, out data))
+            {
+                return data;
+            }
+            throw new Exception("Missing alias value for " + index);
         }
 
         #endregion
@@ -391,6 +470,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         #endregion
 
         #region MemoryEntries
+
+        internal MemoryEntry GetMemoryEntry(MemoryIndex index)
+        {
+            MemoryEntry memoryEntry;
+            if (TryGetMemoryEntry(index, out memoryEntry))
+            {
+                return memoryEntry;
+            }
+            else
+            {
+                throw new Exception("Missing memory entry for " + index);
+            }
+        }
 
         internal bool TryGetMemoryEntry(MemoryIndex index, out MemoryEntry entry)
         {

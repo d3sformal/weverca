@@ -114,7 +114,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryIndex index = operationData.Item1;
                 Snapshot snapshot = operationData.Item2;
 
-                MemoryEntry entry = snapshot.GetMemoryEntry(index);
+                MemoryEntry entry = snapshot.Data.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
                 MemoryAlias aliases;

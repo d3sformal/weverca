@@ -116,6 +116,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             snapshot.ReleaseTemporary(temporaryIndex);
         }
 
+        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            Snapshot snapshot = ToSnapshot(context);
+
+            AssignCollector collector = new AssignCollector(snapshot);
+            collector.ProcessPath(path);
+
+            AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(snapshot);
+            worker.Assign(collector, value);
+        }
+
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             Snapshot snapshot = ToSnapshot(context);
@@ -238,9 +249,5 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return data;
         }
 
-        protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

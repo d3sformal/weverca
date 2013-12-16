@@ -348,7 +348,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 switch (global)
                 {
                     case GlobalContext.LocalOnly:
-                        CreatedIndex = snapshot.CreateControll(Name);
+                        CreatedIndex = snapshot.CreateLocalControll(Name);
                         break;
                     case GlobalContext.GlobalOnly:
                         CreatedIndex = snapshot.CreateGlobalControll(Name);

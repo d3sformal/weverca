@@ -12,42 +12,67 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /// <summary>
+    /// Implementation of the memory snapshot based on copy semantics.
+    /// This implementation stores every possible value for the single memory location in one place.
+    /// This approach guarantees write-read semantics - when user strongly writes to MAY alliased location
+    /// he is still able to read only the strongly writed data without the ones from MAY target.
+    /// Basic unit of the memory model is MemoryIndex which allows undirect links between aliases
+    /// and collection indexes. Every index is just pointer into the memory location where the data is stored.
+    /// So when the data is changed is not necessary to change every connected memory locations. See
+    /// <see cref="Indexes" /> and <see cref="MemoryContainers" /> for more information. Data model itself is
+    /// implemented in <see cref="SnapshotData" /> class.
+    /// Algorithms for reading or modifying snapshots are splitted into two groups. Memory collectors represents
+    /// algorithms to gathering indexes and memory workers provides implementation of read/write
+    /// algorithm. For more informations see <see cref="IndexCollectors" /> and <see cref="MemoryWorkers" />.
+    /// </summary>
     public class Snapshot : SnapshotBase, IReferenceHolder
     {
+        /// <summary>
+        /// Identifier for the bottom of the call stack. At this level the global variables are stored.
+        /// </summary>
         public static readonly int GLOBAL_CALL_LEVEL = 0;
 
-        /*HashSet<MemoryIndex> memoryIndexes = new HashSet<MemoryIndex>();
+        /// <summary>
+        /// Gets the container with data of the snapshot.
+        /// </summary>
+        /// <value>
+        /// The data container object.
+        /// </value>
+        internal SnapshotData Data { get; private set; }
 
-
-        Dictionary<AssociativeArray, ArrayDescriptor> arrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
-        Dictionary<ObjectValue, ObjectDescriptor> objectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
-        
-        Dictionary<MemoryIndex, MemoryEntry> memoryEntries = new Dictionary<MemoryIndex, MemoryEntry>();
-        Dictionary<MemoryIndex, MemoryAlias> memoryAliases = new Dictionary<MemoryIndex, MemoryAlias>();
-
-        Dictionary<MemoryIndex, AssociativeArray> indexArrays = new Dictionary<MemoryIndex, AssociativeArray>();
-        Dictionary<MemoryIndex, ObjectValueContainer> indexObjects = new Dictionary<MemoryIndex, ObjectValueContainer>();
-
-
-        internal DeclarationContainer<FunctionValue> FunctionDecl { get; private set; }
-        internal DeclarationContainer<TypeValue> ClassDecl { get; private set; }
-
-        internal MemoryStack<IndexSet<TemporaryIndex>> Temporary { get; private set; }
-        internal MemoryStack<IndexContainer> Variables { get; private set; }
-        internal MemoryStack<IndexContainer> ContolVariables { get; private set; }
-
-        internal IEnumerable<KeyValuePair<ObjectValue, ObjectDescriptor>> Objects { get { return objectDescriptors; } }
-
-
-        public IEnumerable<MemoryIndex> MemoryIndexes { get { return memoryIndexes; } }*/
-
-        SnapshotData oldData = null;
-        internal SnapshotData Data { get; private set; } 
-        
+        /// <summary>
+        /// Gets the call level of snapshot. Contains GLOBAL_CALL_LEVEL value for the global code.
+        /// Every call is incremented parent's call level.
+        /// </summary>
+        /// <value>
+        /// The call level.
+        /// </value>
         internal int CallLevel { get; private set; }
+
+        /// <summary>
+        /// Gets the this object for actual call level of the snapshot. Null for global code or function calls.
+        /// </summary>
+        /// <value>
+        /// The this object.
+        /// </value>
         internal MemoryEntry ThisObject { get; private set; }
+
+        /// <summary>
+        /// Snapshot where the call was made. CallLevel value of this is incremented value of callerContext.
+        /// Null for global code.
+        /// </summary>
         Snapshot callerContext;
 
+        /// <summary>
+        /// Backup of the snapshot data after the start of transaction.
+        /// </summary>
+        SnapshotData oldData = null;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Snapshot"/> class. Sets the call information for global code
+        /// and initializes empty data.
+        /// </summary>
         public Snapshot()
         {
             callerContext = null;
@@ -57,6 +82,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data = new SnapshotData(this);
         }
 
+        /// <summary>
+        /// Creates the string representation of the data.
+        /// </summary>
         public String DumpSnapshot()
         {
             StringBuilder builder = new StringBuilder();
@@ -78,11 +106,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return DumpSnapshot();
         }
 
+        /// <summary>
+        /// Implementation of BaseSnapshot class.
+        /// See <see cref="SnapshotBase"/> for more informations. 
+        /// </summary>
         #region AbstractSnapshot Implementation
 
         #region Transaction
@@ -100,7 +138,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override bool widenAndCommitTransaction()
         {
-            throw new NotImplementedException();
+            return Data.WidenNotEqual(oldData, Assistant);
         }
 
         #endregion
@@ -323,7 +361,28 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
+        #region Snapshot Entry API
 
+        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
+        {
+            GlobalContext global = forceGlobalContext ? GlobalContext.GlobalOnly : GlobalContext.LocalOnly;
+            return SnapshotEntry.CreateVariableEntry(variable, global);
+        }
+
+        protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
+        {
+            return SnapshotEntry.CreateControlEntry(name, GlobalContext.GlobalOnly);
+        }
+
+        protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
+        {
+            return new DataSnapshotEntry(entry);
+        }
+
+        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
+        {
+            return SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly);
+        }
 
         #endregion
 
@@ -415,31 +474,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
-        #region Snapshot Entry API
-
-        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
-        {
-            GlobalContext global = forceGlobalContext ? GlobalContext.GlobalOnly : GlobalContext.LocalOnly;
-            return SnapshotEntry.CreateVariableEntry(variable, global);
-        }
-
-        protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
-        {
-            return SnapshotEntry.CreateControlEntry(name, GlobalContext.GlobalOnly);
-        }
-
-        protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
-        {
-            return new DataSnapshotEntry(entry);
-        }
-
-        protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
-        {
-            return SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly);
-        }
-
         #endregion
 
+        #region Snapshot Logic Implementation
+
+        #region Variables
+
+        #region Named variables
+
+        /// <summary>
+        /// Creates the local variable. Stack level of the local variable is equal to CallLevel.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <returns>Index of newly created variable.</returns>
         internal MemoryIndex CreateLocalVariable(string variableName)
         {
             MemoryIndex variableIndex = VariableIndex.Create(variableName, CallLevel);
@@ -452,18 +499,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return variableIndex;
         }
 
-        internal MemoryIndex CreateControll(string variableName)
-        {
-            MemoryIndex ctrlIndex = ControlIndex.Create(variableName, CallLevel);
-
-            Data.NewIndex(ctrlIndex);
-            Data.ContolVariables.Local.Indexes.Add(variableName, ctrlIndex);
-
-            CopyMemory(Data.Variables.Local.UnknownIndex, ctrlIndex, false);
-
-            return ctrlIndex;
-        }
-
+        /// <summary>
+        /// Creates the global variable. Stack level of the local variable is equal to GLOBAL_CALL_LEVEL value.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <returns>Index of newly created variable.</returns>
         internal MemoryIndex CreateGlobalVariable(string variableName)
         {
             MemoryIndex variableIndex = VariableIndex.Create(variableName, GLOBAL_CALL_LEVEL);
@@ -476,6 +516,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return variableIndex;
         }
 
+        #endregion
+
+        #region Controll Variables
+
+        /// <summary>
+        /// Creates the local controll variable. Stack level of the local variable is equal to CallLevel.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <returns>Index of newly created variable.</returns>
+        internal MemoryIndex CreateLocalControll(string variableName)
+        {
+            MemoryIndex ctrlIndex = ControlIndex.Create(variableName, CallLevel);
+
+            Data.NewIndex(ctrlIndex);
+            Data.ContolVariables.Local.Indexes.Add(variableName, ctrlIndex);
+
+            CopyMemory(Data.Variables.Local.UnknownIndex, ctrlIndex, false);
+
+            return ctrlIndex;
+        }
+
+        /// <summary>
+        /// Creates the global controll variable. Stack level of the local variable is equal to GLOBAL_CALL_LEVEL value.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <returns>Index of newly created variable.</returns>
         internal MemoryIndex CreateGlobalControll(string variableName)
         {
             MemoryIndex ctrlIndex = ControlIndex.Create(variableName, CallLevel);
@@ -488,6 +554,114 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return ctrlIndex;
         }
 
+        #endregion
+
+        #region Temporary Variables
+
+        /// <summary>
+        /// Determines whether a temporary variable is set for the specified temporary index.
+        /// </summary>
+        /// <param name="temporaryIndex">Index of the temporary variable.</param>
+        internal bool IsTemporarySet(TemporaryIndex temporaryIndex)
+        {
+            return Data.Temporary.Local.Contains(temporaryIndex);
+        }
+
+        /// <summary>
+        /// Creates the temporary variable.
+        /// </summary>
+        /// <returns>Index of newly created variable.</returns>
+        internal TemporaryIndex CreateTemporary()
+        {
+            TemporaryIndex tmp = new TemporaryIndex(CallLevel);
+            Data.NewIndex(tmp);
+            Data.Temporary.Local.Add(tmp);
+            return tmp;
+        }
+
+        /// <summary>
+        /// Releases the temporary variable and clears the memory.
+        /// </summary>
+        /// <param name="temporaryIndex">Index of the temporary variable.</param>
+        internal void ReleaseTemporary(TemporaryIndex temporaryIndex)
+        {
+            ReleaseMemory(temporaryIndex);
+            Data.Temporary.Local.Remove(temporaryIndex);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Objects
+
+        /// <summary>
+        /// Determines whether the specified index has must reference to some objects.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        internal bool HasMustReference(MemoryIndex index)
+        {
+            MemoryEntry entry = Data.GetMemoryEntry(index);
+
+            if (entry.Count == 1)
+            {
+                ObjectValueContainer objects = Data.GetObjects(index);
+                if (objects.Count == 1)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the specified index contains only references.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        internal bool ContainsOnlyReferences(MemoryIndex index)
+        {
+            MemoryEntry entry = Data.GetMemoryEntry(index);
+            ObjectValueContainer objects = Data.GetObjects(index);
+
+            return entry.Count == objects.Count;
+        }
+
+        /// <summary>
+        /// Makes the must reference to the given object in the target index.
+        /// </summary>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        internal void MakeMustReferenceObject(ObjectValue objectValue, MemoryIndex targetIndex)
+        {
+            ObjectValueContainerBuilder objects = Data.GetObjects(targetIndex).Builder();
+            objects.Add(objectValue);
+            Data.SetObjects(targetIndex, objects.Build());
+        }
+
+        /// <summary>
+        /// Makes the may reference object to the given object in the target index.
+        /// </summary>
+        /// <param name="objects">The objects.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        internal void MakeMayReferenceObject(HashSet<ObjectValue> objects, MemoryIndex targetIndex)
+        {
+            ObjectValueContainerBuilder objectsContainer = Data.GetObjects(targetIndex).Builder();
+
+            foreach (ObjectValue objectValue in objects)
+            {
+                objectsContainer.Add(objectValue);
+            }
+
+            Data.SetObjects(targetIndex, objectsContainer.Build());
+        }
+
+        /// <summary>
+        /// Creates the new instance of the default object in given parent index.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="isMust">if set to <c>true</c> object is must and values in parent indexes are removed.</param>
+        /// <returns></returns>
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
         {
             ObjectValue value = this.CreateObject(null);
@@ -522,12 +696,30 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return value;
         }
 
-
+        /// <summary>
+        /// Creates new field in the given object.
+        /// </summary>
+        /// <param name="fieldName">Name of the field.</param>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="isMust">if set to <c>true</c> value must be created.</param>
+        /// <param name="copyFromUnknown">if set to <c>true</c> value of the field is initialized
+        /// from the unknown field of object.</param>
+        /// <returns>Memory index of the newly created field.</returns>
         internal MemoryIndex CreateField(string fieldName, ObjectValue objectValue, bool isMust, bool copyFromUnknown)
         {
             return CreateField(fieldName, Data.GetDescriptor(objectValue), isMust, copyFromUnknown);
         }
 
+        /// <summary>
+        /// Creates new field in the given object.
+        /// </summary>
+        /// <param name="fieldName">Name of the field.</param>
+        /// <param name="descriptor">The descriptor of object.</param>
+        /// <param name="isMust">if set to <c>true</c> value must be created.</param>
+        /// <param name="copyFromUnknown">if set to <c>true</c> value of the field is initialized
+        /// from the unknown field of object.</param>
+        /// <returns>Memory index of the newly created field.</returns>
+        /// <exception cref="System.Exception">Field with given name is already defined</exception>
         internal MemoryIndex CreateField(string fieldName, ObjectDescriptor descriptor, bool isMust, bool copyFromUnknown)
         {
             if (descriptor.Indexes.ContainsKey(fieldName))
@@ -551,11 +743,48 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return fieldIndex;
         }
 
+        /// <summary>
+        /// Removes all values from the given memory object except object values.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        internal void ClearForObjects(MemoryIndex index)
+        {
+            DestroyArrayVisitor visitor = new DestroyArrayVisitor(this, index);
+            visitor.VisitMemoryEntry(Data.GetMemoryEntry(index));
+
+            ObjectValueContainer objects = Data.GetObjects(index);
+            MemoryEntry entry = new MemoryEntry(objects);
+
+            Data.SetMemoryEntry(index, entry);
+        }
+
+        /// <summary>
+        /// Destroys the object.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="value">The value.</param>
+        internal void DestroyObject(MemoryIndex parentIndex, ObjectValue value)
+        {
+            ObjectValueContainerBuilder objects = Data.GetObjects(parentIndex).Builder();
+            objects.Remove(value);
+            Data.SetObjects(parentIndex, objects.Build());
+        }
+
+        #endregion
+
+        #region Arrays
+
+        /// <summary>
+        /// Creates new array in given parent index.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <returns>Memory index of newly created array index.</returns>
+        /// <exception cref="System.Exception">Variable  with given index already has associated array value.</exception>
         internal AssociativeArray CreateArray(MemoryIndex parentIndex)
         {
             if (Data.HasArray(parentIndex))
             {
-                throw new Exception("Variable " + parentIndex + " already has associated arraz value.");
+                throw new Exception("Variable " + parentIndex + " already has associated array value.");
             }
 
             AssociativeArray value = this.CreateArray();
@@ -571,6 +800,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return value;
         }
 
+        /// <summary>
+        /// Creates new array in given parent index.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="isMust">if set to <c>true</c> is must and values in parent indexes are removed.</param>
+        /// <returns>Memory index of newly created array index.</returns>
         internal AssociativeArray CreateArray(MemoryIndex parentIndex, bool isMust)
         {
             AssociativeArray value = CreateArray(parentIndex);
@@ -604,11 +839,28 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return value;
         }
 
+        /// <summary>
+        /// Creates new index in the given array.
+        /// </summary>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="arrayValue">The array value.</param>
+        /// <param name="isMust">if set to <c>true</c> value must be created.</param>
+        /// <param name="copyFromUnknown">if set to <c>true</c> value of the field is initialized
+        /// <returns>Memory index of the newly created array index.</returns>
         internal MemoryIndex CreateIndex(string indexName, AssociativeArray arrayValue, bool isMust, bool copyFromUnknown)
         {
             return CreateIndex(indexName, Data.GetDescriptor(arrayValue), isMust, copyFromUnknown);
         }
 
+        /// <summary>
+        /// Creates new index in the given array.
+        /// </summary>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="descriptor">The descriptor of array.</param>
+        /// <param name="isMust">if set to <c>true</c> value must be created.</param>
+        /// <param name="copyFromUnknown">if set to <c>true</c> value of the field is initialized
+        /// <returns>Memory index of the newly created array index.</returns>
+        /// <exception cref="System.Exception">Index  with given name is already defined</exception>
         internal MemoryIndex CreateIndex(string indexName, ArrayDescriptor descriptor, bool isMust, bool copyFromUnknown)
         {
             if (descriptor.Indexes.ContainsKey(indexName))
@@ -632,90 +884,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return indexIndex;
         }
 
-        internal MemoryEntry GetMemoryEntry(MemoryIndex index)
-        {
-            MemoryEntry memoryEntry;
-            if (Data.TryGetMemoryEntry(index, out memoryEntry))
-            {
-                return memoryEntry;
-            }
-            else
-            {
-                throw new Exception("Missing memory entry for " + index);
-            }
-        }
-
-        private void CopyMemory(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
-        {
-            CopyWithinSnapshotWorker worker = new CopyWithinSnapshotWorker(this, isMust);
-            worker.Copy(sourceIndex, targetIndex);
-        }
-
-        public void DestroyMemory(MemoryIndex parentIndex)
-        {
-            DestroyMemoryVisitor visitor = new DestroyMemoryVisitor(this, parentIndex);
-
-            MemoryEntry entry;
-            if (Data.TryGetMemoryEntry(parentIndex, out entry))
-            {
-                visitor.VisitMemoryEntry(entry);
-            }
-            Data.SetMemoryEntry(parentIndex, new MemoryEntry(this.UndefinedValue));
-        }
-
-        internal void CopyAliases(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
-        {
-            MemoryAlias aliases;
-            if (Data.TryGetAliases(sourceIndex, out aliases))
-            {
-                MemoryAliasBuilder builder = new MemoryAliasBuilder();
-                foreach (MemoryIndex mustAlias in aliases.MustAliasses)
-                {
-                    MemoryAliasBuilder mustBuilder = Data.GetAliases(mustAlias).Builder();
-                    if (isMust)
-                    {
-                        builder.AddMustAlias(mustAlias);
-                        mustBuilder.AddMustAlias(targetIndex);
-                    }
-                    else
-                    {
-                        builder.AddMayAlias(mustAlias);
-                        mustBuilder.AddMayAlias(targetIndex);
-                    }
-                    Data.SetAlias(mustAlias, mustBuilder.Build());
-                }
-
-                foreach (MemoryIndex mayAlias in aliases.MayAliasses)
-                {
-                    MemoryAliasBuilder mayBuilder = Data.GetAliases(mayAlias).Builder();
-
-                    builder.AddMayAlias(mayAlias);
-                    mayBuilder.AddMayAlias(targetIndex);
-
-                    Data.SetAlias(mayAlias, mayBuilder.Build());
-                }
-
-                /*MemoryAliasBuilder sourceBuilder = aliases.Builder();
-                if (isMust && aliases.MustAliasses.Count > 0)
-                {
-                    sourceBuilder.AddMustAlias(targetIndex);
-                    builder.AddMustAlias(sourceIndex);
-                }
-                else
-                {
-                    sourceBuilder.AddMayAlias(targetIndex);
-                    builder.AddMayAlias(sourceIndex);
-                }*/
-
-                Data.SetAlias(targetIndex, builder.Build());
-                //Data.SetAlias(sourceIndex, sourceBuilder.Build());
-            }
-        }
-
+        /// <summary>
+        /// Removes all values from the given memory object except array values.
+        /// </summary>
+        /// <param name="index">The index.</param>
         internal void ClearForArray(MemoryIndex index)
         {
             DestroyObjectsVisitor visitor = new DestroyObjectsVisitor(this, index);
-            visitor.VisitMemoryEntry(GetMemoryEntry(index));
+            visitor.VisitMemoryEntry(Data.GetMemoryEntry(index));
 
             AssociativeArray array;
             MemoryEntry entry;
@@ -731,30 +907,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data.SetMemoryEntry(index, entry);
         }
 
-        internal void ClearForObjects(MemoryIndex index)
-        {
-            DestroyArrayVisitor visitor = new DestroyArrayVisitor(this, index);
-            visitor.VisitMemoryEntry(GetMemoryEntry(index));
-
-            ObjectValueContainer objects = Data.GetObjects(index);
-            MemoryEntry entry = new MemoryEntry(objects);
-
-            Data.SetMemoryEntry(index, entry);
-        }
-
-        internal bool IsUndefined(MemoryIndex index)
-        {
-            MemoryEntry entry = GetMemoryEntry(index);
-            return entry.PossibleValues.Contains(this.UndefinedValue);
-        }
-
-        internal void DestroyObject(MemoryIndex parentIndex, ObjectValue value)
-        {
-            ObjectValueContainerBuilder objects = Data.GetObjects(parentIndex).Builder();
-            objects.Remove(value);
-            Data.SetObjects(parentIndex, objects.Build());
-        }
-
+        /// <summary>
+        /// Destroys the array.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
         internal void DestroyArray(MemoryIndex parentIndex)
         {
             AssociativeArray arrayValue;
@@ -774,58 +930,87 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data.RemoveArray(parentIndex, arrayValue);
         }
 
-        internal void MakeMustReferenceObject(ObjectValue objectValue, MemoryIndex targetIndex)
+        #endregion
+
+        #region Memory
+
+        /// <summary>
+        /// Determines whether the specified index contains undefined value.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns></returns>
+        internal bool IsUndefined(MemoryIndex index)
         {
-            ObjectValueContainerBuilder objects = Data.GetObjects(targetIndex).Builder();
-            objects.Add(objectValue);
-            Data.SetObjects(targetIndex, objects.Build());
+            MemoryEntry entry = Data.GetMemoryEntry(index);
+            return entry.PossibleValues.Contains(this.UndefinedValue);
         }
 
-        internal void MakeMayReferenceObject(HashSet<ObjectValue> objects, MemoryIndex targetIndex)
+        /// <summary>
+        /// Copies the memory from the source index onto the target index.
+        /// </summary>
+        /// <param name="sourceIndex">Index of the source.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="isMust">if set to <c>true</c> copy is must othervise undefined value is added into the whole memory tree.</param>
+        private void CopyMemory(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
         {
-            ObjectValueContainerBuilder objectsContainer = Data.GetObjects(targetIndex).Builder();
+            CopyWithinSnapshotWorker worker = new CopyWithinSnapshotWorker(this, isMust);
+            worker.Copy(sourceIndex, targetIndex);
+        }
 
-            foreach (ObjectValue objectValue in objects)
+        /// <summary>
+        /// Destroys the memory of given index and sets the memory of given index to undefined.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public void DestroyMemory(MemoryIndex index)
+        {
+            DestroyMemoryVisitor visitor = new DestroyMemoryVisitor(this, index);
+
+            MemoryEntry entry;
+            if (Data.TryGetMemoryEntry(index, out entry))
             {
-                objectsContainer.Add(objectValue);
+                visitor.VisitMemoryEntry(entry);
             }
-
-            Data.SetObjects(targetIndex, objectsContainer.Build());
+            Data.SetMemoryEntry(index, new MemoryEntry(this.UndefinedValue));
         }
 
-        internal TemporaryIndex CreateTemporary()
-        {
-            TemporaryIndex tmp = new TemporaryIndex(CallLevel);
-            Data.NewIndex(tmp);
-            Data.Temporary.Local.Add(tmp);
-            return tmp;
-        }
-
-        internal void ReleaseTemporary(TemporaryIndex temporaryIndex)
-        {
-            ReleaseMemory(temporaryIndex);
-            Data.Temporary.Local.Remove(temporaryIndex);
-        }
-
+        /// <summary>
+        /// Releases the memory in the given index and removes it from the data model.
+        /// </summary>
+        /// <param name="index">The index.</param>
         internal void ReleaseMemory(MemoryIndex index)
         {
             DestroyMemory(index);
             DestroyAliases(index);
 
             Data.RemoveIndex(index);
+        }
+        
+        /// <summary>
+        /// Extends the snapshot.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        private void extendSnapshot(ISnapshotReadonly input)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
 
-            // TODO - remove temporary from alias structure
-            //memoryAliases.Remove(temporaryIndex);
-            //memoryInfos.Remove(temporaryIndex);
+            this.callerContext = snapshot.callerContext;
+            CallLevel = snapshot.CallLevel;
+            ThisObject = snapshot.ThisObject;
+
+            Data = snapshot.Data;
         }
 
-
-
-
-
-
-
-
+        /// <summary>
+        /// Merges the snapshots.
+        /// </summary>
+        /// <param name="inputs">The inputs.</param>
+        /// <exception cref="System.Exception">
+        /// Merged snapshots don't have the same call context.
+        /// or
+        /// Merged snapshots don't have the same call level.
+        /// or
+        /// Merged snapshots don't have the same this object value.
+        /// </exception>
         private void mergeSnapshots(ISnapshotReadonly[] inputs)
         {
             bool inputSet = false;
@@ -871,70 +1056,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data = worker.Data;
         }
 
-        private void extendSnapshot(ISnapshotReadonly input)
-        {
-            Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+        #endregion
 
-            this.callerContext = snapshot.callerContext;
-            CallLevel = snapshot.CallLevel;
-            ThisObject = snapshot.ThisObject;
+        #region Aliases
 
-            Data = new SnapshotData(this, snapshot.Data);
-        }
-
-        internal bool HasMustReference(MemoryIndex parentIndex)
-        {
-            MemoryEntry entry = GetMemoryEntry(parentIndex);
-
-            if (entry.Count == 1)
-            {
-                ObjectValueContainer objects = Data.GetObjects(parentIndex);
-                if (objects.Count == 1)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        internal bool ContainsOnlyReferences(MemoryIndex parentIndex)
-        {
-            MemoryEntry entry = GetMemoryEntry(parentIndex);
-            ObjectValueContainer objects = Data.GetObjects(parentIndex);
-
-            return entry.Count == objects.Count;
-        }
-
-        public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
-        {
-            DestroyAliases(index);
-
-            MemoryAliasBuilder builder = new MemoryAliasBuilder();
-            builder.AddMustAlias(mustAliases);
-            builder.AddMayAlias(mayAliases);
-
-            Data.SetAlias(index, builder.Build());
-        }
-
-        public void MaySetAliases(MemoryIndex index, HashSet<MemoryIndex> mayAliases)
-        {
-            MemoryAliasBuilder builder;
-            MemoryAlias oldAlias;
-            if (Data.TryGetAliases(index, out oldAlias))
-            {
-                builder = oldAlias.Builder();
-                convertAliasesToMay(index, builder);
-            }
-            else
-            {
-                builder = new MemoryAliasBuilder();
-            }
-
-            builder.AddMayAlias(mayAliases);
-            Data.SetAlias(index, builder.Build());
-        }
-
+        /// <summary>
+        /// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
+        /// If given memory index contains no aliases new alias entry is created.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAliases">The must aliases.</param>
+        /// <param name="mayAliases">The may aliases.</param>
         public void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
         {
             MemoryAliasBuilder alias;
@@ -968,6 +1100,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data.SetAlias(index, alias.Build());
         }
 
+        /// <summary>
+        /// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
+        /// If given memory index contains no aliases new alias entry is created.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAlias">The must alias.</param>
+        /// <param name="mayAlias">The may alias.</param>
         public void AddAlias(MemoryIndex index, MemoryIndex mustAlias, MemoryIndex mayAlias)
         {
             MemoryAliasBuilder alias;
@@ -995,10 +1134,119 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 alias.AddMayAlias(mayAlias);
             }
-            
+
             Data.SetAlias(index, alias.Build());
         }
 
+        /// <summary>
+        /// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
+        /// Alias entry of the given alias indexes are not changed.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAliases">The must aliases.</param>
+        /// <param name="mayAliases">The may aliases.</param>
+        public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        {
+            DestroyAliases(index);
+
+            MemoryAliasBuilder builder = new MemoryAliasBuilder();
+            builder.AddMustAlias(mustAliases);
+            builder.AddMayAlias(mayAliases);
+
+            Data.SetAlias(index, builder.Build());
+        }
+
+        /// <summary>
+        /// May the set aliases of the given index operation. All must aliases of given index are converted into may.
+        /// Alias entry of the given alias indexes are not changed.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mayAliases">The may aliases.</param>
+        public void MaySetAliases(MemoryIndex index, HashSet<MemoryIndex> mayAliases)
+        {
+            MemoryAliasBuilder builder;
+            MemoryAlias oldAlias;
+            if (Data.TryGetAliases(index, out oldAlias))
+            {
+                builder = oldAlias.Builder();
+                convertAliasesToMay(index, builder);
+            }
+            else
+            {
+                builder = new MemoryAliasBuilder();
+            }
+
+            builder.AddMayAlias(mayAliases);
+            Data.SetAlias(index, builder.Build());
+        }
+
+        /// <summary>
+        /// Converts the aliases of given index to may.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="builder">The builder.</param>
+        private void convertAliasesToMay(MemoryIndex index, MemoryAliasBuilder builder)
+        {
+            foreach (MemoryIndex mustIndex in builder.MustAliasses)
+            {
+                MemoryAlias alias = Data.GetAliases(mustIndex);
+
+                MemoryAliasBuilder mustBuilder = Data.GetAliases(mustIndex).Builder();
+                mustBuilder.RemoveMustAlias(index);
+                mustBuilder.AddMayAlias(index);
+                Data.SetAlias(index, mustBuilder.Build());
+            }
+
+            builder.AddMayAlias(builder.MustAliasses);
+            builder.MustAliasses.Clear();
+        }
+
+        /// <summary>
+        /// Copies the aliases of the source index to target.
+        /// </summary>
+        /// <param name="sourceIndex">Index of the source.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="isMust">if set to <c>true</c> operation is must otherwise all must aliases are copied as may.</param>
+        internal void CopyAliases(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
+        {
+            MemoryAlias aliases;
+            if (Data.TryGetAliases(sourceIndex, out aliases))
+            {
+                MemoryAliasBuilder builder = new MemoryAliasBuilder();
+                foreach (MemoryIndex mustAlias in aliases.MustAliasses)
+                {
+                    MemoryAliasBuilder mustBuilder = Data.GetAliases(mustAlias).Builder();
+                    if (isMust)
+                    {
+                        builder.AddMustAlias(mustAlias);
+                        mustBuilder.AddMustAlias(targetIndex);
+                    }
+                    else
+                    {
+                        builder.AddMayAlias(mustAlias);
+                        mustBuilder.AddMayAlias(targetIndex);
+                    }
+                    Data.SetAlias(mustAlias, mustBuilder.Build());
+                }
+
+                foreach (MemoryIndex mayAlias in aliases.MayAliasses)
+                {
+                    MemoryAliasBuilder mayBuilder = Data.GetAliases(mayAlias).Builder();
+
+                    builder.AddMayAlias(mayAlias);
+                    mayBuilder.AddMayAlias(targetIndex);
+
+                    Data.SetAlias(mayAlias, mayBuilder.Build());
+                }
+
+                Data.SetAlias(targetIndex, builder.Build());
+            }
+        }
+
+        /// <summary>
+        /// Destroys the aliases of the given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
         internal void DestroyAliases(MemoryIndex index)
         {
             MemoryAlias aliases;
@@ -1038,25 +1286,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        private void convertAliasesToMay(MemoryIndex index, MemoryAliasBuilder builder)
-        {
-            foreach (MemoryIndex mustIndex in builder.MustAliasses)
-            {
-                MemoryAlias alias = Data.GetAliases(mustIndex);
+        #endregion
 
-                MemoryAliasBuilder mustBuilder = Data.GetAliases(mustIndex).Builder();
-                mustBuilder.RemoveMustAlias(index);
-                mustBuilder.AddMayAlias(index);
-                Data.SetAlias(index, mustBuilder.Build());
-            }
-
-            builder.AddMayAlias(builder.MustAliasses);
-            builder.MustAliasses.Clear();
-        }
-
-        internal bool IsTemporarySet(TemporaryIndex temporaryIndex)
-        {
-            return Data.Temporary.Local.Contains(temporaryIndex);
-        }
+        #endregion
     }
 }

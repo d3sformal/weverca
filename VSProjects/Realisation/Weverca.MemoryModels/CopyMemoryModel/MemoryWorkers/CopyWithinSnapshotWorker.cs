@@ -35,7 +35,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void Copy(MemoryIndex sourceIndex, MemoryIndex targetIndex)
         {
-            MemoryEntry entry = snapshot.GetMemoryEntry(sourceIndex);
+            MemoryEntry entry = snapshot.Data.GetMemoryEntry(sourceIndex);
 
             CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(this, targetIndex);
             visitor.VisitMemoryEntry(entry);
