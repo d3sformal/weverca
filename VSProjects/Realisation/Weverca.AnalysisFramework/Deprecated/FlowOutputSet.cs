@@ -51,7 +51,8 @@ namespace Weverca.AnalysisFramework
             foreach (var key in inSet.CollectedKeys)
             {
                 FlowInfo info;
-                System.Diagnostics.Debug.Assert(inSet.TryGetInfo(key, out info));
+                bool found=inSet.TryGetInfo(key, out info);
+                System.Diagnostics.Debug.Assert(found);
                 SetInfo(key, info);
             }
 

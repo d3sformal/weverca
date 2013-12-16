@@ -145,8 +145,7 @@ namespace Weverca.Analysis
 
                                     if (stringValue == null)
                                     {
-                                        // TODO: stringValue cannot be null, this is hotfix of error
-                                        initValue = outSet.CreateString(string.Empty);
+                                        initValue = outSet.UndefinedValue;
                                     }
                                     else if (bool.TryParse(stringValue, out boolValue))
                                     {

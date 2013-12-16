@@ -110,8 +110,6 @@ namespace Weverca.Analysis
 
     public class WidenningVisitor : AbstractValueVisitor
     {
-        bool containsFloat = false;
-        bool containsLong = false;
         bool containsOnlyBool = true;
         bool containsOnlyNumvericValues = true;
         bool containsOnlyString = true;
@@ -123,18 +121,8 @@ namespace Weverca.Analysis
             }
             if (containsOnlyNumvericValues)
             {
-                if (containsFloat)
-                {
-                    return new MemoryEntry(Context.AnyFloatValue);
-                }
-                else if (containsLong)
-                {
-                    return new MemoryEntry(Context.AnyLongintValue);
-                }
-                else
-                {
-                    return new MemoryEntry(Context.AnyIntegerValue);
-                }
+               return new MemoryEntry(Context.AnyFloatValue);
+                
             }
             if (containsOnlyString)
             {
@@ -201,37 +189,31 @@ namespace Weverca.Analysis
         public override void VisitLongintValue(LongintValue value)
         {
             numberFound();
-            containsLong = true;
         }
 
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             numberFound();
-            containsLong = true;
         }
 
         public override void VisitAnyLongintValue(AnyLongintValue value)
         {
             numberFound();
-            containsLong = true;
         }
 
         public override void VisitFloatValue(FloatValue value)
         {
             numberFound();
-            containsFloat = true;
         }
 
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             numberFound();
-            containsFloat = true;
         }
 
         public override void VisitAnyFloatValue(AnyFloatValue value)
         {
             numberFound();
-            containsFloat = true;
         }
 
         private void numberFound()

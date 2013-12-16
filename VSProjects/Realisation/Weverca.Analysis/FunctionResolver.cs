@@ -891,6 +891,8 @@ namespace Weverca.Analysis
             classes.Add(result.QualifiedName);
             List<string> indices = new List<string>();
 
+            NativeObjectAnalyzer objectAnalyzer=NativeObjectAnalyzer.GetInstance(Flow.OutSet);
+
             foreach (var currentClass in classes)
             {
                 foreach (var constant in result.Constants.Values.Where(a => a.ClassName == currentClass))
@@ -923,10 +925,20 @@ namespace Weverca.Analysis
             if (result.IsInterface == false)
             {
                 var staticVariables = OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(OutSet.Snapshot, new MemberIdentifier(result.QualifiedName.Name.LowercaseValue));
+                staticVariables.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
                 ReadWriteSnapshotEntryBase publicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("public"));
                 publicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
                 ReadWriteSnapshotEntryBase nonPublicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("non-public"));
                 nonPublicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+
+                if (result.BaseClasses.Count > 0)
+                {
+                    if (Flow.OutSet.ResolveType(result.BaseClasses.Last()).Count() == 0)
+                    {
+                        InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses.Last());
+
+                    }
+                }
 
                 foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.QualifiedName)))
                 {
@@ -991,6 +1003,40 @@ namespace Weverca.Analysis
                 var ppGraph = ProgramPointGraph.From(OutSet.CreateFunction(function));
 
                 Flow.AddExtension(key, ppGraph, ExtensionType.ParallelCall);
+            }
+        }
+
+        private void InsertNativeObjectStaticVariablesIntoMM(QualifiedName qualifiedName)
+        {
+            NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+            Debug.Assert(objectAnalyzer.ExistClass(qualifiedName));
+            ClassDecl classs = objectAnalyzer.GetClass(qualifiedName);
+
+            for (int i = 0; i < classs.BaseClasses.Count; i++)
+            {
+                var staticVariables = OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(OutSet.Snapshot, new MemberIdentifier(classs.BaseClasses[i].Name.LowercaseValue));
+                if (!staticVariables.IsDefined(OutSet.Snapshot))
+                {
+                    staticVariables.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+                    ReadWriteSnapshotEntryBase publicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("public"));
+                    publicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+                    ReadWriteSnapshotEntryBase nonPublicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("non-public"));
+                    nonPublicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+                    ClassDecl currentClass = objectAnalyzer.GetClass(classs.BaseClasses[i]);
+                    ReadWriteSnapshotEntryBase currentContainer=null;
+                    foreach (var field in currentClass.Fields.Values.Where(a => (a.ClassName == currentClass.QualifiedName && a.IsStatic==true)))
+                    {
+                        if (field.Visibility == Visibility.PUBLIC)
+                        {
+                            currentContainer = publicContainer;
+                        }
+                        else 
+                        {
+                            currentContainer = nonPublicContainer;
+                        }
+                        currentContainer.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, field.InitValue);
+                    }
+                }
             }
         }
 

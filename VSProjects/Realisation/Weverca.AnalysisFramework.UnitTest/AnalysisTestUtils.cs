@@ -83,7 +83,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public void SetWideningLimit(int limit)
         {
-            throw new NotImplementedException();
+            WideningLimit = limit;
         }
     }
 
