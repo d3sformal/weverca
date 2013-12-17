@@ -55,13 +55,14 @@
     <Compile Include="ExpressionEvaluator\ArrayIndexEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperations\AritmeticOperation.cs" />
-    <Compile Include="ExpressionEvaluator\BinaryOperations\LogicalOperation.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperations\Comparison.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperations\LogicalOperation.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperations\ModuloOperation.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftBooleanOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftFloatIntervalOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftFloatOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftIntegerIntervalOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftIntegerOperandVisitor.cs" />
-    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftIntervalIntegerOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftNullOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftStringOperandVisitor.cs" />
