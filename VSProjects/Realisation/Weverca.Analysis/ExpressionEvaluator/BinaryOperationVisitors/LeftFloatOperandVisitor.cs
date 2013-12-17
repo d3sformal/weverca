@@ -48,10 +48,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        SetWarning("Division by zero (converted from boolean false)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by false returns false boolean value
-                        result = OutSet.CreateBool(false);
+                        DivisionByFalse();
                     }
                     break;
                 default:
@@ -220,9 +217,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
         {
-            int integerValue;
-            int leftInteger;
-
             switch (operation)
             {
                 case Operations.Identical:
@@ -242,6 +236,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
+                    int integerValue;
                     double floatValue;
                     bool isInteger;
                     bool isHexadecimal;
@@ -266,6 +261,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         integerValue = 0;
                     }
 
+                    int leftInteger;
                     if ((isInteger || (isSuccessful
                         && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
                         && TypeConversion.TryConvertToInteger(leftOperand.Value, out leftInteger))
@@ -313,8 +309,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateDouble(leftOperand.Value);
                     break;
                 case Operations.Mul:
-                    result = OutSet.CreateDouble((leftOperand.Value > 0.0) ? 0.0
-                        : ((leftOperand.Value < -0.0) ? -0.0 : leftOperand.Value));
+                    result = OutSet.CreateDouble(0.0);
                     break;
                 case Operations.BitAnd:
                     result = OutSet.CreateInt(0);
@@ -335,10 +330,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    SetWarning("Division by zero (converted from null)",
-                        AnalysisWarningCause.DIVISION_BY_ZERO);
-                    // Division by null returns false boolean value
-                    result = OutSet.CreateBool(false);
+                    DivisionByNull();
                     break;
                 default:
                     result = Comparison.Compare(OutSet, operation,
@@ -403,6 +395,45 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = Comparison.Equal(OutSet, leftOperand.Value, value);
+                    break;
+                case Operations.NotIdentical:
+                    result = Comparison.NotEqual(OutSet, leftOperand.Value, value);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value);
+                    break;
+                default:
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand.Value, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand.Value, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalFloatValue(value);
                     break;
             }
         }

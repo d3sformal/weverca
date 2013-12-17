@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -60,6 +60,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private LeftIntegerIntervalOperandVisitor integerIntervaVisitor;
 
         /// <summary>
+        /// Visitor of left operand that has interval of floating-point numbers
+        /// </summary>
+        private LeftFloatIntervalOperandVisitor floatIntervaVisitor;
+
+        /// <summary>
         /// Selected visitor of left operand that performs binary operations with the given right operand
         /// </summary>
         private LeftOperandVisitor visitor;
@@ -79,6 +84,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             stringVisitor = new LeftStringOperandVisitor(flowController);
             nullVisitor = new LeftNullOperandVisitor(flowController);
             integerIntervaVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
+            floatIntervaVisitor = new LeftFloatIntervalOperandVisitor(flowController);
         }
 
         /// <summary>
@@ -192,6 +198,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             integerIntervaVisitor.SetLeftOperand(value);
             visitor = integerIntervaVisitor;
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            floatIntervaVisitor.SetLeftOperand(value);
+            visitor = floatIntervaVisitor;
         }
 
         #endregion Interval values

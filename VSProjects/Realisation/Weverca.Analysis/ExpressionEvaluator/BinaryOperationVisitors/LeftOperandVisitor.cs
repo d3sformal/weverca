@@ -185,6 +185,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        protected void DivisionByZero()
+        {
+            SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Division or modulo by zero returns false boolean value
+            result = OutSet.CreateBool(false);
+        }
+
+        protected void DivisionByFloatingPointZero()
+        {
+            SetWarning("Division by floating-point zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Division by floating-point zero does not return NaN or infinite, but false boolean value
+            result = OutSet.CreateBool(false);
+        }
+
+        protected void DivisionByFalse()
+        {
+            SetWarning("Division by zero (converted from boolean false)",
+                AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Division or modulo by false returns false boolean value
+            result = OutSet.CreateBool(false);
+        }
+
+        protected void DivisionByNull()
+        {
+            SetWarning("Division by zero (converted from null)", AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Division or modulo by null returns false boolean value
+            result = OutSet.CreateBool(false);
+        }
+
         #endregion Helper methods
     }
 

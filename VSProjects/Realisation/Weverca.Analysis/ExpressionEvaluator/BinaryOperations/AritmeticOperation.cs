@@ -94,7 +94,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public static ScalarValue Subtract(FlowOutputSet outset, int minuend, int subtrahend)
         {
-            // Result of addition can underflow or underflow
+            // Result of subtraction can underflow or underflow
             if ((subtrahend >= 0) ? (minuend >= int.MinValue + subtrahend)
                 : (minuend <= int.MaxValue + subtrahend))
             {
@@ -128,7 +128,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public static ScalarValue Multiply(FlowOutputSet outset, int multiplicand, int multiplier)
         {
-            // Result of addition can overflow or underflow
+            // Result of multiplication can overflow or underflow
             if ((multiplier == 0) || (((multiplicand >= 0) == (multiplier >= 0))
                 ? (multiplicand <= int.MaxValue / multiplier)
                 : (multiplicand <= int.MinValue / multiplier)))
@@ -689,9 +689,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
             IntegerIntervalValue addend)
         {
             // Result of addition can overflow or underflow
-            if ((augend.Start < 0) ? ((addend.Start >= int.MinValue - augend.Start)
-                && ((augend.End < 0) || (addend.End <= int.MaxValue - augend.End)))
-                : (addend.End <= int.MaxValue - augend.End))
+            if ((augend.Start >= 0) ? (addend.End <= int.MaxValue - augend.End)
+                : ((addend.Start >= int.MinValue - augend.Start)
+                && ((augend.End < 0) || (addend.End <= int.MaxValue - augend.End))))
             {
                 return outset.CreateIntegerInterval(augend.Start + addend.Start, augend.Start + addend.End);
             }
@@ -728,7 +728,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static Value Subtract(FlowOutputSet outset, IntegerIntervalValue minuend,
             IntegerIntervalValue subtrahend)
         {
-            throw new System.NotImplementedException();
+            // Result of subtraction can underflow or underflow
+            if ((minuend.Start >= 0) ? (subtrahend.Start >= minuend.End - int.MaxValue)
+                : ((subtrahend.End <= minuend.Start - int.MinValue)
+                && ((minuend.End < 0) || (subtrahend.Start >= minuend.End - int.MaxValue))))
+            {
+                return outset.CreateIntegerInterval(minuend.Start - subtrahend.End,
+                    minuend.End - subtrahend.Start);
+            }
+            else
+            {
+                // If aritmetic overflows or underflows, result is floating-point number
+                return Subtract(outset, TypeConversion.ToFloatInterval(outset, minuend),
+                    TypeConversion.ToFloatInterval(outset, subtrahend));
+            }
         }
 
         public static FloatIntervalValue Subtract(FlowOutputSet outset, IntegerIntervalValue minuend,
@@ -757,7 +770,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static Value Multiply(FlowOutputSet outset, IntegerIntervalValue multiplicand,
             IntegerIntervalValue multiplier)
         {
-            throw new System.NotImplementedException();
+            // TODO: Calculate more precise result
+            return outset.AnyValue;
         }
 
         public static FloatIntervalValue Multiply(FlowOutputSet outset, IntegerIntervalValue multiplicand,
@@ -775,7 +789,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static FloatIntervalValue Multiply(FlowOutputSet outset, FloatIntervalValue multiplicand,
             FloatIntervalValue multiplier)
         {
-            throw new System.NotImplementedException();
+            // TODO: Calculate more precise result
+            return outset.CreateFloatInterval(double.MinValue, double.MaxValue);
         }
 
         #endregion Multiplication
@@ -785,7 +800,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static Value Divide(FlowController flow, IntegerIntervalValue dividend,
             IntegerIntervalValue divisor)
         {
-            throw new System.NotImplementedException();
+            // TODO: Calculate more precise result
+            return flow.OutSet.AnyValue;
         }
 
         public static Value Divide(FlowController flow, IntegerIntervalValue dividend,
@@ -803,7 +819,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static Value Divide(FlowController flow, FloatIntervalValue dividend,
             FloatIntervalValue divisor)
         {
-            throw new System.NotImplementedException();
+            // TODO: Calculate more precise result
+            return flow.OutSet.AnyValue;
         }
 
         #endregion Division

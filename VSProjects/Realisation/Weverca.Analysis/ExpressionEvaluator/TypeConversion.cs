@@ -41,7 +41,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// </item>
     /// <item>
     /// <description>
-    /// A successful conversion. All other conversions will succeed even if new value result lose some data.
+    /// A successful conversion. All other conversions will succeed even if new result value loses some data.
     /// </description>
     /// </item>
     /// </list>
@@ -587,7 +587,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>The number 1.0 if value is <c>true</c>, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, BooleanValue value)
         {
-            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+            return outset.CreateDouble(ToFloat(value.Value));
         }
 
         /// <summary>
@@ -608,7 +608,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>A floating-point number that is equivalent to integer value.</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, IntegerValue value)
         {
-            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+            return outset.CreateDouble(ToFloat(value.Value));
         }
 
         /// <summary>
@@ -629,7 +629,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>A floating-point number that is equivalent to long integer value.</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, LongintValue value)
         {
-            return outset.CreateDouble(TypeConversion.ToFloat(value.Value));
+            return outset.CreateDouble(ToFloat(value.Value));
         }
 
         /// <summary>
@@ -717,7 +717,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Always 0.0 value</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, UndefinedValue value)
         {
-            return outset.CreateDouble(0.0);
+            return outset.CreateDouble(ToFloat(value));
+        }
+
+        /// <summary>
+        /// Converts an undefined value to an equivalent native floating-point number.
+        /// </summary>
+        /// <param name="value">Undefined value</param>
+        /// <returns>Always 0.0 value</returns>
+        public static double ToFloat(UndefinedValue value)
+        {
+            return 0.0;
         }
 
         #endregion ToFloat

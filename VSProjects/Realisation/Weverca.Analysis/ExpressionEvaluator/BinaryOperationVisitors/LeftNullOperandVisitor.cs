@@ -1,5 +1,3 @@
-using System;
-
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
@@ -85,7 +83,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    DivisionOfNullOperation(value.Value);
+                    if (value.Value)
+                    {
+                        // 0 (null) divided or modulo by anything is always 0
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        DivisionByFalse();
+                    }
                     break;
                 default:
                     base.VisitBooleanValue(value);
@@ -132,7 +138,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    DivisionOfNullOperation(value.Value != 0);
+                    if (value.Value != 0)
+                    {
+                        // 0 (null) divided or modulo by anything is always 0
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        DivisionByZero();
+                    }
                     break;
                 default:
                     result = Comparison.Compare(OutSet, operation,
@@ -188,7 +202,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Div:
-                    DivisionOfNullOperation(value.Value);
+                    if (value.Value != 0.0)
+                    {
+                        // 0 (null) divided or modulo by anything is always 0
+                        result = OutSet.CreateDouble(0.0);
+                    }
+                    else
+                    {
+                        DivisionByFloatingPointZero();
+                    }
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
@@ -275,11 +297,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         out floatValue, out isInteger);
                     if (isInteger)
                     {
-                        DivisionOfNullOperation(integerValue != 0);
+                        if (integerValue != 0)
+                        {
+                            // 0 (null) divided or modulo by anything is always 0
+                            result = OutSet.CreateInt(0);
+                        }
+                        else
+                        {
+                            DivisionByZero();
+                        }
                     }
                     else
                     {
-                        DivisionOfNullOperation(floatValue);
+                        if (floatValue != 0.0)
+                        {
+                            // 0 (null) divided or modulo by anything is always 0
+                            result = OutSet.CreateDouble(0.0);
+                        }
+                        else
+                        {
+                            DivisionByFloatingPointZero();
+                        }
                     }
                     break;
                 case Operations.Mod:
@@ -341,10 +379,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    SetWarning("Division by zero (converted from null)",
-                        AnalysisWarningCause.DIVISION_BY_ZERO);
-                    // Division by null returns false boolean value
-                    result = OutSet.CreateBool(false);
+                    DivisionByNull();
                     break;
                 default:
                     base.VisitUndefinedValue(value);
@@ -367,6 +402,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     result = OutSet.CreateBool(true);
                     break;
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
                 default:
                     base.VisitGenericIntervalValue(value);
                     break;
@@ -382,14 +425,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
                     break;
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.BitAnd:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    result = OutSet.CreateInt(0);
-                    break;
                 case Operations.BitOr:
                 case Operations.BitXor:
                     result = value;
@@ -401,7 +436,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        // As right operant can has any value, can be 0 too
+                        // As right operant can be range of values, can possibly be 0 too
                         // That causes division by zero and returns false
                         SetWarning("Division by any integer, possible division by zero",
                             AnalysisWarningCause.DIVISION_BY_ZERO);
@@ -427,51 +462,62 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Or:
+                case Operations.Xor:
+                    result = TypeConversion.ToBoolean(OutSet, value);
+                    break;
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    IntegerIntervalValue integerInterval;
+                    if (TypeConversion.TryConvertToIntegerInterval(OutSet, value, out integerInterval))
+                    {
+                        result = integerInterval;
+                    }
+                    else
+                    {
+                        result = OutSet.AnyValue;
+                    }
+                    break;
+                case Operations.Mod:
+                    if ((value.Start > 0.0) || (value.End < 0.0))
+                    {
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        // As right operant can be range of values, can possibly be 0 too
+                        // That causes division by zero and returns false
+                        SetWarning("Division by any integer, possible division by zero",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+                        result = OutSet.AnyValue;
+                    }
+                    break;
+                default:
+                    var leftFloat = TypeConversion.ToFloat(leftOperand);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftFloat, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftFloat, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalFloatValue(value);
+                    break;
+            }
+        }
+
         #endregion Interval values
 
         #endregion AbstractValueVisitor Members
-
-        #region Helper methods
-
-        /// <summary>
-        /// Depending on <paramref name="isRightOperandNotZero" />, set 0 or report division by zero
-        /// </summary>
-        /// <param name="isRightOperandNotZero">Indicates whether the right operand is not zero</param>
-        private void DivisionOfNullOperation(bool isRightOperandNotZero)
-        {
-            if (isRightOperandNotZero)
-            {
-                // 0 (null) modulo or divided by anything is always 0
-                result = OutSet.CreateInt(0);
-            }
-            else
-            {
-                SetWarning("Division or modulo by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
-                // Division by false returns false boolean value
-                result = OutSet.CreateBool(false);
-            }
-        }
-
-        /// <summary>
-        /// Set (+/-)0.0 as result or, if divisor is 0.0, report division by zero
-        /// </summary>
-        /// <param name="divisor">Divisor of division operation</param>
-        private void DivisionOfNullOperation(double divisor)
-        {
-            if (divisor != 0.0)
-            {
-                // 0.0 (null) divided by any float is always (+/-)0.0
-                result = OutSet.CreateDouble((divisor > 0.0) ? 0.0 : ((divisor < -0.0) ? -0.0 : divisor));
-            }
-            else
-            {
-                SetWarning("Division by floating-point zero",
-                    AnalysisWarningCause.DIVISION_BY_ZERO);
-                // Division by floating-point zero does not return NaN, but false boolean value
-                result = OutSet.CreateBool(false);
-            }
-        }
-
-        #endregion Helper methods
     }
 }

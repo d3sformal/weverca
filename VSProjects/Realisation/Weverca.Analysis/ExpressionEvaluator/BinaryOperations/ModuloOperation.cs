@@ -7,7 +7,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
-    public class ModuloOperation
+    public static class ModuloOperation
     {
         #region Integer divisor
 
@@ -167,7 +167,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Float divisor
 
-        public static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> modulo,
+        public static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> operation,
             T dividend, double divisor)
         {
             int convertedValue;
@@ -175,7 +175,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             // Here we distinguish whether the integer divisor is known or not
             if (TypeConversion.TryConvertToInteger(divisor, out convertedValue))
             {
-                return modulo(flow, dividend, convertedValue);
+                return operation(flow, dividend, convertedValue);
             }
             else
             {
@@ -227,7 +227,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region String divisor
 
-        public static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> modulo,
+        public static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> operation,
             T dividend, string divisor)
         {
             int integerValue;
@@ -239,7 +239,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             // Here we distinguish whether the integer divisor is known or not
             if (isInteger)
             {
-                return modulo(flow, dividend, integerValue);
+                return operation(flow, dividend, integerValue);
             }
             else
             {
@@ -428,8 +428,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static Value Modulo(FlowController flow, IntegerIntervalValue dividend,
             IntegerIntervalValue divisor)
         {
-            // TODO: Implement
-            throw new NotImplementedException();
+            // TODO: Calculate more precise result
+            return flow.OutSet.AnyValue;
         }
 
         public static Value Modulo(FlowController flow, FloatIntervalValue dividend,
@@ -476,21 +476,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Float interval divisor
 
-        public static Value Modulo<T>(FlowController flow, IntervalDivisorModulo<T> modulo,
+        public static Value Modulo<T>(FlowController flow, IntervalDivisorModulo<T> operation,
             T dividend, FloatIntervalValue divisor)
         {
             IntegerIntervalValue convertedValue;
             if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, divisor, out convertedValue))
             {
-                return modulo(flow, dividend, convertedValue);
+                return operation(flow, dividend, convertedValue);
             }
             else
             {
-                // As right operant can has any value, can be 0 too
-                // That causes division by zero and returns false
-                SetWarning(flow, "Division by any integer, possible division by zero",
-                    AnalysisWarningCause.DIVISION_BY_ZERO);
-                return flow.OutSet.AnyValue;
+                return WarnPossibleDivideByZero(flow);
             }
         }
 
@@ -662,28 +658,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             SetWarning(flow, "Modulo by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
 
-            // Division or modulo by zero returns false boolean value
+            // Modulo by zero returns false boolean value
             return flow.OutSet.CreateBool(false);
         }
 
         private static AnyValue WarnPossibleDivideByZero(FlowController flow)
         {
-            // As right operant can has any value, can be 0 too
+            // As right operant can be range of values, can possibly be 0 too
             // That causes division by zero and returns false
             SetWarning(flow, "Division by any integer, possible division by zero",
                 AnalysisWarningCause.DIVISION_BY_ZERO);
             return flow.OutSet.AnyValue;
-        }
-
-        /// <summary>
-        /// Report a warning for the position of current expression
-        /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="message">Message of the warning</param>
-        private static void SetWarning(FlowController flow, string message)
-        {
-            var warning = new AnalysisWarning(message, flow.CurrentPartial);
-            AnalysisWarningHandler.SetWarning(flow.OutSet, warning);
         }
 
         /// <summary>

@@ -6,18 +6,18 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with interval of integer values as the left operand
+    /// Evaluates one binary operation with interval of floating-point numbers as the left operand
     /// </summary>
     /// <remarks>
     /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
     /// </remarks>
-    public class LeftIntegerIntervalOperandVisitor : GenericLeftOperandVisitor<IntegerIntervalValue>
+    public class LeftFloatIntervalOperandVisitor : GenericLeftOperandVisitor<FloatIntervalValue>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LeftIntegerIntervalOperandVisitor" /> class.
+        /// Initializes a new instance of the <see cref="LeftFloatIntervalOperandVisitor" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public LeftIntegerIntervalOperandVisitor(FlowController flowController)
+        public LeftFloatIntervalOperandVisitor(FlowController flowController)
             : base(flowController)
         {
         }
@@ -55,10 +55,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        SetWarning("Division by zero (converted from boolean false)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by false returns false boolean value
-                        result = OutSet.CreateBool(false);
+                        DivisionByFalse();
                     }
                     break;
                 default:
@@ -142,8 +139,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
                     break;
                 default:
-                    result = Comparison.IntervalCompare(OutSet, operation,
-                        TypeConversion.ToFloatInterval(OutSet, leftOperand), value.Value);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, value.Value);
                     if (result != null)
                     {
                         break;
@@ -197,34 +193,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     TypeConversion.TryConvertToNumber(value.Value, true,
                         out integerValue, out floatValue, out isInteger);
 
-                    if (isInteger)
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, floatValue);
+                    if (result != null)
                     {
-                        result = Comparison.IntervalCompare(OutSet, operation, leftOperand, integerValue);
-                        if (result != null)
-                        {
-                            break;
-                        }
-
-                        result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, integerValue);
-                        if (result != null)
-                        {
-                            break;
-                        }
+                        break;
                     }
-                    else
-                    {
-                        var floatInterval = TypeConversion.ToFloatInterval(OutSet, leftOperand);
-                        result = Comparison.IntervalCompare(OutSet, operation, floatInterval, floatValue);
-                        if (result != null)
-                        {
-                            break;
-                        }
 
-                        result = ArithmeticOperation.Arithmetic(flow, operation, floatInterval, floatValue);
-                        if (result != null)
-                        {
-                            break;
-                        }
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, floatValue);
+                    if (result != null)
+                    {
+                        break;
                     }
 
                     base.VisitStringValue(value);
@@ -264,10 +242,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    SetWarning("Division by zero (converted from null)",
-                        AnalysisWarningCause.DIVISION_BY_ZERO);
-                    // Division by null returns false boolean value
-                    result = OutSet.CreateBool(false);
+                    DivisionByNull();
                     break;
                 default:
                     result = Comparison.IntervalCompare(OutSet, operation,
@@ -301,10 +276,49 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = Comparison.Equal(OutSet, leftOperand, value);
+                    result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
-                    result = Comparison.NotEqual(OutSet, leftOperand, value);
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand, value);
+                    break;
+                default:
+                    var floatInterval = TypeConversion.ToFloatInterval(OutSet, value);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, floatInterval);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, floatInterval);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand, value);
@@ -328,7 +342,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    base.VisitIntervalIntegerValue(value);
+                    base.VisitIntervalFloatValue(value);
                     break;
             }
         }

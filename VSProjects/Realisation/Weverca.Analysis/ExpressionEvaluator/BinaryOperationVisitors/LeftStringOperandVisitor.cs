@@ -1,3 +1,5 @@
+using System;
+
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
@@ -46,10 +48,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        SetWarning("Division by zero (converted from boolean false)",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        // Division by false returns false boolean value
-                        result = OutSet.CreateBool(false);
+                        DivisionByFalse();
                     }
                     break;
                 default:
@@ -217,9 +216,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
-            int integerValue;
-            int rightInteger;
-
             switch (operation)
             {
                 case Operations.Mod:
@@ -233,6 +229,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
+                    int integerValue;
                     double floatValue;
                     bool isInteger;
                     bool isHexadecimal;
@@ -257,6 +254,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         integerValue = 0;
                     }
 
+                    int rightInteger;
                     if ((isInteger || (isSuccessful
                         && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
                         && TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
@@ -292,10 +290,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = OutSet.CreateBool(leftOperand.Value == leftOperand.Value);
+                    result = OutSet.CreateBool(string.Equals(leftOperand.Value, value.Value,
+                        StringComparison.Ordinal));
                     break;
                 case Operations.NotIdentical:
-                    result = OutSet.CreateBool(leftOperand.Value != leftOperand.Value);
+                    result = OutSet.CreateBool(!string.Equals(leftOperand.Value, value.Value,
+                        StringComparison.Ordinal));
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand.Value, value.Value);
@@ -429,10 +429,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    SetWarning("Division by zero (converted from null)",
-                        AnalysisWarningCause.DIVISION_BY_ZERO);
-                    // Division by null returns false boolean value
-                    result = OutSet.CreateBool(false);
+                    DivisionByNull();
                     break;
                 case Operations.BitAnd:
                     result = OutSet.CreateInt(0);
@@ -462,15 +459,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
-            if (!BitwiseOperation())
-            {
-                base.VisitGenericIntervalValue(value);
-            }
-        }
-
-        /// <inheritdoc />
-        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
             switch (operation)
             {
                 case Operations.Identical:
@@ -479,6 +467,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     result = OutSet.CreateBool(true);
                     break;
+                default:
+                    if (BitwiseOperation())
+                    {
+                        break;
+                    }
+
+                    base.VisitGenericIntervalValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            switch (operation)
+            {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand.Value, value);
                     break;
@@ -528,6 +532,46 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     base.VisitIntervalIntegerValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value, value);
+                    break;
+                default:
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    int integerValue;
+                    double floatValue;
+                    bool isInteger;
+                    bool isHexadecimal;
+                    var isSuccessful = TypeConversion.TryConvertToNumber(leftOperand.Value, true,
+                        out integerValue, out floatValue, out isInteger, out isHexadecimal);
+
+                    result = Comparison.IntervalCompare(OutSet, operation, floatValue, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = ArithmeticOperation.Arithmetic(flow, operation, floatValue, value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitIntervalFloatValue(value);
                     break;
             }
         }
