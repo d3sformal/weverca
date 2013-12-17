@@ -16,7 +16,7 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// <summary>
     /// Controlling flow actions during analysis
     /// </summary>
-    class SimpleFlowResolver : FlowResolverBase
+    public class SimpleFlowResolver : FlowResolverBase
     {
         private readonly static VariableName CatchBlocks_Storage = new VariableName(".catch_blocks");
 

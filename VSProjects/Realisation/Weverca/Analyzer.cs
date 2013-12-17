@@ -10,10 +10,23 @@ using PHP.Core;
 
 using Weverca.Analysis;
 using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.UnitTest;
 using Weverca.Parsers;
 
 namespace Weverca
 {
+    internal class WevercaAnalysisSimpleFlowResolver : Weverca.Analysis.ForwardAnalysis
+    {
+       public WevercaAnalysisSimpleFlowResolver(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            : base(entryMethodGraph, memoryModel){ }
+        protected override FlowResolverBase createFlowResolver()
+        {
+            //return new Weverca.Analysis.FlowResolver.FlowResolver();
+            return new SimpleFlowResolver();
+        }
+    }
+
     internal static class Analyzer
     {
         /// <summary>

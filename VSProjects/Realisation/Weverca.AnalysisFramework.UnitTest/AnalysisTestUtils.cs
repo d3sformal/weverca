@@ -55,30 +55,35 @@ namespace Weverca.AnalysisFramework.UnitTest
     #region Weverca.Analysis test implementation
     internal class WevercaAnalysisTest : Weverca.Analysis.ForwardAnalysis, TestAnalysisSettings
     {
+        private readonly WevercaFlowResolverTest _flowResolver;
         private readonly EnvironmentInitializer _envinronmentInitializer;
+        private readonly WevercaFunctionResolverTest _functionResolver;
 
         public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
             : base(entryMethodGraph, memoryModel)
         {
             _envinronmentInitializer = initializer;
+            _flowResolver = new WevercaFlowResolverTest();
+            _functionResolver = new WevercaFunctionResolverTest(_envinronmentInitializer);
         }
 
-        public void SetInclude(String filename, string fileCode)
+        public void SetInclude(string fileName, string fileCode)
         {
-            throw new NotImplementedException();
+            _flowResolver.SetInclude(fileName, fileCode);
         }
         public void SetFunctionShare(string functionName)
         {
-            throw new NotImplementedException();
+            _functionResolver.SetFunctionShare(functionName);
         }
         protected override Expressions.FunctionResolverBase createFunctionResolver()
         {
-            return new WevercaFunctionResolverTest(_envinronmentInitializer);
+            return _functionResolver;
         }
         protected override FlowResolverBase createFlowResolver()
         {
-            return new Weverca.Analysis.FlowResolver.FlowResolver();
+            //return new Weverca.Analysis.FlowResolver.FlowResolver();
             //return new SimpleFlowResolver();
+            return _flowResolver;
         }
 
         public void SetWideningLimit(int limit)
@@ -87,9 +92,55 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
     }
 
+    internal class WevercaFlowResolverTest : Weverca.Analysis.FlowResolver.FlowResolver
+    {
+        private readonly Dictionary<string, string> _includes = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Set code included for given file name (used for include testing)
+        /// </summary>
+        /// <param name="fileName">Name of included file</param>
+        /// <param name="fileCode">PHP code of included file</param>
+        internal void SetInclude(string fileName, string fileCode)
+        {
+            _includes.Add(fileName, fileCode);
+        }
+
+        // Note: Implemetation copied from SimpleFlowResolver
+        public override void Include(FlowController flow, MemoryEntry includeFile)
+        {
+            //extend current program point as Include
+
+            var files = new HashSet<string>();
+            foreach (StringValue possibleFile in includeFile.PossibleValues)
+            {
+                files.Add(possibleFile.Value);
+            }
+
+            foreach (var branchKey in flow.ExtensionKeys)
+            {
+                if (!files.Remove(branchKey as string))
+                {
+                    //this include is now not resolved as possible include branch
+                    flow.RemoveExtension(branchKey);
+                }
+            }
+
+            foreach (var file in files)
+            {
+                //Create graph for every include - NOTE: we can share pp graphs
+                var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
+                var ppGraph = ProgramPointGraph.FromSource(cfg);
+                flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
+            }
+        }
+    }
+
     internal class WevercaFunctionResolverTest : Weverca.Analysis.FunctionResolver
     {
         private readonly EnvironmentInitializer _environmentInitializer;
+        private readonly HashSet<string> _sharedFunctionNames = new HashSet<string>();
+        private readonly Dictionary<string, ProgramPointGraph> _sharedPpGraphs = new Dictionary<string, ProgramPointGraph>();
 
         public WevercaFunctionResolverTest(EnvironmentInitializer envinronmentInitializer)
         {
@@ -100,6 +151,36 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             _environmentInitializer(OutSet);
             base.InitializeCall(extensionGraph, arguments);
+        }
+
+        // Note: implementation copied from SimpleFunctionResolver
+        protected override void addCallBranch(FunctionValue function)
+        {
+            var functionName = function.Name.Value;
+            ProgramPointGraph functionGraph;
+            if (_sharedFunctionNames.Contains(functionName))
+            {
+                //set graph sharing for this function
+                if (!_sharedPpGraphs.ContainsKey(functionName))
+                {
+                    //create single graph instance
+                    _sharedPpGraphs[functionName] = ProgramPointGraph.From(function);
+                }
+
+                //get shared instance of program point graph
+                functionGraph = _sharedPpGraphs[functionName];
+            }
+            else
+            {
+                functionGraph = ProgramPointGraph.From(function);
+            }
+
+            Flow.AddExtension(function.DeclaringElement, functionGraph, ExtensionType.ParallelCall);
+        }
+
+        internal void SetFunctionShare(string functionName)
+        {
+            _sharedFunctionNames.Add(functionName);
         }
     }
     #endregion
@@ -346,7 +427,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
         private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM};
-        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.WevercaAnalysis, Analyses.SimpleAnalysis };
+        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis, Analyses.WevercaAnalysis};
 
         /// <summary>
         /// Values below zero means that there is no limit

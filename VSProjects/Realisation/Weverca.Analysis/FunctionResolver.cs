@@ -1149,10 +1149,15 @@ namespace Weverca.Analysis
 
             foreach (var function in functions.Values)
             {
-                // Create graph for every function - NOTE: We can share pp graphs
-                var ppGraph = ProgramPointGraph.From(function);
-                Flow.AddExtension(function.DeclaringElement, ppGraph, ExtensionType.ParallelCall);
+                addCallBranch(function);
             }
+        }
+
+        protected virtual void addCallBranch(FunctionValue function)
+        {
+            // Create graph for every function - NOTE: We can share pp graphs
+            var ppGraph = ProgramPointGraph.From(function);
+            Flow.AddExtension(function.DeclaringElement, ppGraph, ExtensionType.ParallelCall);
         }
 
         /// <summary>
