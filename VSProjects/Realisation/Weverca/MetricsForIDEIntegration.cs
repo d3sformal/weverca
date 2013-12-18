@@ -56,6 +56,29 @@ namespace Weverca
                     }
                 }
             }
+            else if (metricsType == "-constructsFromFileOfFiles" && metricsArgs.Length > 0)
+            {
+                System.IO.StreamReader fileToRead = new System.IO.StreamReader(analyzedFile);
+                String line;
+                while ((line = fileToRead.ReadLine()) != null)
+                {
+                    if (Directory.Exists(line))
+                    {
+                        ProcessDirectory(line, metricsArgs);
+                    }
+                    else if (File.Exists(line))
+                    {
+                        string fileExtension = Path.GetExtension(line);
+                        if (fileExtension == PHP_FILE_EXTENSION)
+                        {
+                            ProcessFile(line, metricsArgs);
+                        }
+                    }
+                }
+
+                fileToRead.Close();
+            }
+
         }
 
         /// <summary>
@@ -67,7 +90,7 @@ namespace Weverca
             Console.WriteLine("Processing directory: {0}", directoryName);
             System.Diagnostics.Debug.Assert(Directory.Exists(directoryName));
 
-            foreach (string fileName in Directory.EnumerateFiles(directoryName, "*.php", SearchOption.TopDirectoryOnly))
+            foreach (string fileName in Directory.EnumerateFiles(directoryName, "*.php", SearchOption.AllDirectories))
             {
                 string fileExtension = Path.GetExtension(fileName);
                 if (fileExtension == PHP_FILE_EXTENSION)
@@ -120,14 +143,20 @@ namespace Weverca
 
             Console.WriteLine("Processing file: {0}", fileName);
             SyntaxParser parser = GenerateParser(fileName);
-            parser.Parse();
+            try
+            {
+                parser.Parse();
+            }
+            catch 
+            { 
+                return; 
+            }
             if (parser.Errors.AnyError)
             {
                 Console.WriteLine("error");
                 return;
             }
             MetricInfo info = MetricInfo.FromParsers(true, parser);
-
             foreach (string construct in constructs)
             {
                 if (info.HasIndicator(StringToIndicator(construct)))
