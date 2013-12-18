@@ -53,7 +53,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Always return false if the transaction is started and not yet commited
         /// </summary>
         public bool HasChanged { get; private set; }
-        
+
         #region Implementation of SnapshotEntry based API
 
         /// <summary>
@@ -463,9 +463,15 @@ namespace Weverca.AnalysisFramework.Memory
             {
                 throw new NotSupportedException("Cannot commit transaction because no transaction has been started yet");
             }
-            IsTransactionStarted = false;
 
-            HasChanged = commitTransaction();
+            try
+            {
+                HasChanged = commitTransaction();
+            }
+            finally
+            {
+                IsTransactionStarted = false;
+            }
         }
 
         public void WidenAndCommitTransaction()
@@ -475,9 +481,15 @@ namespace Weverca.AnalysisFramework.Memory
             {
                 throw new NotSupportedException("Cannot commit and widen because no transaction has been started yet");
             }
-            IsTransactionStarted = false;
 
-            HasChanged = widenAndCommitTransaction();
+            try
+            {
+                HasChanged = widenAndCommitTransaction();
+            }
+            finally
+            {
+                IsTransactionStarted = false;
+            }
         }
 
         /// <summary>
