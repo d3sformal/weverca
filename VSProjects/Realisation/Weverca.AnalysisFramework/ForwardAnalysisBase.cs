@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
@@ -52,6 +53,11 @@ namespace Weverca.AnalysisFramework
         /// Queue of program points that should be processed
         /// </summary>
         private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
+
+        /// <summary>
+        /// Entry script of the analysis
+        /// </summary>
+        private readonly FileInfo _entryScript;
 
         #endregion
 
@@ -131,9 +137,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
-        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate)
+        /// <param name="entryScript">The entry script of the analysis</param>
+        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate, FileInfo entryScript)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
+            _entryScript = entryScript;
             WideningLimit = int.MaxValue;
             EntryInput = createEmptySet();
             EntryInput.StartTransaction();
@@ -162,7 +170,7 @@ namespace Weverca.AnalysisFramework
         {
             EntryInput.CommitTransaction();
 
-            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG);
+            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG, AnalysisServices.EntryScript);
             _services.SetServices(ProgramPointGraph);
 
             var output=_services.CreateEmptySet();            
@@ -217,7 +225,7 @@ namespace Weverca.AnalysisFramework
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
 
-            _services = new AnalysisServices(_workQueue,_functionResolver,_expressionEvaluator,createEmptySet,  _flowResolver);
+            _services = new AnalysisServices(_workQueue,_functionResolver,_expressionEvaluator,createEmptySet,  _flowResolver, _entryScript);
         }
 
         /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -20,9 +21,23 @@ namespace Weverca.AnalysisFramework.Memory
         /// Element, which caused creating this function
         /// </summary>
         public readonly LangElement DeclaringElement;
-
-        internal FunctionValue(LangElement declaringElement,Name name)
+        /// <summary>
+        /// The script in that this function is declared
+        /// </summary>
+        public readonly FileInfo DeclaringScript;
+        /// <summary>
+        /// Method declaration
+        /// Note that it works only if the function value is SourceMethodValue
+        /// Added for convenient coding of FunctionResolver, not nice
+        /// </summary>
+        public MethodDecl MethodDecl
         {
+            get { return DeclaringElement as MethodDecl; }
+        }
+
+        internal FunctionValue(LangElement declaringElement, Name name)
+        {
+            DeclaringScript = AnalysisServices.CurrentScript;
             if (declaringElement == null)
                 throw new ArgumentNullException("declaringElement");
             DeclaringElement = declaringElement;

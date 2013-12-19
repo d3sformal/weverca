@@ -31,9 +31,9 @@ namespace Weverca.Analysis.UnitTest
 
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
-            var cfg = new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            var cfg = Weverca.ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast);
 
-            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM);
+            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM, null);
         }
 
         /// <summary>

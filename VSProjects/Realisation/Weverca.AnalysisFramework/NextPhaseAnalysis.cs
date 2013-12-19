@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
@@ -65,6 +66,11 @@ namespace Weverca.AnalysisFramework
         /// Mapping used for mapping between program point graph snapshots and current analysis snaphots
         /// </summary>
         private SnapshotMapping _mapping;
+
+        /// <summary>
+        /// Entry script of the analysis
+        /// </summary>
+        private readonly FileInfo _entryScript;
 
         #endregion
 
@@ -140,9 +146,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
-        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, CreateSnapshot createSnapshotDelegate, AnalysisDirection direction)
+        /// <param name="entryScript">The entry script of the analysis</param>
+        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, CreateSnapshot createSnapshotDelegate, AnalysisDirection direction, FileInfo entryScript)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
+            _entryScript = entryScript;
 
             Direction = direction;
             AnalyzedProgramPointGraph = analyzedPPG;
@@ -218,7 +226,7 @@ namespace Weverca.AnalysisFramework
             _functionResolver = createFunctionResolver();
 
             _mapping = new SnapshotMapping(AnalyzedProgramPointGraph);
-            _services = new AnalysisServices(_workQueue, _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver);
+            _services = new AnalysisServices(_workQueue, _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver, _entryScript);
         }
 
         /// <summary>

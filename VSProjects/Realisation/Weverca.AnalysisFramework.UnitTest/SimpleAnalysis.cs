@@ -53,7 +53,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly SimpleFunctionResolver _functionResolver;
 
         public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, Weverca.MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
-            : base(entryCFG, memoryModel.CreateSnapshot)
+            : base(entryCFG, memoryModel.CreateSnapshot, null)
         {
             _initializer = initializer;
             _flowResolver = new SimpleFlowResolver();

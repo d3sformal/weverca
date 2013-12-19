@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
@@ -54,8 +55,57 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="includeFile">File argument of include statement</param>
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
-            //TODO: deal with includes
-            throw new NotImplementedException();
+            //extend current program point as Include
+
+            var files = new HashSet<string>();
+            foreach (StringValue possibleFile in includeFile.PossibleValues)
+            {
+                files.Add(possibleFile.Value);
+            }
+
+            foreach (var branchKey in flow.ExtensionKeys)
+            {
+                if (!files.Remove(branchKey as string))
+                {
+                    //this include is now not resolved as possible include branch
+                    flow.RemoveExtension(branchKey);
+                }
+            }
+
+            foreach (var file in files)
+            {
+                var fileInfo = findFile(flow, file);
+                if (fileInfo == null)
+                {
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("The file " + file + " was included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
+                    continue;
+                }
+
+                //Create graph for every include - NOTE: we can share pp graphs
+                var cfg = ControlFlowGraph.ControlFlowGraph.FromFilename(fileInfo.FullName);
+                var ppGraph = ProgramPointGraph.FromSource(cfg, fileInfo);
+                flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
+            }
+        }
+
+        /// <summary>
+        /// Finds the file to be included
+        /// </summary>
+        private FileInfo findFile(FlowController flow, string fileName) 
+        {
+            // the file has relative path and it is in main script directory
+            var fileInfo = new FileInfo(AnalysisServices.EntryScript.DirectoryName + "/" + fileName);
+            if (fileInfo.Exists) return fileInfo;
+
+            // the file has relative path and it is in current script directory
+            fileInfo = new FileInfo(flow.ProgramPoint.ppGraph.OwningScript.DirectoryName + "/" + fileName);
+            if (fileInfo.Exists) return fileInfo;
+
+            // the file has absolute path
+            fileInfo = new FileInfo(fileName);
+            if (fileInfo.Exists) return fileInfo;
+
+            return null;
         }
 
         /// <summary>

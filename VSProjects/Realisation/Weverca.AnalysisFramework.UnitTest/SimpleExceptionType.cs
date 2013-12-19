@@ -18,7 +18,14 @@ namespace Weverca.AnalysisFramework.UnitTest
             methods.Add(new MethodIdentifier(exceptionIdentifier,new Name("__construct")), method("__construct", _method___construct));
                 
 
-            var declaration = new ClassDecl(exceptionIdentifier, methods, new Dictionary<MethodIdentifier,MethodDecl>(), new Dictionary<FieldIdentifier, ConstantInfo>(), new Dictionary<FieldIdentifier, FieldInfo>(), new List<QualifiedName>(), false, false, false);
+            var declaration = new ClassDecl(
+                exceptionIdentifier, 
+                methods,
+                new Dictionary<MethodIdentifier, FunctionValue>(), 
+                new Dictionary<FieldIdentifier, ConstantInfo>(), 
+                new Dictionary<FieldIdentifier, FieldInfo>(), 
+                new List<QualifiedName>(), 
+                false, false, false);
             return declaration;
         }
 

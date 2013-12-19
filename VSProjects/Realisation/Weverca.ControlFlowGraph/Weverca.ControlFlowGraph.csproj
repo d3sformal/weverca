@@ -51,6 +51,10 @@
       <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
+      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+      <Name>Weverca.Parser</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

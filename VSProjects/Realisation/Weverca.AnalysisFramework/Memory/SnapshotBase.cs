@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -616,23 +617,18 @@ namespace Weverca.AnalysisFramework.Memory
             return new FloatValue(number);
         }
 
+        /// <inheritdoc />
         public FunctionValue CreateFunction(FunctionDecl declaration)
         {
             checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedFunctionValues);
             return new SourceFunctionValue(declaration);
         }
 
-        /// <summary>
-        /// Create function value from given declaration
-        /// </summary>
-        /// <param name="declaration">Method declaration</param>
-        /// <returns>Created value</returns>
+        /// <inheritdoc />
         public FunctionValue CreateFunction(MethodDecl declaration)
         {
             checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedFunctionValues);
             return new SourceMethodValue(declaration);
         }

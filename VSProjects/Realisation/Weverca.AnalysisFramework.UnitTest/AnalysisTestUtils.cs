@@ -60,7 +60,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly WevercaFunctionResolverTest _functionResolver;
 
         public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
-            : base(entryMethodGraph, memoryModel)
+            : base(entryMethodGraph, memoryModel, null)
         {
             _envinronmentInitializer = initializer;
             _flowResolver = new WevercaFlowResolverTest();
@@ -130,7 +130,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
-                var ppGraph = ProgramPointGraph.FromSource(cfg);
+                var ppGraph = ProgramPointGraph.FromSource(cfg, null);
                 flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
             }
         }
@@ -206,7 +206,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             code = "<?php \n" + code + "?>";
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
-            var cfg = new ControlFlowGraph.ControlFlowGraph(parser.Ast);
+            var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast);
 
             return cfg;
         }

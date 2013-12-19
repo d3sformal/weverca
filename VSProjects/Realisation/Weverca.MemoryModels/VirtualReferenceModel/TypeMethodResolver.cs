@@ -51,9 +51,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 _methods.Add(Snapshot.CreateFunction(methodInfo.Value.Name, analyzer));
             }
 
-            foreach (var methodDecl in nativeDecl.SourceCodeMethods.Values)
+            foreach (var methodValue in nativeDecl.SourceCodeMethods.Values)
             {
-                _methods.Add(Snapshot.CreateFunction(methodDecl));
+                _methods.Add(methodValue);
             }
 
         }

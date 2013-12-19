@@ -295,7 +295,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                     var methosIdentifier = new MethodIdentifier(result.QualifiedName, (member as MethodDecl).Name);
                     if (!result.SourceCodeMethods.ContainsKey(methosIdentifier))
                     {
-                        result.SourceCodeMethods.Add(methosIdentifier, member as MethodDecl);
+                        result.SourceCodeMethods.Add(methosIdentifier, OutSet.CreateFunction(member as MethodDecl));
                     }
                     else
                     {

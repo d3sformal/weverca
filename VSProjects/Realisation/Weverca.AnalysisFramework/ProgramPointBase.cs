@@ -77,13 +77,23 @@ namespace Weverca.AnalysisFramework
         public FlowOutputSet OutSet { get { return _outSet; } }
 
         /// <summary>
+        /// Program point graph that owns this program point
+        /// </summary>
+        public ProgramPointGraph ppGraph { get; private set; }
+
+        /// <summary>
         /// Analysis services available for subclasses to handle flow through method
         /// </summary>
         internal AnalysisServices Services { get; private set; }
 
-
         internal ProgramPointBase()
         {
+            Extension = new FlowExtension(this);
+        }
+
+        internal ProgramPointBase(ProgramPointGraph ppGraph)
+        {
+            this.ppGraph = ppGraph;
             Extension = new FlowExtension(this);
         }
 
@@ -257,6 +267,12 @@ namespace Weverca.AnalysisFramework
             Services = services;
             Extension.Sink.Services = services;
             setNewController();
+        }
+
+        internal void SetOwningGraph(ProgramPointGraph owningGraph)
+        {
+            this.ppGraph= owningGraph;
+            Extension.Sink.ppGraph = owningGraph;
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -11,8 +12,8 @@ namespace Weverca.Analysis
 {
     public class ForwardAnalysis : ForwardAnalysisBase
     {
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
-            : base(entryMethodGraph, memoryModel.CreateSnapshot)
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, FileInfo entryScript)
+            : base(entryMethodGraph, memoryModel.CreateSnapshot, entryScript)
         {
             GlobalsInitializer();
         }

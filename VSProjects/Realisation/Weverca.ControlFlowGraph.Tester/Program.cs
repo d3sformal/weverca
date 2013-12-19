@@ -55,32 +55,19 @@ namespace Weverca.ControlFlowGraph.Tester
         /// <returns></returns>
         static Weverca.ControlFlowGraph.ControlFlowGraph GenerateCFG(string fileName)
         {
-            string code;
-            using (StreamReader reader = new StreamReader(fileName))
+            try 
             {
-                code = reader.ReadToEnd();
+                return ControlFlowGraph.FromFilename(fileName);
             }
-
-            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            var parser = new SyntaxParser(source_file, code);
-            parser.Parse();
-
-            if (parser.Ast != null)
+            catch (Weverca.ControlFlowGraph.ControlFlowException e)
             {
-                try
-                {
-                    return new Weverca.ControlFlowGraph.ControlFlowGraph(parser.Ast);
-                }
-                catch (Weverca.ControlFlowGraph.ControlFlowException e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                return null;
+                Console.WriteLine(e.Message);
             }
-            else
+            catch (ArgumentException e)
             {
-                return null;
+                Console.WriteLine(e.Message);
             }
+            return null;
         }
 
         /// <summary>

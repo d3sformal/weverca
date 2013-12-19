@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using PHP.Core.AST;
 
@@ -19,9 +20,26 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Group of services that are provided by analysis object.
     /// </summary>    
-    class AnalysisServices
+    public class AnalysisServices
     {
         private readonly Queue<ProgramPointBase> _workListQueue;
+
+        /// <summary>
+        /// The entry script of the analysis
+        /// </summary>
+        public static FileInfo EntryScript
+        {
+            get;
+            private set;
+        }
+        /// <summary>
+        /// The script in that elements of currently created program point graph are defined
+        /// </summary>
+        public static FileInfo CurrentScript
+        {
+            get;
+            internal set;
+        }
 
         /// <summary>
         /// Available flow resolver obtained from analysis
@@ -43,13 +61,15 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal readonly EmptySetDelegate CreateEmptySet;
 
-        public AnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver)
+        internal AnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver, FileInfo entryScript)
         {
             _workListQueue = workListQueue;
             CreateEmptySet = emptySet;
             FlowResolver = flowResolver;
             FunctionResolver = functionResolver;
             Evaluator = evaluator;
+            EntryScript = entryScript;
+            CurrentScript = entryScript;
         }
 
         internal bool ConfirmAssumption(FlowController flow, AssumptionCondition condition)

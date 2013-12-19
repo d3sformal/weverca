@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,6 +8,8 @@ using System.Reflection;
 using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
+
+using Weverca.Parsers;
 
 
 namespace Weverca.ControlFlowGraph
@@ -63,10 +66,59 @@ namespace Weverca.ControlFlowGraph
         #region construction
 
         /// <summary>
+        /// Creates a confrolflow graph from script with given file name.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static ControlFlowGraph FromFilename(string fileName)
+        {
+            // TODO: check if the file exists?
+            SyntaxParser parser = GenerateParser(fileName);
+            parser.Parse();
+            if (parser.Ast == null)
+            {
+                throw new ArgumentException("The specified file cannot be parsed.");
+            }
+
+            return new ControlFlowGraph(parser.Ast, fileName);
+
+
+        }
+
+        /// <summary>
+        /// Creates a confrolflow graph from parsed code.
+        /// </summary>
+        /// <param name="globalCode"></param>
+        /// <returns></returns>
+        public static ControlFlowGraph FromSource(GlobalCode globalCode) 
+        {
+            return new ControlFlowGraph(globalCode, String.Empty);
+        }
+
+        /// <summary>
+        /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
+        /// </summary>
+        /// <param name="function">function to construct controlflow graph<</param>
+        public static ControlFlowGraph FromFunction(FunctionDecl function)
+        {
+            return new ControlFlowGraph(function);
+        }
+
+        /// <summary>
+        /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
+        /// </summary>
+        /// <param name="function">function to construct controlflow graph</param>
+        public static ControlFlowGraph FromMethod(MethodDecl method)
+        {
+            return new ControlFlowGraph(method);
+        }
+
+
+        /// <summary>
         /// Constructs a confrolflow graph 
         /// </summary>
         /// <param name="globalCode"></param>
-        public ControlFlowGraph(GlobalCode globalCode)
+        private ControlFlowGraph(GlobalCode globalCode, string fileName)
         {
             this.globalCode = globalCode;
             List<Statement> functionsAndClasses = new List<Statement>();
@@ -97,7 +149,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
-        public ControlFlowGraph(GlobalCode globalCode,MethodDecl function)
+        private ControlFlowGraph(GlobalCode globalCode,MethodDecl function)
         {
             this.globalCode = globalCode;
             this.visitor = new CFGVisitor(this);
@@ -110,7 +162,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">Globalcode needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
-        public ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
+        private ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
         {
             this.globalCode = globalCode;
             
@@ -123,7 +175,7 @@ namespace Weverca.ControlFlowGraph
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph</param>
-        public ControlFlowGraph(MethodDecl function)
+        private ControlFlowGraph(MethodDecl function)
         {
 
             this.visitor = new CFGVisitor(this);
@@ -135,7 +187,7 @@ namespace Weverca.ControlFlowGraph
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph<</param>
-        public ControlFlowGraph(FunctionDecl function)
+        private ControlFlowGraph(FunctionDecl function)
         {
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
@@ -148,6 +200,18 @@ namespace Weverca.ControlFlowGraph
         {
             visitor.CheckLabels();
             start.SimplifyGraph();
+        }
+
+        private static SyntaxParser GenerateParser(string fileName)
+        {
+            string code;
+            using (StreamReader reader = new StreamReader(fileName))
+            {
+                code = reader.ReadToEnd();
+            }
+
+            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
+            return new SyntaxParser(source_file, code);
         }
 
         #region generatingTextRepresentation

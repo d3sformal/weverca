@@ -222,20 +222,29 @@ namespace Weverca.AnalysisFramework
 
         public readonly ReadOnlyDictionary<MethodIdentifier,MethodInfo> ModeledMethods;
 
-        public readonly ReadOnlyDictionary<MethodIdentifier,MethodDecl> SourceCodeMethods;
+        public readonly ReadOnlyDictionary<MethodIdentifier, FunctionValue> SourceCodeMethods;
 
         public readonly bool IsFinal;
 
         public readonly bool IsInterface;
 
         public readonly bool IsAbstract;
-        
-        public ClassDecl(QualifiedName typeName, Dictionary<MethodIdentifier,MethodInfo> methods, Dictionary<MethodIdentifier, MethodDecl> sourceCodeMethods, Dictionary<FieldIdentifier, ConstantInfo> constants, Dictionary<FieldIdentifier, FieldInfo> fields, List<QualifiedName> baseClassName, bool isFinal, bool isInteface, bool isAbstract)
+
+        public ClassDecl(QualifiedName typeName, Dictionary<MethodIdentifier, MethodInfo> methods, 
+            Dictionary<MethodIdentifier,
+            FunctionValue> sourceCodeMethods, 
+            Dictionary<FieldIdentifier, 
+            ConstantInfo> constants, Dictionary<FieldIdentifier, 
+            FieldInfo> fields, 
+            List<QualifiedName> baseClassName, 
+            bool isFinal, 
+            bool isInteface, 
+            bool isAbstract)
         {
             QualifiedName = typeName;
             BaseClasses = new ReadOnlyCollection<QualifiedName>(baseClassName);
             ModeledMethods = new ReadOnlyDictionary<MethodIdentifier, MethodInfo>(methods);
-            SourceCodeMethods = new ReadOnlyDictionary<MethodIdentifier, MethodDecl>(sourceCodeMethods);
+            SourceCodeMethods = new ReadOnlyDictionary<MethodIdentifier, FunctionValue>(sourceCodeMethods);
             Constants = new ReadOnlyDictionary<FieldIdentifier, ConstantInfo>(constants);
             Fields = new ReadOnlyDictionary<FieldIdentifier, FieldInfo>(fields);
             IsFinal = isFinal;
@@ -248,7 +257,7 @@ namespace Weverca.AnalysisFramework
     {
         public QualifiedName QualifiedName;
         public Dictionary<MethodIdentifier, MethodInfo> ModeledMethods;
-        public Dictionary<MethodIdentifier,MethodDecl> SourceCodeMethods;
+        public Dictionary<MethodIdentifier, FunctionValue> SourceCodeMethods;
         public Dictionary<FieldIdentifier, ConstantInfo> Constants;
         public Dictionary<FieldIdentifier, FieldInfo> Fields;
         public List<QualifiedName> BaseClasses;
@@ -259,7 +268,7 @@ namespace Weverca.AnalysisFramework
         public ClassDeclBuilder()
         {
             ModeledMethods = new Dictionary<MethodIdentifier, MethodInfo>();
-            SourceCodeMethods = new Dictionary<MethodIdentifier, MethodDecl>();
+            SourceCodeMethods = new Dictionary<MethodIdentifier, FunctionValue>();
             Constants = new Dictionary<FieldIdentifier, ConstantInfo>();
             Fields = new Dictionary<FieldIdentifier, FieldInfo>();
             BaseClasses = new List<QualifiedName>();
