@@ -1,0 +1,41 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="cs">
+<head>
+    <meta name="Author" content="Weverca Team" />
+    <meta http-equiv="Content-language" content="en" />
+    <meta http-equiv="Content-type" content="text/xhtml; charset=utf-8" />
+    <meta name="Keywords" content="Weverca, Web verification tool, PHP verification" />
+    <meta name="Description" content="Weverca is a tool for verifing PHP code." />
+    <meta name="robots" content="index, follow" />
+    <link rel="icon" href="~/Content/Icon.png" />
+    <link rel="Stylesheet" href="~/Content/Site.css" type="text/css" />
+    <title>
+        Weverca Web::@ViewBag.Title
+    </title>
+</head>
+<body>
+    <div id="contentPlaceholder">
+        <div id="header">
+            <div id="logo">
+                @Html.ActionLink(" ", "Index", "Home")
+                <div class="left">
+                    <p id="logoName">Weverca</p>
+                    <p>WEb VERifiCAtion tool for PHP</p>
+                </div>
+            </div>
+
+            <div class="clear"></div>
+        </div>
+        <div id="topic">
+            <h1>@ViewBag.Title</h1>
+        </div>
+        <div id="content">
+            @RenderBody()
+        </div>
+    </div>
+
+    <div id="footer">
+            &copy; Weverca Team 2013, version @Html.CurrentVersion(typeof(Weverca.Web.Controllers.HomeController))
+        </div>
+</body>
+</html>
