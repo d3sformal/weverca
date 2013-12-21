@@ -40,8 +40,6 @@ namespace Weverca.Web.Models
         [Display(ResourceType = typeof(Weverca.Web.Properties.Resources), Name = "InputType")]
         public InputType Input { get; set; }
 
-        public bool Verify { get; set; }
-
         #endregion
         
         #region Private Methods

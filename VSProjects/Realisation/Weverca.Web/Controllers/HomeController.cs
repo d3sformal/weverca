@@ -16,7 +16,7 @@ namespace Weverca.Web.Controllers
             {
                 model = new WevercaModel();
             }
-            model.Verify = true;
+            
             return View(model);
         }
     }

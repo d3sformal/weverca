@@ -156,11 +156,11 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Validate.
+        ///   Looks up a localized string similar to Verify.
         /// </summary>
-        public static string Validate {
+        public static string Verify {
             get {
-                return ResourceManager.GetString("Validate", resourceCulture);
+                return ResourceManager.GetString("Verify", resourceCulture);
             }
         }
     }

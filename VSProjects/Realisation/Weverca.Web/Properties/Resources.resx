@@ -130,7 +130,7 @@
   <data name="PhpCode" xml:space="preserve">
     <value>Php Code</value>
   </data>
-  <data name="Validate" xml:space="preserve">
-    <value>Validate</value>
+  <data name="Verify" xml:space="preserve">
+    <value>Verify</value>
   </data>
 </root>
