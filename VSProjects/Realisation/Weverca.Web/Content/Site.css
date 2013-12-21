@@ -118,6 +118,85 @@ h1, h2, h3
     margin-top: 0.5em;
 }
 
+/*---------FORMS---------*/
+.basicForm
+{
+    border-style: none;
+}
+
+.basicForm input,
+.basicForm textArea
+{
+    padding: 5px 10px;
+    width: 200px;
+}
+
+input,
+textarea,
+select
+{
+    border-style: none;
+}
+
+.button
+{
+    background-color: #4EAD92;
+    color: #003B2A;    
+    min-width: 80px;
+}
+
+.button:hover
+{
+    background-color: #003B2A;
+    color: #4EAD92;
+}
+
+.basicForm .button
+{
+    width: 220px;
+    margin-left: 190px; 
+}
+
+.basicForm ul
+{
+    padding-left: 0px;
+}
+
+.basicForm li
+{
+    display: block;
+    clear: both;
+    margin: 8px 0px;
+    list-style-type: none;
+}
+
+.basicForm label 
+{
+    width: 190px;
+    display: block;
+    float: left;
+}
+
+.selectHolder
+{
+    width: 220px;
+    overflow: hidden;
+    background-image: url("DownArrow.png");
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-color: White;
+    float: left;
+    margin-bottom: 10px;
+    margin-right: 4px;
+}
+
+.basicForm select
+{
+    padding: 4px 10px;
+    width: 250px; 
+    background-color: transparent;
+}
+
 /*---------FOOTER---------*/
 #footer
 {
