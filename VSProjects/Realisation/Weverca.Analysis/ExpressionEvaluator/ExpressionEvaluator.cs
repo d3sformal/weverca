@@ -385,6 +385,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             MemoryEntry leftOperand = null;
 
             stringConverter.SetContext(Flow);
+            List<Value> allValues = new List<Value>();
             foreach (var part in parts)
             {
                 if (leftOperand != null)
@@ -395,10 +396,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     leftOperand = part;
                 }
+                allValues.AddRange(part.PossibleValues);
             }
 
             Debug.Assert(leftOperand != null, "There must be at least one operand to concat");
-            return leftOperand;
+            return new MemoryEntry(FlagsHandler.CopyFlags(allValues,leftOperand.PossibleValues));
         }
 
         /// <inheritdoc />
