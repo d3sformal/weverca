@@ -69,7 +69,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyBooleanValue value = new AnyBooleanValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -105,7 +107,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyIntegerValue value = new AnyIntegerValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -129,7 +133,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyLongintValue value = new AnyLongintValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -153,7 +159,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyFloatValue value = new AnyFloatValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -177,7 +185,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyStringValue value = new AnyStringValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -213,7 +223,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyObjectValue value = new AnyObjectValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -237,7 +249,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            return new AnyArrayValue();
+            AnyArrayValue value = new AnyArrayValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -261,7 +275,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AnyResourceValue value = new AnyResourceValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 }

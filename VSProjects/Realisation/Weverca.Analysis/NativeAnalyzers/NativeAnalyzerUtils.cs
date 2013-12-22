@@ -191,7 +191,7 @@ namespace Weverca.Analysis
             }
         }
 
-        public static List<Value> ResolveAliasArguments(FlowController flow, List<NativeFunction> nativeFunctions)
+        public static List<Value> ResolveAliasArguments(FlowController flow,List<Value> inputValues, List<NativeFunction> nativeFunctions)
         {
             List<Value> result = new List<Value>();
             MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
@@ -212,6 +212,7 @@ namespace Weverca.Analysis
                         if (functionArgument.ByReference == true)
                         {
                             MemoryEntry res = NativeAnalyzerUtils.ResolveReturnValue(functionArgument.Type, flow);
+                            res = new MemoryEntry(FlagsHandler.CopyFlags(inputValues, res.PossibleValues));
                             flow.OutSet.GetVariable(Argument(i)).WriteMemory(flow.OutSet.Snapshot, res);
                             result.AddRange(res.PossibleValues);
                         }

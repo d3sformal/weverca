@@ -108,7 +108,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            BooleanValue value = new BooleanValue(Value);
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -163,7 +165,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            IntegerValue value = new IntegerValue(Value);
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -193,7 +197,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            LongintValue value = new LongintValue(Value);
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -223,7 +229,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            FloatValue value = new FloatValue(Value);
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -251,7 +259,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            StringValue value = new StringValue(Value);
+            value.setStorage(getStorage());
+            return value;
         }
     }
 }

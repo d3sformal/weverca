@@ -165,16 +165,17 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateFloatInterval(start, end);
         }
 
+        [Obsolete("Probably deprecared. Store info into values. Use snapshot entry API instead")]
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return Snapshot.CreateInfo(data);
         }
-
+        [Obsolete("Probably deprecared. Store info into values. Use snapshot entry API instead")]
         public void SetInfo(Value value, params InfoValue[] info)
         {
             Snapshot.SetInfo(value, info);
         }
-
+        [Obsolete("Probably deprecared. Store info into values. Use snapshot entry API instead")]
         public void SetInfo(VariableName variable, params InfoValue[] info)
         {
             Snapshot.SetInfo(variable, info);

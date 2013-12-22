@@ -102,10 +102,15 @@ namespace Weverca.AnalysisFramework.Memory
             visitor.VisitValue(this);
         }
 
-        private void setStorage(InfoDataStorage storage)
+        protected void setStorage(InfoDataStorage storage)
         {
             _storage = storage;
             _precomputedHash = _storage.GetHashCode();
+        }
+
+        protected InfoDataStorage getStorage()
+        {
+            return _storage;
         }
 
         #region Standard method overrides

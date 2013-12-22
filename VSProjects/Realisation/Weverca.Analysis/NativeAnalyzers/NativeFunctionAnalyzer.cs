@@ -408,19 +408,19 @@ namespace Weverca.Analysis
             MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
             List<MemoryEntry> arguments = new List<MemoryEntry>();
+            List<Value> argumentValues = new List<Value>();
             for (int i = 0; i < argumentCount; i++)
             {
                 arguments.Add(flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(i)).ReadMemory(flow.OutSet.Snapshot));
+                argumentValues.AddRange(arguments.Last().PossibleValues);
             }
 
             // Compute result
             MemoryEntry functionResult = new MemoryEntry(ComputeResult(flow, arguments).ToArray());
+            functionResult = new MemoryEntry(FlagsHandler.CopyFlags(argumentValues, functionResult.PossibleValues));
             flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, functionResult);
 
-            // Propagate flags to output of the function
-            ValueInfoHandler.CopyFlags(flow.OutSet, arguments, functionResult);
-            List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, nativeFunctions);
-            ValueInfoHandler.CopyFlags(flow.OutSet, arguments, new MemoryEntry(assigned_aliases));
+            List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, argumentValues, nativeFunctions);
 
         }
 

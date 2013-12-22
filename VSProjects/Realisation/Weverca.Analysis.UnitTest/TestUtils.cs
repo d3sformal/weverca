@@ -140,5 +140,25 @@ namespace Weverca.Analysis.UnitTest
             var val = (ScalarValue<T>)value;
             Assert.IsTrue(val.Value.Equals(compareValue));
         }
+
+        public static void IsDirty(Value value)
+        {
+            var flag = value.GetInfo<Flag>();
+            Debug.Assert(flag.isDirty(DirtyType.FilePathDirty) && flag.isDirty(DirtyType.HTMLDirty) && flag.isDirty(DirtyType.HTMLDirty));
+        }
+
+        public static void IsClean(Value value)
+        {
+            var flag = value.GetInfo<Flag>();
+            if (flag == null)
+            {
+                return;
+            }
+            else
+            {
+                Debug.Assert(!flag.isDirty(DirtyType.FilePathDirty) && !flag.isDirty(DirtyType.HTMLDirty) && !flag.isDirty(DirtyType.HTMLDirty));
+            }
+        }
+
     }
 }

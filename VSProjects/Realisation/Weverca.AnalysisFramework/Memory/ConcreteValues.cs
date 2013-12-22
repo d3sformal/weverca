@@ -87,7 +87,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            UndefinedValue value = new UndefinedValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 }

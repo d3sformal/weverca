@@ -1359,13 +1359,13 @@ namespace Weverca.Analysis
     internal class FunctionHints
     {
         private HashSet<DirtyType> returnHints;
-        private Dictionary<VariableName, HashSet<DirtyType>> argumentHints;
+        private Dictionary<VariableIdentifier, HashSet<DirtyType>> argumentHints;
         private LangElement declaration;
 
         internal FunctionHints(PHPDocBlock doc, LangElement langElement)
         {
             declaration = langElement;
-            argumentHints = new Dictionary<VariableName, HashSet<DirtyType>>();
+            argumentHints = new Dictionary<VariableIdentifier, HashSet<DirtyType>>();
             returnHints = new HashSet<DirtyType>();
 
             string comment;
@@ -1434,12 +1434,12 @@ namespace Weverca.Analysis
                             {
                                 if (val.ToString().ToLower() == res.ToString().ToLower())
                                 {
-                                    addArgumentHint(new VariableName(argName), val);
+                                    addArgumentHint(new VariableIdentifier(argName), val);
                                 }
 
                                 if (res == "all")
                                 {
-                                    addArgumentHint(new VariableName(argName), val);
+                                    addArgumentHint(new VariableIdentifier(argName), val);
                                 }
                             }
 
@@ -1455,7 +1455,7 @@ namespace Weverca.Analysis
             returnHints.Add(type);
         }
 
-        private void addArgumentHint(VariableName name, DirtyType type)
+        private void addArgumentHint(VariableIdentifier name, DirtyType type)
         {
             if (!argumentHints.ContainsKey(name))
             {
@@ -1467,28 +1467,30 @@ namespace Weverca.Analysis
 
         internal void applyHints(FlowOutputSet outset)
         {
-            foreach (var type in returnHints)
-            {
-                throw new NotImplementedException("Return value has been removed from API");
-                /*   var result = outset.ReadValue(outset.ReturnValue);
+            //throw new NotImplementedException("TODO reimplement");
+             /* 
+             foreach (var type in returnHints)
+             {
+                 throw new NotImplementedException("Return value has been removed from API");
+                   var result = outset.ReadValue(outset.ReturnValue);
                 
-                foreach (var value in result.PossibleValues)
-                {
-                    ValueInfoHandler.setClean(outset, value, type);
-                }*/
-            }
-
-            foreach (var variable in argumentHints.Keys)
-            {
-                foreach (var flag in argumentHints[variable])
-                {
-                    var result = outset.ReadValue(variable);
-                    foreach (var value in result.PossibleValues)
-                    {
-                        ValueInfoHandler.setClean(outset, value, flag);
-                    }
-                }
-            }
+                 foreach (var value in result.PossibleValues)
+                 {
+                     ValueInfoHandler.setClean(outset, value, type);
+                 }
+             }
+            
+             foreach (var variable in argumentHints.Keys)
+             {
+                 foreach (var flag in argumentHints[variable])
+                 {
+                     var result = outset.ReadVariable(variable).ReadMemory(outset.Snapshot);
+                     foreach (var value in result.PossibleValues)
+                     {
+                         ValueInfoHandler.setClean(outset, value, flag);
+                     }
+                 }
+             }*/
         }
     }
     #endregion

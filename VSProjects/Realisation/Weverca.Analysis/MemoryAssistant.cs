@@ -9,6 +9,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis
 {
+ 
     /// <inheritdoc />
     internal class MemoryAssistant : MemoryAssistantBase
     {
@@ -41,7 +42,9 @@ namespace Weverca.Analysis
             {
                 // This is case of AnyArrayValue, AnyValue and possibly others.
                 // If value is AnyValue, it can be any object too, so it can cause an error.
-                return new MemoryEntry(Context.AnyValue);
+                Value newValue = Context.AnyValue;
+                newValue = FlagsHandler.CopyFlags(value, newValue);
+                return new MemoryEntry(newValue);
             }
         }
 

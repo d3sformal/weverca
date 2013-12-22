@@ -12,177 +12,94 @@ using Weverca.Analysis.ExpressionEvaluator;
 
 namespace Weverca.Analysis
 {
-    enum DirtyType { 
-        HTMLDirty, SQLDirty, FilePathDirty
+    public enum DirtyType
+    {
+        HTMLDirty = 1, SQLDirty = 2, FilePathDirty = 4
     }
 
-    class ValueInfoHandler 
+
+    public static class FlagsHandler
     {
-
-        public static void setDirty(FlowOutputSet outSet, Value value)
+        public static IEnumerable<Value> CopyFlags(IEnumerable<Value> source, IEnumerable<Value> dest)
         {
-            Array values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
+            List<Value> result = new List<Value>();
+            Dictionary<DirtyType, bool> flags = Flag.CreateCleanFlags();
+            foreach (Value value in source)
             {
-                setDirty(outSet, value, val);
-            }
-        }
-
-
-        private static Dictionary<DirtyType, bool> MergeAndCreateVariableInfo(FlowOutputSet outSet, Value value)
-        {
-            //todo este neje iste ze sa bude pouzivate nove api, je mozne ze to bude zabudovane vo viacfazovej analyze
-            InfoValue[] infos = outSet.ReadInfo(value);
-            Dictionary<DirtyType, bool> dirtyFlags = FlagsInfoValue.CreateDirtyFlags();
-
-            foreach (var info in infos)
-            {
-                if (info is InfoValue<FlagsInfoValue>)
+                if (value.GetInfo<Flag>() != null)
                 {
-                    Array values = DirtyType.GetValues(typeof(DirtyType));
-                    foreach (DirtyType val in values)
-                    {
-                        dirtyFlags[val] |= ((InfoValue<FlagsInfoValue>)info).Data.isDirty(val);
-                    }
+                    mergeFlags(flags, value.GetInfo<Flag>());
                 }
             }
-            return dirtyFlags;
-        }
 
-        public static void setDirty(FlowOutputSet outSet, Value value, DirtyType dirty)
-        {
-            var flags = MergeAndCreateVariableInfo(outSet, value);
-            flags[dirty] = true;
-            FlagsInfoValue newInfo = new FlagsInfoValue(flags);
-            setInfoAndKeppOtherInfos(outSet, value, newInfo);    
-        }
-
-        public static void setClean(FlowOutputSet outSet, Value value, DirtyType dirty)
-        {
-            var flags = MergeAndCreateVariableInfo(outSet, value);
-            flags[dirty] = false;
-            FlagsInfoValue newInfo = new FlagsInfoValue(flags);
-            setInfoAndKeppOtherInfos(outSet, value, newInfo);    
-        }
-
-        public static bool isDirty(FlowOutputSet outSet, Value value, DirtyType dirty)
-        { 
-            bool result=false;
-            
-            foreach(InfoValue info in outSet.ReadInfo(value))
-            {
-                if (info is InfoValue<FlagsInfoValue>)
-                {
-                    result |= ((InfoValue<FlagsInfoValue>)info).Data.isDirty(dirty);
-                }
-            }
-            return result;
-        }
-
-        public static void CopyFlags(FlowOutputSet outSet, Value source, Value value)
-        {
-            CopyFlags(outSet, new MemoryEntry(source), value);
-        }
-
-        public static void CopyFlags(FlowOutputSet outSet, IEnumerable<MemoryEntry> source, MemoryEntry target)
-        {
-            foreach (var value in target.PossibleValues)
-            {
-                CopyFlags(outSet, source, value);
-            }
-        }
-
-        public static void CopyFlags(FlowOutputSet outSet, MemoryEntry source, MemoryEntry target)
-        {
-            foreach (var value in target.PossibleValues)
-            {
-                CopyFlags(outSet, source, value);
-            }
-        }
-
-        public static void CopyFlags(FlowOutputSet outSet, IEnumerable<MemoryEntry> source, Value value)
-        {
-            var dirtyFlags = FlagsInfoValue.CreateDirtyFlags();
-            foreach (var entry in source)
-            {
-                var functionResult = copyFlags(outSet, entry);
-                dirtyFlags = mergeFlags(dirtyFlags, functionResult);
-            }
-
-         
-            FlagsInfoValue newInfo = new FlagsInfoValue(dirtyFlags);
-            setInfoAndKeppOtherInfos(outSet, value, newInfo);    
-        }
-
-        public static void CopyFlags(FlowOutputSet outSet, MemoryEntry source, Value value)
-        {
-            var dirtyFlags = copyFlags(outSet, source);
-           
-            FlagsInfoValue newInfo = new FlagsInfoValue(dirtyFlags);
-            setInfoAndKeppOtherInfos(outSet, value, newInfo);            
-        }
-
-        private static Dictionary<DirtyType, bool> copyFlags(FlowOutputSet outSet, MemoryEntry source)
-        {
-            var dirtyFlags = FlagsInfoValue.CreateDirtyFlags();
-            foreach (Value value in source.PossibleValues)
-            {
-                var functionResult=MergeAndCreateVariableInfo(outSet, value);
-                dirtyFlags = mergeFlags(dirtyFlags, functionResult);
-            }
-            return dirtyFlags;
-        }
-
-        private static Dictionary<DirtyType, bool> mergeFlags(Dictionary<DirtyType, bool> flag1,Dictionary<DirtyType, bool> flag2)
-        {
-            Array values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
-            {
-                flag1[val] |= flag2[val];
-            }
-            return flag1;
-        }
-
-        private static void setInfoAndKeppOtherInfos(FlowOutputSet outSet, Value value, FlagsInfoValue newInfo)
-        {
-            List<InfoValue> newInfos = new List<InfoValue>();
-            foreach (var info in outSet.ReadInfo(value))
-            {
-                if (!(info is InfoValue<FlagsInfoValue>))
-                {
-                    newInfos.Add(info);
-                }
-            }
-            bool atleastOneFlagTrue = false;
-            Array values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
-            {
-                atleastOneFlagTrue |= newInfo.isDirty(val);
-            }
-            //store only if the value contains at least on drity flag
-            if (atleastOneFlagTrue)
-            {
-                newInfos.Add(outSet.CreateInfo(newInfo));
-            }
-            if (newInfos.Count != 0)
+            Flag newFlag = new Flag(flags);
+            foreach (Value value in dest)
             {
                 if (ValueTypeResolver.CanBeDirty(value))
                 {
-                    outSet.SetInfo(value, newInfos.ToArray());
+                    result.Add(value.SetInfo(newFlag));
                 }
+                else
+                {
+                    result.Add(value);
+                }
+            }
+
+            return result;
+        }
+
+        public static IEnumerable<Value> CopyFlags(Value source, IEnumerable<Value> dest)
+        {
+            List<Value> sourceList = new List<Value>();
+            sourceList.Add(source);
+            return CopyFlags(sourceList, dest);
+        }
+
+        public static Value CopyFlags(IEnumerable<Value> source, Value dest)
+        {
+            List<Value> destList = new List<Value>();
+            destList.Add(dest);
+            return CopyFlags(source, destList).First();
+        }
+
+        public static Value CopyFlags(Value source, Value dest)
+        {
+            List<Value> sourceList = new List<Value>();
+            sourceList.Add(source);
+            List<Value> destList = new List<Value>();
+            destList.Add(dest);
+            return CopyFlags(sourceList, destList).First();
+        }
+
+        public static bool IsDirty(Value value,DirtyType dirty)
+        {
+            if (value.GetInfo<Flag>() == null)
+            {
+                return false;
+            }
+            else 
+            {
+                return value.GetInfo<Flag>().isDirty(dirty);
             }
         }
 
-    }
-    
-    /// <summary>
-    /// Information about variable
-    /// </summary>
-    class FlagsInfoValue
-    {
-        private Dictionary<DirtyType,bool> dirtyFlags;
 
-        public static Dictionary<DirtyType, bool> CreateDirtyFlags()
+        private static Dictionary<DirtyType, bool> mergeFlags(Dictionary<DirtyType, bool> dictFlag, Flag flag)
+        {
+            Array values = DirtyType.GetValues(typeof(DirtyType));
+            foreach (DirtyType val in values)
+            {
+                dictFlag[val] |= flag.isDirty(val);
+            }
+            return dictFlag;
+        }
+
+    }
+
+    class Flag : InfoDataBase
+    {
+        private readonly Dictionary<DirtyType, bool> dirtyFlags;
+        public static Dictionary<DirtyType, bool> CreateCleanFlags()
         {
             var flags = new Dictionary<DirtyType, bool>();
             Array values = DirtyType.GetValues(typeof(DirtyType));
@@ -193,12 +110,23 @@ namespace Weverca.Analysis
             return flags;
         }
 
-        public FlagsInfoValue()
+        public static Dictionary<DirtyType, bool> CreateDirtyFlags()
         {
-            dirtyFlags = CreateDirtyFlags();
+            var flags = new Dictionary<DirtyType, bool>();
+            Array values = DirtyType.GetValues(typeof(DirtyType));
+            foreach (DirtyType val in values)
+            {
+                flags.Add(val, true);
+            }
+            return flags;
         }
 
-        public FlagsInfoValue(Dictionary<DirtyType, bool> dirtyFlags)
+        public Flag()
+        {
+            dirtyFlags = CreateCleanFlags();
+        }
+
+        public Flag(Dictionary<DirtyType, bool> dirtyFlags)
         {
             this.dirtyFlags = dirtyFlags;
         }
@@ -207,19 +135,23 @@ namespace Weverca.Analysis
         {
             return dirtyFlags[dirty];
         }
-
-        public override string ToString()
+        protected override int getHashCode()
         {
-            var result = new StringBuilder();
+            int result = 0;
             foreach (var flag in dirtyFlags)
             {
-                result.AppendFormat("{0}:{1}, ", flag.Key, flag.Value);
+                if (flag.Value == true)
+                {
+                    result += (int)flag.Key;
+                }
             }
+            return result;
+        }
 
-            result.Length-=2;
-            result.Append("");
-
-            return result.ToString();
+        protected override bool equals(InfoDataBase other)
+        {
+            return getHashCode() == (other as Flag).getHashCode();
         }
     }
+
 }

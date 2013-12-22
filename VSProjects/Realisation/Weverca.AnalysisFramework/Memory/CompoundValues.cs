@@ -46,7 +46,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            ObjectValue value = new ObjectValue();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 
@@ -72,7 +74,9 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            AssociativeArray value = new AssociativeArray();
+            value.setStorage(getStorage());
+            return value;
         }
     }
 }
