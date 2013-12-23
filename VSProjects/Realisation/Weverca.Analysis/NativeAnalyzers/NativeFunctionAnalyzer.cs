@@ -16,6 +16,7 @@ using PHP.Core.Parsers;
 using PHP.Core.AST;
 using Weverca.Analysis.ExpressionEvaluator;
 using System.Text.RegularExpressions;
+using Weverca.Analysis.Properties;
 
 namespace Weverca.Analysis
 {
@@ -88,7 +89,7 @@ namespace Weverca.Analysis
             string returnType = "";
             string functionAlias = "";
             List<NativeFunctionArgument> arguments = new List<NativeFunctionArgument>();
-            XmlReader reader = XmlReader.Create(new StreamReader("php_functions.xml"));
+            XmlReader reader = XmlReader.Create(new StreamReader(Settings.Default.PhpFunctionsFile));
 
             while (reader.Read())
             {
