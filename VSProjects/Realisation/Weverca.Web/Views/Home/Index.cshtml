@@ -1,23 +1,28 @@
-﻿@{
+﻿@using Weverca.Web.Controllers
+@using Weverca.Web.Models
+@using Weverca.Web.Properties
+
+@model WevercaModel
+
+@{
     ViewBag.Title = "Index";
 }
-
-@model Weverca.Web.Models.WevercaModel
 
 @using (Html.BeginForm(ViewContext.RouteData.Values["Action"].ToString(), ViewContext.RouteData.Values["Controller"].ToString(), FormMethod.Post, new { id = "Form"}))
 {
     <fieldset class="basicForm">
+        @Html.HiddenFor(m => m.ChangeInput)
         <ul>
             <li>
                 @Html.LabelFor(m => m.Input)
-                <div class="selectHolder">@Html.DropDownListFor(m => m.Input, Weverca.Web.Controllers.ValueHelperController.GetValueTypes())</div>
+                <div class="selectHolder">@Html.DropDownListFor(m => m.Input, ValueHelperController.GetValueTypes())</div>
             </li>
             <li>
                 @Html.LabelFor(m => m.PhpCode)
                 @Html.TextAreaFor(m => m.PhpCode)
             </li>
         </ul>
-        <input type="submit" value="@Weverca.Web.Properties.Resources.Verify" class="button" />
+        <input type="submit" value="@Resources.Verify" class="button" />
     </fieldset>
 }
 
@@ -33,5 +38,10 @@
 <script type="text/javascript">
     $(document).ready(function () {
         CodeMirror.fromTextArea(PhpCode, { mode: "php", lineNumbers: true });
+    });
+
+    $("#Input").change(function () {
+        $("#ChangeInput").val(true);
+        $("#Form").submit();
     });
 </script>

@@ -15,47 +15,56 @@ namespace Weverca.Web.Models
         
         #endregion
 
-        #region Fields
-
-        string phpCode;
-
-        #endregion
-
         #region Properties
 
-        [Display(ResourceType = typeof(Weverca.Web.Properties.Resources), Name = "PhpCode")]
-        public string PhpCode
-        {
-            get
-            {
-                phpCode = GetPhpCode(Input);
-                return phpCode;
-            }
-            set
-            {
-                phpCode = value;
-            }
-        }
+        public bool ChangeInput { get; set; }
 
-        [Display(ResourceType = typeof(Weverca.Web.Properties.Resources), Name = "InputType")]
+        [Display(ResourceType = typeof(Resources), Name = "PhpCode")]
+        public string PhpCode { get; set; }
+
+        [Display(ResourceType = typeof(Resources), Name = "InputType")]
         public InputType Input { get; set; }
 
         #endregion
-        
-        #region Private Methods
 
-        string GetPhpCode(InputType input)
+        #region Constructor
+
+        public WevercaModel()
         {
-            if (input == InputType.Input1)
-            {
-                return Resources.Input1;
-            }
-            else if (input == InputType.Input2)
-            {
-                return Resources.Input2;
-            }
+            Input = InputType.Input1;
+            AssignInput();
+        }
 
-            return phpCode;
+        #endregion
+
+        #region Methods
+
+        public void AssignInput()
+        {
+            if (Input == InputType.Input1)
+            {
+                PhpCode = Resources.Input1;
+            }
+            else if (Input == InputType.Input2)
+            {
+                PhpCode = Resources.Input2;
+            }
+        }
+
+        public void AssignInputType()
+        {
+            if (PhpCode == Resources.Input1)
+            {
+                Input = InputType.Input1;
+            }
+            else if (PhpCode == Resources.Input2)
+            {
+                Input = InputType.Input2;
+            }
+            else
+            {
+                Input = InputType.Custom;
+            }
         }
 
         #endregion
