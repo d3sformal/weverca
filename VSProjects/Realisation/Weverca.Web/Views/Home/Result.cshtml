@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = "Result";
+}
+@using Weverca.Web.Models
+
+@model ResultModel
+
+@Html.TextAreaFor(m => m.PhpCode)
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        CodeMirror.fromTextArea(PhpCode, { mode: "php", lineNumbers: true, readOnly: true });
+    });
+</script>

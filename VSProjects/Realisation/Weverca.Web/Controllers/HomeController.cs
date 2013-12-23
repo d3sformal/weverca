@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Weverca.Web.Models;
+using Weverca.Web.Definitions;
 
 namespace Weverca.Web.Controllers
 {
@@ -26,16 +27,19 @@ namespace Weverca.Web.Controllers
             if (model.ChangeInput)
             {
                 model.AssignInput();
+                model.ChangeInput = false;
+
+                ModelState.Clear();
+                return View(model);
             }
             else
             {
                 model.AssignInputType();
+                //TODO: run analysis
+                var ppGraph = Analyzer.Run(model.PhpCode);
+                
+                return View("Result", new ResultModel(model.PhpCode));
             }
-
-            model.ChangeInput = false;
-            
-            ModelState.Clear();
-            return View(model);
         }
     }
 }

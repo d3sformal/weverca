@@ -1,34 +1,12 @@
-<?
+Hello
+
+<?php	
+	function printName($name){
+		echo $name;
+	}
 
 
-for ($x = 1, $y = 1; $x < 10 && $y < 5; $x++, $y++)
-{
-  $b = $x * $y;
-  
-  if ($x == $y)
-  {
-    for ($i = 1; $i < foo(); $i--)
-    {
-      $f = 3;
-    }
-  }
-
-  $a = $x + $y;
-}
-
-for ($x = 1, $y = 1; $x < 10 || $y < 5; $x++, $y++)
-{
-  $a = $x + $y;
-}
-
-for ($x = 1, $y = 1; $x < 10, $y < 5; $x++, $y++)
-{
-  $a = $x + $y;
-}
-
-
-$end = 1;
-
-
-
+	$name=$_POST["name"];
+	printName($name);
+	
 ?>
