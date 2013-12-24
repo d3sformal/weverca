@@ -48,10 +48,14 @@ namespace Weverca.Analysis
             return result;
         }
 
-
         public static Dictionary<DirtyType, bool> GetFlagsFromValues(params Value[] source)
         {
-            Dictionary<DirtyType, bool> flags = Flag.CreateCleanFlags();
+            return GetFlagsFromValues(source as IEnumerable<Value>);
+        }
+
+        public static Dictionary<DirtyType, bool> GetFlagsFromValues(IEnumerable<Value> source)
+        {
+            var flags = Flag.CreateCleanFlags();
             foreach (Value value in source)
             {
                 if (value.GetInfo<Flag>() != null)
@@ -59,6 +63,7 @@ namespace Weverca.Analysis
                     mergeFlags(flags, value.GetInfo<Flag>());
                 }
             }
+
             return flags;
         }
 

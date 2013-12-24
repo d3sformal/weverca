@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 
 using PHP.Core;
@@ -26,11 +25,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Result of conversion that gives no concrete string value
         /// </summary>
         private AnyStringValue abstractResult;
-
-        public void setFlowController(FlowController flow) 
-        {
-            this.flow = flow;
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringConverter" /> class.
@@ -67,10 +61,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="value">Value to convert</param>
         /// <returns>Concrete string value if conversion is successful, otherwise <c>null</c></returns>
-        public StringValue EvaluateToString(FlowController flow, Value value)
+        public StringValue EvaluateToString(Value value)
         {
-            this.flow = flow;
-
             // Gets type of value and convert to string
             value.Accept(this);
 
@@ -132,6 +124,49 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Converts all possible values in memory entry to string representation
+        /// </summary>
+        /// <param name="entry">Memory entry with all possible values to convert</param>
+        /// <param name="abstractString">Abstract string value if any conversion fails</param>
+        /// <returns>List of strings after conversion of all possible values</returns>
+        public IEnumerable<StringValue> Evaluate(MemoryEntry entry, out AnyStringValue abstractString)
+        {
+            var values = new HashSet<StringValue>();
+            var abstractStrings = new HashSet<AnyStringValue>();
+
+            foreach (var value in entry.PossibleValues)
+            {
+                // Gets type of value and convert to string
+                value.Accept(this);
+
+                Debug.Assert((result != null) != (abstractResult != null),
+                    "Result can be either concrete or abstract string value");
+
+                if (result != null)
+                {
+                    values.Add(result);
+                }
+                else
+                {
+                    abstractStrings.Add(abstractResult);
+                }
+            }
+
+            if (abstractStrings.Count > 0)
+            {
+                var flags = FlagsHandler.GetFlagsFromValues(abstractStrings);
+                var flagInfo = new Flag(flags);
+                abstractString = (AnyStringValue)OutSet.AnyStringValue.SetInfo(flagInfo);
+            }
+            else
+            {
+                abstractString = null;
+            }
+
+            return values;
+        }
+
+        /// <summary>
         /// Converts all possible values in memory entry to concrete or abstract strings
         /// </summary>
         /// <param name="entry">Memory entry with all possible values to convert</param>
@@ -160,20 +195,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
             leftOperand.Accept(this);
 
             var leftString = result;
-            var leftAnyString = abstractResult;
 
             // Gets type of right operand and convert to string
             rightOperand.Accept(this);
 
+            // Get all flags from both operands if they are tainted
+            var flags = FlagsHandler.GetFlagsFromValues(leftOperand, rightOperand);
+            var flagInfo = new Flag(flags);
+
             // Check whether it is concrete or abstract value
+            Value taintedResult;
             if ((leftString != null) && (result != null))
             {
-                return OutSet.CreateString(string.Concat(leftString.Value, result.Value));
+                taintedResult = OutSet.CreateString(string.Concat(leftString.Value, result.Value));
             }
             else
             {
-                return OutSet.AnyStringValue;
+                taintedResult = OutSet.AnyStringValue;
             }
+
+            return taintedResult.SetInfo(flagInfo);
         }
 
         /// <summary>
@@ -186,22 +227,46 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             var values = new HashSet<Value>();
 
-            bool isLeftAlwaysConcrete;
-            var leftStrings = Evaluate(leftOperand, out isLeftAlwaysConcrete);
+            AnyStringValue leftAnyString;
+            var leftStrings = Evaluate(leftOperand, out leftAnyString);
 
-            bool isRightAlwaysConcrete;
-            var rightStrings = Evaluate(rightOperand, out isRightAlwaysConcrete);
+            AnyStringValue rightAnyString;
+            var rightStrings = Evaluate(rightOperand, out rightAnyString);
 
-            if ((!isLeftAlwaysConcrete) || (!isRightAlwaysConcrete))
+            if ((leftAnyString != null) || (rightAnyString != null))
             {
-                values.Add(OutSet.AnyStringValue);
+                // Get all flags from both abstract operands if they are tainted
+                Dictionary<DirtyType, bool> flags;
+                if (leftAnyString != null)
+                {
+                    if (rightAnyString != null)
+                    {
+                        flags = FlagsHandler.GetFlagsFromValues(leftAnyString, rightAnyString);
+                    }
+                    else
+                    {
+                        flags = FlagsHandler.GetFlagsFromValues(leftAnyString);
+                    }
+                }
+                else
+                {
+                    flags = FlagsHandler.GetFlagsFromValues(rightAnyString);
+                }
+
+                var flagInfo = new Flag(flags);
+                values.Add(OutSet.AnyStringValue.SetInfo(flagInfo));
             }
 
             foreach (var leftValue in leftStrings)
             {
                 foreach (var rightValue in rightStrings)
                 {
-                    values.Add(OutSet.CreateString(string.Concat(leftValue.Value, rightValue.Value)));
+                    // Get all flags from all combinations of both operands if they are tainted
+                    var flags = FlagsHandler.GetFlagsFromValues(leftValue, rightValue);
+                    var flagInfo = new Flag(flags);
+                    var taintedResult = OutSet.CreateString(string.Concat(leftValue.Value,
+                        rightValue.Value));
+                    values.Add(taintedResult.SetInfo(flagInfo));
                 }
             }
 
@@ -314,10 +379,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Abstract scalar values
 
         /// <inheritdoc />
-        public override void VisitAnyScalarValue(AnyScalarValue value)
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
         {
             result = null;
             abstractResult = OutSet.AnyStringValue;
+        }
+
+        #region Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyNumericValue(AnyNumericValue value)
+        {
+            result = null;
+            abstractResult = OutSet.AnyStringValue;
+        }
+
+        #endregion Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyStringValue(AnyStringValue value)
+        {
+            result = null;
+            abstractResult = value;
         }
 
         #endregion Abstract scalar values

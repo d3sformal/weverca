@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 using PHP.Core;
@@ -50,6 +51,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private LeftStringOperandVisitor stringVisitor;
 
         /// <summary>
+        /// Visitor of left operand that has concrete object value
+        /// </summary>
+        private LeftObjectOperandVisitor objectVisitor;
+
+        /// <summary>
+        /// Visitor of left operand that has concrete array value
+        /// </summary>
+        private LeftArrayOperandVisitor arrayVisitor;
+
+        /// <summary>
         /// Visitor of left operand that is null value
         /// </summary>
         private LeftNullOperandVisitor nullVisitor;
@@ -57,12 +68,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Visitor of left operand that has interval of integer values
         /// </summary>
-        private LeftIntegerIntervalOperandVisitor integerIntervaVisitor;
+        private LeftIntegerIntervalOperandVisitor integerIntervalVisitor;
 
         /// <summary>
         /// Visitor of left operand that has interval of floating-point numbers
         /// </summary>
-        private LeftFloatIntervalOperandVisitor floatIntervaVisitor;
+        private LeftFloatIntervalOperandVisitor floatIntervalVisitor;
+
+        /// <summary>
+        /// Visitor of left operand that has abstract integer value
+        /// </summary>
+        private LeftAnyIntegerOperandVisitor anyIntegerVisitor;
 
         /// <summary>
         /// Selected visitor of left operand that performs binary operations with the given right operand
@@ -82,9 +98,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             integerVisitor = new LeftIntegerOperandVisitor(flowController);
             floatVisitor = new LeftFloatOperandVisitor(flowController);
             stringVisitor = new LeftStringOperandVisitor(flowController);
+            objectVisitor = new LeftObjectOperandVisitor(flowController);
+            arrayVisitor = new LeftArrayOperandVisitor(flowController);
             nullVisitor = new LeftNullOperandVisitor(flowController);
-            integerIntervaVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
-            floatIntervaVisitor = new LeftFloatIntervalOperandVisitor(flowController);
+            integerIntervalVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
+            floatIntervalVisitor = new LeftFloatIntervalOperandVisitor(flowController);
+            anyIntegerVisitor = new LeftAnyIntegerOperandVisitor(flowController);
         }
 
         /// <summary>
@@ -165,6 +184,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
+        }
+
+        /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
             floatVisitor.SetLeftOperand(value);
@@ -182,6 +207,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion Scalar values
 
+        #region Compound values
+
+        /// <inheritdoc />
+        public override void VisitObjectValue(ObjectValue value)
+        {
+            objectVisitor.SetLeftOperand(value);
+            visitor = objectVisitor;
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssociativeArray(AssociativeArray value)
+        {
+            arrayVisitor.SetLeftOperand(value);
+            visitor = arrayVisitor;
+        }
+
+        #endregion Compound values
+
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
@@ -196,18 +239,49 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
-            integerIntervaVisitor.SetLeftOperand(value);
-            visitor = integerIntervaVisitor;
+            integerIntervalVisitor.SetLeftOperand(value);
+            visitor = integerIntervalVisitor;
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
-            floatIntervaVisitor.SetLeftOperand(value);
-            visitor = floatIntervaVisitor;
+            floatIntervalVisitor.SetLeftOperand(value);
+            visitor = floatIntervalVisitor;
         }
 
         #endregion Interval values
+
+        #region Abstract values
+
+        #region Abstract scalar values
+
+        #region Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyIntegerValue(AnyIntegerValue value)
+        {
+            anyIntegerVisitor.SetLeftOperand(value);
+            visitor = anyIntegerVisitor;
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyLongintValue(AnyLongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
+        }
+
+        #endregion Abstract numeric values
+
+        #endregion Abstract scalar values
+
+        #endregion Abstract values
 
         #endregion AbstractValueVisitor Members
     }

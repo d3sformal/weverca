@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -118,73 +117,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Helper methods
 
-        protected bool IsOperationComparison()
-        {
-            return (operation == Operations.Equal)
-                || (operation == Operations.NotEqual)
-                || (operation == Operations.LessThan)
-                || (operation == Operations.LessThanOrEqual)
-                || (operation == Operations.GreaterThan)
-                || (operation == Operations.GreaterThanOrEqual);
-        }
-
-        protected bool IsOperationBitwise()
-        {
-            return (operation == Operations.BitAnd)
-                || (operation == Operations.BitOr)
-                || (operation == Operations.BitXor)
-                || (operation == Operations.ShiftLeft)
-                || (operation == Operations.ShiftRight);
-        }
-
-        protected bool IsLogicalBitwise()
-        {
-            return (operation == Operations.And)
-                || (operation == Operations.Or)
-                || (operation == Operations.Xor);
-        }
-
-        protected bool BitwiseOperation(int leftOperand, int rightOperand)
-        {
-            switch (operation)
-            {
-                case Operations.BitAnd:
-                    result = OutSet.CreateInt(leftOperand & rightOperand);
-                    return true;
-                case Operations.BitOr:
-                    result = OutSet.CreateInt(leftOperand | rightOperand);
-                    return true;
-                case Operations.BitXor:
-                    result = OutSet.CreateInt(leftOperand ^ rightOperand);
-                    return true;
-                case Operations.ShiftLeft:
-                    result = OutSet.CreateInt(leftOperand << rightOperand);
-                    return true;
-                case Operations.ShiftRight:
-                    result = OutSet.CreateInt(leftOperand >> rightOperand);
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        protected bool BitwiseOperation()
-        {
-            switch (operation)
-            {
-                case Operations.BitAnd:
-                case Operations.BitOr:
-                case Operations.BitXor:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    // Realize that objects cannot be converted to integer and we suppress warning
-                    result = OutSet.AnyIntegerValue;
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
         protected void DivisionByZero()
         {
             SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
@@ -199,6 +131,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             // Division by floating-point zero does not return NaN or infinite, but false boolean value
             result = OutSet.CreateBool(false);
+        }
+
+        protected void DivisionByBooleanValue(bool value)
+        {
+            if (value)
+            {
+                // Modulo by 1 (true) is always 0
+                result = OutSet.CreateInt(0);
+            }
+            else
+            {
+                DivisionByFalse();
+            }
         }
 
         protected void DivisionByFalse()

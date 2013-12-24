@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 using PHP.Core;
@@ -63,8 +62,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </param>
         /// <param name="isAlwaysInteger">Indicates that all values can be converted to integer</param>
         /// <param name="isAlwaysLegal">Indicates that there is no compound (forbidden) value</param>
-        public void Evaluate(MemoryEntry entry, ref HashSet<IntegerValue> integerValues,
-            ref HashSet<StringValue> stringValues, out bool isAlwaysConcrete,
+        public void Evaluate(MemoryEntry entry, HashSet<IntegerValue> integerValues,
+            HashSet<StringValue> stringValues, out bool isAlwaysConcrete,
             out bool isAlwaysInteger, out bool isAlwaysLegal)
         {
             integerIndex = null;
@@ -154,7 +153,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             bool isAlwaysConcrete;
             bool isAlwaysInteger;
 
-            Evaluate(entry, ref integerValues, ref stringValues, out isAlwaysConcrete,
+            Evaluate(entry, integerValues, stringValues, out isAlwaysConcrete,
                 out isAlwaysInteger, out isAlwaysLegal);
 
             if (isAlwaysConcrete)

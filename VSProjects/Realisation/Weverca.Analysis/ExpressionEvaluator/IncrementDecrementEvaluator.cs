@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using PHP.Core;
@@ -61,11 +61,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Result of performing the increment or decrement on all possible operands</returns>
         public MemoryEntry Evaluate(bool isIncrementOperation, MemoryEntry entry)
         {
-            var values = new HashSet<Value>();
+            // Sets current operation
+            isIncrement = isIncrementOperation;
 
+            var values = new HashSet<Value>();
             foreach (var value in entry.PossibleValues)
             {
-                var result = Evaluate(isIncrementOperation, value);
+                // Gets type of operand and evaluate expression for given operation
+                result = null;
+                value.Accept(this);
+
+                // Returns result of increment or decrement
+                Debug.Assert(result != null, "The result must be assigned after visiting the value");
                 values.Add(result);
             }
 

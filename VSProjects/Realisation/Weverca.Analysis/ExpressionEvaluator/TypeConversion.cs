@@ -196,9 +196,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns><c>true</c> if array has at least one element, otherwise <c>false</c></returns>
         public static BooleanValue ToBoolean(FlowOutputSet outset, AssociativeArray value)
         {
+            return outset.CreateBool(ToNativeBoolean(outset, value));
+        }
+
+        /// <summary>
+        /// Determines native boolean value from content of the array value.
+        /// </summary>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Array to convert</param>
+        /// <returns><c>true</c> if array has at least one element, otherwise <c>false</c></returns>
+        public static bool ToNativeBoolean(FlowOutputSet outset, AssociativeArray value)
+        {
             var indices = outset.IterateArray(value);
             var enumerator = indices.GetEnumerator();
-            return outset.CreateBool(enumerator.MoveNext());
+            return enumerator.MoveNext();
         }
 
         /// <summary>
@@ -498,6 +509,45 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Tries to convert the string value only if it represents a integer value.
+        /// </summary>
+        /// <remarks>
+        /// <seealso cref="TypeConversion.TryIdentifyInteger(string, out int)" />
+        /// </remarks>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">String to convert</param>
+        /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryIdentifyInteger(FlowOutputSet outset, StringValue value,
+            out IntegerValue convertedValue)
+        {
+            int integerValue;
+            var isSuccessful = TryIdentifyInteger(value.Value, out integerValue);
+            convertedValue = outset.CreateInt(integerValue);
+            return isSuccessful;
+        }
+
+        /// <summary>
+        /// Tries to convert the native string value only if it represents a integer value.
+        /// </summary>
+        /// <remarks>
+        /// Conversion of string to integer value is always defined, but in certain cases, we want to know
+        /// if the conversion is successful (e.g. explicit type-casting or when creating a new array using
+        /// index of string) In these cases, hexadecimal numbers are not recognized.
+        /// </remarks>
+        /// <param name="value">Native string to convert</param>
+        /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        public static bool TryIdentifyInteger(string value, out int convertedValue)
+        {
+            double floatValue;
+            bool isInteger;
+            var isSuccessful = TryConvertToNumber(value, false, out convertedValue,
+                out floatValue, out isInteger);
+            return isSuccessful && isInteger;
+        }
+
+        /// <summary>
         /// Tries to convert the string value to corresponding integer value.
         /// </summary>
         /// <remarks>
@@ -520,24 +570,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the native string value to corresponding native integer value.
         /// </summary>
         /// <remarks>
-        /// Conversion of string to integer value is always defined, but in certain cases, we want to know
-        /// if the conversion is successful (e.g. explicit type-casting or when creating a new array using
-        /// index of string) In these cases, hexadecimal numbers are not recognized
+        /// The method succeeds when conversion gives a predictable result even if the conversion
+        /// into integer itself fails. If the method fails, the result is any abstract integer.
         /// </remarks>
         /// <param name="value">Native string to convert</param>
-        /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0</param>
-        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
+        /// <param name="convertedValue">New integer value if it can be predicted, otherwise 0</param>
+        /// <returns><c>true</c> if string is converted to concrete integer, otherwise <c>false</c></returns>
         public static bool TryConvertToInteger(string value, out int convertedValue)
         {
             double floatValue;
             bool isInteger;
             var isSuccessful = TryConvertToNumber(value, false, out convertedValue,
                 out floatValue, out isInteger);
-            return isSuccessful && isInteger;
+
+            return isInteger || (isSuccessful
+                && TypeConversion.TryConvertToInteger(floatValue, out convertedValue));
         }
 
         /// <summary>
         /// Determines value of integer from content of the array value.
+        /// </summary>
+        /// <remarks>
+        /// <seealso cref="ToNativeInteger(FlowOutputSet, AssociativeArray)" />
+        /// </remarks>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Array to convert</param>
+        /// <returns>1 if array has at least one element, otherwise 0</returns>
+        public static IntegerValue ToInteger(FlowOutputSet outset, AssociativeArray value)
+        {
+            return outset.CreateInt(ToNativeInteger(outset, value));
+        }
+
+        /// <summary>
+        /// Determines value of native integer from content of the array value.
         /// </summary>
         /// <remarks>
         /// Here the documentation is ambiguous. It says that the behavior of converting to integer
@@ -547,11 +612,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Array to convert</param>
         /// <returns>1 if array has at least one element, otherwise 0</returns>
-        public static IntegerValue ToInteger(FlowOutputSet outset, AssociativeArray value)
+        public static int ToNativeInteger(FlowOutputSet outset, AssociativeArray value)
         {
-            var indices = outset.IterateArray(value);
-            var enumerator = indices.GetEnumerator();
-            return outset.CreateInt(enumerator.MoveNext() ? 1 : 0);
+            return ToInteger(ToNativeBoolean(outset, value));
         }
 
         /// <summary>
@@ -704,9 +767,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>1.0 if array has at least one element, otherwise 0.0</returns>
         public static FloatValue ToFloat(FlowOutputSet outset, AssociativeArray value)
         {
-            var indices = outset.IterateArray(value);
-            var enumerator = indices.GetEnumerator();
-            return outset.CreateDouble(enumerator.MoveNext() ? 1.0 : 0.0);
+            return outset.CreateDouble(ToNativeFloat(outset, value));
+        }
+
+        /// <summary>
+        /// Determines native floating-point number from content of the array value.
+        /// </summary>
+        /// <remarks>
+        /// <seealso cref="TypeConversion.ToInteger(FlowOutputSet, AssociativeArray)" />
+        /// </remarks>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Array to convert</param>
+        /// <returns>1.0 if array has at least one element, otherwise 0.0</returns>
+        public static double ToNativeFloat(FlowOutputSet outset, AssociativeArray value)
+        {
+            return ToFloat(ToNativeBoolean(outset, value));
         }
 
         /// <summary>
@@ -1363,8 +1438,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if (index < value.Length)
             {
-                var c = value[index];
-                if ((c != 'e') && (c != 'E'))
+                var character = value[index];
+                if ((character != 'e') && (character != 'E'))
                 {
                     return index;
                 }
@@ -1413,8 +1488,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if (index < value.Length)
             {
-                var c = value[index];
-                if ((c == '+') || (c == '-'))
+                var character = value[index];
+                if ((character == '+') || (character == '-'))
                 {
                     return index + 1;
                 }
@@ -1474,12 +1549,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.CreateObject(enumerator.Current as TypeValue);
         }
 
+        /// <summary>
+        /// Creates snapshot entry containing a given value.
+        /// </summary>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">Value wrapped into snapshot entry</param>
+        /// <returns>New value snapshot entry</returns>
         private static ReadSnapshotEntryBase GetSnapshotEntry(FlowOutputSet outset, Value value)
         {
             var entry = new MemoryEntry(value);
             return outset.CreateSnapshotEntry(entry);
         }
 
+        /// <summary>
+        /// Read memory represented by a given field identifier resolved in current snapshot entry
+        /// </summary>
+        /// <param name="snapshot">Context snapshot where operation is proceeded</param>
+        /// <param name="objectEntry">Snapshot entry of the object value</param>
+        /// <param name="index">Name of the field identifier</param>
+        /// <returns>Snapshot entry representing field resolving in current entry</returns>
         private static ReadWriteSnapshotEntryBase GetFieldEntry(SnapshotBase snapshot,
             ReadSnapshotEntryBase objectEntry, string index)
         {
@@ -1487,6 +1575,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return objectEntry.ReadField(snapshot, fieldIdentifier);
         }
 
+        /// <summary>
+        /// Read memory represented by a given array index resolved in current snapshot entry
+        /// </summary>
+        /// <param name="snapshot">Context snapshot where operation is proceeded</param>
+        /// <param name="arrayEntry">Snapshot entry of the array value</param>
+        /// <param name="index">Value of the index</param>
+        /// <returns>Snapshot entry representing index resolving in current entry</returns>
         private static ReadWriteSnapshotEntryBase GetIndexEntry(SnapshotBase snapshot,
             ReadSnapshotEntryBase arrayEntry, string index)
         {

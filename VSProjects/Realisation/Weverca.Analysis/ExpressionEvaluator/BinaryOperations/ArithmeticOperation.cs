@@ -7,6 +7,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
 {
     public static class ArithmeticOperation
     {
+        private static IntegerIntervalValue entireIntegerInterval;
+
+        public static bool IsArithmetic(Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.Mul:
+                case Operations.Div:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         #region Concrete aritmetic
 
         public static ScalarValue Arithmetic(FlowController flow, Operations operation,
@@ -260,6 +276,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        public static Value RightAbstractOperandArithmetic(FlowController flow,
+            Operations operation, int leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
+        }
+
         #region Addition
 
         public static Value Add(FlowOutputSet outset, int augend, IntegerIntervalValue addend)
@@ -340,16 +364,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static Value Multiply(FlowOutputSet outset, int multiplicand, IntegerIntervalValue multiplier)
         {
             // Result of multiplication can underflow or underflow
-            var isRightOperandNonNegative = multiplicand >= 0.0;
-            if ((multiplicand == 0.0) || ((((multiplier.Start >= 0.0) == isRightOperandNonNegative)
-                ? (multiplier.Start <= int.MaxValue / multiplicand)
-                : (multiplier.Start >= int.MinValue / multiplicand))
-                && (((multiplier.End >= 0.0) == isRightOperandNonNegative)
-                ? (multiplier.End <= int.MaxValue / multiplicand)
-                : (multiplier.End >= int.MinValue / multiplicand))))
+            var isMultiplicandNonNegative = multiplicand >= 0.0;
+            if ((multiplicand == 0.0) || (isMultiplicandNonNegative
+                ? ((multiplier.Start >= 0.0) ? (multiplier.End <= int.MaxValue / multiplicand)
+                : ((multiplier.Start >= int.MinValue / multiplicand)
+                && ((multiplier.End < 0.0) || (multiplier.End <= int.MaxValue / multiplicand))))
+                : ((multiplier.Start >= 0.0) ? (multiplicand >= int.MinValue / multiplier.End)
+                : ((multiplier.Start >= int.MaxValue / multiplicand)
+                && ((multiplier.End < 0.0) || (multiplicand >= int.MinValue / multiplier.End))))))
             {
                 // When multiplicand is negative, interval is reversed and endpoints swap
-                if (isRightOperandNonNegative)
+                if (isMultiplicandNonNegative)
                 {
                     return outset.CreateIntegerInterval(multiplicand * multiplier.Start,
                         multiplicand * multiplier.End);
@@ -494,6 +519,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 default:
                     return null;
             }
+        }
+
+        public static Value LeftAbstractOperandArithmetic(FlowController flow,
+            Operations operation, int rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
         }
 
         #region Addition
@@ -683,6 +716,34 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        public static Value RightAbstractOperandArithmetic(FlowController flow,
+            Operations operation, IntegerIntervalValue leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
+        }
+
+        public static Value LeftAbstractOperandArithmetic(FlowController flow,
+            Operations operation, IntegerIntervalValue rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
+        }
+
+        public static Value AbstractIntegerArithmetic(FlowController flow, Operations operation)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, entireIntegerInterval, entireIntegerInterval);
+        }
+
+        public static Value AbstractFloatArithmetic(FlowOutputSet outset, Operations operation)
+        {
+            return IsArithmetic(operation) ? outset.AnyFloatValue : null;
+        }
+
         #region Addition
 
         public static Value Add(FlowOutputSet outset, IntegerIntervalValue augend,
@@ -719,6 +780,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             FloatIntervalValue addend)
         {
             return outset.CreateFloatInterval(augend.Start + addend.Start, augend.End + addend.End);
+        }
+
+        public static FloatIntervalValue AbstractIntegerAdd(FlowOutputSet outset)
+        {
+            return outset.CreateFloatInterval(int.MinValue * 2.0, int.MaxValue * 2.0);
         }
 
         #endregion Addition
@@ -828,6 +894,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Abstract aritmetic
 
         #region Helper methods
+
+        private static void InitalizeInternals(FlowOutputSet outset)
+        {
+            if (entireIntegerInterval == null)
+            {
+                entireIntegerInterval = outset.CreateIntegerInterval(int.MinValue, int.MaxValue);
+            }
+        }
 
         private static BooleanValue WarnDivideByZero(FlowController flow)
         {

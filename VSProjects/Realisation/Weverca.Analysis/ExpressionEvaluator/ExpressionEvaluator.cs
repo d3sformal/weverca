@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -147,7 +147,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     bool isAlwaysInteger;
                     bool isAlwaysLegal;
 
-                    arrayIndexEvaluator.Evaluate(keyValue.Key, ref integerValues, ref stringValues,
+                    arrayIndexEvaluator.Evaluate(keyValue.Key, integerValues, stringValues,
                         out isAlwaysConcrete, out isAlwaysInteger, out isAlwaysLegal);
 
                     // Create default indices for next element
@@ -327,7 +327,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             bool isAlwaysConcrete;
             var arrays = ResolveArraysForIndex(enumeree, out isAlwaysArray, out isAlwaysConcrete);
 
-            var keys = new HashSet<Value>();
+            var keys = new HashSet<ScalarValue>();
             var values = new HashSet<Value>();
 
             foreach (var array in arrays)
@@ -338,7 +338,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 foreach (var index in indices)
                 {
                     int convertedInteger;
-                    if (TypeConversion.TryConvertToInteger(index.Identifier, out convertedInteger))
+                    if (TypeConversion.TryIdentifyInteger(index.Identifier, out convertedInteger))
                     {
                         keys.Add(OutSnapshot.CreateInt(convertedInteger));
                     }
@@ -385,7 +385,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             MemoryEntry leftOperand = null;
 
             stringConverter.SetContext(Flow);
-            List<Value> allValues = new List<Value>();
             foreach (var part in parts)
             {
                 if (leftOperand != null)
@@ -396,11 +395,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     leftOperand = part;
                 }
-                allValues.AddRange(part.PossibleValues);
             }
 
             Debug.Assert(leftOperand != null, "There must be at least one operand to concat");
-            return new MemoryEntry(FlagsHandler.CopyFlags(allValues,leftOperand.PossibleValues));
+            return leftOperand;
         }
 
         /// <inheritdoc />
@@ -756,7 +754,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private List<QualifiedName> ResolveTypeNames(MemoryEntry possibleNames)
         {
             Debug.Assert(possibleNames.Count > 0, "Every memory entry must have at least one value");
-            var declarations = new HashSet<TypeValue>();
 
             stringConverter.SetContext(Flow);
             bool isAlwaysConcrete;

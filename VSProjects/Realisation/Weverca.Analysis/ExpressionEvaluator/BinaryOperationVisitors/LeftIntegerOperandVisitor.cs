@@ -1,3 +1,5 @@
+using System;
+
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
@@ -86,14 +88,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Mod:
-                    if (value.Value)
-                    {
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        DivisionByFalse();
-                    }
+                    DivisionByBooleanValue(value.Value);
                     break;
                 default:
                     var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
@@ -109,7 +104,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (BitwiseOperation(leftOperand.Value, TypeConversion.ToInteger(value.Value)))
+                    result = BitwiseOperation.Bitwise(OutSet, operation, leftOperand.Value,
+                        TypeConversion.ToInteger(value.Value));
+                    if (result != null)
                     {
                         break;
                     }
@@ -148,7 +145,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (BitwiseOperation(leftOperand.Value, value.Value))
+                    result = BitwiseOperation.Bitwise(OutSet, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
                         break;
                     }
@@ -163,6 +161,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -193,21 +197,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    int rightInteger;
-                    if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
+                    result = BitwiseOperation.Bitwise(OutSet, operation, leftOperand.Value, value.Value);
+                    if (result != null)
                     {
-                        if (BitwiseOperation(leftOperand.Value, rightInteger))
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (IsOperationBitwise())
-                        {
-                            result = OutSet.AnyIntegerValue;
-                            break;
-                        }
+                        break;
                     }
 
                     result = LogicalOperation.Logical(OutSet, operation,
@@ -293,7 +286,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (isInteger || (isSuccessful
                         && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
                     {
-                        if (BitwiseOperation(leftOperand.Value, integerValue))
+                        result = BitwiseOperation.Bitwise(OutSet, operation,
+                            leftOperand.Value, integerValue);
+                        if (result != null)
                         {
                             break;
                         }
@@ -301,7 +296,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         // If at least one operand can not be recognized, result can be any integer value.
-                        if (IsOperationBitwise())
+                        if (BitwiseOperation.IsBitWise(operation))
                         {
                             result = OutSet.AnyIntegerValue;
                             break;
@@ -314,6 +309,112 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Scalar values
+
+        #region Compound values
+
+        /// <inheritdoc />
+        public override void VisitCompoundValue(CompoundValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    base.VisitCompoundValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitObjectValue(ObjectValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Mod:
+                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    result = ModuloOperation.AbstractModulo(flow, leftOperand.Value);
+                    break;
+                default:
+                    result = Comparison.AbstractCompare(OutSet, operation);
+                    if (result != null)
+                    {
+                        SetWarning("Object cannot be converted to integer by comparison");
+                        break;
+                    }
+
+                    result = ArithmeticOperation.RightAbstractOperandArithmetic(flow, operation,
+                        leftOperand.Value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitObjectValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssociativeArray(AssociativeArray value)
+        {
+            switch (operation)
+            {
+                case Operations.Mod:
+                    result = ModuloOperation.Modulo(flow, leftOperand.Value,
+                        TypeConversion.ToNativeInteger(OutSet, value));
+                    break;
+                default:
+                    result = Comparison.LeftArrayCompare(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
+                    var rightBoolean = TypeConversion.ToNativeBoolean(OutSet, value);
+                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    var rightInteger = TypeConversion.ToInteger(rightBoolean);
+                    result = BitwiseOperation.Bitwise(OutSet, operation, leftOperand.Value, rightInteger);
+                    if (result == null)
+                    {
+                        base.VisitAssociativeArray(value);
+                    }
+
+                    break;
+            }
+        }
+
+        #endregion Compound values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -367,7 +468,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
-            if (!BitwiseOperation())
+            result = BitwiseOperation.Bitwise(OutSet, operation);
+            if (result == null)
             {
                 base.VisitGenericIntervalValue(value);
             }
@@ -413,6 +515,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
+        }
+
+        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             switch (operation)
@@ -452,7 +560,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        #endregion
+        #endregion Interval values
 
         #endregion AbstractValueVisitor Members
     }

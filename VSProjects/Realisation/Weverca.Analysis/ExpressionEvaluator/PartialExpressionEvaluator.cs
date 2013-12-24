@@ -27,7 +27,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Initializes a new instance of the <see cref="PartialExpressionEvaluator" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public PartialExpressionEvaluator(FlowController flowController)
+        protected PartialExpressionEvaluator(FlowController flowController)
         {
             SetContext(flowController);
         }

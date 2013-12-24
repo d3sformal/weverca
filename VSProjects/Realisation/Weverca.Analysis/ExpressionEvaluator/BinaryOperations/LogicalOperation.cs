@@ -66,6 +66,57 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        public static Value AbstractLogical(FlowOutputSet outset, Operations operation,
+            bool concreteOperand)
+        {
+            switch (operation)
+            {
+                case Operations.And:
+                    return AbstractAnd(outset, concreteOperand);
+                case Operations.Or:
+                    return AbstractOr(outset, concreteOperand);
+                case Operations.Xor:
+                    return AbstractXor(outset, concreteOperand);
+                default:
+                    return null;
+            }
+        }
+
+        public static Value AbstractLogical<T>(FlowOutputSet outset, Operations operation,
+            IntervalValue<T> intervalOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            switch (operation)
+            {
+                case Operations.And:
+                    return AbstractAnd(outset, intervalOperand);
+                case Operations.Or:
+                    return AbstractOr(outset, intervalOperand);
+                case Operations.Xor:
+                    return AbstractXor(outset, intervalOperand);
+                default:
+                    return null;
+            }
+        }
+
+        public static AnyBooleanValue AbstractLogical(FlowOutputSet outset, Operations operation)
+        {
+            return IsLogical(operation) ? outset.AnyBooleanValue : null;
+        }
+
+        public static bool IsLogical(Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.And:
+                case Operations.Or:
+                case Operations.Xor:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
         #region And
 
         public static Value And<T>(FlowOutputSet outset, bool leftOperand,
@@ -100,6 +151,33 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (TypeConversion.TryConvertToBoolean<T>(leftOperand, out convertedValue))
             {
                 return And(outset, convertedValue, rightOperand);
+            }
+            else
+            {
+                return outset.AnyBooleanValue;
+            }
+        }
+
+        public static Value AbstractAnd(FlowOutputSet outset, bool concreteOperand)
+        {
+            if (concreteOperand)
+            {
+                return outset.AnyBooleanValue;
+            }
+            else
+            {
+                return outset.CreateBool(false);
+            }
+        }
+
+        public static Value AbstractAnd<T>(FlowOutputSet outset, IntervalValue<T> intervalOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+
+            if (TypeConversion.TryConvertToBoolean<T>(intervalOperand, out convertedValue))
+            {
+                return AbstractAnd(outset, convertedValue);
             }
             else
             {
@@ -150,6 +228,33 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        public static Value AbstractOr(FlowOutputSet outset, bool concreteOperand)
+        {
+            if (concreteOperand)
+            {
+                return outset.CreateBool(true);
+            }
+            else
+            {
+                return outset.AnyBooleanValue;
+            }
+        }
+
+        public static Value AbstractOr<T>(FlowOutputSet outset, IntervalValue<T> intervalOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+
+            if (TypeConversion.TryConvertToBoolean<T>(intervalOperand, out convertedValue))
+            {
+                return AbstractOr(outset, convertedValue);
+            }
+            else
+            {
+                return outset.AnyBooleanValue;
+            }
+        }
+
         #endregion Or
 
         #region Xor
@@ -191,6 +296,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 return outset.AnyBooleanValue;
             }
+        }
+
+        public static AnyBooleanValue AbstractXor(FlowOutputSet outset, bool concreteOperand)
+        {
+            return outset.AnyBooleanValue;
+        }
+
+        public static AnyBooleanValue AbstractXor<T>(FlowOutputSet outset, IntervalValue<T> intervalOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            return outset.AnyBooleanValue;
         }
 
         #endregion Xor

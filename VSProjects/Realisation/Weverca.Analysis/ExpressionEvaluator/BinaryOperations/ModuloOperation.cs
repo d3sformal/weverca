@@ -517,6 +517,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
+        public static Value AbstractModulo(FlowController flow, FloatIntervalValue divisor)
+        {
+            IntegerIntervalValue convertedValue;
+            if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, divisor, out convertedValue))
+            {
+                return AbstractModulo(flow, convertedValue);
+            }
+            else
+            {
+                return WarnPossibleDivideByZero(flow);
+            }
+        }
+
         #endregion Float interval divisor
 
         #region Helper methods

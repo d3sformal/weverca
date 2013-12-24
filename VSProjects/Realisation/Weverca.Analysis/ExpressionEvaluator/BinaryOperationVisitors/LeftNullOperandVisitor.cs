@@ -1,3 +1,5 @@
+using System;
+
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
@@ -83,15 +85,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    if (value.Value)
-                    {
-                        // 0 (null) divided or modulo by anything is always 0
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        DivisionByFalse();
-                    }
+                    DivisionByBooleanValue(value.Value);
                     break;
                 default:
                     base.VisitBooleanValue(value);
@@ -159,6 +153,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -460,6 +460,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntervalIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />

@@ -42,14 +42,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    if (value.Value)
-                    {
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        DivisionByFalse();
-                    }
+                    DivisionByBooleanValue(value.Value);
                     break;
                 default:
                     var leftBoolean = TypeConversion.ToBoolean(leftOperand.Value);
@@ -92,7 +85,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (isInteger || (isSuccessful
                         && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
                     {
-                        if (BitwiseOperation(integerValue, rightInteger))
+                        result = BitwiseOperation.Bitwise(OutSet, operation, integerValue, rightInteger);
+                        if (result != null)
                         {
                             break;
                         }
@@ -100,7 +94,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         // If at least one operand can not be recognized, result can be any integer value.
-                        if (IsOperationBitwise())
+                        if (BitwiseOperation.IsBitWise(operation))
                         {
                             result = OutSet.AnyIntegerValue;
                             break;
@@ -193,7 +187,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (isInteger || (isSuccessful
                         && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
                     {
-                        if (BitwiseOperation(integerValue, value.Value))
+                        result = BitwiseOperation.Bitwise(OutSet, operation, integerValue, value.Value);
+                        if (result != null)
                         {
                             break;
                         }
@@ -201,7 +196,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         // If at least one operand can not be recognized, result can be any integer value.
-                        if (IsOperationBitwise())
+                        if (BitwiseOperation.IsBitWise(operation))
                         {
                             result = OutSet.AnyIntegerValue;
                             break;
@@ -211,6 +206,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -259,7 +260,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         && TypeConversion.TryConvertToInteger(floatValue, out integerValue)))
                         && TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
                     {
-                        if (BitwiseOperation(integerValue, rightInteger))
+                        result = BitwiseOperation.Bitwise(OutSet, operation, integerValue, rightInteger);
+                        if (result != null)
                         {
                             break;
                         }
@@ -267,7 +269,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         // If at least one operand can not be recognized, result can be any integer value.
-                        if (IsOperationBitwise())
+                        if (BitwiseOperation.IsBitWise(operation))
                         {
                             result = OutSet.AnyIntegerValue;
                             break;
@@ -358,7 +360,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         && (isRightInteger || (isRightSuccessful
                         && TypeConversion.TryConvertToInteger(rightFloat, out rightInteger))))
                     {
-                        if (BitwiseOperation(leftInteger, rightInteger))
+                        result = BitwiseOperation.Bitwise(OutSet, operation, leftInteger, rightInteger);
+                        if (result != null)
                         {
                             break;
                         }
@@ -366,7 +369,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         // If at least one operand can not be recognized, result can be any integer value.
-                        if (IsOperationBitwise())
+                        if (BitwiseOperation.IsBitWise(operation))
                         {
                             result = OutSet.AnyIntegerValue;
                             break;
@@ -468,12 +471,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
-                    if (BitwiseOperation())
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result == null)
                     {
-                        break;
+                        base.VisitGenericIntervalValue(value);
                     }
 
-                    base.VisitGenericIntervalValue(value);
                     break;
             }
         }
@@ -534,6 +537,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntervalIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />

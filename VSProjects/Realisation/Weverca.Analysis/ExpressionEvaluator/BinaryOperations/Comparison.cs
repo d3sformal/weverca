@@ -7,7 +7,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
-    public class Comparison
+    public static class Comparison
     {
         /// <summary>
         /// Compare values of the same type with the specific operation.
@@ -61,22 +61,56 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Equal:
                     return outset.CreateBool(string.Equals(leftOperand, rightOperand,
-                        StringComparison.InvariantCulture));
+                        StringComparison.Ordinal));
                 case Operations.NotEqual:
                     return outset.CreateBool(!string.Equals(leftOperand, rightOperand,
-                        StringComparison.InvariantCulture));
+                        StringComparison.Ordinal));
                 case Operations.LessThan:
                     return outset.CreateBool(string.Compare(leftOperand, rightOperand,
-                        StringComparison.InvariantCulture) < 0);
+                        StringComparison.Ordinal) < 0);
                 case Operations.LessThanOrEqual:
                     return outset.CreateBool(string.Compare(leftOperand, rightOperand,
-                        StringComparison.InvariantCulture) <= 0);
+                        StringComparison.Ordinal) <= 0);
                 case Operations.GreaterThan:
                     return outset.CreateBool(string.Compare(leftOperand, rightOperand,
-                        StringComparison.InvariantCulture) > 0);
+                        StringComparison.Ordinal) > 0);
                 case Operations.GreaterThanOrEqual:
                     return outset.CreateBool(string.Compare(leftOperand, rightOperand,
-                        StringComparison.InvariantCulture) >= 0);
+                        StringComparison.Ordinal) >= 0);
+                default:
+                    return null;
+            }
+        }
+
+        public static BooleanValue RightArrayCompare(FlowOutputSet outset, Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                    return outset.CreateBool(true);
+                case Operations.NotEqual:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                    return outset.CreateBool(false);
+                default:
+                    return null;
+            }
+        }
+
+        public static BooleanValue LeftArrayCompare(FlowOutputSet outset, Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                    return outset.CreateBool(true);
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                    return outset.CreateBool(false);
                 default:
                     return null;
             }
@@ -175,6 +209,127 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return GreaterThanOrEqual(outset, leftOperand, rightOperand);
                 default:
                     return null;
+            }
+        }
+
+        public static Value RightAbstractBooleanCompare(FlowOutputSet outset,
+            Operations operation, bool leftOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                    return outset.AnyBooleanValue;
+                case Operations.NotEqual:
+                    return outset.AnyBooleanValue;
+                case Operations.LessThan:
+                    if (leftOperand)
+                    {
+                        return outset.CreateBool(false);
+                    }
+                    else
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                case Operations.LessThanOrEqual:
+                    if (leftOperand)
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                    else
+                    {
+                        return outset.CreateBool(true);
+                    }
+                case Operations.GreaterThan:
+                    if (leftOperand)
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                    else
+                    {
+                        return outset.CreateBool(false);
+                    }
+                case Operations.GreaterThanOrEqual:
+                    if (leftOperand)
+                    {
+                        return outset.CreateBool(true);
+                    }
+                    else
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                default:
+                    return null;
+            }
+        }
+
+        public static Value LeftAbstractBooleanCompare(FlowOutputSet outset,
+            Operations operation, bool rightOperand)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                    return outset.AnyBooleanValue;
+                case Operations.NotEqual:
+                    return outset.AnyBooleanValue;
+                case Operations.LessThan:
+                    if (rightOperand)
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                    else
+                    {
+                        return outset.CreateBool(false);
+                    }
+                case Operations.LessThanOrEqual:
+                    if (rightOperand)
+                    {
+                        return outset.CreateBool(true);
+                    }
+                    else
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                case Operations.GreaterThan:
+                    if (rightOperand)
+                    {
+                        return outset.CreateBool(false);
+                    }
+                    else
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                case Operations.GreaterThanOrEqual:
+                    if (rightOperand)
+                    {
+                        return outset.AnyBooleanValue;
+                    }
+                    else
+                    {
+                        return outset.CreateBool(true);
+                    }
+                default:
+                    return null;
+            }
+        }
+
+        public static AnyBooleanValue AbstractCompare(FlowOutputSet outset, Operations operation)
+        {
+            return IsOperationComparison(operation) ? outset.AnyBooleanValue : null;
+        }
+
+        public static bool IsOperationComparison(Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                    return true;
+                default:
+                    return false;
             }
         }
 

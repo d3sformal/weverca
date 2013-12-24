@@ -53,17 +53,19 @@ namespace Weverca.Analysis
         #region Implementations of concrete native functions
         private static Value _strtolower(FlowController flow, Value[] arguments)
         {
+            stringConverter.SetContext(flow);
             return flow.OutSet.CreateString(
                 PHP.Library.PhpStrings.ToLower(
-                    stringConverter.EvaluateToString(flow, arguments[0]).Value)
+                    stringConverter.EvaluateToString(arguments[0]).Value)
                 );
         }
 
         private static Value _strtoupper(FlowController flow, Value[] arguments)
         {
+            stringConverter.SetContext(flow);
             return flow.OutSet.CreateString(
                 PHP.Library.PhpStrings.ToUpper(
-                    stringConverter.EvaluateToString(flow, arguments[0]).Value)
+                    stringConverter.EvaluateToString(arguments[0]).Value)
                 );
         }
 

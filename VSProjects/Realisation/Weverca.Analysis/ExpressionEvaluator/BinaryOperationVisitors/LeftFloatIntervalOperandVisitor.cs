@@ -1,3 +1,5 @@
+using System;
+
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
@@ -31,7 +33,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitScalarValue(ScalarValue value)
         {
-            if (!BitwiseOperation())
+            result = BitwiseOperation.Bitwise(OutSet, operation);
+            if (result == null)
             {
                 base.VisitScalarValue(value);
             }
@@ -49,14 +52,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    if (value.Value)
-                    {
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        DivisionByFalse();
-                    }
+                    DivisionByBooleanValue(value.Value);
                     break;
                 default:
                     result = LogicalOperation.Logical(OutSet, operation, leftOperand, value.Value);
@@ -122,6 +118,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -264,7 +266,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
-            if (!BitwiseOperation())
+            result = BitwiseOperation.Bitwise(OutSet, operation);
+            if (result == null)
             {
                 base.VisitGenericIntervalValue(value);
             }
@@ -307,6 +310,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntervalIntegerValue(value);
                     break;
             }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
