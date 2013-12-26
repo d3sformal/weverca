@@ -18,7 +18,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Available services obtained from analysis
         /// </summary>
-        internal readonly AnalysisServices Services;
+        internal readonly ForwardAnalysisServices Services;
 
         /// <summary>
         /// Flow resolver from analysis services
@@ -70,7 +70,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Create flow controller for given input and output set
         /// </summary>
-        internal FlowController(AnalysisServices services, ProgramPointBase programPoint)
+        internal FlowController(ForwardAnalysisServices services, ProgramPointBase programPoint)
         {
             Services = services;
             ProgramPoint = programPoint;

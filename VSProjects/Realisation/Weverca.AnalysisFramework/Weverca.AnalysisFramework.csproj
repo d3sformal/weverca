@@ -34,7 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Expressions\AliasValueFactory.cs" />
-    <Compile Include="AnalysisServices.cs" />
+    <Compile Include="ForwardAnalysisServices.cs" />
     <Compile Include="Memory\SnapshotMapping.cs" />
     <Compile Include="NextPhaseAnalysis.cs" />
     <Compile Include="Expressions\LiteralValueFactory.cs" />

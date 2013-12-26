@@ -84,7 +84,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Analysis services available for subclasses to handle flow through method
         /// </summary>
-        internal AnalysisServices Services { get; private set; }
+        internal ForwardAnalysisServices Services { get; private set; }
 
         internal ProgramPointBase()
         {
@@ -262,16 +262,22 @@ namespace Weverca.AnalysisFramework
             _outSet = output;
         }
 
-        internal void SetServices(AnalysisServices services)
+        internal void SetServices(ForwardAnalysisServices services)
         {
             Services = services;
             Extension.Sink.Services = services;
             setNewController();
         }
 
+        internal void SetMode(SnapshotMode mode)
+        {
+            _inSet.Snapshot.SetMode(mode);
+            _outSet.Snapshot.SetMode(mode);
+        }
+
         internal void SetOwningGraph(ProgramPointGraph owningGraph)
         {
-            this.ppGraph= owningGraph;
+            this.ppGraph = owningGraph;
             Extension.Sink.ppGraph = owningGraph;
         }
 

@@ -57,9 +57,10 @@ namespace Weverca.AnalysisFramework.Memory
         ValueReadAttempts,
         FieldReadAttempts,
         IndexReadAttempts,
+        ModeSwitch,
         ObjectTypeSearches,
 
-        Last = ObjectTypeSearches
+        Last = ObjectTypeSearches,
     }
 
     /// <summary>
@@ -67,7 +68,7 @@ namespace Weverca.AnalysisFramework.Memory
     /// </summary>
     public class SnapshotStatistics
     {
-        private readonly int[] _statistics = new int[(int)Statistic.Last+1];
+        private readonly int[] _statistics = new int[(int)Statistic.Last + 1];
 
         private SnapshotStatistics(int[] statistics)
         {

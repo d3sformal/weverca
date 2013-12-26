@@ -169,7 +169,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            AnalysisServices.CurrentScript = ppGraph.OwningScript;
+            ForwardAnalysisServices.CurrentScript = ppGraph.OwningScript;
 
             if (Flow.Arguments == null)
                 Flow.Arguments = new MemoryEntry[0];
@@ -209,7 +209,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
             Value = OutSet.CreateSnapshotEntry(returnValue);
-            AnalysisServices.CurrentScript = ppGraph.OwningScript;
+            ForwardAnalysisServices.CurrentScript = ppGraph.OwningScript;
         }
 
         /*     /// <summary>

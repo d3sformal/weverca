@@ -32,7 +32,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Available services provided by analysis
         /// </summary>
-        private AnalysisServices _services;
+        private ForwardAnalysisServices _services;
 
         /// <summary>
         /// Available expression evaluator
@@ -170,7 +170,7 @@ namespace Weverca.AnalysisFramework
         {
             EntryInput.CommitTransaction();
 
-            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG, AnalysisServices.EntryScript);
+            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG, ForwardAnalysisServices.EntryScript);
             _services.SetServices(ProgramPointGraph);
 
             var output=_services.CreateEmptySet();            
@@ -225,7 +225,7 @@ namespace Weverca.AnalysisFramework
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
 
-            _services = new AnalysisServices(_workQueue,_functionResolver,_expressionEvaluator,createEmptySet,  _flowResolver, _entryScript);
+            _services = new ForwardAnalysisServices(_workQueue,_functionResolver,_expressionEvaluator,createEmptySet,  _flowResolver, _entryScript);
         }
 
         /// <summary>

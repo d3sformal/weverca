@@ -9,6 +9,30 @@ using PHP.Core.AST;
 namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
+    /// Mode enumeration used for switching snapshots operational mode.
+    /// </summary>
+    public enum SnapshotMode
+    {
+        /// <summary>
+        /// Standard mode used in first phase of analysis. Snapshot
+        /// creates abstraction of memory level access. Structure of data structures (arrays, objects,..)
+        /// can be changed.
+        /// 
+        /// Extensions/merges are processed only on memory level
+        /// </summary>
+        MemoryLevel,
+
+        /// <summary>
+        /// Mode used for next phases of analysis. Snapshot creates
+        /// abstraction of info level access for data structures. Writings/Readings are targeted  
+        /// to info memory, that is organized accordingly data structures in memory level
+        /// 
+        /// Extensions/merges are processed only on info level
+        /// </summary>
+        InfoLevel
+    }
+
+    /// <summary>
     /// Represents memory snapshot used for fix point analysis.
     /// NOTES:
     ///     * Snapshot will always work in context of some object.
@@ -42,20 +66,39 @@ namespace Weverca.AnalysisFramework.Memory
         protected MemoryAssistantBase Assistant { get; private set; }
 
         /// <summary>
+        /// Current operational mode of snapshot
+        /// </summary>
+        protected SnapshotMode CurrentMode { get; private set; }
+
+        /// <summary>
         /// Determine that transaction of this snapshot is started - updates can be written
         /// </summary>
         public bool IsTransactionStarted { get; private set; }
+
         /// <summary>
         /// Determine that snapshot is frozen - cannot be updated
         /// </summary>
         public bool IsFrozen { get; private set; }
+
         /// <summary>
         /// Determine that the snapshot commited by the last transaction differs from the snapshot commited by the previous transaction
         /// Always return false if the transaction is started and not yet commited
         /// </summary>
         public bool HasChanged { get; private set; }
 
+
+
         #region Implementation of SnapshotEntry based API
+
+        /// <summary>
+        /// Set snapshot into given operational mode. Mode can be switched multiple times during
+        /// transaction. Operations are processed according to current mode.
+        /// </summary>
+        /// <param name="mode">Operational mode of snapshot</param>
+        protected virtual void setMode(SnapshotMode mode)
+        {
+            //by default there is nothing to do - operational mode should be read from CurrentMode member
+        }
 
         /// <summary>
         /// Create snapshot entry providing reading,... services for variable
@@ -501,6 +544,20 @@ namespace Weverca.AnalysisFramework.Memory
         public SnapshotStatistics GetStatistics()
         {
             return _statistics.Clone();
+        }
+
+        public void SetMode(SnapshotMode mode)
+        {
+            checkFrozenState();
+
+            if (CurrentMode == mode)
+                //there is nothing to change
+                return;
+
+            _statistics.Report(Statistic.ModeSwitch);
+
+            CurrentMode = mode;
+            setMode(mode);
         }
 
         /// <summary>

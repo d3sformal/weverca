@@ -20,7 +20,7 @@ namespace Weverca.AnalysisFramework
     /// <summary>
     /// Group of services that are provided by analysis object.
     /// </summary>    
-    public class AnalysisServices
+    public class ForwardAnalysisServices
     {
         private readonly Queue<ProgramPointBase> _workListQueue;
 
@@ -61,7 +61,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal readonly EmptySetDelegate CreateEmptySet;
 
-        internal AnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver, FileInfo entryScript)
+        internal ForwardAnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver, FileInfo entryScript)
         {
             _workListQueue = workListQueue;
             CreateEmptySet = emptySet;
@@ -102,6 +102,7 @@ namespace Weverca.AnalysisFramework
         internal void SetServices(ProgramPointBase point)
         {
             point.SetServices(this);
+            point.SetMode(SnapshotMode.MemoryLevel);
         }
 
         /// <summary>

@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Available services provided by analysis
         /// </summary>
-        private AnalysisServices _services;
+        private ForwardAnalysisServices _services;
 
         /// <summary>
         /// Available expression evaluator
@@ -226,7 +226,7 @@ namespace Weverca.AnalysisFramework
             _functionResolver = createFunctionResolver();
 
             _mapping = new SnapshotMapping(AnalyzedProgramPointGraph);
-            _services = new AnalysisServices(_workQueue, _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver, _entryScript);
+            _services = new ForwardAnalysisServices(_workQueue, _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver, _entryScript);
         }
 
         /// <summary>

@@ -94,7 +94,7 @@ namespace Weverca.Analysis.FlowResolver
         private FileInfo findFile(FlowController flow, string fileName) 
         {
             // the file has relative path and it is in main script directory
-            var fileInfo = new FileInfo(AnalysisServices.EntryScript.DirectoryName + "/" + fileName);
+            var fileInfo = new FileInfo(ForwardAnalysisServices.EntryScript.DirectoryName + "/" + fileName);
             if (fileInfo.Exists) return fileInfo;
 
             // the file has relative path and it is in current script directory

@@ -37,7 +37,7 @@ namespace Weverca.AnalysisFramework.Memory
 
         internal FunctionValue(LangElement declaringElement, Name name)
         {
-            DeclaringScript = AnalysisServices.CurrentScript;
+            DeclaringScript = ForwardAnalysisServices.CurrentScript;
             if (declaringElement == null)
                 throw new ArgumentNullException("declaringElement");
             DeclaringElement = declaringElement;
