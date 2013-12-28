@@ -38,11 +38,6 @@ namespace Weverca.AnalysisFramework
         private readonly CreateSnapshot _createSnapshotDelegate;
 
         /// <summary>
-        /// Available services provided by analysis
-        /// </summary>
-        private ForwardAnalysisServices _services;
-
-        /// <summary>
         /// Available expression evaluator
         /// </summary>
         private ExpressionEvaluatorBase _expressionEvaluator;
@@ -61,11 +56,6 @@ namespace Weverca.AnalysisFramework
         /// Queue of program points that should be processed
         /// </summary>
         private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
-
-        /// <summary>
-        /// Mapping used for mapping between program point graph snapshots and current analysis snaphots
-        /// </summary>
-        private SnapshotMapping _mapping;
 
         /// <summary>
         /// Entry script of the analysis
@@ -92,12 +82,6 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public ProgramPointGraph AnalyzedProgramPointGraph { get; private set; }
 
-        /// <summary>
-        /// Input which is used only once when starting analysis - can be modified only before analysing
-        /// </summary>
-        public readonly FlowOutputSet EntryInput;
-
-        /// <summary>
         /// Determine count of commits on single flow set that is needed to start widening
         /// </summary>
         public int WideningLimit { get; protected set; }
@@ -138,6 +122,14 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created memory assistant</returns>
         protected abstract MemoryAssistantBase createAssistant();
 
+        /// <summary>
+        /// Process flow through in next phase.
+        /// TODO: Would it be better to have another FlowThrough on point?, some visitors,..??
+        /// TODO: How to use resolvers,...?
+        /// </summary>
+        /// <param name="point">Flowed point</param>
+        protected abstract void flowThrough(ProgramPointBase point);
+
         #endregion
 
         /// <summary>
@@ -155,8 +147,6 @@ namespace Weverca.AnalysisFramework
             Direction = direction;
             AnalyzedProgramPointGraph = analyzedPPG;
             WideningLimit = int.MaxValue;
-            EntryInput = createEmptySet();
-            EntryInput.StartTransaction();
         }
 
         /// <summary>
@@ -177,15 +167,16 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private void analyse()
         {
-            EntryInput.CommitTransaction();
-
             enqueue(AnalyzedProgramPointGraph.Start);
-
 
             //fix point computation
             while (_workQueue.Count > 0)
             {
                 var point = _workQueue.Dequeue();
+
+                var inputs = getInputs(point);
+                throw new NotImplementedException("How should work extending of inputs?");
+
 
                 //during flow through are enqueued all needed flow children
                 throw new NotImplementedException("Flowing through point in another way as in forward analysis");
@@ -205,15 +196,9 @@ namespace Weverca.AnalysisFramework
 
         #region Private utilities
 
-        /// <summary>
-        /// Create snapshot used during analysis
-        /// NOTE:
-        ///     * Is called whenever new snapshot is needed (every time new snapshot has to be created)
-        /// </summary>
-        /// <returns>Created snapshot</returns>
-        private SnapshotBase createSnapshot()
+        private IEnumerable<ProgramPointBase> getInputs(ProgramPointBase point)
         {
-            return _createSnapshotDelegate();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -224,24 +209,6 @@ namespace Weverca.AnalysisFramework
             _expressionEvaluator = createExpressionEvaluator();
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
-
-            _mapping = new SnapshotMapping(AnalyzedProgramPointGraph);
-            _services = new ForwardAnalysisServices(_workQueue, _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver, _entryScript);
-        }
-
-        /// <summary>
-        /// Creates empty output set
-        /// </summary>
-        /// <returns>Created output set</returns>
-        private FlowOutputSet createEmptySet()
-        {
-            var snapshot = createSnapshot();
-            var assistant = createAssistant();
-
-            snapshot.InitAssistant(assistant);
-            assistant.InitContext(snapshot);
-
-            return new FlowOutputSet(snapshot, WideningLimit);
         }
 
 

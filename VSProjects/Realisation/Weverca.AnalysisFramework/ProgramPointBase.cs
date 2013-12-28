@@ -135,7 +135,6 @@ namespace Weverca.AnalysisFramework
             extendInput();
             extendOutput();
 
-
             return true;
         }
 
@@ -271,8 +270,11 @@ namespace Weverca.AnalysisFramework
 
         internal void SetMode(SnapshotMode mode)
         {
-            _inSet.Snapshot.SetMode(mode);
-            _outSet.Snapshot.SetMode(mode);
+            if (_inSet != null)
+                _inSet.Snapshot.SetMode(mode);
+
+            if (_outSet != null)
+                _outSet.Snapshot.SetMode(mode);
         }
 
         internal void SetOwningGraph(ProgramPointGraph owningGraph)
