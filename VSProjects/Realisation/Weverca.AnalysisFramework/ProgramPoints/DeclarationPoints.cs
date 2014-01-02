@@ -26,6 +26,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             Services.FunctionResolver.DeclareGlobal(Declaration);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitTypeDecl(this);
+        }
     }
 
     /// <summary>
@@ -45,6 +50,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Services.FunctionResolver.DeclareGlobal(Declaration);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitFunctionDecl(this);
         }
     }
 
@@ -71,6 +81,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.Evaluator.ConstantDeclaration(Declaration, Initializer.Value.ReadMemory(InSnapshot));
 
             Value = Initializer.Value;
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitConstantDecl(this);
         }
     }
 }

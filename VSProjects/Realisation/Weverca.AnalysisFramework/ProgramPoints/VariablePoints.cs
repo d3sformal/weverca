@@ -46,6 +46,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             return "$" + Variable.VarName;
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitVariable(this);
+        }
     }
 
     /// <summary>
@@ -88,6 +93,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             {
                 LValue = Services.Evaluator.ResolveField(ThisObj.Value, variable);
             }
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitIndirectVariable(this);
         }
     }
 }

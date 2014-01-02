@@ -40,6 +40,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             Services.FlowResolver.TryScopeStart(OutSet, CatchStarts);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitTryScopeStarts(this);
+        }
     }
 
     /// <summary>
@@ -61,6 +66,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Services.FlowResolver.TryScopeEnd(OutSet, CatchStarts);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitTryScopeEnds(this);
         }
     }
 
@@ -113,6 +123,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 //only if assumption is made, process children
                 base.enqueueChildren();
             }
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitAssume(this);
         }
     }
 
@@ -176,6 +191,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Services.FunctionResolver.InitializeCall(Graph, Flow.Arguments);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitExtension(this);
+        }
     }
 
     /// <summary>
@@ -222,6 +242,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                  _inSet.Extend(OwningExtension.Owner.InSet);
                  _inSet.CommitTransaction();
              }*/
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitExtensionSink(this);
+        }
     }
 
     /// <summary>
@@ -244,6 +269,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Analyzer.Method(Flow);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitNativeAnalyzer(this);
         }
     }
 }

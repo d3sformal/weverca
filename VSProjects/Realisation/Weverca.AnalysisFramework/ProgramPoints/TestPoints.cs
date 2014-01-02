@@ -32,6 +32,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             throw new NotSupportedException("This node is used only as workaround for testing");
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            throw new NotSupportedException("This node is used only as workaround for testing");
+        }
     }
 
     /// <summary>
@@ -51,6 +56,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         protected override void flowThrough()
+        {
+            throw new NotSupportedException("This node is used only as workaround for testing");
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
         {
             throw new NotSupportedException("This node is used only as workaround for testing");
         }

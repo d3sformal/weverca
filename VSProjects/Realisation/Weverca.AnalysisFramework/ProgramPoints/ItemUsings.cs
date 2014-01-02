@@ -45,5 +45,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(InSnapshot));
             LValue = Services.Evaluator.ResolveIndex(UsedItem.Value, IndexIdentifier);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitItemUse(this);
+        }
     }
 }

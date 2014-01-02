@@ -61,6 +61,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             // OutSet.ExtendAsCall(InSet, Flow.CalledObject, Flow.Arguments);
         }
         */
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitFunctionCall(this);
+        }
     }
 
     /// <summary>
@@ -122,6 +127,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             // OutSet.ExtendAsCall(InSet, Flow.CalledObject, Flow.Arguments);
         }
         */
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitIndirectFunctionCall(this);
+        }
     }
 
     /// <summary>
@@ -155,6 +165,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Services.FunctionResolver.StaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
                 StaticMethodCall.MethodName, Flow.Arguments);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitStaticMethodCall(this);
         }
     }
 
@@ -197,6 +212,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Services.FunctionResolver.IndirectStaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
                 Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitIndirectStaticMethodCall(this);
         }
     }
 }

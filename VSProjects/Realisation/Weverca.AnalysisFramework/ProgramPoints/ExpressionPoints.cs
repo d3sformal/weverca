@@ -73,6 +73,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 Value = OutSet.CreateSnapshotEntry(afterIncrementValue);
             }
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitIncDec(this);
+        }
     }
 
     /// <summary>
@@ -110,6 +115,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var concatedValue = Services.Evaluator.Concat(partValues);
 
             Value = OutSet.CreateSnapshotEntry(concatedValue);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitConcat(this);
         }
     }
 
@@ -149,6 +159,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 Expression.PublicOperation, Operand.Value.ReadMemory(InSnapshot));
 
             Value = OutSet.CreateSnapshotEntry(value);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitUnary(this);
         }
     }
 
@@ -196,6 +211,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Value = OutSet.CreateSnapshotEntry(value);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitBinary(this);
+        }
     }
 
     /// <summary>
@@ -233,6 +253,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             PrepareArguments();
             Flow.FlowResolver.Include(Flow, IncludePath.Value.ReadMemory(InSnapshot));
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitInclude(this);
         }
     }
 
@@ -290,6 +315,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             var arrayValue = Services.Evaluator.ArrayEx(initializer);
             Value = OutSet.CreateSnapshotEntry(arrayValue);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitArray(this);            
         }
     }
 
@@ -352,6 +382,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Value = OutSet.CreateSnapshotEntry(initializedObject);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitNew(this);
+        }
     }
 
     /// <summary>
@@ -409,6 +444,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Value = OutSet.CreateSnapshotEntry(value);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitInstanceOf(this);
+        }
     }
 
     /// <summary>
@@ -457,6 +497,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var value = Services.Evaluator.IssetEx(variables);
             Value = OutSet.CreateSnapshotEntry(value);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitIsSet(this);
+        }
     }
 
     /// <summary>
@@ -496,6 +541,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Value = OutSet.CreateSnapshotEntry(value);
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitEmptyEx(this);
+        }
     }
 
     /// <summary>
@@ -534,6 +584,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var value = Services.Evaluator.Exit(Exit, result);
 
             Value = OutSet.CreateSnapshotEntry(value);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitExit(this);
         }
     }
 }

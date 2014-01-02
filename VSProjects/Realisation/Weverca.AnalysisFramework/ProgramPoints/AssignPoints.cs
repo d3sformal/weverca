@@ -42,6 +42,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             Services.Evaluator.Assign(LOperand.LValue, Value.ReadMemory(InSet.Snapshot));
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitAssign(this);
+        }
     }
 
     /// <summary>
@@ -101,6 +106,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var concatedValue = Services.Evaluator.Concat(new MemoryEntry[] { firstPart.Value.ReadMemory(InSnapshot), secondPart.Value.ReadMemory(InSnapshot) });
             Value = OutSet.CreateSnapshotEntry(concatedValue);
             Services.Evaluator.Assign(AssignTarget.LValue, concatedValue);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitAssignConcat(this);
         }
     }
 
@@ -181,6 +191,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     throw new NotImplementedException("This assign action is not implemented");
             }
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitAssignOperation(this);
+        }
     }
 
     /// <summary>
@@ -214,6 +229,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.Evaluator.AliasAssign(LOperand.LValue, ROperand.Value);
 
             Value=ROperand.Value;
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitRefAssign(this);
         }
     }
 }

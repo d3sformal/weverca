@@ -8,6 +8,7 @@ using Weverca.ControlFlowGraph;
 
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework
 {
@@ -293,7 +294,7 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
-
+        internal abstract void Accept(ProgramPointVisitor visitor);
 
 
     }

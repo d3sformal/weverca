@@ -19,5 +19,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             //no action is needed
         }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitEmpty(this);
+        }
     }
 }

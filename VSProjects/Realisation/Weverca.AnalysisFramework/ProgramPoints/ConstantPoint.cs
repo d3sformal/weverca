@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// Constant value representation
     /// <remarks>Is usually used for storing literal value providers, etc.</remarks>
     /// </summary>
-    public class ConstantProgramPoint : ValuePoint
+    public class ConstantPoint : ValuePoint
     {
         /// <summary>
         /// Provider of constant value
@@ -35,7 +35,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public override LangElement Partial { get { return _partial; } }
 
-        internal ConstantProgramPoint(LangElement partial, ConstantProvider constantProvider)
+        internal ConstantPoint(LangElement partial, ConstantProvider constantProvider)
         {
             _constantProvider = constantProvider;
             _partial = partial;
@@ -45,6 +45,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             var value= _constantProvider(Services.Evaluator);
             Value = OutSet.CreateSnapshotEntry(value);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitConstant(this);
         }
     }
 }

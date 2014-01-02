@@ -63,7 +63,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="provider"></param>
         private void visitConstantNularyElement(LangElement e, ConstantProvider provider)
         {
-            Result(new ConstantProgramPoint(e, provider));
+            Result(new ConstantPoint(e, provider));
         }
 
         /// <summary>
