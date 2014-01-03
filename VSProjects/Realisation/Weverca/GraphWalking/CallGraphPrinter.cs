@@ -5,13 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework;
+using Weverca.Output.GraphWalking;
 
 namespace Weverca.GraphWalking
 {
     /// <summary>
     /// Implementation of call graph printer
     /// </summary>
-    class CallGraphPrinter:GraphWalkerBase
+    class CallGraphPrinter : GraphWalkerBase
     {
         /// <summary>
         /// Create call graph printer
@@ -30,7 +31,7 @@ namespace Weverca.GraphWalking
         protected override void afterPushCall()
         {
             printDelimiter('#');
-            Output.ProgramPointInfo(getStackDescription()+" --->",CallStack.Peek.Start);
+            Output.ProgramPointInfo(getStackDescription()+" --->", CallStack.Peek.Start);
             Output.Indent();
         }
 
@@ -45,7 +46,7 @@ namespace Weverca.GraphWalking
         protected override void beforePopCall()
         {
             Output.Dedent();
-            Output.ProgramPointInfo(getStackDescription()+" <---",CallStack.Peek.End);
+            Output.ProgramPointInfo(getStackDescription()+" <---", CallStack.Peek.End);
             printDelimiter('#');
         }
 

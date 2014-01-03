@@ -1,18 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework;
-using Weverca.Output;
+using Weverca.Output.Output;
 
-namespace Weverca.GraphWalking
+namespace Weverca.Output.GraphWalking
 {
     /// <summary>
     /// Base class for implementing output builders based on walking program point graphs
     /// </summary>
-    abstract class GraphWalkerBase
+    public abstract class GraphWalkerBase
     {
         #region Private fields
 
@@ -77,7 +74,7 @@ namespace Weverca.GraphWalking
         /// Rung graph walking with printing info into given output
         /// </summary>
         /// <param name="output">Output for info generated when walking graph</param>
-        internal void Run(OutputBase output)
+        public void Run(OutputBase output)
         {
             if (output == null)
             {

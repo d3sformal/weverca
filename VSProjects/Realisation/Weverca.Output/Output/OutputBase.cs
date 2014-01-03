@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework;
 
-namespace Weverca.Output
+namespace Weverca.Output.Output
 {
-    abstract class OutputBase
+    public abstract class OutputBase
     {
         /// <summary>
         /// Prefixes for comment lines
@@ -18,7 +15,7 @@ namespace Weverca.Output
         /// <summary>
         /// Prefixes for hint texts
         /// </summary>
-        static List<string> _hintPrefixes=new List<string>(){"#"};
+        static List<string> _hintPrefixes = new List<string>() { "#" };
 
         /// <summary>
         /// Current level of indentation
@@ -81,7 +78,7 @@ namespace Weverca.Output
         /// <summary>
         /// Increase indentation level for next output
         /// </summary>
-        internal void Indent()
+        public void Indent()
         {
             ++_indentationLevel;
             setIndentation(_indentationLevel);
@@ -90,7 +87,7 @@ namespace Weverca.Output
         /// <summary>
         /// Decreates indentation level for next output
         /// </summary>
-        internal void Dedent()
+        public void Dedent()
         {
             if (_indentationLevel == 0)
             {
@@ -106,8 +103,8 @@ namespace Weverca.Output
         /// </summary>
         /// <param name="pointCaption">Caption which specifies program point</param>
         /// <param name="point">Program point which info is printed</param>
-        internal void ProgramPointInfo(string pointCaption, ProgramPointBase point)
-        {            
+        public void ProgramPointInfo(string pointCaption, ProgramPointBase point)
+        {
             headline("PROGRAM POINT: " + pointCaption);
 
             Indent();
@@ -131,7 +128,7 @@ namespace Weverca.Output
         /// Print given text as comment line
         /// </summary>
         /// <param name="text">Comment text</param>
-        internal void CommentLine(string text)
+        public void CommentLine(string text)
         {
             comment(text);
             line();
@@ -183,7 +180,7 @@ namespace Weverca.Output
             else
             {
                 info(text);
-            }            
+            }
         }
 
         /// <summary>
