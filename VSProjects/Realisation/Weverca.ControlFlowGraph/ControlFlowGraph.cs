@@ -95,6 +95,19 @@ namespace Weverca.ControlFlowGraph
             return new ControlFlowGraph(globalCode, String.Empty);
         }
 
+        public static ControlFlowGraph FromSource(string phpCode, string fileName)
+        {
+            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
+            SyntaxParser parser = new SyntaxParser(source_file, phpCode);
+            parser.Parse();
+            if (parser.Ast == null)
+            {
+                throw new ArgumentException("The specified input cannot be parsed.");
+            }
+
+            return new ControlFlowGraph(parser.Ast, fileName);
+        }
+
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
