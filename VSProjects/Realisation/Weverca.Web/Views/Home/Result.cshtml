@@ -12,3 +12,7 @@
         CodeMirror.fromTextArea(PhpCode, { mode: "php", lineNumbers: true, readOnly: true });
     });
 </script>
+
+<div>
+    @Model.Output.ToHtmlString()
+</div>

@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using Weverca.Web.Models;
 using Weverca.Web.Definitions;
+using System.Diagnostics;
 
 namespace Weverca.Web.Controllers
 {
@@ -34,11 +35,21 @@ namespace Weverca.Web.Controllers
             }
             else
             {
+                Stopwatch stopwatch = Stopwatch.StartNew();
+
                 model.AssignInputType();
-                //TODO: run analysis
-                var ppGraph = Analyzer.Run(model.PhpCode);
                 
-                return View("Result", new ResultModel(model.PhpCode));
+                var ppGraph = Analyzer.Run(model.PhpCode);
+
+                var output = new WebOutput();
+                var graphWalker = new CallGraphPrinter(ppGraph);
+
+                graphWalker.Run(output);
+
+                stopwatch.Stop();
+                Debug.WriteLine("Analysis took: {0}", stopwatch.Elapsed);
+                
+                return View("Result", new ResultModel(model.PhpCode, output.Output));
             }
         }
     }

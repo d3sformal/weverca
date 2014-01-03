@@ -48,6 +48,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
@@ -71,16 +73,8 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System.Net.Http">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.Net.Http.2.0.30506.0\lib\net40\System.Net.Http.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebApi.Client.4.0.30506.0\lib\net40\System.Net.Http.Formatting.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http.WebRequest">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.Net.Http.2.0.30506.0\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
@@ -118,6 +112,9 @@
     <Compile Include="Definitions\Analyzer.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ValueHelperController.cs" />
+    <Compile Include="Definitions\CallGraphPrinter.cs" />
+    <Compile Include="Definitions\NameResolver.cs" />
+    <Compile Include="Definitions\WebOutput.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -176,6 +173,10 @@
     <Content Include="Views\Home\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
+      <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Common.WebDefinitions\Common.WebDefinitions.csproj">
       <Project>{c7975503-5314-44c7-be79-6321c16a92a2}</Project>
       <Name>Common.WebDefinitions</Name>
@@ -195,6 +196,10 @@
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
       <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
       <Name>Weverca.MemoryModels</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.Output\Weverca.Output.csproj">
+      <Project>{d43d84c1-1686-48d4-8b9a-bad6860b6315}</Project>
+      <Name>Weverca.Output</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -9,9 +9,12 @@ namespace Weverca.Web.Models
     {
         public string PhpCode { get; private set; }
 
-        public ResultModel(string phpCode)
+        public string Output { get; private set; }
+
+        public ResultModel(string phpCode, string output)
         {
             PhpCode = phpCode;
+            Output = output;
         }
     }
 }
