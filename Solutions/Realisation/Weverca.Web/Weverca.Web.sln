@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.MemoryModels", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "..\..\..\External Sources\PhalangerOriginal\Source\ClassLibrary\ClassLibrary.csproj", "{D515E8F4-357C-4CAF-87C1-97D64C5F865A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Output", "..\..\..\VSProjects\Realisation\Weverca.Output\Weverca.Output.csproj", "{D43D84C1-1686-48D4-8B9A-BAD6860B6315}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{D515E8F4-357C-4CAF-87C1-97D64C5F865A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D515E8F4-357C-4CAF-87C1-97D64C5F865A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D515E8F4-357C-4CAF-87C1-97D64C5F865A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D43D84C1-1686-48D4-8B9A-BAD6860B6315}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D43D84C1-1686-48D4-8B9A-BAD6860B6315}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D43D84C1-1686-48D4-8B9A-BAD6860B6315}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D43D84C1-1686-48D4-8B9A-BAD6860B6315}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
