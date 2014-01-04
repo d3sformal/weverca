@@ -77,7 +77,7 @@ namespace Weverca.Web.Definitions
 
         protected override void line()
         {
-            Console.WriteLine();
+            output.AppendLine("<br />");
             needPrefix = true;
         }
         #endregion
@@ -94,7 +94,7 @@ namespace Weverca.Web.Definitions
                 needPrefix = false;
             }
             output.Append(text);
-            output.AppendLine("</font><br />");
+            output.Append("</font>");
         }
 
         #endregion
