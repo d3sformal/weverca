@@ -38,6 +38,11 @@ namespace Weverca.AnalysisFramework
         private readonly CreateSnapshot _createSnapshotDelegate;
 
         /// <summary>
+        /// Visitor used for visiting analyzed graph
+        /// </summary>
+        private NextPhaseVisitor _visitor;
+
+        /// <summary>
         /// Available expression evaluator
         /// </summary>
         private ExpressionEvaluatorBase _expressionEvaluator;
@@ -122,14 +127,6 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created memory assistant</returns>
         protected abstract MemoryAssistantBase createAssistant();
 
-        /// <summary>
-        /// Process flow through in next phase.
-        /// TODO: Would it be better to have another FlowThrough on point?, some visitors,..??
-        /// TODO: How to use resolvers,...?
-        /// </summary>
-        /// <param name="point">Flowed point</param>
-        protected abstract void flowThrough(ProgramPointBase point);
-
         #endregion
 
         /// <summary>
@@ -174,12 +171,69 @@ namespace Weverca.AnalysisFramework
             {
                 var point = _workQueue.Dequeue();
 
-                var inputs = getInputs(point);
-                throw new NotImplementedException("How should work extending of inputs?");
+                var inputs = getInputPoints(point);
+                extendInput(point, inputs);
 
+                flowThrough(point);
 
-                //during flow through are enqueued all needed flow children
-                throw new NotImplementedException("Flowing through point in another way as in forward analysis");
+                if (hasChanges(point))
+                {
+                    enqueueChildren(point);
+                }
+            }
+        }
+
+        private bool hasChanges(ProgramPointBase point)
+        {
+            var outSet = getOutSet(point);
+            return outSet.HasChanges;
+        }
+
+        private void flowThrough(ProgramPointBase point)
+        {
+            prepare(point);
+            point.Accept(_visitor);
+            commit(point);
+        }
+
+        private void prepare(ProgramPointBase point)
+        {
+            point.SetMode(SnapshotMode.InfoLevel);
+
+            var outSet = getOutSet(point);
+            outSet.StartTransaction();
+        }
+
+        private void commit(ProgramPointBase point)
+        {
+            point.SetMode(SnapshotMode.InfoLevel);
+
+            var outSet = getOutSet(point);
+            outSet.CommitTransaction();
+        }
+
+        private void extendInput(ProgramPointBase point, IEnumerable<ProgramPointBase> inputs)
+        {
+            var inSet = getInSet(point);
+
+            var inputSets = new List<FlowInputSet>();
+            foreach (var input in inputs)
+            {
+                var outSet = getOutSet(input);
+                inputSets.Add(outSet);
+            }
+
+            inSet.StartTransaction();
+            inSet.Extend(inputSets.ToArray());
+            inSet.CommitTransaction();
+        }
+
+        private void enqueueChildren(ProgramPointBase point)
+        {
+            var children = getOutputPoints(point);
+            foreach (var child in children)
+            {
+                enqueue(child);
             }
         }
 
@@ -191,15 +245,30 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        private FlowOutputSet getInSet(ProgramPointBase point)
+        {
+            throw new NotImplementedException();
+        }
+
+        private FlowOutputSet getOutSet(ProgramPointBase point)
+        {
+            throw new NotImplementedException();
+        }
+
+        private IEnumerable<ProgramPointBase> getOutputPoints(ProgramPointBase point)
+        {
+            throw new NotImplementedException();
+        }
+
+        private IEnumerable<ProgramPointBase> getInputPoints(ProgramPointBase point)
+        {
+            throw new NotImplementedException();
+        }
 
         #endregion
 
         #region Private utilities
 
-        private IEnumerable<ProgramPointBase> getInputs(ProgramPointBase point)
-        {
-            throw new NotImplementedException();
-        }
 
         /// <summary>
         /// Initialize all resolvers and services
@@ -210,7 +279,6 @@ namespace Weverca.AnalysisFramework
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
         }
-
 
         /// <summary>
         /// Throws exception when analyze has been already proceeded
