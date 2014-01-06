@@ -28,6 +28,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// </summary>
     public class Snapshot : SnapshotBase, IReferenceHolder
     {
+        private static int SNAP_ID = 0;
+        private int snapId = SNAP_ID++;
+
+
         /// <summary>
         /// Identifier for the bottom of the call stack. At this level the global variables are stored.
         /// </summary>
@@ -89,6 +93,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             StringBuilder builder = new StringBuilder();
 
+            builder.Append(snapId.ToString() + "::"+ Data.ToString() +"\n");
             foreach (var index in Data.IndexData)
             {
                 builder.Append(index.ToString());
@@ -189,8 +194,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void initializeArray(AssociativeArray createdArray)
         {
-            ArrayDescriptor descriptor = new ArrayDescriptor(createdArray);
+            TemporaryIndex arrayIndex = CreateTemporary();
+
+            ArrayDescriptor descriptor = new ArrayDescriptor(createdArray, arrayIndex);
+            Data.NewIndex(descriptor.UnknownIndex);
             Data.SetDescriptor(createdArray, descriptor);
+            Data.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
         }
 
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
@@ -321,7 +330,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
-            if (!Data.IsFunctionDefined(functionName))
+            if (Data.IsFunctionDefined(functionName))
             {
                 return Data.GetFunction(functionName);
             }
@@ -788,16 +797,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             AssociativeArray value = this.CreateArray();
-            ArrayDescriptor descriptor = Data.GetDescriptor(value)
+            ArrayDescriptor oldDescriptor = Data.GetDescriptor(value);
+            closeTemporaryArray(oldDescriptor);
+            
+            ArrayDescriptor newDescriptor = oldDescriptor
                 .Builder()
                 .SetParentVariable(parentIndex)
                 .SetUnknownField(parentIndex.CreateUnknownIndex())
                 .Build();
 
-            Data.NewIndex(descriptor.UnknownIndex);
-            Data.SetDescriptor(value, descriptor);
+            Data.NewIndex(newDescriptor.UnknownIndex);
+            Data.SetDescriptor(value, newDescriptor);
             Data.SetArray(parentIndex, value);
             return value;
+        }
+
+        private void closeTemporaryArray(ArrayDescriptor descriptor)
+        {
+            TemporaryIndex index = descriptor.ParentVariable as TemporaryIndex;
+
+            if (index != null)
+            {
+                Data.SetMemoryEntry(index, new MemoryEntry());
+                ReleaseTemporary(index);
+            }
+
+            ReleaseMemory(descriptor.UnknownIndex);
         }
 
         /// <summary>
@@ -997,7 +1022,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             CallLevel = snapshot.CallLevel;
             ThisObject = snapshot.ThisObject;
 
-            Data = snapshot.Data;
+            Data = new SnapshotData(this, snapshot.Data);
         }
 
         /// <summary>

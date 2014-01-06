@@ -165,7 +165,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private Value mergeArrays(MergeOperation operation)
         {
-            ArrayDescriptorBuilder builder = new ArrayDescriptor().Builder();
+            ArrayDescriptorBuilder builder = new ArrayDescriptorBuilder();
             builder.SetParentVariable(operation.TargetIndex);
             builder.SetUnknownField(operation.TargetIndex.CreateUnknownIndex());
 

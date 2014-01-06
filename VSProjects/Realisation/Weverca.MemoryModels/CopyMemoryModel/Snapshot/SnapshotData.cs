@@ -10,6 +10,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class SnapshotData
     {
+        static int DATA_ID = 0;
+        int dataId = DATA_ID++;
+
+        public override string ToString()
+        {
+            return dataId.ToString();
+        }
+
         internal Dictionary<AssociativeArray, ArrayDescriptor> ArrayDescriptors { get; private set; }
         internal Dictionary<ObjectValue, ObjectDescriptor> ObjectDescriptors { get; private set; }
 

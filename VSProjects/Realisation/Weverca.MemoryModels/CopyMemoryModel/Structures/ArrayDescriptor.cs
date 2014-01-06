@@ -37,22 +37,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
         /// </summary>
-        public ArrayDescriptor(AssociativeArray arrayValue)
-        {
-            Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
-            ArrayValue = arrayValue;
-            ParentVariable = null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
-        /// </summary>
         /// <param name="parentVariable">The parent variable.</param>
-        public ArrayDescriptor(MemoryIndex parentVariable)
+        public ArrayDescriptor(AssociativeArray arrayValue, MemoryIndex parentVariable)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
             ParentVariable = parentVariable;
             UnknownIndex = parentVariable.CreateUnknownIndex();
+            ArrayValue = arrayValue;
+
+            if (arrayValue == null)
+            {
+                throw new Exception("Null array in descriptor");
+            }
         }
 
         /// <summary>
@@ -67,12 +63,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ArrayValue = arrayDescriptorBuilder.ArrayValue;
         }
 
-        public ArrayDescriptor()
-        {
-            Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
-            ArrayValue = null;
-            ParentVariable = null;
-        }
+
 
         /// <summary>
         /// Creates new builder to modify this descriptor 
@@ -128,6 +119,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ArrayValue = arrayDescriptor.ArrayValue;
         }
 
+        public ArrayDescriptorBuilder()
+        {
+            Indexes = new Dictionary<string, MemoryIndex>();
+            ArrayValue = null;
+            ParentVariable = null;
+        }
+
         /// <summary>
         /// Adds the specified container index.
         /// </summary>
@@ -146,6 +144,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <returns></returns>
         public ArrayDescriptor Build()
         {
+            if (ArrayValue == null)
+            {
+                throw new Exception("Null array in descriptor");
+            }
+
             return new ArrayDescriptor(this);
         }
 
@@ -157,6 +160,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal ArrayDescriptorBuilder SetArrayValue(AssociativeArray arrayValue)
         {
+            if (arrayValue == null)
+            {
+                throw new Exception("Null array in descriptor");
+            }
+
             ArrayValue = arrayValue;
             return this;
         }
