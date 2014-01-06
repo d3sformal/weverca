@@ -25,7 +25,7 @@ if($unknown){
 if($unknown){
     $str='f1a';
 }
-".AssertVariable("str").HasUndefinedValue().HasUndefinedOrValues("f1a");
+".AssertVariable("str").HasUndefinedAndValues("f1a");
 
         readonly static TestCase UnaryNegation_CASE = @"
 $result=42;
