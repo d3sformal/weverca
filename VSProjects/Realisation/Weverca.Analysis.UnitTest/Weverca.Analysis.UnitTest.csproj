@@ -57,6 +57,7 @@
     <Compile Include="FlowResolverTests\TestCase.cs" />
     <Compile Include="FlowResolverTests\TestCaseResult.cs" />
     <Compile Include="FlowResolverTests\ValueFactory.cs" />
+    <Compile Include="IncludeTests.cs" />
     <Compile Include="NativeFuntionTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="NativeConstantTester.cs" />
@@ -74,6 +75,10 @@
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Common\Weverca.Common.csproj">
+      <Project>{3cee322a-b262-453b-9a92-47d39807e166}</Project>
+      <Name>Weverca.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
       <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
@@ -89,6 +94,10 @@
     <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
       <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
       <Name>Weverca.Analysis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca\Weverca.csproj">
+      <Project>{4a26a734-9a13-4b70-b2e1-7c448d4c73ac}</Project>
+      <Name>Weverca</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

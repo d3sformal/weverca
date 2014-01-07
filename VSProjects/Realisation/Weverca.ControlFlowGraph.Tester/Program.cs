@@ -6,6 +6,7 @@ using PHP.Core.AST;
 using PHP.Core.Parsers;
 using Weverca.Parsers;
 using Weverca.ControlFlowGraph;
+using Weverca.Common;
 
 namespace Weverca.ControlFlowGraph.Tester
 {
@@ -27,22 +28,6 @@ namespace Weverca.ControlFlowGraph.Tester
 
     class Program
     {
-        /// <summary>
-        /// Relative path to the trunk folder in SVN
-        /// MUST BE CHANGED IN CASE OF CHANDES IN SVN DIRECTORY STRUCTURE
-        /// </summary>
-        public static readonly string TRUNK_PATH = @"..\..\..\..\..\";
-
-        /// <summary>
-        /// Path to the graphviz tool
-        /// </summary>
-        public static readonly string GRAPHVIZ_PATH = TRUNK_PATH + @"Tools\dot_graphviz\dot.exe";
-
-        /// <summary>
-        /// Directory with PHP sources
-        /// </summary>
-        public static readonly string PHP_SOURCES_DIR = TRUNK_PATH + @"PHP_sources\";
-
         //Used file extensions
         public static readonly string PHP_FILE_EXTENSION = ".php";
         public static readonly string GRAPH_FILE_EXTENSION = ".cfg";
@@ -98,7 +83,7 @@ namespace Weverca.ControlFlowGraph.Tester
 
             //Runs the graphviz component
             System.Diagnostics.Process imageMaker = new System.Diagnostics.Process();
-            imageMaker.StartInfo.FileName = GRAPHVIZ_PATH;
+            imageMaker.StartInfo.FileName = TrunkStructure.GRAPHVIZ_PATH;
             imageMaker.StartInfo.Arguments = "-Tpng " + cfgFileName;
             imageMaker.StartInfo.UseShellExecute = false;
             imageMaker.StartInfo.RedirectStandardOutput = true;
@@ -152,7 +137,7 @@ namespace Weverca.ControlFlowGraph.Tester
             //Or just process folder with test PHP sources
             else
             {
-                ProcessDirectory(PHP_SOURCES_DIR);
+                ProcessDirectory(TrunkStructure.PHP_SOURCES_DIR);
             }
         }
     }
