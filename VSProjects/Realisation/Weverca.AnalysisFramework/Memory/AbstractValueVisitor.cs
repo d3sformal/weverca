@@ -84,7 +84,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitGenericNumericValue(value);
         }
 
-        #endregion
+        #endregion Numeric values
 
         /// <inheritdoc />
         public virtual void VisitStringValue(StringValue value)
@@ -92,7 +92,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitGenericScalarValue(value);
         }
 
-        #endregion
+        #endregion Scalar values
 
         #region Compound values
 
@@ -114,7 +114,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitCompoundValue(value);
         }
 
-        #endregion
+        #endregion Compound values
 
         /// <inheritdoc />
         public virtual void VisitResourceValue(ResourceValue value)
@@ -128,7 +128,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitConcreteValue(value);
         }
 
-        #endregion
+        #endregion Concrete values
 
         #region Interval values
 
@@ -157,7 +157,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitGenericIntervalValue(value);
         }
 
-        #endregion
+        #endregion Interval values
 
         #region Abstract values
 
@@ -167,7 +167,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitValue(value);
         }
 
-        #region Abstract primitive values
+        #region Abstract scalar values
 
         /// <inheritdoc />
         public virtual void VisitAnyScalarValue(AnyScalarValue value)
@@ -207,7 +207,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitAnyNumericValue(value);
         }
 
-        #endregion
+        #endregion Abstract numeric values
 
         /// <inheritdoc />
         public virtual void VisitAnyStringValue(AnyStringValue value)
@@ -215,7 +215,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitAnyScalarValue(value);
         }
 
-        #endregion
+        #endregion Abstract scalar values
 
         #region Abstract compound values
 
@@ -237,7 +237,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitAnyCompoundValue(value);
         }
 
-        #endregion
+        #endregion Abstract compound values
 
         /// <inheritdoc />
         public virtual void VisitAnyResourceValue(AnyResourceValue value)
@@ -245,7 +245,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitAnyValue(value);
         }
 
-        #endregion
+        #endregion Abstract values
 
         #region Function values
 
@@ -279,7 +279,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitFunctionValue(value);
         }
 
-        #endregion
+        #endregion Function values
 
         #region Type values
 
@@ -295,7 +295,7 @@ namespace Weverca.AnalysisFramework.Memory
             VisitTypeValue(value);
         }
 
-        #endregion
+        #endregion Type values
 
         #region Special values
 
@@ -318,11 +318,11 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        public virtual void VisitInfoValue<T>(InfoValue<T> value)
+        public virtual void VisitGenericInfoValue<T>(InfoValue<T> value)
         {
             VisitInfoValue(value);
         }
 
-        #endregion
+        #endregion Special values
     }
 }

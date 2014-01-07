@@ -5,175 +5,94 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.UnitTest.FlowResolverTests
 {
-    // TODO: Why not to use AbstractValueVisitor ? (e.g exact resolving of function values is not needed for binary operations)
-    internal class EqualsValueVisitor : IValueVisitor
+    internal class EqualsValueVisitor : AbstractValueVisitor
     {
         private Value expectedValue;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EqualsValueVisitor" /> class.
+        /// </summary>
+        /// <param name="expectedValue"></param>
         public EqualsValueVisitor(Value expectedValue)
         {
             this.expectedValue = expectedValue;
         }
 
-        #region IValueVisitor Members
+        #region AbstractValueVisitor Members
 
-        public void VisitValue(Value value)
+        /// <inheritdoc />
+        /// <exception cref="NotImplementedException">Thrown always</exception>
+        public override void VisitValue(Value value)
         {
             throw new NotImplementedException();
         }
 
-        public void VisitObjectValue(ObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAssociativeArray(AssociativeArray value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitSpecialValue(SpecialValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAliasValue(AliasValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyValue(AnyValue value)
+        /// <inheritdoc />
+        public override void VisitAnyValue(AnyValue value)
         {
             Assert.IsNotNull(expectedValue as AnyValue);
         }
 
-        public void VisitUndefinedValue(UndefinedValue value)
+        /// <inheritdoc />
+        public override void VisitUndefinedValue(UndefinedValue value)
         {
             Assert.IsNotNull(expectedValue as UndefinedValue);
         }
 
-        public virtual void VisitResourceValue(ResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyScalarValue(AnyScalarValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyStringValue(AnyStringValue value)
+        /// <inheritdoc />
+        public override void VisitAnyStringValue(AnyStringValue value)
         {
             Assert.IsNotNull(expectedValue as AnyStringValue);
         }
 
-        public void VisitAnyBooleanValue(AnyBooleanValue value)
-        {
-            throw new NotImplementedException();
-        }
+        #region Scalar values
 
-        public void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyObjectValue(AnyObjectValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyArrayValue(AnyArrayValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyResourceValue(AnyResourceValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue(InfoValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitInfoValue<T>(InfoValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitScalarValue(ScalarValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitGenericScalarValue<T>(ScalarValue<T> value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFunctionValue(FunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitTypeValue(TypeValue typeValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitFloatValue(FloatValue value)
+        /// <inheritdoc />
+        public override void VisitFloatValue(FloatValue value)
         {
             var expected = expectedValue as FloatValue;
             Assert.IsNotNull(expectedValue);
             Assert.AreEqual(expected.Value, value.Value);
         }
 
-        public void VisitBooleanValue(BooleanValue value)
+        /// <inheritdoc />
+        public override void VisitBooleanValue(BooleanValue value)
         {
             var expected = expectedValue as BooleanValue;
             Assert.IsNotNull(expectedValue);
             Assert.AreEqual(expected.Value, value.Value);
         }
 
-        public void VisitStringValue(StringValue value)
+        /// <inheritdoc />
+        public override void VisitStringValue(StringValue value)
         {
             StringValue expected = expectedValue as StringValue;
             Assert.IsNotNull(expectedValue);
             Assert.AreEqual(expected.Value, value.Value);
         }
 
-        public void VisitLongintValue(LongintValue value)
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
         {
             var expected = expectedValue as LongintValue;
             Assert.IsNotNull(expectedValue);
             Assert.AreEqual(expected.Value, value.Value);
         }
 
-        public void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitIntegerValue(IntegerValue value)
+        /// <inheritdoc />
+        public override void VisitIntegerValue(IntegerValue value)
         {
             var expected = expectedValue as IntegerValue;
             Assert.IsNotNull(expectedValue);
             Assert.AreEqual(expected.Value, value.Value);
         }
 
-        public void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-            where T : IComparable, IComparable<T>, IEquatable<T>
-        {
-            throw new NotImplementedException();
-        }
+        #endregion Scalar values
 
-        public void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        #region Interval values
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
             var expected = expectedValue as IntegerIntervalValue;
             Assert.IsNotNull(expectedValue);
@@ -181,7 +100,8 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
             Assert.AreEqual(expected.End, value.End);
         }
 
-        public void VisitIntervalLongintValue(LongintIntervalValue value)
+        /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             var expected = expectedValue as LongintIntervalValue;
             Assert.IsNotNull(expectedValue);
@@ -189,7 +109,8 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
             Assert.AreEqual(expected.End, value.End);
         }
 
-        public void VisitIntervalFloatValue(FloatIntervalValue value)
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             var expected = expectedValue as FloatIntervalValue;
             Assert.IsNotNull(expectedValue);
@@ -197,57 +118,8 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
             Assert.AreEqual(expected.End, value.End);
         }
 
-        public void VisitSourceFunctionValue(SourceFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion Interval values
 
-        public void VisitSourceMethodValue(SourceMethodValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeAnalyzerValue(NativeAnalyzerValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitLambdaFunctionValue(LambdaFunctionValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitNativeTypeValue(TypeValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        public void VisitConcreteValue(ConcreteValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitGenericNumericValue<T>(NumericValue<T> value)
-            where T : IComparable, IComparable<T>, IEquatable<T>
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitCompoundValue(CompoundValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyNumericValue(AnyNumericValue value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void VisitAnyCompoundValue(AnyCompoundValue value)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion AbstractValueVisitor Members
     }
 }

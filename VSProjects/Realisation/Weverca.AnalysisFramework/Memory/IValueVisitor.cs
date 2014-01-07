@@ -72,7 +72,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The floating-point number to visit</param>
         void VisitFloatValue(FloatValue value);
 
-        #endregion
+        #endregion Numeric values
 
         /// <summary>
         /// Visits <see cref="StringValue"/>
@@ -80,7 +80,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The Unicode string representation to visit</param>
         void VisitStringValue(StringValue value);
 
-        #endregion
+        #endregion Scalar values
 
         #region Compound values
 
@@ -102,7 +102,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The array to visit</param>
         void VisitAssociativeArray(AssociativeArray value);
 
-        #endregion
+        #endregion Compound values
 
         /// <summary>
         /// Visits <see cref="ResourceValue"/>
@@ -116,7 +116,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The undefined/null value to visit</param>
         void VisitUndefinedValue(UndefinedValue value);
 
-        #endregion
+        #endregion Concrete values
 
         #region Interval values
 
@@ -146,7 +146,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The interval of floating-point numbers to visit</param>
         void VisitIntervalFloatValue(FloatIntervalValue value);
 
-        #endregion
+        #endregion Interval values
 
         #region Abstract values
 
@@ -196,7 +196,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The abstract interpretation of floating-point numbers type to visit</param>
         void VisitAnyFloatValue(AnyFloatValue value);
 
-        #endregion
+        #endregion Abstract numeric values
 
         /// <summary>
         /// Visits <see cref="AnyStringValue"/>
@@ -204,7 +204,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The abstract interpretation of string type to visit</param>
         void VisitAnyStringValue(AnyStringValue value);
 
-        #endregion
+        #endregion Abstract scalar values
 
         #region Abstract compound values
 
@@ -226,7 +226,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The abstract interpretation of all arrays to visit</param>
         void VisitAnyArrayValue(AnyArrayValue value);
 
-        #endregion
+        #endregion Abstract compound values
 
         /// <summary>
         /// Visits <see cref="AnyResourceValue"/>
@@ -234,7 +234,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">The abstract interpretation of resource reference to visit</param>
         void VisitAnyResourceValue(AnyResourceValue value);
 
-        #endregion
+        #endregion Abstract values
 
         #region Function values
 
@@ -268,7 +268,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value"></param>
         void VisitLambdaFunctionValue(LambdaFunctionValue value);
 
-        #endregion
+        #endregion Function values
 
         #region Type values
 
@@ -284,7 +284,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value"></param>
         void VisitNativeTypeValue(TypeValue value);
 
-        #endregion
+        #endregion Type values
 
         #region Special values
 
@@ -311,8 +311,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <typeparam name="T">Type of meta information</typeparam>
         /// <param name="value"></param>
-        void VisitInfoValue<T>(InfoValue<T> value);
+        void VisitGenericInfoValue<T>(InfoValue<T> value);
 
-        #endregion
+        #endregion Special values
     }
 }

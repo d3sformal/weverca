@@ -7,11 +7,13 @@ namespace Weverca.AnalysisFramework.Memory
     /// </summary>
     public class SpecialValue : Value
     {
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return GetType().GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value obj)
         {
             return GetType() == obj.GetType();
@@ -26,7 +28,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 
@@ -44,6 +46,10 @@ namespace Weverca.AnalysisFramework.Memory
     {
         public readonly object RawData;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InfoValue" /> class.
+        /// </summary>
+        /// <param name="rawData"></param>
         internal InfoValue(object rawData)
         {
             RawData = rawData;
@@ -55,20 +61,22 @@ namespace Weverca.AnalysisFramework.Memory
             visitor.VisitInfoValue(this);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return RawData.GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value obj)
         {
-            var o = obj as InfoValue;
-            if (o == null)
+            var infoValue = obj as InfoValue;
+            if (infoValue == null)
             {
                 return false;
             }
 
-            return o.RawData.Equals(RawData);
+            return infoValue.RawData.Equals(RawData);
         }
     }
 
@@ -82,6 +90,10 @@ namespace Weverca.AnalysisFramework.Memory
     {
         public readonly T Data;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InfoValue{T}" /> class.
+        /// </summary>
+        /// <param name="data"></param>
         internal InfoValue(T data)
             : base(data)
         {
@@ -91,7 +103,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
-            visitor.VisitInfoValue<T>(this);
+            visitor.VisitGenericInfoValue(this);
         }
 
         public override string ToString()
@@ -102,7 +114,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }
