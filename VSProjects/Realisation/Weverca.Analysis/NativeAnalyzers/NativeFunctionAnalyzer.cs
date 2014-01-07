@@ -380,7 +380,6 @@ namespace Weverca.Analysis
     abstract class NativeFunctionAnalyzerHelper
     {
         protected List<NativeFunction> nativeFunctions;
-        protected static readonly VariableName returnVariable = new VariableName(".return");
 
         public NativeFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions)
         {
@@ -419,7 +418,7 @@ namespace Weverca.Analysis
             // Compute result
             MemoryEntry functionResult = new MemoryEntry(ComputeResult(flow, arguments).ToArray());
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(argumentValues, functionResult.PossibleValues));
-            flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, functionResult);
+            flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
 
             List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, argumentValues, nativeFunctions);
 
@@ -522,7 +521,6 @@ namespace Weverca.Analysis
     class SpecialFunctionsImplementations
     {
         private List<NativeFunction> nativeFunctions;
-        private static readonly VariableName returnVariable = new VariableName(".return");
 
         public SpecialFunctionsImplementations(List<NativeFunction> nativeFunctions)
         {
@@ -641,7 +639,7 @@ namespace Weverca.Analysis
             {
                 possibleValues.Add(flow.OutSet.CreateBool(false));
             }
-            flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(possibleValues));
+            flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(possibleValues));
         }
 
         //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
@@ -667,12 +665,12 @@ namespace Weverca.Analysis
                     {
                         values = UserDefinedConstantHandler.GetConstant(flow.OutSet, name).PossibleValues.ToList();
                     }
-                    flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(values));
+                    flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(values));
                 }
             }
             else
             {
-                flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.UndefinedValue));
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.UndefinedValue));
             }
         }
 
@@ -784,11 +782,11 @@ namespace Weverca.Analysis
                     result.Add(flow.OutSet.CreateBool(false));
                 }
 
-                flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(result));
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(result));
             }
             else
             {
-                flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.AnyBooleanValue));
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.AnyBooleanValue));
             }
         }
 

@@ -21,7 +21,6 @@ namespace Weverca.Analysis
     public class FunctionResolver : FunctionResolverBase
     {
         private static readonly VariableName currentFunctionName = new VariableName("$current_function");
-        private VariableName retrunVariable = new VariableName(".return");
         private NativeFunctionAnalyzer nativeFunctionAnalyzer;
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
@@ -178,7 +177,7 @@ namespace Weverca.Analysis
             {
                 var outSet = calls[0].Graph.End.OutSet;
                 applyHints(outSet);
-                return outSet.GetLocalControlVariable(retrunVariable).ReadMemory(outSet.Snapshot);
+                return outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
             }
             else
             {
@@ -189,7 +188,7 @@ namespace Weverca.Analysis
                 {
                     var outSet = call.Graph.End.OutSet;
                     applyHints(outSet);
-                    var returnValue = outSet.GetLocalControlVariable(retrunVariable).ReadMemory(outSet.Snapshot);
+                    var returnValue = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
                 }
 
@@ -284,7 +283,7 @@ namespace Weverca.Analysis
 
         public override MemoryEntry Return(MemoryEntry value)
         {
-            OutSet.GetLocalControlVariable(retrunVariable).WriteMemory(OutSet.Snapshot, value);
+            OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(OutSet.Snapshot, value);
             return value;
         }
 

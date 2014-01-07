@@ -56,15 +56,13 @@ namespace Weverca.AnalysisFramework.UnitTest
     internal class WevercaAnalysisTest : Weverca.Analysis.ForwardAnalysis, TestAnalysisSettings
     {
         private readonly WevercaFlowResolverTest _flowResolver;
-        private readonly EnvironmentInitializer _envinronmentInitializer;
         private readonly WevercaFunctionResolverTest _functionResolver;
 
         public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
             : base(entryMethodGraph, memoryModel, null)
         {
-            _envinronmentInitializer = initializer;
             _flowResolver = new WevercaFlowResolverTest();
-            _functionResolver = new WevercaFunctionResolverTest(_envinronmentInitializer);
+            _functionResolver = new WevercaFunctionResolverTest(initializer);
         }
 
         public void SetInclude(string fileName, string fileCode)
@@ -153,7 +151,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             base.InitializeCall(extensionGraph, arguments);
         }
 
-        // Note: implementation copied from SimpleFunctionResolver
+        // Note: implementation copied from SimpleFunctionResolver to make it possible to test also program point graph sharing
         protected override void addCallBranch(FunctionValue function)
         {
             var functionName = function.Name.Value;

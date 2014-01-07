@@ -46,8 +46,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
     class SimpleAnalysis : ForwardAnalysisBase, TestAnalysisSettings
     {
-        private readonly EnvironmentInitializer _initializer;
-
         private readonly SimpleFlowResolver _flowResolver;
 
         private readonly SimpleFunctionResolver _functionResolver;
@@ -55,9 +53,8 @@ namespace Weverca.AnalysisFramework.UnitTest
         public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, Weverca.MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
             : base(entryCFG, memoryModel.CreateSnapshot, null)
         {
-            _initializer = initializer;
             _flowResolver = new SimpleFlowResolver();
-            _functionResolver = new SimpleFunctionResolver(_initializer);
+            _functionResolver = new SimpleFunctionResolver(initializer);
         }
 
         #region Resolvers that are used during analysis

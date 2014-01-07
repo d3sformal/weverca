@@ -53,7 +53,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Singleton variable where return value is stored
         /// </summary>
-        private static readonly VariableName _returnValue = new VariableName(".return");
+        public static readonly VariableName ReturnValue = new VariableName(".return");
 
         /// <summary>
         /// Statistics object - here are stored statistics

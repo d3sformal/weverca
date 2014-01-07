@@ -13,6 +13,7 @@ namespace Weverca.AnalysisFramework.Expressions
     /// </summary>
     public abstract class FunctionResolverBase
     {
+
         /// <summary>
         /// Gets current flow controller available for function resolver
         /// </summary>
@@ -172,5 +173,32 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             Flow = flow;
         }
+
+        #region Function based storages handling
+
+        /// <summary>
+        /// Sets return storage to given value.
+        /// </summary>
+        /// <param name="outSet">the output set in which the return storage to be set is located</param>
+        /// <param name="returnValue">the value to be set to return storage</param>
+        public static void SetReturn(FlowOutputSet outSet, MemoryEntry returnValue)
+        {
+            var outSnapshot = outSet.Snapshot;
+            var returnVar = outSnapshot.GetLocalControlVariable(SnapshotBase.ReturnValue);
+            returnVar.WriteMemory(outSnapshot, returnValue);
+        }
+
+        /// <summary>
+        /// Gets the value of return storage located in given output set.
+        /// </summary>
+        /// <param name="outSet">the output set in which the return storage is located</param>
+        protected static MemoryEntry GetReturn(FlowOutputSet outSet)
+        {
+            var outSnapshot = outSet.Snapshot;
+            var returnVar = outSnapshot.GetLocalControlVariable(SnapshotBase.ReturnValue);
+            return returnVar.ReadMemory(outSnapshot);
+        }
+
+        #endregion
     }
 }

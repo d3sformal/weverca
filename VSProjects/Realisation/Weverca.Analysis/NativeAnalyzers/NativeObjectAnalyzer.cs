@@ -378,8 +378,6 @@ namespace Weverca.Analysis
 
         public static Dictionary<QualifiedName, ClassDeclBuilder> mutableNativeObjects;
 
-        public static readonly VariableName returnVariable = new VariableName(".return");
-
         public NativeObjectsAnalyzerHelper(NativeMethod method, QualifiedName objectName)
         {
             Method = method;
@@ -429,7 +427,7 @@ namespace Weverca.Analysis
 
 
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(inputValues, functionResult.PossibleValues));
-            flow.OutSet.GetLocalControlVariable(returnVariable).WriteMemory(flow.OutSet.Snapshot, functionResult);
+            flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
             var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, inputValues, (new NativeFunction[1] { Method }).ToList());
         }
 

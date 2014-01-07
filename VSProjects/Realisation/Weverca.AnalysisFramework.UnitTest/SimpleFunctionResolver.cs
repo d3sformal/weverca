@@ -15,8 +15,6 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     internal class SimpleFunctionResolver : FunctionResolverBase
     {
-        internal static readonly VariableName ReturnStorage = new VariableName("return");
-
         private readonly EnvironmentInitializer _environmentInitializer;
 
         /// <summary>
@@ -85,21 +83,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             return argVar;
         }
 
-
-        internal static void SetReturn(FlowOutputSet outSet, MemoryEntry returnValue)
-        {
-            var outSnapshot = outSet.Snapshot;
-            var returnVar = outSnapshot.GetLocalControlVariable(ReturnStorage);
-            returnVar.WriteMemory(outSnapshot, returnValue);
-        }
-
-
-        internal static MemoryEntry GetReturn(FlowOutputSet outSet)
-        {
-            var outSnapshot = outSet.Snapshot;
-            var returnVar = outSnapshot.GetLocalControlVariable(ReturnStorage);
-            return returnVar.ReadMemory(outSnapshot);
-        }
 
         #endregion
 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -51,7 +52,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             field.WriteMemory(outSnapshot, arg);
 
-            SimpleFunctionResolver.SetReturn(outSet, thisEntry.ReadMemory(outSnapshot));
+            FunctionResolverBase.SetReturn(outSet, thisEntry.ReadMemory(outSnapshot));
         }
 
         private static void _method_GetValue(FlowController flow)
@@ -62,7 +63,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             var thisEntry = outSet.GetVariable(thisIdentifier);
             var value = thisEntry.ReadField(outSnapshot, valueIdentifier);
 
-            SimpleFunctionResolver.SetReturn(outSet, value.ReadMemory(outSnapshot));
+            FunctionResolverBase.SetReturn(outSet, value.ReadMemory(outSnapshot));
         }
     }
 }
