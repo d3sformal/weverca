@@ -262,6 +262,16 @@ namespace Weverca.AnalysisFramework
             _outSet = output;
         }
 
+        /// <summary>
+        /// Reset program point so that next transaction will 
+        /// be marked with HasChanges
+        /// </summary>
+        internal void ResetInitialization()
+        {
+            _inSet.ResetInitialization();
+            _outSet.ResetInitialization();
+        }
+
         internal void SetServices(ForwardAnalysisServices services)
         {
             Services = services;
@@ -295,7 +305,5 @@ namespace Weverca.AnalysisFramework
         #endregion
 
         internal abstract void Accept(ProgramPointVisitor visitor);
-
-
     }
 }

@@ -83,7 +83,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             return argVar;
         }
 
-
         #endregion
 
         #region Call processing

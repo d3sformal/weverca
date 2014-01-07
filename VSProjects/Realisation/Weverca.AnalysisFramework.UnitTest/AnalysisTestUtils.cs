@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework.UnitTest.InfoLevelPhase;
+
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.Parsers;
@@ -299,6 +301,24 @@ namespace Weverca.AnalysisFramework.UnitTest
                 testCase.Assert(output);
             }
         }
+        
+        internal static void RunInfoLevelCase(TestCase testCase)
+        {
+            var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
+            var analyses = testCase.CreateAnalyses(cfg);
+
+            foreach (var analysis in analyses)
+            {
+                var output = GetEndPointOutSet(testCase, analysis);
+                testCase.Assert(output);
+
+                var ppg = analysis.ProgramPointGraph;
+                var nextPhase = new SimpleBackwardAnalysis(ppg);
+                nextPhase.Analyse();
+
+                throw new NotImplementedException("Assert");
+            }
+        }
 
         internal static void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>
@@ -328,7 +348,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
 
             var actualValues = new List<T>();
-            foreach (var value in entry.PossibleValues) {
+            foreach (var value in entry.PossibleValues)
+            {
                 //filter undefined values
                 if (value is UndefinedValue)
                     continue;
@@ -638,6 +659,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
 
             return analyses;
+        }
+
+        internal TestCase IsPropagatedTo(params string[] track)
+        {
+            //TODO propagation assert
+            return this;
         }
     }
 }

@@ -58,6 +58,8 @@ namespace Weverca.AnalysisFramework.Expressions
             get { return Flow.CurrentPartial; }
         }
 
+
+
         #region Template API methods for implementors
 
         /// <summary>

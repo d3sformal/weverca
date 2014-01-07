@@ -62,11 +62,6 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
 
-        /// <summary>
-        /// Entry script of the analysis
-        /// </summary>
-        private readonly FileInfo _entryScript;
-
         #endregion
 
         #region Analysis result API
@@ -135,11 +130,9 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
-        /// <param name="entryScript">The entry script of the analysis</param>
-        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, CreateSnapshot createSnapshotDelegate, AnalysisDirection direction, FileInfo entryScript)
+        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, CreateSnapshot createSnapshotDelegate, AnalysisDirection direction)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
-            _entryScript = entryScript;
 
             Direction = direction;
             AnalyzedProgramPointGraph = analyzedPPG;
@@ -164,7 +157,8 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private void analyse()
         {
-            enqueue(AnalyzedProgramPointGraph.Start);
+            var entryPoint = getEntryPoint(AnalyzedProgramPointGraph);
+            enqueue(entryPoint);
 
             //fix point computation
             while (_workQueue.Count > 0)
@@ -245,25 +239,83 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        #region Analysis direction handling
+
+        private ProgramPointBase getEntryPoint(ProgramPointGraph ppg)
+        {
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    return ppg.Start;
+                case AnalysisDirection.Backward:
+                    return ppg.End;
+                default:
+                    throwUnknownDirection();
+                    return null;
+            }
+        }
+
         private FlowOutputSet getInSet(ProgramPointBase point)
         {
-            throw new NotImplementedException();
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    return point.InSet as FlowOutputSet;
+                case AnalysisDirection.Backward:
+                    return point.OutSet;
+                default:
+                    throwUnknownDirection();
+                    return null;
+            }
         }
 
         private FlowOutputSet getOutSet(ProgramPointBase point)
         {
-            throw new NotImplementedException();
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    return point.OutSet;
+                case AnalysisDirection.Backward:
+                    return point.InSet as FlowOutputSet;
+                default:
+                    throwUnknownDirection();
+                    return null;
+            }
         }
 
         private IEnumerable<ProgramPointBase> getOutputPoints(ProgramPointBase point)
         {
-            throw new NotImplementedException();
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    return point.FlowChildren;
+                case AnalysisDirection.Backward:
+                    return point.FlowParents;
+                default:
+                    throwUnknownDirection();
+                    return null;
+            }
         }
 
         private IEnumerable<ProgramPointBase> getInputPoints(ProgramPointBase point)
         {
-            throw new NotImplementedException();
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    return point.FlowParents;
+                case AnalysisDirection.Backward:
+                    return point.FlowChildren;
+                default:
+                    throwUnknownDirection();
+                    return null;
+            }
         }
+
+        private void throwUnknownDirection()
+        {
+            throw new NotSupportedException("Analysis doesn't support: " + Direction);
+        }
+        #endregion
 
         #endregion
 
@@ -278,6 +330,20 @@ namespace Weverca.AnalysisFramework
             _expressionEvaluator = createExpressionEvaluator();
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
+
+            _visitor = new NextPhaseVisitor(_expressionEvaluator);
+
+            resetPoints(AnalyzedProgramPointGraph);
+        }
+
+        private void resetPoints(ProgramPointGraph ppg)
+        {
+            //TODO traverse all subgraphs
+
+            foreach (var point in ppg.Points)
+            {
+                point.ResetInitialization();
+            }
         }
 
         /// <summary>

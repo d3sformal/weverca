@@ -39,6 +39,11 @@ namespace Weverca.AnalysisFramework
             throw new NotImplementedException("UnImplemented point: " + point.ToString());
         }
 
+        public override void VisitEmpty(EmptyProgramPoint p)
+        {
+            //nothing to do
+        }
+
         public override void VisitAssign(AssignPoint p)
         {
             var lValue = p.LOperand.LValue;

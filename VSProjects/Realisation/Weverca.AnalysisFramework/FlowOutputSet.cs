@@ -57,6 +57,11 @@ namespace Weverca.AnalysisFramework
             ++_commitCount;
         }
 
+        internal void ResetInitialization()
+        {
+            _commitCount = 0;
+        }
+
         /// <summary>
         /// Start transaction on contained snapshot
         /// </summary>
@@ -165,12 +170,10 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateFloatInterval(start, end);
         }
 
-        [Obsolete("Probably deprecared. Store info into values. Use snapshot entry API instead")]
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return Snapshot.CreateInfo(data);
         }
-        [Obsolete("Probably deprecared. Store info into values. Use snapshot entry API instead")]
         public void SetInfo(Value value, params InfoValue[] info)
         {
             Snapshot.SetInfo(value, info);
@@ -322,6 +325,7 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
+
 
 
 

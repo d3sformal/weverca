@@ -51,17 +51,21 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AnalysisTestUtils.cs" />
-    <Compile Include="Deprecated_ForwardAnalysisTest.cs" />
-    <Compile Include="ForwardAnalysisTest.cs" />
+    <Compile Include="InfoLevelPhase\PropagationEvaluator.cs" />
+    <Compile Include="InfoLevelPhase\PropagationInfo.cs" />
+    <Compile Include="InfoLevelPhase\SimpleBackwardAnalysis.cs" />
+    <Compile Include="MemoryLevelPhase\Deprecated_ForwardAnalysisTest.cs" />
+    <Compile Include="MemoryLevelPhase\ForwardAnalysisTest.cs" />
+    <Compile Include="InfoLevelPhase\NextPhaseAnalysisTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SimpleAnalysis.cs" />
-    <Compile Include="SimpleAssistant.cs" />
-    <Compile Include="SimpleExceptionType.cs" />
-    <Compile Include="SimpleExpressionEvaluator.cs" />
-    <Compile Include="SimpleFlowResolver.cs" />
-    <Compile Include="SimpleFunctionResolver.cs" />
-    <Compile Include="SimpleNativeType.cs" />
-    <Compile Include="StringAnalysis.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleAnalysis.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleAssistant.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleExceptionType.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleExpressionEvaluator.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleFlowResolver.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleFunctionResolver.cs" />
+    <Compile Include="MemoryLevelPhase\SimpleNativeType.cs" />
+    <Compile Include="MemoryLevelPhase\StringAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
@@ -89,6 +93,7 @@
       <Name>Weverca.Parser</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>
