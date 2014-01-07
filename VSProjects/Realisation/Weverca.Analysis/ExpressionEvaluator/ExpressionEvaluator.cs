@@ -327,7 +327,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             bool isAlwaysConcrete;
             var arrays = ResolveArraysForIndex(enumeree, out isAlwaysArray, out isAlwaysConcrete);
 
-            var keys = new HashSet<ScalarValue>();
+            var keys = new HashSet<Value>();
             var values = new HashSet<Value>();
 
             foreach (var array in arrays)
@@ -356,15 +356,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (!isAlwaysConcrete)
             {
+                if (keyVariable != null)
+                {
+                    keys.Add(OutSet.AnyValue);
+                }
+
                 values.Add(OutSet.AnyValue);
             }
 
             // There could be no values because array could have no elements
             // However it is fine because in this case, foreach will not trace to loop body
-            var keyEntry = new MemoryEntry(keys);
-            keyVariable.WriteMemory(OutSnapshot, keyEntry);
-            var valueRntry = new MemoryEntry(values);
-            valueVariable.WriteMemory(OutSnapshot, valueRntry);
+            if (keys.Count > 0)
+            {
+                if (keyVariable != null)
+                {
+                    var keyEntry = new MemoryEntry(keys);
+                    keyVariable.WriteMemory(OutSnapshot, keyEntry);
+                }
+
+                Debug.Assert(values.Count > 0);
+                var valueEntry = new MemoryEntry(values);
+                valueVariable.WriteMemory(OutSnapshot, valueEntry);
+            }
 
             if (!isAlwaysArray)
             {

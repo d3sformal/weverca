@@ -262,11 +262,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 foreach (var rightValue in rightStrings)
                 {
                     // Get all flags from all combinations of both operands if they are tainted
-                    var flags = FlagsHandler.GetFlagsFromValues(leftValue, rightValue);
-                    var flagInfo = new Flag(flags);
                     var taintedResult = OutSet.CreateString(string.Concat(leftValue.Value,
                         rightValue.Value));
-                    values.Add(taintedResult.SetInfo(flagInfo));
+
+                    if ((leftValue.GetInfo<Flag>() != null) || (rightValue.GetInfo<Flag>() != null))
+                    {
+                        var flags = FlagsHandler.GetFlagsFromValues(leftValue, rightValue);
+                        var flagInfo = new Flag(flags);
+                        values.Add(taintedResult.SetInfo(flagInfo));
+                    }
+                    else
+                    {
+                        values.Add(taintedResult);
+                    }
                 }
             }
 
@@ -373,7 +381,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             // TODO: This is possible fatal error
             result = null;
-            abstractResult = OutSet.AnyStringValue;
+
+            if (value.GetInfo<Flag>() != null)
+            {
+                var flags = FlagsHandler.GetFlagsFromValues(value);
+                var flagInfo = new Flag(flags);
+                abstractResult = (AnyStringValue)OutSet.AnyStringValue.SetInfo(flagInfo);
+            }
+            else
+            {
+                abstractResult = OutSet.AnyStringValue;
+            }
         }
 
         #region Abstract scalar values
