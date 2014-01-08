@@ -88,7 +88,6 @@ namespace Weverca.Analysis.UnitTest
             Operations.Concat,
         };
 
-        /* TODO: Not used for now
         private static readonly string binaryOperationCode = @"
             $result = $inputVariable == $inputVariable;
             $result = $inputVariable === $inputVariable;
@@ -113,7 +112,6 @@ namespace Weverca.Analysis.UnitTest
             $result = $inputVariable >> $inputVariable;
             $result = $inputVariable.$inputVariable;
         ";
-         */
 
         private static readonly string[] inputVariables = new string[]
         {
@@ -171,7 +169,40 @@ namespace Weverca.Analysis.UnitTest
             new AnyResourceValue(),
         };
 
+        /// <summary>
+        /// Input values that are used for testing binary operations
+        /// </summary>
+        private static readonly Value[] inputValuesBinary = new Value[]
+        {
+            new BooleanValue(false),
+            new BooleanValue(true),
+            new IntegerValue(1618033),
+            //new LongintValue(-273L),
+            new FloatValue(3.141592),
+            new FloatValue(-271000000000000000000.0),
+            new StringValue("Weverka"),
+            new StringValue("256"),
+            new ObjectValue(),
+            new AssociativeArray(),
+            // new ResourceValue(),
+            new UndefinedValue(),
+            new IntegerIntervalValue(-541, 954),
+            //new LongintIntervalValue(-789, -111),
+            new FloatIntervalValue(1057.785, 2457.445),
+           
+            new AnyValue(),
+            new AnyBooleanValue(),
+            new AnyIntegerValue(),
+            new AnyLongintValue(),
+            new AnyFloatValue(),
+            new AnyStringValue(),
+            new AnyObjectValue(),
+            new AnyArrayValue(),
+            new AnyResourceValue(),
+        };
+
         private static readonly MemoryEntry inputEntry = new MemoryEntry(inputValues);
+        private static readonly MemoryEntry inputEntryBinary = new MemoryEntry(inputValuesBinary);
 
         private static readonly Value[] stringConversionResults = new Value[]
         {
@@ -267,22 +298,48 @@ namespace Weverca.Analysis.UnitTest
             TestEvaluationResults("${0} = (string)${0};\n", stringConversionResults);
         }
 
+        /// <summary>
+        /// Tests whether the increment of all variables inputVariables with values inputValues results
+        /// in values results.
+        /// </summary>
         [TestMethod]
         public void IncrementEvaluation()
         {
             TestEvaluationResults("++${0};\n", incrementResults);
         }
 
+        /// <summary>
+        /// Tests whether the decrement of all variables inputVariables with values inputValues results
+        /// in values results.
+        /// </summary>
         [TestMethod]
         public void DecrementEvaluation()
         {
             TestEvaluationResults("--${0};\n", decrementResults);
         }
 
+        /// <summary>
+        /// Tests whether all operations defined in unaryOperationCode are supported
+        /// with all values in inputValues.
+        /// Note that this test tests only whether all operations are supported, does not test whether
+        /// the results are correct.
+        /// </summary>
         [TestMethod]
-        public void UnaryOperationEvaluator()
+        public void AreUnaryOperationsImplemented()
         {
-            TestEvaluation(unaryOperationCode);
+            TestEvaluation(unaryOperationCode, inputEntry);
+        }
+
+        /// <summary>
+        /// Tests whether all operations defined in binaryOperationCode are supported
+        /// with all values in inputValuesBinary.
+        /// Note that this test tests only whether all operations are supported, does not test whether
+        /// the results are correct.
+        /// </summary>
+        [TestMethod]
+        public void AreBinaryOperationsImplemented()
+        {
+            TestEvaluation(binaryOperationCode, inputEntryBinary);
         }
 
         [TestMethod]
@@ -501,13 +558,13 @@ namespace Weverca.Analysis.UnitTest
             TestVariableResults(outSet, results, GenerateResultVariableName);
         }
 
-        private static void TestEvaluation(string code)
+        private static void TestEvaluation(string code, MemoryEntry testInputEntry)
         {
             var analysis = TestUtils.GenerateForwardAnalysis(code);
 
             var identifier = new VariableIdentifier(inputVariableName);
             var snapshotEntry = analysis.EntryInput.GetVariable(identifier, true);
-            snapshotEntry.WriteMemory(analysis.EntryInput.Snapshot, inputEntry);
+            snapshotEntry.WriteMemory(analysis.EntryInput.Snapshot, testInputEntry);
 
             // Do not test results, just test whether all operations are supported
             var ppg = TestUtils.GeneratePpg(analysis);
