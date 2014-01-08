@@ -97,7 +97,7 @@
     <Compile Include="Deprecated\ProgramPointGraph.cs" />
     <Compile Include="Memory\IValueVisitor.cs" />
     <Compile Include="NativeAnalyzer.cs" />
-    <Compile Include="NextPhaseVisitor.cs" />
+    <Compile Include="NextPhaseAnalyzer.cs" />
     <Compile Include="ProgramPoints\ProgramPointVisitor.cs" />
     <Compile Include="TypeDecl.cs" />
     <Compile Include="PointsBlock.cs" />

@@ -14,28 +14,8 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
     class SimpleBackwardAnalysis : NextPhaseAnalysis
     {
         public SimpleBackwardAnalysis(ProgramPointGraph analyzedGraph)
-            : base(analyzedGraph, null, AnalysisDirection.Backward)
+            : base(analyzedGraph, AnalysisDirection.Backward, new PropagationAnalyzer())
         {
-        }
-
-        protected override ExpressionEvaluatorBase createExpressionEvaluator()
-        {
-            return new PropagationEvaluator();
-        }
-
-        protected override FlowResolverBase createFlowResolver()
-        {
-            return null;
-        }
-
-        protected override FunctionResolverBase createFunctionResolver()
-        {
-            return null;
-        }
-
-        protected override MemoryAssistantBase createAssistant()
-        {
-            return null;
         }
     }
 }

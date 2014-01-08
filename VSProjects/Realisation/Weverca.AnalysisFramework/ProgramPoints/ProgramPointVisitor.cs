@@ -15,8 +15,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// Abstract method for visiting points (Is used as default fallback, if other 
         /// visiting methods are not overriden)
         /// </summary>
-        /// <param name="point">Visited point</param>
-        public abstract void VisitPoint(ProgramPointBase point);
+        /// <param name="p">Visited point</param>
+        public abstract void VisitPoint(ProgramPointBase p);
 
         /// <summary>
         /// Visit empty program point

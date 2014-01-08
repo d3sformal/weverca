@@ -51,7 +51,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AnalysisTestUtils.cs" />
-    <Compile Include="InfoLevelPhase\PropagationEvaluator.cs" />
+    <Compile Include="InfoLevelPhase\PropagationAnalyzer.cs" />
     <Compile Include="InfoLevelPhase\PropagationInfo.cs" />
     <Compile Include="InfoLevelPhase\SimpleBackwardAnalysis.cs" />
     <Compile Include="MemoryLevelPhase\Deprecated_ForwardAnalysisTest.cs" />

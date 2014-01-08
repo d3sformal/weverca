@@ -33,29 +33,9 @@ namespace Weverca.AnalysisFramework
         #region Private members
 
         /// <summary>
-        /// Create snapshot used during analysis
-        /// </summary>
-        private readonly CreateSnapshot _createSnapshotDelegate;
-
-        /// <summary>
         /// Visitor used for visiting analyzed graph
         /// </summary>
-        private NextPhaseVisitor _visitor;
-
-        /// <summary>
-        /// Available expression evaluator
-        /// </summary>
-        private ExpressionEvaluatorBase _expressionEvaluator;
-
-        /// <summary>
-        /// Available function resolver
-        /// </summary>
-        private FunctionResolverBase _functionResolver;
-
-        /// <summary>
-        /// Available flow resolver
-        /// </summary>
-        private FlowResolverBase _flowResolver;
+        private readonly NextPhaseAnalyzer _analyzer;
 
         /// <summary>
         /// Queue of program points that should be processed
@@ -87,53 +67,15 @@ namespace Weverca.AnalysisFramework
         public int WideningLimit { get; protected set; }
 
         #endregion
-
-        #region Template methods for obtaining resolvers
-
-        /// <summary>
-        /// Create expression evaluator which is used during analysis
-        /// NOTE:
-        ///     * Is created only once
-        /// </summary>
-        /// <returns>Created evaluator</returns>
-        protected abstract ExpressionEvaluatorBase createExpressionEvaluator();
-
-        /// <summary>
-        /// Create flow resolver which is used during analysis
-        /// NOTE:
-        ///     * Is created only once
-        /// </summary>
-        /// <returns>Created resolver</returns>
-        protected abstract FlowResolverBase createFlowResolver();
-
-        /// <summary>
-        /// Create function resolver which is used during analysis
-        /// NOTE:
-        ///     * Is created only once
-        /// </summary>
-        /// <returns>Created resolver</returns>
-        protected abstract FunctionResolverBase createFunctionResolver();
-
-        /// <summary>
-        /// Create memory assistant, that will be used for initializing created snapshots
-        /// NOTE:
-        ///     * Is called whenever new assistant is needed (every time new assistant has to be created)
-        /// </summary>
-        /// <returns>Created memory assistant</returns>
-        protected abstract MemoryAssistantBase createAssistant();
-
-        #endregion
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ForwardAnalysisBase" /> class.
         /// Create forward analysis object for given entry method graph.
         /// </summary>
-        /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
-        /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
-        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, CreateSnapshot createSnapshotDelegate, AnalysisDirection direction)
+        public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, AnalysisDirection direction, NextPhaseAnalyzer analyzer)
         {
-            _createSnapshotDelegate = createSnapshotDelegate;
-
+            _analyzer = analyzer;
+            
             Direction = direction;
             AnalyzedProgramPointGraph = analyzedPPG;
             WideningLimit = int.MaxValue;
@@ -157,7 +99,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private void analyse()
         {
-            var entryPoint = getEntryPoint(AnalyzedProgramPointGraph);
+            var entryPoint = GetEntryPoint(AnalyzedProgramPointGraph);
             enqueue(entryPoint);
 
             //fix point computation
@@ -165,7 +107,7 @@ namespace Weverca.AnalysisFramework
             {
                 var point = _workQueue.Dequeue();
 
-                var inputs = getInputPoints(point);
+                var inputs = GetInputPoints(point);
                 extendInput(point, inputs);
 
                 flowThrough(point);
@@ -179,14 +121,14 @@ namespace Weverca.AnalysisFramework
 
         private bool hasChanges(ProgramPointBase point)
         {
-            var outSet = getOutSet(point);
+            var outSet = GetOutSet(point);
             return outSet.HasChanges;
         }
 
         private void flowThrough(ProgramPointBase point)
         {
             prepare(point);
-            point.Accept(_visitor);
+            _analyzer.FlowThrough(point);
             commit(point);
         }
 
@@ -194,7 +136,7 @@ namespace Weverca.AnalysisFramework
         {
             point.SetMode(SnapshotMode.InfoLevel);
 
-            var outSet = getOutSet(point);
+            var outSet = GetOutSet(point);
             outSet.StartTransaction();
         }
 
@@ -202,18 +144,18 @@ namespace Weverca.AnalysisFramework
         {
             point.SetMode(SnapshotMode.InfoLevel);
 
-            var outSet = getOutSet(point);
+            var outSet = GetOutSet(point);
             outSet.CommitTransaction();
         }
 
         private void extendInput(ProgramPointBase point, IEnumerable<ProgramPointBase> inputs)
         {
-            var inSet = getInSet(point);
+            var inSet = GetInSet(point);
 
             var inputSets = new List<FlowInputSet>();
             foreach (var input in inputs)
             {
-                var outSet = getOutSet(input);
+                var outSet = GetOutSet(input);
                 inputSets.Add(outSet);
             }
 
@@ -224,7 +166,7 @@ namespace Weverca.AnalysisFramework
 
         private void enqueueChildren(ProgramPointBase point)
         {
-            var children = getOutputPoints(point);
+            var children = GetOutputPoints(point);
             foreach (var child in children)
             {
                 enqueue(child);
@@ -241,7 +183,7 @@ namespace Weverca.AnalysisFramework
 
         #region Analysis direction handling
 
-        private ProgramPointBase getEntryPoint(ProgramPointGraph ppg)
+        internal ProgramPointBase GetEntryPoint(ProgramPointGraph ppg)
         {
             switch (Direction)
             {
@@ -255,7 +197,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        private FlowOutputSet getInSet(ProgramPointBase point)
+        internal FlowOutputSet GetInSet(ProgramPointBase point)
         {
             switch (Direction)
             {
@@ -269,7 +211,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        private FlowOutputSet getOutSet(ProgramPointBase point)
+        internal FlowOutputSet GetOutSet(ProgramPointBase point)
         {
             switch (Direction)
             {
@@ -283,7 +225,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        private IEnumerable<ProgramPointBase> getOutputPoints(ProgramPointBase point)
+        internal IEnumerable<ProgramPointBase> GetOutputPoints(ProgramPointBase point)
         {
             switch (Direction)
             {
@@ -297,7 +239,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        private IEnumerable<ProgramPointBase> getInputPoints(ProgramPointBase point)
+        internal IEnumerable<ProgramPointBase> GetInputPoints(ProgramPointBase point)
         {
             switch (Direction)
             {
@@ -315,23 +257,19 @@ namespace Weverca.AnalysisFramework
         {
             throw new NotSupportedException("Analysis doesn't support: " + Direction);
         }
+
         #endregion
 
         #endregion
 
         #region Private utilities
 
-
         /// <summary>
         /// Initialize all resolvers and services
         /// </summary>
         private void initialize()
         {
-            _expressionEvaluator = createExpressionEvaluator();
-            _flowResolver = createFlowResolver();
-            _functionResolver = createFunctionResolver();
-
-            _visitor = new NextPhaseVisitor(_expressionEvaluator);
+            _analyzer.Initialize(this);
 
             resetPoints(AnalyzedProgramPointGraph);
         }
