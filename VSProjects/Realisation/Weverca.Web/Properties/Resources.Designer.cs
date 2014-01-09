@@ -61,44 +61,40 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;?
+        ///   Looks up a localized string similar to PHP Code verification.
+        /// </summary>
+        public static string IndexTitle {
+            get {
+                return ResourceManager.GetString("IndexTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hello
+        ///
+        ///&lt;?php	
+        ///	function printName($name){
+        ///		echo $name;
+        ///	}
         ///
         ///
-        ///for ($x = 1, $y = 1; $x &lt; 10 &amp;&amp; $y &lt; 5; $x++, $y++)
-        ///{
-        ///  $b = $x * $y;
-        ///  
-        ///  if ($x == $y)
-        ///  {
-        ///    for ($i = 1; $i &lt; foo(); $i--)
-        ///    {
-        ///      $f = 3;
-        ///    }
-        ///  }
-        ///
-        ///  $a = $x + $y;
-        ///}
-        ///
-        ///for ($x = 1, $y = 1; $x &lt; 10 || $y &lt; 5; $x++, $y++)
-        ///{
-        ///  $a = $x + $y;
-        ///}
-        ///
-        ///for ($x = 1, $y = 1; $x &lt; 10, $y &lt; 5; $x++, $y++)
-        ///{
-        ///  $a = $x + $y;
-        ///}
-        ///
-        ///
-        ///$end = 1;
-        ///
-        ///
-        ///
+        ///	$name=$_POST[&quot;name&quot;];
+        ///	printName($name);
+        ///	
         ///?&gt;.
         /// </summary>
         public static string Input1 {
             get {
                 return ResourceManager.GetString("Input1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input 1.
+        /// </summary>
+        public static string Input1Description {
+            get {
+                return ResourceManager.GetString("Input1Description", resourceCulture);
             }
         }
         
@@ -138,6 +134,24 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Input 2.
+        /// </summary>
+        public static string Input2Description {
+            get {
+                return ResourceManager.GetString("Input2Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom Input.
+        /// </summary>
+        public static string InputCustomDescription {
+            get {
+                return ResourceManager.GetString("InputCustomDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Input.
         /// </summary>
         public static string InputType {
@@ -152,6 +166,15 @@ namespace Weverca.Web.Properties {
         public static string PhpCode {
             get {
                 return ResourceManager.GetString("PhpCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification results.
+        /// </summary>
+        public static string ResultTitle {
+            get {
+                return ResourceManager.GetString("ResultTitle", resourceCulture);
             }
         }
         

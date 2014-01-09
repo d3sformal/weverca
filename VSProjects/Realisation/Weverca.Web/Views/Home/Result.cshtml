@@ -1,9 +1,11 @@
-﻿@{
-    ViewBag.Title = "Result";
-}
-@using Weverca.Web.Models
+﻿@using Weverca.Web.Models
+@using Weverca.Web.Properties
 
 @model ResultModel
+
+@{
+    ViewBag.Title = Resources.ResultTitle;
+}
 
 @Html.TextAreaFor(m => m.PhpCode)
 

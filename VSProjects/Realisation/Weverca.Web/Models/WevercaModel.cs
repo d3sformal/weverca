@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
+﻿using System.ComponentModel.DataAnnotations;
+
+using Common.WebDefinitions.Localization;
 using Weverca.Web.Properties;
 
 namespace Weverca.Web.Models
@@ -10,8 +8,18 @@ namespace Weverca.Web.Models
     public class WevercaModel
     {
         #region Enums
-        
-        public enum InputType { Input1, Input2, Custom}
+
+        public enum InputType
+        {
+            [LocalizedDescription(typeof(Resources), "Input1Description")]
+            Input1,
+
+            [LocalizedDescription(typeof(Resources), "Input2Description")]
+            Input2,
+
+            [LocalizedDescription(typeof(Resources), "InputCustomDescription")]
+            Custom
+        }
         
         #endregion
 

@@ -54,6 +54,7 @@
     <Compile Include="Extensions\HttpPostedFileWrapperExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Localization\LocalizedDescriptionAttribute.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

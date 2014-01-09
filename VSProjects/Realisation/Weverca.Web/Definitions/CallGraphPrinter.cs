@@ -76,7 +76,7 @@ namespace Weverca.Web.Definitions
         /// <param name="delimiterChar">Char used for delimiter line</param>
         private void printDelimiter(char delimiterChar)
         {
-            Output.CommentLine("".PadLeft(50, delimiterChar));
+            Output.CommentLine(string.Empty.PadLeft(50, delimiterChar));
         }
 
         /// <summary>

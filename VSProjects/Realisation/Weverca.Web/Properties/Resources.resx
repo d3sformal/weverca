@@ -117,18 +117,33 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="IndexTitle" xml:space="preserve">
+    <value>PHP Code verification</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="Input1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Input1.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
+  <data name="Input1Description" xml:space="preserve">
+    <value>Input 1</value>
+  </data>
   <data name="Input2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Input2.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+  </data>
+  <data name="Input2Description" xml:space="preserve">
+    <value>Input 2</value>
+  </data>
+  <data name="InputCustomDescription" xml:space="preserve">
+    <value>Custom Input</value>
   </data>
   <data name="InputType" xml:space="preserve">
     <value>Input</value>
   </data>
   <data name="PhpCode" xml:space="preserve">
     <value>Php Code</value>
+  </data>
+  <data name="ResultTitle" xml:space="preserve">
+    <value>Verification results</value>
   </data>
   <data name="Verify" xml:space="preserve">
     <value>Verify</value>

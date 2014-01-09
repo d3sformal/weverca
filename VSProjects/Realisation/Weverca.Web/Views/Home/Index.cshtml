@@ -5,7 +5,7 @@
 @model WevercaModel
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = Resources.IndexTitle;
 }
 
 @using (Html.BeginForm(ViewContext.RouteData.Values["Action"].ToString(), ViewContext.RouteData.Values["Controller"].ToString(), FormMethod.Post, new { id = "Form"}))
