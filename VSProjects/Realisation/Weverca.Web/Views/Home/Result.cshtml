@@ -15,6 +15,23 @@
     });
 </script>
 
-<div>
-    @Model.Output.ToHtmlString()
+<script src="~/jQuery/jquery-ui.js" type="text/javascript"></script>
+
+<script>
+    $(function () {
+        $("#tabs").tabs();
+    });
+</script>
+
+<div id="tabs">
+    <ul>
+        <li><a href="#tabs-1">@Resources.MetricsResults</a></li>
+        <li><a href="#tabs-2">@Resources.VerificationResults</a></li>
+    </ul>
+    <div id="tabs-1">
+        <p>TODO: here there will be the results.</p>
+    </div>
+    <div id="tabs-2">
+        @Model.Output.ToHtmlString()
+    </div>
 </div>

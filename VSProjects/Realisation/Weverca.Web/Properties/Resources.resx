@@ -139,6 +139,9 @@
   <data name="InputType" xml:space="preserve">
     <value>Input</value>
   </data>
+  <data name="MetricsResults" xml:space="preserve">
+    <value>Metrics Results</value>
+  </data>
   <data name="PhpCode" xml:space="preserve">
     <value>Php Code</value>
   </data>
@@ -159,6 +162,9 @@
   </data>
   <data name="Settings" xml:space="preserve">
     <value>Verification settings</value>
+  </data>
+  <data name="VerificationResults" xml:space="preserve">
+    <value>Verifications Results</value>
   </data>
   <data name="Verify" xml:space="preserve">
     <value>Verify</value>

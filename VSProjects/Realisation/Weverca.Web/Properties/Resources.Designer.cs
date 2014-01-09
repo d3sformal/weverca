@@ -161,6 +161,15 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Metrics Results.
+        /// </summary>
+        public static string MetricsResults {
+            get {
+                return ResourceManager.GetString("MetricsResults", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Php Code.
         /// </summary>
         public static string PhpCode {
@@ -220,6 +229,15 @@ namespace Weverca.Web.Properties {
         public static string Settings {
             get {
                 return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verifications Results.
+        /// </summary>
+        public static string VerificationResults {
+            get {
+                return ResourceManager.GetString("VerificationResults", resourceCulture);
             }
         }
         

@@ -148,10 +148,12 @@
     <Content Include="Content\Icon.png" />
     <Content Include="Content\Logo.png" />
     <Content Include="Content\Site.css" />
+    <Content Include="Content\Tabs.css" />
     <Content Include="Global.asax" />
     <Content Include="jQuery\jquery-1.7.2.js" />
     <None Include="Resources\Input1.php" />
     <None Include="Resources\Input2.php" />
+    <Content Include="jQuery\jquery-ui.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
