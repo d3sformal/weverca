@@ -21,6 +21,29 @@
                 @Html.LabelFor(m => m.PhpCode)
                 @Html.TextAreaFor(m => m.PhpCode)
             </li>
+            <li>
+                <fieldset class="settings">
+                    <legend>@Resources.Settings</legend>
+                    <ul>
+                        <li>
+                            @Html.LabelFor(m => m.AnalysisModel.RunVerification)
+                            @Html.CheckBoxFor(m => m.AnalysisModel.RunVerification)
+                        </li>
+                        <li>
+                            @Html.LabelFor(m => m.AnalysisModel.RunIndicatorMetrics)
+                            @Html.CheckBoxFor(m => m.AnalysisModel.RunIndicatorMetrics)
+                        </li>
+                        <li>
+                            @Html.LabelFor(m => m.AnalysisModel.RunQuantityMetrics)
+                            @Html.CheckBoxFor(m => m.AnalysisModel.RunQuantityMetrics)
+                        </li>
+                        <li>
+                            @Html.LabelFor(m => m.AnalysisModel.RunRatingMetrics)
+                            @Html.CheckBoxFor(m => m.AnalysisModel.RunRatingMetrics)
+                        </li>
+                    </ul>
+                </fieldset> 
+            </li>
         </ul>
         <input type="submit" value="@Resources.Verify" class="button" />
     </fieldset>

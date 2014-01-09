@@ -179,6 +179,51 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Run metrics indicating construct indication.
+        /// </summary>
+        public static string RunIndicatorMetrics {
+            get {
+                return ResourceManager.GetString("RunIndicatorMetrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run metrics measuring quality of the code.
+        /// </summary>
+        public static string RunQuantityMetrics {
+            get {
+                return ResourceManager.GetString("RunQuantityMetrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run metrics rating the code.
+        /// </summary>
+        public static string RunRatingMetrics {
+            get {
+                return ResourceManager.GetString("RunRatingMetrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Run verification.
+        /// </summary>
+        public static string RunVerification {
+            get {
+                return ResourceManager.GetString("RunVerification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Verification settings.
+        /// </summary>
+        public static string Settings {
+            get {
+                return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Verify.
         /// </summary>
         public static string Verify {

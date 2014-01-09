@@ -151,10 +151,15 @@ select
     color: #4EAD92;
 }
 
+.basicForm .button,
+.settings
+{
+    margin-left: 190px; 
+}
+
 .basicForm .button
 {
     width: 220px;
-    margin-left: 190px; 
 }
 
 .basicForm ul
@@ -195,6 +200,16 @@ select
     padding: 4px 10px;
     width: 250px; 
     background-color: transparent;
+}
+
+.basicForm .settings label
+{
+    width: 300px;
+}
+
+.basicForm .settings input
+{
+    width: initial;
 }
 
 /*---------FOOTER---------*/

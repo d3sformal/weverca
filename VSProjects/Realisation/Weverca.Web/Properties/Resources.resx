@@ -145,6 +145,21 @@
   <data name="ResultTitle" xml:space="preserve">
     <value>Verification results</value>
   </data>
+  <data name="RunIndicatorMetrics" xml:space="preserve">
+    <value>Run metrics indicating construct indication</value>
+  </data>
+  <data name="RunQuantityMetrics" xml:space="preserve">
+    <value>Run metrics measuring quality of the code</value>
+  </data>
+  <data name="RunRatingMetrics" xml:space="preserve">
+    <value>Run metrics rating the code</value>
+  </data>
+  <data name="RunVerification" xml:space="preserve">
+    <value>Run verification</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Verification settings</value>
+  </data>
   <data name="Verify" xml:space="preserve">
     <value>Verify</value>
   </data>
