@@ -123,6 +123,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 //only if assumption is made, process children
                 base.enqueueChildren();
             }
+
         }
 
         internal override void Accept(ProgramPointVisitor visitor)

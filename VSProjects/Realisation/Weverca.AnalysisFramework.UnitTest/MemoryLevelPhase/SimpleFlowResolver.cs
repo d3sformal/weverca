@@ -40,7 +40,9 @@ namespace Weverca.AnalysisFramework.UnitTest
                 case ConditionForm.All:
                     willAssume = needsAll(outSet.Snapshot, condition.Parts);
                     break;
-
+                case ConditionForm.SomeNot:
+                    willAssume = needsSomeNot(outSet.Snapshot, condition.Parts);
+                    break;
                 default:
                     //we has to assume, because we can't disprove assumption
                     willAssume = true;
@@ -203,6 +205,22 @@ namespace Weverca.AnalysisFramework.UnitTest
             return true;
         }
 
+        private bool needsSomeNot(SnapshotBase input, IEnumerable<Expressions.Postfix> conditionParts)
+        {
+            //we are searching for one part, that can be evaluated as false
+
+            foreach (var evaluatedPart in conditionParts)
+            {
+                var value = _log.ReadSnapshotEntry(evaluatedPart.SourceElement).ReadMemory(input);
+                if (canEvalFalse(value))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private bool evalOnlyFalse(MemoryEntry evaluatedPart)
         {
             if (evaluatedPart == null)
@@ -235,6 +253,36 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             //some of possible values cant be evaluted as true
             return true;
+        }
+
+        private bool canEvalFalse(MemoryEntry evaluatedPart)
+        {
+            if (evaluatedPart == null)
+            {
+                //Possible cause of this is that evaluatedPart doesn't contains expression
+                //Syntax error
+                throw new NotSupportedException("Can assume only expression - PHP syntax error");
+            }
+            foreach (var value in evaluatedPart.PossibleValues)
+            {
+                var boolean = value as BooleanValue;
+                if (boolean != null)
+                {
+                    if (!boolean.Value)
+                    {
+                        // false found
+                        return true;
+                    }
+                }
+
+                if (value is UndefinedValue)
+                {
+                    //undefined value is evaluated as false
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
