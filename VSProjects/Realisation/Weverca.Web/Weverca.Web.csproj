@@ -44,6 +44,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\External Libraries\NLog\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -118,6 +122,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AnalysisModel.cs" />
     <Compile Include="Models\ResultModel.cs" />
     <Compile Include="Models\WevercaModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -189,6 +194,10 @@
       <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
       <Name>Weverca.Analysis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.CodeMetrics\Weverca.CodeMetrics.csproj">
+      <Project>{880143f7-bd66-4abd-96e7-86fda5cf8161}</Project>
+      <Name>Weverca.CodeMetrics</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
       <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
@@ -200,6 +209,10 @@
     <ProjectReference Include="..\Weverca.Output\Weverca.Output.csproj">
       <Project>{d43d84c1-1686-48d4-8b9a-bad6860b6315}</Project>
       <Name>Weverca.Output</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
+      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+      <Name>Weverca.Parser</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

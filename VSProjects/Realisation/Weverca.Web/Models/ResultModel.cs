@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
+
+using PHP.Core.AST;
+using Weverca.CodeMetrics;
 
 namespace Weverca.Web.Models
 {
@@ -9,12 +9,28 @@ namespace Weverca.Web.Models
     {
         public string PhpCode { get; private set; }
 
-        public string Output { get; private set; }
+        public string Output { get; set; }
 
-        public ResultModel(string phpCode, string output)
+        public Dictionary<ConstructIndicator, MetricResult<bool>> IndicatorMetricsResult { get; private set; }
+
+        public Dictionary<Quantity, MetricResult<int>> QuantityMetricsResult { get; private set; }
+
+        public Dictionary<Rating, MetricResult<double>> RatingMetricsResult { get; private set; }
+
+        public ResultModel(string phpCode)
         {
             PhpCode = phpCode;
-            Output = output;
+
+            IndicatorMetricsResult = new Dictionary<ConstructIndicator, MetricResult<bool>>();
+            QuantityMetricsResult = new Dictionary<Quantity, MetricResult<int>>();
+            RatingMetricsResult = new Dictionary<Rating, MetricResult<double>>();            
         }
+    }
+
+    public class MetricResult<T>
+    {
+        public T Result { get; set; }
+
+        public IEnumerable<AstNode> Occurences { get; set; }
     }
 }

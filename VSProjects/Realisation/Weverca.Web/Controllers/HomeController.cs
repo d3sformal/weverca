@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Diagnostics;
 using System.Web.Mvc;
-using Weverca.Web.Models;
+
 using Weverca.Web.Definitions;
-using System.Diagnostics;
+using Weverca.Web.Models;
 
 namespace Weverca.Web.Controllers
 {
@@ -39,17 +36,12 @@ namespace Weverca.Web.Controllers
 
                 model.AssignInputType();
                 
-                var ppGraph = Analyzer.Run(model.PhpCode);
-
-                var output = new WebOutput();
-                var graphWalker = new CallGraphPrinter(ppGraph);
-
-                graphWalker.Run(output);
+                ResultModel result = Analyzer.Run(model.PhpCode, model.AnalysisModel);
 
                 stopwatch.Stop();
                 Debug.WriteLine("Analysis took: {0}", stopwatch.Elapsed);
                 
-                return View("Result", new ResultModel(model.PhpCode, output.Output));
+                return View("Result", result);
             }
         }
     }

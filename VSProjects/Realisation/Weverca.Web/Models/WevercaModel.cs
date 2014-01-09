@@ -33,6 +33,8 @@ namespace Weverca.Web.Models
         [Display(ResourceType = typeof(Resources), Name = "InputType")]
         public InputType Input { get; set; }
 
+        public AnalysisModel AnalysisModel { get; set; }
+
         #endregion
 
         #region Constructor
@@ -41,6 +43,7 @@ namespace Weverca.Web.Models
         {
             Input = InputType.Input1;
             AssignInput();
+            AnalysisModel = new AnalysisModel();
         }
 
         #endregion
