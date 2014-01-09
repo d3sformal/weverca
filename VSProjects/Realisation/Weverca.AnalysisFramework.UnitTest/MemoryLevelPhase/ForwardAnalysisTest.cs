@@ -1066,6 +1066,7 @@ $result = local_wrap();
 ".AssertVariable("result").HasValues(2)
 ;
 
+        // Without widened variable in loop condition.
         // tests justs that the test terminates
         readonly static TestCase LongLoopWidening_CASE = @"
 $i=0;
@@ -1074,12 +1075,13 @@ while(true){
 }
 ".AssertVariable("").WideningLimit(20)
 ;
+        // Widened variable in loop condition
         //Reason why it fails:
         //before widening of $i is performed, the condition $i<1000 is evaluated to true, this value is also visible FlowResolver.ConfirmAssumption
         // via EvaluationLog
         // $i is widened to AnyValue, the condition $<1000 is evaluated to true/false, however FlowResolver.ConfirmAssumption gets only value true from EvaluationLog
         // => the code after while cycle is never analyzed => ppGraph.End.OutSet is null
-        readonly static TestCase LongLoopWideningConditionEvaluation_CASE = @"
+        readonly static TestCase LongLoopWidenedVariableInLoopCondition_CASE = @"
 $test='NotAffected';
 
 $i=0;
@@ -1557,9 +1559,9 @@ $d=&$a;
         }
 
         [TestMethod]
-        public void LongLoopWideningConditionEvaluation()
+        public void LongLoopWidenedVariableInLoopCondition()
         {
-            AnalysisTestUtils.RunTestCase(LongLoopWideningConditionEvaluation_CASE);
+            AnalysisTestUtils.RunTestCase(LongLoopWidenedVariableInLoopCondition_CASE);
         }
 
         #region Function handling tests
