@@ -7,6 +7,8 @@ using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.ProgramPoints;
+using PHP.Core;
+using PHP.Core.AST;
 
 namespace Weverca.Analysis.FlowResolver
 {
@@ -108,6 +110,15 @@ namespace Weverca.Analysis.FlowResolver
             return null;
         }
 
+        class CatchBlocks
+        {
+            public readonly IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> blocks;
+            public CatchBlocks(IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlocks)
+            {
+                blocks = catchBlocks;
+            }
+        }
+
         /// <summary>
         /// Reports about try block scope start
         /// </summary>
@@ -115,8 +126,10 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="catchBlockStarts">Catch blocks associated with starting try block</param>
         public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
-            //TODO
-            throw new NotImplementedException();
+            var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
+            List<Value> stack = catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues.ToList();
+            stack.Add(outSet.CreateInfo(new CatchBlocks(catchBlockStarts)));
+            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(stack));
         }
 
         /// <summary>
@@ -126,8 +139,11 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="catchBlockStarts">Catch blocks associated with ending try block</param>
         public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
-            //TODO
-            throw new NotImplementedException();
+            var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
+            List<Value> stack = catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues.ToList();
+            stack.Add(outSet.CreateInfo(new CatchBlocks(catchBlockStarts)));
+            stack.RemoveAt(stack.Count - 1);
+            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(stack));
         }
 
         /// <summary>
@@ -141,9 +157,60 @@ namespace Weverca.Analysis.FlowResolver
         /// </returns>
         public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, PHP.Core.AST.ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
-            throw new NotImplementedException();
-        }
+            List<ProgramPointBase> result = new List<ProgramPointBase>();
+            var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
+            List<Value> stack = catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues.ToList();
 
+            bool foundMatch = false ;
+            while (stack.Count > 0)
+            {
+                foreach (Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase> catchBlock in (stack.Last() as InfoValue<CatchBlocks>).Data.blocks)
+                {
+                    foreach (Value value in throwedValue.PossibleValues)
+                    {
+                        if (value is ObjectValue)
+                        {
+                            TypeValue type = outSet.ObjectType(value as ObjectValue);
+                            if (type.QualifiedName == catchBlock.Item1.QualifiedName)
+                            {
+                                result.Add(catchBlock.Item2);
+                                foundMatch = true;
+                            }
+                            else
+                            {
+                                for (int i = type.Declaration.BaseClasses.Count - 1; i >= 0; i--)
+                                {
+                                    if (type.Declaration.BaseClasses[i] == catchBlock.Item1.QualifiedName)
+                                    {
+                                        result.Add(catchBlock.Item2);
+                                        foundMatch = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        else if (value is AnyObjectValue || value is AnyValue)
+                        {
+                            result.Add(catchBlock.Item2);
+                            foundMatch = true;
+                        }
+                        else
+                        {
+                            //warning only objects can be thrown
+                        }
+                    }
+                }
+                stack.RemoveAt(stack.Count - 1);
+                if (foundMatch)
+                {
+                    break;
+                }
+            }
+            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(stack));
+            
+            return result;
+        }
+        
         #endregion
     }
 }

@@ -933,15 +933,19 @@ namespace Weverca.Analysis
 
                 if (result.BaseClasses.Count > 0)
                 {
-                    if (Flow.OutSet.ResolveType(result.BaseClasses.Last()).Count() == 0)
+                    for (int i = result.BaseClasses.Count-1; i >= 0; i--)
                     {
-                        InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses.Last());
+                        if (Flow.OutSet.ResolveType(result.BaseClasses[i]).Count() == 0)
+                        {
+                            InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses[i]);
 
+                        }
                     }
                 }
-
+                HashSet<VariableName> usedFields = new HashSet<VariableName>();
                 foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.QualifiedName)))
                 {
+                    usedFields.Add(field.Name);
                     if (field.Initializer != null)
                     {
                         string index="";
@@ -951,7 +955,7 @@ namespace Weverca.Analysis
                         }
                         else
                         {
-                            index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->nonpublicfield(" + field.Name + "@";
+                            index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->nonpublicfield@(" + field.Name + "@";
                         }
                         indices.Add(index); 
                         code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(field.Initializer.Position) + ";\n";
@@ -981,6 +985,18 @@ namespace Weverca.Analysis
                     }
                 }
 
+                //insert parent values
+                for (int i = result.BaseClasses.Count - 1; i>=0 ; i--)
+                {
+                    foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.BaseClasses[i])))
+                    {
+                        if (usedFields.Contains(field.Name)) 
+                        {
+                            //add
+                            usedFields.Add(field.Name);
+                        }
+                    }
+                }
             }
             NativeFunctionAnalyzer.indices = indices;
             string key = "staticInit" + result.QualifiedName.Name.LowercaseValue;
