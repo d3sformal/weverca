@@ -241,6 +241,11 @@ namespace Weverca.AnalysisFramework.UnitTest
                     }
                 }
 
+                if (value is AnyValue)
+                {
+                    return false;
+                }
+
                 if (value is UndefinedValue)
                 {
                     //undefined value is evaluated as false
@@ -273,6 +278,11 @@ namespace Weverca.AnalysisFramework.UnitTest
                         // false found
                         return true;
                     }
+                }
+
+                if (value is AnyValue)
+                {
+                    return true;
                 }
 
                 if (value is UndefinedValue)
