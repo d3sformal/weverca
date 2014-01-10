@@ -7,6 +7,7 @@ using PHP.Core.AST;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.Analysis.FlowResolver;
 
 namespace Weverca.Analysis
 {
@@ -68,7 +69,7 @@ namespace Weverca.Analysis
             var warningsVariable=EntryInput.GetControlVariable(warnings);
             warningsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
 
-            EntryInput.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(EntryInput.Snapshot, new MemoryEntry(new List<Value>()));
+            EntryInput.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInfo(new CatchBlocks())));
 
             this.WideningLimit = 10;
         }

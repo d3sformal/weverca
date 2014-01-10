@@ -9,6 +9,7 @@ using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.ProgramPoints;
 using PHP.Core;
 using PHP.Core.AST;
+using System.Collections.ObjectModel;
 
 namespace Weverca.Analysis.FlowResolver
 {
@@ -110,15 +111,6 @@ namespace Weverca.Analysis.FlowResolver
             return null;
         }
 
-        class CatchBlocks
-        {
-            public readonly IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> blocks;
-            public CatchBlocks(IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlocks)
-            {
-                blocks = catchBlocks;
-            }
-        }
-
         /// <summary>
         /// Reports about try block scope start
         /// </summary>
@@ -127,9 +119,12 @@ namespace Weverca.Analysis.FlowResolver
         public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
-            List<Value> stack = catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues.ToList();
-            stack.Add(outSet.CreateInfo(new CatchBlocks(catchBlockStarts)));
-            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(stack));
+            List<Value> result = new List<Value>();
+            foreach(var stack in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+            {
+                result.Add(outSet.CreateInfo(new CatchBlocks((stack as InfoValue<CatchBlocks>).Data, catchBlockStarts)));
+            }
+            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
         /// <summary>
@@ -140,10 +135,13 @@ namespace Weverca.Analysis.FlowResolver
         public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
-            List<Value> stack = catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues.ToList();
-            stack.Add(outSet.CreateInfo(new CatchBlocks(catchBlockStarts)));
-            stack.RemoveAt(stack.Count - 1);
-            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(stack));
+             List<Value> result = new List<Value>();
+             foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+             {
+                 CatchBlocks stack = (value as InfoValue<CatchBlocks>).Data;
+                result.Add(outSet.CreateInfo(stack.Pop()));
+             }
+            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
         /// <summary>
@@ -159,12 +157,27 @@ namespace Weverca.Analysis.FlowResolver
         {
             List<ProgramPointBase> result = new List<ProgramPointBase>();
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
-            List<Value> stack = catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues.ToList();
+            List<List<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> stack = new List<List<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>();
+           
+            foreach(var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+            {
+                if (stack.Count == 0)
+                {
+                    for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count;i++ )
+                    {
+                        stack.Add(new List<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>());
+                    }
+                }
+                for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                {
+                    stack[i].AddRange((value as InfoValue<CatchBlocks>).Data.blocks[i]);
+                }
+            }
 
-            bool foundMatch = false ;
+            bool foundMatch = false;
             while (stack.Count > 0)
             {
-                foreach (Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase> catchBlock in (stack.Last() as InfoValue<CatchBlocks>).Data.blocks)
+                foreach (Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase> catchBlock in stack.Last())
                 {
                     foreach (Value value in throwedValue.PossibleValues)
                     {
@@ -206,11 +219,37 @@ namespace Weverca.Analysis.FlowResolver
                     break;
                 }
             }
-            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(stack));
-            
+            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack as IEnumerable<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>))));
             return result;
         }
         
         #endregion
     }
+
+
+    public class CatchBlocks
+    {
+        public readonly ReadOnlyCollection<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> blocks;
+        public CatchBlocks(IEnumerable<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> blocks)
+        {
+            this.blocks = new ReadOnlyCollection<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(new List<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>(blocks));
+        }
+        public CatchBlocks(CatchBlocks blocks,IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlocks)
+        {
+            List<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> list = new List<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(blocks.blocks);
+            list.Add(catchBlocks);
+            this.blocks = new ReadOnlyCollection<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>(list);
+        }
+        public CatchBlocks()
+        {
+            blocks = new ReadOnlyCollection<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(new List<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>());
+        }
+        public CatchBlocks Pop()
+        {
+            List<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> list = new List<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(blocks);
+            list.RemoveAt(list.Count - 1);
+            return new CatchBlocks(list);
+        }
+    }
+
 }
