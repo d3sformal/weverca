@@ -21,5 +21,10 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             merged.UnionWith(childPropagation.Targets);
             return new PropagationInfo(merged.ToArray());
         }
+
+        public override string ToString()
+        {
+            return "Propagated to: `" + string.Join(", ", Targets) + "`";
+        }
     }
 }

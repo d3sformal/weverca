@@ -280,14 +280,21 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static FlowOutputSet GetEndPointOutSet(TestCase test, ForwardAnalysisBase analysis)
         {
+            var ppg = GetAnalyzedGraph(test, analysis);
+            return ppg.End.OutSet;
+        }
+
+        internal static ProgramPointGraph GetAnalyzedGraph(TestCase test, ForwardAnalysisBase analysis)
+        {
             test.ApplyTestSettings((TestAnalysisSettings)analysis);
 
             GLOBAL_ENVIRONMENT_INITIALIZER(analysis.EntryInput);
             test.EnvironmentInitializer(analysis.EntryInput);
             analysis.Analyse();
 
-            return analysis.ProgramPointGraph.End.OutSet;
+            return analysis.ProgramPointGraph;
         }
+
 
         internal static void RunTestCase(TestCase testCase)
         {
@@ -296,12 +303,12 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             foreach (var analysis in analyses)
             {
-                var output = GetEndPointOutSet(testCase, analysis);
+                var ppg = GetAnalyzedGraph(testCase, analysis);
 
-                testCase.Assert(output);
+                testCase.Assert(ppg);
             }
         }
-        
+
         internal static void RunInfoLevelCase(TestCase testCase)
         {
             var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
@@ -309,14 +316,12 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             foreach (var analysis in analyses)
             {
-                var output = GetEndPointOutSet(testCase, analysis);
-                testCase.Assert(output);
+                var ppg = GetAnalyzedGraph(testCase, analysis);
 
-                var ppg = analysis.ProgramPointGraph;
                 var nextPhase = new SimpleBackwardAnalysis(ppg);
                 nextPhase.Analyse();
 
-                throw new NotImplementedException("Assert");
+                testCase.Assert(ppg);
             }
         }
 
@@ -426,9 +431,43 @@ namespace Weverca.AnalysisFramework.UnitTest
                 }
             }
         }
+
+        internal static void AssertIsPropagatedTo(FlowOutputSet declarationSet, string variableName, string assertMessage, string[] expectedTargets)
+        {
+            var expectedCollection = new List<string>(expectedTargets);
+            expectedCollection.Add(variableName);
+
+            var expectedTargetsMessage = string.Join(", ", expectedCollection);
+
+            var snapshot = declarationSet.Snapshot;
+            var variable = declarationSet.GetVariable(new VariableIdentifier(variableName));
+            if (variable == null || !variable.IsDefined(snapshot))
+            {
+                Assert.Fail("Variable {0} is not defined", variableName);
+            }
+
+            var actualValues = variable.ReadMemory(snapshot);
+            if (actualValues.Count != 1)
+            {
+                Assert.Fail("Expected single propagation info");
+            }
+
+            var info = actualValues.PossibleValues.First();
+            if (info is UndefinedValue)
+            {
+                Assert.IsTrue(expectedTargets.Count() == 0, "Variable is propagated nowhere instead of {0}", expectedTargetsMessage);
+                return;
+            }
+
+            var data = (info as InfoValue<PropagationInfo>).Data;
+            var actualCollection = new List<string>(data.Targets);
+
+            var actualTargetMessage = string.Join(", ", actualCollection.ToArray());
+            CollectionAssert.AreEquivalent(expectedCollection, actualCollection, "Wrong targets for propagation {0}, expected {1}", actualTargetMessage, expectedTargetsMessage);
+        }
     }
 
-    internal delegate void AssertRunner(FlowOutputSet output);
+    internal delegate void AssertRunner(ProgramPointGraph ppg);
 
     internal class TestCase
     {
@@ -445,8 +484,8 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
-        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM};
-        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis, Analyses.WevercaAnalysis};
+        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM };
+        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis, Analyses.WevercaAnalysis };
 
         /// <summary>
         /// Values below zero means that there is no limit
@@ -534,8 +573,9 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal TestCase HasUndefinedValue()
         {
-            _asserts.Add((output) =>
+            _asserts.Add((ppg) =>
             {
+                var output = GetEndOutput(ppg);
                 AnalysisTestUtils.AssertUndefined(output, VariableName, AssertMessage);
 
             });
@@ -546,8 +586,9 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal TestCase HasValues<T>(params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            _asserts.Add((output) =>
+            _asserts.Add((ppg) =>
             {
+                var output = GetEndOutput(ppg);
                 AnalysisTestUtils.AssertVariable<T>(output, VariableName, AssertMessage, expectedValues);
             });
             return this;
@@ -556,8 +597,9 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal TestCase HasUndefinedOrValues<T>(params T[] expectedValues)
            where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            _asserts.Add((output) =>
+            _asserts.Add((ppg) =>
             {
+                var output = GetEndOutput(ppg);
                 AnalysisTestUtils.AssertVariableWithUndefined<T>(output, VariableName, AssertMessage, expectedValues);
             });
             return this;
@@ -571,8 +613,9 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal TestCase IsXSSDirty()
         {
-            _asserts.Add((output) =>
+            _asserts.Add((ppg) =>
             {
+                var output = GetEndOutput(ppg);
                 AnalysisTestUtils.AssertIsXSSDirty(output, VariableName, AssertMessage);
             });
             return this;
@@ -580,25 +623,38 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal TestCase IsXSSClean()
         {
-            _asserts.Add((output) =>
+            _asserts.Add((ppg) =>
             {
+                var output = GetEndOutput(ppg);
                 AnalysisTestUtils.AssertIsXSSClean(output, VariableName, AssertMessage);
             });
             return this;
         }
 
+
+        internal TestCase IsPropagatedTo(params string[] track)
+        {
+            _asserts.Add((ppg) =>
+           {
+               var declarationSet = GetDeclarationOutput(ppg, VariableName);
+
+               AnalysisTestUtils.AssertIsPropagatedTo(declarationSet, VariableName, AssertMessage, track);
+           });
+            return this;
+        }
+
         #endregion
 
-        internal void Assert(FlowOutputSet outSet)
+        internal void Assert(ProgramPointGraph ppg)
         {
             foreach (var assert in _asserts)
             {
-                assert(outSet);
+                assert(ppg);
             }
 
             if (PreviousTest != null)
             {
-                PreviousTest.Assert(outSet);
+                PreviousTest.Assert(ppg);
             }
         }
 
@@ -661,10 +717,38 @@ namespace Weverca.AnalysisFramework.UnitTest
             return analyses;
         }
 
-        internal TestCase IsPropagatedTo(params string[] track)
+        internal FlowOutputSet GetEndOutput(ProgramPointGraph ppg)
         {
-            //TODO propagation assert
-            return this;
+            return ppg.End.OutSet;
+        }
+
+        internal FlowOutputSet GetDeclarationOutput(ProgramPointGraph ppg, string name)
+        {
+            var visitedPoints = new HashSet<ProgramPointBase>();
+            var bfsQueue = new Queue<ProgramPointBase>();
+            bfsQueue.Enqueue(ppg.Start);
+
+            while (bfsQueue.Count > 0)
+            {
+                var point = bfsQueue.Dequeue();
+                var variable = point.OutSet.GetVariable(new VariableIdentifier(name));
+                if (variable.IsDefined(point.OutSnapshot))
+                {
+                    //we have found first place where variable is defined
+                    return point.OutSet;
+                }
+
+                visitedPoints.Add(point);
+                foreach (var child in point.FlowChildren)
+                {
+                    if (visitedPoints.Contains(child))
+                        continue;
+
+                    bfsQueue.Enqueue(child);
+                }
+            }
+
+            return null;
         }
     }
 }

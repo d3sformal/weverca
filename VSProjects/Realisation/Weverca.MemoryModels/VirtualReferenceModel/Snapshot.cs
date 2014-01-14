@@ -31,6 +31,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private VariableContainer _localControls;
 
         private DataContainer _data;
+        private DataContainer _infoData;
 
         /// <summary>
         /// Unique stamp for current snapshot
@@ -58,11 +59,33 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             _meta = new VariableContainer(VariableKind.Meta, this);
 
             _data = new DataContainer(this);
+            _infoData = new DataContainer(this);
         }
 
         #region Snapshot manipulation
 
         protected override void startTransaction()
+        {
+
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    startMemoryTransaction();
+                    break;
+                case SnapshotMode.InfoLevel:
+                    startInfoTransaction();
+                    break;
+                default:
+                    throw notSupportedMode();
+            }
+        }
+
+        private void startInfoTransaction()
+        {
+            _infoData.FlipBuffers();
+        }
+
+        private void startMemoryTransaction()
         {
             _locals.FlipBuffers();
             _globals.FlipBuffers();
@@ -90,14 +113,32 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private bool commit()
         {
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    return commitMemory();
+                case SnapshotMode.InfoLevel:
+                    return commitInfo();
+                default:
+                    throw notSupportedMode();
+            }
+        }
+
+        private bool commitInfo()
+        {
+            return _infoData.DifferInCount || _infoData.CheckChange();
+        }
+
+        private bool commitMemory()
+        {
             if (
-            _locals.DifferInCount ||
-            _meta.DifferInCount ||
-            _globals.DifferInCount ||
-            _localControls.DifferInCount ||
-            _globalControls.DifferInCount ||
-            _data.DifferInCount
-            )
+                _locals.DifferInCount ||
+                _meta.DifferInCount ||
+                _globals.DifferInCount ||
+                _localControls.DifferInCount ||
+                _globalControls.DifferInCount ||
+                _data.DifferInCount
+                )
             {
                 //there is some difference in size of containers
                 //it means that there is change according to previous transaction
@@ -119,10 +160,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
 
             return _data.CheckChange();
+
         }
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
+            if (CurrentMode != SnapshotMode.MemoryLevel)
+                throw new NotImplementedException();
+
+
             // called context is extended only at begining of call
             CurrentContextStamp = SnapshotStamp;
 
@@ -144,6 +190,35 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// </summary>
         /// <param name="inputs"></param>
         protected override void extend(ISnapshotReadonly[] inputs)
+        {
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    extendMemory(inputs);
+                    break;
+                case SnapshotMode.InfoLevel:
+                    extendInfo(inputs);
+                    break;
+                default:
+                    throw notSupportedMode();
+            }
+        }
+
+        private void extendInfo(ISnapshotReadonly[] inputs)
+        {
+            _infoData.ClearCurrent();
+
+            var isFirst = true;
+            foreach (Snapshot input in inputs)
+            {
+                //merge info from extending inputs
+                _infoData.ExtendBy(input._infoData, isFirst);
+
+                isFirst = false;
+            }
+        }
+
+        private void extendMemory(ISnapshotReadonly[] inputs)
         {
             _data.ClearCurrent();
             _locals.ClearCurrent();
@@ -167,8 +242,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
+
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
         {
+            if (CurrentMode != SnapshotMode.MemoryLevel)
+                throw new NotImplementedException();
+
+
+
             var isFirst = true;
             foreach (Snapshot callInput in callOutput)
             {
@@ -611,7 +692,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private MemoryEntry getEntry(VirtualReference reference)
         {
-            return _data.GetEntry(reference);
+            return getDataContainer().GetEntry(reference);
         }
 
         private void setEntry(VirtualReference reference, MemoryEntry entry)
@@ -621,7 +702,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 throw new NotSupportedException("Entry cannot be null");
             }
 
-            _data.SetEntry(reference, entry);
+            getDataContainer().SetEntry(reference, entry);
         }
 
         private VariableInfo getInfo(VariableName name, VariableKind kind = VariableKind.Local)
@@ -842,6 +923,25 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #endregion
 
         #region Private utilities
+
+
+        private Exception notSupportedMode()
+        {
+            return new NotSupportedException("Current mode: " + CurrentMode);
+        }
+
+        private DataContainer getDataContainer()
+        {
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    return _data;
+                case SnapshotMode.InfoLevel:
+                    return _infoData;
+                default:
+                    throw notSupportedMode();
+            }
+        }
 
         private VariableKey getOrCreateKey(VariableName name, VariableKind kind = VariableKind.Local)
         {

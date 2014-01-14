@@ -137,7 +137,10 @@ namespace Weverca.AnalysisFramework
             point.SetMode(SnapshotMode.InfoLevel);
 
             var outSet = GetOutSet(point);
+            var inSet = GetInSet(point);
             outSet.StartTransaction();
+            //default extending
+            outSet.Extend(inSet);
         }
 
         private void commit(ProgramPointBase point)
@@ -150,6 +153,8 @@ namespace Weverca.AnalysisFramework
 
         private void extendInput(ProgramPointBase point, IEnumerable<ProgramPointBase> inputs)
         {
+            point.SetMode(SnapshotMode.InfoLevel);
+
             var inSet = GetInSet(point);
 
             var inputSets = new List<FlowInputSet>();
