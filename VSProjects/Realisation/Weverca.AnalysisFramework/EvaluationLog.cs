@@ -73,6 +73,7 @@ namespace Weverca.AnalysisFramework
 
         private void associatePointHierarchy(ProgramPointBase part)
         {
+            var associated = new HashSet<ProgramPointBase>();
             var toAssociate = new Queue<ProgramPointBase>();
             toAssociate.Enqueue(part);
 
@@ -86,6 +87,12 @@ namespace Weverca.AnalysisFramework
 
                 foreach (var parent in point.FlowParents)
                 {
+                    if (associated.Contains(parent))
+                    {
+                        continue;
+                    }
+                    associated.Add(parent);
+
                     toAssociate.Enqueue(parent);
                 }
             }

@@ -38,6 +38,11 @@ namespace Weverca.AnalysisFramework
         private readonly Dictionary<BasicBlock, PointsBlock> _createdBlocks = new Dictionary<BasicBlock, PointsBlock>();
 
         /// <summary>
+        /// Expression blocks remembered for possibility of sharing
+        /// </summary>
+        private readonly Dictionary<Expression, PointsBlock> _creadtedExpressionBlocks = new Dictionary<Expression, PointsBlock>();
+
+        /// <summary>
         /// Program points that has been created during computation, without nodes that has been contracted out from graph        
         /// </summary>
         internal IEnumerable<ProgramPointBase> CreatedPoints { get { return _createdProgramPoints; } }
@@ -87,10 +92,18 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created points block</returns>
         internal PointsBlock CreateFromExpression(Expression expression)
         {
+            PointsBlock result;
+            if (_creadtedExpressionBlocks.TryGetValue(expression, out result))
+            {
+                return result;
+            }
+
             var points = ElementExpander.ExpandStatement(expression, reportCreation);
             if (points.Any())
             {
-                return PointsBlock.ForExpression(points);
+                result = PointsBlock.ForExpression(points);
+                _creadtedExpressionBlocks.Add(expression,result);
+                return result;
             }
             else
             {

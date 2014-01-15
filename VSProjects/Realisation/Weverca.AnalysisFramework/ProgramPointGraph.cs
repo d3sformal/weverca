@@ -77,13 +77,13 @@ namespace Weverca.AnalysisFramework
         private ProgramPointGraph(BasicBlock entryBlock, LangElement sourceObject)
         {
             SourceObject = sourceObject;
-            
+
             _context = new PPGraphBuildingContext(this);
 
             var startBlock = _context.CreateEmptyPoint(out Start, entryBlock);
             var endBlock = _context.CreateEmptyPoint(out End);
 
-            buildGraph(startBlock);            
+            buildGraph(startBlock);
             //connecting end points has to be done before contracting (because of loosing child less points)
             connectChildLessPoints();
 
@@ -94,7 +94,7 @@ namespace Weverca.AnalysisFramework
                 point.SetOwningGraph(this);
             }
         }
-        
+
         /// <summary>
         /// Create program point graph from given declaration
         /// </summary>
@@ -161,7 +161,7 @@ namespace Weverca.AnalysisFramework
         #endregion
 
         #region Graph building
-        
+
         /// <summary>
         /// Build graph from given starting block
         /// <remarks>Uses _context graph build</remarks>
@@ -198,7 +198,7 @@ namespace Weverca.AnalysisFramework
         /// Connect points that doesnt have any childs to End point
         /// </summary>
         private void connectChildLessPoints()
-        {            
+        {
             //collect points without flow children
             var childLessPoints = new List<ProgramPointBase>();
             foreach (var point in Points)
@@ -254,7 +254,7 @@ namespace Weverca.AnalysisFramework
             //process all outgoing conditional edges
             foreach (var edge in parentBlock.ConditionalEdges)
             {
-                var expression=edge.Condition;
+                var expression = edge.Condition;
                 var conditionExpressionBlock = _context.CreateFromExpression(expression);
                 var expressionValue = conditionExpressionBlock.LastPoint as ValuePoint;
 
@@ -276,20 +276,20 @@ namespace Weverca.AnalysisFramework
 
             //if there is default branch, connect it to parent
             if (parentBlock.Default != null)
-            {                
+            {
                 if (expressionValues.Count == 0)
                 {
                     //there is default branch without any condition - connect without assume block
-                     var defaultBlock = getChildBlock(parentBlock.Default, pendingBlocks);
+                    var defaultBlock = getChildBlock(parentBlock.Default, pendingBlocks);
                     //default block needs processing of its children
-                     parentBlock.AddChild(defaultBlock);
+                    parentBlock.AddChild(defaultBlock);
                 }
                 else
                 {
                     //there has to be assumption condition on default branch
-                    var values= expressionValues.ToArray();
-                    var condition=new AssumptionCondition(ConditionForm.SomeNot,expressionParts.ToArray());
-                    var defaultAssumeBlock= _context.CreateAssumeBlock(condition, parentBlock.Default,values);
+                    var values = expressionValues.ToArray();
+                    var condition = new AssumptionCondition(ConditionForm.SomeNot, expressionParts.ToArray());
+                    var defaultAssumeBlock = _context.CreateAssumeBlock(condition, parentBlock.Default, values);
 
                     //default Assume has to be added as child of last expression block
                     //note: there is always last condition block, because of non empty expression values
@@ -301,7 +301,7 @@ namespace Weverca.AnalysisFramework
 
 
 
-        #endregion 
+        #endregion
 
         #region Private utilities
 

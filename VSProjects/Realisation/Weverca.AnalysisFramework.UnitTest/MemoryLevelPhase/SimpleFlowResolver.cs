@@ -306,7 +306,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 if (condition.Parts.Count() == 1)
                 {
-                    assumeBinary(condition.Parts.First().SourceElement as BinaryEx);
+                    var sourceElement = condition.Parts.First().SourceElement;
+                    var binary = sourceElement as BinaryEx;
+
+                    assumeBinary(binary);
                 }
             }
         }
@@ -337,7 +340,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var absParam = call.CallSignature.Parameters[0];
                 lValue = _log.GetSnapshotEntry(absParam.Expression);
 
-                
+
 
                 value = getReverse_abs(paramValue);
             }
