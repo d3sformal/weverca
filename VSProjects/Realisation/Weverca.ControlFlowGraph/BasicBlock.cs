@@ -22,7 +22,7 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// The outgoing edges
         /// </summary>
-        public List<ConditionalEdge> OutgoingEdges;
+        public List<IBasicBlockEdge> OutgoingEdges;
 
         /// <summary>
         /// The incomming edges
@@ -45,7 +45,7 @@ namespace Weverca.ControlFlowGraph
         public BasicBlock()
         {
             Statements = new List<LangElement>();
-            OutgoingEdges = new List<ConditionalEdge>();
+            OutgoingEdges = new List<IBasicBlockEdge>();
             IncommingEdges = new List<IBasicBlockEdge>();
             DefaultBranch = null;
             EndIngTryBlocks = new List<TryBasicBlock>();
@@ -74,7 +74,7 @@ namespace Weverca.ControlFlowGraph
         /// Adds the outgoing edge.
         /// </summary>
         /// <param name="edge">The edge.</param>
-        public void AddOutgoingEdge(ConditionalEdge edge)
+        public void AddOutgoingEdge(IBasicBlockEdge edge)
         {
             OutgoingEdges.Add(edge);
         }

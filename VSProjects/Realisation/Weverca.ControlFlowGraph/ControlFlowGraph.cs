@@ -373,81 +373,88 @@ namespace Weverca.ControlFlowGraph
             i = oldCounter;
             foreach (var node in nodes)
             {
-                foreach (var edge in node.OutgoingEdges)
+                foreach (var e in node.OutgoingEdges)
                 {
-                    int index = oldCounter + nodes.IndexOf(edge.To);
-                    string label = "";
-                    //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode, je potrebne ju inym sposobom vypisat
-                    if (!edge.Condition.Position.IsValid)
+                    int index = oldCounter + nodes.IndexOf(e.To);
+                    if (e is ConditionalEdge)
                     {
-                        if (edge.Condition.GetType() == typeof(BoolLiteral))
+                        ConditionalEdge edge = e as ConditionalEdge;
+                        string label = "";
+                        //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode, je potrebne ju inym sposobom vypisat
+                        if (!edge.Condition.Position.IsValid)
                         {
-                            label = edge.Condition.Value.ToString();
-                        }
-                        if (edge.Condition.GetType() == typeof(BinaryEx))
-                        {
-                            BinaryEx bin = (BinaryEx)edge.Condition;
-                            //dirty trick how to acces internal field
-                            var a = bin.GetType().GetField("operation", BindingFlags.NonPublic | BindingFlags.Instance);
-                            if ((Operations)a.GetValue(bin) == Operations.Equal)
+                            if (edge.Condition.GetType() == typeof(BoolLiteral))
                             {
-                                Expression l = (Expression)bin.GetType().GetField("leftExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
-                                Expression r = (Expression)bin.GetType().GetField("rightExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
-                                if (l.Position.IsValid == false)
+                                label = edge.Condition.Value.ToString();
+                            }
+                            if (edge.Condition.GetType() == typeof(BinaryEx))
+                            {
+                                BinaryEx bin = (BinaryEx)edge.Condition;
+                                //dirty trick how to acces internal field
+                                var a = bin.GetType().GetField("operation", BindingFlags.NonPublic | BindingFlags.Instance);
+                                if ((Operations)a.GetValue(bin) == Operations.Equal)
                                 {
-                                    if (l.GetType() == typeof(IntLiteral))
+                                    Expression l = (Expression)bin.GetType().GetField("leftExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
+                                    Expression r = (Expression)bin.GetType().GetField("rightExpr", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(bin);
+                                    if (l.Position.IsValid == false)
                                     {
-                                        label += "" + ((IntLiteral)l).Value;
-                                        label += "=";
-                                        label += globalCode.SourceUnit.GetSourceCode(r.Position);
+                                        if (l.GetType() == typeof(IntLiteral))
+                                        {
+                                            label += "" + ((IntLiteral)l).Value;
+                                            label += "=";
+                                            label += globalCode.SourceUnit.GetSourceCode(r.Position);
+                                        }
+                                        else
+                                        {
+                                            label += "else";
+                                        }
                                     }
                                     else
                                     {
-                                        label += "else";
+                                        label += globalCode.SourceUnit.GetSourceCode(l.Position);
+                                        label += "=";
+                                        label += globalCode.SourceUnit.GetSourceCode(r.Position);
+
                                     }
                                 }
                                 else
                                 {
-                                    label += globalCode.SourceUnit.GetSourceCode(l.Position);
-                                    label += "=";
-                                    label += globalCode.SourceUnit.GetSourceCode(r.Position);
-
+                                    label += "else";
+                                    //label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
                                 }
                             }
-                            else
+                            if (edge.Condition.GetType() == typeof(DirectFcnCall))
                             {
-                                label += "else";
-                                //label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
+                                DirectFcnCall functionCall = (DirectFcnCall)edge.Condition;
+
+                                label += functionCall.QualifiedName + "(";
+                                foreach (var parameter in functionCall.CallSignature.Parameters)
+                                {
+                                    if (parameter.Expression.GetType() == typeof(StringLiteral))
+                                    {
+                                        StringLiteral literal = (StringLiteral)parameter.Expression;
+                                        label += "\"" + literal.Value + "\"" + ",";
+                                    }
+                                    else
+                                    {
+                                        label += globalCode.SourceUnit.GetSourceCode(parameter.Expression.Position) + ",";
+                                    }
+                                }
+                                label += ")";
                             }
                         }
-                        if (edge.Condition.GetType() == typeof(DirectFcnCall))
+                        else
                         {
-                            DirectFcnCall functionCall = (DirectFcnCall)edge.Condition;
-
-                            label += functionCall.QualifiedName + "(";
-                            foreach (var parameter in functionCall.CallSignature.Parameters)
-                            {
-                                if (parameter.Expression.GetType() == typeof(StringLiteral))
-                                {
-                                    StringLiteral literal = (StringLiteral)parameter.Expression;
-                                    label += "\"" + literal.Value + "\"" + ",";
-                                }
-                                else
-                                {
-                                    label += globalCode.SourceUnit.GetSourceCode(parameter.Expression.Position) + ",";
-                                }
-                            }
-                            label += ")";
+                            label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
                         }
+                        label = label.Replace("\"", "\\\"");
+                        result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                     }
-                    else
+                    else 
                     {
-                        label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
+                        result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"foreach direct edge\"]" + Environment.NewLine;
                     }
-                    label = label.Replace("\"", "\\\"");
-                    result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                 }
-
                 if (node.DefaultBranch != null)
                 {
                     string elseString = string.Empty;

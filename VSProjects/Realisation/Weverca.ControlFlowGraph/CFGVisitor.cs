@@ -478,7 +478,7 @@ namespace Weverca.ControlFlowGraph
             foreachHead.AddElement(x);
 
             //Conditional edge to the foreach body
-            ConditionalEdge.MakeNewAndConnect(foreachHead, foreachBody, x.ValueVariable.Variable);
+            ForEachSpecialEdge.MakeNewAndConnect(foreachHead, foreachBody);
 
             //Visits foreach body
             loopData.Push(new LoopData(foreachHead, foreachSink));

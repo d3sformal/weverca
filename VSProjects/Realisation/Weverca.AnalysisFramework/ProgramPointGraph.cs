@@ -254,7 +254,7 @@ namespace Weverca.AnalysisFramework
             //process all outgoing conditional edges
             foreach (var edge in parentBlock.ConditionalEdges)
             {
-                var expression = edge.Condition;
+                var expression = (edge as ConditionalEdge).Condition;
                 var conditionExpressionBlock = _context.CreateFromExpression(expression);
                 var expressionValue = conditionExpressionBlock.LastPoint as ValuePoint;
 

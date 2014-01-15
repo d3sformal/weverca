@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Outgoing conditional edges (their points will be connected as childs via assume blocks)
         /// </summary>
-        internal readonly IEnumerable<ConditionalEdge> ConditionalEdges;
+        internal readonly IEnumerable<IBasicBlockEdge> ConditionalEdges;
 
         /// <summary>
         /// Outgoing block used as default branch for conditional edges
@@ -65,7 +65,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="outgoingBlocks">Outgoing basic blocks (their points will be connected as current block flow children)</param>
         /// <param name="conditionalEdges">Outgoing conditional edges (their points will be connected as childs via assume blocks)</param>
         /// <param name="defaultBlock">Outgoing block used as default branch for conditional edges</param>
-        private PointsBlock(IEnumerable<BasicBlock> outgoingBlocks, IEnumerable<ConditionalEdge> conditionalEdges, BasicBlock defaultBlock)
+        private PointsBlock(IEnumerable<BasicBlock> outgoingBlocks, IEnumerable<IBasicBlockEdge> conditionalEdges, BasicBlock defaultBlock)
         {
             OutgoingBlocks = outgoingBlocks;
             ConditionalEdges = conditionalEdges;
@@ -98,6 +98,7 @@ namespace Weverca.AnalysisFramework
         internal static PointsBlock ForBlock(IEnumerable<ProgramPointBase> statementPoints, BasicBlock block, bool needsContraction)
         {
             var defaultBlock = block.DefaultBranch == null ? null : block.DefaultBranch.To;
+
             var pointsBlock = new PointsBlock(new BasicBlock[0], block.OutgoingEdges, defaultBlock);
 
             pointsBlock._containedPoints.AddRange(statementPoints);

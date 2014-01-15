@@ -58,17 +58,24 @@ namespace Weverca.AnalysisFramework
                 current = child;
             }
 
-            
+
             foreach (var edge in block.OutgoingEdges)
             {
-                var condition = fromCondition(edge.Condition,block);
-                addChildren(condition, edge.To);
-                current.AddChild(condition);
+                if (edge is ConditionalEdge)
+                {
+                    var condition = fromCondition((edge as ConditionalEdge).Condition, block);
+                    addChildren(condition, edge.To);
+                    current.AddChild(condition);
+                }
+                else 
+                {
+                //foreach edge
+                }
             }
 
             if (block.DefaultBranch != null)
             {
-                var conditionExpressions = from edge in block.OutgoingEdges select edge.Condition;
+                var conditionExpressions = from edge in block.OutgoingEdges where edge is ConditionalEdge select (edge as ConditionalEdge).Condition;
 
                 if (conditionExpressions.Any())
                 {
