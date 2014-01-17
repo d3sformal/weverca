@@ -66,6 +66,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public int WideningLimit { get; protected set; }
 
+        /// <summary>
+        /// Entry input of the analysis.
+        /// </summary>
+        public FlowOutputSet EntryInput {get {return GetInSet(GetEntryPoint(AnalyzedProgramPointGraph));}}
+
         #endregion
         
         /// <summary>
@@ -107,8 +112,7 @@ namespace Weverca.AnalysisFramework
             {
                 var point = _workQueue.Dequeue();
 
-                var inputs = GetInputPoints(point);
-                extendInput(point, inputs);
+                extendInput(point);
 
                 flowThrough(point);
 
@@ -151,8 +155,11 @@ namespace Weverca.AnalysisFramework
             outSet.CommitTransaction();
         }
 
-        private void extendInput(ProgramPointBase point, IEnumerable<ProgramPointBase> inputs)
+        private void extendInput(ProgramPointBase point)
         {
+            var inputs = GetInputPoints(point);
+            if (!inputs.Any()) return;
+
             point.SetMode(SnapshotMode.InfoLevel);
 
             var inSet = GetInSet(point);

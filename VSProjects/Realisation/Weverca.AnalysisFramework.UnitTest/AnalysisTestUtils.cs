@@ -199,6 +199,24 @@ namespace Weverca.AnalysisFramework.UnitTest
             POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
         }
 
+        /// <summary>
+        /// Initializer which sets environment for tests before analyzing
+        /// </summary>
+        /// <param name="outSet"></param>
+        private static void GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(FlowOutputSet outSet)
+        {
+            outSet.Snapshot.SetMode(SnapshotMode.InfoLevel);
+            var POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
+            var POST = outSet.CreateInfo(true);
+
+            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
+
+            POSTVar = outSet.GetVariable(new VariableIdentifier("POST"), true);
+            POST = outSet.CreateInfo(true);
+
+            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
+        }
+
         internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
         {
             var fileName = "./cfg_test.php";
@@ -309,7 +327,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        internal static void RunInfoLevelCase(TestCase testCase)
+        internal static void RunInfoLevelBackwardPropagationCase(TestCase testCase)
         {
             var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
             var analyses = testCase.CreateAnalyses(cfg);
@@ -319,6 +337,24 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var ppg = GetAnalyzedGraph(testCase, analysis);
 
                 var nextPhase = new SimpleBackwardAnalysis(ppg);
+                nextPhase.Analyse();
+
+                testCase.Assert(ppg);
+            }
+        }
+
+        internal static void RunInfoLevelTaintAnalysisCase(TestCase testCase)
+        {
+            var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
+            var analyses = testCase.CreateAnalyses(cfg);
+
+            foreach (var analysis in analyses)
+            {
+                var ppg = GetAnalyzedGraph(testCase, analysis);
+
+                var nextPhase = new SimpleTaintForwardAnalysis(ppg);
+
+                GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(nextPhase.EntryInput);
                 nextPhase.Analyse();
 
                 testCase.Assert(ppg);
@@ -465,6 +501,19 @@ namespace Weverca.AnalysisFramework.UnitTest
             var actualTargetMessage = string.Join(", ", actualCollection.ToArray());
             CollectionAssert.AreEquivalent(expectedCollection, actualCollection, "Wrong targets for propagation {0}, expected {1}", actualTargetMessage, expectedTargetsMessage);
         }
+
+        internal static void AssertHasTaintStatus(FlowOutputSet outSet, string variableName, string assertMessage, bool taintStatus)
+        {
+            var variable = outSet.GetVariable(new VariableIdentifier(variableName));
+            var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
+            var computedTaintStatus = false;
+            foreach (var value in values)
+            {
+                computedTaintStatus = computedTaintStatus || (value as InfoValue<bool>).Data;
+            }
+            Assert.IsTrue(taintStatus == computedTaintStatus, "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
+
+        }
     }
 
     internal delegate void AssertRunner(ProgramPointGraph ppg);
@@ -485,7 +534,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
         private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM };
-        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis, Analyses.WevercaAnalysis };
+        private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.SimpleAnalysis, Analyses.WevercaAnalysis};
 
         /// <summary>
         /// Values below zero means that there is no limit
@@ -642,6 +691,18 @@ namespace Weverca.AnalysisFramework.UnitTest
            });
             return this;
         }
+
+        internal TestCase HasTaintStatus(bool taintStatus)
+        {
+            _asserts.Add((ppg) =>
+            {
+                var output = GetEndOutput(ppg);
+                AnalysisTestUtils.AssertHasTaintStatus(output, VariableName, AssertMessage, taintStatus);
+            });
+            return this;
+        }
+
+
 
         #endregion
 

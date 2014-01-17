@@ -11,18 +11,30 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     internal class SnapshotMemoryEntry : ReadWriteSnapshotEntryBase
     {
-        internal readonly MemoryEntry WrappedEntry;
+        private MemoryEntry WrappedEntry;
+        private MemoryEntry WrappedEntryInfoLevel = null;
+        private static MemoryEntry UndefinedEntry = null;
 
         internal bool ForceStrong { get { return WrappedEntry.Count > 1; } }
 
-        internal SnapshotMemoryEntry(MemoryEntry wrappedEntry)
+        internal SnapshotMemoryEntry(SnapshotBase context, MemoryEntry wrappedEntry)
         {
-            WrappedEntry = wrappedEntry;
+            writeMemory(context, wrappedEntry, true);
         }
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            throw new NotImplementedException();
+            switch (context.CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    WrappedEntry = value;
+                    break;
+                case SnapshotMode.InfoLevel:
+                    WrappedEntryInfoLevel = value;
+                    break;
+                default:
+                    throw notSupportedMode(context.CurrentMode);
+            }
         }
 
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
@@ -47,7 +59,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            return WrappedEntry;
+            switch (context.CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    return WrappedEntry;
+                case SnapshotMode.InfoLevel:
+                    if (WrappedEntryInfoLevel != null) return WrappedEntryInfoLevel;
+                    return getUndefinedMemoryEntry(context);
+                default:
+                    throw notSupportedMode(context.CurrentMode);
+            }
         }
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context,
@@ -107,6 +128,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
             throw new NotImplementedException();
+        }
+
+        private MemoryEntry getUndefinedMemoryEntry(SnapshotBase snapshot)
+        {
+            if (UndefinedEntry == null) UndefinedEntry = new MemoryEntry(snapshot.UndefinedValue);
+            return UndefinedEntry;
+        }
+
+        private Exception notSupportedMode(SnapshotMode currentMode)
+        {
+            return new NotSupportedException("Current mode: " + currentMode);
         }
 
         private static Snapshot toSnapshot(SnapshotBase context)

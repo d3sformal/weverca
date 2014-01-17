@@ -293,7 +293,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
-            return new SnapshotMemoryEntry(entry);
+            return new SnapshotMemoryEntry(this, entry);
         }
 
         #endregion
@@ -923,7 +923,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #endregion
 
         #region Private utilities
-
 
         private Exception notSupportedMode()
         {

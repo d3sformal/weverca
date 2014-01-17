@@ -189,7 +189,7 @@ namespace Weverca.AnalysisFramework
             }
 
             //because of avoid incorrect use
-            _services.UnSetServices(ProgramPointGraph);
+            //_services.UnSetServices(ProgramPointGraph);
         }            
 
         private void enqueue(ProgramPointBase point)

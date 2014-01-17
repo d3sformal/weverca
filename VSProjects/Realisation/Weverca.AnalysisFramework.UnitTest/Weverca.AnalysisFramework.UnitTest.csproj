@@ -54,6 +54,8 @@
     <Compile Include="InfoLevelPhase\PropagationAnalyzer.cs" />
     <Compile Include="InfoLevelPhase\PropagationInfo.cs" />
     <Compile Include="InfoLevelPhase\SimpleBackwardAnalysis.cs" />
+    <Compile Include="InfoLevelPhase\SimpleTaintForwardAnalysis.cs" />
+    <Compile Include="InfoLevelPhase\TaintAnalyzer.cs" />
     <Compile Include="MemoryLevelPhase\Deprecated_ForwardAnalysisTest.cs" />
     <Compile Include="MemoryLevelPhase\ForwardAnalysisTest.cs" />
     <Compile Include="InfoLevelPhase\NextPhaseAnalysisTest.cs" />

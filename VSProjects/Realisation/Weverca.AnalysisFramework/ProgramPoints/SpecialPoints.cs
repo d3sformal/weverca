@@ -210,6 +210,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <remarks>One sink is used per extension</remarks>
         /// </summary>
         public readonly FlowExtension OwningExtension;
+        private static readonly VariableName returnVarName = new VariableName(".resultSinkPoint");
 
         public override LangElement Partial { get { return null; } }
 
@@ -228,9 +229,18 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
-            Value = OutSet.CreateSnapshotEntry(returnValue);
+            ResolveReturnValue();
             ForwardAnalysisServices.CurrentScript = ppGraph.OwningScript;
+        }
+
+        public void ResolveReturnValue()
+        {
+            var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
+            // TODO: if ExtensionPoint is changed to LValuePoint and following commented code is 
+            // used instead of uncommented, shared functions tests fail
+            //if (LValue == null) LValue = OutSet.GetLocalControlVariable(returnVarName);
+            //LValue.WriteMemory(OutSet.Snapshot, returnValue);
+            Value = OutSet.CreateSnapshotEntry(returnValue);
         }
 
         /*     /// <summary>

@@ -179,11 +179,11 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Sets return storage to given value.
         /// </summary>
-        /// <param name="outSet">the output set in which the return storage to be set is located</param>
+        /// <param name="flowSet">the flow set in which the return storage to be set is located</param>
         /// <param name="returnValue">the value to be set to return storage</param>
-        public static void SetReturn(FlowOutputSet outSet, MemoryEntry returnValue)
+        public static void SetReturn(FlowInputSet flowSet, MemoryEntry returnValue)
         {
-            var outSnapshot = outSet.Snapshot;
+            var outSnapshot = flowSet.Snapshot;
             var returnVar = outSnapshot.GetLocalControlVariable(SnapshotBase.ReturnValue);
             returnVar.WriteMemory(outSnapshot, returnValue);
         }

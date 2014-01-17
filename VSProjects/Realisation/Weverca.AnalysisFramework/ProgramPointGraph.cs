@@ -64,6 +64,16 @@ namespace Weverca.AnalysisFramework
             private set;
         }
 
+        /// <summary>
+        /// The name of the function or method that is represented by this program point graph.
+        /// Null in the case that this program point graph represetns script
+        /// </summary>
+        public string FunctionName
+        {
+            get;
+            private set;
+        }
+
         #endregion
 
         #region Program point graph creating
@@ -105,6 +115,7 @@ namespace Weverca.AnalysisFramework
             var builder = new FunctionProgramPointBuilder();
             function.Accept(builder);
             builder.Output.OwningScript = function.DeclaringScript;
+            builder.Output.FunctionName = function.Name.Value;
             return builder.Output;
         }
 

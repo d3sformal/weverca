@@ -212,6 +212,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        public void SetValueContent(MemoryEntry valueContent)
+        {
+            Value = OutSet.CreateSnapshotEntry(valueContent);
+        }
+
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitBinary(this);

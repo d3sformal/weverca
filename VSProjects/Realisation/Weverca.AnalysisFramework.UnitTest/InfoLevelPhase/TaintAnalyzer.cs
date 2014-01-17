@@ -1,0 +1,125 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.ProgramPoints;
+
+namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
+{
+    class TaintAnalyzer : NextPhaseAnalyzer
+    {
+
+        private static readonly List<string> nativeSanitizers = new List<string>() 
+        {
+            "strlen"
+        };
+
+        private static readonly List<string> taintedVariables = new List<string>() 
+        {
+            "$_POST"
+        };
+
+        public override void VisitPoint(ProgramPointBase p)
+        {
+            //nothing to do
+        }
+
+        public override void VisitNativeAnalyzer(NativeAnalyzerPoint p)
+        {
+            string functionName = p.ppGraph.FunctionName;
+            if (nativeSanitizers.Contains(p.ppGraph.FunctionName))
+            {
+                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(false)));
+                return;
+            }
+
+            // If a native function is not sanitizer, propagates taint status from arguments to return value
+
+            // 1. Get values of arguments of the function
+            // TODO: code duplication: the following code, code in SimpleFunctionResolver, and NativeFunctionAnalyzer. Move the code to some API (? FlowInputSet)
+            Input.SetMode(SnapshotMode.MemoryLevel);
+            MemoryEntry argc = InputSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(Input);
+            Input.SetMode(SnapshotMode.InfoLevel);
+            int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+            List<MemoryEntry> arguments = new List<MemoryEntry>();
+            List<Value> argumentValues = new List<Value>();
+            for (int i = 0; i < argumentCount; i++)
+            {
+                arguments.Add(OutputSet.ReadVariable(Argument(i)).ReadMemory(OutputSet.Snapshot));
+                argumentValues.AddRange(arguments.Last().PossibleValues);
+            }
+
+            // 2. Propagate arguments to the return value.
+            FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(mergeTaint(argumentValues))));
+        }
+
+        public override void VisitBinary(BinaryExPoint p)
+        {
+            List<Value> argumentValues = new List<Value>();
+            argumentValues.AddRange(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
+            argumentValues.AddRange(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
+
+            p.SetValueContent(new MemoryEntry(Output.CreateInfo(mergeTaint(argumentValues))));
+        }
+
+        public override void VisitExtensionSink(ExtensionSinkPoint p)
+        {
+            p.ResolveReturnValue();
+        }
+
+        public override void VisitAssign(AssignPoint p)
+        {
+            var source = p.ROperand.Value;
+            var target = p.LOperand.LValue;
+
+            if (target == null || source == null)
+                //Variable has to be LValue
+                return;
+
+            var sourceTaint = getTaint(source);
+
+            var finalPropagation = sourceTaint;
+
+            setTaint(target, finalPropagation);
+        }
+
+        private bool getTaint(ReadSnapshotEntryBase lValue)
+        {
+            var info = lValue.ReadMemory(Output);
+
+            return mergeTaint(info.PossibleValues);
+        }
+
+        private bool mergeTaint(IEnumerable<Value> values)
+        {
+            foreach (var infoValue in values)
+            {
+                if (infoValue is UndefinedValue) continue;
+                if (((InfoValue<bool>)infoValue).Data) return true;
+
+            }
+            return false;
+        }
+
+        private void setTaint(ReadWriteSnapshotEntryBase variable, bool taint)
+        {
+            var infoValue = Output.CreateInfo(taint);
+            variable.WriteMemory(Output, new MemoryEntry(infoValue));
+        }
+
+        private static VariableIdentifier Argument(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+            return new VariableIdentifier(".arg" + index);
+        }
+
+
+    }
+}
