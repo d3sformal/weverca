@@ -94,7 +94,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <summary>
         /// Finds the file to be included
         /// </summary>
-        private FileInfo findFile(FlowController flow, string fileName) 
+        private FileInfo findFile(FlowController flow, string fileName)
         {
             // the file has relative path and it is in main script directory
             var fileInfo = new FileInfo(ForwardAnalysisServices.EntryScript.DirectoryName + "/" + fileName);
@@ -120,7 +120,7 @@ namespace Weverca.Analysis.FlowResolver
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
             List<Value> result = new List<Value>();
-            foreach(var stack in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+            foreach (var stack in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
             {
                 result.Add(outSet.CreateInfo(new CatchBlocks((stack as InfoValue<CatchBlocks>).Data, catchBlockStarts)));
             }
@@ -135,12 +135,12 @@ namespace Weverca.Analysis.FlowResolver
         public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
-             List<Value> result = new List<Value>();
-             foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
-             {
-                 CatchBlocks stack = (value as InfoValue<CatchBlocks>).Data;
+            List<Value> result = new List<Value>();
+            foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+            {
+                CatchBlocks stack = (value as InfoValue<CatchBlocks>).Data;
                 result.Add(outSet.CreateInfo(stack.Pop()));
-             }
+            }
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
@@ -158,12 +158,12 @@ namespace Weverca.Analysis.FlowResolver
             List<ProgramPointBase> result = new List<ProgramPointBase>();
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
             List<List<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> stack = new List<List<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>();
-           
-            foreach(var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+
+            foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
             {
                 if (stack.Count == 0)
                 {
-                    for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count;i++ )
+                    for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
                     {
                         stack.Add(new List<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>());
                     }
@@ -174,13 +174,16 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-            bool foundMatch = false;
-            while (stack.Count > 0)
+
+
+            foreach (Value value in throwedValue.PossibleValues)
             {
-                foreach (Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase> catchBlock in stack.Last())
+                bool foundMatch = false;
+                for (int i = stack.Count - 1; i >= 0; i--)
                 {
-                    foreach (Value value in throwedValue.PossibleValues)
+                    foreach (Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase> catchBlock in stack[i])
                     {
+
                         if (value is ObjectValue)
                         {
                             TypeValue type = outSet.ObjectType(value as ObjectValue);
@@ -191,9 +194,9 @@ namespace Weverca.Analysis.FlowResolver
                             }
                             else
                             {
-                                for (int i = type.Declaration.BaseClasses.Count - 1; i >= 0; i--)
+                                for (int j = type.Declaration.BaseClasses.Count - 1; j >= 0; j--)
                                 {
-                                    if (type.Declaration.BaseClasses[i] == catchBlock.Item1.QualifiedName)
+                                    if (type.Declaration.BaseClasses[j] == catchBlock.Item1.QualifiedName)
                                     {
                                         result.Add(catchBlock.Item2);
                                         foundMatch = true;
@@ -209,41 +212,67 @@ namespace Weverca.Analysis.FlowResolver
                         }
                         else
                         {
-                            //warning only objects can be thrown
-                        }
+                            AnalysisWarningHandler.SetWarning(outSet,new AnalysisWarning("Only objects can be thrown",throwStmt,AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                            //result.Add(ProgramPointGraph.End);
+                        } 
                     }
-                }
-                stack.RemoveAt(stack.Count - 1);
-                if (foundMatch)
-                {
-                    break;
+                    if (foundMatch)
+                    {
+                        break;
+                    }
                 }
             }
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack as IEnumerable<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>))));
             return result;
         }
-        
+
         #endregion
     }
 
-
+    /// <summary>
+    /// Class representing stack of try with catch bloks.
+    /// It is imutable.
+    /// </summary>
     public class CatchBlocks
     {
+        /// <summary>
+        /// stack storing try and catch information
+        /// </summary>
         public readonly ReadOnlyCollection<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> blocks;
+
+        /// <summary>
+        /// Create new instace of CatchBlocks
+        /// </summary>
+        /// <param name="blocks">Stack</param>
         public CatchBlocks(IEnumerable<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> blocks)
         {
             this.blocks = new ReadOnlyCollection<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(new List<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>(blocks));
         }
-        public CatchBlocks(CatchBlocks blocks,IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlocks)
+
+        /// <summary>
+        /// Create new instace of CatchBlocks. It inserts new block on the old stack.
+        /// </summary>
+        /// <param name="blocks">old stack</param>
+        /// <param name="catchBlocks">new inserted information</param>
+        public CatchBlocks(CatchBlocks blocks, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlocks)
         {
             List<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> list = new List<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(blocks.blocks);
             list.Add(catchBlocks);
             this.blocks = new ReadOnlyCollection<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>(list);
         }
+
+        /// <summary>
+        /// Create new instance with empty stack
+        /// </summary>
         public CatchBlocks()
         {
             blocks = new ReadOnlyCollection<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(new List<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>());
         }
+
+        /// <summary>
+        /// Pop the current stack
+        /// </summary>
+        /// <returns>new Catchblocks with last item removed</returns>
         public CatchBlocks Pop()
         {
             List<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>> list = new List<IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>>>(blocks);

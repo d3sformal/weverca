@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="ExceptionTester.cs" />
     <Compile Include="FlagTester.cs" />
     <Compile Include="ExpressionResolverTester.cs" />
     <Compile Include="FlowResolverTests\EqualsValueVisitor.cs" />

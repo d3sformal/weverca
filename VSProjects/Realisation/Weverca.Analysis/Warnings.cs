@@ -145,6 +145,8 @@ namespace Weverca.Analysis
         NON_ABSTRACT_METHOD_MUST_HAVE_BODY,
         //todo abstract classes and methods
 
-        FILE_TO_BE_INCLUDED_NOT_FOUND
+        FILE_TO_BE_INCLUDED_NOT_FOUND,
+
+        ONLY_OBJECT_CAM_BE_THROWN
     }
 }
