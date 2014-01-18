@@ -239,10 +239,19 @@ namespace Weverca.AnalysisFramework
         {
             foreach (var child in parentBlock.OutgoingBlocks)
             {
-                var childBlock = getChildBlock(child, pendingBlocks);
-
-                parentBlock.AddChild(childBlock);
+                connectConditionLessEdge(parentBlock, child, pendingBlocks);
             }
+        }
+
+        /// <summary>
+        /// Connect outgoing condition less edge from parentBlock with given child
+        /// </summary>
+        /// <param name="parentBlock">Parent point block which child block will be connected</param>
+        private void connectConditionLessEdge(PointsBlock parentBlock, BasicBlock child, Queue<PointsBlock> pendingBlocks)
+        {
+            var childBlock = getChildBlock(child, pendingBlocks);
+
+            parentBlock.AddChild(childBlock);
         }
 
         /// <summary>
@@ -265,7 +274,25 @@ namespace Weverca.AnalysisFramework
             //process all outgoing conditional edges
             foreach (var edge in parentBlock.ConditionalEdges)
             {
-                var expression = (edge as ConditionalEdge).Condition;
+
+                Expression expression;
+
+                if (edge is ConditionalEdge)
+                {
+                    expression = (edge as ConditionalEdge).Condition;
+                }
+                else if (edge is ForEachSpecialEdge)
+                {
+                    //now is foreach handled without condition processing (edge is added as non conditional)
+                    connectConditionLessEdge(parentBlock, edge.To, pendingBlocks);
+                    continue;
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+
                 var conditionExpressionBlock = _context.CreateFromExpression(expression);
                 var expressionValue = conditionExpressionBlock.LastPoint as ValuePoint;
 
