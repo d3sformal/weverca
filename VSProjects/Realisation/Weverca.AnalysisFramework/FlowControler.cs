@@ -66,6 +66,10 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public MemoryEntry CalledObject { get; set; }
 
+        /// <summary>
+        /// End point of program point graph
+        /// </summary>
+        public ProgramPointBase ProgramEnd { get { return Services.ProgramEnd; } }
 
         /// <summary>
         /// Create flow controller for given input and output set

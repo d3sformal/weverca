@@ -61,6 +61,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal readonly EmptySetDelegate CreateEmptySet;
 
+        /// <summary>
+        /// End point of program point graph
+        /// </summary>
+        internal ProgramPointBase ProgramEnd { get; private set; }
+
         internal ForwardAnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver, FileInfo entryScript)
         {
             _workListQueue = workListQueue;
@@ -69,7 +74,7 @@ namespace Weverca.AnalysisFramework
             FunctionResolver = functionResolver;
             Evaluator = evaluator;
             EntryScript = entryScript;
-            CurrentScript = entryScript;
+            CurrentScript = entryScript;            
         }
 
         internal bool ConfirmAssumption(FlowController flow, AssumptionCondition condition)
@@ -85,6 +90,11 @@ namespace Weverca.AnalysisFramework
         internal void Enqueue(ProgramPointBase programPoint)
         {
             _workListQueue.Enqueue(programPoint);
+        }
+
+        internal void SetProgramEnd(ProgramPointBase programEnd)
+        {
+            ProgramEnd = programEnd;
         }
 
         /// <summary>

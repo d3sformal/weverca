@@ -29,7 +29,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var catchBlocks = Services.FlowResolver.Throw(OutSet, Throw, ThrowedValue.Value.ReadMemory(InSet.Snapshot));
+            var catchBlocks = Services.FlowResolver.Throw(Flow, OutSet, Throw, ThrowedValue.Value.ReadMemory(InSet.Snapshot));
 
             RemoveFlowChildren();
 

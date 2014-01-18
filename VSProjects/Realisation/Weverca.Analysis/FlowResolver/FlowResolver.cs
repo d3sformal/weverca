@@ -153,7 +153,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <returns>
         /// All possible catch block starts
         /// </returns>
-        public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, PHP.Core.AST.ThrowStmt throwStmt, MemoryEntry throwedValue)
+        public override IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             List<ProgramPointBase> result = new List<ProgramPointBase>();
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
@@ -174,7 +174,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-
+            
 
             foreach (Value value in throwedValue.PossibleValues)
             {

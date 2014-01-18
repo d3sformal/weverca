@@ -49,8 +49,9 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="outSet">Flow output set</param>
         /// <param name="throwStmt">Processed throw statement</param>
         /// <param name="throwedValue">Value that was supplied into throw statement</param>
+        /// <param name="flow">Flow controller which provides API usefull for throw resolvings</param>
         /// <returns>All possible catch block starts</returns>
-        public abstract IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
+        public abstract IEnumerable<ProgramPointBase> Throw(FlowController flow,FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
 
         /// <summary>
         /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)

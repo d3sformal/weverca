@@ -120,7 +120,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             outSet.Assign(CatchBlocks_Storage, new MemoryEntry(remainingCatchBlocks));
         }
 
-        public override IEnumerable<ProgramPointBase> Throw(FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
+        public override IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             outSet.Assign(new VariableName(".throwed_value"), throwedValue);
 

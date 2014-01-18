@@ -159,7 +159,7 @@ namespace Weverca.AnalysisFramework
             IsAnalysed = true;
         }
 
-        
+
 
         #region Analysis routines
 
@@ -171,13 +171,14 @@ namespace Weverca.AnalysisFramework
             EntryInput.CommitTransaction();
 
             ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG, ForwardAnalysisServices.EntryScript);
+            _services.SetProgramEnd(ProgramPointGraph.End);
             _services.SetServices(ProgramPointGraph);
 
-            var output=_services.CreateEmptySet();            
+            var output = _services.CreateEmptySet();
             ProgramPointGraph.Start.Initialize(EntryInput, output);
 
             enqueue(ProgramPointGraph.Start);
-            
+
 
             //fix point computation
             while (_workQueue.Count > 0)
@@ -190,7 +191,7 @@ namespace Weverca.AnalysisFramework
 
             //because of avoid incorrect use
             //_services.UnSetServices(ProgramPointGraph);
-        }            
+        }
 
         private void enqueue(ProgramPointBase point)
         {
@@ -225,7 +226,11 @@ namespace Weverca.AnalysisFramework
             _flowResolver = createFlowResolver();
             _functionResolver = createFunctionResolver();
 
-            _services = new ForwardAnalysisServices(_workQueue,_functionResolver,_expressionEvaluator,createEmptySet,  _flowResolver, _entryScript);
+            _services = new ForwardAnalysisServices(
+                _workQueue,
+                _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver
+                , _entryScript
+                );
         }
 
         /// <summary>
@@ -240,10 +245,10 @@ namespace Weverca.AnalysisFramework
             snapshot.InitAssistant(assistant);
             assistant.InitContext(snapshot);
 
-            return new FlowOutputSet(snapshot,WideningLimit);
+            return new FlowOutputSet(snapshot, WideningLimit);
         }
 
-      
+
         /// <summary>
         /// Throws exception when analyze has been already proceeded
         /// </summary>
