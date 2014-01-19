@@ -174,8 +174,6 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-            
-
             foreach (Value value in throwedValue.PossibleValues)
             {
                 bool foundMatch = false;
@@ -213,7 +211,7 @@ namespace Weverca.Analysis.FlowResolver
                         else
                         {
                             AnalysisWarningHandler.SetWarning(outSet,new AnalysisWarning("Only objects can be thrown",throwStmt,AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
-                            //result.Add(ProgramPointGraph.End);
+                            result.Add(flow.ProgramEnd);
                         } 
                     }
                     if (foundMatch)
@@ -221,7 +219,13 @@ namespace Weverca.Analysis.FlowResolver
                         break;
                     }
                 }
+                if (!foundMatch)
+                {
+                    result.Add(flow.ProgramEnd);
+                }
+
             }
+            //TODO: unroll stack in catch blocks
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack as IEnumerable<IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>>>))));
             return result;
         }

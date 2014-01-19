@@ -14,30 +14,6 @@ using Weverca.Parsers;
 
 namespace Weverca.ControlFlowGraph
 {
-    //pravdepodobne sa nebude pouzivat
-    public class ClassDeclaration
-    {
-        TypeDecl classData;
-        public readonly Dictionary<MethodDecl, BasicBlock> DeclaredMethods = new Dictionary<MethodDecl, BasicBlock>();
-
-        public ClassDeclaration(TypeDecl classData)
-        {
-            this.classData = classData;
-        }
-
-        public void AddFunctionDeclaration(MethodDecl x, BasicBlock functionBasicBlock)
-        {
-            DeclaredMethods.Add(x, functionBasicBlock);
-        }
-
-        internal void SimplifyMethods()
-        {
-            foreach (var method in DeclaredMethods)
-            {
-                method.Value.SimplifyGraph();
-            }
-        }
-    }
 
     /// <summary>
     /// Represents Controlflow graph.
@@ -95,6 +71,13 @@ namespace Weverca.ControlFlowGraph
             return new ControlFlowGraph(globalCode, String.Empty);
         }
 
+
+        /// <summary>
+        ///  Creates a confrolflow graph from string in parameter.
+        /// </summary>
+        /// <param name="phpCode">source code in string</param>
+        /// <param name="fileName">name of the file</param>
+        /// <returns></returns>
         public static ControlFlowGraph FromSource(string phpCode, string fileName)
         {
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -209,12 +192,21 @@ namespace Weverca.ControlFlowGraph
 
         #endregion construction
 
+        /// <summary>
+        /// Function called on end of creating controlflow graph.
+        /// </summary>
+        /// <param name="visitor">visitor which created controlflow graph</param>
         private void PostProcess(CFGVisitor visitor)
         {
             visitor.CheckLabels();
             start.SimplifyGraph();
         }
 
+        /// <summary>
+        /// Reads code from file name and return syntax parser.
+        /// </summary>
+        /// <param name="fileName">file name to read</param>
+        /// <returns>Syntax parser object ready to parser given file</returns>
         private static SyntaxParser GenerateParser(string fileName)
         {
             string code;
@@ -256,7 +248,7 @@ namespace Weverca.ControlFlowGraph
             Queue<BasicBlock> queue = new Queue<BasicBlock>();
 
             /*
-            Prechod grafu do hlbky a poznamenanie vsetkych hran do nodes 
+            detecting all the blocks in controlflow graph
             */
             queue.Enqueue(start);
             while (queue.Count > 0)
@@ -296,7 +288,7 @@ namespace Weverca.ControlFlowGraph
             }
 
             /*
-            Generovanie textu pre vsetky uzly
+            generating text for all nodes
              */
             string functionsResult = "";
             int i = counter;
@@ -307,7 +299,7 @@ namespace Weverca.ControlFlowGraph
                 foreach (var statement in node.Statements)
                 {
                     /*
-                     rekurzivne generovanie cfg a textovej reprezentacii pre funkcie
+                     recursive generating cfg and text representation for function
                      */
                     if (statement.GetType() == typeof(FunctionDecl))
                     {
@@ -328,9 +320,9 @@ namespace Weverca.ControlFlowGraph
                       
                        
                     }
-                     /*
-                     rekurzivne generovanie cfg a textovej reprezentacii pre metody objektov
-                     */
+                    /*
+                     * recursive generating cfg and text representation for objects
+                    */
                     else if (statement.GetType() == typeof(TypeDecl))
                     {
                         TypeDecl clas = (TypeDecl)statement;
@@ -368,7 +360,7 @@ namespace Weverca.ControlFlowGraph
                 i++;
             }
             /*
-            vykreslovanie hran
+            drawing edges
             */
             i = oldCounter;
             foreach (var node in nodes)
@@ -380,7 +372,7 @@ namespace Weverca.ControlFlowGraph
                     {
                         ConditionalEdge edge = e as ConditionalEdge;
                         string label = "";
-                        //v pripdae ze som tam umelo pridal podmienku v cfg a tato podmienka nebola v kode, je potrebne ju inym sposobom vypisat
+                        //in case a condition is not from original ast and hes been aded in constructiion of cfg, we need to write it in different way
                         if (!edge.Condition.Position.IsValid)
                         {
                             if (edge.Condition.GetType() == typeof(BoolLiteral))

@@ -90,6 +90,10 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
+    /// <summary>
+    /// Special Edge, which represents that condition in foreach.
+    /// Analysis goes with this edge while iterating foreach cycle. 
+    /// </summary>
     public class ForEachSpecialEdge : IBasicBlockEdge
     {
         /// <summary>
@@ -103,7 +107,7 @@ namespace Weverca.ControlFlowGraph
         public BasicBlock To { set; get; }
 
         /// <summary>
-        /// Creates new edge between specified basic blocks and adds it into the basic block incoming and outgoing lists.
+        /// CreatesForEachSpecialEdge between specified basic blocks and adds it into the basic block incoming and outgoing lists.
         /// </summary>
         /// <param name="From">Source basic block.</param>
         /// <param name="To">Target basic block.</param>
@@ -117,6 +121,11 @@ namespace Weverca.ControlFlowGraph
             return edge;
         }
 
+        /// <summary>
+        /// Creates new instance of ForEachSpecialEdge.
+        /// </summary>
+        /// <param name="From"></param>
+        /// <param name="To"></param>
         public ForEachSpecialEdge(BasicBlock From, BasicBlock To)
         {
             this.From = From;

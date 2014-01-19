@@ -10,7 +10,9 @@ using PHP.Core.Parsers;
 namespace Weverca.ControlFlowGraph
 {
     /// <summary>
-    /// 
+    /// Represent basic block in controlflow graph.
+    /// In contains AST statements which doesn't contains jumps. 
+    /// Basic blocks are connected with IBasicBlockEdge.
     /// </summary>
     public class BasicBlock
     {
@@ -33,7 +35,7 @@ namespace Weverca.ControlFlowGraph
         /// The default branch for the direct unconditional connection between basic blocks
         /// </summary>
         public DirectEdge DefaultBranch;
-        
+
         /// <summary>
         /// Hold the references of the basic block which ends with this basic block
         /// </summary>
@@ -163,28 +165,52 @@ namespace Weverca.ControlFlowGraph
         }
     }
 
+    /// <summary>
+    /// Special type of basic block, which starts with try statements
+    /// </summary>
     public class TryBasicBlock : BasicBlock
     {
+        /// <summary>
+        /// list of cachblocks which is connected to this tryblock
+        /// </summary>
         public List<CatchBasicBlock> catchBlocks = new List<CatchBasicBlock>();
-        public TryBasicBlock() : base ()
+
+        /// <summary>
+        /// Creates new instance of TryBasicBlock
+        /// </summary>
+        public TryBasicBlock()
+            : base()
         {
-            
+
         }
     }
 
-
+    /// <summary>
+    /// Special type of basic block, which starts with catch statements
+    /// </summary>
     public class CatchBasicBlock : BasicBlock
     {
+        /// <summary>
+        /// Variable name of catch Exception
+        /// </summary>
         public DirectVarUse/*!*/ Variable { private set; get; }
-        public GenericQualifiedName ClassName { private set;  get; }
+
+        /// <summary>
+        /// Class of catch Exception
+        /// </summary>
+        public GenericQualifiedName ClassName { private set; get; }
+
+        /// <summary>
+        /// Create new Instance Of CatchBasicBlock
+        /// </summary>
+        /// <param name="variable">Variable name of catch Exception</param>
+        /// <param name="className">Class of catch Exception</param>
         public CatchBasicBlock(DirectVarUse/*!*/ variable, GenericQualifiedName className)
             : base()
         {
             Variable = variable;
             ClassName = className;
         }
-    
-    
     }
 
 }
