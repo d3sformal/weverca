@@ -922,5 +922,64 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return new MemoryEntry(OutSet.CreateBool(false));
             }
         }
+
+        /// <inheritdoc />
+        public override MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName)
+        {
+            List<Value> result = new List<Value>();
+
+            foreach (var value in thisObject.PossibleValues)
+            {
+                var visitor = new StaticObjectVisitor(OutSet);
+                value.Accept(visitor);
+                switch (visitor.Result)
+                { 
+                    case StaticObjectVisitorResult.NO_RESULT:
+                        result.Add(OutSet.UndefinedValue);
+                        break;
+                    case StaticObjectVisitorResult.ONE_RESULT:
+                        result.AddRange(ClassConstant(visitor.className, variableName).PossibleValues);
+                        break;
+                    case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        result.Add(OutSet.AnyValue);
+                        break;                
+                }
+            }
+
+            return new MemoryEntry(result);
+        }
+
+        /// <inheritdoc />
+        public override MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName)
+        {
+            NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+            if (analyzer.ExistClass(qualifiedName))
+            {
+                var constants = analyzer.GetClass(qualifiedName).Constants;
+                ConstantInfo value;
+                if (constants.TryGetValue(new FieldIdentifier(qualifiedName, variableName), out value))
+                {
+                    return value.Value;
+                }
+                else 
+                {
+                    //warning
+                    return new MemoryEntry(OutSet.UndefinedValue);
+                }
+            }
+            else
+            {
+                var constant=OutSet.GetControlVariable(new VariableName(".class(" + qualifiedName.Name.LowercaseValue + ")->constant(" + variableName.Value + ")"));
+                if (constant.IsDefined(OutSet.Snapshot))
+                {
+                    return constant.ReadMemory(OutSet.Snapshot);
+                }
+                else 
+                {
+                    //warning
+                    return new MemoryEntry(OutSet.UndefinedValue);
+                }
+            }
+        }
     }
 }

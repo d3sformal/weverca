@@ -52,4 +52,38 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             visitor.VisitConstant(this);
         }
     }
+
+    public class ClassConstPoint : ValuePoint
+    {
+        public override LangElement Partial { get { return _partial; } }
+        private readonly ClassConstUse _partial;
+        public ValuePoint ThisObj;
+
+        public ClassConstPoint(ClassConstUse x, ValuePoint thisObj)
+        {
+            _partial = x;
+            this.ThisObj = thisObj;
+        }
+
+        protected override void flowThrough()
+        {
+            MemoryEntry value;
+            if (ThisObj == null)
+            {
+                value=Services.Evaluator.ClassConstant(_partial.ClassName.QualifiedName, _partial.Name);
+            }
+            else
+            {
+                value=Services.Evaluator.ClassConstant(ThisObj.Value.ReadMemory(InSet.Snapshot), _partial.Name);
+            }
+            Value = OutSet.CreateSnapshotEntry(value);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitClassConstPoint(this);
+        }
+
+        
+    }
 }

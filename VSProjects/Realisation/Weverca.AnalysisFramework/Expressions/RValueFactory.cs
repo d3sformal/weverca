@@ -178,6 +178,17 @@ namespace Weverca.AnalysisFramework.Expressions
                     );
         }
 
+        public override void VisitClassConstUse(ClassConstUse x)
+        {
+            ValuePoint thisObj = null;
+            if (x.ClassName.QualifiedName.Name.Value == "")
+            {
+                thisObj = CreateRValue(x.TypeRef);
+            }
+
+            Result(new ClassConstPoint(x, thisObj));
+        }
+
         #endregion
 
         #region Variable visiting

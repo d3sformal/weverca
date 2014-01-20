@@ -103,6 +103,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             VisitValue(p);
         }
 
+
+        public virtual void VisitClassConstPoint(ClassConstPoint p)
+        {
+            VisitValue(p);
+        }
         #endregion
 
         #region Assign points

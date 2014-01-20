@@ -445,5 +445,15 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             throw new NotImplementedException();
         }
+
+        public override MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

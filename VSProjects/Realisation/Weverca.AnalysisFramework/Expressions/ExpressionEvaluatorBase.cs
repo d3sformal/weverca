@@ -241,6 +241,23 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract MemoryEntry Constant(GlobalConstUse x);
 
         /// <summary>
+        /// Get value representation of given class constant
+        /// </summary>
+        /// <param name="thisObject">Object</param>
+        /// <param name="variableName">Constant name</param>
+        /// <returns>Value of class constant</returns>
+        public abstract MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName);
+
+        /// <summary>
+        /// Get value representation of given class constant
+        /// </summary>
+        /// <param name="genericQualifiedName">Class Name</param>
+        /// <param name="variableName">Constant name</param>
+        /// <returns>Value of class constant</returns>
+        public abstract MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName);
+
+
+        /// <summary>
         /// Is called on <c>const x = 5</c> declarations
         /// </summary>
         /// <param name="x">Constant declaration</param>

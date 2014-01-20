@@ -139,6 +139,11 @@ namespace Weverca.AnalysisFramework.Expressions
             VisitElement(x.Initializer);
         }
 
+        public override void VisitClassConstUse(ClassConstUse x)
+        {
+            VisitElement(x.TypeRef);
+        }
+
         public override void VisitForeachStmt(ForeachStmt x)
         {
             // Traverse only header
