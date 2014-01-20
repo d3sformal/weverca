@@ -13,7 +13,7 @@ namespace Weverca.Analysis
     /// </summary>
     internal class UserDefinedConstantHandler
     {
-        private static readonly VariableName constantVariable = new VariableName(".constants");
+        public static readonly VariableName constantVariable = new VariableName(".constants");
 
         /// <summary>
         /// Gets constant value from FlowOutputSet

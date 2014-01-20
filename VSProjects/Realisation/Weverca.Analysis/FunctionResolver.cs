@@ -36,6 +36,7 @@ namespace Weverca.Analysis
 
         #region FunctionResolverBase overrides
 
+        /// <inheritdoc />
         public override void MethodCall(MemoryEntry calledObject, QualifiedName name,
             MemoryEntry[] arguments)
         {
@@ -44,12 +45,14 @@ namespace Weverca.Analysis
             setCallBranching(methods);
         }
 
+        /// <inheritdoc />
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
             var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
         }
 
+        /// <inheritdoc />
         public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name,
             MemoryEntry[] arguments)
         {
@@ -69,6 +72,7 @@ namespace Weverca.Analysis
             setCallBranching(methods);
         }
 
+        /// <inheritdoc />
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
             var functions = new Dictionary<object, FunctionValue>();
@@ -86,13 +90,27 @@ namespace Weverca.Analysis
             setCallBranching(functions);
         }
 
+        /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, Name name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
+        public override void StaticMethodCall(MemoryEntry calledObject, Name name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
         public override void IndirectStaticMethodCall(QualifiedName typeName,
             MemoryEntry name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public override void IndirectStaticMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -141,6 +159,7 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
         public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
         {
             Flow.CalledObject = newObject;
@@ -196,6 +215,7 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
         public override void DeclareGlobal(TypeDecl declaration)
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
@@ -281,6 +301,7 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
         public override MemoryEntry Return(MemoryEntry value)
         {
             OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(OutSet.Snapshot, value);
@@ -1366,6 +1387,8 @@ namespace Weverca.Analysis
         }
 
         #endregion
+
+       
     }
 
     #region function hints

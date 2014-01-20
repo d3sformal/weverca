@@ -128,6 +128,16 @@ namespace Weverca.AnalysisFramework.Expressions
             MemoryEntry[] arguments);
 
         /// <summary>
+        /// Builds program point extension for static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
+        public abstract void StaticMethodCall(MemoryEntry calledObject, Name name,
+            MemoryEntry[] arguments);
+
+        /// <summary>
         /// Builds program point extension for indirect static method call of given name and arguments
         /// via flow controller
         /// </summary>
@@ -136,6 +146,16 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="arguments">Arguments of call</param>
         public abstract void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name,
             MemoryEntry[] arguments);
+
+        /// <summary>
+        /// Builds program point extension for static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Values indirectly representing name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
+        public abstract void IndirectStaticMethodCall(MemoryEntry calledObject, MemoryEntry name,
+           MemoryEntry[] arguments);
 
         /// <summary>
         /// Declare type into global context

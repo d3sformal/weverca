@@ -69,7 +69,12 @@ namespace Weverca.Analysis
             var warningsVariable=EntryInput.GetControlVariable(warnings);
             warningsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
 
+            //stack for catchblocks
             EntryInput.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInfo(new CatchBlocks())));
+
+            //array for global Constants
+            var constantsVariable = EntryInput.GetControlVariable(UserDefinedConstantHandler.constantVariable);
+            constantsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateArray()));
 
             this.WideningLimit = 10;
         }

@@ -1000,6 +1000,14 @@ namespace PHP.Core.AST
         public GenericQualifiedName ClassName { get { return typeRef.GenericQualifiedName; } }
         protected readonly TypeRef/*!*/typeRef;
 
+        public TypeRef PublicTypeRef
+        {
+            get
+            {
+                return typeRef;
+            }
+        }
+
         /// <summary>
         /// Position of <see cref="ClassName"/> in source code.
         /// </summary>

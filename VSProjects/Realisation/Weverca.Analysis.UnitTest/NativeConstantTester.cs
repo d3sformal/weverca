@@ -215,5 +215,17 @@ namespace Weverca.Analysis.UnitTest
             TestUtils.testValue(result, 4);
         }
 
+        private string GlobalConstantNotDefinedTest= @"
+            $result=aaa;
+        ";
+
+        [TestMethod]
+        public void GlobalConstantNotDefined()
+        {
+            var result = TestUtils.ResultTest(GlobalConstantNotDefinedTest);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "aaa");
+        }
+
     }
 }

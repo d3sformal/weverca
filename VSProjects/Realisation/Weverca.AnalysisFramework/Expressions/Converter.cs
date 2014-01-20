@@ -80,12 +80,46 @@ namespace Weverca.AnalysisFramework.Expressions
             }
         }
 
+        public override void VisitIndirectFcnCall(IndirectFcnCall x)
+        {
+            VisitElement(x.IsMemberOf);
+            VisitElement(x.PublicNameExpr);
+            // Force traversing
+            foreach (var param in x.CallSignature.Parameters)
+            {
+                VisitElement(param);
+            }
+        }
+
+        public override void VisitDirectStMtdCall(DirectStMtdCall x)
+        {
+            VisitElement(x.PublicTypeRef);
+            // Force traversing
+            foreach (var param in x.CallSignature.Parameters)
+            {
+                VisitElement(param);
+            }
+        }
+
+        public override void VisitIndirectStMtdCall(IndirectStMtdCall x)
+        {
+            VisitElement(x.PublicTypeRef);
+            VisitElement(x.MethodNameVar);
+            // Force traversing
+            foreach (var param in x.CallSignature.Parameters)
+            {
+                VisitElement(param);
+            }
+        }
+
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
             // Force traversing
             VisitElement(x.IsMemberOf);
             VisitElement(x.VarNameEx);
         }
+
+
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {

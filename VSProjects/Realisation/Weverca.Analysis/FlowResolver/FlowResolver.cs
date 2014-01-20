@@ -111,11 +111,7 @@ namespace Weverca.Analysis.FlowResolver
             return null;
         }
 
-        /// <summary>
-        /// Reports about try block scope start
-        /// </summary>
-        /// <param name="outSet"></param>
-        /// <param name="catchBlockStarts">Catch blocks associated with starting try block</param>
+        /// <inheritdoc />
         public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
@@ -127,11 +123,7 @@ namespace Weverca.Analysis.FlowResolver
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
-        /// <summary>
-        /// Reports about try block scope end
-        /// </summary>
-        /// <param name="outSet"></param>
-        /// <param name="catchBlockStarts">Catch blocks associated with ending try block</param>
+        /// <inheritdoc />
         public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<PHP.Core.GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
@@ -144,15 +136,7 @@ namespace Weverca.Analysis.FlowResolver
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
-        /// <summary>
-        /// Process throw statement according to current flow
-        /// </summary>
-        /// <param name="outSet">Flow output set</param>
-        /// <param name="throwStmt">Processed throw statement</param>
-        /// <param name="throwedValue">Value that was supplied into throw statement</param>
-        /// <returns>
-        /// All possible catch block starts
-        /// </returns>
+        /// <inheritdoc />
         public override IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             List<ProgramPointBase> result = new List<ProgramPointBase>();

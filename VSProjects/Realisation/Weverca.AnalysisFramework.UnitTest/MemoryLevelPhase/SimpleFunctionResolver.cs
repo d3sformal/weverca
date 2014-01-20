@@ -136,12 +136,26 @@ namespace Weverca.AnalysisFramework.UnitTest
             setCallBranching(functions);
         }
 
+        /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, Name name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
+        public override void StaticMethodCall(MemoryEntry calledObject, Name name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
         public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public override void IndirectStaticMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -596,5 +610,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         #endregion
+
+      
     }
 }

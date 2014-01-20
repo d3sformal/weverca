@@ -15,7 +15,7 @@ namespace Weverca.AnalysisFramework.Expressions
     /// <summary>
     /// Creates RValue points (created values has stack edges connected, but no flow edges)
     /// <remarks>RValuePoint provides MemoryEntry as result</remarks>
-    /// </summary>
+    /// </summary>F
     internal class RValueFactory : TreeVisitor
     {
         /// <summary>
@@ -345,9 +345,13 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var arguments = CreateArguments(x.CallSignature);
 
-            Debug.Assert(x.IsMemberOf == null, "Static method cannot be called on object");
+            ValuePoint thisObj = null;
+            if (x.ClassName.QualifiedName.Name.Value=="")
+            {
+                thisObj = CreateRValue(x.PublicTypeRef);
+            }
 
-            Result(new StaticMethodCallPoint(x, arguments));
+            Result(new StaticMethodCallPoint(x,thisObj, arguments));
         }
 
         public override void VisitIndirectStMtdCall(IndirectStMtdCall x)
@@ -355,9 +359,12 @@ namespace Weverca.AnalysisFramework.Expressions
             var arguments = CreateArguments(x.CallSignature);
             var name = CreateRValue(x.MethodNameVar);
 
-            Debug.Assert(x.IsMemberOf == null, "Indirect static method cannot be called on object");
-
-            Result(new IndirectStaticMethodCallPoint(x, name, arguments));
+            ValuePoint thisObj = null;
+            if (x.ClassName.QualifiedName.Name.Value == "")
+            {
+                thisObj = CreateRValue(x.PublicTypeRef);
+            }
+            Result(new IndirectStaticMethodCallPoint(x, thisObj, name, arguments));
         }
 
         public override void VisitIncludingEx(IncludingEx x)

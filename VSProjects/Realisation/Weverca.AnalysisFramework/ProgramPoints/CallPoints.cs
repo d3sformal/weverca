@@ -148,12 +148,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         public override LangElement Partial { get { return StaticMethodCall; } }
 
         /// <summary>
+        /// Static method call expression
+        /// </summary>
+        public readonly ValuePoint ObjectName;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="StaticMethodCallPoint" /> class.
         /// </summary>
         /// <param name="staticMethodCall">Static method call expression</param>
         /// <param name="arguments">Program points with arguments of static method call</param>
-        internal StaticMethodCallPoint(DirectStMtdCall staticMethodCall, ValuePoint[] arguments)
-            : base(null, staticMethodCall.CallSignature, arguments)
+        internal StaticMethodCallPoint(DirectStMtdCall staticMethodCall,ValuePoint objectName, ValuePoint[] arguments)
+            : base(objectName, staticMethodCall.CallSignature, arguments)
         {
             StaticMethodCall = staticMethodCall;
         }
@@ -163,8 +168,18 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             PrepareArguments();
 
-            Services.FunctionResolver.StaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
-                StaticMethodCall.MethodName, Flow.Arguments);
+            if (ThisObj == null)
+            {
+                Services.FunctionResolver.StaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
+StaticMethodCall.MethodName, Flow.Arguments);
+            }
+            else
+            {
+                Services.FunctionResolver.StaticMethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot),
+StaticMethodCall.MethodName, Flow.Arguments);
+            }
+
+           
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
@@ -197,9 +212,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <param name="staticMethodCall">Indirect static method call expression</param>
         /// <param name="name">Indirect name of call</param>
         /// <param name="arguments">Program points with arguments of static method call</param>
-        internal IndirectStaticMethodCallPoint(IndirectStMtdCall staticMethodCall, ValuePoint name,
+        internal IndirectStaticMethodCallPoint(IndirectStMtdCall staticMethodCall,ValuePoint objectName, ValuePoint name,
             ValuePoint[] arguments)
-            : base(null, staticMethodCall.CallSignature, arguments)
+            : base(objectName, staticMethodCall.CallSignature, arguments)
         {
             StaticMethodCall = staticMethodCall;
             Name = name;
@@ -210,8 +225,18 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             PrepareArguments();
 
-            Services.FunctionResolver.IndirectStaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
-                Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+            if (ThisObj == null)
+            {
+                Services.FunctionResolver.IndirectStaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
+                 Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+            }
+            else
+            {
+                Services.FunctionResolver.IndirectStaticMethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot),
+Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+            }
+
+            
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
