@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core.AST;
+
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.ProgramPoints;
@@ -68,8 +70,46 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
 
         public override void VisitExtensionSink(ExtensionSinkPoint p)
         {
+            var ends = p.OwningExtension.Branches.Select(c => c.Graph.End.OutSet).ToArray();
+            OutputSet.MergeWithCallLevel(ends);
+
             p.ResolveReturnValue();
         }
+
+        public override void VisitExtension(ExtensionPoint p)
+        {
+            //TODO resolve caller properly
+            var callPoint = p.Caller as FunctionCallPoint;
+            var decl = p.Graph.SourceObject as FunctionDecl;
+            if (decl == null)
+                return;
+            
+            var signature = decl.Signature;
+            var callSignature = callPoint.CallSignature;
+            var enumerator = callPoint.Arguments.GetEnumerator();
+            for (int i = 0; i < signature.FormalParams.Count; ++i)
+            {
+                enumerator.MoveNext();
+
+                //determine that argument is passed by reference or not
+                var param = signature.FormalParams[i];
+                var callParam = callSignature.Value.Parameters[i];
+
+                var argumentVar = Output.GetVariable(new VariableIdentifier(param.Name));
+                var argument = enumerator.Current.Value;
+
+                if (callParam.PublicAmpersand || param.PassedByRef)
+                {
+                    argumentVar.SetAliases(Output, argument);
+                }
+                else
+                {
+                    var argumentValue = argument.ReadMemory(Output);
+                    argumentVar.WriteMemory(Output, argumentValue);
+                }
+            }
+        }
+
 
         public override void VisitAssign(AssignPoint p)
         {
@@ -85,6 +125,20 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             var finalPropagation = sourceTaint;
 
             setTaint(target, finalPropagation);
+        }
+
+        public override void VisitJump(JumpStmtPoint p)
+        {
+            switch (p.Jump.Type)
+            {
+                case JumpStmt.Types.Return:
+                    var returnVar = Output.GetLocalControlVariable(SnapshotBase.ReturnValue);
+                    var returnValue = p.Expression.Value.ReadMemory(Input);
+                    returnVar.WriteMemory(Output, returnValue);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private bool getTaint(ReadSnapshotEntryBase lValue)
@@ -119,7 +173,5 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             }
             return new VariableIdentifier(".arg" + index);
         }
-
-
     }
 }

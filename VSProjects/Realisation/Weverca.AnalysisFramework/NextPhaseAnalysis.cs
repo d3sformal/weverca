@@ -7,6 +7,7 @@ using System.IO;
 
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework
 {
@@ -69,10 +70,10 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Entry input of the analysis.
         /// </summary>
-        public FlowOutputSet EntryInput {get {return GetInSet(GetEntryPoint(AnalyzedProgramPointGraph));}}
+        public FlowOutputSet EntryInput { get { return GetInSet(GetEntryPoint(AnalyzedProgramPointGraph)); } }
 
         #endregion
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ForwardAnalysisBase" /> class.
         /// Create forward analysis object for given entry method graph.
@@ -80,7 +81,7 @@ namespace Weverca.AnalysisFramework
         public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, AnalysisDirection direction, NextPhaseAnalyzer analyzer)
         {
             _analyzer = analyzer;
-            
+
             Direction = direction;
             AnalyzedProgramPointGraph = analyzedPPG;
             WideningLimit = int.MaxValue;
@@ -164,6 +165,42 @@ namespace Weverca.AnalysisFramework
 
             var inSet = GetInSet(point);
 
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    forwardExtend(point, inputs, inSet);
+                    break;
+                case AnalysisDirection.Backward:
+                    standardExtend(inputs, inSet);
+                    break;
+                default:
+                    throwUnknownDirection();
+                    break;
+            }
+        }
+
+        #region Extending strategies
+
+        private void forwardExtend(ProgramPointBase point, IEnumerable<ProgramPointBase> inputs, FlowOutputSet inSet)
+        {
+            var extensionPoint = point as ExtensionPoint;
+            var sinkPoint = point as ExtensionSinkPoint;
+            if (extensionPoint != null)
+            {
+                extendCallExtension(extensionPoint, inSet);
+            }
+            else if (sinkPoint != null)
+            {
+                extendCallSink(sinkPoint, inSet);
+            }
+            else
+            {
+                standardExtend(inputs, inSet);
+            }
+        }
+
+        private void standardExtend(IEnumerable<ProgramPointBase> inputs, FlowOutputSet inSet)
+        {
             var inputSets = new List<FlowInputSet>();
             foreach (var input in inputs)
             {
@@ -175,6 +212,32 @@ namespace Weverca.AnalysisFramework
             inSet.Extend(inputSets.ToArray());
             inSet.CommitTransaction();
         }
+
+        private void extendCallSink(ExtensionSinkPoint point, FlowOutputSet inSet)
+        {
+            inSet.StartTransaction();
+            inSet.Extend(point.OwningExtension.Owner.OutSet);
+            //Services.FlowResolver.CallDispatchMerge(_inSet, OwningExtension.Branches);
+            inSet.CommitTransaction();
+        }
+
+        private void extendCallExtension(ExtensionPoint point, FlowOutputSet inSet)
+        {
+            inSet.StartTransaction();
+
+            if (point.Type == ExtensionType.ParallelCall)
+            {
+                inSet.ExtendAsCall(point.Caller.OutSet, point.Flow.CalledObject, point.Flow.Arguments);
+            }
+            else
+            {
+                inSet.Extend(point.Caller.OutSet);
+            }
+
+            inSet.CommitTransaction();
+        }
+
+        #endregion
 
         private void enqueueChildren(ProgramPointBase point)
         {

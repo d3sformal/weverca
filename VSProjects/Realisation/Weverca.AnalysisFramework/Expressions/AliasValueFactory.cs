@@ -90,7 +90,8 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitItemUse(ItemUse x)
         {
-            throw new NotImplementedException();
+            var itemUse = CreateRValue(x);
+            Result(itemUse);
         }
 
         #endregion

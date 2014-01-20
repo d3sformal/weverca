@@ -141,6 +141,9 @@ namespace Weverca.AnalysisFramework.UnitTest
             var leftValue = left.PossibleValues.First() as IntegerValue;
             var rightValue = right.PossibleValues.First() as IntegerValue;
 
+            if (leftValue == null || rightValue == null)
+                return new MemoryEntry(OutSet.AnyValue);
+
             return new MemoryEntry(OutSet.CreateInt(leftValue.Value + rightValue.Value));
         }
 

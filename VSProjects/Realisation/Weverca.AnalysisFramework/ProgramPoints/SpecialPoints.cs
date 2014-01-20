@@ -236,23 +236,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         public void ResolveReturnValue()
         {
             var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
-            // TODO: if ExtensionPoint is changed to LValuePoint and following commented code is 
-            // used instead of uncommented, shared functions tests fail
-            //if (LValue == null) LValue = OutSet.GetLocalControlVariable(returnVarName);
-            //LValue.WriteMemory(OutSet.Snapshot, returnValue);
             Value = OutSet.CreateSnapshotEntry(returnValue);
         }
-
-        /*     /// <summary>
-             /// Input for sink is pre call set of owner - it cause merging caller context with call context
-             /// </summary>
-             protected override void extendInput()
-             {
-                 _inSet.StartTransaction();
-                 //skip outset because of it belongs into call context
-                 _inSet.Extend(OwningExtension.Owner.InSet);
-                 _inSet.CommitTransaction();
-             }*/
 
         internal override void Accept(ProgramPointVisitor visitor)
         {

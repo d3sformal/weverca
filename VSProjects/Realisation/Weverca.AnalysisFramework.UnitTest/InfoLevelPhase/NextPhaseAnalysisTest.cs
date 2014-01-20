@@ -120,6 +120,7 @@ $d = f($y, $y);
 
         readonly static TestCase SimpleTaintAnalysisFunctionsTaintInsideReturnValue_CASE = @"
 function f($arg) {
+    global $_POST;
     return $arg + $_POST;
 }
 
@@ -133,6 +134,7 @@ $b = f($y);
 
         readonly static TestCase SimpleTaintAnalysisFunctionsTaintInsideAlias_CASE = @"
 function f_taint(&$arg) {
+    global $_POST;
     $arg = $_POST;
 }
 

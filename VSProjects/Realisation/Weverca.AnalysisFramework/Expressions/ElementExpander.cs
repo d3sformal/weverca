@@ -160,7 +160,19 @@ namespace Weverca.AnalysisFramework.Expressions
         internal ValuePoint CreateAliasValue(LangElement el)
         {
             var result = _aliasValueCreator.CreateValue(el);
-            _programPoints.Add(el, result);
+
+            if (_programPoints.ContainsKey(el))
+            {
+                //aliased value can be created as RValue (it will be added twice)
+                if (_programPoints[el] != result)
+                {
+                    throw new NotSupportedException("Cannot add two different program point to single element");
+                }
+            }
+            else
+            {
+                _programPoints.Add(el, result);
+            }
 
             return result;
         }

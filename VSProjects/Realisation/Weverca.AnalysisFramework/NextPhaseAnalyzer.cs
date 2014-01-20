@@ -46,7 +46,7 @@ namespace Weverca.AnalysisFramework
                 return _analysis.GetInSet(_currentPoint);
             }
         }
-        protected FlowInputSet OutputSet
+        protected FlowOutputSet OutputSet
         {
             get
             {

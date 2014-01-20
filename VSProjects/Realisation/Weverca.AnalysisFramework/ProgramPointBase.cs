@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework
 
 
 
-        protected FlowController Flow;
+        internal protected FlowController Flow;
 
         #endregion
 

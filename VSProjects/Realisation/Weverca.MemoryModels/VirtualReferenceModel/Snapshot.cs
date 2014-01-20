@@ -165,10 +165,29 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            if (CurrentMode != SnapshotMode.MemoryLevel)
-                throw new NotImplementedException();
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    extendAsCallMemory(callerContext, thisObject, arguments);
+                    break;
+                case SnapshotMode.InfoLevel:
+                    extendAsCallInfo(callerContext, thisObject, arguments);
+                    break;
+                default:
+                    throw notSupportedMode();
+            }
+        }
 
+        private void extendAsCallInfo(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        {
+            //TODO semantic about this object and arguments ?
 
+            var input = callerContext as Snapshot;
+            _infoData.ExtendBy(input._infoData, true);
+        }
+
+        private void extendAsCallMemory(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        {
             // called context is extended only at begining of call
             CurrentContextStamp = SnapshotStamp;
 
@@ -245,11 +264,31 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
         {
-            if (CurrentMode != SnapshotMode.MemoryLevel)
-                throw new NotImplementedException();
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    mergeWithCallLevelMemory(callOutput);
+                    break;
+                case SnapshotMode.InfoLevel:
+                    mergeWithCallLevelInfo(callOutput);
+                    break;
+                default:
+                    throw notSupportedMode();
+            }
+        }
 
+        protected void mergeWithCallLevelInfo(ISnapshotReadonly[] callOutput)
+        {
+            var isFirst = true;
+            foreach (Snapshot callInput in callOutput)
+            {
+                _infoData.ExtendBy(callInput._infoData, isFirst);
+                isFirst = false;
+            }
+        }
 
-
+        protected void mergeWithCallLevelMemory(ISnapshotReadonly[] callOutput)
+        {
             var isFirst = true;
             foreach (Snapshot callInput in callOutput)
             {
