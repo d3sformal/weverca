@@ -935,6 +935,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 switch (visitor.Result)
                 { 
                     case StaticObjectVisitorResult.NO_RESULT:
+                        SetWarning("Cannot access constant on non object", AnalysisWarningCause.CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT);
                         result.Add(OutSet.UndefinedValue);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
@@ -963,7 +964,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else 
                 {
-                    //warning
+                    SetWarning("Constant " + qualifiedName.Name + "::" + variableName+" doesn't exist", AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
@@ -976,7 +977,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else 
                 {
-                    //warning
+                    SetWarning("Constant " + qualifiedName.Name + "::" + variableName + " doesnt exist", AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }

@@ -1,8 +1,11 @@
-﻿using System;
+﻿using PHP.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
@@ -26,7 +29,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void VisitValue(Value value)
         {
-            //add warning
             Result = StaticObjectVisitorResult.NO_RESULT;
         }
 
