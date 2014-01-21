@@ -67,7 +67,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow, operation,
+                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation,
                         TypeConversion.ToInteger(value.Value));
                     if (result != null)
                     {
@@ -104,7 +104,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow, operation, value.Value);
+                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
                     if (result != null)
                     {
                         break;
@@ -199,7 +199,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (isInteger)
                     {
-                        result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow,
+                        result = ArithmeticOperation.LeftAbstractArithmetic(flow,
                             operation, integerValue);
                         if (result != null)
                         {

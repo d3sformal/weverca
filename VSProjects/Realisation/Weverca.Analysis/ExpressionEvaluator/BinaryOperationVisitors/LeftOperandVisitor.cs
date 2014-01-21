@@ -146,6 +146,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        protected void DivisionByAnyBooleanValue()
+        {
+            SetWarning("Possible division by zero (converted from boolean false)",
+                AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Division or modulo by false returns false boolean value
+            result = OutSet.AnyValue;
+        }
+
         protected void DivisionByFalse()
         {
             SetWarning("Division by zero (converted from boolean false)",

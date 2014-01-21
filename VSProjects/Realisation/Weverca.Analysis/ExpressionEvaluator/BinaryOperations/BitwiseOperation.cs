@@ -149,10 +149,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public static AnyIntegerValue Bitwise(FlowOutputSet outset, Operations operation)
         {
-            return IsBitWise(operation) ? outset.AnyIntegerValue : null;
+            return IsBitwise(operation) ? outset.AnyIntegerValue : null;
         }
 
-        public static bool IsBitWise(Operations operation)
+        public static bool IsBitwise(Operations operation)
         {
             switch (operation)
             {

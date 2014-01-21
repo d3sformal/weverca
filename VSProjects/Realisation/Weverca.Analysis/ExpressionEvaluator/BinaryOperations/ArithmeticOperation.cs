@@ -1,5 +1,5 @@
+using PHP.Core;
 using PHP.Core.AST;
-
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -7,7 +7,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
 {
     public static class ArithmeticOperation
     {
+        /// <summary>
+        /// The entire integer interval from minimum to maximum value
+        /// </summary>
         private static IntegerIntervalValue entireIntegerInterval;
+
+        /// <summary>
+        /// Interval of all values converted from a boolean value
+        /// </summary>
+        private static IntegerIntervalValue booleanInterval;
 
         public static bool IsArithmetic(Operations operation)
         {
@@ -276,12 +284,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value RightAbstractOperandArithmetic(FlowController flow,
+        public static Value RightAbstractArithmetic(FlowController flow,
             Operations operation, int leftOperand)
         {
             InitalizeInternals(flow.OutSet);
 
             return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
+        }
+
+        public static Value RightAbstractArithmetic(FlowController flow,
+            Operations operation, double leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
+        }
+
+        public static Value RightAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, int leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, booleanInterval);
+        }
+
+        public static Value RightAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, double leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, booleanInterval);
         }
 
         #region Addition
@@ -521,12 +553,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value LeftAbstractOperandArithmetic(FlowController flow,
+        public static Value LeftAbstractArithmetic(FlowController flow,
             Operations operation, int rightOperand)
         {
             InitalizeInternals(flow.OutSet);
 
             return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
+        }
+
+        public static Value LeftAbstractArithmetic(FlowController flow,
+            Operations operation, double rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
+        }
+
+        public static Value LeftAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, int rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, booleanInterval, rightOperand);
+        }
+
+        public static Value LeftAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, double rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, booleanInterval, rightOperand);
         }
 
         #region Addition
@@ -739,7 +795,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, entireIntegerInterval, entireIntegerInterval);
         }
 
-        public static Value AbstractFloatArithmetic(FlowOutputSet outset, Operations operation)
+        public static AnyFloatValue AbstractFloatArithmetic(FlowOutputSet outset, Operations operation)
         {
             return IsArithmetic(operation) ? outset.AnyFloatValue : null;
         }
@@ -900,6 +956,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (entireIntegerInterval == null)
             {
                 entireIntegerInterval = outset.CreateIntegerInterval(int.MinValue, int.MaxValue);
+                Debug.Assert(booleanInterval == null, "All private fields are initialized together");
+                booleanInterval = outset.CreateIntegerInterval(0, 1);
             }
         }
 

@@ -45,6 +45,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result == null)
                     {
+                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         base.VisitScalarValue(value);
                     }
 
@@ -68,10 +69,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow, operation,
+                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation,
                         TypeConversion.ToInteger(value.Value));
                     if (result != null)
                     {
+                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -115,7 +117,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow, operation, value.Value);
+                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
                     if (result != null)
                     {
                         break;
@@ -179,10 +181,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
+                    if (Comparison.IsOperationComparison(operation))
                     {
-                        SetWarning("Object cannot be converted to integer by comparison");
+                        // TODO: Object can be converted only if it has __toString magic method implemented
+                        // TODO: If there is no __toString magic method, the object is always greater
+                        result = OutSet.AnyBooleanValue;
                         break;
                     }
 
@@ -201,7 +204,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (isInteger)
                     {
-                        result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow,
+                        result = ArithmeticOperation.LeftAbstractArithmetic(flow,
                             operation, integerValue);
                         if (result != null)
                         {
@@ -223,6 +226,112 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Scalar values
+
+        #region Compound values
+
+        /// <inheritdoc />
+        public override void VisitObjectValue(ObjectValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.NotIdentical:
+                    // TODO: Compare if two objects are the same instances of the same class
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.Mod:
+                    SetWarning("Both objects cannot be converted to integers by modulo operation");
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    if (Comparison.IsOperationComparison(operation))
+                    {
+                        /*
+                         * TODO: Two object instances are equal if they have the same attributes and values,
+                         * and are instances of the same class.
+                         */
+                        result = OutSet.AnyBooleanValue;
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        SetWarning("Both objects cannot be converted to integers by arithmetic operation");
+                        result = OutSet.AnyIntegerValue;
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        SetWarning("Both objects cannot be converted to integers by bitwise operation");
+                        break;
+                    }
+
+                    base.VisitObjectValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssociativeArray(AssociativeArray value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        SetWarning("Object cannot be converted to integer by arithmetic operation");
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    var leftBoolean = TypeConversion.ToBoolean(leftOperand);
+                    var rightBoolean = TypeConversion.ToNativeBoolean(OutSet, value);
+                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        SetWarning("Object cannot be converted to integer by bitwise operation");
+                        break;
+                    }
+
+                    base.VisitAssociativeArray(value);
+                    break;
+            }
+        }
+
+        #endregion Compound values
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)

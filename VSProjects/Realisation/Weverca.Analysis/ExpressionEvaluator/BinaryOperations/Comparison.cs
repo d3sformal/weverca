@@ -82,40 +82,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static BooleanValue RightArrayCompare(FlowOutputSet outset, Operations operation)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                case Operations.LessThan:
-                case Operations.LessThanOrEqual:
-                    return outset.CreateBool(true);
-                case Operations.NotEqual:
-                case Operations.GreaterThan:
-                case Operations.GreaterThanOrEqual:
-                    return outset.CreateBool(false);
-                default:
-                    return null;
-            }
-        }
-
-        public static BooleanValue LeftArrayCompare(FlowOutputSet outset, Operations operation)
-        {
-            switch (operation)
-            {
-                case Operations.Equal:
-                case Operations.GreaterThan:
-                case Operations.GreaterThanOrEqual:
-                    return outset.CreateBool(true);
-                case Operations.NotEqual:
-                case Operations.LessThan:
-                case Operations.LessThanOrEqual:
-                    return outset.CreateBool(false);
-                default:
-                    return null;
-            }
-        }
-
         /// <summary>
         /// Compare concrete integer to integer interval with the specified operation.
         /// </summary>
@@ -207,6 +173,40 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return GreaterThan(outset, leftOperand, rightOperand);
                 case Operations.GreaterThanOrEqual:
                     return GreaterThanOrEqual(outset, leftOperand, rightOperand);
+                default:
+                    return null;
+            }
+        }
+
+        public static BooleanValue RightAlwaysGreater(FlowOutputSet outset, Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                    return outset.CreateBool(true);
+                case Operations.Equal:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                    return outset.CreateBool(false);
+                default:
+                    return null;
+            }
+        }
+
+        public static BooleanValue LeftAlwaysGreater(FlowOutputSet outset, Operations operation)
+        {
+            switch (operation)
+            {
+                case Operations.NotEqual:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                    return outset.CreateBool(true);
+                case Operations.Equal:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                    return outset.CreateBool(false);
                 default:
                     return null;
             }

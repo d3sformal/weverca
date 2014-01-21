@@ -532,6 +532,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion Float interval divisor
 
+        public static AnyValue AbstractModulo(FlowController flow)
+        {
+            return WarnPossibleDivideByZero(flow);
+        }
+
         #region Helper methods
 
         private static Value Modulo(FlowOutputSet outset, IntegerIntervalValue leftOperand, int rightOperand)

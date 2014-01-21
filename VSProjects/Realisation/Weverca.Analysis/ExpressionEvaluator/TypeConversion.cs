@@ -49,6 +49,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
     public static class TypeConversion
     {
         /// <summary>
+        /// Number style of PHP integer. It is used to string-to-number conversion.
+        /// </summary>
+        private const NumberStyles INTEGER_STYLE = NumberStyles.Integer
+            | NumberStyles.AllowLeadingWhite | NumberStyles.AllowLeadingSign;
+
+        /// <summary>
+        /// Number style of PHP floating-point number. It is used to string-to-number conversion.
+        /// </summary>
+        private const NumberStyles FLOATING_POINT_NUMBER_STYLE = NumberStyles.Float
+            | NumberStyles.AllowLeadingWhite | NumberStyles.AllowLeadingSign
+            | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent;
+
+        /// <summary>
         /// Name of standard generic empty class used for typecasting to object
         /// </summary>
         private static readonly QualifiedName standardClass = new QualifiedName(new Name("stdClass"));
@@ -1247,11 +1260,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 // We identify a correct floating-point number format
                 if ((start == 0) && (end == value.Length))
                 {
-                    isSuccessful = double.TryParse(value, out floatValue);
+                    isSuccessful = double.TryParse(value, FLOATING_POINT_NUMBER_STYLE,
+                        CultureInfo.InvariantCulture, out floatValue);
                 }
                 else
                 {
-                    isSuccessful = double.TryParse(value.Substring(start, end - start), out floatValue);
+                    isSuccessful = double.TryParse(value.Substring(start, end - start),
+                        FLOATING_POINT_NUMBER_STYLE, CultureInfo.InvariantCulture, out floatValue);
                 }
 
                 Debug.Assert(isSuccessful, "The string is definitely in floating-point number format");
@@ -1296,12 +1311,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="value">String in integer format value to parse</param>
         /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
         /// <param name="floatValue">New floating-point number if conversion fails, otherwise 0.0</param>
-        /// <returns><c>true</c> if value is parsed successfully, otherwise <c>false</c></returns>
+        /// <returns><c>true</c> if integer is parsed successfully, otherwise <c>false</c></returns>
         private static bool TryParseToInteger(string value, out int integerValue, out double floatValue)
         {
             Debug.Assert(value.Length > 0, "The string with number must not be empty");
 
-            if (int.TryParse(value, out integerValue))
+            if (int.TryParse(value, INTEGER_STYLE, CultureInfo.InvariantCulture, out integerValue))
             {
                 floatValue = integerValue;
                 return true;
@@ -1309,7 +1324,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             else
             {
                 integerValue = 0;
-                var isSuccessful = double.TryParse(value, out floatValue);
+                var isSuccessful = double.TryParse(value, FLOATING_POINT_NUMBER_STYLE,
+                    CultureInfo.InvariantCulture, out floatValue);
                 Debug.Assert(isSuccessful, "The string is definitely in floating-point number format");
                 return false;
             }
@@ -1323,7 +1339,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="length">Length of the substring to parse</param>
         /// <param name="integerValue">New integer value if conversion is successful, otherwise 0</param>
         /// <param name="floatValue">New floating-point number if conversion fails, otherwise 0.0</param>
-        /// <returns><c>true</c> if value is parsed successfully, otherwise <c>false</c></returns>
+        /// <returns><c>true</c> if integer is parsed successfully, otherwise <c>false</c></returns>
         private static bool TryParseToInteger(string value, int start, int length,
             out int integerValue, out double floatValue)
         {

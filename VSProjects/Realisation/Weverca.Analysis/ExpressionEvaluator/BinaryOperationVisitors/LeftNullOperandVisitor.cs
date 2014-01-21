@@ -347,6 +347,119 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion Scalar values
 
+        #region Compound values
+
+        /// <inheritdoc />
+        public override void VisitObjectValue(ObjectValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.Identical:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotEqual:
+                case Operations.NotIdentical:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                default:
+                    SetWarning("Object cannot be converted to integer");
+                    switch (operation)
+                    {
+                        case Operations.Mul:
+                        case Operations.BitAnd:
+                            result = OutSet.CreateInt(0);
+                            break;
+                        case Operations.Add:
+                        case Operations.Sub:
+                        case Operations.BitOr:
+                        case Operations.BitXor:
+                        case Operations.ShiftLeft:
+                        case Operations.ShiftRight:
+                            result = OutSet.AnyIntegerValue;
+                            break;
+                        case Operations.Div:
+                        case Operations.Mod:
+                            // We can assume that object is not zero, because null is zero
+                            result = OutSet.CreateInt(0);
+                            break;
+                        default:
+                            base.VisitObjectValue(value);
+                            break;
+                    }
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssociativeArray(AssociativeArray value)
+        {
+            switch (operation)
+            {
+                case Operations.NotIdentical:
+                case Operations.LessThanOrEqual:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Identical:
+                case Operations.GreaterThan:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = TypeConversion.ToBoolean(OutSet, value);
+                    break;
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, value));
+                    break;
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.Mod:
+                    if (TypeConversion.ToNativeBoolean(OutSet, value))
+                    {
+                        // 0 (null) divided or modulo by anything is always 0
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        DivisionByZero();
+                    }
+                    break;
+                default:
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and null type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAssociativeArray(value);
+                    break;
+            }
+        }
+
+        #endregion Compound values
+
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
