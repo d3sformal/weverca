@@ -11,7 +11,11 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis
 {
-    class NativeAnalyzerUtils
+
+    /// <summary>
+    /// Static class which contains functions for NativeFunctionAnalyzer and NativeObjectAnalyzer 
+    /// </summary>
+    public static class NativeAnalyzerUtils
     {
         /// <summary>
         /// Tells if the two intervals intersects.
@@ -33,7 +37,12 @@ namespace Weverca.Analysis
             }
         }
 
-
+        /// <summary>
+        /// Checks number of arguments in called function.
+        /// </summary>
+        /// <param name="flow">FlowControllers</param>
+        /// <param name="nativeFunction">NativeFunction</param>
+        /// <returns>true if the arguments count matches, false otherwise</returns>
         static public bool checkArgumentsCount(FlowController flow, NativeFunction nativeFunction)
         {
             List<NativeFunction> nativeFunctions = new List<NativeFunction>();
@@ -41,6 +50,12 @@ namespace Weverca.Analysis
             return checkArgumentsCount(flow, nativeFunctions);
         }
 
+        /// <summary>
+        /// Checks number of arguments in called function.
+        /// </summary>
+        /// <param name="flow">FlowControllers</param>
+        /// <param name="nativeFunction">NativeFunctions</param>
+        /// <returns>true if the arguments count matches, false otherwise</returns>
         static public bool checkArgumentsCount(FlowController flow, List<NativeFunction> nativeFunctions)
         {
             //check number of arduments
@@ -138,6 +153,11 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <summary>
+        /// Checks arguments in functions and generates warning if the arguments don't match.
+        /// </summary>
+        /// <param name="flow">FlowControllers</param>
+        /// <param name="nativeFunction">NativeFunction</param>
         public static void checkArgumentTypes(FlowController flow, NativeFunction nativeFunction)
         {
             List<NativeFunction> nativeFunctions = new List<NativeFunction>();
@@ -145,6 +165,11 @@ namespace Weverca.Analysis
             checkArgumentTypes(flow, nativeFunctions);
         }
 
+        /// <summary>
+        /// Checks arguments in functions and generates warning if the arguments don't match.
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="nativeFunctions">nativeFunctions</param>
         public static void checkArgumentTypes(FlowController flow, List<NativeFunction> nativeFunctions)
         {
             List<List<AnalysisWarning>> warningsList = new List<List<AnalysisWarning>>();
@@ -191,6 +216,13 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <summary>
+        /// For arguments passed by reference: it assignes new values, and copies flags form inputValues.
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="inputValues">Input values into analyzed function</param>
+        /// <param name="nativeFunctions">Info about analyzed function</param>
+        /// <returns>List of assigned values into aliases</returns>
         public static List<Value> ResolveAliasArguments(FlowController flow,List<Value> inputValues, List<NativeFunction> nativeFunctions)
         {
             List<Value> result = new List<Value>();
@@ -230,6 +262,15 @@ namespace Weverca.Analysis
             return result;
         }
 
+        /// <summary>
+        /// Check type of one argument and reports warnings if they doesn't match.
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="memoryEntry">Values of argument</param>
+        /// <param name="argument">Information about argument</param>
+        /// <param name="argumentNumber">Number of argument</param>
+        /// <param name="functionName">Name of function</param>
+        /// <param name="warnings">List of warnings, for inserting warnings</param>
         private static void CheckArgumentTypes(FlowController flow, MemoryEntry memoryEntry, NativeFunctionArgument argument, int argumentNumber, string functionName, List<AnalysisWarning> warnings)
         {
             bool argumentMatches = true;
@@ -314,6 +355,12 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <summary>
+        /// Base on type function returns AnyTypeValue 
+        /// </summary>
+        /// <param name="type">Type to resolve</param>
+        /// <param name="flow">FlowController</param>
+        /// <returns>MemoryEntry containg Abstract Values</returns>
         public static MemoryEntry ResolveReturnValue(string type, FlowController flow)
         {
             var outset = flow.OutSet;
@@ -385,6 +432,13 @@ namespace Weverca.Analysis
             return new MemoryEntry(res);
         }
 
+
+        /// <summary>
+        /// Creates an object a initialize default with defualt fields.
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="type">Type to resolve</param>
+        /// <returns>ObjectValue</returns>
         private static Value CreateObject(FlowController flow, string type)
         {
             
@@ -419,6 +473,11 @@ namespace Weverca.Analysis
 
         }
 
+        /// <summary>
+        /// Returns VariableIdentifier of numbered argument
+        /// </summary>
+        /// <param name="index">Argument index</param>
+        /// <returns>Returns VariableIdentifier of numbered argument</returns>
         public static VariableIdentifier Argument(int index)
         {
             if (index < 0)

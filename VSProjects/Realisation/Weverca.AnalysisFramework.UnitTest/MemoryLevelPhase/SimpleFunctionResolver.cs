@@ -137,13 +137,13 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         /// <inheritdoc />
-        public override void StaticMethodCall(QualifiedName typeName, Name name, MemoryEntry[] arguments)
+        public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public override void StaticMethodCall(MemoryEntry calledObject, Name name, MemoryEntry[] arguments)
+        public override void StaticMethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }

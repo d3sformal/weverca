@@ -20,15 +20,40 @@ using Weverca.Analysis.Properties;
 
 namespace Weverca.Analysis
 {
-    //TODO - funkcie co nesiria priznaky - pridat najst
 
-
+    /// <summary>
+    /// Represents information about native function argument
+    /// </summary>
     public class NativeFunctionArgument
     {
+        /// <summary>
+        /// Type of argument
+        /// </summary>
         public string Type { get; private set; }
+        
+        /// <summary>
+        /// Indicates if argument is passed by reference
+        /// </summary>
         public bool ByReference { get; private set; }
+
+        /// <summary>
+        /// Indicates if argument is optional
+        /// </summary>
         public bool Optional { get; private set; }
+
+        /// <summary>
+        /// Dots means that function takes more than one argument:
+        /// Example printf("",...);
+        /// </summary>
         public bool Dots { get; private set; }
+        
+        /// <summary>
+        /// Creates the instance of NativeFunctionArgument
+        /// </summary>
+        /// <param name="type">Type of argument</param>
+        /// <param name="optional">optional flag</param>
+        /// <param name="byReference">reference flag</param>
+        /// <param name="dots">dots flag</param>
         public NativeFunctionArgument( string type, bool optional, bool byReference, bool dots)
         {
             this.Type = type;
@@ -38,14 +63,47 @@ namespace Weverca.Analysis
         }
     }
 
+    /// <summary>
+    /// Stores information about native function
+    /// </summary>
     public class NativeFunction
     {
+        /// <summary>
+        /// Delegate called during analysis to model this function
+        /// </summary>
         public NativeAnalyzerMethod Analyzer { get; set; }
+
+        /// <summary>
+        /// Function name
+        /// </summary>
         public QualifiedName Name { get; protected set; }
+
+        /// <summary>
+        /// Function arguments
+        /// </summary>
         public List<NativeFunctionArgument> Arguments { get; protected set; }
+
+        /// <summary>
+        /// Represents return ttype of function
+        /// </summary>
         public string ReturnType { get; protected set; }
+
+        /// <summary>
+        /// Minimal number of arguments, which function takes
+        /// </summary>
         public int MinArgumentCount = -1;
+
+        /// <summary>
+        /// Maximal number of arguments, which function takes
+        /// </summary>
         public int MaxArgumentCount = -1;
+
+        /// <summary>
+        /// Creates instance of NativeFunction
+        /// </summary>
+        /// <param name="name">Name of function</param>
+        /// <param name="returnType">Return type</param>
+        /// <param name="arguments">Arguments of function</param>
         public NativeFunction(QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
         {
             this.Name = name;
@@ -53,12 +111,19 @@ namespace Weverca.Analysis
             this.ReturnType = returnType;
             this.Analyzer = null;
         }
+
+        /// <summary>
+        /// Default contructino for NativeFunction
+        /// </summary>
         public NativeFunction()
         { }
     }
 
-    //TODO informacie o objektoch kvoli implementacii is_subclass, ktora je potreba pri exceptions
-
+   
+    /// <summary>
+    /// Singleton class which stores information about native functinos and their arguments.
+    /// Provides delegates for modeling native functions during analysis 
+    /// </summary>
     public class NativeFunctionAnalyzer
     {
         /// <summary>
@@ -66,22 +131,34 @@ namespace Weverca.Analysis
         /// All PHP native functions are modeled by type.
         /// </summary>
         private Dictionary<QualifiedName, List<NativeFunction>> typeModeledFunctions = new Dictionary<QualifiedName, List<NativeFunction>>();
+        
         /// <summary>
         /// Concrete implementations of functions.
         /// </summary>
         private Dictionary<QualifiedName, NativeAnalyzerMethod> concreteFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
+        
         /// <summary>
         /// Special implementations of functions.
         /// If a special implementation of function exists, it should be called and any other implementation
         /// should not be called.
         /// </summary>
         private Dictionary<QualifiedName, NativeAnalyzerMethod> specialFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
+
         private HashSet<string> types = new HashSet<string>();
+        
         private HashSet<string> returnTypes = new HashSet<string>();
+        
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
         private static NativeFunctionAnalyzer instance = null;
 
         #region consructor, xml parser
 
+        /// <summary>
+        /// Creates new instance of NativeFunctionAnalyzer.
+        /// Parses XML file containing information about native functions.
+        /// </summary>
         private NativeFunctionAnalyzer()
         {
 
@@ -255,7 +332,10 @@ namespace Weverca.Analysis
 
         #endregion
 
-
+        /// <summary>
+        /// Return singleton instance. If instance was not created yet, it call constructor.
+        /// </summary>
+        /// <returns>Singleton instance</returns>
         static public NativeFunctionAnalyzer CreateInstance()
         {
             if (instance != null)
@@ -266,20 +346,35 @@ namespace Weverca.Analysis
             return instance;
         }
 
-        
+        /// <summary>
+        /// Indicteas if native functino exist
+        /// </summary>
+        /// <param name="name">Function name</param>
+        /// <returns>True if function exist, false otherwise</returns>
         public bool existNativeFunction(QualifiedName name)
         {
+            //function for intialization of static properties and constants in objects
             if(name==new QualifiedName(new Name(".initStaticProperties")))
             {
                 return true;
             }
             return typeModeledFunctions.ContainsKey(name);
         }
+
+        /// <summary>
+        /// Return array of function names
+        /// </summary>
+        /// <returns>array of function names</returns>
         public QualifiedName[] getNativeFunctions()
         {
             return typeModeledFunctions.Keys.ToArray();
         }
 
+        /// <summary>
+        /// Return signleton instance of NativeAnalyzerMethod
+        /// </summary>
+        /// <param name="name">Function name</param>
+        /// <returns>delegate which models this function</returns>
         public NativeAnalyzerMethod GetInstance(QualifiedName name) 
         {
             if (!existNativeFunction(name))
@@ -305,12 +400,12 @@ namespace Weverca.Analysis
             // default: model function by type
             InitTypeModeledFunction(name);
             return typeModeledFunctions[name][0].Analyzer;
-
-
-
-
         }
 
+        /// <summary>
+        /// Inits analyzer for given function
+        /// </summary>
+        /// <param name="name">Function name</param>
         private void InitTypeModeledFunction(QualifiedName name)
         {
             if (typeModeledFunctions[name][0].Analyzer == null)
@@ -320,8 +415,12 @@ namespace Weverca.Analysis
             }
         }
 
-   
         public static List<string> indices;
+
+        /// <summary>
+        /// Function which initlializes static properties and constant and insert then into memory model
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void InsetStaticPropertiesIntoMemoryModel(FlowController flow)
         {
             //todo replace with iterate array
@@ -377,17 +476,38 @@ namespace Weverca.Analysis
         }
     }
 
+    /// <summary>
+    /// Abstract class, which provides implemetation of native functions
+    /// </summary>
     abstract class NativeFunctionAnalyzerHelper
     {
+        /// <summary>
+        /// Information about native function with all "overloads"
+        /// </summary>
         protected List<NativeFunction> nativeFunctions;
 
+        /// <summary>
+        /// Creates new instance of NativeFunctionAnalyzerHelper
+        /// </summary>
+        /// <param name="nativeFunctions">native functions</param>
         public NativeFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions)
         {
             this.nativeFunctions = nativeFunctions;
         }
 
+        /// <summary>
+        /// Computes return values of function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="arguments">Function arguments</param>
+        /// <returns>computed values</returns>
         protected abstract List<Value> ComputeResult(FlowController flow, List<MemoryEntry> arguments);
 
+
+        /// <summary>
+        /// Models given function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void analyze(FlowController flow)
         {
             // Check arguments
@@ -424,6 +544,12 @@ namespace Weverca.Analysis
 
         }
 
+        /// <summary>
+        /// Computes return values of function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="arguments">Method arguments</param>
+        /// <returns>computed list of values</returns>
         protected List<Value> ComputeResultType(FlowController flow, List<MemoryEntry> arguments)
         {
             var argumentCount = arguments.Count;
@@ -454,19 +580,34 @@ namespace Weverca.Analysis
         }
     }
 
+    /// <summary>
+    /// Delegate used for concrete function implemetations
+    /// </summary>
+    /// <param name="flow">FlowController</param>
+    /// <param name="arguments">Value</param>
+    /// <returns>computed value</returns>
     delegate Value ConcreteFunctionDelegate(FlowController flow, Value[] arguments);
 
+    /// <summary>
+    /// 
+    /// </summary>
     class ConcreteFunctionAnalyzerHelper : NativeFunctionAnalyzerHelper
     {
         private bool containsAbstractValue;
         private ConcreteFunctionDelegate concreteFunction;
 
+        /// <summary>
+        /// Create new instance of ConcreteFunctionAnalyzerHelper
+        /// </summary>
+        /// <param name="nativeFunctions">List of native functions</param>
+        /// <param name="concreteFunction">Delegate of function implementation</param>
         public ConcreteFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions, ConcreteFunctionDelegate concreteFunction)
             : base(nativeFunctions) 
         {
             this.concreteFunction = concreteFunction;
         }
 
+        /// <inheritdoc />
         protected override List<Value> ComputeResult(FlowController flow, List<MemoryEntry> arguments)
         {
             var result = new List<Value>();
@@ -506,10 +647,18 @@ namespace Weverca.Analysis
         }
     }
 
+    /// <summary>
+    /// Helper for type modeling of native functions
+    /// </summary>
     class TypeModeledFunctionAnalyzerHelper : NativeFunctionAnalyzerHelper
     {
+        /// <summary>
+        /// Create new instance of TypeModeledFunctionAnalyzerHelper 
+        /// </summary>
+        /// <param name="nativeFunctions"></param>
         public TypeModeledFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions) : base(nativeFunctions) {}
 
+        /// <inheritdoc />
         protected override List<Value> ComputeResult(FlowController flow, List<MemoryEntry> arguments)
         {
             return ComputeResultType(flow, arguments);
@@ -518,10 +667,20 @@ namespace Weverca.Analysis
         
     }
 
+    /// <summary>
+    /// Helper for special implementations of functions
+    /// </summary>
     class SpecialFunctionsImplementations
     {
+        /// <summary>
+        /// Information about function
+        /// </summary>
         private List<NativeFunction> nativeFunctions;
 
+        /// <summary>
+        /// Creates new instance of SpecialFunctionsImplementations
+        /// </summary>
+        /// <param name="nativeFunctions"></param>
         public SpecialFunctionsImplementations(List<NativeFunction> nativeFunctions)
         {
             this.nativeFunctions = nativeFunctions;
@@ -529,7 +688,10 @@ namespace Weverca.Analysis
 
         #region implementation of native php functions
 
-        //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
+        /// <summary>
+        /// Implementation of define function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _define(FlowController flow)
         {
 
@@ -642,7 +804,10 @@ namespace Weverca.Analysis
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(possibleValues));
         }
 
-        //todo unknown string - vytvori unknown costant pockat na podporu memory modelu
+        /// <summary>
+        /// Implementation of constant function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _constant(FlowController flow)
         {
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))
@@ -674,9 +839,17 @@ namespace Weverca.Analysis
             }
         }
 
-
+        /// <summary>
+        /// Delegate for implemetation of is_"something" native functions
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         delegate bool Typedelegate(Value value);
 
+        /// <summary>
+        /// Implementation of is_array function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_array(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -684,6 +857,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsArray(value);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_bool function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_bool(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -691,6 +869,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsBool(value);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_double function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_double(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -698,6 +881,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsFloat(value);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_int function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_int(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -705,6 +893,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_null function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_null(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -712,6 +905,11 @@ namespace Weverca.Analysis
                 return (value is UndefinedValue);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_numeric function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_numeric(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -719,6 +917,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value) || ValueTypeResolver.IsFloat(value);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_object function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_object(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -726,6 +929,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsObject(value);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_resource function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_resource(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -733,6 +941,11 @@ namespace Weverca.Analysis
                 return (value is AnyResourceValue);
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_scalar function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_scalar(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -740,6 +953,11 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value) || ValueTypeResolver.IsFloat(value) || ValueTypeResolver.IsBool(value) || ValueTypeResolver.IsString(value); ;
             }));
         }
+
+        /// <summary>
+        /// Implementation of is_string function
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void _is_string(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
@@ -747,8 +965,12 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsString(value);
             }));
         }
-
-
+    
+        /// <summary>
+        /// Implementation method for all is_something functions
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <param name="del">Typedelegate</param>
         private void processIsFunctions(FlowController flow, Typedelegate del)
         {
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))

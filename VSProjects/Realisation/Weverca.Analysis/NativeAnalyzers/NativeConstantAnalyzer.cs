@@ -63,7 +63,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Creates new instance of NativeConstantAnalyzer. Is private because this class is singleton.
         /// </summary>
-        /// <param name="outset"></param>
+        /// <param name="outset">FlowOutputSet</param>
         private NativeConstantAnalyzer(FlowOutputSet outset)
         {
             XmlReader reader = XmlReader.Create(new StreamReader("php_constants.xml"));
@@ -188,7 +188,7 @@ namespace Weverca.Analysis
         /// Method used when parsing xml with constants.
         /// </summary>
         /// <param name="value">Value</param>
-        /// <returns>Returns true the value equals unknown</returns>
+        /// <returns>true the value equals unknown</returns>
         private static bool isValueUnknown(string value)
         {
             return (value == "unknown");
@@ -223,7 +223,7 @@ namespace Weverca.Analysis
         /// Return the constant value.
         /// </summary>
         /// <param name="constant">Name of the constant.</param>
-        /// <returns>Return the value of constant.</returns>
+        /// <returns>the value of constant.</returns>
         public Value GetConstantValue(QualifiedName constant)
         {
             return constants[constant].Value;

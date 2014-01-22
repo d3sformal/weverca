@@ -10,18 +10,39 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis
 {
+    /// <summary>
+    /// Sotred information about native method
+    /// </summary>
     public class NativeMethod : NativeFunction
     {
+        /// <summary>
+        /// Indicates if method is static
+        /// </summary>
         public bool IsStatic;
 
+        /// <summary>
+        /// Indicates if method is final
+        /// </summary>
         public bool IsFinal;
 
+        /// <summary>
+        /// Indicates if method is abstract
+        /// </summary>
         public bool IsAbstract = false;
 
+        /// <summary>
+        /// Default empty contructor
+        /// </summary>
         public NativeMethod()
         {
         }
 
+        /// <summary>
+        /// Creates new instance of NativeMethod
+        /// </summary>
+        /// <param name="name">Method name</param>
+        /// <param name="returnType">Return type</param>
+        /// <param name="arguments">Method argument</param>
         public NativeMethod(QualifiedName name, string returnType, List<NativeFunctionArgument> arguments)
         {
             Name = name;
@@ -29,6 +50,11 @@ namespace Weverca.Analysis
             ReturnType = returnType;
             Analyzer = null;
         }
+
+        /// <summary>
+        /// COnverts method arguments into imutable list of MethodArgument
+        /// </summary>
+        /// <returns></returns>
         public List<MethodArgument> ConvertArguments()
         {
             List<MethodArgument> res = new List<MethodArgument>();
@@ -39,15 +65,27 @@ namespace Weverca.Analysis
 
             return res;
         }
-
     }
 
+    /// <summary>
+    /// Stores information about native object
+    /// </summary>
     public class NativeObjectAnalyzer
     {
+
+        /// <summary>
+        /// Singleton instance
+        /// </summary>
         private static NativeObjectAnalyzer instance = null;
 
+        /// <summary>
+        /// Structure which stores all native objects
+        /// </summary>
         private Dictionary<QualifiedName, ClassDecl> nativeObjects;
         
+        /// <summary>
+        /// Structure which stores all native objects, with concrete implementation
+        /// </summary>
         private Dictionary<string, MethodInfo> WevercaImplementedMethods
             = new Dictionary<string, MethodInfo>();
 
@@ -58,6 +96,10 @@ namespace Weverca.Analysis
         
         #region parsing xml
 
+        /// <summary>
+        /// Creates a new instance of NativeObjectAnalyzer. It parses the xml with information about the objects.
+        /// </summary>
+        /// <param name="outSet">FlowOutputSet</param>
         private NativeObjectAnalyzer(FlowOutputSet outSet)
         {
             var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
@@ -339,6 +381,11 @@ namespace Weverca.Analysis
 
         #endregion
 
+        /// <summary>
+        /// Return singleton instance of NativeObjectAnalyzer
+        /// </summary>
+        /// <param name="outSet">FlowOutputSet</param>
+        /// <returns>singleton instance of NativeObjectAnalyzer</returns>
         public static NativeObjectAnalyzer GetInstance(FlowOutputSet outSet)
         {
             if (instance == null)
@@ -349,41 +396,82 @@ namespace Weverca.Analysis
             return instance;
         }
 
+        /// <summary>
+        /// Indicates if the class exist
+        /// </summary>
+        /// <param name="className">Class name</param>
+        /// <returns>true if class exist, false otherwise</returns>
         public bool ExistClass(QualifiedName className)
         {
             return nativeObjects.ContainsKey(className);
         }
 
+        /// <summary>
+        /// Return native class
+        /// </summary>
+        /// <param name="className">Class name</param>
+        /// <returns>native class</returns>
         public ClassDecl GetClass(QualifiedName className)
         {
             return nativeObjects[className];
         }
 
+        /// <summary>
+        /// Tries to get class and return in second parameter.
+        /// </summary>
+        /// <param name="className">Class name</param>
+        /// <param name="declaration">out parameter with result</param>
+        /// <returns>true if class exists</returns>
         public bool TryGetClass(QualifiedName className, out ClassDecl declaration)
         {
             return nativeObjects.TryGetValue(className, out declaration);
         }
 
+        /// <summary>
+        /// Returns all classes
+        /// </summary>
+        /// <returns>all classes</returns>
         public IEnumerable<ClassDecl> GetAllClasses()
         {
             return nativeObjects.Values;
         }
     }
 
+    /// <summary>
+    /// Helper for native metod analyzer
+    /// </summary>
     internal class NativeObjectsAnalyzerHelper
     {
+        /// <summary>
+        /// Method information
+        /// </summary>
         private NativeMethod Method;
 
+        /// <summary>
+        /// Class name
+        /// </summary>
         private QualifiedName ObjectName;
 
+        /// <summary>
+        /// Structure with muttable native objects
+        /// </summary>
         public static Dictionary<QualifiedName, ClassDeclBuilder> mutableNativeObjects;
 
+        /// <summary>
+        /// Creates instance of NativeObjectsAnalyzerHelper
+        /// </summary>
+        /// <param name="method">Method name</param>
+        /// <param name="objectName">Class name</param>
         public NativeObjectsAnalyzerHelper(NativeMethod method, QualifiedName objectName)
         {
             Method = method;
             ObjectName = objectName;
         }
 
+        /// <summary>
+        /// Models called method.
+        /// </summary>
+        /// <param name="flow"></param>
         public void Analyze(FlowController flow)
         {
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, Method))
@@ -431,6 +519,10 @@ namespace Weverca.Analysis
             var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, inputValues, (new NativeFunction[1] { Method }).ToList());
         }
 
+        /// <summary>
+        /// Models constructor of native object
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void Construct(FlowController flow)
         {
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, Method))
@@ -441,6 +533,10 @@ namespace Weverca.Analysis
             initObject(flow);
         }
 
+        /// <summary>
+        /// Models constructor of native object
+        /// </summary>
+        /// <param name="flow">FlowController</param>
         public void initObject(FlowController flow)
         {
             var nativeClass = NativeObjectAnalyzer.GetInstance(flow.OutSet).GetClass(ObjectName);
@@ -467,6 +563,11 @@ namespace Weverca.Analysis
 
         }
 
+        /// <summary>
+        /// Reads all arguments and returns them in List
+        /// </summary>
+        /// <param name="flow">FlowController</param>
+        /// <returns>List of arguments</returns>
         private List<MemoryEntry> getArguments(FlowController flow)
         {
             MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);

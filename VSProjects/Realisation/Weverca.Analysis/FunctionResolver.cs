@@ -12,6 +12,7 @@ using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.ProgramPoints;
 using System.IO;
 using Weverca.Parsers;
+using Weverca.Analysis.ExpressionEvaluator;
 
 namespace Weverca.Analysis
 {
@@ -37,6 +38,13 @@ namespace Weverca.Analysis
         #region FunctionResolverBase overrides
 
         /// <inheritdoc />
+        public override void Call(QualifiedName name, MemoryEntry[] arguments)
+        {
+            var functions = resolveFunction(name, arguments);
+            setCallBranching(functions);
+        }
+        
+        /// <inheritdoc />
         public override void MethodCall(MemoryEntry calledObject, QualifiedName name,
             MemoryEntry[] arguments)
         {
@@ -46,11 +54,34 @@ namespace Weverca.Analysis
         }
 
         /// <inheritdoc />
-        public override void Call(QualifiedName name, MemoryEntry[] arguments)
+        public override void StaticMethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
-            var functions = resolveFunction(name, arguments);
-            setCallBranching(functions);
+            foreach (var value in calledObject.PossibleValues)
+            {
+                var visitor = new StaticObjectVisitor(OutSet);
+                value.Accept(visitor);
+                switch (visitor.Result)
+                {
+                    case StaticObjectVisitorResult.NO_RESULT:
+                        setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
+                        break;
+                    case StaticObjectVisitorResult.ONE_RESULT:
+                        StaticMethodCall(visitor.className, name,arguments);
+                        break;
+                    case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        break;
+                }
+            }
         }
+
+        /// <inheritdoc />
+        public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
+        {
+            throw new NotImplementedException();
+
+
+        }
+
 
         /// <inheritdoc />
         public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name,
@@ -88,18 +119,6 @@ namespace Weverca.Analysis
             }
 
             setCallBranching(functions);
-        }
-
-        /// <inheritdoc />
-        public override void StaticMethodCall(QualifiedName typeName, Name name, MemoryEntry[] arguments)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <inheritdoc />
-        public override void StaticMethodCall(MemoryEntry calledObject, Name name, MemoryEntry[] arguments)
-        {
-            throw new NotImplementedException();
         }
 
         /// <inheritdoc />

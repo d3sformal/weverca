@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
+using PHP.Core;
 
 namespace Weverca.AnalysisFramework.ProgramPoints
 {
@@ -171,12 +172,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (ThisObj == null)
             {
                 Services.FunctionResolver.StaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
-StaticMethodCall.MethodName, Flow.Arguments);
+new QualifiedName(StaticMethodCall.MethodName), Flow.Arguments);
             }
             else
             {
                 Services.FunctionResolver.StaticMethodCall(ThisObj.Value.ReadMemory(InSet.Snapshot),
-StaticMethodCall.MethodName, Flow.Arguments);
+new QualifiedName(StaticMethodCall.MethodName), Flow.Arguments);
             }
 
            
