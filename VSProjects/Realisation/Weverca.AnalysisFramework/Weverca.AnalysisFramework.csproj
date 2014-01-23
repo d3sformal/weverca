@@ -33,12 +33,20 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Deprecated\Expressions\AliasValueFactory.cs" />
+    <Compile Include="Expressions\AliasValueFactory.cs" />
+    <Compile Include="Expressions\Converter.cs" />
+    <Compile Include="Expressions\ElementExpander.cs" />
+    <Compile Include="Expressions\ExpressionEvaluatorBase.cs" />
+    <Compile Include="Expressions\FlowResolverBase.cs" />
+    <Compile Include="Expressions\FunctionResolverBase.cs" />
+    <Compile Include="Expressions\LiteralValueFactory.cs" />
+    <Compile Include="Expressions\LValueFactory.cs" />
+    <Compile Include="Expressions\ObjectInitializer.cs" />
+    <Compile Include="Expressions\PostfixExpression.cs" />
+    <Compile Include="Expressions\RValueFactory.cs" />
     <Compile Include="ForwardAnalysisServices.cs" />
     <Compile Include="Memory\SnapshotMapping.cs" />
     <Compile Include="NextPhaseAnalysis.cs" />
-    <Compile Include="Deprecated\Expressions\LiteralValueFactory.cs" />
-    <Compile Include="Deprecated\Expressions\ObjectInitializer.cs" />
     <Compile Include="FlowExtension.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />
     <Compile Include="Deprecated\AnalysisServices.cs" />
@@ -49,21 +57,13 @@
     <Compile Include="Deprecated\CallDispatchLevel.cs" />
     <Compile Include="Deprecated\DeclarationResolver.cs" />
     <Compile Include="EvaluationLog.cs" />
-    <Compile Include="Deprecated\Expressions\FlowResolverBase.cs" />
-    <Compile Include="Deprecated\Expressions\FunctionResolverBase.cs" />
-    <Compile Include="Deprecated\Expressions\Converter.cs" />
     <Compile Include="Deprecated\ExpressionEvaluator.cs" />
-    <Compile Include="Deprecated\Expressions\ExpressionEvaluatorBase.cs" />
-    <Compile Include="Deprecated\Expressions\LValueFactory.cs" />
-    <Compile Include="Deprecated\Expressions\PostfixExpression.cs" />
     <Compile Include="Deprecated\StatementWalker.cs" />
     <Compile Include="Deprecated\FlowControler.cs" />
     <Compile Include="Deprecated\FlowInputSet.cs" />
     <Compile Include="Deprecated\FlowOutputSet.cs" />
     <Compile Include="Deprecated\ForwardAnalysis.cs" />
     <Compile Include="Deprecated\ForwardAnalysisAbstract.cs" />
-    <Compile Include="Deprecated\Expressions\RValueFactory.cs" />
-    <Compile Include="Deprecated\Expressions\ElementExpander.cs" />
     <Compile Include="FlowControler.cs" />
     <Compile Include="FlowInputSet.cs" />
     <Compile Include="FlowOutputSet.cs" />

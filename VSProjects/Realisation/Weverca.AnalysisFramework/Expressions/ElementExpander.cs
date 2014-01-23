@@ -352,7 +352,7 @@ namespace Weverca.AnalysisFramework.Expressions
             RValueResult(x);
         }
 
-        public override void VisitClassConstantDecl(ClassConstantDecl x)
+        public override void VisitClassConstUse(ClassConstUse x)
         {
             RValueResult(x);
         }

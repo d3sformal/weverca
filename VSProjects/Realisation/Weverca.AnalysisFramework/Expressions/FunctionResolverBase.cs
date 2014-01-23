@@ -124,7 +124,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="typeName">Name of type where the static method is defined</param>
         /// <param name="name">Name of called static method</param>
         /// <param name="arguments">Arguments of call</param>
-        public abstract void StaticMethodCall(QualifiedName typeName, Name name,
+        public abstract void StaticMethodCall(QualifiedName typeName, QualifiedName name,
             MemoryEntry[] arguments);
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="calledObject">Object which method is called</param>
         /// <param name="name">Name of called static method</param>
         /// <param name="arguments">Arguments of call</param>
-        public abstract void StaticMethodCall(MemoryEntry calledObject, Name name,
+        public abstract void StaticMethodCall(MemoryEntry calledObject, QualifiedName name,
             MemoryEntry[] arguments);
 
         /// <summary>
