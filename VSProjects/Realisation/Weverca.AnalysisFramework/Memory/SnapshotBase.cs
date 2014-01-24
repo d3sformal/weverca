@@ -320,6 +320,15 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
         /// <summary>
+        /// Resolves all possible functions for given functionName
+        /// NOTE:
+        ///     Multiple declarations for single functionName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="functionName">Name of resolved function</param>
+        /// <returns>Resolved functions</returns>
+        protected abstract IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName);
+
+        /// <summary>
         /// Resolves all possible types for given typeName
         /// NOTE:
         ///     Multiple declarations for single typeName can happen for example because of branch merging
@@ -806,6 +815,11 @@ namespace Weverca.AnalysisFramework.Memory
         {
             _statistics.Report(Statistic.FunctionResolvings);
             return resolveFunction(functionName);
+        }
+
+        public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName)
+        {
+            return resolveStaticMethod(value, methodName);
         }
 
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)

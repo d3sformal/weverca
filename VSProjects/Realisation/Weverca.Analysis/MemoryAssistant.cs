@@ -121,6 +121,19 @@ namespace Weverca.Analysis
                 }
             }
         }
+
+
+        public override IEnumerable<FunctionValue> ResolveMethods(TypeValue value, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
+        {
+            foreach (var method in objectMethods)
+            {
+                bool isstatic = (value.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || value.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
+                if (method.Name.Value == methodName.Name.Value && isstatic == true)
+                {
+                    yield return method;
+                }
+            }
+        }
     }
 
 

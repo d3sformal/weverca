@@ -81,10 +81,9 @@ namespace Weverca.Analysis
             IEnumerable<TypeValue> types=ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
             foreach (var type in types)
             {
-                //var methods = resolveStaticMethod(type, name, arguments);
-                //setCallBranching(methods);
+                var methods = resolveStaticMethod(type, name, arguments);
+                setCallBranching(methods);
             }
-            throw new NotImplementedException();
 
         }
 
@@ -1285,6 +1284,20 @@ namespace Weverca.Analysis
             }
 
             return result;
+        }
+
+        private Dictionary<object, FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName name, MemoryEntry[] arguments)
+        {
+            var result = new Dictionary<object, FunctionValue>();
+            var methods = OutSet.ResolveStaticMethod(value, name);
+            foreach (var method in methods)
+            {
+                // TODO: Check whether the number of arguments match.
+                result[method.DeclaringElement] = method;
+            }
+
+            return result;
+
         }
 
         private List<ObjectValue> resolveObjectsForMember(MemoryEntry entry)

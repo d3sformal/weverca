@@ -566,6 +566,18 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
+        protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
+        {
+            List<FunctionValue> result = new List<FunctionValue>();
+            IEnumerable<FunctionValue> objectMethods;
+            objectMethods = TypeMethodResolver.ResolveMethods(value, this);
+
+            var resolvedMethods = MemoryAssistant.ResolveMethods(value, methodName, objectMethods);
+            result.AddRange(resolvedMethods);
+         
+            return result;
+        }
+
         #endregion
 
         #region Snapshot memory manipulation
@@ -849,6 +861,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return result;
         }
+
 
         #endregion
 

@@ -929,5 +929,10 @@ namespace Weverca.MemoryModels.MemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -143,5 +143,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="typeName">Name of resolved type</param>
         /// <returns>Resolved types</returns>
         IEnumerable<TypeValue> ResolveType(QualifiedName typeName);
+
+        IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName);
+
     }
 }

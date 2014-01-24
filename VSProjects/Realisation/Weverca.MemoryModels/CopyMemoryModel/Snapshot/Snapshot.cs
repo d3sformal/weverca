@@ -428,6 +428,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             throw new NotImplementedException();
         }
 
+        protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #endregion

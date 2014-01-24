@@ -102,7 +102,12 @@ namespace Weverca.AnalysisFramework
         {
             return Snapshot.ResolveType(typeName);
         }
-               
+
+        public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName)
+        {
+            return Snapshot.ResolveStaticMethod(value, methodName);
+        }
+
         public TypeValue ObjectType(ObjectValue objectValue)
         {
             return Snapshot.ObjectType(objectValue);
@@ -141,5 +146,8 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
+
+
+        
     }
 }
