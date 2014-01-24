@@ -129,13 +129,44 @@ namespace Weverca.Analysis
         public override void IndirectStaticMethodCall(QualifiedName typeName,
             MemoryEntry name, MemoryEntry[] arguments)
         {
-            throw new NotImplementedException();
+            var functions = new Dictionary<object, FunctionValue>();
+            var functionNames = getSubroutineNames(name);
+            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            foreach (var type in types)
+            {
+                foreach (var functionName in functionNames)
+                {
+                    var resolvedFunctions = resolveStaticMethod(type, functionName, arguments);
+                    foreach (var resolvedFunction in resolvedFunctions)
+                    {
+                        functions[resolvedFunction.Key] = resolvedFunction.Value;
+                    }
+                }
+            }
+            setCallBranching(functions);
         }
 
         /// <inheritdoc />
         public override void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
-            throw new NotImplementedException();
+            var calledObjectValue = calledObject.ReadMemory(InSnapshot);
+
+            foreach (var value in calledObjectValue.PossibleValues)
+            {
+                var visitor = new StaticObjectVisitor(Flow);
+                value.Accept(visitor);
+                switch (visitor.Result)
+                {
+                    case StaticObjectVisitorResult.NO_RESULT:
+                        setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
+                        break;
+                    case StaticObjectVisitorResult.ONE_RESULT:
+                        IndirectStaticMethodCall(visitor.className, name, arguments);
+                        break;
+                    case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        break;
+                }
+            }
         }
 
         /// <summary>
