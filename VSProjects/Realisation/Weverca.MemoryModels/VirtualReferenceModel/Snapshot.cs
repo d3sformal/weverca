@@ -822,18 +822,32 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return type;
         }
 
-        protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
-        {
-            var type = objectType(objectValue);
-            var methods = TypeMethodResolver.ResolveMethods(type, this);
 
-            foreach (var method in methods)
+        internal IEnumerable<FunctionValue> ResolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        {
+            var result = new List<FunctionValue>();
+            foreach (var possibleValue in thisObject.PossibleValues)
             {
-                if (method.Name.Value == methodName.Name.Value)
+                var objectValue = possibleValue as ObjectValue;
+
+                TypeValue type;
+                IEnumerable<FunctionValue> objectMethods;
+                if (objectValue == null)
                 {
-                    yield return method;
+                    type = null;
+                    objectMethods = new FunctionValue[0];
                 }
+                else
+                {
+                    type = objectType(objectValue);
+                    objectMethods = TypeMethodResolver.ResolveMethods(type, this);
+                }
+
+                var resolvedMethods = MemoryAssistant.ResolveMethods(possibleValue, methodName, objectMethods);
+                result.AddRange(resolvedMethods);
             }
+
+            return result;
         }
 
         #endregion
@@ -1150,21 +1164,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return new ReferenceAlias(info.References);
         }
-
-        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
-        {
-            var storage = getIndexStorage(array, index);
-
-            return createAlias(storage);
-        }
-
-        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
-        {
-            var storage = getFieldStorage(objectValue, field);
-
-            return createAlias(storage);
-        }
-
+               
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
             assign(targetVar, entry, VariableKind.Local);
@@ -1195,25 +1195,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             entry = resolveReferences(info.References);
             return true;
         }
-
-        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
-        {
-            var storage = getFieldStorage(value, index);
-            assign(storage, entry);
-        }
-
-        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
-        {
-            var storage = getFieldStorage(value, index);
-            return readValue(storage);
-        }
-
-        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
-        {
-            var storage = getFieldStorage(objectValue, field);
-            return tryReadValue(storage, out entry);
-        }
-
 
         protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
@@ -1299,26 +1280,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return infoValues.ToArray();
         }
 
-
-        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
-        {
-            var storage = getIndexStorage(value, index);
-            assign(storage, entry);
-        }
-
-        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
-        {
-            var storage = getIndexStorage(value, index);
-            return readValue(storage);
-        }
-
-        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
-        {
-            var storage = getIndexStorage(array, index);
-            return tryReadValue(storage, out entry);
-        }
-
-
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
             var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
@@ -1339,7 +1300,5 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
-
-
     }
 }

@@ -82,7 +82,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="newObject">Entry of possible new objects created after construction</param>
         /// <param name="arguments">Arguments passed to constructor when creating a new object</param>
         /// <returns>Entry of objects, the same as <paramref name="newObject"/></returns>
-        public abstract MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments);
+        public abstract MemoryEntry InitializeObject(ReadSnapshotEntryBase newObject, MemoryEntry[] arguments);
 
         /// <summary>
         /// Builds program point extension for call of given name and arguments via flow controller
@@ -104,7 +104,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="calledObject">Object which method is called</param>
         /// <param name="name">Name of called method</param>
         /// <param name="arguments">Arguments of call</param>
-        public abstract void MethodCall(MemoryEntry calledObject, QualifiedName name,
+        public abstract void MethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name,
             MemoryEntry[] arguments);
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="calledObject">Object which method is called</param>
         /// <param name="name">Values indirectly representing name of called method</param>
         /// <param name="arguments">Arguments of call</param>
-        public abstract void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name,
+        public abstract void IndirectMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name,
             MemoryEntry[] arguments);
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="calledObject">Object which method is called</param>
         /// <param name="name">Name of called static method</param>
         /// <param name="arguments">Arguments of call</param>
-        public abstract void StaticMethodCall(MemoryEntry calledObject, QualifiedName name,
+        public abstract void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name,
             MemoryEntry[] arguments);
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="calledObject">Object which method is called</param>
         /// <param name="name">Values indirectly representing name of called static method</param>
         /// <param name="arguments">Arguments of call</param>
-        public abstract void IndirectStaticMethodCall(MemoryEntry calledObject, MemoryEntry name,
+        public abstract void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name,
            MemoryEntry[] arguments);
 
         /// <summary>

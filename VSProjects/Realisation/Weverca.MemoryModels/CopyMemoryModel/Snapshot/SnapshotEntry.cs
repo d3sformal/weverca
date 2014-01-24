@@ -249,5 +249,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return data;
         }
 
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

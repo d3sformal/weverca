@@ -41,7 +41,6 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
-    [Obsolete("Use Value.SetInfo() instead")]
     public abstract class InfoValue : SpecialValue
     {
         public readonly object RawData;

@@ -229,40 +229,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable which info is stored</param>
         /// <param name="info">Info stored for variable</param>
         void SetInfo(VariableName variable, params InfoValue[] info);
-
-        /// <summary>
-        /// Set given value into field in objectValue
-        /// </summary>
-        /// <param name="objectValue">Object which field will be set</param>
-        /// <param name="field">Field where value will be stored</param>
-        /// <param name="value">Value that will be stored</param>
-        void SetField(ObjectValue objectValue, ContainerIndex field, MemoryEntry value);
-
-        /// <summary>
-        /// Set given alias into field in objectValue
-        /// </summary>
-        /// <param name="objectValue">Object which field will be set</param>
-        /// <param name="field">Field where alias will be set</param>
-        /// <param name="alias">Alias that will be set</param>
-        void SetFieldAlias(ObjectValue objectValue, ContainerIndex field, IEnumerable<AliasValue> alias);
-        
-        /// <summary>
-        /// Set given value at specified index in array
-        /// </summary>
-        /// <param name="array">Array which index will be set</param>
-        /// <param name="index">Index where value will be stored</param>
-        /// <param name="value">Value that will be stored</param>
-        void SetIndex(AssociativeArray array, ContainerIndex index, MemoryEntry value);
-
-        /// <summary>
-        /// Set given alias at index in array
-        /// </summary>
-        /// <param name="array">Array which index will be set</param>
-        /// <param name="index">Index where alias will be set</param>
-        /// <param name="alias">Alias that will be set</param>
-        void SetIndexAlias(AssociativeArray array, ContainerIndex index, IEnumerable<AliasValue> alias);
-
-
+     
         #endregion
 
         #region Global context manipulation

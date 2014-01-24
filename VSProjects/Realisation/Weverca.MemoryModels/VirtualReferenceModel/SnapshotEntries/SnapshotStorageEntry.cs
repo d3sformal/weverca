@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
+
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -115,6 +117,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
             return _identifier;
+        }
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
+        {
+            var memory = readMemory(context);
+
+            return C(context).ResolveMethod(memory, methodName);
         }
     }
 }

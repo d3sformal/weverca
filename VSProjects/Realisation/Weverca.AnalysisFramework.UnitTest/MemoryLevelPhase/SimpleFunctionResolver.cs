@@ -87,16 +87,18 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #region Call processing
 
-        public override void MethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
+        public override void MethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
             var methods = resolveMethod(calledObject, name);
             setCallBranching(methods);
         }
 
-        public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
+        public override MemoryEntry InitializeObject(ReadSnapshotEntryBase newObject, MemoryEntry[] arguments)
         {
+            var newObjectValue = newObject.ReadMemory(InSnapshot);
+
             Flow.Arguments = arguments;
-            Flow.CalledObject = newObject;
+            Flow.CalledObject = newObjectValue;
 
             var ctorName = new QualifiedName(new Name("__construct"));
             var ctors = resolveMethod(newObject, ctorName);
@@ -106,7 +108,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 setCallBranching(ctors);
             }
 
-            return newObject;
+            return newObjectValue;
         }
 
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
@@ -115,7 +117,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             setCallBranching(functions);
         }
 
-        public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
+        public override void IndirectMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -143,7 +145,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         /// <inheritdoc />
-        public override void StaticMethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
+        public override void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -155,7 +157,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         /// <inheritdoc />
-        public override void IndirectStaticMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
+        public override void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -224,7 +226,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             ClassDeclBuilder result = new ClassDeclBuilder();
             result.BaseClasses = new List<QualifiedName>();
-            if(declaration.BaseClassName.HasValue)
+            if (declaration.BaseClassName.HasValue)
             {
                 result.BaseClasses.Add(declaration.BaseClassName.Value.QualifiedName);
             }
@@ -520,7 +522,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return result;
         }
 
-        private Dictionary<object, FunctionValue> resolveMethod(MemoryEntry thisObject, QualifiedName methodName)
+        private Dictionary<object, FunctionValue> resolveMethod(ReadSnapshotEntryBase thisObject, QualifiedName methodName)
         {
             NativeAnalyzerMethod analyzer;
             var result = new Dictionary<object, FunctionValue>();
@@ -533,15 +535,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
             else
             {
-                var functions = new List<FunctionValue>();
-                foreach (var thisObj in thisObject.PossibleValues)
+                var methods = thisObject.ResolveMethod(OutSnapshot, methodName);
+                foreach (var method in methods)
                 {
-                    functions.AddRange(Flow.OutSet.ResolveMethod((ObjectValue)thisObj, methodName));
-                }
-
-                foreach (var function in functions)
-                {
-                    result[function.DeclaringElement] = function;
+                    result[method.DeclaringElement] = method;
                 }
             }
 
@@ -611,6 +608,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         #endregion
 
-      
+
     }
 }

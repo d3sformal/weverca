@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
+
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -55,6 +57,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
             throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
+        {
+            return toSnapshot(context).ResolveMethod(WrappedEntry, methodName);
         }
 
         protected override MemoryEntry readMemory(SnapshotBase context)

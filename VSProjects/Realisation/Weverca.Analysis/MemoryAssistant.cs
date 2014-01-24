@@ -107,6 +107,17 @@ namespace Weverca.Analysis
         {
             // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
+
+        public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
+        {
+            foreach (var method in objectMethods)
+            {
+                if (method.Name.Value == methodName.Name.Value)
+                {
+                    yield return method;
+                }
+            }
+        }
     }
 
 

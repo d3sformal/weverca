@@ -222,30 +222,6 @@ namespace Weverca.AnalysisFramework
             Snapshot.DeclareGlobal(declaration);
         }
 
-        [Obsolete("Use snapshot entry API instead")]
-        public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
-        {
-            Snapshot.SetField(value, index, entry);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
-        {
-            Snapshot.SetIndex(value, index, entry);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public void SetFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
-        {
-            Snapshot.SetFieldAlias(value, index, alias);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
-        {
-            Snapshot.SetIndexAlias(value, index, alias);
-        }
-
         /// <summary>
         /// Expects FlowInput set objects
         /// </summary>

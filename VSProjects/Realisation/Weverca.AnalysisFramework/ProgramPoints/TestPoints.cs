@@ -16,8 +16,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class TestMemoryEntryPoint : ValuePoint
     {
-        private readonly MemoryEntry _entry;
-
         public readonly LangElement Element;
         public override LangElement Partial { get { return Element; } }
 
@@ -120,6 +118,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
             throw new NotImplementedException();
         }

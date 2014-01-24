@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
+
 namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
@@ -60,7 +62,14 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="field">Identifier of an field</param>
         /// <returns>Snapshot entry representing field resolving on current entry</returns>
         protected abstract ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field);
-
+        
+        /// <summary>
+        /// Resolve method on current snapshot entry with given methodName
+        /// </summary>
+        /// <param name="context">Context where methods are resolved</param>
+        /// <param name="methodName">Name of resolved method</param>
+        /// <returns>Resolved methods</returns>
+        protected abstract IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName);
 
         /// <summary>
         /// Returns variables corresponding to current snapshot entry
@@ -141,6 +150,18 @@ namespace Weverca.AnalysisFramework.Memory
         {
             //TODO statistics reporting
             return readField(context, field);
+        }
+
+        /// <summary>
+        /// Resolve method on current snapshot entry with given methodName
+        /// </summary>
+        /// <param name="context">Context where methods are resolved</param>
+        /// <param name="methodName">Name of resolved method</param>
+        /// <returns>Resolved methods</returns>
+        public IEnumerable<FunctionValue> ResolveMethod(SnapshotBase context, QualifiedName methodName)
+        {
+            //TODO statistics reporting
+            return resolveMethod(context, methodName);
         }
     }
 }

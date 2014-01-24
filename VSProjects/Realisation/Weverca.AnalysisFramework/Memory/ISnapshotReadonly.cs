@@ -72,44 +72,6 @@ namespace Weverca.AnalysisFramework.Memory
 
         [Obsolete("Use snapshot entry API instead")]
         /// <summary>
-        /// Get value from object at specified field
-        /// </summary>
-        /// <param name="objectValue">Object which field is resolved</param>
-        /// <param name="field">Field where value will be searched</param>
-        /// <returns>Value stored at given field in objectValue</returns>
-        MemoryEntry GetField(ObjectValue objectValue, ContainerIndex field);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Tries to get value from object at specified field stored in current snapshot
-        /// </summary>
-        /// <param name="objectValue">Object which field is resolved</param>
-        /// <param name="field">Field where value will be searched</param>
-        /// <param name="entry">Value stored at given object field if exists, otherwise undefined value</param>
-        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
-        bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Get value from array at specified index
-        /// </summary>
-        /// <param name="array">Array which index is resolved</param>
-        /// <param name="index">Index where value will be searched</param>
-        /// <returns>Value stored at given index in array</returns>
-        MemoryEntry GetIndex(AssociativeArray array, ContainerIndex index);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Tries to get value from array at specified index stored in current snapshot
-        /// </summary>
-        /// <param name="array">Array which index is resolved</param>
-        /// <param name="index">Index where value will be searched</param>
-        /// <param name="entry">Value stored at given index in array if exists, otherwise undefined value</param>
-        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
-        bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
         /// Determine type of given object
         /// </summary>
         /// <param name="objectValue">Object which type is resolved</param>
@@ -163,24 +125,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="sourceVar">Variable which alias will be created</param>
         /// <returns>Created alias</returns>
         AliasValue CreateAlias(VariableName sourceVar);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Create alias for given index contained in array
-        /// </summary>
-        /// <param name="array">Array containing index</param>
-        /// <param name="index">Aliased index</param>
-        /// <returns>Created alias</returns>
-        AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Create alias for given field of objectValue
-        /// </summary>
-        /// <param name="objectValue">Value containing aliased field</param>
-        /// <param name="field">Aliased field</param>
-        /// <returns>Created alias</returns>
-        AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field);
 
         /// <summary>
         /// Resolves all possible functions for given functionName

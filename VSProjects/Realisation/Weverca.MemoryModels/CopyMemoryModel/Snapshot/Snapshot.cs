@@ -403,18 +403,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             throw new NotImplementedException();
         }
 
-        //OBSOLETE
-        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
-        {
-            throw new NotImplementedException();
-        }
-
+       
         //OBSOLETE
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
@@ -429,48 +418,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         //OBSOLETE
         protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             throw new NotImplementedException();
         }

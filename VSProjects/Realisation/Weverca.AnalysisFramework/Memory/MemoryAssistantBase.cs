@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
+
 namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
@@ -48,6 +50,15 @@ namespace Weverca.AnalysisFramework.Memory
         public abstract MemoryEntry Widen(MemoryEntry old, MemoryEntry current);
 
         /// <summary>
+        /// Resolve methods with given name for possible value
+        /// </summary>
+        /// <param name="thisObject">Value which methods are resolved</param>
+        /// <param name="methodName">Name of resolved methods</param>
+        /// <param name="objectMethods">Methods available for thisObject</param>
+        /// <returns>Resolved methods</returns>
+        public abstract IEnumerable<FunctionValue> ResolveMethods(Value thisObject, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
+
+        /// <summary>
         /// Initialize context snapshot for current assistant
         /// </summary>
         /// <param name="context">Context snapshot for current memory assistant</param>
@@ -58,5 +69,7 @@ namespace Weverca.AnalysisFramework.Memory
 
             Context = context;
         }
+
+
     }
 }

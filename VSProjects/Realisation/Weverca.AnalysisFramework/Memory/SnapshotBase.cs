@@ -213,24 +213,6 @@ namespace Weverca.AnalysisFramework.Memory
 
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
-        /// Create alias for given index contained in array
-        /// </summary>
-        /// <param name="array">Array containing index</param>
-        /// <param name="index">Aliased index</param>
-        /// <returns>Created alias</returns>
-        protected abstract AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Create alias for given field of objectValue
-        /// </summary>
-        /// <param name="objectValue">Value containing aliased field</param>
-        /// <param name="field">Aliased field</param>
-        /// <returns>Created alias</returns>
-        protected abstract AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
         /// Assign memory entry into <paramref name="targetVar"/>
         /// </summary>
         /// <param name="targetVar">Target of assigning</param>
@@ -306,63 +288,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
         protected abstract bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Set field specified by index, on object represented by value 
-        /// </summary>
-        /// <param name="value">Handler for object manipulation</param>
-        /// <param name="index">Index of field that will be set</param>
-        /// <param name="entry">Data that will be set on specified field</param>
-        protected abstract void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Set specified index, in array represented by value 
-        /// </summary>
-        /// <param name="value">Handler for array manipulation</param>
-        /// <param name="index">Array index that will be set</param>
-        /// <param name="entry">Data that will be set on specified index</param>
-        protected abstract void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry);
-
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Get value for field specified by index, in object represented by value 
-        /// </summary>
-        /// <param name="value">Handler for object manipulation</param>
-        /// <param name="index">Index of field that will be set</param>
-        /// <returns></returns>
-        protected abstract MemoryEntry getField(ObjectValue value, ContainerIndex index);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Tries to get value from object at specified field stored in current snapshot
-        /// </summary>
-        /// <param name="objectValue">Object which field is resolved</param>
-        /// <param name="field">Field where value will be searched</param>
-        /// <param name="entry">Value stored at given object field if exists, otherwise undefined value</param>
-        /// <returns><c>true</c> if field for given object exists, <c>false</c> otherwise</returns>
-        protected abstract bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Get value for field specified by index, in array represented by value 
-        /// </summary>
-        /// <param name="value">Handler for array manipulation</param>
-        /// <param name="index">Index that will be set</param>
-        /// <returns></returns>
-        protected abstract MemoryEntry getIndex(AssociativeArray value, ContainerIndex index);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Tries to get value from array at specified index stored in current snapshot
-        /// </summary>
-        /// <param name="array">Array which index is resolved</param>
-        /// <param name="index">Index where value will be searched</param>
-        /// <param name="entry">Value stored at given index in array if exists, otherwise undefined value</param>
-        /// <returns><c>true</c> if element of index exists in given array, <c>false</c> otherwise</returns>
-        protected abstract bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry);
-
         /// <summary>
         /// Fetch variables from global context into current context
         /// </summary>
@@ -394,14 +319,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Resolved functions</returns>
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="objectValue"></param>
-        /// <param name="methodName"></param>
-        /// <returns></returns>
-        protected abstract IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName);
         /// <summary>
         /// Resolves all possible types for given typeName
         /// NOTE:
@@ -798,88 +715,13 @@ namespace Weverca.AnalysisFramework.Memory
             return readInfo(variable);
         }
 
-        public void SetField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
-        {
-            checkCanUpdate();
-
-            _statistics.Report(Statistic.FieldAssigns);
-            setField(value, index, entry);
-        }
-        public void SetIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
-        {
-            checkCanUpdate();
-
-            _statistics.Report(Statistic.IndexAssigns);
-            setIndex(value, index, entry);
-        }
-
-        public void SetFieldAlias(ObjectValue value, ContainerIndex index, IEnumerable<AliasValue> alias)
-        {
-            throw new NotSupportedException("Obsolete API");
-        }
-
-        public void SetIndexAlias(AssociativeArray value, ContainerIndex index, IEnumerable<AliasValue> alias)
-        {
-            throw new NotSupportedException("Obsolete API");
-        }
-
-        public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
-        {
-            checkCanUpdate();
-
-            _statistics.Report(Statistic.FieldReads);
-            return getField(value, index);
-        }
-
-        public bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
-        {
-            // TODO_David: Je tohle treba?
-            checkCanUpdate();
-
-            _statistics.Report(Statistic.FieldReadAttempts);
-            return tryGetField(objectValue, field, out entry);
-        }
-
-        public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
-        {
-            checkCanUpdate();
-
-            _statistics.Report(Statistic.IndexReads);
-            return getIndex(value, index);
-        }
-
-        public bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
-        {
-            // TODO_David: Je tohle treba?
-            checkCanUpdate();
-
-            _statistics.Report(Statistic.IndexReadAttempts);
-            return tryGetIndex(array, index, out entry);
-        }
-
         public AliasValue CreateAlias(VariableName sourceVar)
         {
             var result = createAlias(sourceVar);
             _statistics.Report(Statistic.CreatedAliasValues);
             return result;
         }
-
-        public AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index)
-        {
-            var result = createIndexAlias(array, index);
-
-            _statistics.Report(Statistic.CreatedAliasValues);
-            return result;
-        }
-
-        public AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field)
-        {
-            var result = createFieldAlias(objectValue, field);
-
-            _statistics.Report(Statistic.CreatedAliasValues);
-            return result;
-        }
-
+               
         public void Assign(VariableName targetVar, Value value)
         {
             checkCanUpdate();
@@ -964,12 +806,6 @@ namespace Weverca.AnalysisFramework.Memory
         {
             _statistics.Report(Statistic.FunctionResolvings);
             return resolveFunction(functionName);
-        }
-
-        internal IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
-        {
-            _statistics.Report(Statistic.MethodResolvings);
-            return resolveMethod(objectValue, methodName);
         }
 
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
@@ -1110,7 +946,6 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         #endregion
-
 
     }
 }

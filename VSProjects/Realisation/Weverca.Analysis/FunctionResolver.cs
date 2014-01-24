@@ -43,20 +43,21 @@ namespace Weverca.Analysis
             var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
         }
-        
+
         /// <inheritdoc />
-        public override void MethodCall(MemoryEntry calledObject, QualifiedName name,
+        public override void MethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name,
             MemoryEntry[] arguments)
         {
-            var objectValues = resolveObjectsForMember(calledObject);
-            var methods = resolveMethod(objectValues, name, arguments);
+            var methods = resolveMethod(calledObject, name, arguments);
             setCallBranching(methods);
         }
 
         /// <inheritdoc />
-        public override void StaticMethodCall(MemoryEntry calledObject, QualifiedName name, MemoryEntry[] arguments)
+        public override void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
-            foreach (var value in calledObject.PossibleValues)
+            var calledObjectValue = calledObject.ReadMemory(InSnapshot);
+
+            foreach (var value in calledObjectValue.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(OutSet);
                 value.Accept(visitor);
@@ -66,7 +67,7 @@ namespace Weverca.Analysis
                         setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
-                        StaticMethodCall(visitor.className, name,arguments);
+                        StaticMethodCall(visitor.className, name, arguments);
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
                         break;
@@ -84,16 +85,15 @@ namespace Weverca.Analysis
 
 
         /// <inheritdoc />
-        public override void IndirectMethodCall(MemoryEntry calledObject, MemoryEntry name,
+        public override void IndirectMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name,
             MemoryEntry[] arguments)
         {
             var methods = new Dictionary<object, FunctionValue>();
             var methodNames = getSubroutineNames(name);
-            var objectValues = resolveObjectsForMember(calledObject);
 
             foreach (var methodName in methodNames)
             {
-                var resolvedMethods = resolveMethod(objectValues, methodName, arguments);
+                var resolvedMethods = resolveMethod(calledObject, methodName, arguments);
                 foreach (var resolvedMethod in resolvedMethods)
                 {
                     methods[resolvedMethod.Key] = resolvedMethod.Value;
@@ -129,7 +129,7 @@ namespace Weverca.Analysis
         }
 
         /// <inheritdoc />
-        public override void IndirectStaticMethodCall(MemoryEntry calledObject, MemoryEntry name, MemoryEntry[] arguments)
+        public override void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
@@ -179,27 +179,22 @@ namespace Weverca.Analysis
         }
 
         /// <inheritdoc />
-        public override MemoryEntry InitializeObject(MemoryEntry newObject, MemoryEntry[] arguments)
+        public override MemoryEntry InitializeObject(ReadSnapshotEntryBase newObject, MemoryEntry[] arguments)
         {
-            Flow.CalledObject = newObject;
+            var newObjectValue = newObject.ReadMemory(InSnapshot);
+
+            Flow.CalledObject = newObjectValue;
             Flow.Arguments = arguments;
 
             var constructorName = new QualifiedName(new Name("__construct"));
-            var objectValues = new List<ObjectValue>();
 
-            foreach (var value in newObject.PossibleValues)
-            {
-                Debug.Assert(value is ObjectValue, "All objects are creating now");
-                objectValues.Add(value as ObjectValue);
-            }
-
-            var constructors = resolveMethod(objectValues, constructorName, arguments);
+            var constructors = resolveMethod(newObject, constructorName, arguments);
             if (constructors.Count > 0)
             {
                 setCallBranching(constructors);
             }
 
-            return newObject;
+            return newObjectValue;
         }
 
         /// <summary>
@@ -271,7 +266,7 @@ namespace Weverca.Analysis
                             else
                             {
                                 ClassDeclBuilder newType = CopyInfoFromBaseClass(baseClass, type);
-                                ClassDecl finalNewType= checkClassAndCopyConstantsFromInterfaces(newType, declaration);
+                                ClassDecl finalNewType = checkClassAndCopyConstantsFromInterfaces(newType, declaration);
                                 insetStaticVariablesIntoMM(finalNewType);
                                 OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
                             }
@@ -931,7 +926,7 @@ namespace Weverca.Analysis
             classes.Add(result.QualifiedName);
             List<string> indices = new List<string>();
 
-            NativeObjectAnalyzer objectAnalyzer=NativeObjectAnalyzer.GetInstance(Flow.OutSet);
+            NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
 
             foreach (var currentClass in classes)
             {
@@ -940,11 +935,11 @@ namespace Weverca.Analysis
                     constants[constant.Name] = constant;
                 }
             }
-            string code = "function _static_intialization_of_" + result .QualifiedName+ "(){$res=array();";
+            string code = "function _static_intialization_of_" + result.QualifiedName + "(){$res=array();";
             foreach (var constant in constants.Values)
             {
 
-                var variable = OutSet.GetControlVariable(new VariableName(".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name+")"));
+                var variable = OutSet.GetControlVariable(new VariableName(".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name + ")"));
                 List<Value> constantValues = new List<Value>();
                 if (variable.IsDefined(OutSet.Snapshot))
                 {
@@ -957,9 +952,9 @@ namespace Weverca.Analysis
                 }
                 else
                 {
-                    string index=".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name + ")";
+                    string index = ".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name + ")";
                     code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(constant.Initializer.Position) + ";\n";
-                    indices.Add(index); 
+                    indices.Add(index);
                 }
             }
             if (result.IsInterface == false)
@@ -973,7 +968,7 @@ namespace Weverca.Analysis
 
                 if (result.BaseClasses.Count > 0)
                 {
-                    for (int i = result.BaseClasses.Count-1; i >= 0; i--)
+                    for (int i = result.BaseClasses.Count - 1; i >= 0; i--)
                     {
                         if (Flow.OutSet.ResolveType(result.BaseClasses[i]).Count() == 0)
                         {
@@ -988,8 +983,8 @@ namespace Weverca.Analysis
                     usedFields.Add(field.Name);
                     if (field.Initializer != null)
                     {
-                        string index="";
-                        if(field.Visibility==Visibility.PUBLIC)
+                        string index = "";
+                        if (field.Visibility == Visibility.PUBLIC)
                         {
                             index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->publicfield@" + field.Name + "@";
                         }
@@ -997,17 +992,17 @@ namespace Weverca.Analysis
                         {
                             index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->nonpublicfield@(" + field.Name + "@";
                         }
-                        indices.Add(index); 
+                        indices.Add(index);
                         code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(field.Initializer.Position) + ";\n";
                     }
-                    else   
+                    else
                     {
                         MemoryEntry fieldValue;
                         if (field.InitValue != null)
                         {
                             fieldValue = field.InitValue;
                         }
-                        else 
+                        else
                         {
                             fieldValue = new MemoryEntry(OutSet.UndefinedValue);
                         }
@@ -1017,20 +1012,20 @@ namespace Weverca.Analysis
                         {
                             container = publicContainer;
                         }
-                        else 
+                        else
                         {
-                            container = nonPublicContainer; 
+                            container = nonPublicContainer;
                         }
                         container.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, fieldValue);
                     }
                 }
 
                 //insert parent values
-                for (int i = result.BaseClasses.Count - 1; i>=0 ; i--)
+                for (int i = result.BaseClasses.Count - 1; i >= 0; i--)
                 {
                     foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.BaseClasses[i])))
                     {
-                        if (usedFields.Contains(field.Name)) 
+                        if (usedFields.Contains(field.Name))
                         {
                             //add
                             usedFields.Add(field.Name);
@@ -1045,14 +1040,14 @@ namespace Weverca.Analysis
                 var fileName = "./cfg_test.php";
                 var fullPath = new FullPath(Path.GetDirectoryName(fileName));
                 var sourceFile = new PhpSourceFile(fullPath, new FullPath(fileName));
-                code = @"<?php "+code+ " } ?>";
-               
+                code = @"<?php " + code + " } ?>";
+
                 var parser = new SyntaxParser(sourceFile, code);
                 parser.Parse();
-               
+
                 var function = (parser.Ast.Statements[0] as FunctionDecl);
-                var parameters=new List<ActualParam>();
-                parameters.Add(new ActualParam(Position.Invalid,new DirectVarUse(Position.Invalid,"res") ,false));
+                var parameters = new List<ActualParam>();
+                parameters.Add(new ActualParam(Position.Invalid, new DirectVarUse(Position.Invalid, "res"), false));
                 function.Body.Add(new ExpressionStmt(Position.Invalid,
                 new DirectFcnCall(Position.Invalid, new QualifiedName(new Name(".initStaticProperties")), null, Position.Invalid, parameters, new List<TypeRef>())));
 
@@ -1079,14 +1074,14 @@ namespace Weverca.Analysis
                     ReadWriteSnapshotEntryBase nonPublicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("non-public"));
                     nonPublicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
                     ClassDecl currentClass = objectAnalyzer.GetClass(classs.BaseClasses[i]);
-                    ReadWriteSnapshotEntryBase currentContainer=null;
-                    foreach (var field in currentClass.Fields.Values.Where(a => (a.ClassName == currentClass.QualifiedName && a.IsStatic==true)))
+                    ReadWriteSnapshotEntryBase currentContainer = null;
+                    foreach (var field in currentClass.Fields.Values.Where(a => (a.ClassName == currentClass.QualifiedName && a.IsStatic == true)))
                     {
                         if (field.Visibility == Visibility.PUBLIC)
                         {
                             currentContainer = publicContainer;
                         }
-                        else 
+                        else
                         {
                             currentContainer = nonPublicContainer;
                         }
@@ -1272,19 +1267,16 @@ namespace Weverca.Analysis
             return result;
         }
 
-        private Dictionary<object, FunctionValue> resolveMethod(IEnumerable<ObjectValue> objects,
+        private Dictionary<object, FunctionValue> resolveMethod(ReadSnapshotEntryBase thisObject,
             QualifiedName name, MemoryEntry[] arguments)
         {
             var result = new Dictionary<object, FunctionValue>();
 
-            foreach (var objectValue in objects)
+            var methods = thisObject.ResolveMethod(OutSnapshot, name);
+            foreach (var method in methods)
             {
-                var functions = OutSet.ResolveMethod(objectValue, name);
-                foreach (var function in functions)
-                {
-                    // TODO: Check whether the number of arguments match.
-                    result[function.DeclaringElement] = function;
-                }
+                // TODO: Check whether the number of arguments match.
+                result[method.DeclaringElement] = method;
             }
 
             return result;
@@ -1351,7 +1343,7 @@ namespace Weverca.Analysis
             {
                 return;
             }
-            
+
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -1407,7 +1399,7 @@ namespace Weverca.Analysis
 
         #endregion
 
-       
+
     }
 
     #region function hints
@@ -1525,29 +1517,29 @@ namespace Weverca.Analysis
         internal void applyHints(FlowOutputSet outset)
         {
             //throw new NotImplementedException("TODO reimplement");
-             /* 
-             foreach (var type in returnHints)
-             {
-                 throw new NotImplementedException("Return value has been removed from API");
-                   var result = outset.ReadValue(outset.ReturnValue);
+            /* 
+            foreach (var type in returnHints)
+            {
+                throw new NotImplementedException("Return value has been removed from API");
+                  var result = outset.ReadValue(outset.ReturnValue);
                 
-                 foreach (var value in result.PossibleValues)
-                 {
-                     ValueInfoHandler.setClean(outset, value, type);
-                 }
-             }
+                foreach (var value in result.PossibleValues)
+                {
+                    ValueInfoHandler.setClean(outset, value, type);
+                }
+            }
             
-             foreach (var variable in argumentHints.Keys)
-             {
-                 foreach (var flag in argumentHints[variable])
-                 {
-                     var result = outset.ReadVariable(variable).ReadMemory(outset.Snapshot);
-                     foreach (var value in result.PossibleValues)
-                     {
-                         ValueInfoHandler.setClean(outset, value, flag);
-                     }
-                 }
-             }*/
+            foreach (var variable in argumentHints.Keys)
+            {
+                foreach (var flag in argumentHints[variable])
+                {
+                    var result = outset.ReadVariable(variable).ReadMemory(outset.Snapshot);
+                    foreach (var value in result.PossibleValues)
+                    {
+                        ValueInfoHandler.setClean(outset, value, flag);
+                    }
+                }
+            }*/
         }
     }
     #endregion

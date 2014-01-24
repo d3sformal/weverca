@@ -93,61 +93,19 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateAlias(sourceVar);
         }
 
-        [Obsolete("Use snapshot entry API instead")]
-        public AliasValue CreateIndexAlias(AssociativeArray array, ContainerIndex index)
-        {
-            return Snapshot.CreateIndexAlias(array, index);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public AliasValue CreateFieldAlias(ObjectValue objectValue, ContainerIndex field)
-        {
-            return Snapshot.CreateFieldAlias(objectValue, field);
-        }
-
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
             return Snapshot.ResolveFunction(functionName);
         }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public IEnumerable<FunctionValue> ResolveMethod(ObjectValue objectValue, QualifiedName methodName)
-        {
-            return Snapshot.ResolveMethod(objectValue, methodName);
-        }
-
+    
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             return Snapshot.ResolveType(typeName);
         }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public MemoryEntry GetField(ObjectValue value, ContainerIndex index)
-        {
-            return Snapshot.GetField(value, index);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public bool TryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
-        {
-            return Snapshot.TryGetField(objectValue, field, out entry);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public MemoryEntry GetIndex(AssociativeArray value, ContainerIndex index)
-        {
-            return Snapshot.GetIndex(value, index);
-        }
-
+               
         public TypeValue ObjectType(ObjectValue objectValue)
         {
             return Snapshot.ObjectType(objectValue);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public bool TryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
-        {
-            return Snapshot.TryGetIndex(array, index, out entry);
         }
 
         [Obsolete("Use snapshot entry API instead")]
@@ -182,8 +140,6 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
-
-
 
     }
 }

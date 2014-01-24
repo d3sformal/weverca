@@ -324,7 +324,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal override void Accept(ProgramPointVisitor visitor)
         {
-            visitor.VisitArray(this);            
+            visitor.VisitArray(this);
         }
     }
 
@@ -383,7 +383,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
 
             //initialize created object
-            var initializedObject = Services.FunctionResolver.InitializeObject(value, Flow.Arguments);
+            var objectEntry = OutSet.CreateSnapshotEntry(value);
+            var initializedObject = Services.FunctionResolver.InitializeObject(objectEntry, Flow.Arguments);
 
             Value = OutSet.CreateSnapshotEntry(initializedObject);
         }

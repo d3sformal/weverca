@@ -128,5 +128,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -76,7 +76,7 @@ namespace Weverca.MemoryModels.MemoryModel
             MemoryIndex index = getOrCreateVariable(targetVar);
             assignMemoryAlias(index, alias);
         }
-    
+
 
         #endregion
 
@@ -88,18 +88,18 @@ namespace Weverca.MemoryModels.MemoryModel
             objects[createdObject] = descriptor;
         }
 
-        protected override MemoryEntry getField(ObjectValue value, ContainerIndex index)
+        protected MemoryEntry getField(ObjectValue value, ContainerIndex index)
         {
             MemoryIndex fieldIndex = getFieldOrUnknown(value, index);
             return getMemoryEntry(fieldIndex);
         }
 
-        protected override bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
+        protected bool tryGetField(ObjectValue objectValue, ContainerIndex field, out MemoryEntry entry)
         {
             throw new NotImplementedException();
         }
 
-        protected override void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
+        protected void setField(ObjectValue value, ContainerIndex index, MemoryEntry entry)
         {
             MemoryIndex fieldIndex = getOrCreateField(value, index);
             assignMemoryEntry(fieldIndex, entry);
@@ -116,7 +116,7 @@ namespace Weverca.MemoryModels.MemoryModel
             MemoryIndex fieldIndex = getOrCreateField(value, index);
             assignMemoryAlias(fieldIndex, alias);
         }
-    
+
         protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
             ObjectDescriptor descriptor = objects[iteratedObject];
@@ -133,18 +133,18 @@ namespace Weverca.MemoryModels.MemoryModel
             arrays[createdArray] = descriptor;
         }
 
-        protected override MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
+        protected MemoryEntry getIndex(AssociativeArray value, ContainerIndex index)
         {
             MemoryIndex fieldIndex = getIndexOrUnknown(value, index);
             return getMemoryEntry(fieldIndex);
         }
 
-        protected override bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
+        protected bool tryGetIndex(AssociativeArray array, ContainerIndex index, out MemoryEntry entry)
         {
             throw new NotImplementedException();
         }
 
-        protected override void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
+        protected void setIndex(AssociativeArray value, ContainerIndex index, MemoryEntry entry)
         {
             MemoryIndex fieldIndex = getOrCreateIndex(value, index);
             assignMemoryEntry(fieldIndex, entry);
@@ -161,7 +161,7 @@ namespace Weverca.MemoryModels.MemoryModel
             MemoryIndex fieldIndex = getOrCreateIndex(value, index);
             assignMemoryAlias(fieldIndex, alias);
         }
-        
+
         protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
             ArrayDescriptor array = arrays[iteratedArray];
@@ -175,10 +175,10 @@ namespace Weverca.MemoryModels.MemoryModel
 
 
         #region Flow Controll
-        
+
         protected override void extend(ISnapshotReadonly[] inputs)
         {
-            if (inputs.Length > 0) 
+            if (inputs.Length > 0)
             {
                 Snapshot baseSnapshot = inputs[0] as Snapshot;
                 if (baseSnapshot != null)
@@ -219,7 +219,7 @@ namespace Weverca.MemoryModels.MemoryModel
                 {
                     mergeMemoryIndexes(mergeSnapshot, item.Value, variables[item.Key]);
                 }
-                else 
+                else
                 {
                     variables[item.Key] = item.Value;
                     insertMemoryIndex(mergeSnapshot, item.Value);
@@ -294,10 +294,6 @@ namespace Weverca.MemoryModels.MemoryModel
             throw new NotImplementedException();
         }
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
-        {
-            throw new NotImplementedException();
-        }
-        protected override IEnumerable<FunctionValue> resolveMethod(ObjectValue objectValue, QualifiedName methodName)
         {
             throw new NotImplementedException();
         }
@@ -535,9 +531,9 @@ namespace Weverca.MemoryModels.MemoryModel
             {
                 ValueVisitors.AssignValueVisitor visitor = new ValueVisitors.AssignValueVisitor(this, index);
                 visitor.VisitMemoryEntry(entry);
-   
+
                 destroyMemoryEntry(index);
-            
+
                 MemoryEntry newEntry = visitor.GetCopiedEntry();
                 foreach (MemoryIndex aliasIndex in info.MustAliasses)
                 {
@@ -580,7 +576,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
             AssociativeArray targetValue = CreateArray();
             ArrayDescriptorBuilder descriptorBuilder = arrays[targetValue].Builder();
-            
+
             //Copy all indexes
             foreach (var sourceContent in sourceDescriptor.Indexes)
             {
@@ -830,7 +826,7 @@ namespace Weverca.MemoryModels.MemoryModel
         private void clearMayAliases(MemoryIndex index)
         {
             MemoryInfo oldvariableInfo = getMemoryInfo(index);
-            
+
             if (oldvariableInfo.MayAliasses.Count > 1)
             {
                 throw new NotImplementedException();
@@ -903,16 +899,6 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #endregion
 
-
-        protected override AliasValue createIndexAlias(AssociativeArray array, ContainerIndex index)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override AliasValue createFieldAlias(ObjectValue objectValue, ContainerIndex field)
-        {
-            throw new NotImplementedException();
-        }
 
         protected override TypeValue objectType(ObjectValue objectValue)
         {
