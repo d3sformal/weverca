@@ -30,7 +30,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return new MemoryEntry(Context.AnyValue);
         }
 
-        public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
+        public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject, TypeValue type,PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
         {
             foreach (var method in objectMethods)
             {

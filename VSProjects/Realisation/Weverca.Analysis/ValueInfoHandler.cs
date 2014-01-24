@@ -171,6 +171,20 @@ namespace Weverca.Analysis
         {
             return getHashCode() == (other as Flag).getHashCode();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is InfoDataBase)
+                return equals(obj as InfoDataBase);
+            else
+                return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return getHashCode();
+        }
+
     }
 
 }

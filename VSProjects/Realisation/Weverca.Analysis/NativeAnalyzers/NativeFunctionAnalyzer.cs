@@ -144,6 +144,16 @@ namespace Weverca.Analysis
         /// </summary>
         private Dictionary<QualifiedName, NativeAnalyzerMethod> specialFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
 
+        /// <summary>
+        /// Structure storing information about function which clean dirty flag from values
+        /// </summary>
+        private Dictionary<QualifiedName, DirtyType> cleaningFunctions;
+
+        /// <summary>
+        /// Structure storing information about function which report security warning, when, argument contains drity flag
+        /// </summary>
+        private Dictionary<QualifiedName, DirtyType> reportingFunctions;
+
         private HashSet<string> types = new HashSet<string>();
         
         private HashSet<string> returnTypes = new HashSet<string>();
@@ -161,6 +171,9 @@ namespace Weverca.Analysis
         /// </summary>
         private NativeFunctionAnalyzer()
         {
+
+            initCleaningFunctions();
+            initReportingFunctions();
 
             string function = "";
             string returnType = "";
@@ -330,6 +343,37 @@ namespace Weverca.Analysis
         
         }
 
+        private QualifiedName getQualifiedName(string s)
+        {
+            return new QualifiedName(new Name(s));
+        }
+
+        private void initCleaningFunctions()
+        {
+            cleaningFunctions = new Dictionary<QualifiedName, DirtyType>();
+            cleaningFunctions.Add(getQualifiedName("htmlentities"),DirtyType.HTMLDirty);
+            cleaningFunctions.Add(getQualifiedName("htmlspecialchars"), DirtyType.HTMLDirty);
+
+            cleaningFunctions.Add(getQualifiedName("mysql_escape_string"), DirtyType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysqli_real_escape_string"), DirtyType.SQLDirty);
+        }
+
+        private void initReportingFunctions()
+        {
+            reportingFunctions = new Dictionary<QualifiedName, DirtyType>();
+            reportingFunctions.Add(getQualifiedName("print_r"), DirtyType.HTMLDirty);
+            reportingFunctions.Add(getQualifiedName("printf"), DirtyType.HTMLDirty);
+            reportingFunctions.Add(getQualifiedName("print"), DirtyType.HTMLDirty);
+            //echo
+
+            reportingFunctions.Add(getQualifiedName("fopen"), DirtyType.FilePathDirty);
+            //includy
+
+            //sql dirty
+
+
+        }
+
         #endregion
 
         /// <summary>
@@ -424,7 +468,7 @@ namespace Weverca.Analysis
         public void InsetStaticPropertiesIntoMemoryModel(FlowController flow)
         {
             //todo replace with iterate array
-            var res=flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0));
+            var res=flow.OutSet.GetVariable(NativeAnalyzerUtils.Argument(0));
             foreach (string index in indices)
             {
                 if (index.StartsWith("."))
@@ -589,7 +633,7 @@ namespace Weverca.Analysis
     delegate Value ConcreteFunctionDelegate(FlowController flow, Value[] arguments);
 
     /// <summary>
-    /// 
+    /// Hepler used for concrete functions implementations or for functions implemented by Phalanger
     /// </summary>
     class ConcreteFunctionAnalyzerHelper : NativeFunctionAnalyzerHelper
     {

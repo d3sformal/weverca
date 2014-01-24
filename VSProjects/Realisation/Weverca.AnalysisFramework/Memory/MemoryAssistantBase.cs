@@ -56,7 +56,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="methodName">Name of resolved methods</param>
         /// <param name="objectMethods">Methods available for thisObject</param>
         /// <returns>Resolved methods</returns>
-        public abstract IEnumerable<FunctionValue> ResolveMethods(Value thisObject, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
+        public abstract IEnumerable<FunctionValue> ResolveMethods(Value thisObject, TypeValue type, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
 
         /// <summary>
         /// Initialize context snapshot for current assistant

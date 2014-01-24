@@ -843,7 +843,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                     objectMethods = TypeMethodResolver.ResolveMethods(type, this);
                 }
 
-                var resolvedMethods = MemoryAssistant.ResolveMethods(possibleValue, methodName, objectMethods);
+                var resolvedMethods = MemoryAssistant.ResolveMethods(possibleValue, type, methodName, objectMethods);
                 result.AddRange(resolvedMethods);
             }
 

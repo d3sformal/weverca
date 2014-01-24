@@ -59,7 +59,7 @@ namespace Weverca.Analysis
 
             foreach (var value in calledObjectValue.PossibleValues)
             {
-                var visitor = new StaticObjectVisitor(OutSet);
+                var visitor = new StaticObjectVisitor(Flow);
                 value.Accept(visitor);
                 switch (visitor.Result)
                 {
@@ -78,8 +78,13 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
+            IEnumerable<TypeValue> types=ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            foreach (var type in types)
+            {
+                //var methods = resolveStaticMethod(type, name, arguments);
+                //setCallBranching(methods);
+            }
             throw new NotImplementedException();
-
 
         }
 

@@ -16,15 +16,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         MULTIPLE_RESULTS
     }
 
-    public class StaticObjectVisitor : AbstractValueVisitor
+    public class StaticObjectVisitor : PartialExpressionEvaluator
     {
         public StaticObjectVisitorResult Result;
         public QualifiedName className;
-        private FlowOutputSet OutSet;
 
-        public StaticObjectVisitor(FlowOutputSet OutSet)
+        public StaticObjectVisitor(FlowController flowController) : base(flowController)
         {
-            this.OutSet = OutSet;
+            
         }
 
         public override void VisitValue(Value value)

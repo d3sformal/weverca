@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PHP.Core.Reflection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -108,11 +109,13 @@ namespace Weverca.Analysis
             // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
 
-        public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
+        public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject,TypeValue type, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
         {
+            
             foreach (var method in objectMethods)
             {
-                if (method.Name.Value == methodName.Name.Value)
+                bool isstatic = (type.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || type.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
+                if (method.Name.Value == methodName.Name.Value && isstatic == false) 
                 {
                     yield return method;
                 }

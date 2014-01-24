@@ -733,15 +733,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="typeName">Name of type to resolve</param>
         /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>
-        private IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName)
+        public static IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName,FlowOutputSet OutSet,LangElement element)
         {
             var typeValues = OutSet.ResolveType(typeName);
             if (!typeValues.GetEnumerator().MoveNext())
             {
-                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
+                var objectAnalyzer = NativeObjectAnalyzer.GetInstance(OutSet);
                 ClassDecl nativeDeclaration;
                 if (objectAnalyzer.TryGetClass(typeName, out nativeDeclaration))
                 {
+                    foreach (var baseClass in nativeDeclaration.BaseClasses)
+                    {
+                        if (!OutSet.ResolveType(nativeDeclaration.QualifiedName).GetEnumerator().MoveNext())
+                        {
+                            OutSet.DeclareGlobal(OutSet.CreateType(nativeDeclaration));
+                        }
+                    }
                     var type = OutSet.CreateType(nativeDeclaration);
                     OutSet.DeclareGlobal(type);
                     var newTypes = new List<TypeValue>();
@@ -751,7 +758,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 else
                 {
                     // TODO: This must be error
-                    SetWarning("Class not found when creating new object");
+                    AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Class doesn't exist",element,AnalysisWarningCause.CLASS_DOESNT_EXIST));
                     return null;
                 }
             }
@@ -800,7 +807,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName);
+                var typeValues = ResolveSourceOrNativeType(typeName, OutSet, Element);
                 if (typeValues != null)
                 {
                     foreach (var type in typeValues)
@@ -846,7 +853,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName);
+                var typeValues = ResolveSourceOrNativeType(typeName, OutSet,Element);
                 if (typeValues == null)
                 {
                     // TODO: This must be error
@@ -930,7 +937,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var value in thisObject.PossibleValues)
             {
-                var visitor = new StaticObjectVisitor(OutSet);
+                var visitor = new StaticObjectVisitor(Flow);
                 value.Accept(visitor);
                 switch (visitor.Result)
                 { 
