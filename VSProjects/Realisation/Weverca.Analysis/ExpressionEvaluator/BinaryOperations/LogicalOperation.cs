@@ -49,9 +49,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Logical(outset, operation, rightOperand, leftOperand);
         }
 
-        public static Value Logical<T>(FlowOutputSet outset, Operations operation,
-            IntervalValue<T> leftOperand, IntervalValue<T> rightOperand)
-            where T : IComparable, IComparable<T>, IEquatable<T>
+        public static Value Logical<TLeft, TRight>(FlowOutputSet outset, Operations operation,
+            IntervalValue<TLeft> leftOperand, IntervalValue<TRight> rightOperand)
+            where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
+            where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
         {
             switch (operation)
             {
@@ -76,7 +77,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Or:
                     return AbstractOr(outset, concreteOperand);
                 case Operations.Xor:
-                    return AbstractXor(outset, concreteOperand);
+                    return AbstractXor(outset);
                 default:
                     return null;
             }
@@ -93,7 +94,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.Or:
                     return AbstractOr(outset, intervalOperand);
                 case Operations.Xor:
-                    return AbstractXor(outset, intervalOperand);
+                    return AbstractXor(outset);
                 default:
                     return null;
             }
@@ -142,13 +143,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return And(outset, rightOperand, leftOperand);
         }
 
-        public static Value And<T>(FlowOutputSet outset, IntervalValue<T> leftOperand,
-            IntervalValue<T> rightOperand)
-            where T : IComparable, IComparable<T>, IEquatable<T>
+        public static Value And<TLeft, TRight>(FlowOutputSet outset, IntervalValue<TLeft> leftOperand,
+            IntervalValue<TRight> rightOperand)
+            where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
+            where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
         {
             bool convertedValue;
 
-            if (TypeConversion.TryConvertToBoolean<T>(leftOperand, out convertedValue))
+            if (TypeConversion.TryConvertToBoolean<TLeft>(leftOperand, out convertedValue))
             {
                 return And(outset, convertedValue, rightOperand);
             }
@@ -212,13 +214,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Or(outset, rightOperand, leftOperand);
         }
 
-        public static Value Or<T>(FlowOutputSet outset, IntervalValue<T> leftOperand,
-            IntervalValue<T> rightOperand)
-            where T : IComparable, IComparable<T>, IEquatable<T>
+        public static Value Or<TLeft, TRight>(FlowOutputSet outset, IntervalValue<TLeft> leftOperand,
+            IntervalValue<TRight> rightOperand)
+            where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
+            where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
         {
             bool convertedValue;
 
-            if (TypeConversion.TryConvertToBoolean<T>(leftOperand, out convertedValue))
+            if (TypeConversion.TryConvertToBoolean<TLeft>(leftOperand, out convertedValue))
             {
                 return Or(outset, convertedValue, rightOperand);
             }
@@ -282,13 +285,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Xor(outset, rightOperand, leftOperand);
         }
 
-        public static Value Xor<T>(FlowOutputSet outset, IntervalValue<T> leftOperand,
-            IntervalValue<T> rightOperand)
-            where T : IComparable, IComparable<T>, IEquatable<T>
+        public static Value Xor<TLeft, TRight>(FlowOutputSet outset, IntervalValue<TLeft> leftOperand,
+            IntervalValue<TRight> rightOperand)
+            where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
+            where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
         {
             bool convertedValue;
 
-            if (TypeConversion.TryConvertToBoolean<T>(leftOperand, out convertedValue))
+            if (TypeConversion.TryConvertToBoolean<TLeft>(leftOperand, out convertedValue))
             {
                 return Xor(outset, convertedValue, rightOperand);
             }
@@ -298,13 +302,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static AnyBooleanValue AbstractXor(FlowOutputSet outset, bool concreteOperand)
-        {
-            return outset.AnyBooleanValue;
-        }
-
-        public static AnyBooleanValue AbstractXor<T>(FlowOutputSet outset, IntervalValue<T> intervalOperand)
-            where T : IComparable, IComparable<T>, IEquatable<T>
+        public static AnyBooleanValue AbstractXor(FlowOutputSet outset)
         {
             return outset.AnyBooleanValue;
         }

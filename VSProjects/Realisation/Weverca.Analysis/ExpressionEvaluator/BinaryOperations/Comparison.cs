@@ -82,6 +82,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        public static Value IntervalCompare<T>(FlowOutputSet outset, Operations operation,
+            bool leftOperand, IntervalValue<T> rightOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+            if (TypeConversion.TryConvertToBoolean(rightOperand, out convertedValue))
+            {
+                return Compare(outset, operation, leftOperand, convertedValue);
+            }
+            else
+            {
+                return RightAbstractBooleanCompare(outset, operation, leftOperand);
+            }
+        }
+
         /// <summary>
         /// Compare concrete integer to integer interval with the specified operation.
         /// </summary>
@@ -111,6 +126,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return GreaterThanOrEqual(outset, leftOperand, rightOperand);
                 default:
                     return null;
+            }
+        }
+
+        public static Value IntervalCompare<T>(FlowOutputSet outset, Operations operation,
+            IntervalValue<T> leftOperand, bool rightOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+            if (TypeConversion.TryConvertToBoolean(leftOperand, out convertedValue))
+            {
+                return Compare(outset, operation, convertedValue, rightOperand);
+            }
+            else
+            {
+                return LeftAbstractBooleanCompare(outset, operation, rightOperand);
             }
         }
 
@@ -262,6 +292,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        public static Value RightAbstractBooleanCompare<T>(FlowOutputSet outset,
+            Operations operation, IntervalValue<T> leftOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+            if (TypeConversion.TryConvertToBoolean(leftOperand, out convertedValue))
+            {
+                return RightAbstractBooleanCompare(outset, operation, convertedValue);
+            }
+            else
+            {
+                return AbstractCompare(outset, operation);
+            }
+        }
+
         public static Value LeftAbstractBooleanCompare(FlowOutputSet outset,
             Operations operation, bool rightOperand)
         {
@@ -309,6 +354,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 default:
                     return null;
+            }
+        }
+
+        public static Value LeftAbstractBooleanCompare<T>(FlowOutputSet outset,
+            Operations operation, IntervalValue<T> rightOperand)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            bool convertedValue;
+            if (TypeConversion.TryConvertToBoolean(rightOperand, out convertedValue))
+            {
+                return LeftAbstractBooleanCompare(outset, operation, convertedValue);
+            }
+            else
+            {
+                return AbstractCompare(outset, operation);
             }
         }
 

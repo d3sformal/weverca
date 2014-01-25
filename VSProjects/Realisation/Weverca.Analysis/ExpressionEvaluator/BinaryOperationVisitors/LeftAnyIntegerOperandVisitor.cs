@@ -34,10 +34,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitScalarValue(ScalarValue value)
         {
             result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result == null)
+            if (result != null)
             {
-                base.VisitScalarValue(value);
+                return;
             }
+
+            base.VisitScalarValue(value);
         }
 
         /// <inheritdoc />
@@ -55,12 +57,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     DivisionByBooleanValue(value.Value);
                     break;
                 default:
-                    result = LogicalOperation.AbstractLogical(OutSet, operation, value.Value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     result = Comparison.LeftAbstractBooleanCompare(OutSet, operation, value.Value);
                     if (result != null)
                     {
@@ -69,6 +65,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation,
                         TypeConversion.ToInteger(value.Value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.AbstractLogical(OutSet, operation, value.Value);
                     if (result != null)
                     {
                         break;
@@ -85,10 +87,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitGenericNumericValue<T>(NumericValue<T> value)
         {
             result = Comparison.AbstractCompare(OutSet, operation);
-            if (result == null)
+            if (result != null)
             {
-                VisitGenericScalarValue(value);
+                return;
             }
+
+            base.VisitGenericScalarValue(value);
         }
 
         /// <inheritdoc />
@@ -143,7 +147,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
                     if (result != null)
                     {
                         break;
@@ -197,22 +201,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
                         out floatValue, out isInteger);
 
-                    if (isInteger)
+                    result = isInteger
+                        ? ArithmeticOperation.LeftAbstractArithmetic(flow, operation, integerValue)
+                        : ArithmeticOperation.LeftAbstractArithmetic(flow, operation, floatValue);
+
+                    if (result != null)
                     {
-                        result = ArithmeticOperation.LeftAbstractArithmetic(flow,
-                            operation, integerValue);
-                        if (result != null)
-                        {
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-                        if (result != null)
-                        {
-                            break;
-                        }
+                        break;
                     }
 
                     base.VisitStringValue(value);
@@ -223,24 +218,75 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Scalar values
 
         /// <inheritdoc />
-        public override void VisitUndefinedValue(UndefinedValue value)
+        public override void VisitResourceValue(ResourceValue value)
         {
             switch (operation)
             {
                 case Operations.Identical:
-                case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
                     result = OutSet.CreateBool(true);
                     break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.AbstractCompare(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Comapring of resource and integer makes no sence.
+                        break;
+                    }
+
+                    result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
+                    if (result != null)
+                    {
+                        // Arithmetic with resources is nonsence
+                        return;
+                    }
+
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Bitwise operation with resource can give any integer
+                        break;
+                    }
+
+                    base.VisitResourceValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitUndefinedValue(UndefinedValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.LessThan:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.LessThanOrEqual:
+                case Operations.GreaterThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = OutSet.AnyBooleanValue;
-                    break;
-                case Operations.Mul:
-                case Operations.BitAnd:
-                    result = OutSet.CreateInt(0);
                     break;
                 case Operations.Add:
                 case Operations.Sub:
@@ -250,17 +296,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.ShiftRight:
                     result = leftOperand;
                     break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                    result = OutSet.CreateInt(0);
+                    break;
                 case Operations.Div:
                 case Operations.Mod:
                     DivisionByNull();
                     break;
                 default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result == null)
-                    {
-                        VisitUndefinedValue(value);
-                    }
-
+                    base.VisitUndefinedValue(value);
                     break;
             }
         }
@@ -304,7 +349,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.AbstractModulo(flow, value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractOperandArithmetic(flow, operation, value);
+                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value);
                     if (result != null)
                     {
                         break;

@@ -9,9 +9,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 {
     public static class ModuloOperation
     {
-        #region Integer divisor
+        private delegate Value IntegerDivisorModulo<T>(FlowController flow, T dividend, int divisor);
 
-        public delegate Value IntegerDivisorModulo<T>(FlowController flow, T dividend, int divisor);
+        private delegate Value IntervalDivisorModulo<T>(FlowController flow, T dividend,
+            IntervalValue<int> divisor);
+
+        #region Integer divisor
 
         /// <summary>
         /// Perform modulo operation for given integer dividend and divisor. Warn if modulo by zero.
@@ -104,7 +107,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="dividend">Integer interval dividend of modulo operation</param>
         /// <param name="divisor">Integer divisor of modulo operation</param>
         /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
-        public static Value Modulo(FlowController flow, IntegerIntervalValue dividend, int divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<int> dividend, int divisor)
         {
             if (divisor != 0)
             {
@@ -123,11 +126,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="dividend">Floating-point interval dividend of modulo operation</param>
         /// <param name="divisor">Integer divisor of modulo operation</param>
         /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
-        public static Value Modulo(FlowController flow, FloatIntervalValue dividend, int divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<double> dividend, int divisor)
         {
             if (divisor != 0)
             {
-                IntegerIntervalValue convertedValue;
+                IntervalValue<int> convertedValue;
 
                 // Here we distinguish whether the integer interval dividend is known or not
                 if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, dividend, out convertedValue))
@@ -167,22 +170,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Float divisor
 
-        public static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> operation,
-            T dividend, double divisor)
-        {
-            int convertedValue;
-
-            // Here we distinguish whether the integer divisor is known or not
-            if (TypeConversion.TryConvertToInteger(divisor, out convertedValue))
-            {
-                return operation(flow, dividend, convertedValue);
-            }
-            else
-            {
-                return WarnPossibleDivideByZero(flow);
-            }
-        }
-
         public static Value Modulo(FlowController flow, int dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
@@ -198,12 +185,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, IntegerIntervalValue dividend, double divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<int> dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, FloatIntervalValue dividend, double divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<double> dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
@@ -227,26 +214,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region String divisor
 
-        public static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> operation,
-            T dividend, string divisor)
-        {
-            int integerValue;
-            double floatValue;
-            bool isInteger;
-            TypeConversion.TryConvertToNumber(divisor, false, out integerValue,
-                out floatValue, out isInteger);
-
-            // Here we distinguish whether the integer divisor is known or not
-            if (isInteger)
-            {
-                return operation(flow, dividend, integerValue);
-            }
-            else
-            {
-                return WarnPossibleDivideByZero(flow);
-            }
-        }
-
         public static Value Modulo(FlowController flow, int dividend, string divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
@@ -262,12 +229,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, IntegerIntervalValue dividend, string divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<int> dividend, string divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, FloatIntervalValue dividend, string divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<double> dividend, string divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
@@ -295,10 +262,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Integer interval divisor
 
-        public delegate Value IntervalDivisorModulo<T>(FlowController flow, T dividend,
-            IntegerIntervalValue divisor);
-
-        public static Value Modulo(FlowController flow, int dividend, IntegerIntervalValue divisor)
+        public static Value Modulo(FlowController flow, int dividend, IntervalValue<int> divisor)
         {
             if (dividend > int.MinValue)
             {
@@ -391,7 +355,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value Modulo(FlowController flow, double dividend, IntegerIntervalValue divisor)
+        public static Value Modulo(FlowController flow, double dividend, IntervalValue<int> divisor)
         {
             int convertedValue;
 
@@ -406,7 +370,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value Modulo(FlowController flow, string dividend, IntegerIntervalValue divisor)
+        public static Value Modulo(FlowController flow, string dividend, IntervalValue<int> divisor)
         {
             int integerValue;
             double floatValue;
@@ -425,17 +389,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value Modulo(FlowController flow, IntegerIntervalValue dividend,
-            IntegerIntervalValue divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<int> dividend,
+            IntervalValue<int> divisor)
         {
             // TODO: Calculate more precise result
             return flow.OutSet.AnyValue;
         }
 
-        public static Value Modulo(FlowController flow, FloatIntervalValue dividend,
-            IntegerIntervalValue divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<double> dividend,
+            IntervalValue<int> divisor)
         {
-            IntegerIntervalValue convertedValue;
+            IntervalValue<int> convertedValue;
 
             // Here we distinguish whether the integer interval dividend is known or not
             if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, dividend, out convertedValue))
@@ -448,7 +412,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value AbstractModulo(FlowController flow, IntegerIntervalValue divisor)
+        public static Value AbstractModulo(FlowController flow, IntervalValue<int> divisor)
         {
             if (divisor.Start > 0)
             {
@@ -476,50 +440,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Float interval divisor
 
-        public static Value Modulo<T>(FlowController flow, IntervalDivisorModulo<T> operation,
-            T dividend, FloatIntervalValue divisor)
-        {
-            IntegerIntervalValue convertedValue;
-            if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, divisor, out convertedValue))
-            {
-                return operation(flow, dividend, convertedValue);
-            }
-            else
-            {
-                return WarnPossibleDivideByZero(flow);
-            }
-        }
-
-        public static Value Modulo(FlowController flow, int dividend, FloatIntervalValue divisor)
+        public static Value Modulo(FlowController flow, int dividend, IntervalValue<double> divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, double dividend, FloatIntervalValue divisor)
+        public static Value Modulo(FlowController flow, double dividend, IntervalValue<double> divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, string dividend, FloatIntervalValue divisor)
+        public static Value Modulo(FlowController flow, string dividend, IntervalValue<double> divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, IntegerIntervalValue dividend,
-            FloatIntervalValue divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<int> dividend,
+            IntervalValue<double> divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value Modulo(FlowController flow, FloatIntervalValue dividend,
-            FloatIntervalValue divisor)
+        public static Value Modulo(FlowController flow, IntervalValue<double> dividend,
+            IntervalValue<double> divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
-        public static Value AbstractModulo(FlowController flow, FloatIntervalValue divisor)
+        public static Value AbstractModulo(FlowController flow, IntervalValue<double> divisor)
         {
-            IntegerIntervalValue convertedValue;
+            IntervalValue<int> convertedValue;
             if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, divisor, out convertedValue))
             {
                 return AbstractModulo(flow, convertedValue);
@@ -539,9 +489,59 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Helper methods
 
-        private static Value Modulo(FlowOutputSet outset, IntegerIntervalValue leftOperand, int rightOperand)
+        private static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> operation,
+            T dividend, double divisor)
         {
-            IntegerIntervalValue result;
+            int convertedValue;
+
+            // Here we distinguish whether the integer divisor is known or not
+            if (TypeConversion.TryConvertToInteger(divisor, out convertedValue))
+            {
+                return operation(flow, dividend, convertedValue);
+            }
+            else
+            {
+                return WarnPossibleDivideByZero(flow);
+            }
+        }
+
+        private static Value Modulo<T>(FlowController flow, IntegerDivisorModulo<T> operation,
+            T dividend, string divisor)
+        {
+            int integerValue;
+            double floatValue;
+            bool isInteger;
+            TypeConversion.TryConvertToNumber(divisor, false, out integerValue,
+                out floatValue, out isInteger);
+
+            // Here we distinguish whether the integer divisor is known or not
+            if (isInteger)
+            {
+                return operation(flow, dividend, integerValue);
+            }
+            else
+            {
+                return WarnPossibleDivideByZero(flow);
+            }
+        }
+
+        private static Value Modulo<T>(FlowController flow, IntervalDivisorModulo<T> operation,
+            T dividend, IntervalValue<double> divisor)
+        {
+            IntervalValue<int> convertedValue;
+            if (TypeConversion.TryConvertToIntegerInterval(flow.OutSet, divisor, out convertedValue))
+            {
+                return operation(flow, dividend, convertedValue);
+            }
+            else
+            {
+                return WarnPossibleDivideByZero(flow);
+            }
+        }
+
+        private static Value Modulo(FlowOutputSet outset, IntervalValue<int> leftOperand, int rightOperand)
+        {
+            IntervalValue<int> result;
 
             if (leftOperand.Start >= 0)
             {
@@ -573,7 +573,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        private static IntegerIntervalValue PositiveDividendModulo(FlowOutputSet outset,
+        private static IntervalValue<int> PositiveDividendModulo(FlowOutputSet outset,
             int leftOperandStart, int leftOperandEnd, int rightOperand)
         {
             if (rightOperand < 0)
@@ -608,7 +608,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        private static IntegerIntervalValue NegativeDividendModulo(FlowOutputSet outset,
+        private static IntervalValue<int> NegativeDividendModulo(FlowOutputSet outset,
             int leftOperandStart, int leftOperandEnd, int rightOperand)
         {
             if (rightOperand < 0)
@@ -657,7 +657,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        private static IntegerIntervalValue WorstModuloResult(FlowOutputSet outset, int divisor)
+        private static IntervalValue<int> WorstModuloResult(FlowOutputSet outset, int divisor)
         {
             Debug.Assert(divisor != 0, "Zero divisor causes modulo by zero");
 

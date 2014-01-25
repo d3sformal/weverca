@@ -215,10 +215,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = TypeConversion.ToFloat(OutSet, value);
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
-                    break;
                 default:
                     base.VisitBooleanValue(value);
                     break;
@@ -277,10 +273,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = OutSet.CreateDouble(value.Value);
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
-                    break;
                 default:
                     base.VisitIntegerValue(value);
                     break;
@@ -325,10 +317,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = TypeConversion.ToFloat(OutSet, value);
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
-                    break;
                 default:
                     base.VisitLongintValue(value);
                     break;
@@ -371,10 +359,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
                     result = value;
-                    break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
                     break;
                 default:
                     base.VisitFloatValue(value);
@@ -443,10 +427,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = TypeConversion.ToFloat(OutSet, value);
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = value;
-                    break;
                 default:
                     base.VisitStringValue(value);
                     break;
@@ -500,11 +480,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     SetWarning("Object cannot be converted to float");
                     result = OutSet.AnyFloatValue;
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    // TODO: Object can by converted only if it has __toString magic method implemented
-                    result = OutSet.AnyStringValue;
-                    break;
                 case Operations.Print:
                     // The operator convert value to string and print it. The string value is not used
                     // to resolve the entire expression. Instead, the false value is returned.
@@ -556,10 +531,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
                     result = TypeConversion.ToFloat(OutSet, value);
-                    break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
                     break;
                 case Operations.Print:
                     // The operator convert value to string and print it. The string value is not used
@@ -615,10 +586,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = OutSet.AnyFloatValue;
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
-                    break;
                 default:
                     if (!PerformUsualOperation(value))
                     {
@@ -657,10 +624,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = TypeConversion.ToFloat(OutSet, value);
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
-                    break;
                 default:
                     if (!PerformUsualOperation(value))
                     {
@@ -695,10 +658,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.BoolCast:
                     result = TypeConversion.ToBoolean<T>(OutSet, value);
-                    break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = OutSet.AnyStringValue;
                     break;
                 default:
                     if (!PerformUsualOperation(value))
@@ -778,7 +737,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateLongintInterval(~value.End, ~value.Start);
                     break;
                 case Operations.Int32Cast:
-                    IntegerIntervalValue integerInterval;
+                    IntervalValue<int> integerInterval;
                     if (TypeConversion.TryConvertToIntegerInterval(OutSet, value, out integerInterval))
                     {
                         result = integerInterval;
@@ -808,7 +767,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return;
             }
 
-            IntegerIntervalValue integerInterval;
+            IntervalValue<int> integerInterval;
 
             switch (operation)
             {
@@ -873,11 +832,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.DoubleCast:
                     result = OutSet.AnyFloatValue;
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    // TODO: This is possible fatal error
-                    result = OutSet.AnyStringValue;
-                    break;
                 case Operations.Clone:
                     // TODO: This is possible fatal error
                     SetWarning("__clone method called on non-object");
@@ -918,10 +872,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
                     result = OutSet.AnyFloatValue;
-                    break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = OutSet.AnyStringValue;
                     break;
                 default:
                     if (!PerformUsualOperation(value))
@@ -1106,20 +1056,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     SetWarning("Object cannot be converted to float");
                     result = OutSet.AnyFloatValue;
                     break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    // TODO: Object can by converted only if it has __toString magic method implemented
-                    result = OutSet.AnyStringValue;
-                    break;
                 case Operations.Print:
                     // The operator convert value to string and print it. The string value is not used
                     // to resolve the entire expression. Instead, the false value is returned.
                     // TODO: This is a quest for tainted analysis
                     result = OutSet.CreateBool(false);
-                    // TODO: Object can by converted only if it has __toString magic method implemented
+                    // TODO: Object can be converted only if it has __toString magic method implemented
                     break;
                 case Operations.Clone:
-                    // TODO: Object can by converted only if it has __clone magic method implemented
+                    // TODO: Object can be converted only if it has __clone magic method implemented
                     result = OutSet.AnyObjectValue;
                     break;
                 case Operations.ObjectCast:
@@ -1161,10 +1106,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
                     result = OutSet.AnyFloatValue;
-                    break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = TypeConversion.ToString(OutSet, value);
                     break;
                 case Operations.Print:
                     // The operator convert value to string and print it. The string value is not used
@@ -1219,10 +1160,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
                     result = OutSet.AnyFloatValue;
-                    break;
-                case Operations.StringCast:
-                case Operations.UnicodeCast:
-                    result = OutSet.AnyStringValue;
                     break;
                 default:
                     if (!PerformUsualOperation(value))

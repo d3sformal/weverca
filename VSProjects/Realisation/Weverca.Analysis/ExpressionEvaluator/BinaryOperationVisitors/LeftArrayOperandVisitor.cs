@@ -77,14 +77,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    var leftInteger = TypeConversion.ToInteger(leftBoolean);
-                    var rightInteger = TypeConversion.ToInteger(value.Value);
-                    result = BitwiseOperation.Bitwise(OutSet, operation, leftInteger, rightInteger);
-                    if (result == null)
+                    result = BitwiseOperation.Bitwise(OutSet, operation,
+                        TypeConversion.ToNativeInteger(OutSet, leftOperand),
+                        TypeConversion.ToInteger(value.Value));
+                    if (result != null)
                     {
-                        base.VisitBooleanValue(value);
+                        break;
                     }
 
+                    base.VisitBooleanValue(value);
                     break;
             }
         }
@@ -95,10 +96,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitGenericNumericValue<T>(NumericValue<T> value)
         {
             result = Comparison.LeftAlwaysGreater(OutSet, operation);
-            if (result == null)
+            if (result != null)
             {
-                VisitGenericScalarValue(value);
+                return;
             }
+
+            VisitGenericScalarValue(value);
         }
 
         /// <inheritdoc />
@@ -119,8 +122,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    var leftInteger = TypeConversion.ToInteger(leftBoolean);
-                    result = BitwiseOperation.Bitwise(OutSet, operation, leftInteger, value.Value);
+                    result = BitwiseOperation.Bitwise(OutSet, operation,
+                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
                     if (result == null)
                     {
                         base.VisitIntegerValue(value);
@@ -154,8 +157,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    var leftInteger = TypeConversion.ToInteger(leftBoolean);
-                    result = BitwiseOperation.Bitwise(OutSet, operation, leftInteger, value.Value);
+                    result = BitwiseOperation.Bitwise(OutSet, operation,
+                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
                     if (result == null)
                     {
                         base.VisitFloatValue(value);
@@ -191,8 +194,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    var leftInteger = TypeConversion.ToInteger(leftBoolean);
-                    result = BitwiseOperation.Bitwise(OutSet, operation, leftInteger, value.Value);
+                    result = BitwiseOperation.Bitwise(OutSet, operation,
+                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
                     if (result == null)
                     {
                         base.VisitStringValue(value);
@@ -228,18 +231,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
-                    var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
-                    var rightBoolean = TypeConversion.ToBoolean(value);
-                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
                         break;
@@ -249,6 +243,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (result != null)
                     {
                         SetWarning("Object cannot be converted to integer by bitwise operation");
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        SetWarning("Object cannot be converted to integer by arithmetic operation");
+
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
                         break;
                     }
 
@@ -268,18 +272,33 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.Mod:
-                    result = ModuloOperation.Modulo(flow, TypeConversion.ToNativeInteger(OutSet,
-                        leftOperand), TypeConversion.ToNativeInteger(OutSet, value));
+                    result = ModuloOperation.Modulo(flow,
+                        TypeConversion.ToNativeInteger(OutSet, leftOperand),
+                        TypeConversion.ToNativeInteger(OutSet, value));
                     break;
                 default:
                     if (Comparison.IsOperationComparison(operation))
                     {
-                        /*
-                         * TODO: We compare arrays first by the number of elements and second
-                         * if key from left operand is not found in right operand then arrays are
-                         * uncomparable, otherwise we compare value by value
-                         */
+                        // TODO: We compare arrays first by the number of elements and second
+                        // if key from left operand is not found in right operand then arrays are
+                        // uncomparable, otherwise we compare value by value
                         result = OutSet.AnyBooleanValue;
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToNativeBoolean(OutSet, value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation,
+                        TypeConversion.ToNativeInteger(OutSet, leftOperand),
+                        TypeConversion.ToNativeInteger(OutSet, value));
+                    if (result != null)
+                    {
                         break;
                     }
 
@@ -291,22 +310,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
-                    var rightBoolean = TypeConversion.ToNativeBoolean(OutSet, value);
-                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    var leftInteger = TypeConversion.ToInteger(leftBoolean);
-                    var rightInteger = TypeConversion.ToInteger(rightBoolean);
-                    result = BitwiseOperation.Bitwise(OutSet, operation, leftInteger, rightInteger);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitAssociativeArray(value);
                     break;
             }
@@ -315,28 +318,77 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Compound values
 
         /// <inheritdoc />
+        public override void VisitResourceValue(ResourceValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Bitwise operation with resource can give any integer
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitResourceValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
             switch (operation)
             {
-                case Operations.NotIdentical:
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(true);
-                    break;
                 case Operations.Identical:
                 case Operations.LessThan:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Equal:
+                case Operations.LessThanOrEqual:
+                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, leftOperand));
                     break;
                 case Operations.NotEqual:
                 case Operations.GreaterThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, leftOperand);
-                    break;
-                case Operations.Equal:
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, leftOperand));
                     break;
                 case Operations.BitAnd:
                     result = OutSet.CreateInt(0);
@@ -462,6 +514,329 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Interval values
+
+        #region Abstract values
+
+        /// <inheritdoc />
+        public override void VisitAnyValue(AnyValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.NotIdentical:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.Mod:
+                    // Ommitted warning message that object cannot be converted to integer
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.AbstractCompare(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Ommitted warning message that object cannot be converted to integer
+                        break;
+                    }
+
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                    if (result != null)
+                    {
+                        return;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Ommitted warning message that object cannot be converted to integer
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // Ommitted warning message that object cannot be converted to integer
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAnyValue(value);
+                    break;
+            }
+        }
+
+        #region Abstract scalar values
+
+        /// <inheritdoc />
+        public override void VisitAnyScalarValue(AnyScalarValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                    if (result != null)
+                    {
+                        return;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAnyScalarValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Mod:
+                    DivisionByAnyBooleanValue();
+                    break;
+                default:
+                    result = Comparison.RightAbstractBooleanCompare(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitAnyBooleanValue(value);
+                    break;
+            }
+        }
+
+        #region Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyNumericValue(AnyNumericValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
+                    if (result != null)
+                    {
+                        return;
+                    }
+
+                    base.VisitAnyNumericValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyLongintValue(AnyLongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
+        }
+
+        #endregion Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyStringValue(AnyStringValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitAnyStringValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract scalar values
+
+        #region Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyObjectValue(AnyObjectValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.RightAlwaysGreater(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        SetWarning("Object cannot be converted to integer by bitwise operation");
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        SetWarning("Object cannot be converted to integer by arithmetic operation");
+
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAnyObjectValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyArrayValue(AnyArrayValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.NotIdentical:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.AbstractCompare(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAnyArrayValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = Comparison.AbstractCompare(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Comapring of resource and integer makes no sence.
+                        break;
+                    }
+
+                    result = LogicalOperation.Logical(OutSet, operation,
+                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Bitwise operation with resource can give any integer
+                        break;
+                    }
+
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAnyResourceValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract values
 
         #endregion AbstractValueVisitor Members
     }

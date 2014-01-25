@@ -36,10 +36,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
+                case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
                     result = OutSet.CreateBool(true);
+                    break;
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
                     break;
                 default:
                     base.VisitScalarValue(value);
@@ -52,36 +58,32 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.NotEqual:
-                case Operations.LessThan:
-                case Operations.Or:
-                case Operations.Xor:
-                    result = OutSet.CreateBool(value.Value);
-                    break;
-                case Operations.Equal:
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(!value.Value);
-                    break;
                 case Operations.GreaterThan:
-                case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.LessThanOrEqual:
                     result = OutSet.CreateBool(true);
                     break;
-                case Operations.Sub:
-                    result = OutSet.CreateInt(-TypeConversion.ToInteger(value.Value));
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(!value.Value);
                     break;
-                case Operations.Mul:
-                case Operations.BitAnd:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    result = OutSet.CreateInt(0);
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = value;
                     break;
                 case Operations.Add:
                 case Operations.BitOr:
                 case Operations.BitXor:
                     result = TypeConversion.ToInteger(OutSet, value);
+                    break;
+                case Operations.Sub:
+                    result = OutSet.CreateInt(-TypeConversion.ToInteger(value.Value));
+                    break;
+                case Operations.Mul:
+                    result = OutSet.CreateInt(0);
                     break;
                 case Operations.Div:
                 case Operations.Mod:
@@ -96,16 +98,43 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Numeric values
 
         /// <inheritdoc />
-        public override void VisitIntegerValue(IntegerValue value)
+        public override void VisitGenericNumericValue<T>(NumericValue<T> value)
         {
+            // When comparing, both operands are converted to boolean
             switch (operation)
             {
+                case Operations.GreaterThan:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.LessThanOrEqual:
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    base.VisitGenericNumericValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntegerValue(IntegerValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(value.Value));
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
                     break;
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
+                case Operations.Add:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = value;
                     break;
                 case Operations.Sub:
                     // Result of subtraction can overflow
@@ -120,15 +149,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 case Operations.Mul:
-                case Operations.BitAnd:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
                     result = OutSet.CreateInt(0);
-                    break;
-                case Operations.Add:
-                case Operations.BitOr:
-                case Operations.BitXor:
-                    result = value;
                     break;
                 case Operations.Div:
                 case Operations.Mod:
@@ -143,13 +164,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     break;
                 default:
-                    result = Comparison.Compare(OutSet, operation,
-                        TypeConversion.ToInteger(leftOperand), value.Value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitIntegerValue(value);
                     break;
             }
@@ -164,16 +178,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
-            int rightInteger;
-
+            // When comparing, both operands are converted to boolean
             switch (operation)
             {
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(!TypeConversion.ToBoolean(value.Value));
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
                     break;
                 case Operations.Add:
                     result = OutSet.CreateDouble(value.Value);
@@ -182,16 +198,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateDouble(-value.Value);
                     break;
                 case Operations.Mul:
-                    result = OutSet.CreateDouble((value.Value > 0.0) ? 0.0
-                        : ((value.Value < -0.0) ? -0.0 : value.Value));
-                    break;
-                case Operations.BitAnd:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    result = OutSet.CreateInt(0);
+                    result = OutSet.CreateDouble(0.0);
                     break;
                 case Operations.BitOr:
                 case Operations.BitXor:
+                    int rightInteger;
                     if (TypeConversion.TryConvertToInteger(value.Value, out rightInteger))
                     {
                         result = OutSet.CreateInt(rightInteger);
@@ -217,13 +228,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         TypeConversion.ToInteger(leftOperand), value.Value);
                     break;
                 default:
-                    result = Comparison.Compare(OutSet, operation,
-                        TypeConversion.ToInteger(leftOperand), value.Value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitFloatValue(value);
                     break;
             }
@@ -234,91 +238,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
         {
-            int integerValue;
-            double floatValue;
-            bool isInteger;
-
             switch (operation)
             {
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.Add:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
-                        out floatValue, out isInteger);
-                    if (isInteger)
-                    {
-                        result = OutSet.CreateInt(integerValue);
-                    }
-                    else
-                    {
-                        result = OutSet.CreateDouble(floatValue);
-                    }
-                    break;
-                case Operations.Sub:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
-                        out floatValue, out isInteger);
-                    if (isInteger)
-                    {
-                        // Result of subtraction can overflow
-                        if ((integerValue == 0) || ((-integerValue) != 0))
-                        {
-                            result = OutSet.CreateInt(-integerValue);
-                        }
-                        else
-                        {
-                            // <seealso cref="UnaryOperationEvaluator.VisitIntegerValue" />
-                            result = OutSet.CreateDouble(-TypeConversion.ToFloat(integerValue));
-                        }
-                    }
-                    else
-                    {
-                        result = OutSet.CreateDouble(-floatValue);
-                    }
-                    break;
-                case Operations.Mul:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
-                        out floatValue, out isInteger);
-                    if (isInteger)
-                    {
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        result = OutSet.CreateDouble(0.0);
-                    }
-                    break;
-                case Operations.Div:
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
-                        out floatValue, out isInteger);
-                    if (isInteger)
-                    {
-                        if (integerValue != 0)
-                        {
-                            // 0 (null) divided or modulo by anything is always 0
-                            result = OutSet.CreateInt(0);
-                        }
-                        else
-                        {
-                            DivisionByZero();
-                        }
-                    }
-                    else
-                    {
-                        if (floatValue != 0.0)
-                        {
-                            // 0 (null) divided or modulo by anything is always 0
-                            result = OutSet.CreateDouble(0.0);
-                        }
-                        else
-                        {
-                            DivisionByFloatingPointZero();
-                        }
-                    }
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
@@ -328,13 +252,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.BitXor:
                     result = TypeConversion.ToInteger(OutSet, value);
                     break;
-                case Operations.BitAnd:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    result = OutSet.CreateInt(0);
-                    break;
                 default:
                     result = Comparison.Compare(OutSet, operation, string.Empty, value.Value);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    int integerValue;
+                    double floatValue;
+                    bool isInteger;
+                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
+                        out floatValue, out isInteger);
+
+                    var leftInteger = TypeConversion.ToInteger(leftOperand);
+                    result = isInteger
+                        ? ArithmeticOperation.Arithmetic(flow, operation, leftInteger, integerValue)
+                        : ArithmeticOperation.Arithmetic(flow, operation, leftInteger, floatValue);
+
                     if (result != null)
                     {
                         break;
@@ -350,52 +285,63 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Compound values
 
         /// <inheritdoc />
-        public override void VisitObjectValue(ObjectValue value)
+        public override void VisitCompoundValue(CompoundValue value)
         {
             switch (operation)
             {
-                case Operations.Equal:
                 case Operations.Identical:
                 case Operations.GreaterThan:
-                case Operations.GreaterThanOrEqual:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
-                case Operations.NotEqual:
                 case Operations.NotIdentical:
-                case Operations.LessThan:
                 case Operations.LessThanOrEqual:
                     result = OutSet.CreateBool(true);
                     break;
+                default:
+                    base.VisitCompoundValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitObjectValue(ObjectValue value)
+        {
+            // An object is always greater then null value
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
-                    result = OutSet.AnyBooleanValue;
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    SetWarning("Object cannot be converted to integer");
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    SetWarning("Object cannot be converted to integer");
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    SetWarning("Object cannot be converted to integer");
+                    // We can assume that object is not zero, because null is zero
+                    result = OutSet.CreateInt(0);
                     break;
                 default:
-                    SetWarning("Object cannot be converted to integer");
-                    switch (operation)
-                    {
-                        case Operations.Mul:
-                        case Operations.BitAnd:
-                            result = OutSet.CreateInt(0);
-                            break;
-                        case Operations.Add:
-                        case Operations.Sub:
-                        case Operations.BitOr:
-                        case Operations.BitXor:
-                        case Operations.ShiftLeft:
-                        case Operations.ShiftRight:
-                            result = OutSet.AnyIntegerValue;
-                            break;
-                        case Operations.Div:
-                        case Operations.Mod:
-                            // We can assume that object is not zero, because null is zero
-                            result = OutSet.CreateInt(0);
-                            break;
-                        default:
-                            base.VisitObjectValue(value);
-                            break;
-                    }
+                    base.VisitObjectValue(value);
                     break;
             }
         }
@@ -405,24 +351,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.NotIdentical:
-                case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Identical:
-                case Operations.GreaterThan:
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, value));
                     break;
                 case Operations.NotEqual:
                 case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
                     result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
-                case Operations.Equal:
-                case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, value));
                     break;
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
@@ -459,6 +396,50 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
+
+        /// <inheritdoc />
+        public override void VisitResourceValue(ResourceValue value)
+        {
+            // Resource is always greater than null
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.Equal:
+                case Operations.GreaterThan:
+                case Operations.GreaterThanOrEqual:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.LessThanOrEqual:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    // We can assume that resource is not zero, because it is always true
+                    result = OutSet.CreateInt(0);
+                    break;
+                default:
+                    base.VisitResourceValue(value);
+                    break;
+            }
+        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -507,16 +488,43 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
+            // When comparing, both operands are converted to boolean
             switch (operation)
             {
                 case Operations.Identical:
+                case Operations.GreaterThan:
+                case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
+                case Operations.LessThanOrEqual:
                     result = OutSet.CreateBool(true);
                     break;
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    bool booleanValue;
+                    if (TypeConversion.TryConvertToBoolean(value, out booleanValue))
+                    {
+                        result = OutSet.CreateBool(!booleanValue);
+                    }
+                    else
+                    {
+                        result = OutSet.AnyBooleanValue;
+                    }
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    BooleanValue convertedValue;
+                    if (TypeConversion.TryConvertToBoolean(OutSet, value, out convertedValue))
+                    {
+                        result = convertedValue;
+                    }
+                    else
+                    {
+                        result = OutSet.AnyBooleanValue;
+                    }
                     break;
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
@@ -532,39 +540,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
+            // When comparing, both operands are converted to boolean
             switch (operation)
             {
-                case Operations.Or:
-                case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.BitOr:
                 case Operations.BitXor:
                     result = value;
                     break;
                 case Operations.Mod:
-                    if ((value.Start > 0) || (value.End < 0))
-                    {
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        // As right operant can be range of values, can possibly be 0 too
-                        // That causes division by zero and returns false
-                        SetWarning("Division by any integer, possible division by zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        result = OutSet.AnyValue;
-                    }
+                    result = ModuloOperation.Modulo(flow, TypeConversion.ToInteger(leftOperand), value);
                     break;
                 default:
-                    var leftInteger = TypeConversion.ToInteger(leftOperand);
-                    result = Comparison.IntervalCompare(OutSet, operation, leftInteger, value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.Arithmetic(flow, operation, leftInteger, value);
+                    result = ArithmeticOperation.Arithmetic(flow, operation,
+                        TypeConversion.ToInteger(leftOperand), value);
                     if (result != null)
                     {
                         break;
@@ -584,47 +572,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
+            // When comparing, both operands are converted to boolean
             switch (operation)
             {
-                case Operations.Or:
-                case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.BitOr:
                 case Operations.BitXor:
-                    IntegerIntervalValue integerInterval;
+                    IntervalValue<int> integerInterval;
                     if (TypeConversion.TryConvertToIntegerInterval(OutSet, value, out integerInterval))
                     {
                         result = integerInterval;
                     }
                     else
                     {
-                        result = OutSet.AnyValue;
+                        result = OutSet.AnyIntegerValue;
                     }
                     break;
                 case Operations.Mod:
-                    if ((value.Start > 0.0) || (value.End < 0.0))
-                    {
-                        result = OutSet.CreateInt(0);
-                    }
-                    else
-                    {
-                        // As right operant can be range of values, can possibly be 0 too
-                        // That causes division by zero and returns false
-                        SetWarning("Division by any integer, possible division by zero",
-                            AnalysisWarningCause.DIVISION_BY_ZERO);
-                        result = OutSet.AnyValue;
-                    }
+                    result = ModuloOperation.Modulo(flow, TypeConversion.ToInteger(leftOperand), value);
                     break;
                 default:
-                    var leftFloat = TypeConversion.ToFloat(leftOperand);
-                    result = Comparison.IntervalCompare(OutSet, operation, leftFloat, value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.Arithmetic(flow, operation, leftFloat, value);
+                    result = ArithmeticOperation.Arithmetic(flow, operation,
+                        TypeConversion.ToFloat(leftOperand), value);
                     if (result != null)
                     {
                         break;
@@ -637,6 +605,402 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion Interval values
 
+        #region Abstract values
+
+        /// <inheritdoc />
+        public override void VisitAnyValue(AnyValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.GreaterThanOrEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = value;
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                    // Ommitted warning message that object cannot be converted to integer
+                    // Ommitted error report that array is unsupported operand in arithmetic operation
+                    result = OutSet.AnyFloatValue;
+                    break;
+                case Operations.Mul:
+                    // Ommitted warning message that object cannot be converted to integer
+                    // Ommitted error report that array is unsupported operand in arithmetic operation
+                    result = OutSet.CreateDouble(0.0);
+                    break;
+                case Operations.Div:
+                    // Ommitted warning message that object cannot be converted to integer
+                    // Ommitted warning message of division by zero
+                    // Ommitted error report that array is unsupported operand in arithmetic operation
+                    result = OutSet.AnyValue;
+                    break;
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    // Ommitted warning message that object cannot be converted to integer
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    // Ommitted warning message that object cannot be converted to integer
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                case Operations.Mod:
+                    // Ommitted warning message that object cannot be converted to integer
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    if (PerformCommonAnyOperandOperations())
+                    {
+                        return;
+                    }
+
+                    base.VisitAnyValue(value);
+                    break;
+            }
+        }
+
+        #region Abstract scalar values
+
+        /// <inheritdoc />
+        public override void VisitAnyScalarValue(AnyScalarValue value)
+        {
+            switch (operation)
+            {
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
+                default:
+                    if (PerformCommonAnyOperandOperations())
+                    {
+                        return;
+                    }
+
+                    base.VisitAnyScalarValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.GreaterThanOrEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = value;
+                    break;
+                case Operations.Add:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = TypeConversion.AnyBooleanToIntegerInterval(OutSet);
+                    break;
+                case Operations.Sub:
+                    var booleanInterval = TypeConversion.AnyBooleanToIntegerInterval(OutSet);
+                    result = OutSet.CreateIntegerInterval(-booleanInterval.End, -booleanInterval.Start);
+                    break;
+                case Operations.Mul:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    DivisionByAnyBooleanValue();
+                    break;
+                default:
+                    base.VisitAnyBooleanValue(value);
+                    break;
+            }
+        }
+
+        #region Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyNumericValue(AnyNumericValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.GreaterThanOrEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    base.VisitAnyNumericValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyIntegerValue(AnyIntegerValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = value;
+                    break;
+                default:
+                    result = ArithmeticOperation.RightAbstractArithmetic(flow, operation,
+                        TypeConversion.ToInteger(leftOperand));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitAnyIntegerValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyLongintValue(AnyLongintValue value)
+        {
+            throw new NotSupportedException("Long integer is not currently supported");
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                default:
+                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitAnyFloatValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyStringValue(AnyStringValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.GreaterThanOrEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                default:
+                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitAnyStringValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract scalar values
+
+        #region Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyCompoundValue(AnyCompoundValue value)
+        {
+            if (PerformCommonAnyOperandOperations())
+            {
+                return;
+            }
+
+            base.VisitAnyCompoundValue(value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyObjectValue(AnyObjectValue value)
+        {
+            // An object is always greater then null value
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    SetWarning("Object cannot be converted to integer");
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    SetWarning("Object cannot be converted to integer");
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    SetWarning("Object cannot be converted to integer");
+                    // We can assume that object is not zero, because null is zero
+                    result = OutSet.CreateInt(0);
+                    break;
+                default:
+                    base.VisitAnyObjectValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyArrayValue(AnyArrayValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.GreaterThanOrEqual:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = TypeConversion.AnyArrayToIntegerInterval(OutSet);
+                    break;
+                case Operations.Mod:
+                    result = ModuloOperation.AbstractModulo(flow);
+                    break;
+                default:
+                    if (ArithmeticOperation.IsArithmetic(operation))
+                    {
+                        // TODO: This must be fatal error
+                        SetWarning("Unsupported operand type: Arithmetic of array and null type");
+                        result = OutSet.AnyValue;
+                        break;
+                    }
+
+                    base.VisitAnyArrayValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            // Resource is always greater than null
+            switch (operation)
+            {
+                case Operations.Equal:
+                case Operations.GreaterThanOrEqual:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotEqual:
+                case Operations.LessThan:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.CreateBool(true);
+                    break;
+                case Operations.Mul:
+                case Operations.BitAnd:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.Add:
+                case Operations.Sub:
+                case Operations.BitOr:
+                case Operations.BitXor:
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                case Operations.Div:
+                case Operations.Mod:
+                    // We can assume that resource is not zero, because it is always true
+                    result = OutSet.CreateInt(0);
+                    break;
+                default:
+                    if (PerformCommonAnyOperandOperations())
+                    {
+                        return;
+                    }
+
+                    base.VisitAnyResourceValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract values
+
         #endregion AbstractValueVisitor Members
+
+        #region Helper methods
+
+        /// <summary>
+        /// Perform operation that is common for all abstract right operands or do nothing.
+        /// </summary>
+        /// <returns><c>True</c> whether operation has been performed, otherwise <c>false</c></returns>
+        private bool PerformCommonAnyOperandOperations()
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.GreaterThan:
+                case Operations.And:
+                    result = OutSet.CreateBool(false);
+                    return true;
+                case Operations.NotIdentical:
+                case Operations.LessThanOrEqual:
+                    result = OutSet.CreateBool(true);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        #endregion Helper methods
     }
 }

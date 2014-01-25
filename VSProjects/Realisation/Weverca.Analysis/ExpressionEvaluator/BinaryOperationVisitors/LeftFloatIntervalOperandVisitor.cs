@@ -1,5 +1,3 @@
-using System;
-
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
@@ -13,7 +11,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <remarks>
     /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
     /// </remarks>
-    public class LeftFloatIntervalOperandVisitor : GenericLeftOperandVisitor<FloatIntervalValue>
+    public class LeftFloatIntervalOperandVisitor : LeftIntervalOperandVisitor<double>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftFloatIntervalOperandVisitor" /> class.
@@ -31,52 +29,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Scalar values
 
         /// <inheritdoc />
-        public override void VisitScalarValue(ScalarValue value)
-        {
-            result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result == null)
-            {
-                base.VisitScalarValue(value);
-            }
-        }
-
-        /// <inheritdoc />
         public override void VisitBooleanValue(BooleanValue value)
         {
-            switch (operation)
+            result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand,
+                TypeConversion.ToFloat(value.Value));
+            if (result != null)
             {
-                case Operations.Identical:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Mod:
-                    DivisionByBooleanValue(value.Value);
-                    break;
-                default:
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, value.Value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    var rightInteger = TypeConversion.ToInteger(value.Value);
-                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, rightInteger);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.Arithmetic(flow, operation, leftOperand, rightInteger);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    base.VisitBooleanValue(value);
-                    break;
+                return;
             }
+
+            base.VisitBooleanValue(value);
         }
 
         #region Numeric values
@@ -87,10 +49,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = Comparison.Equal(OutSet, leftOperand, value.Value);
+                    result = OutSet.CreateBool(false);
                     break;
                 case Operations.NotIdentical:
-                    result = Comparison.NotEqual(OutSet, leftOperand, value.Value);
+                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
@@ -108,22 +70,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value.Value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitIntegerValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -132,10 +81,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = OutSet.CreateBool(false);
+                    result = Comparison.Equal(OutSet, leftOperand, value.Value);
                     break;
                 case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
+                    result = Comparison.NotEqual(OutSet, leftOperand, value.Value);
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
@@ -172,22 +121,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.Identical:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
-                    break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
                     break;
                 default:
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value.Value));
-                    if (result != null)
-                    {
-                        break;
-                    }
 
                     int integerValue;
                     double floatValue;
@@ -214,64 +151,54 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #endregion Scalar values
 
+        #region Compound values
+
         /// <inheritdoc />
-        public override void VisitUndefinedValue(UndefinedValue value)
+        public override void VisitObjectValue(ObjectValue value)
+        {
+            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
+            if (result != null)
+            {
+                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                return;
+            }
+
+            base.VisitObjectValue(value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssociativeArray(AssociativeArray value)
         {
             switch (operation)
             {
-                case Operations.Identical:
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Or:
-                case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, leftOperand);
-                    break;
-                case Operations.Mul:
-                case Operations.BitAnd:
-                    result = OutSet.CreateInt(0);
-                    break;
-                case Operations.Add:
-                case Operations.Sub:
-                case Operations.BitOr:
-                case Operations.BitXor:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    result = leftOperand;
-                    break;
-                case Operations.Div:
                 case Operations.Mod:
-                    DivisionByNull();
+                    result = ModuloOperation.Modulo(flow, leftOperand,
+                        TypeConversion.ToNativeInteger(OutSet, value));
                     break;
                 default:
-                    result = Comparison.IntervalCompare(OutSet, operation,
-                        leftOperand, TypeConversion.ToInteger(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    base.VisitUndefinedValue(value);
+                    base.VisitAssociativeArray(value);
                     break;
             }
+        }
+
+        #endregion Compound values
+
+        /// <inheritdoc />
+        public override void VisitResourceValue(ResourceValue value)
+        {
+            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
+            if (result != null)
+            {
+                // Arithmetic with resources is nonsence
+                return;
+            }
+
+            base.VisitResourceValue(value);
         }
 
         #endregion Concrete values
 
         #region Interval values
-
-        /// <inheritdoc />
-        public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
-        {
-            result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result == null)
-            {
-                base.VisitGenericIntervalValue(value);
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
@@ -301,21 +228,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, floatInterval);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitIntervalIntegerValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -324,10 +239,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = OutSet.CreateBool(false);
+                    result = Comparison.Equal(OutSet, leftOperand, value);
                     break;
                 case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
+                    result = Comparison.NotEqual(OutSet, leftOperand, value);
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand, value);
@@ -345,18 +260,104 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitIntervalFloatValue(value);
                     break;
             }
         }
 
         #endregion Interval values
+
+        #region Abstract values
+
+        #region Abstract scalar values
+
+        /// <inheritdoc />
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            result = ArithmeticOperation.RightAbstractBooleanArithmetic(flow, operation, leftOperand);
+            if (result != null)
+            {
+                return;
+            }
+
+            base.VisitAnyBooleanValue(value);
+        }
+
+        #region Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyIntegerValue(AnyIntegerValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
+                case Operations.NotIdentical:
+                    result = OutSet.CreateBool(true);
+                    break;
+                default:
+                    result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    base.VisitAnyIntegerValue(value);
+                    break;
+            }
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            switch (operation)
+            {
+                case Operations.Identical:
+                case Operations.NotIdentical:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                default:
+                    base.VisitAnyFloatValue(value);
+                    break;
+            }
+        }
+
+        #endregion Abstract numeric values
+
+        #endregion Abstract scalar values
+
+        #region Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyObjectValue(AnyObjectValue value)
+        {
+            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
+            if (result != null)
+            {
+                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                return;
+            }
+
+            base.VisitAnyObjectValue(value);
+        }
+
+        #endregion Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
+            if (result != null)
+            {
+                // Arithmetic with resources is nonsence
+                return;
+            }
+
+            base.VisitAnyResourceValue(value);
+        }
+
+        #endregion Abstract values
 
         #endregion AbstractValueVisitor Members
     }

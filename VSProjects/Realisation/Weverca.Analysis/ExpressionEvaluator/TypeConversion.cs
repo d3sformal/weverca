@@ -1086,7 +1086,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
         public static bool TryConvertToIntegerInterval(FlowOutputSet outset, LongintIntervalValue value,
-            out IntegerIntervalValue convertedValue)
+            out IntervalValue<int> convertedValue)
         {
             int castedStart, castedEnd = 0;
             var isConverted = TryConvertToInteger(value.Start, out castedStart)
@@ -1107,14 +1107,30 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Integer interval in the same range as input if conversion is successful, otherwise (0;0)
         /// </param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c></returns>
-        public static bool TryConvertToIntegerInterval(FlowOutputSet outset, FloatIntervalValue value,
-            out IntegerIntervalValue convertedValue)
+        public static bool TryConvertToIntegerInterval(FlowOutputSet outset, IntervalValue<double> value,
+            out IntervalValue<int> convertedValue)
         {
             int castedStart, castedEnd = 0;
             var isConverted = TryConvertToInteger(value.Start, out castedStart)
                 && TryConvertToInteger(value.End, out castedEnd);
             convertedValue = outset.CreateIntegerInterval(castedStart, castedEnd);
             return isConverted;
+        }
+
+        public static IntervalValue<int> AnyBooleanToIntegerInterval(FlowOutputSet outset)
+        {
+            return outset.CreateIntegerInterval(ToInteger(false), ToInteger(true));
+        }
+
+        public static IntervalValue<int> AnyIntegerToIntegerInterval(FlowOutputSet outset)
+        {
+            return outset.CreateIntegerInterval(int.MinValue, int.MaxValue);
+        }
+
+        public static IntervalValue<int> AnyArrayToIntegerInterval(FlowOutputSet outset)
+        {
+            // Interval has only two values meaning that array can be empty or not
+            return outset.CreateIntegerInterval(0, 1);
         }
 
         #endregion ToIntegerInterval
@@ -1127,7 +1143,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point</param>
         /// <param name="value">Integer interval to extend</param>
         /// <returns>Floating-point interval extended from integer interval</returns>
-        public static FloatIntervalValue ToFloatInterval(FlowOutputSet outset, IntegerIntervalValue value)
+        public static IntervalValue<double> ToFloatInterval(FlowOutputSet outset, IntervalValue<int> value)
         {
             return outset.CreateFloatInterval(value.Start, value.End);
         }
@@ -1617,7 +1633,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public static bool IsInt(Value value)
         {
-            return value is IntegerIntervalValue || value is IntegerValue || value is AnyIntegerValue;
+            return value is IntervalValue<int> || value is IntegerValue || value is AnyIntegerValue;
         }
 
         public static bool IsLong(Value value)
@@ -1627,7 +1643,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public static bool IsFloat(Value value)
         {
-            return value is FloatIntervalValue || value is FloatValue || value is AnyFloatValue;
+            return value is IntervalValue<double> || value is FloatValue || value is AnyFloatValue;
         }
 
         public static bool IsString(Value value)
@@ -1667,9 +1683,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             return value is UndefinedValue
                 || value is AnyValue
-                || value is IntegerIntervalValue
+                || value is IntervalValue<int>
                 || value is LongintIntervalValue
-                || value is FloatIntervalValue;
+                || value is IntervalValue<double>;
         }
     }
 }

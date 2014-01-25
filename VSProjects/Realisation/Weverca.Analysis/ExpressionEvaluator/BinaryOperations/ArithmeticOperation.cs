@@ -10,12 +10,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// The entire integer interval from minimum to maximum value
         /// </summary>
-        private static IntegerIntervalValue entireIntegerInterval;
+        private static IntervalValue<int> entireIntegerInterval;
 
         /// <summary>
         /// Interval of all values converted from a boolean value
         /// </summary>
-        private static IntegerIntervalValue booleanInterval;
+        private static IntervalValue<int> booleanInterval;
 
         public static bool IsArithmetic(Operations operation)
         {
@@ -236,7 +236,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Left concrete and right abstract operand aritmetic
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            int leftOperand, IntegerIntervalValue rightOperand)
+            int leftOperand, IntervalValue<int> rightOperand)
         {
             switch (operation)
             {
@@ -254,20 +254,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            int leftOperand, FloatIntervalValue rightOperand)
+            int leftOperand, IntervalValue<double> rightOperand)
         {
             return Arithmetic(flow, operation, TypeConversion.ToFloat(leftOperand), rightOperand);
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            double leftOperand, IntegerIntervalValue rightOperand)
+            double leftOperand, IntervalValue<int> rightOperand)
         {
             return Arithmetic(flow, operation, leftOperand,
                 TypeConversion.ToFloatInterval(flow.OutSet, rightOperand));
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            double leftOperand, FloatIntervalValue rightOperand)
+            double leftOperand, IntervalValue<double> rightOperand)
         {
             switch (operation)
             {
@@ -318,7 +318,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
-        public static Value Add(FlowOutputSet outset, int augend, IntegerIntervalValue addend)
+        public static Value Add(FlowOutputSet outset, int augend, IntervalValue<int> addend)
         {
             // Result of addition can overflow or underflow
             if ((augend >= 0) ? (addend.End <= int.MaxValue - augend)
@@ -334,19 +334,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, int augend, FloatIntervalValue addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset, int augend,
+            IntervalValue<double> addend)
         {
             return Add(outset, TypeConversion.ToFloat(augend), addend);
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, double augend,
-            IntegerIntervalValue addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset, double augend,
+            IntervalValue<int> addend)
         {
             return Add(outset, augend, TypeConversion.ToFloatInterval(outset, addend));
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, double augend,
-            FloatIntervalValue addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset, double augend,
+            IntervalValue<double> addend)
         {
             return outset.CreateFloatInterval(augend + addend.Start, augend + addend.End);
         }
@@ -355,7 +356,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Subtraction
 
-        public static Value Subtract(FlowOutputSet outset, int minuend, IntegerIntervalValue subtrahend)
+        public static Value Subtract(FlowOutputSet outset, int minuend, IntervalValue<int> subtrahend)
         {
             // Result of subtraction can underflow or underflow
             if ((minuend >= 0) ? (subtrahend.Start >= minuend - int.MaxValue)
@@ -371,20 +372,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset,
-            int minuend, FloatIntervalValue subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset,
+            int minuend, IntervalValue<double> subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloat(minuend), subtrahend);
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset, double minuend,
-            IntegerIntervalValue subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset, double minuend,
+            IntervalValue<int> subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloatInterval(outset, subtrahend));
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset, double minuend,
-            FloatIntervalValue subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset, double minuend,
+            IntervalValue<double> subtrahend)
         {
             return outset.CreateFloatInterval(minuend - subtrahend.End, minuend - subtrahend.Start);
         }
@@ -393,7 +394,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
-        public static Value Multiply(FlowOutputSet outset, int multiplicand, IntegerIntervalValue multiplier)
+        public static Value Multiply(FlowOutputSet outset, int multiplicand, IntervalValue<int> multiplier)
         {
             // Result of multiplication can underflow or underflow
             var isMultiplicandNonNegative = multiplicand >= 0.0;
@@ -425,20 +426,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset, int multiplicand,
-            FloatIntervalValue multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset, int multiplicand,
+            IntervalValue<double> multiplier)
         {
             return Multiply(outset, TypeConversion.ToFloat(multiplicand), multiplier);
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset, double multiplicand,
-            IntegerIntervalValue multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset, double multiplicand,
+            IntervalValue<int> multiplier)
         {
             return Multiply(outset, multiplicand, TypeConversion.ToFloatInterval(outset, multiplier));
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset, double multiplicand,
-            FloatIntervalValue multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset, double multiplicand,
+            IntervalValue<double> multiplier)
         {
             // When multiplicand is negative, interval is reversed and endpoints swap
             if (multiplicand >= 0.0)
@@ -457,7 +458,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
-        public static Value Divide(FlowController flow, int dividend, IntegerIntervalValue divisor)
+        public static Value Divide(FlowController flow, int dividend, IntervalValue<int> divisor)
         {
             // Not divisible numbers result to floating-point number.
             // Unfortunately, except for trivial cases, the result after division
@@ -467,19 +468,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public static Value Divide(FlowController flow, int dividend,
-            FloatIntervalValue divisor)
+            IntervalValue<double> divisor)
         {
             return Divide(flow, TypeConversion.ToFloat(dividend), divisor);
         }
 
         public static Value Divide(FlowController flow, double dividend,
-            IntegerIntervalValue divisor)
+            IntervalValue<int> divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloatInterval(flow.OutSet, divisor));
         }
 
         public static Value Divide(FlowController flow, double dividend,
-            FloatIntervalValue divisor)
+            IntervalValue<double> divisor)
         {
             if ((divisor.Start > 0.0) || (divisor.End < 0.0))
             {
@@ -505,7 +506,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Left abstract and right concrete operand aritmetic
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            IntegerIntervalValue leftOperand, int rightOperand)
+            IntervalValue<int> leftOperand, int rightOperand)
         {
             switch (operation)
             {
@@ -523,20 +524,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            IntegerIntervalValue leftOperand, double rightOperand)
+            IntervalValue<int> leftOperand, double rightOperand)
         {
             return Arithmetic(flow, operation,
                 TypeConversion.ToFloatInterval(flow.OutSet, leftOperand), rightOperand);
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            FloatIntervalValue leftOperand, int rightOperand)
+            IntervalValue<double> leftOperand, int rightOperand)
         {
             return Arithmetic(flow, operation, leftOperand, TypeConversion.ToFloat(rightOperand));
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            FloatIntervalValue leftOperand, double rightOperand)
+            IntervalValue<double> leftOperand, double rightOperand)
         {
             switch (operation)
             {
@@ -587,24 +588,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
-        public static Value Add(FlowOutputSet outset, IntegerIntervalValue augend, int addend)
+        public static Value Add(FlowOutputSet outset, IntervalValue<int> augend, int addend)
         {
             return Add(outset, addend, augend);
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset,
-            IntegerIntervalValue augend, double addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset,
+            IntervalValue<int> augend, double addend)
         {
             return Add(outset, addend, augend);
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, FloatIntervalValue augend, int addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset,
+            IntervalValue<double> augend, int addend)
         {
             return Add(outset, addend, augend);
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset,
-            FloatIntervalValue augend, double addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset,
+            IntervalValue<double> augend, double addend)
         {
             return Add(outset, addend, augend);
         }
@@ -613,7 +615,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Subtraction
 
-        public static Value Subtract(FlowOutputSet outset, IntegerIntervalValue minuend, int subtrahend)
+        public static Value Subtract(FlowOutputSet outset, IntervalValue<int> minuend, int subtrahend)
         {
             // Result of subtraction can underflow or underflow
             if ((subtrahend >= 0) ? (minuend.Start >= int.MinValue + subtrahend)
@@ -629,20 +631,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset,
-            IntegerIntervalValue minuend, double subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset,
+            IntervalValue<int> minuend, double subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloatInterval(outset, minuend), subtrahend);
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset,
-            FloatIntervalValue minuend, int subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset,
+            IntervalValue<double> minuend, int subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloat(subtrahend));
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset,
-            FloatIntervalValue minuend, double subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset,
+            IntervalValue<double> minuend, double subtrahend)
         {
             return outset.CreateFloatInterval(minuend.Start - subtrahend, minuend.End - subtrahend);
         }
@@ -651,25 +653,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
-        public static Value Multiply(FlowOutputSet outset, IntegerIntervalValue multiplicand, int multiplier)
+        public static Value Multiply(FlowOutputSet outset, IntervalValue<int> multiplicand, int multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset,
-            IntegerIntervalValue multiplicand, double multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset,
+            IntervalValue<int> multiplicand, double multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset,
-            FloatIntervalValue multiplicand, int multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset,
+            IntervalValue<double> multiplicand, int multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset,
-            FloatIntervalValue multiplicand, double multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset,
+            IntervalValue<double> multiplicand, double multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
@@ -678,7 +680,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
-        public static Value Divide(FlowController flow, IntegerIntervalValue dividend, int divisor)
+        public static Value Divide(FlowController flow, IntervalValue<int> dividend, int divisor)
         {
             // Not divisible numbers result to floating-point number.
             // Unfortunately, except for trivial cases, the result after division
@@ -687,17 +689,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToFloat(divisor));
         }
 
-        public static Value Divide(FlowController flow, IntegerIntervalValue dividend, double divisor)
+        public static Value Divide(FlowController flow, IntervalValue<int> dividend, double divisor)
         {
             return Divide(flow, TypeConversion.ToFloatInterval(flow.OutSet, dividend), divisor);
         }
 
-        public static Value Divide(FlowController flow, FloatIntervalValue dividend, int divisor)
+        public static Value Divide(FlowController flow, IntervalValue<double> dividend, int divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloat(divisor));
         }
 
-        public static Value Divide(FlowController flow, FloatIntervalValue dividend, double divisor)
+        public static Value Divide(FlowController flow, IntervalValue<double> dividend, double divisor)
         {
             if (divisor != 0.0)
             {
@@ -723,7 +725,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Abstract aritmetic
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            IntegerIntervalValue leftOperand, IntegerIntervalValue rightOperand)
+            IntervalValue<int> leftOperand, IntervalValue<int> rightOperand)
         {
             switch (operation)
             {
@@ -741,21 +743,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            IntegerIntervalValue leftOperand, FloatIntervalValue rightOperand)
+            IntervalValue<int> leftOperand, IntervalValue<double> rightOperand)
         {
             return Arithmetic(flow, operation,
                 TypeConversion.ToFloatInterval(flow.OutSet, leftOperand), rightOperand);
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            FloatIntervalValue leftOperand, IntegerIntervalValue rightOperand)
+            IntervalValue<double> leftOperand, IntervalValue<int> rightOperand)
         {
             return Arithmetic(flow, operation, leftOperand,
                 TypeConversion.ToFloatInterval(flow.OutSet, rightOperand));
         }
 
         public static Value Arithmetic(FlowController flow, Operations operation,
-            FloatIntervalValue leftOperand, FloatIntervalValue rightOperand)
+            IntervalValue<double> leftOperand, IntervalValue<double> rightOperand)
         {
             switch (operation)
             {
@@ -772,20 +774,82 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static Value RightAbstractOperandArithmetic(FlowController flow,
-            Operations operation, IntegerIntervalValue leftOperand)
+        public static Value RightAbstractArithmetic(FlowController flow,
+            Operations operation, IntervalValue<int> leftOperand)
         {
             InitalizeInternals(flow.OutSet);
 
             return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
         }
 
-        public static Value LeftAbstractOperandArithmetic(FlowController flow,
-            Operations operation, IntegerIntervalValue rightOperand)
+        public static Value RightAbstractArithmetic(FlowController flow,
+            Operations operation, IntervalValue<double> leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
+        }
+
+        public static Value LeftAbstractArithmetic(FlowController flow,
+            Operations operation, IntervalValue<int> rightOperand)
         {
             InitalizeInternals(flow.OutSet);
 
             return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
+        }
+
+        public static Value LeftAbstractArithmetic(FlowController flow,
+            Operations operation, IntervalValue<double> rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
+        }
+
+        public static Value RightAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, IntervalValue<int> leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, booleanInterval);
+        }
+
+        public static Value RightAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, IntervalValue<double> leftOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, leftOperand, booleanInterval);
+        }
+
+        public static Value RightAbstractBooleanArithmetic(FlowController flow, Operations operation)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, entireIntegerInterval, booleanInterval);
+        }
+
+        public static Value LeftAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, IntervalValue<int> rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, booleanInterval, rightOperand);
+        }
+
+        public static Value LeftAbstractBooleanArithmetic(FlowController flow,
+            Operations operation, IntervalValue<double> rightOperand)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, booleanInterval, rightOperand);
+        }
+
+        public static Value LeftAbstractBooleanArithmetic(FlowController flow, Operations operation)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, booleanInterval, entireIntegerInterval);
         }
 
         public static Value AbstractIntegerArithmetic(FlowController flow, Operations operation)
@@ -802,8 +866,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
-        public static Value Add(FlowOutputSet outset, IntegerIntervalValue augend,
-            IntegerIntervalValue addend)
+        public static Value Add(FlowOutputSet outset, IntervalValue<int> augend,
+            IntervalValue<int> addend)
         {
             // Result of addition can overflow or underflow
             if ((augend.Start >= 0) ? (addend.End <= int.MaxValue - augend.End)
@@ -820,25 +884,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, IntegerIntervalValue augend,
-            FloatIntervalValue addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset, IntervalValue<int> augend,
+            IntervalValue<double> addend)
         {
             return Add(outset, TypeConversion.ToFloatInterval(outset, augend), addend);
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, FloatIntervalValue augend,
-            IntegerIntervalValue addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset, IntervalValue<double> augend,
+            IntervalValue<int> addend)
         {
             return Add(outset, augend, TypeConversion.ToFloatInterval(outset, addend));
         }
 
-        public static FloatIntervalValue Add(FlowOutputSet outset, FloatIntervalValue augend,
-            FloatIntervalValue addend)
+        public static IntervalValue<double> Add(FlowOutputSet outset, IntervalValue<double> augend,
+            IntervalValue<double> addend)
         {
             return outset.CreateFloatInterval(augend.Start + addend.Start, augend.End + addend.End);
         }
 
-        public static FloatIntervalValue AbstractIntegerAdd(FlowOutputSet outset)
+        public static IntervalValue<double> AbstractIntegerAdd(FlowOutputSet outset)
         {
             return outset.CreateFloatInterval(int.MinValue * 2.0, int.MaxValue * 2.0);
         }
@@ -847,8 +911,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Subtraction
 
-        public static Value Subtract(FlowOutputSet outset, IntegerIntervalValue minuend,
-            IntegerIntervalValue subtrahend)
+        public static Value Subtract(FlowOutputSet outset, IntervalValue<int> minuend,
+            IntervalValue<int> subtrahend)
         {
             // Result of subtraction can underflow or underflow
             if ((minuend.Start >= 0) ? (subtrahend.Start >= minuend.End - int.MaxValue)
@@ -866,20 +930,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset, IntegerIntervalValue minuend,
-            FloatIntervalValue subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset, IntervalValue<int> minuend,
+            IntervalValue<double> subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloatInterval(outset, minuend), subtrahend);
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset, FloatIntervalValue minuend,
-            IntegerIntervalValue subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset, IntervalValue<double> minuend,
+            IntervalValue<int> subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloatInterval(outset, subtrahend));
         }
 
-        public static FloatIntervalValue Subtract(FlowOutputSet outset, FloatIntervalValue minuend,
-            FloatIntervalValue subtrahend)
+        public static IntervalValue<double> Subtract(FlowOutputSet outset, IntervalValue<double> minuend,
+            IntervalValue<double> subtrahend)
         {
             return outset.CreateFloatInterval(minuend.Start - subtrahend.End,
                 minuend.End - subtrahend.Start);
@@ -889,27 +953,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
-        public static Value Multiply(FlowOutputSet outset, IntegerIntervalValue multiplicand,
-            IntegerIntervalValue multiplier)
+        public static Value Multiply(FlowOutputSet outset, IntervalValue<int> multiplicand,
+            IntervalValue<int> multiplier)
         {
             // TODO: Calculate more precise result
             return outset.AnyValue;
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset, IntegerIntervalValue multiplicand,
-            FloatIntervalValue multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset, IntervalValue<int> multiplicand,
+            IntervalValue<double> multiplier)
         {
             return Multiply(outset, TypeConversion.ToFloatInterval(outset, multiplicand), multiplier);
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset, FloatIntervalValue multiplicand,
-            IntegerIntervalValue multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset, IntervalValue<double> multiplicand,
+            IntervalValue<int> multiplier)
         {
             return Multiply(outset, multiplicand, TypeConversion.ToFloatInterval(outset, multiplier));
         }
 
-        public static FloatIntervalValue Multiply(FlowOutputSet outset, FloatIntervalValue multiplicand,
-            FloatIntervalValue multiplier)
+        public static IntervalValue<double> Multiply(FlowOutputSet outset, IntervalValue<double> multiplicand,
+            IntervalValue<double> multiplier)
         {
             // TODO: Calculate more precise result
             return outset.CreateFloatInterval(double.MinValue, double.MaxValue);
@@ -919,27 +983,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
-        public static Value Divide(FlowController flow, IntegerIntervalValue dividend,
-            IntegerIntervalValue divisor)
+        public static Value Divide(FlowController flow, IntervalValue<int> dividend,
+            IntervalValue<int> divisor)
         {
             // TODO: Calculate more precise result
             return flow.OutSet.AnyValue;
         }
 
-        public static Value Divide(FlowController flow, IntegerIntervalValue dividend,
-            FloatIntervalValue divisor)
+        public static Value Divide(FlowController flow, IntervalValue<int> dividend,
+            IntervalValue<double> divisor)
         {
             return Divide(flow, TypeConversion.ToFloatInterval(flow.OutSet, dividend), divisor);
         }
 
-        public static Value Divide(FlowController flow, FloatIntervalValue dividend,
-            IntegerIntervalValue divisor)
+        public static Value Divide(FlowController flow, IntervalValue<double> dividend,
+            IntervalValue<int> divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloatInterval(flow.OutSet, divisor));
         }
 
-        public static Value Divide(FlowController flow, FloatIntervalValue dividend,
-            FloatIntervalValue divisor)
+        public static Value Divide(FlowController flow, IntervalValue<double> dividend,
+            IntervalValue<double> divisor)
         {
             // TODO: Calculate more precise result
             return flow.OutSet.AnyValue;
@@ -955,9 +1019,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if (entireIntegerInterval == null)
             {
-                entireIntegerInterval = outset.CreateIntegerInterval(int.MinValue, int.MaxValue);
+                entireIntegerInterval = TypeConversion.AnyIntegerToIntegerInterval(outset);
                 Debug.Assert(booleanInterval == null, "All private fields are initialized together");
-                booleanInterval = outset.CreateIntegerInterval(0, 1);
+                booleanInterval = TypeConversion.AnyBooleanToIntegerInterval(outset);
             }
         }
 
