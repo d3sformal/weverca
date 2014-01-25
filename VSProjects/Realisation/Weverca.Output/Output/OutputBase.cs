@@ -108,18 +108,26 @@ namespace Weverca.Output.Output
             headline("PROGRAM POINT: " + pointCaption);
 
             Indent();
-            foreach (var infoLine in lineSplit(point.OutSet.Representation))
+            if (point.OutSet == null)
             {
-                if (isCommentLine(infoLine))
-                {
-                    comment(infoLine);
-                }
-                else if (!isEmpty(infoLine))
-                {
-                    variableInfoLine(infoLine);
-                }
-
+                comment("Point not reached");
                 line();
+            }
+            else
+            {
+                foreach (var infoLine in lineSplit(point.OutSet.Representation))
+                {
+                    if (isCommentLine(infoLine))
+                    {
+                        comment(infoLine);
+                    }
+                    else if (!isEmpty(infoLine))
+                    {
+                        variableInfoLine(infoLine);
+                    }
+
+                    line();
+                }
             }
             Dedent();
         }

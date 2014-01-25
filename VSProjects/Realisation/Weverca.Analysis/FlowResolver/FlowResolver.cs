@@ -33,6 +33,7 @@ namespace Weverca.Analysis.FlowResolver
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log)
         {
             //TODO: How to resolve not-bool conditions, like if (1) etc.?
+            //non bool coditions can be resolve by retyping to bool UnaryOperationEvaluator -> operatron bool cast
             //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
 
             ConditionParts conditionParts = new ConditionParts(condition.Form, outSet.Snapshot, log, condition.Parts);

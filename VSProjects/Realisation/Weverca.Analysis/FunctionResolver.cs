@@ -708,7 +708,7 @@ namespace Weverca.Analysis
             }
         }
 
-        private void checkIfStaticMatch(MethodInfo method, MethodDecl overridenMethod, LangElement element)
+        private bool checkIfStaticMatch(MethodInfo method, MethodDecl overridenMethod, LangElement element)
         {
             if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Static) != method.IsStatic)
             {
@@ -720,10 +720,12 @@ namespace Weverca.Analysis
                 {
                     setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
+                return false;
             }
+            return true;
         }
 
-        private void checkIfStaticMatch(MethodInfo method, MethodInfo overridenMethod, LangElement element)
+        private bool checkIfStaticMatch(MethodInfo method, MethodInfo overridenMethod, LangElement element)
         {
             if (overridenMethod.IsStatic != method.IsStatic)
             {
@@ -735,10 +737,12 @@ namespace Weverca.Analysis
                 {
                     setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
+                return false;
             }
+            return true;
         }
 
-        private void checkIfStaticMatch(MethodDecl method, MethodDecl overridenMethod, LangElement element)
+        private bool checkIfStaticMatch(MethodDecl method, MethodDecl overridenMethod, LangElement element)
         {
             if (overridenMethod.Modifiers.HasFlag(PhpMemberAttributes.Static) != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
             {
@@ -749,11 +753,12 @@ namespace Weverca.Analysis
                 else
                 {
                     setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                }
+                }return false;
             }
+            return true;
         }
 
-        private void checkIfStaticMatch(MethodDecl method, MethodInfo overridenMethod, LangElement element)
+        private bool checkIfStaticMatch(MethodDecl method, MethodInfo overridenMethod, LangElement element)
         {
             if (overridenMethod.IsStatic != method.Modifiers.HasFlag(PhpMemberAttributes.Static))
             {
@@ -765,7 +770,9 @@ namespace Weverca.Analysis
                 {
                     setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
                 }
+                return false;
             }
+            return true;
         }
 
         private ClassDeclBuilder CopyInfoFromBaseClass(ClassDecl baseClass, ClassDeclBuilder currentClass)
@@ -831,40 +838,64 @@ namespace Weverca.Analysis
                     else
                     {
                         var overridenMethod = result.ModeledMethods.Values.Where(a => a.Name == method.Name).First();
+                        bool containsErrors = false;
                         if (overridenMethod.IsFinal)
                         {
                             setWarning("Cannot redeclare final method " + method.MethodDecl.Name, method.MethodDecl, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
+                            containsErrors = true;
                         }
-                        checkIfStaticMatch(method.MethodDecl, overridenMethod, method.MethodDecl);
+                        if (!checkIfStaticMatch(method.MethodDecl, overridenMethod, method.MethodDecl))
+                        {
+                            containsErrors = true;
+                        }
 
                         if (!AreMethodsCompatible(overridenMethod, method.MethodDecl))
                         {
                             setWarning("Can't inherit function " + method.MethodDecl.Name + ", beacuse arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                            containsErrors = true;
                         }
                         if (method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
                         {
                             setWarning("Can't override function " + method.MethodDecl.Name + ", with abstract function", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);
-
+                            containsErrors = true;
+                        }
+                        if (containsErrors == false)
+                        {
+                            result.SourceCodeMethods[new MethodIdentifier(currentClass.QualifiedName, method.Name)] = method;
+                            result.SourceCodeMethods.Remove(new MethodIdentifier(overridenMethod.ClassName, overridenMethod.Name));
                         }
                     }
                 }
                 else
                 {
-                    var overridenMethod = result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).First();
+                    var key = result.SourceCodeMethods.Keys.Where(a => a.Name == method.Name).First();
+                    var overridenMethod = result.SourceCodeMethods[key];
+                    bool containsErrors = false;
                     if (overridenMethod.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Final))
                     {
                         setWarning("Cannot redeclare final method " + method.MethodDecl.Name, method.MethodDecl, AnalysisWarningCause.CANNOT_REDECLARE_FINAL_METHOD);
+                        containsErrors = true;
                     }
 
-                    checkIfStaticMatch(method.MethodDecl, overridenMethod.MethodDecl, method.MethodDecl);
+                    if (!checkIfStaticMatch(method.MethodDecl, overridenMethod.MethodDecl, method.MethodDecl))
+                    {
+                        containsErrors = true;
+                    }
 
                     if (!AreMethodsCompatible(overridenMethod.MethodDecl, method.MethodDecl))
                     {
                         setWarning("Can't inherit function " + method.MethodDecl.Name + ", beacuse arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                        containsErrors = true;
                     }
                     if (method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
                     {
                         setWarning("Can't override function " + method.MethodDecl.Name + ", with abstract function", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);
+                        containsErrors = true;
+                    }
+                    if (containsErrors == false)
+                    {
+                        result.SourceCodeMethods.Remove(key);
+                        result.SourceCodeMethods[new MethodIdentifier(currentClass.QualifiedName, method.Name)] = method;
                     }
                 }
             }
