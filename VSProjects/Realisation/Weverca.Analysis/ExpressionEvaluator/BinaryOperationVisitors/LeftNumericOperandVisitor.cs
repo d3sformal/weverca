@@ -8,21 +8,21 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with interval of numbers as the left operand
+    /// Evaluates one binary operation with fixed number value as the left operand
     /// </summary>
     /// <remarks>
     /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
     /// </remarks>
-    /// <typeparam name="TComparable">Native type of values in left operand interval</typeparam>
-    public abstract class LeftIntervalOperandVisitor<TComparable>
-        : GenericLeftOperandVisitor<IntervalValue<TComparable>>
+    /// <typeparam name="TComparable">Native type of values in left operand number</typeparam>
+    public abstract class LeftNumericOperandVisitor<TComparable>
+        : GenericLeftOperandVisitor<NumericValue<TComparable>>
         where TComparable : IComparable, IComparable<TComparable>, IEquatable<TComparable>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LeftIntervalOperandVisitor{TComparable}" /> class.
+        /// Initializes a new instance of the <see cref="LeftNumericOperandVisitor{TComparable}" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        protected LeftIntervalOperandVisitor(FlowController flowController)
+        protected LeftNumericOperandVisitor(FlowController flowController)
             : base(flowController)
         {
         }
@@ -32,18 +32,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Concrete values
 
         #region Scalar values
-
-        /// <inheritdoc />
-        public override void VisitScalarValue(ScalarValue value)
-        {
-            result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitScalarValue(value);
-        }
 
         /// <inheritdoc />
         public override void VisitBooleanValue(BooleanValue value)
@@ -60,18 +48,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     DivisionByBooleanValue(value.Value);
                     break;
                 default:
-                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, value.Value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand, value.Value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitBooleanValue(value);
                     break;
             }
@@ -80,35 +56,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Numeric values
 
         /// <inheritdoc />
-        public override void VisitIntegerValue(IntegerValue value)
-        {
-            result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                TypeConversion.ToBoolean(value.Value));
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitIntegerValue(value);
-        }
-
-        /// <inheritdoc />
         public override void VisitLongintValue(LongintValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");
-        }
-
-        /// <inheritdoc />
-        public override void VisitFloatValue(FloatValue value)
-        {
-            result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                TypeConversion.ToBoolean(value.Value));
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitFloatValue(value);
         }
 
         #endregion Numeric values
@@ -125,13 +75,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value.Value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitStringValue(value);
                     break;
             }
@@ -175,20 +118,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = BitwiseOperation.Bitwise(OutSet, operation);
-                    if (result != null)
-                    {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
-                        break;
-                    }
-
                     base.VisitObjectValue(value);
                     break;
             }
@@ -198,19 +127,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitAssociativeArray(AssociativeArray value)
         {
             result = Comparison.RightAlwaysGreater(OutSet, operation);
-            if (result != null)
-            {
-                return;
-            }
-
-            result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                TypeConversion.ToNativeBoolean(OutSet, value));
-            if (result != null)
-            {
-                return;
-            }
-
-            result = BitwiseOperation.Bitwise(OutSet, operation);
             if (result != null)
             {
                 return;
@@ -247,14 +163,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
-                        // Comapring of resource and integer makes no sence.
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
+                        // Comapring of resource and number makes no sence.
                         break;
                     }
 
@@ -285,24 +194,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.GreaterThanOrEqual:
                     result = OutSet.CreateBool(true);
                     break;
-                case Operations.Equal:
-                case Operations.LessThanOrEqual:
-                    bool convertedValue;
-                    if (TypeConversion.TryConvertToBoolean(leftOperand, out convertedValue))
-                    {
-                        result = OutSet.CreateBool(!convertedValue);
-                    }
-                    else
-                    {
-                        result = OutSet.AnyBooleanValue;
-                    }
-                    break;
-                case Operations.NotEqual:
-                case Operations.GreaterThan:
-                case Operations.Or:
-                case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, leftOperand);
-                    break;
                 case Operations.Add:
                 case Operations.Sub:
                     result = leftOperand;
@@ -330,7 +221,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = BitwiseOperation.Bitwise(OutSet, operation);
             if (result != null)
             {
-                // It is too complicated to represend result of bitwise operation with intervals
+                // It is too complicated to represend result of bitwise operation with interval
                 return;
             }
 
@@ -338,33 +229,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
-        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
-        {
-            result = LogicalOperation.Logical(OutSet, operation, leftOperand, value);
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitIntervalIntegerValue(value);
-        }
-
-        /// <inheritdoc />
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");
-        }
-
-        /// <inheritdoc />
-        public override void VisitIntervalFloatValue(FloatIntervalValue value)
-        {
-            result = LogicalOperation.Logical(OutSet, operation, leftOperand, value);
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitIntervalFloatValue(value);
         }
 
         #endregion Interval values
@@ -395,14 +262,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
                     if (result != null)
                     {
+                        // Ommitted warning message that object cannot be converted to integer
                         // Ommitted error report that array is unsupported operand in arithmetic operation
                         break;
-                    }
-
-                    result = LogicalOperation.AbstractLogical(OutSet, operation, leftOperand);
-                    if (result != null)
-                    {
-                        return;
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation);
@@ -422,12 +284,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyScalarValue(AnyScalarValue value)
         {
-            result = LogicalOperation.AbstractLogical(OutSet, operation, leftOperand);
-            if (result != null)
-            {
-                return;
-            }
-
             result = BitwiseOperation.Bitwise(OutSet, operation);
             if (result != null)
             {
@@ -452,12 +308,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     DivisionByAnyBooleanValue();
                     break;
                 default:
-                    result = Comparison.RightAbstractBooleanCompare(OutSet, operation, leftOperand);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitAnyBooleanValue(value);
                     break;
             }
@@ -491,18 +341,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotSupportedException("Long integer is not currently supported");
         }
 
-        /// <inheritdoc />
-        public override void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitAnyFloatValue(value);
-        }
-
         #endregion Abstract numeric values
 
         /// <inheritdoc />
@@ -523,13 +361,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-                    if (result != null)
-                    {
-                        // A string can be converted into floating point number too.
                         break;
                     }
 
@@ -576,13 +407,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
@@ -605,12 +429,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     result = Comparison.RightAlwaysGreater(OutSet, operation);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.AbstractLogical(OutSet, operation, leftOperand);
                     if (result != null)
                     {
                         break;
@@ -656,13 +474,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (result != null)
                     {
                         // Comapring of resource and number makes no sence.
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
                         break;
                     }
 

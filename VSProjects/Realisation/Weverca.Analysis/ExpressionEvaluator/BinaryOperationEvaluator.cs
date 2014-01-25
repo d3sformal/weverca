@@ -81,6 +81,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private LeftAnyIntegerOperandVisitor anyIntegerVisitor;
 
         /// <summary>
+        /// Visitor of left operand that has abstract floating-point number value
+        /// </summary>
+        private LeftAnyFloatOperandVisitor anyFloatVisitor;
+
+        /// <summary>
         /// Selected visitor of left operand that performs binary operations with the given right operand
         /// </summary>
         private LeftOperandVisitor visitor;
@@ -104,6 +109,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             integerIntervalVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
             floatIntervalVisitor = new LeftFloatIntervalOperandVisitor(flowController);
             anyIntegerVisitor = new LeftAnyIntegerOperandVisitor(flowController);
+            anyFloatVisitor = new LeftAnyFloatOperandVisitor(flowController);
         }
 
         /// <summary>
@@ -275,6 +281,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitAnyLongintValue(AnyLongintValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            anyFloatVisitor.SetLeftOperand(value);
+            visitor = anyFloatVisitor;
         }
 
         #endregion Abstract numeric values

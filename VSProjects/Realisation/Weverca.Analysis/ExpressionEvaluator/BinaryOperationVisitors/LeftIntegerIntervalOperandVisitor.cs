@@ -207,6 +207,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
             base.VisitResourceValue(value);
         }
 
+        /// <inheritdoc />
+        public override void VisitUndefinedValue(UndefinedValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = leftOperand;
+                    break;
+                case Operations.Mul:
+                    result = OutSet.CreateInt(0);
+                    break;
+                default:
+                    base.VisitUndefinedValue(value);
+                    break;
+            }
+        }
+
         #endregion Concrete values
 
         #region Interval values

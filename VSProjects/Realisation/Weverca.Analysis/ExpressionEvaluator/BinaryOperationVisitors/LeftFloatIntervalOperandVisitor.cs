@@ -102,13 +102,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                        TypeConversion.ToBoolean(value.Value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     base.VisitFloatValue(value);
                     break;
             }
@@ -125,7 +118,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.Modulo(flow, leftOperand, value.Value);
                     break;
                 default:
-
                     int integerValue;
                     double floatValue;
                     bool isInteger;
@@ -196,6 +188,35 @@ namespace Weverca.Analysis.ExpressionEvaluator
             base.VisitResourceValue(value);
         }
 
+        /// <inheritdoc />
+        public override void VisitUndefinedValue(UndefinedValue value)
+        {
+            // When comparing, both operands are converted to boolean
+            switch (operation)
+            {
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    IntervalValue<int> convertedValue;
+                    if (TypeConversion.TryConvertToIntegerInterval(OutSet, leftOperand, out convertedValue))
+                    {
+                        result = convertedValue;
+                    }
+                    else
+                    {
+                        result = OutSet.AnyIntegerValue;
+                    }
+                    break;
+                case Operations.Mul:
+                    result = OutSet.CreateDouble(0.0);
+                    break;
+                default:
+                    base.VisitUndefinedValue(value);
+                    break;
+            }
+        }
+
         #endregion Concrete values
 
         #region Interval values
@@ -215,8 +236,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.Modulo(flow, leftOperand, value);
                     break;
                 default:
-                    var floatInterval = TypeConversion.ToFloatInterval(OutSet, value);
-                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand, floatInterval);
+                    result = Comparison.IntervalCompare(OutSet, operation, leftOperand,
+                        TypeConversion.ToFloatInterval(OutSet, value));
                     if (result != null)
                     {
                         break;
