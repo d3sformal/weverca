@@ -78,7 +78,7 @@ namespace Weverca.Analysis.UnitTest
         /// <returns>True, if FlowOutputSet contains warning with given cause</returns>
         public static bool ContainsWarning(FlowOutputSet outset, AnalysisWarningCause cause)
         {
-            var warnings = AnalysisWarningHandler.ReadWarnings(outset);
+            var warnings = AnalysisWarningHandler.ReadWarnings<AnalysisWarning>(outset);
             foreach (var value in warnings)
             {
                 var infoValue = (InfoValue<AnalysisWarning>)value;

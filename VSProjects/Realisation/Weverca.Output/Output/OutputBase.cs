@@ -146,8 +146,18 @@ namespace Weverca.Output.Output
 
         public void Warnings(string text)
         {
+            warnings(text, "Analysis warnings:");
+        }
+
+        public void SecurityWarnings(string text)
+        {
+            warnings(text, "Security warnings:");
+        }
+
+        private void warnings(string text, string headLine)
+        {
             line();
-            headline("Analysis warnings:"); 
+            headline(headLine);
             line();
             foreach (var s in text.Split('\n'))
             {
@@ -162,17 +172,7 @@ namespace Weverca.Output.Output
                 line();
             }
             line();
-            line();
-        }
 
-        public void SecurityWarnings(string text)
-        {
-            line();
-            headline("Security warnings:");
-            line();
-            variableInfoLine(text);
-            line();
-            line();
         }
 
         #endregion

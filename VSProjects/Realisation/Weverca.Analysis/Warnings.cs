@@ -23,25 +23,49 @@ namespace Weverca.Analysis
         /// </summary>
         private static readonly VariableName WARNING_STORAGE = new VariableName(".analysisWarning");
 
-        public static HashSet<AnalysisWarning> Warnings = new HashSet<AnalysisWarning>();
+        private static readonly VariableName SECUTIRTY_WARNING_STORAGE = new VariableName(".analysisSecurityWarning");
 
+        private static HashSet<AnalysisWarning> Warnings = new HashSet<AnalysisWarning>();
 
+        private static HashSet<AnalysisSecurityWarning> SecurityWarnings = new HashSet<AnalysisSecurityWarning>();
+
+        private static VariableName getStorage<T>() where T : AnalysisWarning
+        {
+            if (typeof(T) == typeof(AnalysisWarning))
+            {
+                return WARNING_STORAGE;
+            }
+            else if (typeof(T) == typeof(AnalysisSecurityWarning))
+            {
+                return SECUTIRTY_WARNING_STORAGE;
+            }
+            else 
+            {
+                throw new NotSupportedException();
+            }
+        }
 
         /// <summary>
         /// Insert warning inte FlowOutputSet
         /// </summary>
         /// <param name="flowOutSet"></param>
         /// <param name="warning"></param>
-        public static void SetWarning(FlowOutputSet flowOutSet, AnalysisWarning warning)
+        public static void SetWarning<T>(FlowOutputSet flowOutSet, T warning) where T : AnalysisWarning
         {
-            var previousWarnings = ReadWarnings(flowOutSet);
+            var previousWarnings = ReadWarnings<T>(flowOutSet);
             var newEntry = new List<Value>(previousWarnings);
             newEntry.Add(flowOutSet.CreateInfo(warning));
 
-           // flowOutSet.FetchFromGlobal(WARNING_STORAGE);
-            var warnings=flowOutSet.GetControlVariable(WARNING_STORAGE);
+            var warnings = flowOutSet.GetControlVariable(getStorage<T>());
             warnings.WriteMemory(flowOutSet.Snapshot, new MemoryEntry(newEntry));
-            Warnings.Add(warning);
+            if (typeof(T) == typeof(AnalysisWarning))
+            {
+                Warnings.Add(warning);
+            }
+            if (typeof(T) == typeof(AnalysisSecurityWarning))
+            {
+                Warnings.Add(warning);
+            }
         }
 
         /// <summary>
@@ -49,22 +73,41 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="flowOutSet"></param>
         /// <returns></returns>
-        public static IEnumerable<Value> ReadWarnings(FlowOutputSet flowOutSet)
+        public static IEnumerable<Value> ReadWarnings<T>(FlowOutputSet flowOutSet) where T : AnalysisWarning
         {
             //flowOutSet.FetchFromGlobal(WARNING_STORAGE);
-            var result = flowOutSet.ReadControlVariable(WARNING_STORAGE).ReadMemory(flowOutSet.Snapshot).PossibleValues;
+            var result = flowOutSet.ReadControlVariable(getStorage<T>()).ReadMemory(flowOutSet.Snapshot).PossibleValues;
             return from value in result where !(value is UndefinedValue) select value;
         }
 
+       
 
         public static string GetWarningsToOutput()
         {
-            
             StringBuilder result=new StringBuilder();
-            var warnings=Analysis.AnalysisWarningHandler.Warnings.ToArray();
+            var warnings = Warnings.ToArray();
+           
             if (warnings.Count() == 0)
             {
                 return "No analysis warnings.";
+            }
+            Array.Sort(warnings, warnings[0]);
+            foreach (var warning in warnings)
+            {
+                result.Append(warning.ToString());
+                result.Append("\n");
+            }
+            return result.ToString();
+        }
+
+        public static string GetSecurityWarningsToOutput()
+        {
+            StringBuilder result = new StringBuilder();
+            var warnings = SecurityWarnings.ToArray();
+
+            if (warnings.Count() == 0)
+            {
+                return "No security warnings.";
             }
             Array.Sort(warnings, warnings[0]);
             foreach (var warning in warnings)
@@ -84,12 +127,12 @@ namespace Weverca.Analysis
         /// <summary>
         /// Warning message
         /// </summary>
-        public string Message { get; private set; }
+        public string Message { get; protected set; }
 
         /// <summary>
         /// Langelement of AST, which produced the warning
         /// </summary>
-        public LangElement LangElement { get; private set; }
+        public LangElement LangElement { get; protected set; }
 
         /// <summary>
         /// Cause of the warning(Why was the warning added)
@@ -120,6 +163,11 @@ namespace Weverca.Analysis
             Cause = cause;
         }
 
+        protected AnalysisWarning()
+        { 
+        
+        }
+
         /// <summary>
         /// Return the warning message, with position in source code
         /// </summary>
@@ -144,7 +192,7 @@ namespace Weverca.Analysis
 
         public override bool Equals(object obj)
         {
-            if (!(obj is AnalysisWarning))
+            if (!(obj.GetType() == this.GetType()))
             {
                 return false;
             }
@@ -159,10 +207,57 @@ namespace Weverca.Analysis
 
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode();
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
         }
     }
 
+    public class AnalysisSecurityWarning : AnalysisWarning, IComparer<AnalysisSecurityWarning>
+    {
+
+        public DirtyType  Cause { get; protected set; }
+
+        public AnalysisSecurityWarning(string message, LangElement element, DirtyType cause)
+        {
+            Message = message;
+            LangElement = element;
+            Cause = cause;
+        }
+
+        public int Compare(AnalysisSecurityWarning x, AnalysisSecurityWarning y)
+        {
+            if (x.LangElement.Position.FirstOffset < y.LangElement.Position.FirstOffset)
+            {
+                return -1;
+            }
+            else if (x.LangElement.Position.FirstOffset > y.LangElement.Position.FirstOffset)
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj.GetType() == this.GetType()))
+            {
+                return false;
+            }
+
+            AnalysisSecurityWarning other = obj as AnalysisSecurityWarning;
+            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause == other.Cause)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
+        }
+    }
+
+    
     /// <summary>
     /// Posiible warning causes, Fell free to add more.
     /// </summary>

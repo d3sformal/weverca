@@ -109,6 +109,8 @@ namespace Weverca
 
                     console.Warnings(AnalysisWarningHandler.GetWarningsToOutput());
 
+                    console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarningsToOutput());
+
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     Console.ReadKey();
                     Console.WriteLine();
