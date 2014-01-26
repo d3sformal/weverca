@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Weverca.Analysis;
 using Weverca.Output;
 
 namespace Weverca
@@ -106,6 +106,9 @@ namespace Weverca
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
                     graphWalker.Run(console);
+
+                    console.Warnings(AnalysisWarningHandler.GetWarningsToOutput());
+
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     Console.ReadKey();
                     Console.WriteLine();

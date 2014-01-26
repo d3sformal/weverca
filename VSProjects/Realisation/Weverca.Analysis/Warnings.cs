@@ -6,6 +6,9 @@ using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using System.Collections;
+using System.Text;
+using System;
 
 namespace Weverca.Analysis
 {
@@ -19,6 +22,10 @@ namespace Weverca.Analysis
         /// Variable where warning values are stored
         /// </summary>
         private static readonly VariableName WARNING_STORAGE = new VariableName(".analysisWarning");
+
+        public static HashSet<AnalysisWarning> Warnings = new HashSet<AnalysisWarning>();
+
+
 
         /// <summary>
         /// Insert warning inte FlowOutputSet
@@ -34,6 +41,7 @@ namespace Weverca.Analysis
            // flowOutSet.FetchFromGlobal(WARNING_STORAGE);
             var warnings=flowOutSet.GetControlVariable(WARNING_STORAGE);
             warnings.WriteMemory(flowOutSet.Snapshot, new MemoryEntry(newEntry));
+            Warnings.Add(warning);
         }
 
         /// <summary>
@@ -47,12 +55,31 @@ namespace Weverca.Analysis
             var result = flowOutSet.ReadControlVariable(WARNING_STORAGE).ReadMemory(flowOutSet.Snapshot).PossibleValues;
             return from value in result where !(value is UndefinedValue) select value;
         }
+
+
+        public static string GetWarningsToOutput()
+        {
+            
+            StringBuilder result=new StringBuilder();
+            var warnings=Analysis.AnalysisWarningHandler.Warnings.ToArray();
+            if (warnings.Count() == 0)
+            {
+                return "No analysis warnings.";
+            }
+            Array.Sort(warnings, warnings[0]);
+            foreach (var warning in warnings)
+            {
+                result.Append(warning.ToString());
+                result.Append("\n");
+            }
+            return result.ToString();
+        }
     }
 
     /// <summary>
     /// Class, which contains information about analysis warning
     /// </summary>
-    public class AnalysisWarning
+    public class AnalysisWarning : IComparer<AnalysisWarning>
     {
         /// <summary>
         /// Warning message
@@ -100,6 +127,39 @@ namespace Weverca.Analysis
         public override string ToString()
         {
             return "Warning at line " + LangElement.Position.FirstLine + " char " + LangElement.Position.FirstColumn + ": " + Message.ToString();
+        }
+
+        public int Compare(AnalysisWarning x, AnalysisWarning y)
+        {
+            if (x.LangElement.Position.FirstOffset < y.LangElement.Position.FirstOffset)
+            {
+                return -1;
+            }
+            else if (x.LangElement.Position.FirstOffset > y.LangElement.Position.FirstOffset)
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is AnalysisWarning))
+            {
+                return false;
+            }
+
+            AnalysisWarning other = obj as AnalysisWarning;
+            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause==other.Cause)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode();
         }
     }
 
@@ -154,4 +214,5 @@ namespace Weverca.Analysis
        CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT,
 
     }
+   
 }

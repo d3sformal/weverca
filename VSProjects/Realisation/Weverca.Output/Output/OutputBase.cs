@@ -144,6 +144,37 @@ namespace Weverca.Output.Output
             line();
         }
 
+        public void Warnings(string text)
+        {
+            line();
+            headline("Analysis warnings:"); 
+            line();
+            foreach (var s in text.Split('\n'))
+            {
+                if (s.Contains(":"))
+                {
+                    variableInfoLine(s);
+                }
+                else
+                {
+                    comment(s);
+                }
+                line();
+            }
+            line();
+            line();
+        }
+
+        public void SecurityWarnings(string text)
+        {
+            line();
+            headline("Security warnings:");
+            line();
+            variableInfoLine(text);
+            line();
+            line();
+        }
+
         #endregion
 
         #region Private utilities
