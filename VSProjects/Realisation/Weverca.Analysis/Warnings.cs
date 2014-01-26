@@ -64,7 +64,7 @@ namespace Weverca.Analysis
             }
             if (typeof(T) == typeof(AnalysisSecurityWarning))
             {
-                Warnings.Add(warning);
+                SecurityWarnings.Add(warning as AnalysisSecurityWarning);
             }
         }
 
@@ -214,13 +214,13 @@ namespace Weverca.Analysis
     public class AnalysisSecurityWarning : AnalysisWarning, IComparer<AnalysisSecurityWarning>
     {
 
-        public DirtyType  Cause { get; protected set; }
+        public DirtyType  Flag { get; protected set; }
 
         public AnalysisSecurityWarning(string message, LangElement element, DirtyType cause)
         {
             Message = message;
             LangElement = element;
-            Cause = cause;
+            Flag = cause;
         }
 
         public int Compare(AnalysisSecurityWarning x, AnalysisSecurityWarning y)
@@ -244,7 +244,7 @@ namespace Weverca.Analysis
             }
 
             AnalysisSecurityWarning other = obj as AnalysisSecurityWarning;
-            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause == other.Cause)
+            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Flag == other.Flag)
             {
                 return true;
             }
@@ -253,7 +253,7 @@ namespace Weverca.Analysis
 
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Flag.GetHashCode();
         }
     }
 
