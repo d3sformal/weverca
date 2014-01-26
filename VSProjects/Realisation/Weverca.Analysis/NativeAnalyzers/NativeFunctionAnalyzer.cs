@@ -147,12 +147,12 @@ namespace Weverca.Analysis
         /// <summary>
         /// Structure storing information about function which clean dirty flag from values
         /// </summary>
-        private Dictionary<QualifiedName, DirtyType> cleaningFunctions;
+        public Dictionary<QualifiedName, DirtyType> cleaningFunctions;
 
         /// <summary>
         /// Structure storing information about function which report security warning, when, argument contains drity flag
         /// </summary>
-        private Dictionary<QualifiedName, DirtyType> reportingFunctions;
+        public Dictionary<QualifiedName, DirtyType> reportingFunctions;
 
         private HashSet<string> types = new HashSet<string>();
         
@@ -582,8 +582,12 @@ namespace Weverca.Analysis
             // Compute result
             MemoryEntry functionResult = new MemoryEntry(ComputeResult(flow, arguments).ToArray());
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(argumentValues, functionResult.PossibleValues));
+            NativeFunctionAnalyzer analyzer = NativeFunctionAnalyzer.CreateInstance();
+            if (analyzer.cleaningFunctions.ContainsKey(nativeFunctions[0].Name))
+            {
+                functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, analyzer.cleaningFunctions[nativeFunctions[0].Name]));
+            }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
-
             List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, argumentValues, nativeFunctions);
 
         }

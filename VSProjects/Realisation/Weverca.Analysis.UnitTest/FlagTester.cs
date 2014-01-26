@@ -16,7 +16,10 @@ namespace Weverca.Analysis.UnitTest
     {
 
         string SimpleFlagTest = @"
-          $result=$_POST['x'];
+            $a=$_POST['x'];
+            $b=$a;
+            $c=$b;
+            $result=$c;
         ";
 
         [TestMethod]
@@ -60,6 +63,30 @@ namespace Weverca.Analysis.UnitTest
         {
             var result = TestUtils.ResultTest(SimpleFlagTest4);
             TestUtils.IsDirty(result);
+
+        }
+
+        string SimpleFlagTest5 = @"
+          $result= htmlspecialchars($_POST['x']);
+        ";
+
+        [TestMethod]
+        public void SimpleFlag5()
+        {
+            var result = TestUtils.ResultTest(SimpleFlagTest5);
+            TestUtils.IsClean(result,DirtyType.HTMLDirty);
+
+        }
+
+        string SimpleFlagTest6 = @"
+          $result=mysql_escape_string($_POST['x']);
+        ";
+
+        [TestMethod]
+        public void SimpleFlag6()
+        {
+            var result = TestUtils.ResultTest(SimpleFlagTest6);
+            TestUtils.IsClean(result,DirtyType.SQLDirty);
 
         }
 

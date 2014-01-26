@@ -102,6 +102,17 @@ namespace Weverca.Analysis
             }
         }
 
+        public static IEnumerable<Value> Clean(IEnumerable<Value> source, DirtyType dirty)
+        {
+            List<Value> result = new List<Value>();
+            foreach(Value value in source)
+            {
+                var flag = GetFlagsFromValues(value);
+                flag[dirty] = false;
+                result.Add(value.SetInfo(new Flag(flag)));
+            }
+            return result;
+        }
 
         private static Dictionary<DirtyType, bool> mergeFlags(Dictionary<DirtyType, bool> dictFlag, Flag flag)
         {

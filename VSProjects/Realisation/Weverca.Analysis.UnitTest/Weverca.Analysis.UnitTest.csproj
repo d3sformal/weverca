@@ -51,6 +51,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ClassConstantTests.cs" />
+    <Compile Include="CondtionTester.cs" />
     <Compile Include="ExceptionTester.cs" />
     <Compile Include="FlagTester.cs" />
     <Compile Include="ExpressionResolverTester.cs" />

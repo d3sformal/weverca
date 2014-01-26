@@ -160,5 +160,35 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
+        public static void IsClean(Value value,DirtyType type)
+        {
+            var flag = value.GetInfo<Flag>();
+            if (flag == null)
+            {
+                return;
+            }
+            else
+            {
+                Debug.Assert(!flag.isDirty(type));
+            }
+        }
+
+        public static void HasValues<T>(MemoryEntry entry, params T[] types)
+        {
+            foreach (var value in entry.PossibleValues)
+            {
+                bool match = false;
+                foreach (T t in types)
+                {
+                    if ((value as ScalarValue<T>).Value.Equals( t))
+                    {
+                        match = true;
+                    }
+                }
+                Debug.Assert(match);
+            }
+
+        }
+
     }
 }

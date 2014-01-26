@@ -110,7 +110,9 @@ namespace Weverca.Output.Output
             Indent();
             if (point.OutSet == null)
             {
-                comment("Point not reached");
+                line();
+                headline("Point not reached");
+                line();
                 line();
             }
             else
