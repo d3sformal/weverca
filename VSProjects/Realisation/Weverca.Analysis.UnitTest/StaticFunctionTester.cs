@@ -113,5 +113,56 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+
+        string StaticCallWithParameterTest = @"
+         $result=0;
+        class a
+        {
+            static function b($x)
+            {
+                global $result;
+                $result=$x;
+            }
+        }
+        $a=new a();
+        $p='b';
+        $a::$p(8);
+
+        ";
+
+        [TestMethod]
+        public void StaticCallWithParameter()
+        {
+            var result = TestUtils.ResultTest(StaticCallWithParameterTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 8);
+
+        }
+
+        string StaticCallWithRefParameterTest = @"
+
+        class a
+        {
+            static function b(&$x)
+            {
+                $x=8;
+            }
+        }
+        $a=new a();
+        $p='b';
+        $a::$p($result);
+
+        ";
+
+        [TestMethod]
+        public void StaticCallWithRefParameter()
+        {
+            var result = TestUtils.ResultTest(StaticCallWithRefParameterTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 8);
+
+        }
+
+
     }
 }
