@@ -852,6 +852,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, booleanInterval, entireIntegerInterval);
         }
 
+        public static Value AbstractBooleanArithmetic(FlowController flow, Operations operation)
+        {
+            InitalizeInternals(flow.OutSet);
+
+            return Arithmetic(flow, operation, booleanInterval, booleanInterval);
+        }
+
         public static Value AbstractIntegerArithmetic(FlowController flow, Operations operation)
         {
             InitalizeInternals(flow.OutSet);

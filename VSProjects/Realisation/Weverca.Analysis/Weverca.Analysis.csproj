@@ -59,9 +59,12 @@
     <Compile Include="ExpressionEvaluator\BinaryOperations\Comparison.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperations\LogicalOperation.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperations\ModuloOperation.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftAnyBooleanOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftAnyFloatOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftAnyIntegerOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftAnyNumericOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftAnyScalarOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftAnyStringOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftArrayOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftBooleanOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftFloatIntervalOperandVisitor.cs" />
@@ -73,6 +76,7 @@
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftNumericOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftObjectOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftScalarOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftStringOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\IncrementDecrementEvaluator.cs" />

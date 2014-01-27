@@ -76,6 +76,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private LeftFloatIntervalOperandVisitor floatIntervalVisitor;
 
         /// <summary>
+        /// Visitor of left operand that has abstract boolean value
+        /// </summary>
+        private LeftAnyBooleanOperandVisitor anyBooleanVisitor;
+
+        /// <summary>
         /// Visitor of left operand that has abstract integer value
         /// </summary>
         private LeftAnyIntegerOperandVisitor anyIntegerVisitor;
@@ -84,6 +89,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Visitor of left operand that has abstract floating-point number value
         /// </summary>
         private LeftAnyFloatOperandVisitor anyFloatVisitor;
+
+        /// <summary>
+        /// Visitor of left operand that has abstract string value
+        /// </summary>
+        private LeftAnyStringOperandVisitor anyStringVisitor;
 
         /// <summary>
         /// Selected visitor of left operand that performs binary operations with the given right operand
@@ -108,8 +118,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             nullVisitor = new LeftNullOperandVisitor(flowController);
             integerIntervalVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
             floatIntervalVisitor = new LeftFloatIntervalOperandVisitor(flowController);
+            anyBooleanVisitor = new LeftAnyBooleanOperandVisitor(flowController);
             anyIntegerVisitor = new LeftAnyIntegerOperandVisitor(flowController);
             anyFloatVisitor = new LeftAnyFloatOperandVisitor(flowController);
+            anyStringVisitor = new LeftAnyStringOperandVisitor(flowController);
         }
 
         /// <summary>
@@ -268,6 +280,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Abstract scalar values
 
+        /// <inheritdoc />
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            anyBooleanVisitor.SetLeftOperand(value);
+            visitor = anyBooleanVisitor;
+        }
+
         #region Abstract numeric values
 
         /// <inheritdoc />
@@ -291,6 +310,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Abstract numeric values
+
+        /// <inheritdoc />
+        public override void VisitAnyStringValue(AnyStringValue value)
+        {
+            anyStringVisitor.SetLeftOperand(value);
+            visitor = anyStringVisitor;
+        }
 
         #endregion Abstract scalar values
 

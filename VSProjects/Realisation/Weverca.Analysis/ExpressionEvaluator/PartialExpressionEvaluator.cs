@@ -53,6 +53,45 @@ namespace Weverca.Analysis.ExpressionEvaluator
             throw new NotImplementedException("There is no way to evaluate a value of the type");
         }
 
+        #region Abstract values
+
+        #region Abstract scalar values
+
+        /// <inheritdoc />
+        public override void VisitAnyScalarValue(AnyScalarValue value)
+        {
+            // Skip <see cref="AnyValue" />. The type is super-type of <see cref="AnyScalarValue" />,
+            // but it is concrete type and its visit method can contain code that is solving the same
+            // problem as the previous visit methods. In this case, use additional method with shared code.
+            VisitValue(value);
+        }
+
+        #endregion Abstract scalar values
+
+        #region Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyCompoundValue(AnyCompoundValue value)
+        {
+            // Skip <see cref="AnyValue" />. The type is super-type of <see cref="AnyCompoundValue" />,
+            // but it is concrete type and its visit method can contain code that is solving the same
+            // problem as the previous visit methods. In this case, use additional method with shared code.
+            VisitValue(value);
+        }
+
+        #endregion Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            // Skip <see cref="AnyValue" />. The type is super-type of <see cref="AnyResourceValue" />,
+            // but it is concrete type and its visit method can contain code that is solving the same
+            // problem as the previous visit methods. In this case, use additional method with shared code.
+            VisitValue(value);
+        }
+
+        #endregion Abstract values
+
         #region Function values
 
         /// <inheritdoc />
