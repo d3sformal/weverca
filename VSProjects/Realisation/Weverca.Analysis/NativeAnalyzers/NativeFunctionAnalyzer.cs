@@ -243,18 +243,6 @@ namespace Weverca.Analysis
                 }
             }
 
-            foreach (var f in typeModeledFunctions)
-            {
-                if (f.Key.Name.LowercaseValue.Contains("sql"))
-                {
-                    if (f.Value.First().Arguments.Where(a => a.Type == "string").Count() > 0)
-                    {
-                        Console.WriteLine(f.Key.Name);
-                    
-                    }
-                }
-            
-            }
 
             /*
             var it = instance.types.GetEnumerator();
