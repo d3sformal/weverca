@@ -131,6 +131,21 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string SimpleFlagTest10 = @"
+            mysql_query('select *  from x where a='.intval($_POST['x']));
+    
+        ";
+
+
+        [TestMethod]
+        public void SimpleFlag10()
+        {
+            var result = TestUtils.Analyze(SimpleFlagTest10);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.SQLDirty)==false);
+
+        }
+
+
 
     }
 }

@@ -67,6 +67,7 @@ namespace Weverca.Analysis
         }
     }
 
+   
     /// <summary>
     /// Stores information about native object
     /// </summary>
@@ -93,7 +94,10 @@ namespace Weverca.Analysis
         private HashSet<string> methodTypes = new HashSet<string>();
         private HashSet<string> returnTypes = new HashSet<string>();
 
-        
+        public static Dictionary<MethodIdentifier, DirtyType> CleaningFunctions = new Dictionary<MethodIdentifier, DirtyType>();
+
+        public static  Dictionary<MethodIdentifier, DirtyType> ReportingFunctions = new Dictionary<MethodIdentifier, DirtyType>();
+
         #region parsing xml
 
         /// <summary>
@@ -376,9 +380,52 @@ namespace Weverca.Analysis
                 newBaseClasses.Reverse();
                 nativeObject.BaseClasses = newBaseClasses;
                 nativeObjects[nativeObject.QualifiedName] = nativeObject.Build();
+
+                
+                
             }
+            initReportingFunctions();
+            initCleaningFunctions();
         }
 
+        private QualifiedName getQualifiedName(string s)
+        {
+            return new QualifiedName(new Name(s));
+        }
+
+
+        private void initCleaningFunctions()
+        {
+            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("escape_string")), DirtyType.SQLDirty);
+
+            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("escapeString")), DirtyType.SQLDirty);
+
+            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("escapeString")), DirtyType.SQLDirty);
+
+        }
+
+        private void initReportingFunctions()
+        {
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("query")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("real_query")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("send_query")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("change_user")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("select_db")), DirtyType.SQLDirty);
+
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli_stmt"), new Name("execute")), DirtyType.SQLDirty);
+
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("query")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("sendQuery")), DirtyType.SQLDirty);
+
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhPreparedStatement"), new Name("execute")), DirtyType.SQLDirty);
+
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("exec")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("query")), DirtyType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("querySingle")), DirtyType.SQLDirty);
+
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3Stmt"), new Name("execute")), DirtyType.SQLDirty);
+          
+        }
         #endregion
 
         /// <summary>
@@ -478,44 +525,70 @@ namespace Weverca.Analysis
             {
                 NativeAnalyzerUtils.checkArgumentTypes(flow, Method);
             }
-
+            MethodIdentifier methodIdentifier = new MethodIdentifier(ObjectName, Method.Name.Name);
             var nativeClass = NativeObjectAnalyzer.GetInstance(flow.OutSet).GetClass(ObjectName);
             var fields = nativeClass.Fields;
 
             var functionResult = NativeAnalyzerUtils.ResolveReturnValue(Method.ReturnType, flow);
             var arguments = getArguments(flow);
-
+            
             var thisVariable = flow.OutSet.GetVariable(new VariableIdentifier("this"));
-            var fieldsEntries = new List<MemoryEntry>();
-            List<Value> inputValues=new List<Value>();
-            foreach (FieldInfo field in fields.Values)
+            List<Value> inputValues = new List<Value>();
+            bool isStaticCall = false;
+            
+            if (thisVariable.ReadMemory(flow.OutSet.Snapshot).PossibleValues.Count() == 1 && thisVariable.ReadMemory(flow.OutSet.Snapshot).PossibleValues.First() is UndefinedValue)
             {
-                var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
-                fieldsEntries.Add(fieldEntry.ReadMemory(flow.OutSet.Snapshot));
-                inputValues.AddRange(fieldEntry.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
-            }
+                isStaticCall = true;
+                var fieldsEntries = new List<MemoryEntry>();
+                
+                foreach (FieldInfo field in fields.Values)
+                {
+                    var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                    fieldsEntries.Add(fieldEntry.ReadMemory(flow.OutSet.Snapshot));
+                    inputValues.AddRange(fieldEntry.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
+                }
 
-            fieldsEntries.AddRange(arguments);
+                fieldsEntries.AddRange(arguments);
+
+                foreach (FieldInfo field in fields.Values)
+                {
+                    var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
+                    MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
+                    newfieldValues = new MemoryEntry(FlagsHandler.CopyFlags(inputValues, newfieldValues.PossibleValues));
+                    HashSet<Value> newValues = new HashSet<Value>((fieldEntry.ReadMemory(flow.OutSet.Snapshot)).PossibleValues);
+                    foreach (var newValue in newfieldValues.PossibleValues)
+                    {
+                        newValues.Add(newValue);
+                    }
+                    thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(newValues));
+                }
+            }
+            
             foreach (var argument in arguments)
             {
                 inputValues.AddRange(argument.PossibleValues);
             }
-            foreach (FieldInfo field in fields.Values)
+
+            if (NativeObjectAnalyzer.ReportingFunctions.ContainsKey(methodIdentifier))
             {
-                var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
-                MemoryEntry newfieldValues = NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow);
-                newfieldValues=new MemoryEntry(FlagsHandler.CopyFlags(inputValues,newfieldValues.PossibleValues));
-                HashSet<Value> newValues=new HashSet<Value>((fieldEntry.ReadMemory(flow.OutSet.Snapshot)).PossibleValues);
-                foreach (var newValue in newfieldValues.PossibleValues)
+                if (FlagsHandler.IsDirty(inputValues, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]))
                 {
-                    newValues.Add(newValue);
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(flow.CurrentPartial, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]));
                 }
-                thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(newValues));
             }
 
+            if (isStaticCall == true)
+            {
+                thisVariable.WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(FlagsHandler.CopyFlags(inputValues, thisVariable.ReadMemory(flow.OutSet.Snapshot).PossibleValues)));
+            }
 
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(inputValues, functionResult.PossibleValues));
+            if (NativeObjectAnalyzer.CleaningFunctions.ContainsKey(methodIdentifier))
+            {
+                functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, NativeObjectAnalyzer.CleaningFunctions[methodIdentifier]));
+            }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
+            
             var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, inputValues, (new NativeFunction[1] { Method }).ToList());
         }
 

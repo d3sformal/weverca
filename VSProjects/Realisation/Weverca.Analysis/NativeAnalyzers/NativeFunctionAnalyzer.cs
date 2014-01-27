@@ -433,6 +433,8 @@ namespace Weverca.Analysis
             reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_is_select"), DirtyType.SQLDirty);
             reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_storage_handler"), DirtyType.SQLDirty);
             reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_user_handlers"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_execute"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_stmt_execute"), DirtyType.SQLDirty);
             reportingFunctions.Add(getQualifiedName("session_pgsql_add_error"), DirtyType.SQLDirty);
             reportingFunctions.Add(getQualifiedName("session_pgsql_set_field"), DirtyType.SQLDirty);
             reportingFunctions.Add(getQualifiedName("sql_regcase"), DirtyType.SQLDirty);
