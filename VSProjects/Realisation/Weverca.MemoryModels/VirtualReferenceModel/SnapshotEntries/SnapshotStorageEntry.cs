@@ -125,5 +125,19 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             return C(context).ResolveMethod(memory, methodName);
         }
+
+        protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
+        {
+            var memory=readMemory(context);
+
+            return C(context).IterateFields(memory);
+        }
+
+        protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
+        {
+            var memory = readMemory(context);
+
+            return C(context).IterateIndexes(memory);
+        }
     }
 }

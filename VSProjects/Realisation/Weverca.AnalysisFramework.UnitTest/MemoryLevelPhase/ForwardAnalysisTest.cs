@@ -434,20 +434,20 @@ $IncludeResult=(include 'test.php');
         readonly static TestCase SimpleXSSDirty_CASE = @"
 $x=$_POST['dirty'];
 $x=$x;
-".AssertVariable("x").IsXSSDirty();
+".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysis);
 
 
         readonly static TestCase XSSSanitized_CASE = @"
 $x=$_POST['dirty'];
 $x='sanitized';
-".AssertVariable("x").IsXSSClean();
+".AssertVariable("x").IsXSSClean().Analysis(Analyses.SimpleAnalysis);
 
         readonly static TestCase XSSPossibleDirty_CASE = @"
 $x=$_POST['dirty'];
 if($unknown){
     $x='sanitized';
 }
-".AssertVariable("x").IsXSSDirty();
+".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysis);
 
 
         readonly static TestCase ConstantDeclaring_CASE = @"

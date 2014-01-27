@@ -45,7 +45,6 @@
     <Compile Include="Expressions\PostfixExpression.cs" />
     <Compile Include="Expressions\RValueFactory.cs" />
     <Compile Include="ForwardAnalysisServices.cs" />
-    <Compile Include="Memory\SnapshotMapping.cs" />
     <Compile Include="NextPhaseAnalysis.cs" />
     <Compile Include="FlowExtension.cs" />
     <Compile Include="Deprecated\AnalysisCallStack.cs" />

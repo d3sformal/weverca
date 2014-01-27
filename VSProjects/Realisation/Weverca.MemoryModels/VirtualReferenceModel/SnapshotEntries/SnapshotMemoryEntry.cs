@@ -61,7 +61,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
         {
-            return toSnapshot(context).ResolveMethod(WrappedEntry, methodName);
+            return C(context).ResolveMethod(WrappedEntry, methodName);
         }
 
         protected override MemoryEntry readMemory(SnapshotBase context)
@@ -83,7 +83,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         {
             // TODO: The method should return SnapshotMemoryEntry of read indices
 
-            var snapshot = toSnapshot(context);
+            var snapshot = C(context);
             var allKeys = new List<Memory.VariableKey>();
 
             foreach (var value in WrappedEntry.PossibleValues)
@@ -110,7 +110,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         {
             // TODO: The method should return SnapshotMemoryEntry of read fields
 
-            var snapshot = toSnapshot(context);
+            var snapshot = C(context);
             var allKeys = new List<Memory.VariableKey>();
 
             foreach (var value in WrappedEntry.PossibleValues)
@@ -137,6 +137,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             throw new NotImplementedException();
         }
 
+        protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
+        {
+            return C(context).IterateFields(WrappedEntry);
+        }
+
+        protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
+        {
+            return C(context).IterateIndexes(WrappedEntry);
+        }
+
         private MemoryEntry getUndefinedMemoryEntry(SnapshotBase snapshot)
         {
             if (UndefinedEntry == null) UndefinedEntry = new MemoryEntry(snapshot.UndefinedValue);
@@ -148,7 +158,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             return new NotSupportedException("Current mode: " + currentMode);
         }
 
-        private static Snapshot toSnapshot(SnapshotBase context)
+        private static Snapshot C(SnapshotBase context)
         {
             var snapshot = context as Snapshot;
 

@@ -271,11 +271,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             var array = enumeree.PossibleValues.First() as AssociativeArray;
             var arrayEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(array));
 
-            var indexes = OutSet.IterateArray(array);
+            var indexes = arrayEntry.IterateIndexes(OutSnapshot);
             foreach (var index in indexes)
             {
-                var indexIdentifier = new MemberIdentifier(index.Identifier);
-                var indexEntry = arrayEntry.ReadIndex(OutSnapshot, indexIdentifier);
+                var indexEntry = arrayEntry.ReadIndex(OutSnapshot, index);
                 var element = indexEntry.ReadMemory(OutSnapshot);
                 values.UnionWith(element.PossibleValues);
             }
@@ -296,9 +295,9 @@ namespace Weverca.AnalysisFramework.UnitTest
                     break;
                 default:
                     var constantName = ".constant_" + x.Name;
-                    var constantVar = new VariableName(constantName);
-                    OutSet.FetchFromGlobal(constantVar);
-                    return OutSet.ReadValue(constantVar);
+                    var constantVar = new VariableIdentifier(constantName);
+                    OutSet.FetchFromGlobal(constantVar.DirectName);
+                    return OutSet.ReadVariable(constantVar).ReadMemory(OutSnapshot);
             }
 
             return new MemoryEntry(result);

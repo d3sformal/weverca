@@ -173,15 +173,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="createdObject">Created object that has to be initialized</param>
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Iterates over the given object
-        /// </summary>
-        /// <param name="iteratedObject">Object which iterator will be created</param>
-        /// <returns>Iterator for given object</returns>
-        protected abstract IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject);
-
+        
         /// <summary>
         /// Determine type of given object
         /// </summary>
@@ -194,14 +186,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="createdArray">Created array that has to be initialized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Create iterator for given array
-        /// </summary>
-        /// <param name="iteratedArray">Array which iterator will be created</param>
-        /// <returns>Iterators for given array</returns>
-        protected abstract IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray);
 
         [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
         /// <summary>
@@ -269,25 +253,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable which info is read</param>
         /// <returns>Stored info</returns>
         protected abstract InfoValue[] readInfo(VariableName variable);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Read value stored in snapshot for <paramref name="sourceVar"/>
-        /// </summary>
-        /// <param name="sourceVar">Variable which value will be read</param>
-        /// <returns>Value stored for given variable</returns>
-        protected abstract MemoryEntry readValue(VariableName sourceVar);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Tries to read value stored in current snapshot for <paramref name="sourceVar" />
-        /// </summary>
-        /// <param name="sourceVar">Variable which value will be attempted to read</param>
-        /// <param name="entry">Value stored for given variable if exists, otherwise undefined value</param>
-        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
-        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
-        protected abstract bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext);
-
+               
         /// <summary>
         /// Fetch variables from global context into current context
         /// </summary>
@@ -772,20 +738,6 @@ namespace Weverca.AnalysisFramework.Memory
             _statistics.Report(Statistic.CallLevelMerges);
         }
 
-        public MemoryEntry ReadValue(VariableName sourceVar)
-        {
-            var result = readValue(sourceVar);
-            _statistics.Report(Statistic.ValueReads);
-            return result;
-        }
-
-        public bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
-        {
-            var result = tryReadValue(sourceVar, out entry, forceGlobalContext);
-            _statistics.Report(Statistic.ValueReadAttempts);
-            return result;
-        }
-
         public void FetchFromGlobal(params VariableName[] variables)
         {
             _statistics.Report(Statistic.GlobalVariableFetches, variables.Length);
@@ -826,18 +778,6 @@ namespace Weverca.AnalysisFramework.Memory
         {
             _statistics.Report(Statistic.TypeResolvings);
             return resolveType(typeName);
-        }
-
-        public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
-        {
-            _statistics.Report(Statistic.ObjectIterations);
-            return iterateObject(iteratedObject);
-        }
-
-        public IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray)
-        {
-            _statistics.Report(Statistic.ArrayIterations);
-            return iterateArray(iteratedArray);
         }
 
         #endregion

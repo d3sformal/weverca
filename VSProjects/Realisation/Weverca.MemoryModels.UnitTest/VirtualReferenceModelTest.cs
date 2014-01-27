@@ -63,8 +63,8 @@ namespace Weverca.ControlFlowGraph.UnitTest
         public void AliasAssign()
         {
             var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1, false);
-            var testVar1Entry = readVariable(testVar1, snapshot1);
-            var testVar2Entry = getVariable(testVar2, snapshot1);
+            var testVar1Entry = readVariable(snapshot1, testVar1);
+            var testVar2Entry = getVariable(snapshot1, testVar2);
 
             testVar2Entry.SetAliases(snapshot1, testVar1Entry);
 
@@ -120,8 +120,8 @@ namespace Weverca.ControlFlowGraph.UnitTest
             var snapshot1 = createSnapshotWithValue(testVar1, testStringValue1);
             var snapshot2 = createSnapshotWithValue(testVar2, testStringValue2, false);
 
-            var testVar1Entry = getVariable(testVar1, snapshot2);
-            var testVar2Entry = readVariable(testVar2, snapshot2);
+            var testVar1Entry = getVariable(snapshot2, testVar1);
+            var testVar2Entry = readVariable(snapshot2, testVar2);
 
             testVar1Entry.SetAliases(snapshot2, testVar2Entry);
             snapshot2.CommitTransaction();
@@ -153,20 +153,27 @@ namespace Weverca.ControlFlowGraph.UnitTest
             return snapshot;
         }
 
-        private ReadWriteSnapshotEntryBase getVariable(VariableName name, Snapshot context)
+        private ReadWriteSnapshotEntryBase getVariable(Snapshot context, VariableName name)
         {
             return context.GetVariable(new VariableIdentifier(name));
         }
 
-        private ReadSnapshotEntryBase readVariable(VariableName name, Snapshot context)
+        private ReadSnapshotEntryBase readVariable(Snapshot context, VariableName name)
         {
             return context.ReadVariable(new VariableIdentifier(name));
+        }
+
+        private MemoryEntry readValue(Snapshot context, VariableName name)
+        {
+            var entry = readVariable(context, name);
+
+            return entry.ReadMemory(context);
         }
 
         private T readFirstValue<T>(Snapshot snapshot, VariableName variable)
             where T : Value
         {
-            var entry = snapshot.ReadValue(variable);
+            var entry = readValue(snapshot, variable);
             var enumerator = entry.PossibleValues.GetEnumerator();
             enumerator.MoveNext();
             var value = enumerator.Current;
@@ -176,7 +183,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
         private T[] readValues<T>(Snapshot snapshot, VariableName variable)
             where T : Value
         {
-            var entry = snapshot.ReadValue(variable);
+            var entry = readValue(snapshot, variable);
             var castedEnumerable = entry.PossibleValues.Where(val => !(val is UndefinedValue)).Cast<T>();
             return castedEnumerable.ToArray();
         }

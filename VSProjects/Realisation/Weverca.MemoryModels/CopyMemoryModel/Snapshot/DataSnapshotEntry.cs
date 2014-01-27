@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 
+using Weverca.AnalysisFramework;
+
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class DataSnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
@@ -130,6 +132,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             throw new NotImplementedException();
         }

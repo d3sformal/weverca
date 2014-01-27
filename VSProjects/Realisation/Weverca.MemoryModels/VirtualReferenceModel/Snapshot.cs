@@ -474,6 +474,92 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return storages;
         }
 
+        private IEnumerable<VariableIdentifier> iterateFields(ObjectValue iteratedObject)
+        {
+            // TODO: Add visibility
+
+            var objPrefix = string.Format("$obj{0}->", iteratedObject.UID);
+            var fields = new List<VariableIdentifier>();
+            foreach (var varName in _meta.VariableIdentifiers)
+            {
+                //TODO optimize
+                if (!varName.StartsWith(objPrefix))
+                {
+                    continue;
+                }
+
+                var fieldIdentifier = varName.Substring(objPrefix.Length, varName.Length - objPrefix.Length);
+                fields.Add(new VariableIdentifier(fieldIdentifier));
+            }
+
+            return fields;
+        }
+
+        internal IEnumerable<VariableIdentifier> IterateFields(MemoryEntry memory)
+        {
+            foreach (var value in memory.PossibleValues)
+            {
+                var objectValue = value as ObjectValue;
+
+                if (objectValue != null)
+                {
+                    var fields = iterateFields(objectValue);
+                    foreach (var field in fields)
+                    {
+                        yield return field;
+                    }
+                }
+                else
+                {
+                    //only objects can be iterated for fields
+                    Assistant.TriedIterateFields(value);
+                }
+            }
+        }
+
+
+        protected IEnumerable<MemberIdentifier> iterateIndexes(AssociativeArray iteratedArray)
+        {
+            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
+            var indexes = new List<MemberIdentifier>();
+            foreach (var varName in _meta.VariableIdentifiers)
+            {
+                if (!varName.StartsWith(arrayPrefix))
+                {
+                    continue;
+                }
+
+                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
+
+                indexes.Add(new MemberIdentifier(indexIdentifier));
+            }
+
+            return indexes;
+        }
+
+
+        internal IEnumerable<MemberIdentifier> IterateIndexes(MemoryEntry memory)
+        {
+            foreach (var value in memory.PossibleValues)
+            {
+                var arrayValue = value as AssociativeArray;
+
+                if (arrayValue != null)
+                {
+                    var indexes = iterateIndexes(arrayValue);
+                    foreach (var index in indexes)
+                    {
+                        yield return index;
+                    }
+                }
+                else
+                {
+                    //only objects can be iterated for fields
+                    Assistant.TriedIterateFields(value);
+                }
+            }
+        }
+
         /// <summary>
         /// Method allowing statitic reporting via Snapshot entries
         /// </summary>
@@ -574,7 +660,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             var resolvedMethods = MemoryAssistant.ResolveMethods(value, methodName, objectMethods);
             result.AddRange(resolvedMethods);
-         
+
             return result;
         }
 
@@ -1177,18 +1263,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return new ReferenceAlias(info.References);
         }
-               
+
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
             assign(targetVar, entry, VariableKind.Local);
         }
 
-        protected override MemoryEntry readValue(VariableName sourceVar)
-        {
-            return readValue(sourceVar, VariableKind.Local);
-        }
-
-        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        protected  bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {
             var kind = repairKind(VariableKind.Local, forceGlobalContext);
             return tryReadValue(new VariableKey(kind, sourceVar, CurrentContextStamp), out entry);
@@ -1207,27 +1288,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             entry = resolveReferences(info.References);
             return true;
-        }
-
-        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
-        {
-            // TODO: Add visibility
-
-            var arrayPrefix = string.Format("$obj{0}->", iteratedObject.UID);
-            var indexes = new List<ContainerIndex>();
-            foreach (var varName in _meta.VariableIdentifiers)
-            {
-                if (!varName.StartsWith(arrayPrefix))
-                {
-                    continue;
-                }
-
-                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - arrayPrefix.Length);
-
-                indexes.Add(CreateIndex(indexIdentifier));
-            }
-
-            return indexes;
         }
 
         protected override void setInfo(Value value, params InfoValue[] info)
@@ -1291,25 +1351,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
 
             return infoValues.ToArray();
-        }
-
-        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
-        {
-            var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
-            var indexes = new List<ContainerIndex>();
-            foreach (var varName in _meta.VariableIdentifiers)
-            {
-                if (!varName.StartsWith(arrayPrefix))
-                {
-                    continue;
-                }
-
-                var indexIdentifier = varName.Substring(arrayPrefix.Length, varName.Length - 1 - arrayPrefix.Length);
-
-                indexes.Add(CreateIndex(indexIdentifier));
-            }
-
-            return indexes;
         }
 
         #endregion

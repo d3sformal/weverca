@@ -334,21 +334,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 var arrayEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(array));
 
-                var indices = OutSet.IterateArray(array);
+                var indices = arrayEntry.IterateIndexes(OutSnapshot);
                 foreach (var index in indices)
                 {
                     int convertedInteger;
-                    if (TypeConversion.TryIdentifyInteger(index.Identifier, out convertedInteger))
+                    if (TypeConversion.TryIdentifyInteger(index.DirectName, out convertedInteger))
                     {
                         keys.Add(OutSnapshot.CreateInt(convertedInteger));
                     }
                     else
                     {
-                        keys.Add(OutSnapshot.CreateString(index.Identifier));
+                        keys.Add(OutSnapshot.CreateString(index.DirectName));
                     }
 
-                    var indexIdentifier = new MemberIdentifier(index.Identifier);
-                    var indexEntry = arrayEntry.ReadIndex(OutSnapshot, indexIdentifier);
+                    var indexEntry = arrayEntry.ReadIndex(OutSnapshot, index);
                     var element = indexEntry.ReadMemory(OutSnapshot);
                     values.UnionWith(element.PossibleValues);
                 }
@@ -733,7 +732,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="typeName">Name of type to resolve</param>
         /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>
-        public static IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName,FlowOutputSet OutSet,LangElement element)
+        public static IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName, FlowOutputSet OutSet, LangElement element)
         {
             var typeValues = OutSet.ResolveType(typeName);
             if (!typeValues.GetEnumerator().MoveNext())
@@ -758,7 +757,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 else
                 {
                     // TODO: This must be error
-                    AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Class doesn't exist",element,AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class doesn't exist", element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
                     return null;
                 }
             }
@@ -853,7 +852,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName, OutSet,Element);
+                var typeValues = ResolveSourceOrNativeType(typeName, OutSet, Element);
                 if (typeValues == null)
                 {
                     // TODO: This must be error
@@ -940,7 +939,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 var visitor = new StaticObjectVisitor(Flow);
                 value.Accept(visitor);
                 switch (visitor.Result)
-                { 
+                {
                     case StaticObjectVisitorResult.NO_RESULT:
                         SetWarning("Cannot access constant on non object", AnalysisWarningCause.CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT);
                         result.Add(OutSet.UndefinedValue);
@@ -950,7 +949,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
                         result.Add(OutSet.AnyValue);
-                        break;                
+                        break;
                 }
             }
 
@@ -969,20 +968,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     return value.Value;
                 }
-                else 
+                else
                 {
-                    SetWarning("Constant " + qualifiedName.Name + "::" + variableName+" doesn't exist", AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
+                    SetWarning("Constant " + qualifiedName.Name + "::" + variableName + " doesn't exist", AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
             else
             {
-                var constant=OutSet.GetControlVariable(new VariableName(".class(" + qualifiedName.Name.LowercaseValue + ")->constant(" + variableName.Value + ")"));
+                var constant = OutSet.GetControlVariable(new VariableName(".class(" + qualifiedName.Name.LowercaseValue + ")->constant(" + variableName.Value + ")"));
                 if (constant.IsDefined(OutSet.Snapshot))
                 {
                     return constant.ReadMemory(OutSet.Snapshot);
                 }
-                else 
+                else
                 {
                     SetWarning("Constant " + qualifiedName.Name + "::" + variableName + " doesnt exist", AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
                     return new MemoryEntry(OutSet.UndefinedValue);

@@ -42,16 +42,6 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Variables
 
-        protected override MemoryEntry readValue(VariableName sourceVar)
-        {
-            MemoryIndex index = getVariableOrUnknown(sourceVar);
-            return getMemoryEntry(index);
-        }
-
-        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
-        {
-            throw new NotImplementedException();
-        }
 
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
@@ -117,7 +107,7 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryAlias(fieldIndex, alias);
         }
 
-        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
+        protected IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
             ObjectDescriptor descriptor = objects[iteratedObject];
             return descriptor.Fields.Keys;
@@ -162,7 +152,7 @@ namespace Weverca.MemoryModels.MemoryModel
             assignMemoryAlias(fieldIndex, alias);
         }
 
-        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
+        protected IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
             ArrayDescriptor array = arrays[iteratedArray];
             return array.Indexes.Keys;

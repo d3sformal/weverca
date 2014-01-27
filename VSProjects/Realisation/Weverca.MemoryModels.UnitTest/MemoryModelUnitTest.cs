@@ -5,6 +5,7 @@ using System.Linq;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.MemoryModel;
 
@@ -26,7 +27,7 @@ namespace Weverca.MemoryModels.UnitTest
         IntegerValue value5;
         IntegerValue value6;
 
-        
+
         [TestInitialize]
         public void Prepare()
         {
@@ -51,33 +52,19 @@ namespace Weverca.MemoryModels.UnitTest
 
         private void singleVariableTester(VariableName variable, Value value)
         {
-            MemoryEntry entry = snapshot.ReadValue(variable);
+            MemoryEntry entry = readVariable(variable);
             List<Value> entryValues = new List<Value>(entry.PossibleValues);
             Assert.AreEqual(entryValues.Count, 1);
             Assert.AreEqual(entryValues[0], value);
         }
 
-        [TestMethod]
-        public void CreateSimpleVariable()
+        private MemoryEntry readVariable(VariableName variable)
         {
-            snapshot.Assign(variableX, value5);
-            singleVariableTester(variableX, value5);
-
-            snapshot.Assign(variableX, value6);
-            singleVariableTester(variableX, value6);
+            var entry = snapshot.GetVariable(new VariableIdentifier(variable)).ReadMemory(snapshot);
+            return entry;
         }
 
-        [TestMethod]
-        public void AssignFromVariable()
-        {
-            snapshot.Assign(variableX, value5);
-            MemoryEntry entryX = snapshot.ReadValue(variableX);
-
-            snapshot.Assign(variableY, entryX);
-            singleVariableTester(variableY, value5);
-        }
-
-   //     [TestMethod]
+        //     [TestMethod]
         public void AssignAlias()
         {
             Value alias = snapshot.CreateAlias(variableY);
@@ -98,7 +85,7 @@ namespace Weverca.MemoryModels.UnitTest
             singleVariableTester(variableZ, value6);
         }
 
- //       [TestMethod]
+        //       [TestMethod]
         public void OverrideAlias()
         {
             snapshot.Assign(variableX, snapshot.CreateAlias(variableY));
@@ -113,6 +100,6 @@ namespace Weverca.MemoryModels.UnitTest
         }
 
         #endregion
-        
+
     }
 }

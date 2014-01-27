@@ -62,7 +62,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="field">Identifier of an field</param>
         /// <returns>Snapshot entry representing field resolving on current entry</returns>
         protected abstract ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field);
-        
+
         /// <summary>
         /// Resolve method on current snapshot entry with given methodName
         /// </summary>
@@ -77,6 +77,20 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <returns>Variable identifier of current snapshot entry or null if entry doesn't belong to variable</returns>
         protected abstract VariableIdentifier getVariableIdentifier(SnapshotBase context);
+
+        /// <summary>
+        /// Iterate fields defined on object
+        /// </summary>
+        /// <param name="context">Context where fields are searched</param>
+        /// <returns>Enumeration of available fields</returns>
+        protected abstract IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context);
+
+        /// <summary>
+        /// Iterate indexes defined on array
+        /// </summary>
+        /// <param name="context">Context where indexes are searched</param>
+        /// <returns>Enumeration of available fields</returns>
+        protected abstract IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context);
 
         /// <summary>
         /// Determine that memory represented by current snapshot entry Is already defined.
@@ -100,7 +114,6 @@ namespace Weverca.AnalysisFramework.Memory
         {
             return aliases(context);
         }
-
 
         /// <summary>
         /// Returns variables corresponding to current snapshot entry
@@ -162,6 +175,28 @@ namespace Weverca.AnalysisFramework.Memory
         {
             //TODO statistics reporting
             return resolveMethod(context, methodName);
+        }
+
+        /// <summary>
+        /// Iterate fields defined on object
+        /// </summary>
+        /// <param name="context">Context where fields are searched</param>
+        /// <returns>Enumeration of available fields</returns>
+        public IEnumerable<VariableIdentifier> IterateFields(SnapshotBase context)
+        {
+            //TODO statistics reporting
+            return iterateFields(context);
+        }
+
+        /// <summary>
+        /// Iterate indexes defined on array
+        /// </summary>
+        /// <param name="context">Context where indexes are searched</param>
+        /// <returns>Enumeration of available fields</returns>
+        public IEnumerable<MemberIdentifier> IterateIndexes(SnapshotBase context)
+        {
+            //TODO statistics reporting
+            return iterateIndexes(context);
         }
     }
 }

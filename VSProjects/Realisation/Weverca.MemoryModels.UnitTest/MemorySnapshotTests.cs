@@ -15,13 +15,6 @@ namespace Weverca.ControlFlowGraph.UnitTest
     /// </summary>
     class MemorySnapshotTests
     {
-        public void AssignFromVariable(VariableName targetVar, VariableName sourceVar,ISnapshotReadonly input, ISnapshotReadWrite output)
-        {            
-            output.Extend(input);
-            var value = input.ReadValue(sourceVar);
-            output.Assign(targetVar, value);
-        }
-
         public void AssignFromLiteral(VariableName targetVar, string literal, ISnapshotReadonly input, ISnapshotReadWrite output)
         {
             output.Extend(input);

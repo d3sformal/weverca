@@ -74,6 +74,11 @@ namespace Weverca.AnalysisFramework.Memory
 
 
         public abstract IEnumerable<FunctionValue> ResolveMethods(TypeValue value, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
-        
+
+
+        public void TriedIterateFields(Value value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -68,19 +68,7 @@ namespace Weverca.AnalysisFramework
         {
             return Snapshot.ReadInfo(variable);
         }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public MemoryEntry ReadValue(VariableName sourceVar)
-        {
-            return Snapshot.ReadValue(sourceVar);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext = false)
-        {
-            return Snapshot.TryReadValue(sourceVar, out entry, forceGlobalContext);
-        }
-
+              
         [Obsolete("Use snapshot entry API instead")]
         public ContainerIndex CreateIndex(string identifier)
         {
@@ -111,18 +99,6 @@ namespace Weverca.AnalysisFramework
         public TypeValue ObjectType(ObjectValue objectValue)
         {
             return Snapshot.ObjectType(objectValue);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject)
-        {
-            return Snapshot.IterateObject(iteratedObject);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray)
-        {
-            return Snapshot.IterateArray(iteratedArray);
         }
 
         #endregion

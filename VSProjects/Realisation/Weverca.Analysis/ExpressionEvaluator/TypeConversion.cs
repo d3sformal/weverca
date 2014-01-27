@@ -220,7 +220,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns><c>true</c> if array has at least one element, otherwise <c>false</c></returns>
         public static bool ToNativeBoolean(FlowOutputSet outset, AssociativeArray value)
         {
-            var indices = outset.IterateArray(value);
+            var entry = outset.CreateSnapshotEntry(new MemoryEntry(value));
+
+            var indices = entry.IterateIndexes(outset.Snapshot);
             var enumerator = indices.GetEnumerator();
             return enumerator.MoveNext();
         }
@@ -961,15 +963,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             var outSnapshot = outset.Snapshot;
 
-            var indices = outset.IterateArray(value);
+            var indices = objectEntry.IterateFields(outSnapshot);
 
             foreach (var index in indices)
             {
-                var fieldEntry = GetFieldEntry(outSnapshot, objectEntry, index.Identifier);
-                var readValue = fieldEntry.ReadMemory(outSnapshot);
+                var fieldEntry = objectEntry.ReadField(outSnapshot, index);
+                var indexEntry = arrayEntry.ReadIndex(outSnapshot, new MemberIdentifier(index.DirectName.Value));
 
-                var indexEntry = GetIndexEntry(outSnapshot, arrayEntry, index.Identifier);
-                indexEntry.WriteMemory(outSnapshot, readValue);
+                var readValue = indexEntry.ReadMemory(outSnapshot);
+                fieldEntry.WriteMemory(outSnapshot, readValue);
             }
 
             return objectValue;
@@ -1027,15 +1029,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             var outSnapshot = outset.Snapshot;
 
-            var indices = outset.IterateObject(value);
+            var fields = objectEntry.IterateFields(outSnapshot);
 
-            foreach (var index in indices)
+            foreach (var field in fields)
             {
-                var indexEntry = GetIndexEntry(outSnapshot, arrayEntry, index.Identifier);
-                var readValue = indexEntry.ReadMemory(outSnapshot);
+                var fieldEntry = objectEntry.ReadField(outSnapshot, field);
+                var indexEntry = arrayEntry.ReadIndex(outSnapshot, new MemberIdentifier(field.DirectName.Value));
 
-                var fieldEntry = GetFieldEntry(outSnapshot, objectEntry, index.Identifier);
-                fieldEntry.WriteMemory(outSnapshot, readValue);
+                var readValue = fieldEntry.ReadMemory(outSnapshot);
+                indexEntry.WriteMemory(outSnapshot, readValue);
             }
 
             return arrayValue;

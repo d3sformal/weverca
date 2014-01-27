@@ -254,5 +254,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             throw new NotImplementedException();
         }
+
+        protected override IEnumerable<AnalysisFramework.VariableIdentifier> iterateFields(SnapshotBase context)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

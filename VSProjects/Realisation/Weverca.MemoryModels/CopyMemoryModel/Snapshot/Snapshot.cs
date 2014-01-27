@@ -93,7 +93,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             StringBuilder builder = new StringBuilder();
 
-            builder.Append(snapId.ToString() + "::"+ Data.ToString() +"\n");
+            builder.Append(snapId.ToString() + "::" + Data.ToString() + "\n");
             foreach (var index in Data.IndexData)
             {
                 builder.Append(index.ToString());
@@ -157,7 +157,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data.SetDescriptor(createdObject, descriptor);
         }
 
-        protected override IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
+        protected IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
             ObjectDescriptor descriptor;
             if (Data.TryGetDescriptor(iteratedObject, out descriptor))
@@ -202,7 +202,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Data.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
         }
 
-        protected override IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
+        protected IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
             ArrayDescriptor descriptor;
             if (Data.TryGetDescriptor(iteratedArray, out descriptor))
@@ -403,24 +403,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             throw new NotImplementedException();
         }
 
-       
+
         //OBSOLETE
         protected override void assign(VariableName targetVar, MemoryEntry entry)
         {
             throw new NotImplementedException();
         }
-
-        //OBSOLETE
-        protected override MemoryEntry readValue(VariableName sourceVar)
-        {
-            throw new NotImplementedException();
-        }
-
-        //OBSOLETE
-        protected override bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
-        {
-            throw new NotImplementedException();
-        }
+                
 
         //OBSOLETE
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
@@ -751,7 +740,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             AssociativeArray value = this.CreateArray();
             ArrayDescriptor oldDescriptor = Data.GetDescriptor(value);
             closeTemporaryArray(oldDescriptor);
-            
+
             ArrayDescriptor newDescriptor = oldDescriptor
                 .Builder()
                 .SetParentVariable(parentIndex)
@@ -961,7 +950,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             Data.RemoveIndex(index);
         }
-        
+
         /// <summary>
         /// Extends the snapshot.
         /// </summary>

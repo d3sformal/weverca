@@ -53,23 +53,7 @@ namespace Weverca.AnalysisFramework.Memory
         ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable);
 
         #endregion
-       
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Iterates over the given object
-        /// </summary>
-        /// <param name="iteratedObject">Object which iterator will be created</param>
-        /// <returns>Iterator for given object</returns>
-        IEnumerable<ContainerIndex> IterateObject(ObjectValue iteratedObject);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Create iterator for given array
-        /// </summary>
-        /// <param name="iteratedArray">Array which iterator will be created</param>
-        /// <returns>Iterators for given array</returns>
-        IEnumerable<ContainerIndex> IterateArray(AssociativeArray iteratedArray);
-
+      
         [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Determine type of given object
@@ -91,24 +75,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable which info is read</param>
         /// <returns>Stored info</returns>
         InfoValue[] ReadInfo(VariableName variable);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Read value stored in snapshot for <paramref name="sourceVar" />
-        /// </summary>
-        /// <param name="sourceVar">Variable which value will be read</param>
-        /// <returns>Value stored for given variable</returns>
-        MemoryEntry ReadValue(VariableName sourceVar);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Tries to read value stored in current snapshot for <paramref name="sourceVar" />
-        /// </summary>
-        /// <param name="sourceVar">Variable which value will be attempted to read</param>
-        /// <param name="entry">Value stored for given variable if exists, otherwise undefined value</param>
-        /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
-        /// <returns><c>true</c> if variable exists, <c>false</c> otherwise</returns>
-        bool TryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext = false);
 
         [Obsolete("Use snapshot entry API instead")]
         /// <summary>
