@@ -91,6 +91,23 @@ namespace Weverca.Analysis.UnitTest
             return false;
         }
 
+
+        public static bool ContainsSecurityWarning(FlowOutputSet outset, DirtyType cause)
+        {
+            var warnings = AnalysisWarningHandler.ReadWarnings<AnalysisSecurityWarning>(outset);
+            foreach (var value in warnings)
+            {
+                var infoValue = (InfoValue<AnalysisSecurityWarning>)value;
+                if (infoValue.Data.Flag == cause)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
         /// <summary>
         /// Runs the analysis of the code.
         /// </summary>

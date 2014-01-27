@@ -990,7 +990,6 @@ namespace Weverca.Analysis
             Dictionary<VariableName, ConstantInfo> constants = new Dictionary<VariableName, ConstantInfo>();
             List<QualifiedName> classes = new List<QualifiedName>(result.BaseClasses);
             classes.Add(result.QualifiedName);
-            List<string> indices = new List<string>();
 
             NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
 
@@ -1020,7 +1019,6 @@ namespace Weverca.Analysis
                 {
                     string index = ".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name + ")";
                     code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(constant.Initializer.Position) + ";\n";
-                    indices.Add(index);
                 }
             }
             if (result.IsInterface == false)
@@ -1058,7 +1056,6 @@ namespace Weverca.Analysis
                         {
                             index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->nonpublicfield@(" + field.Name + "@";
                         }
-                        indices.Add(index);
                         code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(field.Initializer.Position) + ";\n";
                     }
                     else
@@ -1099,7 +1096,6 @@ namespace Weverca.Analysis
                     }
                 }
             }
-            NativeFunctionAnalyzer.indices = indices;
             string key = "staticInit" + result.QualifiedName.Name.LowercaseValue;
             if (!Flow.ExtensionKeys.Contains(key))
             {
@@ -1423,7 +1419,7 @@ namespace Weverca.Analysis
             {
                 return;
             }
-
+            
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -1594,32 +1590,23 @@ namespace Weverca.Analysis
             argumentHints[name].Add(type);
         }
 
-        internal void applyHints(FlowOutputSet outset)
+        internal void applyHints(FlowOutputSet outSet)
         {
-            //throw new NotImplementedException("TODO reimplement");
-            /* 
+              
             foreach (var type in returnHints)
             {
-                throw new NotImplementedException("Return value has been removed from API");
-                  var result = outset.ReadValue(outset.ReturnValue);
-                
-                foreach (var value in result.PossibleValues)
-                {
-                    ValueInfoHandler.setClean(outset, value, type);
-                }
+                var result=outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
+                outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(outSet.Snapshot,new MemoryEntry(FlagsHandler.Clean(result.PossibleValues,type)));
             }
             
             foreach (var variable in argumentHints.Keys)
             {
                 foreach (var flag in argumentHints[variable])
                 {
-                    var result = outset.ReadVariable(variable).ReadMemory(outset.Snapshot);
-                    foreach (var value in result.PossibleValues)
-                    {
-                        ValueInfoHandler.setClean(outset, value, flag);
-                    }
+                    var result = outSet.ReadVariable(variable).ReadMemory(outSet.Snapshot);
+                    outSet.GetVariable(variable).WriteMemory(outSet.Snapshot, new MemoryEntry(FlagsHandler.Clean(result.PossibleValues, flag)));
                 }
-            }*/
+            }
         }
     }
     #endregion

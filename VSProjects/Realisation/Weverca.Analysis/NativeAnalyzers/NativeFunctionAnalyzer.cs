@@ -242,6 +242,20 @@ namespace Weverca.Analysis
                         break;
                 }
             }
+
+            foreach (var f in typeModeledFunctions)
+            {
+                if (f.Key.Name.LowercaseValue.Contains("sql"))
+                {
+                    if (f.Value.First().Arguments.Where(a => a.Type == "string").Count() > 0)
+                    {
+                        Console.WriteLine(f.Key.Name);
+                    
+                    }
+                }
+            
+            }
+
             /*
             var it = instance.types.GetEnumerator();
             while (it.MoveNext())
@@ -355,7 +369,11 @@ namespace Weverca.Analysis
             cleaningFunctions.Add(getQualifiedName("htmlspecialchars"), DirtyType.HTMLDirty);
 
             cleaningFunctions.Add(getQualifiedName("mysql_escape_string"), DirtyType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysql_real_escape_string"), DirtyType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("sqlite_escape_string"), DirtyType.SQLDirty);
             cleaningFunctions.Add(getQualifiedName("mysqli_real_escape_string"), DirtyType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysqli_escape_string"), DirtyType.SQLDirty);
+
         }
 
         private void initReportingFunctions()
@@ -364,13 +382,100 @@ namespace Weverca.Analysis
             reportingFunctions.Add(getQualifiedName("print_r"), DirtyType.HTMLDirty);
             reportingFunctions.Add(getQualifiedName("printf"), DirtyType.HTMLDirty);
             reportingFunctions.Add(getQualifiedName("print"), DirtyType.HTMLDirty);
-            //echo
-
+            
             reportingFunctions.Add(getQualifiedName("fopen"), DirtyType.FilePathDirty);
             //includy
 
-            //sql dirty
-
+            reportingFunctions.Add(getQualifiedName("dbplus_sql"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_blob_size"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_change_user"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_clob_size"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_connect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_create_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_database_password"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_database"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_db_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_db_status"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_drop_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_hostname"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_list_fields"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_list_tables"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_password"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_pconnect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_select_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_set_password"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_start_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_stop_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_username"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_connect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_create_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_db_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_drop_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_list_fields"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_list_tables"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_pconnect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_select_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_bind"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_connect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_guid_string"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_init"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_pconnect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_select_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_connect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_create_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_db_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_drop_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_fetch_object"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_list_fields"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_list_tables"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_pconnect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_select_db"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_set_charset"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_unbuffered_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_master_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_slave_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_memcache_set"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_match_wild"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_query_is_select"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_set_user_pick_server"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_is_select"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_storage_handler"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_user_handlers"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("session_pgsql_add_error"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("session_pgsql_set_field"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sql_regcase"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_array_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_create_aggregate"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_create_function"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_exec"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_factory"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_fetch_column_types"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_fetch_object"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_open"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_popen"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_single_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_udf_decode_binary"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_udf_encode_binary"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_unbuffered_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_configure"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_connect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_fetch_object"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_get_config"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_prepare"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_query"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_connect"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_stmt_bind_param"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_stmt_send_long_data"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_createdb"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_regcase"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_bind_param"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_send_long_data"), DirtyType.SQLDirty);
 
         }
 
@@ -459,7 +564,6 @@ namespace Weverca.Analysis
             }
         }
 
-        public static List<string> indices;
 
         /// <summary>
         /// Function which initlializes static properties and constant and insert then into memory model
@@ -467,21 +571,20 @@ namespace Weverca.Analysis
         /// <param name="flow">FlowController</param>
         public void InsetStaticPropertiesIntoMemoryModel(FlowController flow)
         {
-            //todo replace with iterate array
             var res=flow.OutSet.GetVariable(NativeAnalyzerUtils.Argument(0));
-            foreach (string index in indices)
+            foreach (MemberIdentifier index in res.IterateIndexes(flow.OutSet.Snapshot))
             {
-                if (index.StartsWith("."))
+                if (index.DirectName.StartsWith("."))
                 {
-                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, new MemberIdentifier(index));
+                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, index);
                     List<Value> valueToWrite = new List<Value>();
                     valueToWrite.AddRange(mmValue.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
-                    if (flow.OutSet.GetControlVariable(new VariableName(index)).IsDefined(flow.OutSet.Snapshot))
+                    if (flow.OutSet.GetControlVariable(new VariableName(index.DirectName)).IsDefined(flow.OutSet.Snapshot))
                     {
-                        valueToWrite.AddRange(flow.OutSet.GetControlVariable(new VariableName(index)).ReadMemory(flow.OutSet.Snapshot).PossibleValues);
+                        valueToWrite.AddRange(flow.OutSet.GetControlVariable(new VariableName(index.DirectName)).ReadMemory(flow.OutSet.Snapshot).PossibleValues);
                     }
 
-                    flow.OutSet.GetControlVariable(new VariableName(index)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(valueToWrite));
+                    flow.OutSet.GetControlVariable(new VariableName(index.DirectName)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(valueToWrite));
                 }
                 else 
                 {
@@ -489,12 +592,12 @@ namespace Weverca.Analysis
                     var nonPublicFieldPattern = @"^@class@(.*)@->nonpublicfield@(.*)@$";
                     var publicRegularExpression = new Regex(publicFieldPattern, RegexOptions.None);
                     var nonPublicRegularExpression = new Regex(nonPublicFieldPattern, RegexOptions.None);
-                    var match = publicRegularExpression.Match(index);
+                    var match = publicRegularExpression.Match(index.DirectName);
                     
                     string visibility="";
                     if (!match.Success)
                     {
-                        match = nonPublicRegularExpression.Match(index);
+                        match = nonPublicRegularExpression.Match(index.DirectName);
                         visibility = "nonpublic";
                     }
                     else 
@@ -511,7 +614,7 @@ namespace Weverca.Analysis
                     {
                         values.AddRange(staticField.ReadMemory(snapshot).PossibleValues);
                     }
-                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, new MemberIdentifier(index));
+                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, index);
                     values.AddRange(mmValue.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
                     staticField.WriteMemory(snapshot, new MemoryEntry(values));
                     //store static variable
@@ -586,6 +689,14 @@ namespace Weverca.Analysis
             if (analyzer.cleaningFunctions.ContainsKey(nativeFunctions[0].Name))
             {
                 functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, analyzer.cleaningFunctions[nativeFunctions[0].Name]));
+            }
+            if (analyzer.reportingFunctions.ContainsKey(nativeFunctions[0].Name))
+            {
+                DirtyType type=analyzer.reportingFunctions[nativeFunctions[0].Name];
+                if (FlagsHandler.GetFlags(argumentValues).isDirty(type))
+                { 
+                    AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentPartial, type));  
+                }
             }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
             List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, argumentValues, nativeFunctions);

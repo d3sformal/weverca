@@ -212,8 +212,7 @@ namespace Weverca.Analysis
     }
 
     public class AnalysisSecurityWarning : AnalysisWarning, IComparer<AnalysisSecurityWarning>
-    {
-
+    {   
         public DirtyType  Flag { get; protected set; }
 
         public AnalysisSecurityWarning(string message, LangElement element, DirtyType cause)
@@ -222,6 +221,26 @@ namespace Weverca.Analysis
             LangElement = element;
             Flag = cause;
         }
+
+        public AnalysisSecurityWarning(LangElement element, DirtyType cause)
+        {
+            switch (cause)
+            { 
+                case DirtyType.HTMLDirty:
+                    Message="Unchecked value goes into browser";
+                    break;
+                case DirtyType.FilePathDirty:
+                    Message = "File name has to be checked before open";
+                    break;
+                case DirtyType.SQLDirty:
+                    Message="Unchecked value goes into database";
+                    break;
+            }
+
+            LangElement = element;
+            Flag = cause;
+        }
+
 
         public int Compare(AnalysisSecurityWarning x, AnalysisSecurityWarning y)
         {

@@ -20,9 +20,8 @@ namespace Weverca.Analysis
 
     public static class FlagsHandler
     {
-        public static IEnumerable<Value> CopyFlags(IEnumerable<Value> source, IEnumerable<Value> dest)
+        public static Flag GetFlags(IEnumerable<Value> source)
         {
-            List<Value> result = new List<Value>();
             Dictionary<DirtyType, bool> flags = Flag.CreateCleanFlags();
             foreach (Value value in source)
             {
@@ -31,8 +30,15 @@ namespace Weverca.Analysis
                     mergeFlags(flags, value.GetInfo<Flag>());
                 }
             }
+            return new Flag(flags);
+        }
 
-            Flag newFlag = new Flag(flags);
+        public static IEnumerable<Value> CopyFlags(IEnumerable<Value> source, IEnumerable<Value> dest)
+        {
+            List<Value> result = new List<Value>();
+
+
+            Flag newFlag = GetFlags(source);
             foreach (Value value in dest)
             {
                 if (ValueTypeResolver.CanBeDirty(value))
@@ -102,6 +108,16 @@ namespace Weverca.Analysis
             }
         }
 
+        public static bool IsDirty(IEnumerable<Value> entry, DirtyType dirty)
+        {
+            bool res = false;
+            foreach (var value in entry)
+            {
+                res |= IsDirty(value, dirty);
+            }
+            return res;
+        }
+
         public static IEnumerable<Value> Clean(IEnumerable<Value> source, DirtyType dirty)
         {
             List<Value> result = new List<Value>();
@@ -126,7 +142,7 @@ namespace Weverca.Analysis
 
     }
 
-    class Flag : InfoDataBase
+    public class Flag : InfoDataBase
     {
         private readonly Dictionary<DirtyType, bool> dirtyFlags;
         public static Dictionary<DirtyType, bool> CreateCleanFlags()

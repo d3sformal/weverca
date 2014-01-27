@@ -111,6 +111,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
+            if (operation == Operations.Print)
+            {
+                if (FlagsHandler.IsDirty(operand.PossibleValues, DirtyType.HTMLDirty))
+                {
+                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Element, DirtyType.HTMLDirty));
+                }
+            }
+
             unaryOperationEvaluator.SetContext(Flow);
             return unaryOperationEvaluator.Evaluate(operation, operand);
         }
@@ -417,13 +425,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void Echo(EchoStmt echo, MemoryEntry[] entries)
         {
             // TODO: Optimalize, implementation is provided only for faultless progress and testing
-
+            bool isDirty = false;
             stringConverter.SetContext(Flow);
             foreach (var entry in entries)
             {
+                isDirty|=FlagsHandler.IsDirty(entry.PossibleValues, DirtyType.HTMLDirty);
                 bool isAlwaysConcrete;
                 stringConverter.Evaluate(entry, out isAlwaysConcrete);
             }
+            
+            if (isDirty)
+            { 
+                AnalysisWarningHandler.SetWarning(OutSet,new AnalysisSecurityWarning(Element,DirtyType.HTMLDirty));
+            }
+
         }
 
         /// <inheritdoc />

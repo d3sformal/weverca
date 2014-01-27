@@ -195,7 +195,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             switch (Jump.Type)
             {
                 case JumpStmt.Types.Return:
-                    value = Services.FunctionResolver.Return(Expression.Value.ReadMemory(InSnapshot));
+                    if (Expression == null)
+                    {
+                        //php code: return ;
+                        value =new MemoryEntry(OutSet.UndefinedValue);
+                    }
+                    else
+                    {
+                        value = Services.FunctionResolver.Return(Expression.Value.ReadMemory(InSnapshot));
+                    }
                     break;
                 default:
                     throw new NotImplementedException();

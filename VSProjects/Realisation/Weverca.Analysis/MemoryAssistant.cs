@@ -114,8 +114,8 @@ namespace Weverca.Analysis
             
             foreach (var method in objectMethods)
             {
-                bool isstatic = (type.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || type.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
-                if (method.Name.Value == methodName.Name.Value && isstatic == false) 
+                //bool isstatic = (type.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || type.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
+                if (method.Name.Value == methodName.Name.Value)// && isstatic == false) 
                 {
                     yield return method;
                 }
@@ -127,8 +127,8 @@ namespace Weverca.Analysis
         {
             foreach (var method in objectMethods)
             {
-                bool isstatic = (value.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || value.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
-                if (method.Name.Value == methodName.Name.Value && isstatic == true)
+                //bool isstatic = (value.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || value.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
+                if (method.Name.Value == methodName.Name.Value)// && isstatic == true)
                 {
                     yield return method;
                 }

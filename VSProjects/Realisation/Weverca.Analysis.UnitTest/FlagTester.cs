@@ -27,7 +27,7 @@ namespace Weverca.Analysis.UnitTest
         {
             var result = TestUtils.ResultTest(SimpleFlagTest);
             TestUtils.IsDirty(result);
-           
+
         }
 
         string SimpleFlagTest2 = @"
@@ -74,7 +74,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag5()
         {
             var result = TestUtils.ResultTest(SimpleFlagTest5);
-            TestUtils.IsClean(result,DirtyType.HTMLDirty);
+            TestUtils.IsClean(result, DirtyType.HTMLDirty);
 
         }
 
@@ -86,9 +86,51 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag6()
         {
             var result = TestUtils.ResultTest(SimpleFlagTest6);
-            TestUtils.IsClean(result,DirtyType.SQLDirty);
+            TestUtils.IsClean(result, DirtyType.SQLDirty);
 
         }
+
+
+        string SimpleFlagTest7 = @"
+            $result= htmlspecialchars($_POST['x']);
+            echo $result;
+        ";
+
+        [TestMethod]
+        public void SimpleFlag7()
+        {
+            var result = TestUtils.Analyze(SimpleFlagTest7);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.HTMLDirty) == false);
+
+        }
+
+        string SimpleFlagTest8 = @"
+            $result=mysql_escape_string($_POST['x']);
+            echo $result;
+        ";
+
+        [TestMethod]
+        public void SimpleFlag8()
+        {
+            var result = TestUtils.Analyze(SimpleFlagTest8);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.HTMLDirty));
+
+        }
+
+        string SimpleFlagTest9 = @"
+            mysql_query('select *  from x where a='.$_POST['x']);
+    
+        ";
+
+
+        [TestMethod]
+        public void SimpleFlag9()
+        {
+            var result = TestUtils.Analyze(SimpleFlagTest9);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.SQLDirty));
+
+        }
+
 
     }
 }

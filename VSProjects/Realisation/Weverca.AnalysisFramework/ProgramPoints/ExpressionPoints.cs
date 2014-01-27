@@ -586,7 +586,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var result = ResultExpression.Value.ReadMemory(InSnapshot);
+            MemoryEntry result;
+            if (ResultExpression == null)
+            {
+                result = new MemoryEntry(OutSet.UndefinedValue);
+            }
+            else
+            {
+                result = ResultExpression.Value.ReadMemory(InSnapshot);
+            }
             var value = Services.Evaluator.Exit(Exit, result);
 
             Value = OutSet.CreateSnapshotEntry(value);
