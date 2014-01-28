@@ -82,47 +82,25 @@ namespace Weverca.Analysis
 
        
 
-        public static string GetWarningsToOutput()
+        public static List<AnalysisWarning> GetWarnings()
         {
-            StringBuilder result=new StringBuilder();
-            var warnings = Warnings.ToArray();
-           
-            if (warnings.Count() == 0)
-            {
-                return "No analysis warnings.";
-            }
-            Array.Sort(warnings, warnings[0]);
-            foreach (var warning in warnings)
-            {
-                result.Append(warning.ToString());
-                result.Append("\n");
-            }
-            return result.ToString();
+            var arr=Warnings.ToArray();
+            Array.Sort(arr);
+            return new List<AnalysisWarning>(arr);
         }
 
-        public static string GetSecurityWarningsToOutput()
+        public static List<AnalysisSecurityWarning> GetSecurityWarnings()
         {
-            StringBuilder result = new StringBuilder();
-            var warnings = SecurityWarnings.ToArray();
-
-            if (warnings.Count() == 0)
-            {
-                return "No security warnings.";
-            }
-            Array.Sort(warnings, warnings[0]);
-            foreach (var warning in warnings)
-            {
-                result.Append(warning.ToString());
-                result.Append("\n");
-            }
-            return result.ToString();
+            var arr = SecurityWarnings.ToArray();
+            Array.Sort(arr);
+            return new List<AnalysisSecurityWarning>(arr);
         }
     }
 
     /// <summary>
     /// Class, which contains information about analysis warning
     /// </summary>
-    public class AnalysisWarning : IComparer<AnalysisWarning>
+    public class AnalysisWarning : IComparable<AnalysisWarning>, IEquatable<AnalysisWarning>
     {
         /// <summary>
         /// Warning message
@@ -177,41 +155,37 @@ namespace Weverca.Analysis
             return "Warning at line " + LangElement.Position.FirstLine + " char " + LangElement.Position.FirstColumn + ": " + Message.ToString();
         }
 
-        public int Compare(AnalysisWarning x, AnalysisWarning y)
+        public int CompareTo(AnalysisWarning other)
         {
-            if (x.LangElement.Position.FirstOffset < y.LangElement.Position.FirstOffset)
+            if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
             {
                 return -1;
             }
-            else if (x.LangElement.Position.FirstOffset > y.LangElement.Position.FirstOffset)
+            else if (this.LangElement.Position.FirstOffset > other.LangElement.Position.FirstOffset)
             {
                 return 1;
             }
             return 0;
         }
 
-        public override bool Equals(object obj)
+        public override int GetHashCode()
         {
-            if (!(obj.GetType() == this.GetType()))
-            {
-                return false;
-            }
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
+        }
 
-            AnalysisWarning other = obj as AnalysisWarning;
-            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause==other.Cause)
+        public bool Equals(AnalysisWarning other)
+        {
+            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause == other.Cause)
             {
                 return true;
             }
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
-        }
+       
     }
 
-    public class AnalysisSecurityWarning : AnalysisWarning, IComparer<AnalysisSecurityWarning>
+    public class AnalysisSecurityWarning : AnalysisWarning, IComparable<AnalysisSecurityWarning>, IEquatable<AnalysisSecurityWarning>
     {   
         public DirtyType  Flag { get; protected set; }
 
@@ -241,28 +215,13 @@ namespace Weverca.Analysis
             Flag = cause;
         }
 
-
-        public int Compare(AnalysisSecurityWarning x, AnalysisSecurityWarning y)
+        public override int GetHashCode()
         {
-            if (x.LangElement.Position.FirstOffset < y.LangElement.Position.FirstOffset)
-            {
-                return -1;
-            }
-            else if (x.LangElement.Position.FirstOffset > y.LangElement.Position.FirstOffset)
-            {
-                return 1;
-            }
-            return 0;
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Flag.GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        public bool Equals(AnalysisSecurityWarning other)
         {
-            if (!(obj.GetType() == this.GetType()))
-            {
-                return false;
-            }
-
-            AnalysisSecurityWarning other = obj as AnalysisSecurityWarning;
             if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Flag == other.Flag)
             {
                 return true;
@@ -270,9 +229,17 @@ namespace Weverca.Analysis
             return false;
         }
 
-        public override int GetHashCode()
+        public int CompareTo(AnalysisSecurityWarning other)
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Flag.GetHashCode();
+            if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
+            {
+                return -1;
+            }
+            else if (this.LangElement.Position.FirstOffset > other.LangElement.Position.FirstOffset)
+            {
+                return 1;
+            }
+            return 0;
         }
     }
 

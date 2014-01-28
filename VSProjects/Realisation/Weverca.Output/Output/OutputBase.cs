@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using Weverca.AnalysisFramework;
+using Weverca.Analysis;
 
 namespace Weverca.Output.Output
 {
@@ -144,33 +145,32 @@ namespace Weverca.Output.Output
             line();
         }
 
-        public void Warnings(string text)
+        public void Warnings(List<AnalysisWarning> list)
         {
-            warnings(text, "Analysis warnings:");
+            warnings(list, "Analysis warnings:");
         }
 
-        public void SecurityWarnings(string text)
+        public void SecurityWarnings(List<AnalysisSecurityWarning> list)
         {
-            warnings(text, "Security warnings:");
+            warnings(list, "Security warnings:");
         }
 
-        private void warnings(string text, string headLine)
+        private void warnings<T>(List<T> warnings, string headLine) where T : AnalysisWarning
         {
             line();
             headline(headLine);
             line();
-            foreach (var s in text.Split('\n'))
+            if (warnings.Count == 0)
             {
-                if (s.Contains(":"))
-                {
-                    variableInfoLine(s);
-                }
-                else
-                {
-                    comment(s);
-                }
+                comment("No warnings");
+            }
+
+            foreach (var s in warnings)
+            {
+                variableInfoLine(s.ToString());
                 line();
             }
+
             line();
 
         }

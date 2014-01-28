@@ -53,6 +53,10 @@
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
+      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Name>Weverca.Analysis</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

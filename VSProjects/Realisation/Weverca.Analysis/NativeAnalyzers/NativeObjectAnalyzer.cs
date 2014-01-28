@@ -87,8 +87,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Structure which stores all native objects, with concrete implementation
         /// </summary>
-        private Dictionary<string, MethodInfo> WevercaImplementedMethods
-            = new Dictionary<string, MethodInfo>();
+        private Dictionary<MethodIdentifier, DirtyType> WevercaImplementedMethods
+            = new Dictionary<MethodIdentifier, DirtyType>();
 
         private HashSet<string> fieldTypes = new HashSet<string>();
         private HashSet<string> methodTypes = new HashSet<string>();

@@ -107,9 +107,9 @@ namespace Weverca
 
                     graphWalker.Run(console);
 
-                    console.Warnings(AnalysisWarningHandler.GetWarningsToOutput());
+                    console.Warnings(AnalysisWarningHandler.GetWarnings());
 
-                    console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarningsToOutput());
+                    console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     Console.ReadKey();
