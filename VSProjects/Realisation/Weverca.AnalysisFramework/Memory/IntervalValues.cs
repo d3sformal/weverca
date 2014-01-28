@@ -4,11 +4,14 @@ using PHP.Core;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+    public abstract class IntervalValue : Value
+    { }
+    
     /// <summary>
     /// Value representing interval of values
     /// </summary>
     /// <typeparam name="T">Type of stored value - NOTE: Has to provide immutability</typeparam>
-    public abstract class IntervalValue<T> : Value
+    public abstract class IntervalValue<T> : IntervalValue
         where T : IComparable, IComparable<T>, IEquatable<T>
     {
         /// <summary>
