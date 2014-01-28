@@ -119,8 +119,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-            //TODO: Proper implementation. This is just a demo.
-            variableValues[variableName].Add(value);
+            IntersectValues(variableValues[variableName], value);
         }
 
         #endregion
@@ -169,6 +168,44 @@ namespace Weverca.Analysis.FlowResolver
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
             return valueFactory.CreateFloatInterval(start, end);
+        }
+
+        #endregion
+
+        #region private methods
+
+        void IntersectValues(List<Value> values, Value newValue)
+        {
+            if (newValue is ConcreteValue)
+            {
+                //There is nothin more precise, so we can delete anything.
+                //If there is a precise value already present, the newValue should be one of them.
+                values.Clear();
+            }
+            else if (newValue is IntervalValue)
+            {
+                //if there is already a concrete value, there is nothing to add, because the present conrete value is more precise.
+                if (values.Any(a => a is ConcreteValue))
+                {
+                    return;
+                }
+
+                //if there are some other intarvalu values, we must delete those, which doesn't intersect the new one. We will add the intersection of those, which intersects the new one and the new one
+
+                //we will also delete more general values (any value, anystring, anyint, ...)
+            }
+            else if (newValue is AnyValue && values.Count > 0)
+            {
+                //There already is something, which is defitinelly more precise... or with the same precision.
+                return;
+            }
+            else
+            {
+                // in this case we are adding something more precise than anyValue.
+                values.RemoveAll(a => a is AnyValue);
+            }
+
+            values.Add(newValue);
         }
 
         #endregion
