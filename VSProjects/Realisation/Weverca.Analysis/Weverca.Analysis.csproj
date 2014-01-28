@@ -84,6 +84,7 @@
     <Compile Include="ExpressionEvaluator\StaticObjectVisitor.cs" />
     <Compile Include="ExpressionEvaluator\StringConverter.cs" />
     <Compile Include="ExpressionEvaluator\TypeConversion.cs" />
+    <Compile Include="ExpressionEvaluator\ToBoolConversionVisitor.cs" />
     <Compile Include="ExpressionEvaluator\UnaryOperationEvaluator.cs" />
     <Compile Include="FlowResolver\ConditionPart.cs" />
     <Compile Include="FlowResolver\ConditionParts.cs" />

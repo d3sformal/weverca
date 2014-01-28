@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using PHP.Core.AST;
-
+using Weverca.Analysis.ExpressionEvaluator;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -65,13 +65,13 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="conditionPart">The definition of the part of the condition.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
-        public ConditionPart(LangElement conditionPart, EvaluationLog log, SnapshotBase flowOutputSet)
+        public ConditionPart(LangElement conditionPart, EvaluationLog log, FlowOutputSet flowOutputSet)
         {
             this.conditionPart = conditionPart;
-            this.evaluatedPart = log.ReadSnapshotEntry(conditionPart).ReadMemory(flowOutputSet);
+            this.evaluatedPart = log.ReadSnapshotEntry(conditionPart).ReadMemory(flowOutputSet.Snapshot);
             this.log = log;
 
-            ConditionResult = GetConditionResult();
+            ConditionResult = GetConditionResult(flowOutputSet);
         }
 
         #endregion
@@ -83,7 +83,7 @@ namespace Weverca.Analysis.FlowResolver
         /// According to the possible results of the condition the state of the inner block will be set up.
         /// </summary>
         /// <param name="memoryContext">The flow output set.</param>
-        public void AssumeCondition(ConditionForm conditionForm, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        public void AssumeCondition(ConditionForm conditionForm, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             var variables = GetVariables();
             if (variables.Count() == 0)
@@ -113,7 +113,7 @@ namespace Weverca.Analysis.FlowResolver
                 else
                 {
                     //run both assumptions and merge results
-                    MemoryContext memoryContextTrue = new MemoryContext(log, flowOutputSet);
+                    MemoryContext memoryContextTrue = new MemoryContext(log, flowOutputSet.Snapshot);
                     AssumeTrue(conditionPart, memoryContextTrue, flowOutputSet);
 
                     AssumeFalse(conditionPart, memoryContext, flowOutputSet);
@@ -146,7 +146,7 @@ namespace Weverca.Analysis.FlowResolver
         /// Gets the condition result.
         /// </summary>
         /// <returns>see <see cref="PossibleValues"/> for details of possible result.</returns>
-        PossibleValues GetConditionResult()
+        PossibleValues GetConditionResult(FlowOutputSet flowOutputSet)
         {
             bool onlyTrue = true;
             bool onlyFalse = true;
@@ -154,6 +154,11 @@ namespace Weverca.Analysis.FlowResolver
             foreach (var value in evaluatedPart.PossibleValues)
             {
                 var boolean = value as BooleanValue;
+                if (boolean == null)
+                {
+                    boolean = TypeConversion.ToBoolean(flowOutputSet, value);
+                }
+
                 if (boolean != null)
                 {
                     if (!boolean.Value)
@@ -169,7 +174,6 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     onlyFalse = false;
                     onlyTrue = false;
-                    //TODO: what to do with non-bool values?
                 }
             }
 
@@ -192,7 +196,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
         /// </exception>
-        void AssumeTrue(LangElement langElement, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        void AssumeTrue(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
@@ -235,7 +239,7 @@ namespace Weverca.Analysis.FlowResolver
                         conditionForm = ConditionForm.ExactlyOne;
                     }
 
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet.Snapshot);
                     ConditionParts condition = new ConditionParts(conditionForm, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
                     condition.MakeAssumption(currentMemoryContext);
                     memoryContext.UnionMerge(currentMemoryContext);
@@ -260,7 +264,7 @@ namespace Weverca.Analysis.FlowResolver
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
-                AssumeTrueDirectVarUse(directVarUse, memoryContext, flowOutputSet);
+                AssumeTrueDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
             }
             else
             {
@@ -274,7 +278,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
         /// </exception>
-        void AssumeFalse(LangElement langElement, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        void AssumeFalse(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
@@ -317,7 +321,7 @@ namespace Weverca.Analysis.FlowResolver
                         conditionForm = ConditionForm.NotExactlyOne; //!(a XOR b) --> !((a OR b) AND !(a AND b)) --> (!a AND !b) OR (a AND b)
                     }
 
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet.Snapshot);
                     ConditionParts condition = new ConditionParts(conditionForm, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
                     condition.MakeAssumption(currentMemoryContext);
                     memoryContext.UnionMerge(currentMemoryContext);
@@ -342,7 +346,7 @@ namespace Weverca.Analysis.FlowResolver
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
-                AssumeFalseDirectVarUse(directVarUse, memoryContext, flowOutputSet);
+                AssumeFalseDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
             }
             else
             {

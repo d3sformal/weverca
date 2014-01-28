@@ -19,7 +19,7 @@ namespace Weverca.Analysis.FlowResolver
 
         List<ConditionPart> conditionParts = new List<ConditionPart>();
 
-        SnapshotBase flowOutputSet;
+        FlowOutputSet flowOutputSet;
         ConditionForm conditionForm;
         EvaluationLog log;
 
@@ -62,7 +62,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="langElements">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, SnapshotBase flowOutputSet, EvaluationLog log, params LangElement[] langElements)
+        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, params LangElement[] langElements)
             : this(conditionForm, flowOutputSet, log, langElements.Select(a => new ConditionPart(a, log, flowOutputSet)))
         { }
 
@@ -73,7 +73,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, SnapshotBase flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, IEnumerable<Postfix> conditionParts)
             : this(conditionForm, flowOutputSet, log, conditionParts.Select(a => a.SourceElement).ToArray())
         { }
 
@@ -84,7 +84,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="flowOutputSet">Output set where condition will be assumed.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
         /// <param name="conditionParts">The elements of the condition.</param>
-        public ConditionParts(ConditionForm conditionForm, SnapshotBase flowOutputSet, EvaluationLog log, IEnumerable<ConditionPart> conditionParts)
+        public ConditionParts(ConditionForm conditionForm, FlowOutputSet flowOutputSet, EvaluationLog log, IEnumerable<ConditionPart> conditionParts)
         {
             this.flowOutputSet = flowOutputSet;
             this.conditionParts.AddRange(conditionParts);
@@ -148,14 +148,14 @@ namespace Weverca.Analysis.FlowResolver
 
             if (willAssume)
             {
-                MemoryContext memoryContext = outputMemoryContext ?? new MemoryContext(log, flowOutputSet);
+                MemoryContext memoryContext = outputMemoryContext ?? new MemoryContext(log, flowOutputSet.Snapshot);
                 
                 bool intersectionMerge = conditionForm == ConditionForm.All || conditionForm == ConditionForm.None || conditionForm == ConditionForm.ExactlyOne ?
                     true : false;
 
                 foreach (var conditionPart in conditionParts)
                 {
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet.Snapshot);
                     conditionPart.AssumeCondition(conditionForm, currentMemoryContext, flowOutputSet);
                     if (intersectionMerge)
                     {
@@ -170,7 +170,7 @@ namespace Weverca.Analysis.FlowResolver
                 //If this condition is false, then we are in recursion. Made by splitting 1 condition with logic operator into two.
                 if (outputMemoryContext == null)
                 {
-                    memoryContext.AssignToSnapshot(flowOutputSet);
+                    memoryContext.AssignToSnapshot(flowOutputSet.Snapshot);
                 }
             }
 

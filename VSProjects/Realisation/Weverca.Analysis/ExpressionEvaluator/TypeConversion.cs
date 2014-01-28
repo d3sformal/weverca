@@ -105,6 +105,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Converts the valu to the equivalent boolean value.
+        /// </summary>
+        /// <param name="outset">Output set of a program point</param>
+        /// <param name="value">The value to convert</param>
+        /// <returns>Corresponding boolean value.</returns>
+        public static BooleanValue ToBoolean(FlowOutputSet outset, Value value)
+        {
+            ToBoolConversionVisitor visitor = new ToBoolConversionVisitor(outset);
+            value.Accept(visitor);
+            return visitor.Result as BooleanValue;
+        }
+
+        /// <summary>
         /// Converts the value of native integer to an equivalent native boolean value.
         /// </summary>
         /// <param name="value">Native integer to convert</param>
