@@ -26,7 +26,7 @@ namespace Weverca.Analysis.UnitTest
         {
             var outset = TestUtils.Analyze(SimpleConditionTest);
             var result = outset.ReadVariable(new VariableIdentifier("i")).ReadMemory(outset.Snapshot);
-            TestUtils.HasValues(result, 2,1);
+            TestUtils.HasValues(result, 0,1);
             
         }
 
