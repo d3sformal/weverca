@@ -27,6 +27,14 @@ namespace Weverca.Analysis
         private Dictionary<FunctionDecl, FunctionHints> functions
             = new Dictionary<FunctionDecl, FunctionHints>();
         public GlobalCode globalCode { get; set; }
+
+        private readonly Dictionary<FunctionValue, ProgramPointGraph> sharedProgramPoints = new Dictionary<FunctionValue, ProgramPointGraph>();
+
+        private readonly HashSet<FunctionValue> sharedFunctions = new HashSet<FunctionValue>();
+        
+        public static readonly VariableName callDepthName = new VariableName(".callDepth");
+   
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
         /// </summary>
@@ -42,6 +50,7 @@ namespace Weverca.Analysis
         {
             var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
+            
         }
 
         /// <inheritdoc />
@@ -78,6 +87,8 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
+            typeName=resolveType(typeName);
+
             IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
             foreach (var type in types)
             {
@@ -85,6 +96,20 @@ namespace Weverca.Analysis
                 setCallBranching(methods);
             }
 
+        }
+
+        private QualifiedName resolveType(QualifiedName typeName)
+        {
+
+            if (typeName.Name.LowercaseValue == "self")
+            {
+
+            }
+            if (typeName.Name.LowercaseValue == "parent")
+            {
+
+            }
+            return typeName;
         }
 
 
@@ -129,6 +154,7 @@ namespace Weverca.Analysis
         public override void IndirectStaticMethodCall(QualifiedName typeName,
             MemoryEntry name, MemoryEntry[] arguments)
         {
+            typeName = resolveType(typeName);
             var functions = new Dictionary<object, FunctionValue>();
             var functionNames = getSubroutineNames(name);
             IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
@@ -170,8 +196,26 @@ namespace Weverca.Analysis
         }
 
 
-        public override MemoryEntry InitializeCalledObject(ProgramPointGraph extensionGraph, MemoryEntry calledObject)
+        public override MemoryEntry InitializeCalledObject(ProgramPointBase caller, ProgramPointGraph extensionGraph, MemoryEntry calledObject)
         {
+            if (caller is StaticMethodCallPoint || caller is IndirectStaticMethodCallPoint)
+            {
+                //static call $this cannot be accesible
+                return new MemoryEntry(OutSet.UndefinedValue);
+            }
+            else
+            {
+                var declaration = extensionGraph.SourceObject;
+                if (declaration is MethodDecl)
+                {
+                    //normal call of static method  $this cannot be accesible
+                    if ((declaration as MethodDecl).Modifiers.HasFlag(PhpMemberAttributes.Static))
+                    {
+                        return new MemoryEntry(OutSet.UndefinedValue);
+                    }
+                }
+            }
+
             return calledObject;
         }
 
@@ -184,9 +228,11 @@ namespace Weverca.Analysis
         /// <param name="callInput">Input of initialized call</param>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
-        public override void InitializeCall(ProgramPointGraph extensionGraph,
+        public override void InitializeCall(ProgramPointBase caller, ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments)
         {
+            IncreaseStackSize(caller.OutSet);
+
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
@@ -217,6 +263,15 @@ namespace Weverca.Analysis
                         new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
                 }
             }
+             List<Value> newCalledFunctions=new List<Value>();
+            if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
+            {
+                MemoryEntry calledFunctions = caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSet.Snapshot);
+                newCalledFunctions = new List<Value>(calledFunctions.PossibleValues);
+            }
+            
+            newCalledFunctions.AddRange(OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues);
+            OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot,new MemoryEntry(newCalledFunctions));
         }
 
         /// <inheritdoc />
@@ -245,8 +300,8 @@ namespace Weverca.Analysis
         /// <returns>Resolved return value</returns>
         public override MemoryEntry ResolveReturnValue(IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var calls = dispatchedExtensions.ToArray();
 
+            var calls = dispatchedExtensions.ToArray();
             if (calls.Length == 1)
             {
                 var outSet = calls[0].Graph.End.OutSet;
@@ -1275,8 +1330,63 @@ namespace Weverca.Analysis
         protected virtual void addCallBranch(FunctionValue function)
         {
             // Create graph for every function - NOTE: We can share pp graphs
-            var ppGraph = ProgramPointGraph.From(function);
-            Flow.AddExtension(function.DeclaringElement, ppGraph, ExtensionType.ParallelCall);
+            var functionName = function.Name;
+            ProgramPointGraph functionGraph;
+
+            bool useSharedFunctions = false;
+            if(OutSet.GetLocalControlVariable(callDepthName).IsDefined(OutSet.Snapshot))
+            {
+                MemoryEntry callDepthEntry = OutSet.GetLocalControlVariable(callDepthName).ReadMemory(OutSet.Snapshot);
+                foreach (Value callDepth in callDepthEntry.PossibleValues)
+                {
+                    if (callDepth is IntegerValue)
+                    {
+                        if ((callDepth as IntegerValue).Value > 10)
+                        {
+                            useSharedFunctions = true;
+                        }
+                    }
+                    else
+                    {
+                        useSharedFunctions = true;
+                    }
+                }
+            }
+
+            if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot) && 
+                OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues
+                .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >= 2)
+            {
+                useSharedFunctions = true;
+            }
+            
+            if (useSharedFunctions)
+            {
+                if (sharedFunctions.Contains(function))
+                {
+                    //set graph sharing for this function
+                    if (!sharedProgramPoints.ContainsKey(function))
+                    {
+                        //create single graph instance
+                        sharedProgramPoints[function] = ProgramPointGraph.From(function);
+                    }
+
+                    //get shared instance of program point graph
+                    functionGraph = sharedProgramPoints[function];
+                }
+                else
+                {
+                    functionGraph = ProgramPointGraph.From(function);
+                    sharedFunctions.Add(function);
+                }
+            }
+            else 
+            {
+                functionGraph = ProgramPointGraph.From(function);
+            
+            }
+            
+            Flow.AddExtension(function.DeclaringElement, functionGraph, ExtensionType.ParallelCall);
         }
 
         /// <summary>
@@ -1343,7 +1453,6 @@ namespace Weverca.Analysis
             var methods = thisObject.ResolveMethod(OutSnapshot, name);
             foreach (var method in methods)
             {
-                // TODO: Check whether the number of arguments match.
                 result[method.DeclaringElement] = method;
             }
 
@@ -1356,7 +1465,6 @@ namespace Weverca.Analysis
             var methods = OutSet.ResolveStaticMethod(value, name);
             foreach (var method in methods)
             {
-                // TODO: Check whether the number of arguments match.
                 result[method.DeclaringElement] = method;
             }
 
@@ -1425,10 +1533,9 @@ namespace Weverca.Analysis
             {
                 return;
             }
-
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
-            for (int i = 0; i < signature.FormalParams.Count; ++i)
+            for (int i = 0; i < Math.Min(signature.FormalParams.Count,arguments.Count()); ++i)
             {
                 enumerator.MoveNext();
 
@@ -1479,12 +1586,43 @@ namespace Weverca.Analysis
 
         }
 
+        private void IncreaseStackSize(FlowOutputSet calledOutSet)
+        {
+            
+
+            List<Value> newStackSize = new List<Value>();
+            if (calledOutSet.GetLocalControlVariable(callDepthName).IsDefined(calledOutSet.Snapshot))
+            {
+                MemoryEntry stackSize = calledOutSet.GetLocalControlVariable(callDepthName).ReadMemory(calledOutSet.Snapshot);
+                foreach (var value in stackSize.PossibleValues)
+                {
+                    if (value is AnyFloatValue)
+                    {
+                        newStackSize.Add(value);
+                    }
+                    else 
+                    {
+                        newStackSize.Add(OutSet.CreateInt((value as IntegerValue).Value + 1));
+                    }
+                    
+                }
+            }
+            else
+            { 
+                newStackSize.Add(OutSet.CreateInt(1));
+            }
+
+            OutSet.GetLocalControlVariable(callDepthName).WriteMemory(OutSet.Snapshot, new MemoryEntry(newStackSize));
+        }
+
         #endregion
+
+
+       
     }
 
     #region function hints
-    // TODO: testy treba pockat na priznaky
-    // TODO pravdepodobne sa zmeni praca s priznakmi
+
     internal class FunctionHints
     {
         private HashSet<DirtyType> returnHints;

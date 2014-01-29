@@ -163,7 +163,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
 
-        public override MemoryEntry InitializeCalledObject(ProgramPointGraph extensionGraph, MemoryEntry calledObject)
+        public override MemoryEntry InitializeCalledObject(ProgramPointBase caller, ProgramPointGraph extensionGraph, MemoryEntry calledObject)
         {
             return calledObject;
         }
@@ -178,7 +178,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="callInput"></param>
         /// <param name="extensionGraph"></param>
         /// <param name="arguments"></param>
-        public override void InitializeCall(ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
+        public override void InitializeCall(ProgramPointBase caller,ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
             _environmentInitializer(OutSet);
 

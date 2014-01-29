@@ -74,6 +74,11 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override MemoryEntry Widen(MemoryEntry old, MemoryEntry current)
         {
+            if (current == null)
+            {
+                return old;
+            }
+
             //todo copy info
             var visitor = new WidenningVisitor();
 

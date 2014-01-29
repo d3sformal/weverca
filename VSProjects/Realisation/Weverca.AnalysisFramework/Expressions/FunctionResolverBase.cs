@@ -74,14 +74,14 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="calledObject">Object that is available for call</param>
         /// <returns>Object on which call is processed. Null if there is no object</returns>
-        public abstract MemoryEntry InitializeCalledObject(ProgramPointGraph extensionGraph, MemoryEntry calledObject);
+        public abstract MemoryEntry InitializeCalledObject(ProgramPointBase caller,ProgramPointGraph extensionGraph, MemoryEntry calledObject);
 
         /// <summary>
         /// Initialization of call of function with given declaration and arguments
         /// </summary>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
-        public abstract void InitializeCall(ProgramPointGraph extensionGraph,
+        public abstract void InitializeCall(ProgramPointBase Caller, ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments);
 
         /// <summary>

@@ -81,8 +81,8 @@ namespace Weverca.Output.GraphWalking
                 throw new ArgumentNullException("output");
             }
             Output = output;
-
-            walkCall(_entryGraph);
+            var visitedPoints = new HashSet<ProgramPointBase>();
+            walkCall(_entryGraph, visitedPoints);
         }
 
         #region Private walking routines
@@ -91,11 +91,11 @@ namespace Weverca.Output.GraphWalking
         /// Walk given program point graph of call
         /// </summary>
         /// <param name="callPpGraph">Program point of walked call</param>
-        private void walkCall(ProgramPointGraph callPpGraph)
+        private void walkCall(ProgramPointGraph callPpGraph, HashSet<ProgramPointBase> visitedPoints)
         {
             pushCall(callPpGraph);
 
-            var visitedPoints = new HashSet<ProgramPointBase>();
+            
             var pointsToVisit = new Queue<ProgramPointBase>();
             visitPoint(callPpGraph.Start, pointsToVisit, visitedPoints);
 
@@ -129,7 +129,7 @@ namespace Weverca.Output.GraphWalking
                 switch (branch.Type)
                 {
                     case ExtensionType.ParallelCall:
-                        walkCall(branch.Graph);
+                        walkCall(branch.Graph, visitedPoints);
                         break;
                     case ExtensionType.ParallelInclude:
                         visitPoint(branch.Graph.Start, pointsToVisit, visitedPoints);

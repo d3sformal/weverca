@@ -173,7 +173,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (Type == ExtensionType.ParallelCall)
             {
 
-                var calledObject = Services.FunctionResolver.InitializeCalledObject(Graph, Flow.CalledObject);
+                var calledObject = Services.FunctionResolver.InitializeCalledObject(Caller, Graph, Flow.CalledObject);
                 _inSet.ExtendAsCall(Caller.OutSet, calledObject, Flow.Arguments);
             }
             else
@@ -192,7 +192,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (Flow.Arguments == null)
                 Flow.Arguments = new MemoryEntry[0];
 
-            Services.FunctionResolver.InitializeCall(Graph, Flow.Arguments);
+            Services.FunctionResolver.InitializeCall(Caller,Graph, Flow.Arguments);
         }
 
         internal override void Accept(ProgramPointVisitor visitor)

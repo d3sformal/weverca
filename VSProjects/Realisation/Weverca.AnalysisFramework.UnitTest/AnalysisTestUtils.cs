@@ -147,10 +147,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             _environmentInitializer = envinronmentInitializer;
         }
 
-        public override void InitializeCall(ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
+        public override void InitializeCall(ProgramPointBase caller,ProgramPointGraph extensionGraph, MemoryEntry[] arguments)
         {
             _environmentInitializer(OutSet);
-            base.InitializeCall(extensionGraph, arguments);
+            base.InitializeCall(caller, extensionGraph, arguments);
         }
 
         // Note: implementation copied from SimpleFunctionResolver to make it possible to test also program point graph sharing
