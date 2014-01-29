@@ -88,7 +88,7 @@ namespace Weverca.Analysis
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
             typeName=resolveType(typeName);
-
+            
             IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
             foreach (var type in types)
             {
@@ -198,9 +198,29 @@ namespace Weverca.Analysis
 
         public override MemoryEntry InitializeCalledObject(ProgramPointBase caller, ProgramPointGraph extensionGraph, MemoryEntry calledObject)
         {
-            if (caller is StaticMethodCallPoint || caller is IndirectStaticMethodCallPoint)
+
+            if (calledObject!=null)
             {
                 //static call $this cannot be accesible
+                List<Value> types = new List<Value>();
+                foreach (var objects in calledObject.PossibleValues)
+                {
+                    if (objects is StringValue)
+                    {
+                        StringValue s = objects as StringValue;
+                        types.AddRange(caller.OutSet.ResolveType(new QualifiedName(new Name(s.Value))));
+
+                    }
+                    else if (objects is ObjectValue)
+                    {
+                        types.Add(caller.OutSet.ObjectType(objects as ObjectValue));
+                    }
+                }
+                caller.OutSet.GetLocalControlVariable(new VariableName(".calledObject")).WriteMemory(caller.OutSet.Snapshot, new MemoryEntry(types));
+
+            }
+            if (caller is StaticMethodCallPoint || caller is IndirectStaticMethodCallPoint)
+            {
                 return new MemoryEntry(OutSet.UndefinedValue);
             }
             else
@@ -232,7 +252,7 @@ namespace Weverca.Analysis
             MemoryEntry[] arguments)
         {
             IncreaseStackSize(caller.OutSet);
-
+            
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
