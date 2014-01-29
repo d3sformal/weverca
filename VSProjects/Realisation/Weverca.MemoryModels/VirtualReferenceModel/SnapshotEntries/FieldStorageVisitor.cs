@@ -17,7 +17,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         private readonly List<VariableKey> _indexStorages = new List<VariableKey>();
         private readonly VariableIdentifier _field;
 
-        private ObjectValue _implicitObject;
+        private ObjectValue _implicitObject = null;
 
         internal readonly VariableKey[] Storages;
 

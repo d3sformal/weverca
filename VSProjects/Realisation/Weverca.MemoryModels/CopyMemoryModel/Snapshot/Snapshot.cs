@@ -396,20 +396,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         #endregion
 
         #region OBSOLETE
-
-        //OBSOLETE
-        protected override AliasValue createAlias(VariableName sourceVar)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        //OBSOLETE
-        protected override void assign(VariableName targetVar, MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
-                
+                        
 
         //OBSOLETE
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)

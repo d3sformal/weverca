@@ -152,7 +152,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         public readonly ProgramPointBase Caller;
 
         internal ExtensionPoint(ProgramPointBase caller, ProgramPointGraph graph, ExtensionType type)
-            :base(graph)
+            : base(graph)
         {
             Graph = graph;
             Type = type;
@@ -172,7 +172,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             if (Type == ExtensionType.ParallelCall)
             {
-                _inSet.ExtendAsCall(Caller.OutSet, Flow.CalledObject, Flow.Arguments);
+
+                var calledObject = Services.FunctionResolver.InitializeCalledObject(Graph, Flow.CalledObject);
+                _inSet.ExtendAsCall(Caller.OutSet, calledObject, Flow.Arguments);
             }
             else
             {

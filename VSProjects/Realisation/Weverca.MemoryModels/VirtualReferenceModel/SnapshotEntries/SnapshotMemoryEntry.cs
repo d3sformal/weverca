@@ -172,5 +172,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                     "Context parameter is not of type Weverca.MemoryModels.CopyMemoryModel.Snapshot");
             }
         }
+
+        protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
+        {
+            return C(context).ResolveObjectTypes(WrappedEntry);
+        }
     }
 }

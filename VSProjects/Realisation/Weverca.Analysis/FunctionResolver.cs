@@ -78,7 +78,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            IEnumerable<TypeValue> types=ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
             foreach (var type in types)
             {
                 var methods = resolveStaticMethod(type, name, arguments);
@@ -167,6 +167,12 @@ namespace Weverca.Analysis
                         break;
                 }
             }
+        }
+
+
+        public override MemoryEntry InitializeCalledObject(ProgramPointGraph extensionGraph, MemoryEntry calledObject)
+        {
+            return calledObject;
         }
 
         /// <summary>
@@ -753,7 +759,7 @@ namespace Weverca.Analysis
                 else
                 {
                     setWarning("Cannot redeclare non static method with static " + method.Name, element, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC);
-                }return false;
+                } return false;
             }
             return true;
         }
@@ -1419,7 +1425,7 @@ namespace Weverca.Analysis
             {
                 return;
             }
-            
+
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -1474,8 +1480,6 @@ namespace Weverca.Analysis
         }
 
         #endregion
-
-
     }
 
     #region function hints
@@ -1592,13 +1596,13 @@ namespace Weverca.Analysis
 
         internal void applyHints(FlowOutputSet outSet)
         {
-              
+
             foreach (var type in returnHints)
             {
-                var result=outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
-                outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(outSet.Snapshot,new MemoryEntry(FlagsHandler.Clean(result.PossibleValues,type)));
+                var result = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
+                outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(outSet.Snapshot, new MemoryEntry(FlagsHandler.Clean(result.PossibleValues, type)));
             }
-            
+
             foreach (var variable in argumentHints.Keys)
             {
                 foreach (var flag in argumentHints[variable])

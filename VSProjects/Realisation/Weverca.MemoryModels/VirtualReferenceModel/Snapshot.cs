@@ -345,6 +345,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(variable, value);
         }
 
+
+        internal IEnumerable<TypeValue> ResolveObjectTypes(MemoryEntry entry)
+        {
+            foreach (var value in entry.PossibleValues)
+            {
+                if (value is ObjectValue)
+                    yield return ObjectType(value as ObjectValue);
+            }
+        }
+
         internal void Write(VariableKey[] storages, MemoryEntry value, bool forceStrongWrite, bool noArrayCopy)
         {
             var references = new List<VirtualReference>();
@@ -1235,11 +1245,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #region OLD API related methods (will be removed after backcompatibility won't be needed)
 
 
-        protected override AliasValue createAlias(VariableName sourceVar)
-        {
-            return createAlias(sourceVar);
-        }
-
         private AliasValue createAlias(VariableKey key)
         {
             var info = getOrCreateInfo(key);
@@ -1264,12 +1269,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
-        protected override void assign(VariableName targetVar, MemoryEntry entry)
-        {
-            assign(targetVar, entry, VariableKind.Local);
-        }
-
-        protected  bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+        protected bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {
             var kind = repairKind(VariableKind.Local, forceGlobalContext);
             return tryReadValue(new VariableKey(kind, sourceVar, CurrentContextStamp), out entry);
@@ -1354,5 +1354,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
+
     }
 }

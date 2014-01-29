@@ -162,6 +162,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
+
+        public override MemoryEntry InitializeCalledObject(ProgramPointGraph extensionGraph, MemoryEntry calledObject)
+        {
+            return calledObject;
+        }
+
         /// <summary>
         /// Initialize call into callInput.
         /// 
@@ -394,9 +400,11 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             foreach (StringValue constName in arg0.PossibleValues)
             {
-                var constVar = new VariableName(".constant_" + constName.Value);
-                flow.OutSet.FetchFromGlobal(constVar);
-                flow.OutSet.Assign(constVar, new MemoryEntry(arg1.PossibleValues));
+                var constVarId = new VariableIdentifier(".constant_" + constName.Value);
+                var constVar = flow.OutSet.GetVariable(constVarId);
+                flow.OutSet.FetchFromGlobal(constVarId.DirectName);
+
+                constVar.WriteMemory(flow.OutSet.Snapshot, arg1);
             }
         }
 

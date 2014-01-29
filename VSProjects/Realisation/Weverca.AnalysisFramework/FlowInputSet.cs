@@ -68,18 +68,6 @@ namespace Weverca.AnalysisFramework
         {
             return Snapshot.ReadInfo(variable);
         }
-              
-        [Obsolete("Use snapshot entry API instead")]
-        public ContainerIndex CreateIndex(string identifier)
-        {
-            return Snapshot.CreateIndex(identifier);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public AliasValue CreateAlias(VariableName sourceVar)
-        {
-            return Snapshot.CreateAlias(sourceVar);
-        }
 
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {

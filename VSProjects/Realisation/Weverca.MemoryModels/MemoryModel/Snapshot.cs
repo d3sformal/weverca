@@ -43,13 +43,13 @@ namespace Weverca.MemoryModels.MemoryModel
         #region Variables
 
 
-        protected override void assign(VariableName targetVar, MemoryEntry entry)
+        protected void assign(VariableName targetVar, MemoryEntry entry)
         {
             MemoryIndex index = getOrCreateVariable(targetVar);
             assignMemoryEntry(index, entry);
         }
 
-        protected override AliasValue createAlias(VariableName sourceVar)
+        protected AliasValue createAlias(VariableName sourceVar)
         {
             MemoryIndex index = getOrCreateVariable(sourceVar);
             return new MemoryAlias(index);

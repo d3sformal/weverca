@@ -69,6 +69,14 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract MemoryEntry ResolveReturnValue(IEnumerable<ExtensionPoint> dispatchedExtensions);
 
         /// <summary>
+        /// Initialization of call of function with given called object
+        /// </summary>
+        /// <param name="extensionGraph">Graph representing initialized call</param>
+        /// <param name="calledObject">Object that is available for call</param>
+        /// <returns>Object on which call is processed. Null if there is no object</returns>
+        public abstract MemoryEntry InitializeCalledObject(ProgramPointGraph extensionGraph, MemoryEntry calledObject);
+
+        /// <summary>
         /// Initialization of call of function with given declaration and arguments
         /// </summary>
         /// <param name="extensionGraph">Graph representing initialized call</param>
@@ -220,5 +228,6 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         #endregion
+
     }
 }

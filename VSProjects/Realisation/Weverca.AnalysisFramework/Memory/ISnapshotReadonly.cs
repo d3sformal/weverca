@@ -54,7 +54,6 @@ namespace Weverca.AnalysisFramework.Memory
 
         #endregion
       
-        [Obsolete("Use snapshot entry API instead")]
         /// <summary>
         /// Determine type of given object
         /// </summary>
@@ -75,22 +74,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable which info is read</param>
         /// <returns>Stored info</returns>
         InfoValue[] ReadInfo(VariableName variable);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Creates index for given identifier
-        /// </summary>
-        /// <param name="identifier">Identifier of index</param>
-        /// <returns>Created index</returns>
-        ContainerIndex CreateIndex(string identifier);
-
-        [Obsolete("Use snapshot entry API instead")]
-        /// <summary>
-        /// Create alias for given variable
-        /// </summary>
-        /// <param name="sourceVar">Variable which alias will be created</param>
-        /// <returns>Created alias</returns>
-        AliasValue CreateAlias(VariableName sourceVar);
 
         /// <summary>
         /// Resolves all possible functions for given functionName

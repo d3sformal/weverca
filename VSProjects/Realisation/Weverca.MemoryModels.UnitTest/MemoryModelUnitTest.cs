@@ -64,40 +64,7 @@ namespace Weverca.MemoryModels.UnitTest
             return entry;
         }
 
-        //     [TestMethod]
-        public void AssignAlias()
-        {
-            Value alias = snapshot.CreateAlias(variableY);
-            snapshot.Assign(variableX, alias);
-
-            snapshot.Assign(variableX, value5);
-            singleVariableTester(variableX, value5);
-            singleVariableTester(variableY, value5);
-
-            snapshot.Assign(variableZ, snapshot.CreateAlias(variableX));
-            singleVariableTester(variableX, value5);
-            singleVariableTester(variableY, value5);
-            singleVariableTester(variableZ, value5);
-
-            snapshot.Assign(variableZ, value6);
-            singleVariableTester(variableX, value6);
-            singleVariableTester(variableY, value6);
-            singleVariableTester(variableZ, value6);
-        }
-
-        //       [TestMethod]
-        public void OverrideAlias()
-        {
-            snapshot.Assign(variableX, snapshot.CreateAlias(variableY));
-            snapshot.Assign(variableX, value5);
-
-            snapshot.Assign(variableX, snapshot.CreateAlias(variableZ));
-            snapshot.Assign(variableX, value6);
-
-            singleVariableTester(variableX, value6);
-            singleVariableTester(variableY, value5);
-            singleVariableTester(variableZ, value6);
-        }
+   
 
         #endregion
 

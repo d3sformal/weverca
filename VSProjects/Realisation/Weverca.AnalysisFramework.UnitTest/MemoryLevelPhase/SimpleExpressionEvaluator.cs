@@ -305,9 +305,11 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
         {
-            var constName = new VariableName(".constant_" + x.Name);
-            OutSet.FetchFromGlobal(constName);
-            OutSet.Assign(constName, constantValue);
+            var constantName = ".constant_" + x.Name;
+            var constantVar = new VariableIdentifier(constantName);
+            OutSet.FetchFromGlobal(constantVar.DirectName);
+
+            OutSet.GetVariable(constantVar).WriteMemory(OutSnapshot, constantValue);
         }
 
         public override MemoryEntry Concat(IEnumerable<MemoryEntry> parts)

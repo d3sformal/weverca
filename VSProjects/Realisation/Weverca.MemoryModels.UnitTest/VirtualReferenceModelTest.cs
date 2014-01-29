@@ -76,7 +76,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
 
             //set value to testVar2 and expect its presence in testVar1
             var testValue2 = snapshot1.CreateString(testStringValue2);
-            snapshot1.Assign(testVar2, testValue2);
+            writeValue(snapshot1, testVar2, testValue2);
 
             var mustAliasAfterWrite = readFirstValue<StringValue>(snapshot1, testVar1);
             Assert.AreEqual(testStringValue2, mustAliasAfterWrite.Value,
@@ -95,7 +95,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
                 );
 
             snapshot1.StartTransaction();
-            snapshot1.Assign(testVar1, snapshot1.CreateString(testStringValue1));
+            writeValue(snapshot1, testVar1, snapshot1.CreateString(testStringValue1));
             snapshot1.CommitTransaction();
 
             Assert.IsFalse(
@@ -144,7 +144,7 @@ namespace Weverca.ControlFlowGraph.UnitTest
             snapshot.StartTransaction();
 
             var testString = snapshot.CreateString(value);
-            snapshot.Assign(targetVar, testString);
+            writeValue(snapshot, targetVar, testString);
             if (commit)
             {
                 snapshot.CommitTransaction();
@@ -168,6 +168,17 @@ namespace Weverca.ControlFlowGraph.UnitTest
             var entry = readVariable(context, name);
 
             return entry.ReadMemory(context);
+        }
+
+        private void writeValue(Snapshot context, VariableName name, Value value)
+        {
+            writeValue(context, name, new MemoryEntry(value));
+        }
+
+        private void writeValue(Snapshot context, VariableName name, MemoryEntry value)
+        {
+            var variable = context.GetVariable(new VariableIdentifier(name));
+            variable.WriteMemory(context, value);
         }
 
         private T readFirstValue<T>(Snapshot snapshot, VariableName variable)

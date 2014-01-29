@@ -187,23 +187,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="createdArray">Created array that has to be initialized</param>
         protected abstract void initializeArray(AssociativeArray createdArray);
 
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Create alias for given variable
-        /// </summary>
-        /// <param name="sourceVar">Variable which alias will be created</param>
-        /// <returns>Created alias</returns>
-        protected abstract AliasValue createAlias(VariableName sourceVar);
-
-        [Obsolete("Will be removed from snapshot early - dont need to be implemented")]
-        /// <summary>
-        /// Assign memory entry into <paramref name="targetVar"/>
-        /// </summary>
-        /// <param name="targetVar">Target of assigning</param>
-        /// <param name="entry">Value that will be assigned</param>
-        protected abstract void assign(VariableName targetVar, MemoryEntry entry);
-
-
         /// <summary>
         /// Snapshot has to contain merged info present in inputs (no matter what snapshots contains till now)
         /// This merged info can be than changed with snapshot updatable operations
@@ -689,41 +672,7 @@ namespace Weverca.AnalysisFramework.Memory
             _statistics.Report(Statistic.VariableInfoReads);
             return readInfo(variable);
         }
-
-        public AliasValue CreateAlias(VariableName sourceVar)
-        {
-            var result = createAlias(sourceVar);
-            _statistics.Report(Statistic.CreatedAliasValues);
-            return result;
-        }
-               
-        public void Assign(VariableName targetVar, Value value)
-        {
-            checkCanUpdate();
-
-            if (value is AliasValue)
-            {
-                throw new NotSupportedException("Obsolete API");
-            }
-            else
-            {
-                // create implicit memory entry
-                Assign(targetVar, new MemoryEntry(value));
-            }
-        }
-
-        public void Assign(VariableName targetVar, MemoryEntry value)
-        {
-            checkCanUpdate();
-            assign(targetVar, value);
-            _statistics.Report(Statistic.MemoryEntryAssigns);
-        }
-
-        public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
-        {
-            throw new NotSupportedException("Obsolete API");
-        }
-
+   
         public void Extend(params ISnapshotReadonly[] inputs)
         {
             checkCanUpdate();

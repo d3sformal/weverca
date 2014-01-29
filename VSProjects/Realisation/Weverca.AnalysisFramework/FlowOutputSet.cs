@@ -178,30 +178,12 @@ namespace Weverca.AnalysisFramework
         {
             Snapshot.SetInfo(value, info);
         }
-        [Obsolete("Probably deprecared. Store info into values. Use snapshot entry API instead")]
+        
         public void SetInfo(VariableName variable, params InfoValue[] info)
         {
             Snapshot.SetInfo(variable, info);
         }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public void Assign(VariableName targetVar, Value value)
-        {
-            Snapshot.Assign(targetVar, value);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public void Assign(VariableName targetVar, MemoryEntry entry)
-        {
-            Snapshot.Assign(targetVar, entry);
-        }
-
-        [Obsolete("Use snapshot entry API instead")]
-        public void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> aliases)
-        {
-            Snapshot.AssignAliases(targetVar, aliases);
-        }
-
+        
         public void FetchFromGlobal(params VariableName[] variables)
         {
             Snapshot.FetchFromGlobal(variables);

@@ -126,7 +126,10 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
-            outSet.Assign(new VariableName(".throwed_value"), throwedValue);
+            var throwedVarId = new VariableIdentifier(".throwed_value");
+            var throwedVar = outSet.GetVariable(throwedVarId);
+
+            throwedVar.WriteMemory(outSet.Snapshot, throwedValue);
 
             if (throwedValue.Count != 1)
                 throw new NotImplementedException();

@@ -90,7 +90,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created value</returns>
         BooleanValue CreateBool(bool boolean);
         
-        [Obsolete("Use Value.SetInfo instead")]
         /// <summary>
         /// Create info value from given data
         /// NOTE:
@@ -197,24 +196,6 @@ namespace Weverca.AnalysisFramework.Memory
         #endregion
 
         #region Value storing
-
-        /// <summary>
-        /// Assign value into targetVar
-        /// If value is AliasValue - must alias has to be set for variable
-        /// </summary>
-        /// <param name="targetVar">Target of assigning</param>
-        /// <param name="value">Value that will be assigned</param>
-        void Assign(VariableName targetVar, Value value);
-
-
-        void AssignAliases(VariableName targetVar, IEnumerable<AliasValue> alias);
-
-        /// <summary>
-        /// Assign memory entry into targetVar        
-        /// </summary>
-        /// <param name="targetVar">Target of assigning</param>
-        /// <param name="entry">Value that will be assigned</param>
-        void Assign(VariableName targetVar, MemoryEntry entry);
 
         /// <summary>
         /// Set given info for value

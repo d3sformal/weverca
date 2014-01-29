@@ -136,5 +136,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             throw new NotImplementedException();
         }
+
+        protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

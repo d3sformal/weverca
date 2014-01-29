@@ -59,7 +59,6 @@
     <Compile Include="SnapshotTestFramework\SnapshotEntryFactory.cs" />
     <Compile Include="SnapshotTestFramework\SnapshotTester.cs" />
     <Compile Include="MemoryModelUnitTest.cs" />
-    <Compile Include="MemorySnapshotTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SnapshotTestFramework\TestOperation.cs" />
     <Compile Include="SnapshotTestFramework\TestOperationLogger.cs" />

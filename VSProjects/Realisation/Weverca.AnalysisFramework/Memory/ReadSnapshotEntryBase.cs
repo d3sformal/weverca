@@ -93,6 +93,13 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context);
 
         /// <summary>
+        /// Resolve type of objects in snapshot entry
+        /// </summary>
+        /// <param name="context">Context where types are resolved</param>
+        /// <returns>Resolved types</returns>
+        protected abstract IEnumerable<TypeValue> resolveType(SnapshotBase context);
+
+        /// <summary>
         /// Determine that memory represented by current snapshot entry Is already defined.
         /// If not, reading memory returns UndefinedValue. But UndefinedValue can be returned
         /// even for defined memory entries - this can be used to distinct 
@@ -197,6 +204,17 @@ namespace Weverca.AnalysisFramework.Memory
         {
             //TODO statistics reporting
             return iterateIndexes(context);
+        }
+
+        /// <summary>
+        /// Resolve type of objects in snapshot entry
+        /// </summary>
+        /// <param name="context">Context where types are resolved</param>
+        /// <returns>Resolved types</returns>
+        public IEnumerable<TypeValue> ResolveType(SnapshotBase context)
+        {
+            //TODO statistics reporting
+            return resolveType(context);
         }
     }
 }
