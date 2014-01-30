@@ -27,11 +27,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Starting points of catch blocks with scope in starting try block
         /// </summary>
-        public readonly IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> CatchStarts;
+        public readonly IEnumerable<CatchBlockDescription> CatchStarts;
 
         public override LangElement Partial { get { return null; } }
 
-        public TryScopeStartsPoint(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> scopeStarts)
+        public TryScopeStartsPoint(IEnumerable<CatchBlockDescription> scopeStarts)
         {
             CatchStarts = scopeStarts;
         }
@@ -48,6 +48,57 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     }
 
     /// <summary>
+    /// Program point used for connection between throw and according catch block
+    /// </summary>
+    public class CatchPoint : ProgramPointBase
+    {
+        public override LangElement Partial { get { return null; } }
+
+        /// <summary>
+        /// Point that has thrown catched exception
+        /// </summary>
+        public readonly ProgramPointBase ThrowingPoint;
+
+        /// <summary>
+        /// Point where execution continues
+        /// </summary>
+        public readonly ProgramPointBase TargetPoint;
+
+        /// <summary>
+        /// Type catched by this point
+        /// </summary>
+        public GenericQualifiedName CatchedType { get { return _info.Catch.CatchedType; } }
+
+        /// <summary>
+        /// Value that has been thrown
+        /// </summary>
+        public MemoryEntry ThrowedValue { get { return _info.ThrowedValue; } }
+
+        /// <summary>
+        /// Current throw info
+        /// </summary>
+        private ThrowInfo _info;
+
+        internal void ReThrow(ThrowInfo info)
+        {
+            if (info.Catch.TargetPoint != TargetPoint)
+                throw new NotSupportedException("Cannot rethrow with given info");
+
+            _info = info;
+        }
+
+        protected override void flowThrough()
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
     /// Report explicit scope ending of specified catch blocks   
     /// </summary>
     public class TryScopeEndsPoint : ProgramPointBase
@@ -55,11 +106,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Starting points of catch blocks with scope in ending try block
         /// </summary>
-        public readonly IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> CatchStarts;
+        public readonly IEnumerable<CatchBlockDescription> CatchStarts;
 
         public override LangElement Partial { get { return null; } }
 
-        public TryScopeEndsPoint(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchStarts)
+        public TryScopeEndsPoint(IEnumerable<CatchBlockDescription> catchStarts)
         {
             CatchStarts = catchStarts;
         }
@@ -192,7 +243,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (Flow.Arguments == null)
                 Flow.Arguments = new MemoryEntry[0];
 
-            Services.FunctionResolver.InitializeCall(Caller,Graph, Flow.Arguments);
+            Services.FunctionResolver.InitializeCall(Caller, Graph, Flow.Arguments);
         }
 
         internal override void Accept(ProgramPointVisitor visitor)

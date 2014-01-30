@@ -33,6 +33,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CatchBlockDescription.cs" />
     <Compile Include="Expressions\AliasValueFactory.cs" />
     <Compile Include="Expressions\Converter.cs" />
     <Compile Include="Expressions\ElementExpander.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="NextPhaseAnalyzer.cs" />
     <Compile Include="ProgramPoints\ProgramPointVisitor.cs" />
+    <Compile Include="ThrowInfo.cs" />
     <Compile Include="TypeDecl.cs" />
     <Compile Include="PointsBlock.cs" />
     <Compile Include="PPGraphBuildingContext.cs" />

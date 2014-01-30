@@ -102,7 +102,7 @@ namespace Weverca.AnalysisFramework
             if (points.Any())
             {
                 result = PointsBlock.ForExpression(points);
-                _creadtedExpressionBlocks.Add(expression,result);
+                _creadtedExpressionBlocks.Add(expression, result);
                 return result;
             }
             else
@@ -140,7 +140,7 @@ namespace Weverca.AnalysisFramework
             return PointsBlock.ForPoint(createdPoint, outgoingBlocks);
         }
 
-        internal TryScopeStartsPoint CreateCatchScopeStart(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlocks)
+        internal TryScopeStartsPoint CreateCatchScopeStart(IEnumerable<CatchBlockDescription> catchBlocks)
         {
             var scopeStart = new TryScopeStartsPoint(catchBlocks);
 
@@ -149,7 +149,7 @@ namespace Weverca.AnalysisFramework
             return scopeStart;
         }
 
-        internal TryScopeEndsPoint CreateCatchScopeEnd(IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlocks)
+        internal TryScopeEndsPoint CreateCatchScopeEnd(IEnumerable<CatchBlockDescription> catchBlocks)
         {
             var scopeEnd = new TryScopeEndsPoint(catchBlocks);
 

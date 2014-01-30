@@ -35,13 +35,13 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Reports about try block scope start
         /// </summary>
         /// <param name="catchBlockStarts">Catch blocks associated with starting try block</param>
-        public abstract void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts);
+        public abstract void TryScopeStart(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockStarts);
 
         /// <summary>
         /// Reports about try block scope end
         /// </summary>
         /// <param name="catchBlockStarts">Catch blocks associated with ending try block</param>
-        public abstract void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts);
+        public abstract void TryScopeEnd(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockStarts);
 
         /// <summary>
         /// Process throw statement according to current flow
@@ -51,7 +51,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="throwedValue">Value that was supplied into throw statement</param>
         /// <param name="flow">Flow controller which provides API usefull for throw resolvings</param>
         /// <returns>All possible catch block starts</returns>
-        public abstract IEnumerable<ProgramPointBase> Throw(FlowController flow,FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
+        public abstract IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
 
         /// <summary>
         /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)
@@ -70,6 +70,6 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
 
-        
+
     }
 }

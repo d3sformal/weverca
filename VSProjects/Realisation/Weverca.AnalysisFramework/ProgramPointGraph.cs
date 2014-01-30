@@ -376,15 +376,16 @@ namespace Weverca.AnalysisFramework
             if (tryBlock != null)
             {
                 //block is try block, we has to start scope of its catch blocks
-                var catchBlocks = new List<Tuple<GenericQualifiedName, ProgramPointBase>>();
+                var catchBlocks = new List<CatchBlockDescription>();
                 foreach (var catchBB in tryBlock.catchBlocks)
                 {
                     var startingCatch = getChildBlock(catchBB, pendingBlocks);
 
                     startingCatch.DisallowContraction();
 
-                    var tuple = Tuple.Create(catchBB.ClassName, startingCatch.FirstPoint);
-                    catchBlocks.Add(tuple);
+                    var catchVar = new VariableIdentifier(catchBB.Variable.VarName);
+                    var description = new CatchBlockDescription(startingCatch.FirstPoint, catchBB.ClassName, catchVar);
+                    catchBlocks.Add(description);
                 }
 
                 var scopeStart = _context.CreateCatchScopeStart(catchBlocks);
@@ -392,7 +393,7 @@ namespace Weverca.AnalysisFramework
             }
 
             //find all incomming edges from catch blocks
-            var endingCatchBlocks = new List<Tuple<GenericQualifiedName, ProgramPointBase>>();
+            var endingCatchBlocks = new List<CatchBlockDescription>();
             foreach (var endingTryBlock in block.EndIngTryBlocks)
             {
                 foreach (var endingCatch in endingTryBlock.catchBlocks)
@@ -400,8 +401,9 @@ namespace Weverca.AnalysisFramework
                     var endingCatchBlock = getChildBlock(endingCatch, pendingBlocks);
                     endingCatchBlock.DisallowContraction();
 
-                    var tuple = Tuple.Create(endingCatch.ClassName, endingCatchBlock.FirstPoint);
-                    endingCatchBlocks.Add(tuple);
+                    var catchVar = new VariableIdentifier(endingCatch.Variable.VarName);
+                    var description = new CatchBlockDescription(endingCatchBlock.FirstPoint, endingCatch.ClassName, catchVar);
+                    endingCatchBlocks.Add(description);
                 }
             }
 

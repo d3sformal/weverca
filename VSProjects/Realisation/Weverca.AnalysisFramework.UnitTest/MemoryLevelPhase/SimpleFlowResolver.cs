@@ -83,13 +83,13 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
+        public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockStarts)
         {
             var blockStarts = new List<InfoValue>();
             //NOTE this is only simple implementation without resolving try block stack
             foreach (var blockStart in catchBlockStarts)
             {
-                var blockInfo = new CatchBlockInfo(blockStart.Item1, blockStart.Item2);
+                var blockInfo = new CatchBlockInfo(blockStart.CatchedType, blockStart.TargetPoint);
                 var blockValue = outSet.CreateInfo<CatchBlockInfo>(blockInfo);
                 blockStarts.Add(blockValue);
             }
@@ -100,7 +100,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(blockStarts));
         }
 
-        public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<Tuple<GenericQualifiedName, ProgramPointBase>> catchBlockStarts)
+        public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockStarts)
         {
             //NOTE in simple implementation we don't resolve try block stack
             outSet.FetchFromGlobal(CatchBlocks_Storage.DirectName);
@@ -109,7 +109,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             foreach (var catchBlock in catchBlockStarts)
             {
-                endingBlocks.Add(catchBlock.Item1);
+                endingBlocks.Add(catchBlock.CatchedType);
             }
 
             var remainingCatchBlocks = new List<InfoValue>();
