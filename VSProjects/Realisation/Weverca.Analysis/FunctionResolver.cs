@@ -87,29 +87,46 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            typeName=resolveType(typeName);
-            
-            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
-            foreach (var type in types)
+            var resolvedTypes=resolveType(typeName);
+            foreach (var resolvedType in resolvedTypes)
             {
-                var methods = resolveStaticMethod(type, name, arguments);
-                setCallBranching(methods);
+                IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(resolvedType, OutSet, Element);
+                foreach (var type in types)
+                {
+                    var methods = resolveStaticMethod(type, name, arguments);
+                    setCallBranching(methods);
+                }
             }
-
         }
 
-        private QualifiedName resolveType(QualifiedName typeName)
+        private IEnumerable<QualifiedName> resolveType(QualifiedName typeName)
         {
-
-            if (typeName.Name.LowercaseValue == "self")
+            if (typeName.Name.LowercaseValue == "self" || typeName.Name.LowercaseValue == "parent")
             {
+                MemoryEntry calledObjects =
+               OutSet.GetLocalControlVariable(new VariableName(".calledObject")).ReadMemory(OutSet.Snapshot);
+                if (!(calledObjects.PossibleValues.Count() == 1 && calledObjects.PossibleValues.First() is UndefinedValue))
+                {
+                    if (typeName.Name.LowercaseValue == "self")
+                    {
+                        foreach (var calledObject in calledObjects.PossibleValues)
+                        {
+                            yield return (calledObject as TypeValue).QualifiedName;
 
+                        }
+                    }
+                    if (typeName.Name.LowercaseValue == "parent")
+                    { 
+                    
+                    }
+                }
             }
-            if (typeName.Name.LowercaseValue == "parent")
+            else
             {
-
+                yield return typeName;
             }
-            return typeName;
+           
+            
         }
 
 
@@ -154,22 +171,25 @@ namespace Weverca.Analysis
         public override void IndirectStaticMethodCall(QualifiedName typeName,
             MemoryEntry name, MemoryEntry[] arguments)
         {
-            typeName = resolveType(typeName);
-            var functions = new Dictionary<object, FunctionValue>();
-            var functionNames = getSubroutineNames(name);
-            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
-            foreach (var type in types)
+            foreach (var resolvedType in resolveType(typeName))
             {
-                foreach (var functionName in functionNames)
+                var functions = new Dictionary<object, FunctionValue>();
+                var functionNames = getSubroutineNames(name);
+                IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(resolvedType, OutSet, Element);
+                foreach (var type in types)
                 {
-                    var resolvedFunctions = resolveStaticMethod(type, functionName, arguments);
-                    foreach (var resolvedFunction in resolvedFunctions)
+                    foreach (var functionName in functionNames)
                     {
-                        functions[resolvedFunction.Key] = resolvedFunction.Value;
+                        var resolvedFunctions = resolveStaticMethod(type, functionName, arguments);
+                        foreach (var resolvedFunction in resolvedFunctions)
+                        {
+                            functions[resolvedFunction.Key] = resolvedFunction.Value;
+                        }
                     }
                 }
+                setCallBranching(functions);
             }
-            setCallBranching(functions);
+           
         }
 
         /// <inheritdoc />
@@ -216,7 +236,7 @@ namespace Weverca.Analysis
                         types.Add(caller.OutSet.ObjectType(objects as ObjectValue));
                     }
                 }
-                caller.OutSet.GetLocalControlVariable(new VariableName(".calledObject")).WriteMemory(caller.OutSet.Snapshot, new MemoryEntry(types));
+                caller.OutSet.GetControlVariable(new VariableName(".calledObject")).WriteMemory(caller.OutSet.Snapshot, new MemoryEntry(types));
 
             }
             if (caller is StaticMethodCallPoint || caller is IndirectStaticMethodCallPoint)
@@ -252,7 +272,11 @@ namespace Weverca.Analysis
             MemoryEntry[] arguments)
         {
             IncreaseStackSize(caller.OutSet);
-            
+
+            var calledObject=caller.OutSet.GetControlVariable(new VariableName(".calledObject")).ReadMemory(caller.OutSet.Snapshot);
+
+            OutSet.GetLocalControlVariable(new VariableName(".calledObject")).WriteMemory(OutSet.Snapshot, calledObject);
+
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
