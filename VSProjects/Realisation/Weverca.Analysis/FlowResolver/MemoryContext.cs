@@ -191,10 +191,11 @@ namespace Weverca.Analysis.FlowResolver
                     return;
                 }
 
-                //we will also delete more general values (any value, anystring, anyint, ...)
-
                 //if there are some other intarvalu values, we must delete those, which doesn't intersect the new one. We will add the intersection of those, which intersects the new one and the new one
                 IntervalValue intersection = IntersectIntervals((IntervalValue)newValue, values.Where(a => a is IntervalValue).Select(a => (IntervalValue)a));
+
+                //we will also delete more general values (any value, anystring, anyint, ...) also the intervals are already counted in.
+                values.Clear();
                 values.Add(intersection);
             }
             else if (newValue is AnyValue && values.Count > 0)
