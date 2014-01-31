@@ -50,9 +50,16 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="throwStmt">Processed throw statement</param>
         /// <param name="throwedValue">Value that was supplied into throw statement</param>
         /// <param name="flow">Flow controller which provides API usefull for throw resolvings</param>
-        /// <returns>All possible catch block starts</returns>
-        public abstract IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
+        /// <returns>All possible ThrowInfo branches</returns>
+        public abstract IEnumerable<ThrowInfo> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue);
 
+        /// <summary>
+        /// Process catch statement according to given catch block
+        /// </summary>
+        /// <param name="catchPoint">Point describing state of current catch block</param>
+        /// <param name="outSet">Flow output set</param>
+        public abstract void Catch(CatchPoint catchPoint, FlowOutputSet outSet);
+        
         /// <summary>
         /// Is called after each include/require/include_once/require_once expression (can be resolved according to flow.CurrentPartial)
         /// </summary>
@@ -68,8 +75,6 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             //By default there is nothing to do           
         }
-
-
 
     }
 }

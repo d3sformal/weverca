@@ -62,12 +62,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Point where execution continues
         /// </summary>
-        public readonly ProgramPointBase TargetPoint;
-
-        /// <summary>
-        /// Type catched by this point
-        /// </summary>
-        public GenericQualifiedName CatchedType { get { return _info.Catch.CatchedType; } }
+        public ProgramPointBase TargetPoint { get { return CatchDescription.TargetPoint; } }
 
         /// <summary>
         /// Value that has been thrown
@@ -75,13 +70,24 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         public MemoryEntry ThrowedValue { get { return _info.ThrowedValue; } }
 
         /// <summary>
+        /// Description of catching block
+        /// </summary>
+        public readonly CatchBlockDescription CatchDescription;
+
+        /// <summary>
         /// Current throw info
         /// </summary>
         private ThrowInfo _info;
 
+        internal CatchPoint(ProgramPointBase throwingPoint, CatchBlockDescription catchDescription)
+        {
+            ThrowingPoint = throwingPoint;
+            CatchDescription = catchDescription;
+        }
+
         internal void ReThrow(ThrowInfo info)
         {
-            if (info.Catch.TargetPoint != TargetPoint)
+            if (!CatchDescription.Equals(info.Catch))
                 throw new NotSupportedException("Cannot rethrow with given info");
 
             _info = info;
@@ -89,12 +95,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            throw new NotImplementedException();
+            Flow.FlowResolver.Catch(this, OutSet);
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitCatch(this);
         }
     }
 

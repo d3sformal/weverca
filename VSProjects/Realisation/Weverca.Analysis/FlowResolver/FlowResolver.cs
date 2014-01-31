@@ -137,7 +137,7 @@ namespace Weverca.Analysis.FlowResolver
         }
 
         /// <inheritdoc />
-        public override IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
+        public override IEnumerable<ThrowInfo> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             var result = new List<ProgramPointBase>();
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
@@ -211,11 +211,18 @@ namespace Weverca.Analysis.FlowResolver
             }
             //TODO: unroll stack in catch blocks
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack as IEnumerable<IEnumerable<CatchBlockDescription>>))));
-            return result;
+            throw new NotImplementedException("API for exceptions throwing changed");
+        }
+
+        public override void Catch(CatchPoint catchPoint,FlowOutputSet outSet)
+        {
+            throw new NotImplementedException("API for exceptions catching changed");
         }
 
         #endregion
     }
+
+    
 
     /// <summary>
     /// Class representing stack of try with catch bloks.

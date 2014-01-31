@@ -124,18 +124,4 @@ namespace Weverca.AnalysisFramework.UnitTest
             return o.XssSanitized == XssSanitized;
         }
     }
-
-    class CatchBlockInfo
-    {
-        internal readonly GenericQualifiedName InputClass;
-
-        internal readonly ProgramPointBase CatchStart;
-
-
-        public CatchBlockInfo(GenericQualifiedName inputClass, ProgramPointBase catchStart)
-        {
-            InputClass = inputClass;
-            CatchStart = catchStart;
-        }
-    }
 }

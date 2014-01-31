@@ -34,5 +34,22 @@ namespace Weverca.AnalysisFramework
             CatchedType = catchedType;
             CatchVariable = catchVariable;
         }
+
+        public override int GetHashCode()
+        {
+            return TargetPoint.GetHashCode() + CatchVariable.GetHashCode() + CatchedType.GetHashCode();
+        }
+        
+        public override bool Equals(object obj)
+        {
+            var o = obj as CatchBlockDescription;
+            if (o == null)
+                return false;
+
+            return
+                o.CatchedType.QualifiedName.Equals(CatchedType.QualifiedName) &&
+                o.CatchVariable == CatchVariable &&
+                o.TargetPoint == TargetPoint;
+        }
     }
 }

@@ -24,5 +24,11 @@ namespace Weverca.AnalysisFramework
         /// Value that has been throwed
         /// </summary>
         public readonly MemoryEntry ThrowedValue;
+
+        public ThrowInfo(CatchBlockDescription catchBlock, MemoryEntry throwedValue)
+        {
+            Catch = catchBlock;
+            ThrowedValue = throwedValue;
+        }
     }
 }

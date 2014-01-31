@@ -166,6 +166,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             VisitValue(p);
         }
 
+        public virtual void VisitCatch(CatchPoint p)
+        {
+            VisitPoint(p);
+        }
+
         #endregion
 
         #region Declaration points

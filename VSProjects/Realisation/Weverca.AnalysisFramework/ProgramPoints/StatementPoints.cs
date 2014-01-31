@@ -21,6 +21,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public override LangElement Partial { get { return Throw; } }
 
+        public IEnumerable<ThrowInfo> ThrowBranches { get; private set; }
+
         internal ThrowStmtPoint(ThrowStmt throwStmt, ValuePoint throwedValue)
         {
             ThrowedValue = throwedValue;
@@ -29,14 +31,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var catchBlocks = Services.FlowResolver.Throw(Flow, OutSet, Throw, ThrowedValue.Value.ReadMemory(InSet.Snapshot));
-
-            RemoveFlowChildren();
-
-            foreach (var catchBlock in catchBlocks)
+            if (ThrowBranches == null)
             {
-                AddFlowChild(catchBlock);
+                //initialize - throw statement cannot have flow childrens
+                RemoveFlowChildren();
             }
+
+            ThrowBranches = Services.FlowResolver.Throw(Flow, OutSet, Throw, ThrowedValue.Value.ReadMemory(InSet.Snapshot));
+            Flow.SetThrowBranching(ThrowBranches);
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
@@ -198,7 +200,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     if (Expression == null)
                     {
                         //php code: return ;
-                        value =new MemoryEntry(OutSet.UndefinedValue);
+                        value = new MemoryEntry(OutSet.UndefinedValue);
                     }
                     else
                     {

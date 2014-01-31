@@ -7,6 +7,7 @@ using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework
 {
@@ -35,6 +36,9 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public LangElement CurrentPartial { get { return ProgramPoint.Partial; } }
 
+        /// <summary>
+        /// Log holding all subresults hashed according to AST partials
+        /// </summary>
         public EvaluationLog Log { get; private set; }
 
         /// <summary>
@@ -98,6 +102,66 @@ namespace Weverca.AnalysisFramework
         public void AddExtension(object branchKey, ProgramPointGraph ppGraph, ExtensionType type)
         {
             ProgramPoint.Extension.Add(branchKey, ppGraph, type);
+        }
+
+        /// <summary>
+        /// Set throw branches from current point into specified program points. These branches contains
+        /// catch point and handles given ThrowInfo values.
+        /// </summary>
+        /// <param name="branches">ThrowInfo values specifiing udpates/creations/deletions of throw branches</param>
+        public void SetThrowBranching(IEnumerable<ThrowInfo> branches)
+        {
+            //create indexed structure for branches
+            var indexed = new Dictionary<CatchBlockDescription, ThrowInfo>();
+            foreach (var branch in branches)
+            {
+                indexed.Add(branch.Catch, branch);
+            }
+
+            //update already existing branches
+            var childrenCopy = ProgramPoint.FlowChildren.ToArray();
+            foreach (var child in childrenCopy)
+            {
+                var catchChild = child as CatchPoint;
+                if (catchChild == null)
+                    continue;
+
+                ThrowInfo info;
+                if (indexed.TryGetValue(catchChild.CatchDescription, out info))
+                {
+                    catchChild.ReThrow(info);
+
+                    //remove branch from index because it is already complete
+                    indexed.Remove(catchChild.CatchDescription);
+                }
+                else
+                {
+                    //no more it contains branch for this catch child
+                    //disconnect it from graph
+                    ProgramPoint.RemoveFlowChild(catchChild);
+                    catchChild.RemoveFlowChild(catchChild.TargetPoint);
+                }
+            }
+
+            //add new branches
+            foreach (var throwInfo in indexed.Values)
+            {
+                //create catch point according to specified throw info
+                var catchPoint = new CatchPoint(ProgramPoint, throwInfo.Catch);
+                initializeNewPoint(catchPoint);
+
+                catchPoint.ReThrow(throwInfo);
+
+                //connect branch into graph
+                ProgramPoint.AddFlowChild(catchPoint);
+                catchPoint.AddFlowChild(catchPoint.TargetPoint);
+            }
+        }
+
+        private void initializeNewPoint(ProgramPointBase point)
+        {
+            point.Initialize(Services.CreateEmptySet(), Services.CreateEmptySet());
+            point.SetServices(Services);
         }
     }
 }

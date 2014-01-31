@@ -18,7 +18,7 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     public class SimpleFlowResolver : FlowResolverBase
     {
-        private readonly static VariableIdentifier CatchBlocks_Storage = new VariableIdentifier(".catch_blocks");
+        private readonly static VariableName CatchBlocks_Storage = new VariableName(".catch_blocks");
 
         private readonly Dictionary<string, string> _includes = new Dictionary<string, string>();
 
@@ -89,70 +89,68 @@ namespace Weverca.AnalysisFramework.UnitTest
             //NOTE this is only simple implementation without resolving try block stack
             foreach (var blockStart in catchBlockStarts)
             {
-                var blockInfo = new CatchBlockInfo(blockStart.CatchedType, blockStart.TargetPoint);
-                var blockValue = outSet.CreateInfo<CatchBlockInfo>(blockInfo);
+                var blockValue = outSet.CreateInfo(blockStart);
                 blockStarts.Add(blockValue);
             }
 
-            outSet.FetchFromGlobal(CatchBlocks_Storage.DirectName);
-
-            var catchBlocks = outSet.GetVariable(CatchBlocks_Storage);
+            var catchBlocks = outSet.GetControlVariable(CatchBlocks_Storage);
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(blockStarts));
         }
 
-        public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockStarts)
+        public override void TryScopeEnd(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockEnds)
         {
             //NOTE in simple implementation we don't resolve try block stack
-            outSet.FetchFromGlobal(CatchBlocks_Storage.DirectName);
-            var catchBlocks = outSet.GetVariable(CatchBlocks_Storage);
-            var endingBlocks = new HashSet<GenericQualifiedName>();
+            var endingBlocks = new HashSet<CatchBlockDescription>(catchBlockEnds);
 
-            foreach (var catchBlock in catchBlockStarts)
-            {
-                endingBlocks.Add(catchBlock.CatchedType);
-            }
-
-            var remainingCatchBlocks = new List<InfoValue>();
+            var catchBlocks = outSet.GetControlVariable(CatchBlocks_Storage);
             var catchBlockValues = catchBlocks.ReadMemory(outSet.Snapshot);
 
-            foreach (InfoValue<CatchBlockInfo> blockInfo in catchBlockValues.PossibleValues)
+            var remainingCatchBlocks = new List<InfoValue>();
+            foreach (InfoValue<CatchBlockDescription> block in catchBlockValues.PossibleValues)
             {
-                if (!endingBlocks.Contains(blockInfo.Data.InputClass))
-                    remainingCatchBlocks.Add(blockInfo);
+                if (!endingBlocks.Contains(block.Data))
+                    remainingCatchBlocks.Add(block);
             }
 
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(remainingCatchBlocks));
         }
 
-        public override IEnumerable<ProgramPointBase> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
+        public override IEnumerable<ThrowInfo> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
-            var throwedVarId = new VariableIdentifier(".throwed_value");
-            var throwedVar = outSet.GetVariable(throwedVarId);
-
-            throwedVar.WriteMemory(outSet.Snapshot, throwedValue);
-
-            if (throwedValue.Count != 1)
-                throw new NotImplementedException();
-
+            //TODO this is only simple implementation
             var exceptionObj = (ObjectValue)throwedValue.PossibleValues.First();
 
-            var targetBlocks = new List<ProgramPointBase>();
+            var catchBlocks = outSet.ReadControlVariable(CatchBlocks_Storage).ReadMemory(outSet.Snapshot);
 
-            var catchBlocks = outSet.ReadVariable(CatchBlocks_Storage, true).ReadMemory(outSet.Snapshot);
-
-            //find catch blocks with valid scope and matchin catch condition
-            foreach (InfoValue<CatchBlockInfo> blockInfo in catchBlocks.PossibleValues)
+            var throwBranches = new List<ThrowInfo>();
+            //find catch blocks with valid scope and matching catch condition
+            foreach (InfoValue<CatchBlockDescription> blockInfo in catchBlocks.PossibleValues)
             {
                 var throwedType = outSet.ObjectType(exceptionObj).QualifiedName;
 
                 //check catch condition
-                if (blockInfo.Data.InputClass.QualifiedName != throwedType)
+                if (blockInfo.Data.CatchedType.QualifiedName != throwedType)
                     continue;
 
-                targetBlocks.Add(blockInfo.Data.CatchStart);
+                var branch = new ThrowInfo(blockInfo.Data, throwedValue);
+                throwBranches.Add(branch);
             }
 
-            return targetBlocks;
+            return throwBranches;
+        }
+
+        public override void Catch(CatchPoint catchPoint, FlowOutputSet outSet)
+        {
+            //TODO this is simple catch demonstration - there should be catch stack unrolling
+
+            var catchVariable = catchPoint.CatchDescription.CatchVariable;
+            var hasCatchVariable = catchVariable!=null;
+
+            if (hasCatchVariable)
+            {
+                var catchVar=outSet.GetVariable(catchPoint.CatchDescription.CatchVariable);
+                catchVar.WriteMemory(outSet.Snapshot, catchPoint.ThrowedValue);
+            }
         }
 
         public override void Include(FlowController flow, MemoryEntry includeFile)
