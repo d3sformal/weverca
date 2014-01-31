@@ -1148,7 +1148,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.CreateIntegerInterval(0, 1);
         }
 
+        public static IntegerIntervalValue ToIntegerInterval(FlowOutputSet outset, IntervalValue value)
+        {
+            ToIntegerIntervalConversionVisitor visitor = new ToIntegerIntervalConversionVisitor(outset);
+            value.Accept(visitor);
+            return visitor.Result;
+        }
+
         #endregion ToIntegerInterval
+
+        #region ToLongInterval
+
+        public static LongintIntervalValue ToLongInterval(FlowOutputSet outset, IntervalValue value)
+        {
+            ToLongIntervalConversionVisitor visitor = new ToLongIntervalConversionVisitor(outset);
+            value.Accept(visitor);
+            return visitor.Result;
+        }
+
+        #endregion
 
         #region ToFloatInterval
 
@@ -1161,6 +1179,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public static IntervalValue<double> ToFloatInterval(FlowOutputSet outset, IntervalValue<int> value)
         {
             return outset.CreateFloatInterval(value.Start, value.End);
+        }
+
+        public static FloatIntervalValue ToFloatInterval(FlowOutputSet outset, IntervalValue value)
+        {
+            ToFloatIntervalConversionVisitor visitor = new ToFloatIntervalConversionVisitor(outset);
+            value.Accept(visitor);
+            return visitor.Result;
         }
 
         #endregion ToFloatInterval

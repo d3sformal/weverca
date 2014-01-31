@@ -113,7 +113,7 @@ namespace Weverca.Analysis.FlowResolver
                 else
                 {
                     //run both assumptions and merge results
-                    MemoryContext memoryContextTrue = new MemoryContext(log, flowOutputSet.Snapshot);
+                    MemoryContext memoryContextTrue = new MemoryContext(log, flowOutputSet);
                     AssumeTrue(conditionPart, memoryContextTrue, flowOutputSet);
 
                     AssumeFalse(conditionPart, memoryContext, flowOutputSet);
@@ -239,7 +239,7 @@ namespace Weverca.Analysis.FlowResolver
                         conditionForm = ConditionForm.ExactlyOne;
                     }
 
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet.Snapshot);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
                     ConditionParts condition = new ConditionParts(conditionForm, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
                     condition.MakeAssumption(currentMemoryContext);
                     memoryContext.UnionMerge(currentMemoryContext);
@@ -321,7 +321,7 @@ namespace Weverca.Analysis.FlowResolver
                         conditionForm = ConditionForm.NotExactlyOne; //!(a XOR b) --> !((a OR b) AND !(a AND b)) --> (!a AND !b) OR (a AND b)
                     }
 
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet.Snapshot);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
                     ConditionParts condition = new ConditionParts(conditionForm, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
                     condition.MakeAssumption(currentMemoryContext);
                     memoryContext.UnionMerge(currentMemoryContext);

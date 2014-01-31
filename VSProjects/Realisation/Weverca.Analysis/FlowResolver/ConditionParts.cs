@@ -148,14 +148,14 @@ namespace Weverca.Analysis.FlowResolver
 
             if (willAssume)
             {
-                MemoryContext memoryContext = outputMemoryContext ?? new MemoryContext(log, flowOutputSet.Snapshot);
+                MemoryContext memoryContext = outputMemoryContext ?? new MemoryContext(log, flowOutputSet);
                 
                 bool intersectionMerge = conditionForm == ConditionForm.All || conditionForm == ConditionForm.None || conditionForm == ConditionForm.ExactlyOne ?
                     true : false;
 
                 foreach (var conditionPart in conditionParts)
                 {
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet.Snapshot);
+                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
                     conditionPart.AssumeCondition(conditionForm, currentMemoryContext, flowOutputSet);
                     if (intersectionMerge)
                     {

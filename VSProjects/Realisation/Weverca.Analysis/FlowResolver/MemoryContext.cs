@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core;
 using PHP.Core.AST;
+
+using Weverca.Analysis.ExpressionEvaluator;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -19,7 +19,7 @@ namespace Weverca.Analysis.FlowResolver
         #region Members
 
         EvaluationLog log;
-        SnapshotBase valueFactory;
+        FlowOutputSet valueFactory;
 
         Dictionary<VariableName, List<Value>> variableValues = new Dictionary<VariableName, List<Value>>();
 
@@ -32,7 +32,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="log">Evaluation log used for evaluating variables which are not yet in the memoryContext.</param>
         /// <param name="valueFactory">ValueFactory used for creating value classes instances.</param>
-        public MemoryContext(EvaluationLog log, SnapshotBase valueFactory)
+        public MemoryContext(EvaluationLog log, FlowOutputSet valueFactory)
         {
             this.log = log;
             this.valueFactory = valueFactory;
@@ -111,7 +111,7 @@ namespace Weverca.Analysis.FlowResolver
                 var variableInfo = log.ReadSnapshotEntry(element);
                 if (variableInfo != null)
                 {
-                    MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory);
+                    MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
                     if (memoryEntry != null && memoryEntry.PossibleValues != null)
                     {
                         variableValues[variableName].AddRange(memoryEntry.PossibleValues);
@@ -181,6 +181,7 @@ namespace Weverca.Analysis.FlowResolver
                 //There is nothin more precise, so we can delete anything.
                 //If there is a precise value already present, the newValue should be one of them.
                 values.Clear();
+                values.Add(newValue);
             }
             else if (newValue is IntervalValue)
             {
@@ -190,22 +191,90 @@ namespace Weverca.Analysis.FlowResolver
                     return;
                 }
 
-                //if there are some other intarvalu values, we must delete those, which doesn't intersect the new one. We will add the intersection of those, which intersects the new one and the new one
-
                 //we will also delete more general values (any value, anystring, anyint, ...)
+
+                //if there are some other intarvalu values, we must delete those, which doesn't intersect the new one. We will add the intersection of those, which intersects the new one and the new one
+                IntervalValue intersection = IntersectIntervals((IntervalValue)newValue, values.Where(a => a is IntervalValue).Select(a => (IntervalValue)a));
+                values.Add(intersection);
             }
             else if (newValue is AnyValue && values.Count > 0)
             {
-                //There already is something, which is defitinelly more precise... or with the same precision.
-                return;
+                //There already is something, which is defitinelly more precise... or with the same precision. -- there is nothing to add
             }
             else
             {
                 // in this case we are adding something more precise than anyValue.
                 values.RemoveAll(a => a is AnyValue);
+                values.Add(newValue);
+            }
+        }
+
+        IntervalValue IntersectIntervals(IntervalValue interval, IEnumerable<IntervalValue> intervals)
+        {
+            if (intervals == null || intervals.Count() == 0)
+            {
+                return interval;
             }
 
-            values.Add(newValue);
+            bool hasLong = intervals.Any(a => a is LongintIntervalValue);
+            bool hasFloat = intervals.Any(a => a is FloatIntervalValue);
+            bool hasInt = intervals.Any(a => a is IntegerIntervalValue);
+
+            if (hasFloat || interval is FloatIntervalValue)
+            {
+                return IntersectIntervals(TypeConversion.ToFloatInterval(valueFactory, interval), intervals.Select(a => TypeConversion.ToFloatInterval(valueFactory, a)));
+            }
+            else if (hasLong || interval is LongintIntervalValue)
+            {
+                return IntersectIntervals(TypeConversion.ToLongInterval(valueFactory, interval), intervals.Select(a => TypeConversion.ToLongInterval(valueFactory, a)));
+            }
+            else if (hasInt || interval is IntegerIntervalValue)
+            {
+                return IntersectIntervals(TypeConversion.ToIntegerInterval(valueFactory, interval), intervals.Select(a => TypeConversion.ToIntegerInterval(valueFactory, a)));
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Interval type \"{0}\" is not supported.", interval.GetType()));
+            }
+        }
+
+        IntervalValue IntersectIntervals<T>(IntervalValue<T> interval, IEnumerable<IntervalValue<T>> intervals)
+            where T : IComparable, IComparable<T>, IEquatable<T>
+        {
+            IntervalValue<T> result = interval;
+            
+            T maxStart = result.Start;
+            T minEnd = result.Start;
+
+            foreach (var item in intervals)
+            {
+                if (maxStart.CompareTo(item.Start) < 0)
+                {
+                    maxStart = item.Start;
+                }
+
+                if (maxStart.CompareTo(item.Start) > 0)
+                {
+                    maxStart = item.Start;
+                }
+            }
+
+            if (maxStart is int)
+            {
+                return valueFactory.CreateIntegerInterval(System.Convert.ToInt32(maxStart), System.Convert.ToInt32(minEnd));
+            }
+            else if (maxStart is long)
+            {
+                return valueFactory.CreateLongintInterval(System.Convert.ToInt64(maxStart), System.Convert.ToInt64(minEnd));
+            }
+            if (maxStart is double)
+            {
+                return valueFactory.CreateFloatInterval(System.Convert.ToDouble(maxStart), System.Convert.ToDouble(minEnd));
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Interval type \"{0}\" is not supported.", interval.GetType()));
+            }
         }
 
         #endregion
