@@ -142,6 +142,9 @@
   <data name="MetricsResults" xml:space="preserve">
     <value>Metrics Results</value>
   </data>
+  <data name="OtherWarnings" xml:space="preserve">
+    <value>Other Warnings</value>
+  </data>
   <data name="PhpCode" xml:space="preserve">
     <value>Php Code</value>
   </data>
@@ -160,6 +163,9 @@
   <data name="RunVerification" xml:space="preserve">
     <value>Run verification</value>
   </data>
+  <data name="SecurityWarnings" xml:space="preserve">
+    <value>Security Warnings</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Verification settings</value>
   </data>
@@ -168,5 +174,8 @@
   </data>
   <data name="Verify" xml:space="preserve">
     <value>Verify</value>
+  </data>
+  <data name="Warnings" xml:space="preserve">
+    <value>Warnings</value>
   </data>
 </root>

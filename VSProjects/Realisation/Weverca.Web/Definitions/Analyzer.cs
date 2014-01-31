@@ -35,6 +35,8 @@ namespace Weverca.Web.Definitions
                 RunMetrics(parser, analysisModel, result);
             }
 
+            result.LoadWarnings();
+
             return result;
         }
 

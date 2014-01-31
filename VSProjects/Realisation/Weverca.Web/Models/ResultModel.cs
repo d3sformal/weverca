@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-
 using PHP.Core.AST;
+using Weverca.Analysis;
 using Weverca.CodeMetrics;
 
 namespace Weverca.Web.Models
@@ -17,6 +17,9 @@ namespace Weverca.Web.Models
 
         public Dictionary<Rating, MetricResult<double>> RatingMetricsResult { get; private set; }
 
+        public List<AnalysisWarning> Warnings { get; private set; }
+        public List<AnalysisSecurityWarning> SecurityWarnings { get; private set; }
+
         public ResultModel(string phpCode)
         {
             PhpCode = phpCode;
@@ -24,6 +27,12 @@ namespace Weverca.Web.Models
             IndicatorMetricsResult = new Dictionary<ConstructIndicator, MetricResult<bool>>();
             QuantityMetricsResult = new Dictionary<Quantity, MetricResult<int>>();
             RatingMetricsResult = new Dictionary<Rating, MetricResult<double>>();            
+        }
+
+        public void LoadWarnings()
+        {
+            Warnings = AnalysisWarningHandler.GetWarnings();
+            SecurityWarnings = AnalysisWarningHandler.GetSecurityWarnings();
         }
     }
 

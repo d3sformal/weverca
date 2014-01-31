@@ -170,6 +170,15 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Other Warnings.
+        /// </summary>
+        public static string OtherWarnings {
+            get {
+                return ResourceManager.GetString("OtherWarnings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Php Code.
         /// </summary>
         public static string PhpCode {
@@ -224,6 +233,15 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Security Warnings.
+        /// </summary>
+        public static string SecurityWarnings {
+            get {
+                return ResourceManager.GetString("SecurityWarnings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Verification settings.
         /// </summary>
         public static string Settings {
@@ -247,6 +265,15 @@ namespace Weverca.Web.Properties {
         public static string Verify {
             get {
                 return ResourceManager.GetString("Verify", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warnings.
+        /// </summary>
+        public static string Warnings {
+            get {
+                return ResourceManager.GetString("Warnings", resourceCulture);
             }
         }
     }

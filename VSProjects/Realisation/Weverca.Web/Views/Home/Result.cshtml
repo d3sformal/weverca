@@ -25,13 +25,27 @@
 
 <div id="tabs">
     <ul>
-        <li><a href="#tabs-1">@Resources.MetricsResults</a></li>
-        <li><a href="#tabs-2">@Resources.VerificationResults</a></li>
+        <li><a href="#tabs-1">@Resources.Warnings</a></li>
+        <li><a href="#tabs-2">@Resources.MetricsResults</a></li>
+        <li><a href="#tabs-3">@Resources.VerificationResults</a></li>
     </ul>
     <div id="tabs-1">
-        <p>TODO: here there will be the results.</p>
+        <h3>@Resources.SecurityWarnings</h3>
+        @foreach (var warning in Model.SecurityWarnings)
+        {
+            <p>@warning.ToString()</p>
+        }
+
+        <h3>@Resources.OtherWarnings</h3>
+        @foreach (var warning in Model.Warnings)
+        {
+            <p>@warning.ToString()</p>
+        }
     </div>
     <div id="tabs-2">
+        <p>TODO: here there will be the results.</p>
+    </div>
+    <div id="tabs-3">
         @Model.Output.ToHtmlString()
     </div>
 </div>
