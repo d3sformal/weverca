@@ -188,5 +188,37 @@ namespace Weverca.Analysis.UnitTest
             TestUtils.testValue(result, 2);
 
         }
+
+        string ExceptionInFunctionsTest = @"
+        $result=0;        
+        class x extends Exception{}      
+        function a()
+        {
+            throw new x();
+        }
+        function b()
+        {
+            a();
+        }
+             
+        try
+        {
+            b();
+        } 
+        catch(Exception $e)
+        {
+            $result=2;
+        }
+        ";
+
+        [TestMethod]
+        public void ExceptionInFunctions()
+        {
+            var result = TestUtils.ResultTest(ExceptionInFunctionsTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 2);
+
+        }
+
     }
 }

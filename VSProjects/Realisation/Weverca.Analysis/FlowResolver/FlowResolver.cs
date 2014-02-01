@@ -118,7 +118,7 @@ namespace Weverca.Analysis.FlowResolver
             List<Value> result = new List<Value>();
             foreach (var stack in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
             {
-                result.Add(outSet.CreateInfo(new CatchBlocks((stack as InfoValue<CatchBlocks>).Data, catchBlockStarts)));
+                result.Add(outSet.CreateInfo(new TryBlockStack((stack as InfoValue<TryBlockStack>).Data, catchBlockStarts)));
             }
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
@@ -130,7 +130,7 @@ namespace Weverca.Analysis.FlowResolver
             List<Value> result = new List<Value>();
             foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
             {
-                CatchBlocks stack = (value as InfoValue<CatchBlocks>).Data;
+                TryBlockStack stack = (value as InfoValue<TryBlockStack>).Data;
                 result.Add(outSet.CreateInfo(stack.Pop()));
             }
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
@@ -146,14 +146,14 @@ namespace Weverca.Analysis.FlowResolver
             {
                 if (stack.Count == 0)
                 {
-                    for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                    for (int i = 0; i < (value as InfoValue<TryBlockStack>).Data.blocks.Count; i++)
                     {
                         stack.Add(new HashSet<CatchBlockDescription>());
                     }
                 }
-                for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                for (int i = 0; i < (value as InfoValue<TryBlockStack>).Data.blocks.Count; i++)
                 {
-                    foreach (var block in (value as InfoValue<CatchBlocks>).Data.blocks[i])
+                    foreach (var block in (value as InfoValue<TryBlockStack>).Data.blocks[i])
                         stack[i].Add(block);
                 }
             }
@@ -272,14 +272,14 @@ namespace Weverca.Analysis.FlowResolver
             {
                 if (stack.Count == 0)
                 {
-                    for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                    for (int i = 0; i < (value as InfoValue<TryBlockStack>).Data.blocks.Count; i++)
                     {
                         stack.Add(new HashSet<CatchBlockDescription>());
                     }
                 }
-                for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                for (int i = 0; i < (value as InfoValue<TryBlockStack>).Data.blocks.Count; i++)
                 {
-                    foreach (var block in (value as InfoValue<CatchBlocks>).Data.blocks[i])
+                    foreach (var block in (value as InfoValue<TryBlockStack>).Data.blocks[i])
                         stack[i].Add(block);
                 }
             }
@@ -294,7 +294,7 @@ namespace Weverca.Analysis.FlowResolver
                 stack.RemoveLast();
             }
 
-            outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack))));
+            outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new TryBlockStack(stack))));
 
         }
 
@@ -307,7 +307,7 @@ namespace Weverca.Analysis.FlowResolver
     /// Class representing stack of try with catch bloks.
     /// It is imutable.
     /// </summary>
-    public class CatchBlocks
+    public class TryBlockStack
     {
         /// <summary>
         /// stack storing try and catch information
@@ -318,7 +318,7 @@ namespace Weverca.Analysis.FlowResolver
         /// Create new instace of CatchBlocks
         /// </summary>
         /// <param name="blocks">Stack</param>
-        public CatchBlocks(IEnumerable<IEnumerable<CatchBlockDescription>> blocks)
+        public TryBlockStack(IEnumerable<IEnumerable<CatchBlockDescription>> blocks)
         {
             this.blocks = new ReadOnlyCollection<IEnumerable<CatchBlockDescription>>(new List<IEnumerable<CatchBlockDescription>>(blocks));
         }
@@ -328,7 +328,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="blocks">old stack</param>
         /// <param name="catchBlocks">new inserted information</param>
-        public CatchBlocks(CatchBlocks blocks, IEnumerable<CatchBlockDescription> catchBlocks)
+        public TryBlockStack(TryBlockStack blocks, IEnumerable<CatchBlockDescription> catchBlocks)
         {
             var list = new List<IEnumerable<CatchBlockDescription>>(blocks.blocks);
             list.Add(catchBlocks);
@@ -338,7 +338,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <summary>
         /// Create new instance with empty stack
         /// </summary>
-        public CatchBlocks()
+        public TryBlockStack()
         {
             blocks = new ReadOnlyCollection<IEnumerable<CatchBlockDescription>>(new List<IEnumerable<CatchBlockDescription>>());
         }
@@ -347,11 +347,11 @@ namespace Weverca.Analysis.FlowResolver
         /// Pop the current stack
         /// </summary>
         /// <returns>new Catchblocks with last item removed</returns>
-        public CatchBlocks Pop()
+        public TryBlockStack Pop()
         {
             var list = new List<IEnumerable<CatchBlockDescription>>(blocks);
             list.RemoveAt(list.Count - 1);
-            return new CatchBlocks(list);
+            return new TryBlockStack(list);
         }
     }
 

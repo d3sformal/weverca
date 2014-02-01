@@ -75,7 +75,7 @@ namespace Weverca.Analysis
 
 
             //stack for catchblocks
-            EntryInput.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInfo(new CatchBlocks())));
+            EntryInput.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInfo(new TryBlockStack())));
 
             //array for global Constants
             var constantsVariable = EntryInput.GetControlVariable(UserDefinedConstantHandler.constantVariable);
