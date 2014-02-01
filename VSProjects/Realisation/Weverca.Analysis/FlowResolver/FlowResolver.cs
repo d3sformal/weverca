@@ -139,9 +139,8 @@ namespace Weverca.Analysis.FlowResolver
         /// <inheritdoc />
         public override IEnumerable<ThrowInfo> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
-            var result = new List<ProgramPointBase>();
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
-            var stack = new List<List<CatchBlockDescription>>();
+            var stack = new List<HashSet<CatchBlockDescription>>();
 
             foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
             {
@@ -149,74 +148,134 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
                     {
-                        stack.Add(new List<CatchBlockDescription>());
+                        stack.Add(new HashSet<CatchBlockDescription>());
                     }
                 }
                 for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
                 {
-                    stack[i].AddRange((value as InfoValue<CatchBlocks>).Data.blocks[i]);
+                    foreach(var block in (value as InfoValue<CatchBlocks>).Data.blocks[i])
+                        stack[i].Add(block);
                 }
             }
+
+            Dictionary<CatchBlockDescription, List<Value>> result = new Dictionary<CatchBlockDescription, List<Value>>();
 
             foreach (Value value in throwedValue.PossibleValues)
             {
                 bool foundMatch = false;
-                for (int i = stack.Count - 1; i >= 0; i--)
+                if (value is ObjectValue)
                 {
-                    foreach (var catchBlock in stack[i])
+                    for (int i = stack.Count - 1; i >= 0; i--)
                     {
-
-                        if (value is ObjectValue)
+                        foreach (var block in stack[i])
                         {
                             TypeValue type = outSet.ObjectType(value as ObjectValue);
-                            if (type.QualifiedName == catchBlock.CatchedType.QualifiedName)
+                            if (type.QualifiedName == block.CatchedType.QualifiedName)
                             {
-                                result.Add(catchBlock.TargetPoint);
+                                var key = block;
+                                if (!result.ContainsKey(key))
+                                {
+                                    result[key] = new List<Value>();
+                                }
+                                result[key].Add(value);
                                 foundMatch = true;
                             }
                             else
                             {
                                 for (int j = type.Declaration.BaseClasses.Count - 1; j >= 0; j--)
                                 {
-                                    if (type.Declaration.BaseClasses[j] == catchBlock.CatchedType.QualifiedName)
+                                    if (type.Declaration.BaseClasses[j] == block.CatchedType.QualifiedName)
                                     {
-                                        result.Add(catchBlock.TargetPoint);
+                                        var key = block;
+                                        if (!result.ContainsKey(key))
+                                        {
+                                            result[key] = new List<Value>();
+                                        }
+                                        result[key].Add(value);
                                         foundMatch = true;
                                         break;
                                     }
                                 }
                             }
+                            if (foundMatch)
+                                break;
                         }
-                        else if (value is AnyObjectValue || value is AnyValue)
+                        if (foundMatch)
+                            break;
+                    }
+
+                }
+                else if (value is AnyObjectValue || value is AnyValue)
+                {
+                    for (int i = stack.Count - 1; i >= 0; i--)
+                    {
+                        foreach (var block in stack[i])
                         {
-                            result.Add(catchBlock.TargetPoint);
+                            var key = block;
+
+                            if (!result.ContainsKey(key))
+                            {
+                                result[key] = new List<Value>();
+                            }
+                            result[key].Add(value);
                             foundMatch = true;
                         }
-                        else
-                        {
-                            AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Only objects can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
-                            result.Add(flow.ProgramEnd);
-                        }
                     }
-                    if (foundMatch)
-                    {
-                        break;
-                    }
+                }
+                else
+                {
+                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Only objects can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                    foundMatch = false;
+
                 }
                 if (!foundMatch)
                 {
-                    result.Add(flow.ProgramEnd);
+                    var key = new CatchBlockDescription(flow.ProgramEnd, new GenericQualifiedName(new QualifiedName(new Name(""))), new VariableIdentifier(""));
+                    if (!result.ContainsKey(key))
+                    {
+                        result[key] = new List<Value>();
+                    }
+                    result[key].Add(value);
                 }
-
             }
-            //TODO: unroll stack in catch blocks
-            catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack as IEnumerable<IEnumerable<CatchBlockDescription>>))));
-            throw new NotImplementedException("API for exceptions throwing changed");
+
+            List<ThrowInfo> res = new List<ThrowInfo>();
+
+            foreach(var entry in result)
+            {
+                res.Add(new ThrowInfo(entry.Key, new MemoryEntry(entry.Value)));
+            }
+
+            return res;
         }
 
+        /// <inheritdoc />
         public override void Catch(CatchPoint catchPoint,FlowOutputSet outSet)
         {
-            throw new NotImplementedException("API for exceptions catching changed");
+            if(catchPoint.CatchDescription.CatchedType.Equals( new GenericQualifiedName(new QualifiedName(new Name("")))))
+            {
+                return;
+            }
+            var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));
+            var stack = new List<HashSet<CatchBlockDescription>>();
+
+            foreach (var value in catchBlocks.ReadMemory(outSet.Snapshot).PossibleValues)
+            {
+                if (stack.Count == 0)
+                {
+                    for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                    {
+                        stack.Add(new HashSet<CatchBlockDescription>());
+                    }
+                }
+                for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
+                {
+                    foreach (var block in (value as InfoValue<CatchBlocks>).Data.blocks[i])
+                        stack[i].Add(block);
+                }
+            }
+            outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot,new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack))));
+
         }
 
         #endregion

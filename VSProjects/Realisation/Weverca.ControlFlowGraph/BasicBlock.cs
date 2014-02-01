@@ -110,7 +110,7 @@ namespace Weverca.ControlFlowGraph
                 if (accBlock.OutgoingEdges.Count == 0
                     && accBlock.Statements.Count == 0
                     && accBlock.IncommingEdges.Count > 0
-                    && accBlock.DefaultBranch != null)
+                    && accBlock.DefaultBranch != null && !(accBlock is TryBasicBlock) && accBlock.EndIngTryBlocks.Count==0)
                 {
                     //For all incoming edges set new location and skip this block
                     BasicBlock newDestination = accBlock.DefaultBranch.To;

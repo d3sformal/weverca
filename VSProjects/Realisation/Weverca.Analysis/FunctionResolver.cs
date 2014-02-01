@@ -171,9 +171,10 @@ namespace Weverca.Analysis
         public override void IndirectStaticMethodCall(QualifiedName typeName,
             MemoryEntry name, MemoryEntry[] arguments)
         {
+            var functions = new Dictionary<object, FunctionValue>();
             foreach (var resolvedType in resolveType(typeName))
             {
-                var functions = new Dictionary<object, FunctionValue>();
+               
                 var functionNames = getSubroutineNames(name);
                 IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(resolvedType, OutSet, Element);
                 foreach (var type in types)
@@ -187,9 +188,9 @@ namespace Weverca.Analysis
                         }
                     }
                 }
-                setCallBranching(functions);
+                
             }
-           
+            setCallBranching(functions);
         }
 
         /// <inheritdoc />
