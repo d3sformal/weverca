@@ -36,14 +36,16 @@ namespace Weverca.Analysis.UnitTest
 
 
         string ExceptionTest = @"
-        class a{}
+        class a extends Exception{}
+        class b extends Exception{}
+
         try
         {
             try
             {
                 throw new a();
             }
-            catch(Exception $e)
+            catch(b $e)
             {
                 $result=2;
             }
@@ -64,7 +66,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
         string ExceptionTest2 = @"
-        class a{}
+       class a extends Exception{}
         try
         {
 
@@ -78,7 +80,7 @@ namespace Weverca.Analysis.UnitTest
                 $result=1;
             }
         }
-        catch(Excpetion $e)
+        catch(Exception $e)
         {
             $result=2;
         }
@@ -93,5 +95,98 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+
+        string ExceptionTest3 = @"
+        class a extends Exception{}
+        try
+        {
+            try
+            {
+            
+                throw new a();
+            }
+            catch(a $e)
+            {
+                $result=1;
+            }
+        }
+        catch(a $e)
+        {
+            $result=2;
+        }
+        ";
+
+        [TestMethod]
+        public void Exception3()
+        {
+            var result = TestUtils.ResultTest(ExceptionTest3);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 1);
+
+        }
+
+        string ExceptionTest4 = @"
+        try
+        {
+            try
+            {
+                throw new Exception();
+            }
+            catch(Exception $e)
+            {
+                $result=1;
+                throw new Exception();
+            }
+        }
+        catch(Exception $e)
+        {
+            $result=2;
+        }
+        ";
+
+        [TestMethod]
+        public void Exception4()
+        {
+            var result = TestUtils.ResultTest(ExceptionTest4);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 2);
+
+        }
+
+        string ExceptionTest5 = @"
+        class a extends Exception{}        
+        try
+        {
+            try
+            {
+                throw new Exception();
+            }
+            catch(Exception $e)
+            {
+                $result=1;
+            }
+            try
+            {
+                throw new Exception();
+            }
+            catch(a $e)
+            {
+                $result=1;
+            }
+        }
+        catch(Exception $e)
+        {
+            $result=2;
+        }
+        ";
+
+        [TestMethod]
+        public void Exception5()
+        {
+            var result = TestUtils.ResultTest(ExceptionTest5);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 2);
+
+        }
     }
 }

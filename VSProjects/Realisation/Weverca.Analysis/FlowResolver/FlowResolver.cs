@@ -153,7 +153,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 for (int i = 0; i < (value as InfoValue<CatchBlocks>).Data.blocks.Count; i++)
                 {
-                    foreach(var block in (value as InfoValue<CatchBlocks>).Data.blocks[i])
+                    foreach (var block in (value as InfoValue<CatchBlocks>).Data.blocks[i])
                         stack[i].Add(block);
                 }
             }
@@ -165,43 +165,52 @@ namespace Weverca.Analysis.FlowResolver
                 bool foundMatch = false;
                 if (value is ObjectValue)
                 {
-                    for (int i = stack.Count - 1; i >= 0; i--)
+                    TypeValue type = outSet.ObjectType(value as ObjectValue);
+                    var exceptionName=new QualifiedName(new Name("Exception"));
+                    if (type.Declaration.BaseClasses.Where(a => a.Equals(exceptionName)).Count() == 0 && !type.QualifiedName.Equals(exceptionName))
                     {
-                        foreach (var block in stack[i])
+                        AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Only objects derived from Exception can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                        foundMatch = false;
+                    }
+                    else
+                    {
+                        for (int i = stack.Count - 1; i >= 0; i--)
                         {
-                            TypeValue type = outSet.ObjectType(value as ObjectValue);
-                            if (type.QualifiedName == block.CatchedType.QualifiedName)
+                            foreach (var block in stack[i])
                             {
-                                var key = block;
-                                if (!result.ContainsKey(key))
+                                if (type.QualifiedName == block.CatchedType.QualifiedName)
                                 {
-                                    result[key] = new List<Value>();
-                                }
-                                result[key].Add(value);
-                                foundMatch = true;
-                            }
-                            else
-                            {
-                                for (int j = type.Declaration.BaseClasses.Count - 1; j >= 0; j--)
-                                {
-                                    if (type.Declaration.BaseClasses[j] == block.CatchedType.QualifiedName)
+                                    var key = block;
+                                    if (!result.ContainsKey(key))
                                     {
-                                        var key = block;
-                                        if (!result.ContainsKey(key))
+                                        result[key] = new List<Value>();
+                                    }
+                                    result[key].Add(value);
+                                    foundMatch = true;
+                                }
+                                else
+                                {
+                                    for (int j = type.Declaration.BaseClasses.Count - 1; j >= 0; j--)
+                                    {
+                                        if (type.Declaration.BaseClasses[j] == block.CatchedType.QualifiedName)
                                         {
-                                            result[key] = new List<Value>();
+                                            var key = block;
+                                            if (!result.ContainsKey(key))
+                                            {
+                                                result[key] = new List<Value>();
+                                            }
+                                            result[key].Add(value);
+                                            foundMatch = true;
+                                            break;
                                         }
-                                        result[key].Add(value);
-                                        foundMatch = true;
-                                        break;
                                     }
                                 }
+                                if (foundMatch)
+                                    break;
                             }
                             if (foundMatch)
                                 break;
                         }
-                        if (foundMatch)
-                            break;
                     }
 
                 }
@@ -241,7 +250,7 @@ namespace Weverca.Analysis.FlowResolver
 
             List<ThrowInfo> res = new List<ThrowInfo>();
 
-            foreach(var entry in result)
+            foreach (var entry in result)
             {
                 res.Add(new ThrowInfo(entry.Key, new MemoryEntry(entry.Value)));
             }
@@ -250,9 +259,9 @@ namespace Weverca.Analysis.FlowResolver
         }
 
         /// <inheritdoc />
-        public override void Catch(CatchPoint catchPoint,FlowOutputSet outSet)
+        public override void Catch(CatchPoint catchPoint, FlowOutputSet outSet)
         {
-            if(catchPoint.CatchDescription.CatchedType.Equals( new GenericQualifiedName(new QualifiedName(new Name("")))))
+            if (catchPoint.CatchDescription.CatchedType.QualifiedName.Equals(new QualifiedName(new Name(""))))
             {
                 return;
             }
@@ -274,14 +283,25 @@ namespace Weverca.Analysis.FlowResolver
                         stack[i].Add(block);
                 }
             }
-            outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot,new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack))));
+
+            for (int i = stack.Count - 1; i >= 0; i--)
+            {
+                if (stack[i].Where(a => a.CatchedType.QualifiedName.Equals(catchPoint.CatchDescription.CatchedType.QualifiedName)).Count() > 0)
+                {
+                    stack.RemoveLast();
+                    break;
+                }
+                stack.RemoveLast();
+            }
+
+            outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new CatchBlocks(stack))));
 
         }
 
         #endregion
     }
 
-    
+
 
     /// <summary>
     /// Class representing stack of try with catch bloks.
