@@ -245,7 +245,7 @@ namespace Weverca.Analysis.FlowResolver
             IntervalValue<T> result = interval;
             
             T maxStart = result.Start;
-            T minEnd = result.Start;
+            T minEnd = result.End;
 
             foreach (var item in intervals)
             {
@@ -254,9 +254,9 @@ namespace Weverca.Analysis.FlowResolver
                     maxStart = item.Start;
                 }
 
-                if (maxStart.CompareTo(item.Start) > 0)
+                if (minEnd.CompareTo(item.End) > 0)
                 {
-                    maxStart = item.Start;
+                    minEnd = item.End;
                 }
             }
 

@@ -32,8 +32,6 @@ namespace Weverca.Analysis.FlowResolver
         /// </returns>
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log)
         {
-            //TODO: if(False) there is empty avaluated parts --> is evaluated like "can be true".
-
             ConditionParts conditionParts = new ConditionParts(condition.Form, outSet, log, condition.Parts);
 
             return conditionParts.MakeAssumption(null);
