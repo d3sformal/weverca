@@ -123,6 +123,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AnalysisModel.cs" />
+    <Compile Include="Models\MessageModel.cs" />
     <Compile Include="Models\ResultModel.cs" />
     <Compile Include="Models\WevercaModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -130,6 +131,11 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +157,10 @@
     <Content Include="Content\Tabs.css" />
     <Content Include="Global.asax" />
     <Content Include="jQuery\jquery-1.7.2.js" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Resources\Input1.php" />
     <None Include="Resources\Input2.php" />
     <Content Include="jQuery\jquery-ui.js" />
@@ -163,6 +173,7 @@
     </Content>
     <Content Include="Views\Web.config" />
     <Content Include="Views\Home\Result.cshtml" />
+    <Content Include="Views\Shared\Message.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

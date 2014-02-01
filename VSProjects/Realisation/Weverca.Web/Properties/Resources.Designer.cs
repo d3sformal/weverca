@@ -61,6 +61,24 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to We are sorry, but the analysis over your source code timeouted..
+        /// </summary>
+        public static string AnalysisTimeouted {
+            get {
+                return ResourceManager.GetString("AnalysisTimeouted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        public static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to PHP Code verification.
         /// </summary>
         public static string IndexTitle {
