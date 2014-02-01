@@ -1,4 +1,6 @@
-﻿using Weverca.AnalysisFramework;
+﻿using System;
+
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
@@ -34,7 +36,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public override void VisitValue(Value value)
-        { }
+        {
+            throw new NotSupportedException("Not supported value type used.");
+        }
     }
 
     /// <summary>
@@ -68,7 +72,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public override void VisitValue(Value value)
-        { }
+        {
+            throw new NotSupportedException("Not supported value type used.");
+        }
     }
 
     /// <summary>
@@ -102,6 +108,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         public override void VisitValue(Value value)
-        { }
+        {
+            throw new NotSupportedException("Not supported value type used.");
+        }
     }
 }
