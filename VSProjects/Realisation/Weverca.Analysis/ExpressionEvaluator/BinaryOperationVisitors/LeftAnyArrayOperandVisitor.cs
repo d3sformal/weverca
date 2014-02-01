@@ -8,23 +8,38 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed concrete or abstract object value as the left operand
+    /// Evaluates one binary operation with abstract array value as the left operand
     /// </summary>
     /// <remarks>
     /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
     /// </remarks>
-    public class LeftObjectOperandVisitor : GenericLeftOperandVisitor<AnyObjectValue>
+    public class LeftAnyArrayOperandVisitor : GenericLeftOperandVisitor<AnyArrayValue>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LeftObjectOperandVisitor" /> class.
+        /// Initializes a new instance of the <see cref="LeftAnyArrayOperandVisitor" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public LeftObjectOperandVisitor(FlowController flowController)
+        public LeftAnyArrayOperandVisitor(FlowController flowController)
             : base(flowController)
         {
         }
 
         #region AbstractValueVisitor Members
+
+        /// <inheritdoc />
+        public override void VisitValue(Value value)
+        {
+            if (ArithmeticOperation.IsArithmetic(operation))
+            {
+                // Ommitted warning message that object cannot be converted to integer
+                // TODO: This must be fatal error
+                SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                result = OutSet.AnyValue;
+                return;
+            }
+
+            base.VisitValue(value);
+        }
 
         #region Concrete values
 
@@ -45,7 +60,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         break;
                     }
 
@@ -60,26 +74,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     DivisionByBooleanValue(value.Value);
                     break;
                 default:
-                    var leftBoolean = TypeConversion.ToBoolean(leftOperand);
-                    result = Comparison.Compare(OutSet, operation, leftBoolean, value.Value);
+                    result = Comparison.LeftAbstractBooleanCompare(OutSet, operation, value.Value);
                     if (result != null)
                     {
                         break;
                     }
 
-                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation,
-                        TypeConversion.ToInteger(value.Value));
-                    if (result != null)
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation, leftBoolean, value.Value);
+                    result = LogicalOperation.AbstractLogical(OutSet, operation, value.Value);
                     if (result != null)
                     {
                         break;
@@ -95,13 +99,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericNumericValue<T>(NumericValue<T> value)
         {
-            result = Comparison.AbstractCompare(OutSet, operation);
+            result = Comparison.LeftAlwaysGreater(OutSet, operation);
             if (result != null)
             {
-                // Probably since PHP version 5.1.5, Object converts into a number when comparing
-                // with other number. However, since this conversion is undefined, we are comparing
-                // concrete number with abstract number that can result into both true and false
-                SetWarning("Object cannot be converted to integer by comparison");
                 return;
             }
 
@@ -114,19 +114,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
-                    if (result != null)
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value.Value));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value.Value));
                     if (result != null)
                     {
                         break;
@@ -149,19 +141,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
-                    if (result != null)
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value.Value));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value.Value));
                     if (result != null)
                     {
                         break;
@@ -180,39 +164,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow, value.Value);
                     break;
                 default:
-                    if (Comparison.IsOperationComparison(operation))
-                    {
-                        // TODO: The comparison of string with object depends upon whether the object has
-                        // the "__toString" magic method implemented. If so, the string comparison is
-                        // performed. Otherwise, the object is always greater than string.
-                        result = OutSet.AnyBooleanValue;
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value.Value));
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
                         break;
                     }
 
-                    int integerValue;
-                    double floatValue;
-                    bool isInteger;
-                    TypeConversion.TryConvertToNumber(value.Value, true, out integerValue,
-                        out floatValue, out isInteger);
-
-                    result = isInteger
-                        ? ArithmeticOperation.LeftAbstractArithmetic(flow, operation, integerValue)
-                        : ArithmeticOperation.LeftAbstractArithmetic(flow, operation, floatValue);
-
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value.Value));
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -231,32 +195,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
                 case Operations.NotIdentical:
-                    // TODO: Compare if two objects are the same instances of the same class
-                    result = OutSet.AnyBooleanValue;
+                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    SetWarning("Both objects cannot be converted to integers by modulo operation");
+                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
-                    if (Comparison.IsOperationComparison(operation))
+                    result = Comparison.RightAlwaysGreater(OutSet, operation);
+                    if (result != null)
                     {
-                        // TODO: Two object instances are equal if they have the same attributes
-                        // and their values, and are instances of the same class.
-                        result = OutSet.AnyBooleanValue;
                         break;
                     }
 
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        SetWarning("Both objects cannot be converted to integers by arithmetic operation");
-                        result = OutSet.AnyIntegerValue;
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
                         break;
@@ -265,7 +221,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Both objects cannot be converted to integers by bitwise operation");
+                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         break;
                     }
 
@@ -280,34 +236,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = OutSet.CreateBool(false);
-                    break;
                 case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
+                    result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
-                    result = ModuloOperation.AbstractModulo(flow);
+                    result = ModuloOperation.AbstractModulo(flow,
+                        TypeConversion.ToNativeInteger(OutSet, value));
                     break;
                 default:
-                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
+                    result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
                         break;
                     }
 
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand),
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
                         TypeConversion.ToNativeBoolean(OutSet, value));
                     if (result != null)
                     {
@@ -317,7 +260,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         break;
                     }
 
@@ -349,15 +291,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
-                    if (result != null)
-                    {
-                        // Arithmetic objects and resources is nonsence
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
                         break;
@@ -380,47 +315,37 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.Equal:
                 case Operations.Identical:
                 case Operations.LessThan:
-                case Operations.LessThanOrEqual:
                 case Operations.And:
                     result = OutSet.CreateBool(false);
                     break;
-                case Operations.NotEqual:
                 case Operations.NotIdentical:
-                case Operations.GreaterThan:
                 case Operations.GreaterThanOrEqual:
-                case Operations.Or:
-                case Operations.Xor:
                     result = OutSet.CreateBool(true);
                     break;
+                case Operations.Equal:
+                case Operations.NotEqual:
+                case Operations.GreaterThan:
+                case Operations.LessThanOrEqual:
+                case Operations.Or:
+                case Operations.Xor:
+                    result = OutSet.AnyBooleanValue;
+                    break;
+                case Operations.BitAnd:
+                    result = OutSet.CreateInt(0);
+                    break;
+                case Operations.BitOr:
+                case Operations.BitXor:
+                case Operations.ShiftLeft:
+                case Operations.ShiftRight:
+                    result = OutSet.AnyIntegerValue;
+                    break;
+                case Operations.Mod:
+                    DivisionByNull();
+                    break;
                 default:
-                    switch (operation)
-                    {
-                        case Operations.Mul:
-                        case Operations.BitAnd:
-                            SetWarning("Object cannot be converted to integer");
-                            result = OutSet.CreateInt(0);
-                            break;
-                        case Operations.Add:
-                        case Operations.Sub:
-                        case Operations.BitOr:
-                        case Operations.BitXor:
-                        case Operations.ShiftLeft:
-                        case Operations.ShiftRight:
-                            SetWarning("Object cannot be converted to integer");
-                            result = OutSet.AnyIntegerValue;
-                            break;
-                        case Operations.Div:
-                        case Operations.Mod:
-                            SetWarning("Object cannot be converted to integer");
-                            DivisionByNull();
-                            break;
-                        default:
-                            base.VisitUndefinedValue(value);
-                            break;
-                    }
+                    base.VisitUndefinedValue(value);
                     break;
             }
         }
@@ -441,20 +366,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
-                        // Probably since PHP version 5.1.5, Object converts into a number when comparing
-                        // with other number. However, since this conversion is undefined, we are comparing
-                        // concrete number with abstract number that can result into both true and false
-                        SetWarning("Object cannot be converted to number by comparison");
                         break;
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         break;
                     }
 
@@ -469,18 +389,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow, value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), value);
+                    result = LogicalOperation.AbstractLogical(OutSet, operation, value);
                     if (result != null)
                     {
                         break;
@@ -503,18 +415,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow, value);
                     break;
                 default:
-                    result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), value);
+                    result = LogicalOperation.AbstractLogical(OutSet, operation, value);
                     if (result != null)
                     {
                         break;
@@ -540,7 +444,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Mod:
                     // Ommitted warning message that object cannot be converted to integer
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
@@ -551,17 +454,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Ommitted warning message that object cannot be converted to integer
-                        // Ommitted error report that array is unsupported operand in arithmetic operation
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-                        break;
-                    }
-
-                    result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation);
                     if (result != null)
                     {
                         break;
@@ -571,7 +464,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (result != null)
                     {
                         // Ommitted warning message that object cannot be converted to integer
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         break;
                     }
 
@@ -594,8 +486,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
-                    result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation);
                     if (result != null)
                     {
                         break;
@@ -604,7 +495,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
                         break;
                     }
 
@@ -619,21 +509,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     DivisionByAnyBooleanValue();
                     break;
                 default:
-                    result = Comparison.RightAbstractBooleanCompare(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand));
+                    result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.RightAbstractBooleanArithmetic(flow, operation);
-                    if (result != null)
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -653,13 +534,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
-                        // Probably since PHP version 5.1.5, Object converts into a number when comparing
-                        // with other number. However, since this conversion is undefined, we are comparing
-                        // concrete number with abstract number that can result into both true and false
-                        SetWarning("Object cannot be converted to integer by comparison");
                         break;
                     }
 
@@ -669,33 +546,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
-        public override void VisitAnyIntegerValue(AnyIntegerValue value)
-        {
-            result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitAnyIntegerValue(value);
-        }
-
-        /// <inheritdoc />
         public override void VisitAnyLongintValue(AnyLongintValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");
-        }
-
-        /// <inheritdoc />
-        public override void VisitAnyFloatValue(AnyFloatValue value)
-        {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitAnyFloatValue(value);
         }
 
         #endregion Abstract numeric values
@@ -706,23 +559,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
-                    if (Comparison.IsOperationComparison(operation))
-                    {
-                        // TODO: The comparison of string with object depends upon whether the object has
-                        // the "__toString" magic method implemented. If so, the string comparison is
-                        // performed. Otherwise, the object is always greater than string.
-                        result = OutSet.AnyBooleanValue;
-                        break;
-                    }
-
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
-                        // A string can be converted into floating point number too.
                         break;
                     }
 
@@ -741,31 +583,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
+                    result = OutSet.CreateBool(false);
+                    break;
                 case Operations.NotIdentical:
-                    // It cannot be decided if they are identical or not.
-                    result = OutSet.AnyBooleanValue;
+                    result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
                     SetWarning("Object cannot be converted to integer by modulo operation");
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
+                    result = Comparison.RightAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by comparison");
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
-                    if (result != null)
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
                         break;
@@ -789,23 +624,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Identical:
-                    result = OutSet.CreateBool(false);
-                    break;
                 case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
+                    result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
-                    result = Comparison.RightAlwaysGreater(OutSet, operation);
+                    result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
                         break;
                     }
 
-                    result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation);
                     if (result != null)
                     {
                         break;
@@ -814,14 +646,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
                         break;
                     }
 
@@ -853,15 +677,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
+                    result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
-                        // Arithmetic objects and resources is nonsence
+                        // Comapring of resource and integer makes no sence.
                         break;
                     }
 
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand), TypeConversion.ToBoolean(value));
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
                         break;

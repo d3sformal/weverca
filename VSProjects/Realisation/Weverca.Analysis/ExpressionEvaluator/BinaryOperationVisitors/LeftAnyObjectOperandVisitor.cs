@@ -8,18 +8,18 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed concrete or abstract object value as the left operand
+    /// Evaluates one binary operation with abstract object value as the left operand
     /// </summary>
     /// <remarks>
     /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
     /// </remarks>
-    public class LeftObjectOperandVisitor : GenericLeftOperandVisitor<AnyObjectValue>
+    public class LeftAnyObjectOperandVisitor : GenericLeftOperandVisitor<AnyObjectValue>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LeftObjectOperandVisitor" /> class.
+        /// Initializes a new instance of the <see cref="LeftAnyObjectOperandVisitor" /> class.
         /// </summary>
         /// <param name="flowController">Flow controller of program point</param>
-        public LeftObjectOperandVisitor(FlowController flowController)
+        public LeftAnyObjectOperandVisitor(FlowController flowController)
             : base(flowController)
         {
         }
@@ -121,7 +121,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -156,7 +155,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ArithmeticOperation.LeftAbstractArithmetic(flow, operation, value.Value);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -212,7 +210,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -539,8 +536,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.Mod:
-                    // Ommitted warning message that object cannot be converted to integer
-                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    // Ommitted warnings messages that objects cannot be converted to integers
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
@@ -556,7 +552,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         // Ommitted warning message that object cannot be converted to integer
                         // Ommitted error report that array is unsupported operand in arithmetic operation
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
                         break;
                     }
 
@@ -570,8 +565,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        // Ommitted warning message that object cannot be converted to integer
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
+                        // Ommitted warnings messages that objects cannot be converted to integers
                         break;
                     }
 

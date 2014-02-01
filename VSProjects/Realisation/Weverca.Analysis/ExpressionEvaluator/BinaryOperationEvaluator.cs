@@ -76,6 +76,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private LeftFloatIntervalOperandVisitor floatIntervalVisitor;
 
         /// <summary>
+        /// Visitor of left operand that has any abstract  value
+        /// </summary>
+        private LeftAnyValueOperandVisitor anyValueVisitor;
+
+        /// <summary>
         /// Visitor of left operand that has abstract boolean value
         /// </summary>
         private LeftAnyBooleanOperandVisitor anyBooleanVisitor;
@@ -94,6 +99,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Visitor of left operand that has abstract string value
         /// </summary>
         private LeftAnyStringOperandVisitor anyStringVisitor;
+
+        /// <summary>
+        /// Visitor of left operand that has abstract array value
+        /// </summary>
+        private LeftAnyArrayOperandVisitor anyArrayVisitor;
+
+        /// <summary>
+        /// Visitor of left operand that has concrete or abstract resource value
+        /// </summary>
+        private LeftResourceOperandVisitor resourceVisitor;
 
         /// <summary>
         /// Selected visitor of left operand that performs binary operations with the given right operand
@@ -115,13 +130,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
             stringVisitor = new LeftStringOperandVisitor(flowController);
             objectVisitor = new LeftObjectOperandVisitor(flowController);
             arrayVisitor = new LeftArrayOperandVisitor(flowController);
+            resourceVisitor = new LeftResourceOperandVisitor(flowController);
             nullVisitor = new LeftNullOperandVisitor(flowController);
             integerIntervalVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
             floatIntervalVisitor = new LeftFloatIntervalOperandVisitor(flowController);
+            anyValueVisitor = new LeftAnyValueOperandVisitor(flowController);
             anyBooleanVisitor = new LeftAnyBooleanOperandVisitor(flowController);
             anyIntegerVisitor = new LeftAnyIntegerOperandVisitor(flowController);
             anyFloatVisitor = new LeftAnyFloatOperandVisitor(flowController);
             anyStringVisitor = new LeftAnyStringOperandVisitor(flowController);
+            anyArrayVisitor = new LeftAnyArrayOperandVisitor(flowController);
         }
 
         /// <summary>
@@ -202,6 +220,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        /// <exception cref="System.NotSupportedException">Thrown always</exception>
         public override void VisitLongintValue(LongintValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");
@@ -230,7 +249,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
-            objectVisitor.SetLeftOperand(value);
+            // Almost every binary operation converts object to another type. If object is converted
+            // into boolean, it is always true. Exact comparing of objects is complicated to achieve.
+            // And comparison into string calls "__toString" magic method. that is not currently supported.
+            // Thou we do not need concrete object.
+            objectVisitor.SetLeftOperand(OutSet.AnyObjectValue);
             visitor = objectVisitor;
         }
 
@@ -242,6 +265,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
+
+        /// <inheritdoc />
+        public override void VisitResourceValue(ResourceValue value)
+        {
+            // Every binary operation converts resource to another type, but conversion to another type
+            // makes no sence expect boolean that is always true. Thou we do not need concrete resource.
+            resourceVisitor.SetLeftOperand(OutSet.AnyResourceValue);
+            visitor = resourceVisitor;
+        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -277,6 +309,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Interval values
 
         #region Abstract values
+
+        /// <inheritdoc />
+        public override void VisitAnyValue(AnyValue value)
+        {
+            anyValueVisitor.SetLeftOperand(value);
+            visitor = anyValueVisitor;
+        }
 
         #region Abstract scalar values
 
@@ -319,6 +358,31 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Abstract scalar values
+
+        #region Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyObjectValue(AnyObjectValue value)
+        {
+            objectVisitor.SetLeftOperand(value);
+            visitor = objectVisitor;
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyArrayValue(AnyArrayValue value)
+        {
+            anyArrayVisitor.SetLeftOperand(value);
+            visitor = anyArrayVisitor;
+        }
+
+        #endregion Compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            resourceVisitor.SetLeftOperand(value);
+            visitor = resourceVisitor;
+        }
 
         #endregion Abstract values
 
