@@ -163,6 +163,160 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string StaticCallWithSelfTest = @"
+            class a
+            {
+            function b()
+            {
+            self::c();
+            }
+            function c()
+            {
+            global $result;
+            $result='called';
+            }
+
+            }
+            a::b();
+        ";
+        [TestMethod]
+        public void StaticCallWithSelf()
+        {
+            var result = TestUtils.ResultTest(StaticCallWithSelfTest);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "called");
+
+        }
+
+        string StaticCallWithSelfTest2 = @"
+            class a
+            {
+            static function b()
+            {
+            self::c();
+            }
+            static function c()
+            {
+            global $result;
+            $result='called';
+            }
+
+            }
+            a::b();
+        ";
+        [TestMethod]
+        public void StaticCallWithSelf2()
+        {
+            var result = TestUtils.ResultTest(StaticCallWithSelfTest2);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "called");
+
+        }
+
+
+        string CallWithSelfTest = @"
+            class a
+            {
+            function b()
+            {
+            self::c();
+            }
+            function c()
+            {
+            $this->x='called';
+            }
+
+            }
+            $a=new a();
+            $a->b();
+            $result=$a->x;
+        ";
+        [TestMethod]
+        public void CallWithSelf()
+        {
+            var result = TestUtils.ResultTest(CallWithSelfTest);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "called");
+
+        }
+
+
+        string CallWithParentTest = @"
+            class base
+            {
+                 function c()
+                {
+                $this->x='base called';
+                }
+            }
+
+
+            class a extends base
+            {
+            function b()
+            {
+            parent::c();
+            }
+            function c()
+            {
+            $this->x='called';
+            }
+
+            }
+            $a=new a();
+            $a->b();
+            $result=$a->x;
+        ";
+        [TestMethod]
+        public void CallWithParent()
+        {
+            var result = TestUtils.ResultTest(CallWithParentTest);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "base called");
+
+        }
+
+        string CannotAccesSelfTest = @"
+            self::a();
+        ";
+        [TestMethod]
+        public void CannotAccesSelf()
+        {
+            var outset = TestUtils.Analyze(CannotAccesSelfTest);
+            TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS);
+
+        }
+
+        string CannotAccesParentTest = @"
+            function p()
+            {   
+                self::a();
+            }
+        ";
+        [TestMethod]
+        public void CannotAccesParent()
+        {
+            var outset = TestUtils.Analyze(CannotAccesParentTest);
+            TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS);
+
+        }
+
+        string CannotAccesParentInClassWithNoParentTest = @"
+            class base
+            {
+                function c()
+                {
+                   parent::c();
+                }
+            }
+        ";
+        [TestMethod]
+        public void CannotAccesParentInClassWithNoParent()
+        {
+            var outset = TestUtils.Analyze(CannotAccesParentInClassWithNoParentTest);
+            TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT);
+
+        }
 
     }
 }

@@ -31,10 +31,12 @@ namespace Weverca.Analysis
         private readonly Dictionary<FunctionValue, ProgramPointGraph> sharedProgramPoints = new Dictionary<FunctionValue, ProgramPointGraph>();
 
         private readonly HashSet<FunctionValue> sharedFunctions = new HashSet<FunctionValue>();
-        
-        public static readonly VariableName callDepthName = new VariableName(".callDepth");
-   
 
+        public static readonly VariableName callDepthName = new VariableName(".callDepth");
+
+        private static readonly VariableName calledObjectTypeName = new VariableName(".calledObject");
+
+        public static Dictionary<LangElement, QualifiedName> methodToClass = new Dictionary<LangElement, QualifiedName>();
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
         /// </summary>
@@ -45,13 +47,38 @@ namespace Weverca.Analysis
 
         #region FunctionResolverBase overrides
 
+        #region function calls
+
         /// <inheritdoc />
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
             var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
-            
+
         }
+
+        /// <inheritdoc />
+        public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
+        {
+            var functions = new Dictionary<object, FunctionValue>();
+            var functionNames = getSubroutineNames(name);
+
+            foreach (var functionName in functionNames)
+            {
+                var resolvedFunctions = resolveFunction(functionName, arguments);
+                foreach (var resolvedFunction in resolvedFunctions)
+                {
+                    functions[resolvedFunction.Key] = resolvedFunction.Value;
+                }
+            }
+
+            setCallBranching(functions);
+        }
+
+        #endregion
+
+        #region method calls
+
 
         /// <inheritdoc />
         public override void MethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name,
@@ -59,74 +86,6 @@ namespace Weverca.Analysis
         {
             var methods = resolveMethod(calledObject, name, arguments);
             setCallBranching(methods);
-        }
-
-        /// <inheritdoc />
-        public override void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
-        {
-            var calledObjectValue = calledObject.ReadMemory(InSnapshot);
-
-            foreach (var value in calledObjectValue.PossibleValues)
-            {
-                var visitor = new StaticObjectVisitor(Flow);
-                value.Accept(visitor);
-                switch (visitor.Result)
-                {
-                    case StaticObjectVisitorResult.NO_RESULT:
-                        setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
-                        break;
-                    case StaticObjectVisitorResult.ONE_RESULT:
-                        StaticMethodCall(visitor.className, name, arguments);
-                        break;
-                    case StaticObjectVisitorResult.MULTIPLE_RESULTS:
-                        break;
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
-        {
-            var resolvedTypes=resolveType(typeName);
-            foreach (var resolvedType in resolvedTypes)
-            {
-                IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(resolvedType, OutSet, Element);
-                foreach (var type in types)
-                {
-                    var methods = resolveStaticMethod(type, name, arguments);
-                    setCallBranching(methods);
-                }
-            }
-        }
-
-        private IEnumerable<QualifiedName> resolveType(QualifiedName typeName)
-        {
-            if (typeName.Name.LowercaseValue == "self" || typeName.Name.LowercaseValue == "parent")
-            {
-                MemoryEntry calledObjects =
-               OutSet.GetLocalControlVariable(new VariableName(".calledObject")).ReadMemory(OutSet.Snapshot);
-                if (!(calledObjects.PossibleValues.Count() == 1 && calledObjects.PossibleValues.First() is UndefinedValue))
-                {
-                    if (typeName.Name.LowercaseValue == "self")
-                    {
-                        foreach (var calledObject in calledObjects.PossibleValues)
-                        {
-                            yield return (calledObject as TypeValue).QualifiedName;
-
-                        }
-                    }
-                    if (typeName.Name.LowercaseValue == "parent")
-                    { 
-                    
-                    }
-                }
-            }
-            else
-            {
-                yield return typeName;
-            }
-           
-            
         }
 
 
@@ -149,48 +108,52 @@ namespace Weverca.Analysis
             setCallBranching(methods);
         }
 
-        /// <inheritdoc />
-        public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
-        {
-            var functions = new Dictionary<object, FunctionValue>();
-            var functionNames = getSubroutineNames(name);
 
-            foreach (var functionName in functionNames)
+        #endregion
+
+        #region static calls
+
+        /// <inheritdoc />
+        public override void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
+        {
+            var calledObjectValue = calledObject.ReadMemory(InSnapshot);
+
+            foreach (var value in calledObjectValue.PossibleValues)
             {
-                var resolvedFunctions = resolveFunction(functionName, arguments);
-                foreach (var resolvedFunction in resolvedFunctions)
+                var visitor = new StaticObjectVisitor(Flow);
+                value.Accept(visitor);
+                switch (visitor.Result)
                 {
-                    functions[resolvedFunction.Key] = resolvedFunction.Value;
+                    case StaticObjectVisitorResult.NO_RESULT:
+                        setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
+                        break;
+                    case StaticObjectVisitorResult.ONE_RESULT:
+                        staticMethodCall(visitor.className, name, arguments);
+                        break;
+                    case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        break;
                 }
             }
-
-            setCallBranching(functions);
         }
 
         /// <inheritdoc />
-        public override void IndirectStaticMethodCall(QualifiedName typeName,
-            MemoryEntry name, MemoryEntry[] arguments)
+        public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            var functions = new Dictionary<object, FunctionValue>();
-            foreach (var resolvedType in resolveType(typeName))
+            var resolvedTypes = resolveType(typeName);
+            foreach (var resolvedType in resolvedTypes)
             {
-               
-                var functionNames = getSubroutineNames(name);
-                IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(resolvedType, OutSet, Element);
-                foreach (var type in types)
-                {
-                    foreach (var functionName in functionNames)
-                    {
-                        var resolvedFunctions = resolveStaticMethod(type, functionName, arguments);
-                        foreach (var resolvedFunction in resolvedFunctions)
-                        {
-                            functions[resolvedFunction.Key] = resolvedFunction.Value;
-                        }
-                    }
-                }
-                
+                staticMethodCall(resolvedType, name, arguments);
             }
-            setCallBranching(functions);
+        }
+
+        private void staticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
+        {
+            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            foreach (var type in types)
+            {
+                var methods = resolveStaticMethod(type, name, arguments);
+                setCallBranching(methods);
+            }
         }
 
         /// <inheritdoc />
@@ -208,7 +171,7 @@ namespace Weverca.Analysis
                         setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
-                        IndirectStaticMethodCall(visitor.className, name, arguments);
+                        indirectStaticMethodCall(visitor.className, name, arguments);
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
                         break;
@@ -216,32 +179,108 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
+        public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
+        {
+            foreach (var resolvedType in resolveType(typeName))
+            {
+                indirectStaticMethodCall(resolvedType, name, arguments);
+            }
+        }
+
+        private void indirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
+        {
+            var functions = new Dictionary<object, FunctionValue>();
+
+            var functionNames = getSubroutineNames(name);
+            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            foreach (var type in types)
+            {
+                foreach (var functionName in functionNames)
+                {
+                    var resolvedFunctions = resolveStaticMethod(type, functionName, arguments);
+                    foreach (var resolvedFunction in resolvedFunctions)
+                    {
+                        functions[resolvedFunction.Key] = resolvedFunction.Value;
+                    }
+                }
+            }
+          
+            setCallBranching(functions);
+        }
+
+
+        private IEnumerable<QualifiedName> resolveType(QualifiedName typeName)
+        {
+            List<QualifiedName> result = new List<QualifiedName>();
+            if (typeName.Name.Value == "self" || typeName.Name.Value == "parent")
+            {
+
+                MemoryEntry calledObjects =
+                OutSet.GetLocalControlVariable(calledObjectTypeName).ReadMemory(OutSet.Snapshot);
+                if (!(calledObjects.Count == 1 && calledObjects.PossibleValues.First() is UndefinedValue))
+                {
+                    if (typeName.Name.Value == "self")
+                    {
+                        foreach (var calledObject in calledObjects.PossibleValues)
+                        {
+                            result.Add((calledObject as TypeValue).QualifiedName);
+                        }
+                    }
+                    if (typeName.Name.Value == "parent")
+                    {
+                        foreach (var calledObject in calledObjects.PossibleValues)
+                        {
+                            ClassDecl classDeclaration = (calledObject as TypeValue).Declaration;
+                            if (classDeclaration.BaseClasses.Count > 0)
+                            {
+                                result.Add((calledObject as TypeValue).Declaration.BaseClasses.Last());
+                            }
+                            else
+                            {
+                                setWarning("Cannot acces parrent:: current class has no parrent", AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (typeName.Name.Value == "self")
+                    {
+                        setWarning("Cannot acces self:: when not in class", AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS);
+                    }
+                    else
+                    {
+                        setWarning("Cannot acces parent:: when not in class", AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS);
+                    }
+
+                }
+            }
+            else
+            {
+                result.Add(typeName);
+            }
+            return result;
+
+        }
+
+        #endregion
+
 
         public override MemoryEntry InitializeCalledObject(ProgramPointBase caller, ProgramPointGraph extensionGraph, MemoryEntry calledObject)
         {
 
-            if (calledObject!=null)
-            {
-                //static call $this cannot be accesible
-                List<Value> types = new List<Value>();
-                foreach (var objects in calledObject.PossibleValues)
-                {
-                    if (objects is StringValue)
-                    {
-                        StringValue s = objects as StringValue;
-                        types.AddRange(caller.OutSet.ResolveType(new QualifiedName(new Name(s.Value))));
-
-                    }
-                    else if (objects is ObjectValue)
-                    {
-                        types.Add(caller.OutSet.ObjectType(objects as ObjectValue));
-                    }
-                }
-                caller.OutSet.GetControlVariable(new VariableName(".calledObject")).WriteMemory(caller.OutSet.Snapshot, new MemoryEntry(types));
-
-            }
             if (caller is StaticMethodCallPoint || caller is IndirectStaticMethodCallPoint)
             {
+                StaticMtdCall element = caller.Partial as StaticMtdCall;
+                if (element != null)
+                {
+                    if (element.ClassName.QualifiedName.Name.Value == "self" || element.ClassName.QualifiedName.Name.Value == "parent")
+                    {
+                        return caller.OutSet.ReadVariable(new VariableIdentifier("this")).ReadMemory(caller.OutSnapshot);
+                    }
+                }
+
                 return new MemoryEntry(OutSet.UndefinedValue);
             }
             else
@@ -274,13 +313,16 @@ namespace Weverca.Analysis
         {
             IncreaseStackSize(caller.OutSet);
 
-            var calledObject=caller.OutSet.GetControlVariable(new VariableName(".calledObject")).ReadMemory(caller.OutSet.Snapshot);
-
-            OutSet.GetLocalControlVariable(new VariableName(".calledObject")).WriteMemory(OutSet.Snapshot, calledObject);
-
             var declaration = extensionGraph.SourceObject;
             var signature = getSignature(declaration);
             var hasNamedSignature = signature.HasValue;
+
+            if (declaration != null && methodToClass.ContainsKey(declaration))
+            {
+                QualifiedName calledClass = methodToClass[declaration];
+                MemoryEntry types = new MemoryEntry(OutSet.ResolveType(calledClass));
+                OutSet.GetLocalControlVariable(calledObjectTypeName).WriteMemory(OutSet.Snapshot, types);
+            }
 
             if (hasNamedSignature)
             {
@@ -308,15 +350,15 @@ namespace Weverca.Analysis
                         new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
                 }
             }
-             List<Value> newCalledFunctions=new List<Value>();
+            List<Value> newCalledFunctions = new List<Value>();
             if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
             {
                 MemoryEntry calledFunctions = caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSet.Snapshot);
                 newCalledFunctions = new List<Value>(calledFunctions.PossibleValues);
             }
-            
+
             newCalledFunctions.AddRange(OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues);
-            OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot,new MemoryEntry(newCalledFunctions));
+            OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
         }
 
         /// <inheritdoc />
@@ -375,6 +417,11 @@ namespace Weverca.Analysis
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
             ClassDeclBuilder type = convertToClassDecl(declaration);
+
+            foreach (var method in type.SourceCodeMethods)
+            {
+                methodToClass.Add(method.Value.DeclaringElement, type.QualifiedName);
+            }
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
                 setWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
@@ -1379,7 +1426,7 @@ namespace Weverca.Analysis
             ProgramPointGraph functionGraph;
 
             bool useSharedFunctions = false;
-            if(OutSet.GetLocalControlVariable(callDepthName).IsDefined(OutSet.Snapshot))
+            if (OutSet.GetLocalControlVariable(callDepthName).IsDefined(OutSet.Snapshot))
             {
                 MemoryEntry callDepthEntry = OutSet.GetLocalControlVariable(callDepthName).ReadMemory(OutSet.Snapshot);
                 foreach (Value callDepth in callDepthEntry.PossibleValues)
@@ -1398,13 +1445,13 @@ namespace Weverca.Analysis
                 }
             }
 
-            if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot) && 
+            if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot) &&
                 OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues
                 .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >= 2)
             {
                 useSharedFunctions = true;
             }
-            
+
             if (useSharedFunctions)
             {
                 if (sharedFunctions.Contains(function))
@@ -1425,12 +1472,12 @@ namespace Weverca.Analysis
                     sharedFunctions.Add(function);
                 }
             }
-            else 
+            else
             {
                 functionGraph = ProgramPointGraph.From(function);
-            
+
             }
-            
+
             Flow.AddExtension(function.DeclaringElement, functionGraph, ExtensionType.ParallelCall);
         }
 
@@ -1580,7 +1627,7 @@ namespace Weverca.Analysis
             }
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
-            for (int i = 0; i < Math.Min(signature.FormalParams.Count,arguments.Count()); ++i)
+            for (int i = 0; i < Math.Min(signature.FormalParams.Count, arguments.Count()); ++i)
             {
                 enumerator.MoveNext();
 
@@ -1633,7 +1680,7 @@ namespace Weverca.Analysis
 
         private void IncreaseStackSize(FlowOutputSet calledOutSet)
         {
-            
+
 
             List<Value> newStackSize = new List<Value>();
             if (calledOutSet.GetLocalControlVariable(callDepthName).IsDefined(calledOutSet.Snapshot))
@@ -1645,15 +1692,15 @@ namespace Weverca.Analysis
                     {
                         newStackSize.Add(value);
                     }
-                    else 
+                    else
                     {
                         newStackSize.Add(OutSet.CreateInt((value as IntegerValue).Value + 1));
                     }
-                    
+
                 }
             }
             else
-            { 
+            {
                 newStackSize.Add(OutSet.CreateInt(1));
             }
 
@@ -1663,7 +1710,7 @@ namespace Weverca.Analysis
         #endregion
 
 
-       
+
     }
 
     #region function hints
