@@ -74,7 +74,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag5()
         {
             var result = TestUtils.ResultTest(SimpleFlagTest5);
-            TestUtils.IsClean(result, DirtyType.HTMLDirty);
+            TestUtils.IsClean(result, FlagType.HTMLDirty);
 
         }
 
@@ -86,7 +86,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag6()
         {
             var result = TestUtils.ResultTest(SimpleFlagTest6);
-            TestUtils.IsClean(result, DirtyType.SQLDirty);
+            TestUtils.IsClean(result, FlagType.SQLDirty);
 
         }
 
@@ -100,7 +100,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag7()
         {
             var result = TestUtils.Analyze(SimpleFlagTest7);
-            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.HTMLDirty) == false);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, FlagType.HTMLDirty) == false);
 
         }
 
@@ -113,7 +113,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag8()
         {
             var result = TestUtils.Analyze(SimpleFlagTest8);
-            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.HTMLDirty));
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, FlagType.HTMLDirty));
 
         }
 
@@ -127,7 +127,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag9()
         {
             var result = TestUtils.Analyze(SimpleFlagTest9);
-            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.SQLDirty));
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, FlagType.SQLDirty));
 
         }
 
@@ -141,7 +141,7 @@ namespace Weverca.Analysis.UnitTest
         public void SimpleFlag10()
         {
             var result = TestUtils.Analyze(SimpleFlagTest10);
-            Debug.Assert(TestUtils.ContainsSecurityWarning(result, DirtyType.SQLDirty)==false);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(result, FlagType.SQLDirty)==false);
 
         }
 

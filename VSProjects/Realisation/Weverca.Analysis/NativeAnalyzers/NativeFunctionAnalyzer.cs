@@ -147,12 +147,12 @@ namespace Weverca.Analysis
         /// <summary>
         /// Structure storing information about function which clean dirty flag from values
         /// </summary>
-        public Dictionary<QualifiedName, DirtyType> cleaningFunctions;
+        public Dictionary<QualifiedName, FlagType> cleaningFunctions;
 
         /// <summary>
         /// Structure storing information about function which report security warning, when, argument contains drity flag
         /// </summary>
-        public Dictionary<QualifiedName, DirtyType> reportingFunctions;
+        public Dictionary<QualifiedName, FlagType> reportingFunctions;
 
         private HashSet<string> types = new HashSet<string>();
         
@@ -352,120 +352,120 @@ namespace Weverca.Analysis
 
         private void initCleaningFunctions()
         {
-            cleaningFunctions = new Dictionary<QualifiedName, DirtyType>();
-            cleaningFunctions.Add(getQualifiedName("htmlentities"),DirtyType.HTMLDirty);
-            cleaningFunctions.Add(getQualifiedName("htmlspecialchars"), DirtyType.HTMLDirty);
+            cleaningFunctions = new Dictionary<QualifiedName, FlagType>();
+            cleaningFunctions.Add(getQualifiedName("htmlentities"),FlagType.HTMLDirty);
+            cleaningFunctions.Add(getQualifiedName("htmlspecialchars"), FlagType.HTMLDirty);
 
-            cleaningFunctions.Add(getQualifiedName("mysql_escape_string"), DirtyType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("mysql_real_escape_string"), DirtyType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("sqlite_escape_string"), DirtyType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("mysqli_real_escape_string"), DirtyType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("mysqli_escape_string"), DirtyType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysql_escape_string"), FlagType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysql_real_escape_string"), FlagType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("sqlite_escape_string"), FlagType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysqli_real_escape_string"), FlagType.SQLDirty);
+            cleaningFunctions.Add(getQualifiedName("mysqli_escape_string"), FlagType.SQLDirty);
 
         }
 
         private void initReportingFunctions()
         {
-            reportingFunctions = new Dictionary<QualifiedName, DirtyType>();
-            reportingFunctions.Add(getQualifiedName("print_r"), DirtyType.HTMLDirty);
-            reportingFunctions.Add(getQualifiedName("printf"), DirtyType.HTMLDirty);
-            reportingFunctions.Add(getQualifiedName("print"), DirtyType.HTMLDirty);
+            reportingFunctions = new Dictionary<QualifiedName, FlagType>();
+            reportingFunctions.Add(getQualifiedName("print_r"), FlagType.HTMLDirty);
+            reportingFunctions.Add(getQualifiedName("printf"), FlagType.HTMLDirty);
+            reportingFunctions.Add(getQualifiedName("print"), FlagType.HTMLDirty);
             
-            reportingFunctions.Add(getQualifiedName("fopen"), DirtyType.FilePathDirty);
+            reportingFunctions.Add(getQualifiedName("fopen"), FlagType.FilePathDirty);
             //includy
 
-            reportingFunctions.Add(getQualifiedName("dbplus_sql"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_blob_size"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_change_user"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_clob_size"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_connect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_create_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_database_password"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_database"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_db_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_db_status"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_drop_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_hostname"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_list_fields"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_list_tables"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_password"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_pconnect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_select_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_set_password"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_start_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_stop_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_username"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_connect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_create_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_db_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_drop_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_list_fields"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_list_tables"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_pconnect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_select_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_bind"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_connect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_guid_string"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_init"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_pconnect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_select_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_connect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_create_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_db_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_drop_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_fetch_object"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_list_fields"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_list_tables"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_pconnect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_select_db"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_set_charset"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_unbuffered_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_master_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_slave_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_memcache_set"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_match_wild"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_query_is_select"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_set_user_pick_server"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_is_select"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_storage_handler"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_user_handlers"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_execute"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_stmt_execute"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("session_pgsql_add_error"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("session_pgsql_set_field"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sql_regcase"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_array_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_create_aggregate"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_create_function"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_exec"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_factory"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_fetch_column_types"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_fetch_object"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_open"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_popen"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_single_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_udf_decode_binary"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_udf_encode_binary"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_unbuffered_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_configure"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_connect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_fetch_object"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_get_config"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_prepare"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_query"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_connect"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_stmt_bind_param"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_stmt_send_long_data"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_createdb"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_regcase"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_bind_param"), DirtyType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_send_long_data"), DirtyType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("dbplus_sql"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_blob_size"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_change_user"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_clob_size"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_connect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_create_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_database_password"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_database"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_db_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_db_status"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_drop_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_hostname"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_list_fields"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_list_tables"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_password"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_pconnect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_select_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_set_password"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_start_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_stop_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("fbsql_username"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_connect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_create_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_db_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_drop_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_list_fields"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_list_tables"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_pconnect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_select_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_bind"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_connect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_guid_string"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_init"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_pconnect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mssql_select_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_connect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_create_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_db_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_drop_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_fetch_object"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_list_fields"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_list_tables"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_pconnect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_select_db"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_set_charset"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysql_unbuffered_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_master_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_slave_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_memcache_set"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_match_wild"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_query_is_select"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_set_user_pick_server"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_is_select"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_storage_handler"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_user_handlers"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_execute"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_stmt_execute"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("session_pgsql_add_error"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("session_pgsql_set_field"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sql_regcase"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_array_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_create_aggregate"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_create_function"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_exec"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_factory"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_fetch_column_types"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_fetch_object"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_open"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_popen"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_single_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_udf_decode_binary"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_udf_encode_binary"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlite_unbuffered_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_configure"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_connect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_fetch_object"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_get_config"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_prepare"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("sqlsrv_query"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_connect"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_stmt_bind_param"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_stmt_send_long_data"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_createdb"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql_regcase"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("msql"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_bind_param"), FlagType.SQLDirty);
+            reportingFunctions.Add(getQualifiedName("mysqli_send_long_data"), FlagType.SQLDirty);
 
         }
 
@@ -682,7 +682,7 @@ namespace Weverca.Analysis
             }
             if (analyzer.reportingFunctions.ContainsKey(nativeFunctions[0].Name))
             {
-                DirtyType type=analyzer.reportingFunctions[nativeFunctions[0].Name];
+                FlagType type=analyzer.reportingFunctions[nativeFunctions[0].Name];
                 if (FlagsHandler.GetFlags(argumentValues).isDirty(type))
                 { 
                     AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentPartial, type));  

@@ -92,7 +92,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
 
-        public static bool ContainsSecurityWarning(FlowOutputSet outset, DirtyType cause)
+        public static bool ContainsSecurityWarning(FlowOutputSet outset, FlagType cause)
         {
             var warnings = AnalysisWarningHandler.ReadWarnings<AnalysisSecurityWarning>(outset);
             foreach (var value in warnings)
@@ -161,7 +161,7 @@ namespace Weverca.Analysis.UnitTest
         public static void IsDirty(Value value)
         {
             var flag = value.GetInfo<Flags>();
-            Debug.Assert(flag.isDirty(DirtyType.FilePathDirty) && flag.isDirty(DirtyType.HTMLDirty) && flag.isDirty(DirtyType.HTMLDirty));
+            Debug.Assert(flag.isDirty(FlagType.FilePathDirty) && flag.isDirty(FlagType.HTMLDirty) && flag.isDirty(FlagType.HTMLDirty));
         }
 
         public static void IsClean(Value value)
@@ -173,11 +173,11 @@ namespace Weverca.Analysis.UnitTest
             }
             else
             {
-                Debug.Assert(!flag.isDirty(DirtyType.FilePathDirty) && !flag.isDirty(DirtyType.HTMLDirty) && !flag.isDirty(DirtyType.HTMLDirty));
+                Debug.Assert(!flag.isDirty(FlagType.FilePathDirty) && !flag.isDirty(FlagType.HTMLDirty) && !flag.isDirty(FlagType.HTMLDirty));
             }
         }
 
-        public static void IsClean(Value value,DirtyType type)
+        public static void IsClean(Value value,FlagType type)
         {
             var flag = value.GetInfo<Flags>();
             if (flag == null)

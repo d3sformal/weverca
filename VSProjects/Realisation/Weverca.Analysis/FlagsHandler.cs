@@ -15,7 +15,7 @@ namespace Weverca.Analysis
     /// <summary>
     /// Type of flag
     /// </summary>
-    public enum DirtyType
+    public enum FlagType
     {
         HTMLDirty = 1, SQLDirty = 2, FilePathDirty = 4
     }
@@ -34,7 +34,7 @@ namespace Weverca.Analysis
         /// <returns>Merged flags</returns>
         public static Flags GetFlags(IEnumerable<Value> source)
         {
-            Dictionary<DirtyType, bool> flags = GetFlagsFromValues(source);
+            Dictionary<FlagType, bool> flags = GetFlagsFromValues(source);
             return new Flags(flags);
         }
 
@@ -43,7 +43,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="source">Values</param>
         /// <returns>Dictionary containing flag information</returns>
-        public static Dictionary<DirtyType, bool> GetFlagsFromValues(params Value[] source)
+        public static Dictionary<FlagType, bool> GetFlagsFromValues(params Value[] source)
         {
             return GetFlagsFromValues(source as IEnumerable<Value>);
         }
@@ -53,7 +53,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="source">Values</param>
         /// <returns>Dictionary containing flag information</returns>
-        public static Dictionary<DirtyType, bool> GetFlagsFromValues(IEnumerable<Value> source)
+        public static Dictionary<FlagType, bool> GetFlagsFromValues(IEnumerable<Value> source)
         {
             var flags = Flags.CreateCleanFlags();
             foreach (Value value in source)
@@ -73,10 +73,10 @@ namespace Weverca.Analysis
         /// <param name="dictFlag">flags represented with dictionary</param>
         /// <param name="flag">flag represented by Flag object</param>
         /// <returns>Merged flags stored in dictionary</returns>
-        private static Dictionary<DirtyType, bool> mergeFlags(Dictionary<DirtyType, bool> dictFlag, Flags flag)
+        private static Dictionary<FlagType, bool> mergeFlags(Dictionary<FlagType, bool> dictFlag, Flags flag)
         {
-            Array values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
+            Array values = FlagType.GetValues(typeof(FlagType));
+            foreach (FlagType val in values)
             {
                 dictFlag[val] |= flag.isDirty(val);
             }
@@ -163,7 +163,7 @@ namespace Weverca.Analysis
         /// <param name="value">Value</param>
         /// <param name="dirty">Dirty type</param>
         /// <returns>true if value contains Dirty flag</returns>
-        public static bool IsDirty(Value value,DirtyType dirty)
+        public static bool IsDirty(Value value,FlagType dirty)
         {
             if (value.GetInfo<Flags>() == null)
             {
@@ -181,7 +181,7 @@ namespace Weverca.Analysis
         /// <param name="entry">Values</param>
         /// <param name="dirty">Dirty type</param>
         /// <returns>true if one of values contains Dirty flag</returns>
-        public static bool IsDirty(IEnumerable<Value> entry, DirtyType dirty)
+        public static bool IsDirty(IEnumerable<Value> entry, FlagType dirty)
         {
             bool res = false;
             foreach (var value in entry)
@@ -192,12 +192,12 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Cleans source values from specified flag
+        /// Cleans source values from specified flagtype
         /// </summary>
         /// <param name="source">Values</param>
         /// <param name="dirty">Dirty type</param>
         /// <returns>Cleaned values, which doesn't contains specified type of flag</returns>
-        public static IEnumerable<Value> Clean(IEnumerable<Value> source, DirtyType dirty)
+        public static IEnumerable<Value> Clean(IEnumerable<Value> source, FlagType dirty)
         {
             List<Value> result = new List<Value>();
             foreach(Value value in source)
@@ -220,17 +220,17 @@ namespace Weverca.Analysis
         /// <summary>
         /// Structure, which store all information about dirty flags
         /// </summary>
-        private readonly Dictionary<DirtyType, bool> dirtyFlags;
+        private readonly Dictionary<FlagType, bool> dirtyFlags;
 
         /// <summary>
         /// Create new dictionary, with all clean flags 
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<DirtyType, bool> CreateCleanFlags()
+        public static Dictionary<FlagType, bool> CreateCleanFlags()
         {
-            var flags = new Dictionary<DirtyType, bool>();
-            Array values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
+            var flags = new Dictionary<FlagType, bool>();
+            Array values = FlagType.GetValues(typeof(FlagType));
+            foreach (FlagType val in values)
             {
                 flags.Add(val, false);
             }
@@ -241,11 +241,11 @@ namespace Weverca.Analysis
         /// Create new dictionary, with all dirty flags 
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<DirtyType, bool> CreateDirtyFlags()
+        public static Dictionary<FlagType, bool> CreateDirtyFlags()
         {
-            var flags = new Dictionary<DirtyType, bool>();
-            Array values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
+            var flags = new Dictionary<FlagType, bool>();
+            Array values = FlagType.GetValues(typeof(FlagType));
+            foreach (FlagType val in values)
             {
                 flags.Add(val, true);
             }
@@ -264,7 +264,7 @@ namespace Weverca.Analysis
         /// Create new instance of Flag, dirty flags are set from argument
         /// </summary>
         /// <param name="dirtyFlags">dirty flags</param>
-        public Flags(Dictionary<DirtyType, bool> dirtyFlags)
+        public Flags(Dictionary<FlagType, bool> dirtyFlags)
         {
             this.dirtyFlags = dirtyFlags;
         }
@@ -274,7 +274,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="dirty">DirtyType</param>
         /// <returns>true if flags contains dirty flag</returns>
-        public bool isDirty(DirtyType dirty)
+        public bool isDirty(FlagType dirty)
         {
             return dirtyFlags[dirty];
         }

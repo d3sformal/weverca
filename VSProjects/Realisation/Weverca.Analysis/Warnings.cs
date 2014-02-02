@@ -224,7 +224,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Type of flag which triggered the warning
         /// </summary>
-        public DirtyType  Flag { get; protected set; }
+        public FlagType  Flag { get; protected set; }
 
         /// <summary>
         /// Construct new instance of AnalysisSecurityWarning
@@ -232,7 +232,7 @@ namespace Weverca.Analysis
         /// <param name="message">Warning message</param>
         /// <param name="element">>Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(string message, LangElement element, DirtyType cause)
+        public AnalysisSecurityWarning(string message, LangElement element, FlagType cause)
         {
             Message = message;
             LangElement = element;
@@ -244,17 +244,17 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="element">>Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(LangElement element, DirtyType cause)
+        public AnalysisSecurityWarning(LangElement element, FlagType cause)
         {
             switch (cause)
             { 
-                case DirtyType.HTMLDirty:
+                case FlagType.HTMLDirty:
                     Message="Unchecked value goes into browser";
                     break;
-                case DirtyType.FilePathDirty:
+                case FlagType.FilePathDirty:
                     Message = "File name has to be checked before open";
                     break;
-                case DirtyType.SQLDirty:
+                case FlagType.SQLDirty:
                     Message="Unchecked value goes into database";
                     break;
             }

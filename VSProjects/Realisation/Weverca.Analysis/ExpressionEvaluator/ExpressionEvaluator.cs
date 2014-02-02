@@ -113,9 +113,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if (operation == Operations.Print)
             {
-                if (FlagsHandler.IsDirty(operand.PossibleValues, DirtyType.HTMLDirty))
+                if (FlagsHandler.IsDirty(operand.PossibleValues, FlagType.HTMLDirty))
                 {
-                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Element, DirtyType.HTMLDirty));
+                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Element, FlagType.HTMLDirty));
                 }
             }
 
@@ -429,14 +429,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             stringConverter.SetContext(Flow);
             foreach (var entry in entries)
             {
-                isDirty|=FlagsHandler.IsDirty(entry.PossibleValues, DirtyType.HTMLDirty);
+                isDirty|=FlagsHandler.IsDirty(entry.PossibleValues, FlagType.HTMLDirty);
                 bool isAlwaysConcrete;
                 stringConverter.Evaluate(entry, out isAlwaysConcrete);
             }
             
             if (isDirty)
             { 
-                AnalysisWarningHandler.SetWarning(OutSet,new AnalysisSecurityWarning(Element,DirtyType.HTMLDirty));
+                AnalysisWarningHandler.SetWarning(OutSet,new AnalysisSecurityWarning(Element,FlagType.HTMLDirty));
             }
 
         }

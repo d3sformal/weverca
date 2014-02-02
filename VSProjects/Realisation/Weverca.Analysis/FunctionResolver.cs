@@ -1717,15 +1717,15 @@ namespace Weverca.Analysis
 
     internal class FunctionHints
     {
-        private HashSet<DirtyType> returnHints;
-        private Dictionary<VariableIdentifier, HashSet<DirtyType>> argumentHints;
+        private HashSet<FlagType> returnHints;
+        private Dictionary<VariableIdentifier, HashSet<FlagType>> argumentHints;
         private LangElement declaration;
 
         internal FunctionHints(PHPDocBlock doc, LangElement langElement)
         {
             declaration = langElement;
-            argumentHints = new Dictionary<VariableIdentifier, HashSet<DirtyType>>();
-            returnHints = new HashSet<DirtyType>();
+            argumentHints = new Dictionary<VariableIdentifier, HashSet<FlagType>>();
+            returnHints = new HashSet<FlagType>();
 
             string comment;
             if (doc == null)
@@ -1748,8 +1748,8 @@ namespace Weverca.Analysis
             }
 
             var endOfRegexp = "(";
-            var values = DirtyType.GetValues(typeof(DirtyType));
-            foreach (DirtyType val in values)
+            var values = FlagType.GetValues(typeof(FlagType));
+            foreach (FlagType val in values)
             {
                 endOfRegexp += val + "|";
             }
@@ -1766,7 +1766,7 @@ namespace Weverca.Analysis
                 if (match.Success)
                 {
                     var res = match.Groups[1].Value.ToString();
-                    foreach (DirtyType val in values)
+                    foreach (FlagType val in values)
                     {
                         if (val.ToString().ToLower() == res.ToString().ToLower())
                         {
@@ -1789,7 +1789,7 @@ namespace Weverca.Analysis
                     {
                         if (parameter.Name.Equals(argName))
                         {
-                            foreach (DirtyType val in values)
+                            foreach (FlagType val in values)
                             {
                                 if (val.ToString().ToLower() == res.ToString().ToLower())
                                 {
@@ -1809,16 +1809,16 @@ namespace Weverca.Analysis
             }
         }
 
-        private void addReturnHint(DirtyType type)
+        private void addReturnHint(FlagType type)
         {
             returnHints.Add(type);
         }
 
-        private void addArgumentHint(VariableIdentifier name, DirtyType type)
+        private void addArgumentHint(VariableIdentifier name, FlagType type)
         {
             if (!argumentHints.ContainsKey(name))
             {
-                argumentHints[name] = new HashSet<DirtyType>();
+                argumentHints[name] = new HashSet<FlagType>();
             }
 
             argumentHints[name].Add(type);

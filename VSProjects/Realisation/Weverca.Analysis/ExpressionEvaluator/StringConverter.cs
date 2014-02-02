@@ -236,7 +236,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if ((leftAnyString != null) || (rightAnyString != null))
             {
                 // Get all flags from both abstract operands if they are tainted
-                Dictionary<DirtyType, bool> flags;
+                Dictionary<FlagType, bool> flags;
                 if (leftAnyString != null)
                 {
                     if (rightAnyString != null)
