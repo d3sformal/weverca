@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
+using System.Collections.Generic;
 
 namespace Weverca.AnalysisFramework.Expressions
 {
@@ -62,9 +66,43 @@ namespace Weverca.AnalysisFramework.Expressions
             try
             {
                 thisObject = createdObject;
-                // TODO: ObjectInitializer is actually disabled
-                // VisitTypeDecl(typeDeclaration);
                 Debug.Assert(thisObject != null, "Initialized object must stay until end of initialization");
+                ReadSnapshotEntryBase objectEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(createdObject));
+
+                List<QualifiedName> classHierarchy=new List<QualifiedName>(typeDeclaration.BaseClasses);
+                classHierarchy.Add(typeDeclaration.QualifiedName);
+                Dictionary<VariableName, FieldInfo> currentClassFields = new Dictionary<VariableName, FieldInfo>();
+                
+                foreach (var className in classHierarchy)
+                {
+                    foreach (var entry in typeDeclaration.Fields.Where(a => a.Key.ClassName.Equals(className)))
+                    {
+                        if (entry.Value.IsStatic == false)
+                        {
+                            currentClassFields[entry.Key.Name] = entry.Value;
+                        }
+                    }
+
+                }
+
+                foreach (var entry in currentClassFields.Values)
+                {
+                    var fieldEntry=objectEntry.ReadField(OutSet.Snapshot, new VariableIdentifier(entry.Name.Value));
+                    if (entry.InitValue != null)
+                    {
+                        fieldEntry.WriteMemory(OutSet.Snapshot, entry.InitValue);
+                    }
+                    else if (entry.Initializer != null)
+                    {
+                        entry.Initializer.VisitMe(this);
+                        fieldEntry.WriteMemory(OutSet.Snapshot, initializationValue);
+                    }
+                    else 
+                    {
+                        fieldEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
+                    }
+
+                }
             }
             finally
             {
@@ -72,74 +110,7 @@ namespace Weverca.AnalysisFramework.Expressions
             }
         }
 
-        #region Statements
 
-        public override void VisitMethodDecl(MethodDecl x)
-        {
-            // Omit the method
-        }
-
-        public override void VisitFieldDecl(FieldDecl x)
-        {
-            initializationValue = null;
-
-            try
-            {
-                if (x.Initializer != null)
-                {
-                    base.VisitFieldDecl(x);
-                }
-                else
-                {
-                    initializationValue = new MemoryEntry(OutSet.UndefinedValue);
-                }
-
-                Debug.Assert(initializationValue != null, "Every field has any initialization value");
-
-                var memoryEntry = new MemoryEntry(thisObject);
-                var objectEntry = OutSet.CreateSnapshotEntry(memoryEntry);
-                var fieldIdentifier = new MemberIdentifier(x.Name.Value);
-
-                var outSnapshot = OutSet.Snapshot;
-                var objectField = objectEntry.ReadIndex(outSnapshot, fieldIdentifier);
-                objectField.WriteMemory(outSnapshot, initializationValue);
-            }
-            finally
-            {
-                initializationValue = null;
-            }
-        }
-
-        public override void VisitClassConstantDecl(ClassConstantDecl x)
-        {
-            // Class constants are set when the type, not object, is declared
-        }
-
-        public override void VisitTraitsUse(TraitsUse x)
-        {
-            // Omit traits
-        }
-
-        #endregion
-
-        #region Expressions
-
-        public override void VisitGlobalConstUse(GlobalConstUse x)
-        {
-            initializationValue = expressionResolver.Constant(x);
-        }
-
-        public override void VisitClassConstUse(ClassConstUse x)
-        {
-            // TODO: Add method to expression resolver which returns class constant
-        }
-
-        public override void VisitPseudoConstUse(PseudoConstUse x)
-        {
-            // TODO: Add method which returns pseudo-constant depedning on position in source code
-        }
-
-        #endregion
 
         #region Literals
 
