@@ -37,6 +37,8 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         private CFGVisitor visitor;
 
+        public HashSet<LangElement> cfgAddedElements=new HashSet<LangElement>(); 
+
         #endregion fields
 
         #region construction
@@ -373,7 +375,7 @@ namespace Weverca.ControlFlowGraph
                         ConditionalEdge edge = e as ConditionalEdge;
                         string label = "";
                         //in case a condition is not from original ast and hes been aded in constructiion of cfg, we need to write it in different way
-                        if (!edge.Condition.Position.IsValid)
+                        if (!edge.Condition.Position.IsValid || this.cfgAddedElements.Contains(edge.Condition))
                         {
                             if (edge.Condition.GetType() == typeof(BoolLiteral))
                             {

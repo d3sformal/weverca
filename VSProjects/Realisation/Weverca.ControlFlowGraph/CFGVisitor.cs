@@ -600,7 +600,9 @@ namespace Weverca.ControlFlowGraph
                 if (switchItem.GetType() == typeof(CaseItem))
                 {
                     right = ((CaseItem)switchItem).CaseVal;
-                    ConditionalEdge.MakeNewAndConnect(above, currentBasicBlock, new BinaryEx(Operations.Equal, x.SwitchValue, right));
+                    BinaryEx condition = new BinaryEx(right.Position, Operations.Equal, x.SwitchValue, right);
+                    graph.cfgAddedElements.Add(condition);
+                    ConditionalEdge.MakeNewAndConnect(above, currentBasicBlock, condition);
                 }
                 else 
                 {
@@ -710,7 +712,9 @@ namespace Weverca.ControlFlowGraph
                             {
                                 target = loopData.ElementAt(i).ContinueTarget;
                             }
-                            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, target, new BinaryEx(Operations.Equal, new IntLiteral(Position.Invalid, breakValue), x.Expression));
+                            BinaryEx condition = new BinaryEx(x.Position,Operations.Equal, new IntLiteral(Position.Invalid, breakValue), x.Expression);
+                            graph.cfgAddedElements.Add(condition);
+                            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, target, condition);
                             ++breakValue;
                         }
                     }
@@ -851,17 +855,6 @@ namespace Weverca.ControlFlowGraph
 
                 CatchBasicBlock catchBlock = new CatchBasicBlock(catchItem.Variable,catchItem.ClassName);
 
-                /*foreach (var throwBlock in throwBlocks.Peek())
-                {
-                    //ThrowStmt throwStatement = (ThrowStmt)throwBlock.Statements.Last();
-                    //throwBlock.Statements.RemoveLast();
-                    //List<ActualParam> parameters = new List<ActualParam>();
-                    //parameters.Add(new ActualParam(Position.Invalid, throwStatement.Expression, false));
-                    //parameters.Add(new ActualParam(Position.Invalid, new StringLiteral(Position.Invalid, catchItem.ClassName.QualifiedName.ToString()), false));
-                    //ConditionalEdge.MakeNewAndConnect(throwBlock, catchBlock, new DirectFcnCall(Position.Invalid, new QualifiedName(new Name("is_subclass_of")), null, Position.Invalid, parameters, new List<TypeRef>()));
-
-
-                }*/
                 tryBlock.catchBlocks.Add(catchBlock);
                 currentBasicBlock=catchBlock;
                 VisitStatementList(catchItem.Statements);
