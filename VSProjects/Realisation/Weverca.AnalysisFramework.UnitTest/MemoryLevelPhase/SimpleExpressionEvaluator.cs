@@ -456,5 +456,10 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             throw new NotImplementedException();
         }
+
+        public override ObjectValue CreateInitializedObject(TypeValue type)
+        {
+            return OutSet.CreateObject(type);
+        }
     }
 }

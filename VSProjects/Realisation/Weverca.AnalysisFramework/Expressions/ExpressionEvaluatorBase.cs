@@ -379,20 +379,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="type">Type that is always needed when creating new object</param>
         /// <returns>New initialized object</returns>
-        protected ObjectValue CreateInitializedObject(TypeValue type)
-        {
-            var newObject = OutSet.CreateObject(type);
-
-            var typeDeclaration = type as TypeValue;
-            if (typeDeclaration != null)
-            {
-                // TODO: Initialize all fields with its default or initialization value
-                var initializer = new ObjectInitializer(this);
-                initializer.InitializeObject(newObject, typeDeclaration.Declaration);
-            }
-
-            return newObject;
-        }
+        public abstract ObjectValue CreateInitializedObject(TypeValue type);
+       
 
         /// <summary>
         /// Fetches variables of given name from global to local function scope when global keyword is used

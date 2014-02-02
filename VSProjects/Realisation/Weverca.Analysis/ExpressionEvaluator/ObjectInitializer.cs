@@ -5,11 +5,11 @@ using System.Text.RegularExpressions;
 
 using PHP.Core;
 using PHP.Core.AST;
-
 using Weverca.AnalysisFramework.Memory;
-using System.Collections.Generic;
+using Weverca.AnalysisFramework.Expressions;
+using Weverca.AnalysisFramework;
 
-namespace Weverca.AnalysisFramework.Expressions
+namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
     /// Initializes properties of new instance of given class

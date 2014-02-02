@@ -429,14 +429,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             stringConverter.SetContext(Flow);
             foreach (var entry in entries)
             {
-                isDirty|=FlagsHandler.IsDirty(entry.PossibleValues, FlagType.HTMLDirty);
+                isDirty |= FlagsHandler.IsDirty(entry.PossibleValues, FlagType.HTMLDirty);
                 bool isAlwaysConcrete;
                 stringConverter.Evaluate(entry, out isAlwaysConcrete);
             }
-            
+
             if (isDirty)
-            { 
-                AnalysisWarningHandler.SetWarning(OutSet,new AnalysisSecurityWarning(Element,FlagType.HTMLDirty));
+            {
+                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Element, FlagType.HTMLDirty));
             }
 
         }
@@ -945,6 +945,34 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        public override ObjectValue CreateInitializedObject(TypeValue type)
+        {
+            var newObject = OutSet.CreateObject(type);
+
+            var typeDeclaration = type as TypeValue;
+            if (typeDeclaration != null)
+            {
+                if (typeDeclaration.Declaration.IsAbstract == true)
+                {
+                    SetWarning("Cannot instantiate abstract class " + typeDeclaration.Declaration.QualifiedName.Name.Value, AnalysisWarningCause.CANNOT_INSTANCIATE_ABSTRACT_CLASS);
+                }
+                else if (typeDeclaration.Declaration.IsInterface == true)
+                {
+                    SetWarning("Cannot instantiate interface " + typeDeclaration.Declaration.QualifiedName.Name.Value, AnalysisWarningCause.CANNOT_INSTANCIATE_INTERFACE);
+                }
+                else
+                {
+                    var initializer = new ObjectInitializer(this);
+                    initializer.InitializeObject(newObject, typeDeclaration.Declaration);
+                }
+
+            }
+
+            return newObject;
+        }
+
+
+        /// <inheritdoc />
         public override MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName)
         {
             List<Value> result = new List<Value>();
@@ -1003,5 +1031,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
         }
+
+       
+
     }
 }

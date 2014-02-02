@@ -843,6 +843,7 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(e.Declaration.BaseClasses.Count == 7);
            
         }
+
         string ClassListOfInheritedClassesTest3 = @"
         class a extends PharData{}
         ";
@@ -855,7 +856,62 @@ namespace Weverca.Analysis.UnitTest
            
         }
 
-
+        string InitAbstractClass = @"
+        abstract class a{}
+        $x=new a();
+         ";
         
+        [TestMethod]
+        public void InitAbstractClassTest()
+        {
+            var outset = TestUtils.Analyze(InitAbstractClass);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_INSTANCIATE_ABSTRACT_CLASS));
+        }
+
+        string InitInterface = @"
+        interface b{}
+        $x=new b();
+         ";
+
+        [TestMethod]
+        public void InitInterfaceTest()
+        {
+            var outset = TestUtils.Analyze(InitInterface);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_INSTANCIATE_INTERFACE));
+        }
+
+        string InitObject = @"
+        class base
+        {
+        public $x=4;
+        public $base=""aa"";
+        }
+        class a extends base
+        {
+
+        public $x=""s"";
+        public $y=5;
+        public $z=6;
+        public $a=""a"";
+        public $ppp;
+
+        }
+
+        $x=new a();
+        $result1=$x->x;
+        $result2=$x->base;
+        $result3=$x->z;
+
+        ";
+
+        [TestMethod]
+        public void InitObjectTest()
+        {
+            var outset = TestUtils.Analyze(InitObject);
+            TestUtils.HasValues(outset.ReadVariable(new VariableIdentifier("result1")).ReadMemory(outset.Snapshot), "s");
+            TestUtils.HasValues(outset.ReadVariable(new VariableIdentifier("result2")).ReadMemory(outset.Snapshot), "aa");
+            TestUtils.HasValues(outset.ReadVariable(new VariableIdentifier("result3")).ReadMemory(outset.Snapshot), 6);
+        }
+
     }
 }
