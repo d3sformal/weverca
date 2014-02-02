@@ -542,13 +542,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                if (leftOperand.CompareTo(rightOperand.End) >= 0)
+                if (leftOperand.CompareTo(rightOperand.End) < 0)
                 {
-                    return outset.CreateBool(false);
+                    return outset.AnyBooleanValue;
                 }
                 else
                 {
-                    return outset.AnyBooleanValue;
+                    return outset.CreateBool(false);
                 }
             }
         }
@@ -570,13 +570,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                if (leftOperand.Start.CompareTo(rightOperand.End) >= 0)
+                if (leftOperand.Start.CompareTo(rightOperand.End) < 0)
                 {
-                    return outset.CreateBool(false);
+                    return outset.AnyBooleanValue;
                 }
                 else
                 {
-                    return outset.AnyBooleanValue;
+                    return outset.CreateBool(false);
                 }
             }
         }
@@ -595,13 +595,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                if (leftOperand.CompareTo(rightOperand.End) > 0)
+                if (leftOperand.CompareTo(rightOperand.End) <= 0)
                 {
-                    return outset.CreateBool(false);
+                    return outset.AnyBooleanValue;
                 }
                 else
                 {
-                    return outset.AnyBooleanValue;
+                    return outset.CreateBool(false);
                 }
             }
         }
@@ -623,13 +623,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                if (leftOperand.Start.CompareTo(rightOperand.End) > 0)
+                if (leftOperand.Start.CompareTo(rightOperand.End) <= 0)
                 {
-                    return outset.CreateBool(false);
+                    return outset.AnyBooleanValue;
                 }
                 else
                 {
-                    return outset.AnyBooleanValue;
+                    return outset.CreateBool(false);
                 }
             }
         }
@@ -644,18 +644,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if (leftOperand.CompareTo(rightOperand.Start) > 0)
             {
-                return outset.CreateBool(true);
-            }
-            else
-            {
-                if (leftOperand.CompareTo(rightOperand.End) <= 0)
+                if (leftOperand.CompareTo(rightOperand.End) > 0)
                 {
-                    return outset.CreateBool(false);
+                    return outset.CreateBool(true);
                 }
                 else
                 {
                     return outset.AnyBooleanValue;
                 }
+            }
+            else
+            {
+                return outset.CreateBool(false);
             }
         }
 
@@ -683,18 +683,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if (leftOperand.CompareTo(rightOperand.Start) >= 0)
             {
-                return outset.CreateBool(true);
-            }
-            else
-            {
-                if (leftOperand.CompareTo(rightOperand.End) < 0)
+                if (leftOperand.CompareTo(rightOperand.End) >= 0)
                 {
-                    return outset.CreateBool(false);
+                    return outset.CreateBool(true);
                 }
                 else
                 {
                     return outset.AnyBooleanValue;
                 }
+            }
+            else
+            {
+                return outset.CreateBool(false);
             }
         }
 
