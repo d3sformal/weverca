@@ -17,6 +17,7 @@ namespace Weverca.Analysis
     /// </summary>
     public class ForwardAnalysis : ForwardAnalysisBase
     {
+        static public NativeObjectAnalyzer nativeObjectAnalyzer;
 
         /// <summary>
         /// Creates new Instance of ForwardAnalysis
@@ -98,6 +99,8 @@ namespace Weverca.Analysis
             //array for global Constants
             var constantsVariable = EntryInput.GetControlVariable(UserDefinedConstantHandler.constantVariable);
             constantsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateArray()));
+
+            nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
 
             this.WideningLimit = 10;
         }

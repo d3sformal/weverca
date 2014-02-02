@@ -215,11 +215,11 @@ namespace Weverca.Analysis
             List<QualifiedName> result = new List<QualifiedName>();
             if (typeName.Name.Value == "self" || typeName.Name.Value == "parent")
             {
-
-                MemoryEntry calledObjects =
-                OutSet.GetLocalControlVariable(calledObjectTypeName).ReadMemory(OutSet.Snapshot);
-                if (!(calledObjects.Count == 1 && calledObjects.PossibleValues.First() is UndefinedValue))
+                if (OutSet.ReadLocalControlVariable(calledObjectTypeName).IsDefined(OutSet.Snapshot))
                 {
+                    MemoryEntry calledObjects =
+                    OutSet.GetLocalControlVariable(calledObjectTypeName).ReadMemory(OutSet.Snapshot);
+                
                     if (typeName.Name.Value == "self")
                     {
                         foreach (var calledObject in calledObjects.PossibleValues)
@@ -1447,7 +1447,7 @@ namespace Weverca.Analysis
 
             if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot) &&
                 OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues
-                .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >= 2)
+                .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >=2)
             {
                 useSharedFunctions = true;
             }

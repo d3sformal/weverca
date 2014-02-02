@@ -1,4 +1,5 @@
-﻿using PHP.Core.Reflection;
+﻿using PHP.Core;
+using PHP.Core.Reflection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -141,9 +142,10 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
         public override ObjectValue GetImplicitObject()
         {
-            throw new NotImplementedException("MemoryAssistant.GetImplicitObject");
+            return Context.CreateObject(Context.CreateType(ForwardAnalysis.nativeObjectAnalyzer.GetClass(new QualifiedName(new Name("stdClass")))));
         }
     }
 

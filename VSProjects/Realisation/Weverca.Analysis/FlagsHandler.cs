@@ -212,13 +212,13 @@ namespace Weverca.Analysis
 
 
     /// <summary>
-    /// Class which stores iformation about dirty flags, 
+    /// Class which stores iformation about  flags, 
     /// It inherits from InfoDataBase, so it can be stored in Value
     /// </summary>
     public class Flags : InfoDataBase
     {
         /// <summary>
-        /// Structure, which store all information about dirty flags
+        /// Structure, which store all information about flags
         /// </summary>
         private readonly Dictionary<FlagType, bool> dirtyFlags;
 
