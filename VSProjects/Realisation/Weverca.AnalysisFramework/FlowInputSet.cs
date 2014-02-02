@@ -105,7 +105,7 @@ namespace Weverca.AnalysisFramework
 
         public ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable)
         {
-            return Snapshot.ReadControlVariable(variable);
+            return Snapshot.ReadLocalControlVariable(variable);
         }
 
         #endregion

@@ -61,5 +61,20 @@ namespace Weverca.AnalysisFramework
                 expander.VisitNative(this);
             }
         }
+
+        public override int GetHashCode()
+        {
+            return Method.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o= obj as NativeAnalyzer;
+
+            if (o == null)
+                return false;
+
+            return o.Method.Equals(Method);
+        }
     }
 }

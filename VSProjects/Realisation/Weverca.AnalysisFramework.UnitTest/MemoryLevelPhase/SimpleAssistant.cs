@@ -40,9 +40,13 @@ namespace Weverca.AnalysisFramework.UnitTest
                 }
             }
         }
-
-
+        
         public override IEnumerable<FunctionValue> ResolveMethods(TypeValue value, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ObjectValue GetImplicitObject()
         {
             throw new NotImplementedException();
         }

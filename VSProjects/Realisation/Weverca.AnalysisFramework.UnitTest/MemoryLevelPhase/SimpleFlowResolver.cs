@@ -59,7 +59,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var ends = (from callOutput in dispatchedExtensions select callOutput.Graph.End.OutSet as ISnapshotReadonly).ToArray();
+            var ends = (from callOutput in dispatchedExtensions where callOutput.Graph.End.OutSet!=null select callOutput.Graph.End.OutSet as ISnapshotReadonly).ToArray();
 
             //TODO determine correct extension type
             var callType = dispatchedExtensions.First().Type;

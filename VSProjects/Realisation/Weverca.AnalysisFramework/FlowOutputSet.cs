@@ -255,7 +255,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="input">input set which snapshot will be returned</param>
         /// <returns>Snapshot from FlowInputSet</returns>
         private SnapshotBase getSnapshot(FlowInputSet input)
-        {
+        {            
             return input.Snapshot;
         }
         #endregion

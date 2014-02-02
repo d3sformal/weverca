@@ -58,6 +58,16 @@ if($unknown){
 $call_result=$call_name('TEst');
 ".AssertVariable("call_result").HasValues("TEST", "test");
 
+
+        readonly static TestCase SingleBranchedIndirectCall_CASE = @"
+$call_name='strtoupper';
+if($unknown){
+    $call_name='strtolower';
+}
+
+$call_result=$call_name('TEst');
+".AssertVariable("call_result").HasValues("TEST", "test");
+
         readonly static TestCase MustAliasAssign_CASE = @"
 $VarA='ValueA';
 $VarB='ValueB';
@@ -1285,6 +1295,12 @@ $d=&$a;
         public void BranchedIndirectCall()
         {
             AnalysisTestUtils.RunTestCase(BranchedIndirectCall_CASE);
+        }
+
+        [TestMethod]
+        public void SingleBranchedIndirectCall()
+        {
+            AnalysisTestUtils.RunTestCase(SingleBranchedIndirectCall_CASE);
         }
 
         [TestMethod]

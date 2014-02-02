@@ -140,6 +140,11 @@ namespace Weverca.Analysis
                 }
             }
         }
+
+        public override ObjectValue GetImplicitObject()
+        {
+            throw new NotImplementedException("MemoryAssistant.GetImplicitObject");
+        }
     }
 
 

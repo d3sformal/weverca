@@ -72,10 +72,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         private ObjectValue getImplicitObject()
         {
             if (_implicitObject == null)
-                //TODO type for implicit object ?
-                //_implicitObject = _context.CreateObject(null);
-                throw new NotImplementedException("What is type of implicit object ? ");
-
+                _implicitObject = _context.MemoryAssistant.GetImplicitObject();
+          
             return _implicitObject;
         }
     }

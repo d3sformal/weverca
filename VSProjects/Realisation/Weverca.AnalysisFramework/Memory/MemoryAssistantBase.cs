@@ -82,10 +82,13 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
 
+        public abstract ObjectValue GetImplicitObject();
 
         public void TriedIterateFields(Value value)
         {
             throw new NotImplementedException();
         }
+
+        
     }
 }

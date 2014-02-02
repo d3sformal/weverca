@@ -222,6 +222,9 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="outSet">the output set in which the return storage is located</param>
         protected static MemoryEntry GetReturn(FlowOutputSet outSet)
         {
+            if (outSet == null)
+                return null;
+            
             var outSnapshot = outSet.Snapshot;
             var returnVar = outSnapshot.GetLocalControlVariable(SnapshotBase.ReturnValue);
             return returnVar.ReadMemory(outSnapshot);

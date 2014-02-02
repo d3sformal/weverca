@@ -209,7 +209,15 @@ namespace Weverca.AnalysisFramework.UnitTest
             foreach (var call in calls)
             {
                 var returnEntry = SimpleFunctionResolver.GetReturn(call.Graph.End.OutSet);
-                returnValues.UnionWith(returnEntry.PossibleValues);
+
+                if (returnEntry == null)
+                {
+                    returnValues.Add(OutSet.UndefinedValue);
+                }
+                else
+                {
+                    returnValues.UnionWith(returnEntry.PossibleValues);
+                }
             }
 
             return new MemoryEntry(returnValues);
