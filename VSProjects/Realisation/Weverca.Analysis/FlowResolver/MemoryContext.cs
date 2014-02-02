@@ -204,7 +204,10 @@ namespace Weverca.Analysis.FlowResolver
 
                 //we will also delete more general values (any value, anystring, anyint, ...) also the intervals are already counted in.
                 values.Clear();
-                values.Add(intersection);
+                if (intersection != null)
+                {
+                    values.Add(intersection);
+                }
             }
             else if (newValue is AnyValue && values.Count > 0)
             {
@@ -268,21 +271,29 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-            if (maxStart is int)
+            if (minEnd.CompareTo(maxStart) <= 0)
             {
-                return valueFactory.CreateIntegerInterval(System.Convert.ToInt32(maxStart), System.Convert.ToInt32(minEnd));
-            }
-            else if (maxStart is long)
-            {
-                return valueFactory.CreateLongintInterval(System.Convert.ToInt64(maxStart), System.Convert.ToInt64(minEnd));
-            }
-            if (maxStart is double)
-            {
-                return valueFactory.CreateFloatInterval(System.Convert.ToDouble(maxStart), System.Convert.ToDouble(minEnd));
+
+                if (maxStart is int)
+                {
+                    return valueFactory.CreateIntegerInterval(System.Convert.ToInt32(maxStart), System.Convert.ToInt32(minEnd));
+                }
+                else if (maxStart is long)
+                {
+                    return valueFactory.CreateLongintInterval(System.Convert.ToInt64(maxStart), System.Convert.ToInt64(minEnd));
+                }
+                if (maxStart is double)
+                {
+                    return valueFactory.CreateFloatInterval(System.Convert.ToDouble(maxStart), System.Convert.ToDouble(minEnd));
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("Interval type \"{0}\" is not supported.", interval.GetType()));
+                }
             }
             else
             {
-                throw new NotSupportedException(string.Format("Interval type \"{0}\" is not supported.", interval.GetType()));
+                return null;
             }
         }
 
