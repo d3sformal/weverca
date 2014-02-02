@@ -160,13 +160,13 @@ namespace Weverca.Analysis.UnitTest
 
         public static void IsDirty(Value value)
         {
-            var flag = value.GetInfo<Flag>();
+            var flag = value.GetInfo<Flags>();
             Debug.Assert(flag.isDirty(DirtyType.FilePathDirty) && flag.isDirty(DirtyType.HTMLDirty) && flag.isDirty(DirtyType.HTMLDirty));
         }
 
         public static void IsClean(Value value)
         {
-            var flag = value.GetInfo<Flag>();
+            var flag = value.GetInfo<Flags>();
             if (flag == null)
             {
                 return;
@@ -179,7 +179,7 @@ namespace Weverca.Analysis.UnitTest
 
         public static void IsClean(Value value,DirtyType type)
         {
-            var flag = value.GetInfo<Flag>();
+            var flag = value.GetInfo<Flags>();
             if (flag == null)
             {
                 return;

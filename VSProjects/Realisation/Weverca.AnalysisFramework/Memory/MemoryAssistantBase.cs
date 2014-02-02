@@ -53,11 +53,22 @@ namespace Weverca.AnalysisFramework.Memory
         /// Resolve methods with given name for possible value
         /// </summary>
         /// <param name="thisObject">Value which methods are resolved</param>
+        /// <param name="value">Type of the object</param>
         /// <param name="methodName">Name of resolved methods</param>
         /// <param name="objectMethods">Methods available for thisObject</param>
         /// <returns>Resolved methods</returns>
         public abstract IEnumerable<FunctionValue> ResolveMethods(Value thisObject, TypeValue type, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
 
+        /// <summary>
+        /// Resolve methods with given name for possible value
+        /// </summary>
+        /// <param name="value">Type of the object</param>
+        /// <param name="methodName">Name of resolved methods</param>
+        /// <param name="objectMethods">Methods available for thisObject</param>
+        /// <returns>Resolved methods</returns>
+        public abstract IEnumerable<FunctionValue> ResolveMethods(TypeValue value, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
+
+        
         /// <summary>
         /// Initialize context snapshot for current assistant
         /// </summary>
@@ -70,10 +81,6 @@ namespace Weverca.AnalysisFramework.Memory
             Context = context;
         }
 
-
-
-
-        public abstract IEnumerable<FunctionValue> ResolveMethods(TypeValue value, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
 
 
         public void TriedIterateFields(Value value)

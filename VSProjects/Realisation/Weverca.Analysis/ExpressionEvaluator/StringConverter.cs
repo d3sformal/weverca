@@ -155,7 +155,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (abstractStrings.Count > 0)
             {
                 var flags = FlagsHandler.GetFlagsFromValues(abstractStrings);
-                var flagInfo = new Flag(flags);
+                var flagInfo = new Flags(flags);
                 abstractString = (AnyStringValue)OutSet.AnyStringValue.SetInfo(flagInfo);
             }
             else
@@ -201,7 +201,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             // Get all flags from both operands if they are tainted
             var flags = FlagsHandler.GetFlagsFromValues(leftOperand, rightOperand);
-            var flagInfo = new Flag(flags);
+            var flagInfo = new Flags(flags);
 
             // Check whether it is concrete or abstract value
             Value taintedResult;
@@ -253,7 +253,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     flags = FlagsHandler.GetFlagsFromValues(rightAnyString);
                 }
 
-                var flagInfo = new Flag(flags);
+                var flagInfo = new Flags(flags);
                 values.Add(OutSet.AnyStringValue.SetInfo(flagInfo));
             }
 
@@ -265,10 +265,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var taintedResult = OutSet.CreateString(string.Concat(leftValue.Value,
                         rightValue.Value));
 
-                    if ((leftValue.GetInfo<Flag>() != null) || (rightValue.GetInfo<Flag>() != null))
+                    if ((leftValue.GetInfo<Flags>() != null) || (rightValue.GetInfo<Flags>() != null))
                     {
                         var flags = FlagsHandler.GetFlagsFromValues(leftValue, rightValue);
-                        var flagInfo = new Flag(flags);
+                        var flagInfo = new Flags(flags);
                         values.Add(taintedResult.SetInfo(flagInfo));
                     }
                     else
@@ -382,10 +382,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             // TODO: This is possible fatal error
             result = null;
 
-            if (value.GetInfo<Flag>() != null)
+            if (value.GetInfo<Flags>() != null)
             {
                 var flags = FlagsHandler.GetFlagsFromValues(value);
-                var flagInfo = new Flag(flags);
+                var flagInfo = new Flags(flags);
                 abstractResult = (AnyStringValue)OutSet.AnyStringValue.SetInfo(flagInfo);
             }
             else

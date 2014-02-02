@@ -11,8 +11,19 @@ using Weverca.Analysis.FlowResolver;
 
 namespace Weverca.Analysis
 {
+
+    /// <summary>
+    /// Provides functionnality to analyze php source codes
+    /// </summary>
     public class ForwardAnalysis : ForwardAnalysisBase
     {
+
+        /// <summary>
+        /// Creates new Instance of ForwardAnalysis
+        /// </summary>
+        /// <param name="entryMethodGraph">ControlFlowGraph to analyze</param>
+        /// <param name="memoryModel">Memory model used by analyser</param>
+        /// <param name="entryScript">File to analyze</param>
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, FileInfo entryScript)
             : base(entryMethodGraph, memoryModel.CreateSnapshot, entryScript)
         {
@@ -21,16 +32,19 @@ namespace Weverca.Analysis
 
         #region ForwardAnalysis override
 
+        /// <inheritdoc />
         protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
             return new ExpressionEvaluator.ExpressionEvaluator();
         }
 
+        /// <inheritdoc />
         protected override FlowResolverBase createFlowResolver()
         {
             return new FlowResolver.FlowResolver();
         }
 
+        /// <inheritdoc />
         protected override FunctionResolverBase createFunctionResolver()
         {
             var functionResolver = new FunctionResolver();
@@ -38,6 +52,7 @@ namespace Weverca.Analysis
             return functionResolver;
         }
 
+        /// <inheritdoc />
         protected override MemoryAssistantBase createAssistant()
         {
             return new MemoryAssistant();
@@ -45,17 +60,20 @@ namespace Weverca.Analysis
 
         #endregion
 
+        /// <summary>
+        /// Initialize php variables and control variables user by static analyser
+        /// </summary>
         protected void GlobalsInitializer()
         {
             var post = new VariableName("_POST");
-            var postValue = EntryInput.AnyArrayValue.SetInfo(new Flag(Flag.CreateDirtyFlags()));
+            var postValue = EntryInput.AnyArrayValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
             EntryInput.FetchFromGlobal(post);
             var postVariable = EntryInput.GetVariable(new VariableIdentifier(post), true);
             postVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(postValue));
 
 
             var get = new VariableName("_GET");
-            var getValue = EntryInput.AnyArrayValue.SetInfo(new Flag(Flag.CreateDirtyFlags()));
+            var getValue = EntryInput.AnyArrayValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
             EntryInput.FetchFromGlobal(get);
             var getVariable = EntryInput.GetVariable(new VariableIdentifier(get), true);
             getVariable.WriteMemory(EntryInput.Snapshot , new MemoryEntry(getValue));

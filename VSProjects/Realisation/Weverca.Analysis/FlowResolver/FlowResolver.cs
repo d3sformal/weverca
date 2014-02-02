@@ -109,6 +109,8 @@ namespace Weverca.Analysis.FlowResolver
             return null;
         }
 
+        #region exception handling
+
         /// <inheritdoc />
         public override void TryScopeStart(FlowOutputSet outSet, IEnumerable<CatchBlockDescription> catchBlockStarts)
         {
@@ -295,6 +297,7 @@ namespace Weverca.Analysis.FlowResolver
             outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new TryBlockStack(stack))));
 
         }
+        #endregion
 
         #endregion
     }

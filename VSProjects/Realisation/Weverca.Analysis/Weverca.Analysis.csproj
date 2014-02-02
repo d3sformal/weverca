@@ -111,7 +111,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="UserDefinedConstantHandler.cs" />
-    <Compile Include="ValueInfoHandler.cs" />
+    <Compile Include="FlagsHandler.cs" />
     <Compile Include="Warnings.cs" />
   </ItemGroup>
   <ItemGroup>

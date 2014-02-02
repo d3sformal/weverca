@@ -23,12 +23,26 @@ namespace Weverca.Analysis
         /// </summary>
         private static readonly VariableName WARNING_STORAGE = new VariableName(".analysisWarning");
 
+        /// <summary>
+        /// Variable where security warning values are stored
+        /// </summary>
         private static readonly VariableName SECUTIRTY_WARNING_STORAGE = new VariableName(".analysisSecurityWarning");
 
+        /// <summary>
+        /// Stores all analysis warnings for user output
+        /// </summary>
         private static HashSet<AnalysisWarning> Warnings = new HashSet<AnalysisWarning>();
 
+        /// <summary>
+        /// Stores all security warnings for user output
+        /// </summary>
         private static HashSet<AnalysisSecurityWarning> SecurityWarnings = new HashSet<AnalysisSecurityWarning>();
 
+        /// <summary>
+        /// Returns name of variable for specified kind of warning
+        /// </summary>
+        /// <typeparam name="T">type of warning</typeparam>
+        /// <returns>Returns name of variable for specified kind of warning</returns>
         private static VariableName getStorage<T>() where T : AnalysisWarning
         {
             if (typeof(T) == typeof(AnalysisWarning))
@@ -80,8 +94,10 @@ namespace Weverca.Analysis
             return from value in result where !(value is UndefinedValue) select value;
         }
 
-       
-
+        /// <summary>
+        /// Returns sorted list of analysis warnings
+        /// </summary>
+        /// <returns> Returns sorted list of analysis warnings</returns>
         public static List<AnalysisWarning> GetWarnings()
         {
             var arr=Warnings.ToArray();
@@ -89,6 +105,10 @@ namespace Weverca.Analysis
             return new List<AnalysisWarning>(arr);
         }
 
+        /// <summary>
+        /// Returns sorted list of analysis warnings
+        /// </summary>
+        /// <returns> Returns sorted list of security warnings</returns>
         public static List<AnalysisSecurityWarning> GetSecurityWarnings()
         {
             var arr = SecurityWarnings.ToArray();
@@ -155,6 +175,17 @@ namespace Weverca.Analysis
             return "Warning at line " + LangElement.Position.FirstLine + " char " + LangElement.Position.FirstColumn + ": " + Message.ToString();
         }
 
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
+        }
+
+        /// <summary>
+        /// Comparing function for sorting warning acoriding to line numbers
+        /// </summary>
+        /// <param name="other">Other warning</param>
+        /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
         public int CompareTo(AnalysisWarning other)
         {
             if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
@@ -168,11 +199,11 @@ namespace Weverca.Analysis
             return 0;
         }
 
-        public override int GetHashCode()
-        {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
-        }
-
+        /// <summary>
+        /// Compares warnings based of message, element a warning cause
+        /// </summary>
+        /// <param name="other">other warning</param>
+        /// <returns>true, if they are the same, false otherwise</returns>
         public bool Equals(AnalysisWarning other)
         {
             if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause == other.Cause)
@@ -185,10 +216,22 @@ namespace Weverca.Analysis
        
     }
 
+    /// <summary>
+    /// Special type of analysis warnings
+    /// </summary>
     public class AnalysisSecurityWarning : AnalysisWarning, IComparable<AnalysisSecurityWarning>, IEquatable<AnalysisSecurityWarning>
     {   
+        /// <summary>
+        /// Type of flag which triggered the warning
+        /// </summary>
         public DirtyType  Flag { get; protected set; }
 
+        /// <summary>
+        /// Construct new instance of AnalysisSecurityWarning
+        /// </summary>
+        /// <param name="message">Warning message</param>
+        /// <param name="element">>Element, where the warning was produced</param>
+        /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(string message, LangElement element, DirtyType cause)
         {
             Message = message;
@@ -196,6 +239,11 @@ namespace Weverca.Analysis
             Flag = cause;
         }
 
+        /// <summary>
+        /// Construct new instance of AnalysisSecurityWarning,message will be generated automaticly
+        /// </summary>
+        /// <param name="element">>Element, where the warning was produced</param>
+        /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(LangElement element, DirtyType cause)
         {
             switch (cause)
@@ -215,20 +263,17 @@ namespace Weverca.Analysis
             Flag = cause;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Flag.GetHashCode();
         }
 
-        public bool Equals(AnalysisSecurityWarning other)
-        {
-            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Flag == other.Flag)
-            {
-                return true;
-            }
-            return false;
-        }
-
+        /// <summary>
+        /// Comparing function for sorting warning acoriding to line numbers
+        /// </summary>
+        /// <param name="other">Other warning</param>
+        /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
         public int CompareTo(AnalysisSecurityWarning other)
         {
             if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
@@ -240,6 +285,20 @@ namespace Weverca.Analysis
                 return 1;
             }
             return 0;
+        }
+
+        /// <summary>
+        /// Compares warnings based of message, element a warning cause
+        /// </summary>
+        /// <param name="other">other warning</param>
+        /// <returns>true, if they are the same, false otherwise</returns>
+        public bool Equals(AnalysisSecurityWarning other)
+        {
+            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Flag == other.Flag)
+            {
+                return true;
+            }
+            return false;
         }
     }
 
@@ -284,7 +343,6 @@ namespace Weverca.Analysis
         INTERFACE_METHOD_CANNOT_HAVE_IMPLEMENTATION,
         ABSTRACT_METHOD_CANNOT_HAVE_BODY,
         NON_ABSTRACT_METHOD_MUST_HAVE_BODY,
-        //todo abstract classes and methods
 
         FILE_TO_BE_INCLUDED_NOT_FOUND,
 
@@ -294,7 +352,7 @@ namespace Weverca.Analysis
         CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT,
         
         CLASS_CONSTANT_DOESNT_EXIST,
-       CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT,
+        CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT,
 
     }
    

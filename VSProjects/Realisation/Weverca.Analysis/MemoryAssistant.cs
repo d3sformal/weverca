@@ -114,6 +114,7 @@ namespace Weverca.Analysis
             // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
         }
 
+        /// <inheritdoc />
         public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject,TypeValue type, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
         {
             
@@ -127,7 +128,7 @@ namespace Weverca.Analysis
             }
         }
 
-
+        /// <inheritdoc />
         public override IEnumerable<FunctionValue> ResolveMethods(TypeValue value, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
         {
             foreach (var method in objectMethods)
@@ -142,12 +143,31 @@ namespace Weverca.Analysis
     }
 
 
-
+    /// <summary>
+    /// Visitor, for all visited values finds common abstract value
+    /// </summary>
     public class WidenningVisitor : AbstractValueVisitor
     {
-        bool containsOnlyBool = true;
-        bool containsOnlyNumvericValues = true;
-        bool containsOnlyString = true;
+        /// <summary>
+        /// Indicates if only boolean were visited
+        /// </summary>
+        private bool containsOnlyBool = true;
+
+        /// <summary>
+        /// Indicates if only numeric values were visited
+        /// </summary>
+        private bool containsOnlyNumvericValues = true;
+
+        /// <summary>
+        /// Indicates if only string values were visited
+        /// </summary>
+        private bool containsOnlyString = true;
+
+        /// <summary>
+        /// Return Widen memory entry for all visited values
+        /// </summary>
+        /// <param name="Context">Output set</param>
+        /// <returns>Widen memory entry for all visited values</returns>
         public MemoryEntry GetResult(SnapshotBase Context)
         {
             if (containsOnlyBool)
@@ -167,6 +187,35 @@ namespace Weverca.Analysis
             return new MemoryEntry(Context.AnyValue);
         }
 
+        /// <summary>
+        /// Indicates that numbered value was visited
+        /// </summary>
+        private void numberFound()
+        {
+            containsOnlyBool = false;
+            containsOnlyString = false;
+        }
+
+        /// <summary>
+        /// Indicates that boolean value was visited
+        /// </summary>
+        private void booleanFound()
+        {
+            containsOnlyNumvericValues = false;
+            containsOnlyString = false;
+        }
+
+        /// <summary>
+        /// Indicates that string value was visited
+        /// </summary>
+        private void stringFound()
+        {
+            containsOnlyNumvericValues = false;
+            containsOnlyBool = false;
+        }
+
+
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             containsOnlyBool = false;
@@ -174,89 +223,84 @@ namespace Weverca.Analysis
             containsOnlyNumvericValues = false;
         }
 
+        /// <inheritdoc />
         public override void VisitBooleanValue(BooleanValue value)
         {
             booleanFound();
         }
 
+        /// <inheritdoc />
         public override void VisitAnyBooleanValue(AnyBooleanValue value)
         {
             booleanFound();
         }
 
-        private void booleanFound()
-        {
-            containsOnlyNumvericValues = false;
-            containsOnlyString = false;
-        }
-
+        /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
         {
             stringFound();
         }
 
+        /// <inheritdoc />
         public override void VisitAnyStringValue(AnyStringValue value)
         {
             stringFound();
         }
 
-        private void stringFound()
-        {
-            containsOnlyNumvericValues = false;
-            containsOnlyBool = false;
-        }
-
+        /// <inheritdoc />
         public override void VisitIntegerValue(IntegerValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitAnyIntegerValue(AnyIntegerValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitLongintValue(LongintValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitAnyLongintValue(AnyLongintValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             numberFound();
         }
 
+        /// <inheritdoc />
         public override void VisitAnyFloatValue(AnyFloatValue value)
         {
             numberFound();
         }
-
-        private void numberFound()
-        {
-            containsOnlyBool = false;
-            containsOnlyString = false;
-        }
-
+        
     }
 
 }
