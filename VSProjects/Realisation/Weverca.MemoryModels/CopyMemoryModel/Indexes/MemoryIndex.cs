@@ -102,12 +102,28 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override string ToString()
         {
             StringBuilder builder = new StringBuilder();
+
             foreach (IndexSegment name in MemoryPath)
             {
                 builder.Append(name.ToString());
             }
 
             return builder.ToString();
+        }
+
+        public string CallLevelPrefix
+        {
+            get
+            {
+                if (CallLevel > Snapshot.GLOBAL_CALL_LEVEL)
+                {
+                    return CallLevel + "::";
+                }
+                else
+                {
+                    return "";
+                }
+            }
         }
 
         public abstract MemoryIndex ToAny();
@@ -220,7 +236,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override string ToString()
         {
-            return String.Format("{2}->{0}{1}", MemoryRoot.Name, base.ToString(), Object.UID);
+            return String.Format("{3}{2}->{0}{1}", MemoryRoot.Name, base.ToString(), Object.UID, CallLevelPrefix);
         }
 
         public static MemoryIndex CreateUnknown(ObjectValue obj)
@@ -262,7 +278,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override string ToString()
         {
-            return String.Format("${0}{1}", MemoryRoot.Name, base.ToString());
+            return String.Format("{2}${0}{1}", MemoryRoot.Name, base.ToString(), CallLevelPrefix);
         }
 
         public override MemoryIndex ToAny()
@@ -342,7 +358,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override string ToString()
         {
-            return String.Format("TEMP::${0}{1}", rootId, base.ToString());
+            return String.Format("TEMP::{2}${0}{1}", rootId, base.ToString(), CallLevelPrefix);
         }
 
         public override MemoryIndex ToAny()
@@ -386,7 +402,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override string ToString()
         {
-            return String.Format("CTRL${0}{1}", MemoryRoot.Name, base.ToString());
+            return String.Format("CTRL::{2}${0}{1}", MemoryRoot.Name, base.ToString(), CallLevelPrefix);
         }
 
         public override MemoryIndex ToAny()

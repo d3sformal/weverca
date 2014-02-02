@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
@@ -10,6 +11,48 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     interface ICopyModelSnapshotEntry
     {
         AliasData CreateAliasToEntry(Snapshot snapshot);
+        MemoryEntry ReadMemory(Snapshot snapshot);
+    }
+
+    class SnapshotEntryHelper
+    {
+        private SnapshotEntryHelper()
+        {
+
+        }
+
+        public static IEnumerable<VariableIdentifier> IterateFields(SnapshotBase context, ICopyModelSnapshotEntry snapshotEntry)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            MemoryEntry entry = snapshotEntry.ReadMemory(snapshot);
+
+            CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
+            visitor.VisitMemoryEntry(entry);
+
+            return visitor.CollectFields(snapshot);
+        }
+
+        public static IEnumerable<MemberIdentifier> IterateIndexes(SnapshotBase context, ICopyModelSnapshotEntry snapshotEntry)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            MemoryEntry entry = snapshotEntry.ReadMemory(snapshot);
+
+            CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
+            visitor.VisitMemoryEntry(entry);
+
+            return visitor.CollectIndexes(snapshot);
+        }
+
+        public static IEnumerable<TypeValue> ResolveType(SnapshotBase context, ICopyModelSnapshotEntry snapshotEntry)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            MemoryEntry entry = snapshotEntry.ReadMemory(snapshot);
+
+            CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
+            visitor.VisitMemoryEntry(entry);
+
+            return visitor.ResolveObjectsTypes(snapshot);
+        }
     }
 
     class AliasData

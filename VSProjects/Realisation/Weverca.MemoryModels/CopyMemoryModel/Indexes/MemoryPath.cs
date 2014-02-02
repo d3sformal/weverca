@@ -23,27 +23,28 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public bool IsDirect { get; private set; }
         public GlobalContext Global { get; private set; }
+        public int CallLevel { get; private set; }
 
         #region Path Factories
 
-        public static MemoryPath MakePathAnyVariable(GlobalContext global)
+        public static MemoryPath MakePathAnyVariable(GlobalContext global, int callLevel)
         {
-            return new MemoryPath(new VariablePathSegment(), global);
+            return new MemoryPath(new VariablePathSegment(), global, callLevel);
         }
 
-        public static MemoryPath MakePathVariable(IEnumerable<string> names, GlobalContext global)
+        public static MemoryPath MakePathVariable(IEnumerable<string> names, GlobalContext global, int callLevel)
         {
-            return new MemoryPath(new VariablePathSegment(names), global);
+            return new MemoryPath(new VariablePathSegment(names), global, callLevel);
         }
 
-        public static MemoryPath MakePathAnyControl(GlobalContext global)
+        public static MemoryPath MakePathAnyControl(GlobalContext global, int callLevel)
         {
-            return new MemoryPath(new ControlPathSegment(), global);
+            return new MemoryPath(new ControlPathSegment(), global, callLevel);
         }
 
-        public static MemoryPath MakePathControl(IEnumerable<string> names, GlobalContext global)
+        public static MemoryPath MakePathControl(IEnumerable<string> names, GlobalContext global, int callLevel)
         {
-            return new MemoryPath(new ControlPathSegment(names), global);
+            return new MemoryPath(new ControlPathSegment(names), global, callLevel);
         }
 
         public static MemoryPath MakePathAnyField(MemoryPath parentPath)
@@ -68,18 +69,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public static MemoryPath MakePathTemporary(TemporaryIndex temporaryIndex)
         {
-            return new MemoryPath(new TemporaryPathSegment(temporaryIndex), GlobalContext.LocalOnly);
+            return new MemoryPath(new TemporaryPathSegment(temporaryIndex), GlobalContext.LocalOnly, temporaryIndex.CallLevel);
         }
 
         #endregion
 
-        private MemoryPath(PathSegment pathSegment, GlobalContext global)
+        private MemoryPath(PathSegment pathSegment, GlobalContext global, int callLevel)
         {
             List<PathSegment> path = new List<PathSegment>();
             path.Add(pathSegment);
 
             IsDirect = pathSegment.IsDirect;
             Global = global;
+            CallLevel = callLevel;
 
             PathSegments = new ReadOnlyCollection<PathSegment>(path);
         }
@@ -91,6 +93,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             IsDirect = parentPath.IsDirect && pathSegment.IsDirect;
             Global = parentPath.Global;
+            CallLevel = parentPath.CallLevel;
 
             PathSegments = new ReadOnlyCollection<PathSegment>(path);
         }
@@ -98,6 +101,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override string ToString()
         {
             StringBuilder builder = new StringBuilder();
+
+            if (CallLevel > Snapshot.GLOBAL_CALL_LEVEL)
+            {
+                builder.Append(CallLevel + "::");
+            }
+
             foreach (PathSegment name in PathSegments)
             {
                 builder.Append(name.ToString());

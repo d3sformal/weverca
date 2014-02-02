@@ -86,6 +86,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal bool DataEquals(MemoryAlias other)
         {
+            if (other == null)
+            {
+                return this.MayAliasses.Count == 0 && this.MustAliasses.Count == 0;
+            }
+
             if (this.MayAliasses.Count != other.MayAliasses.Count
                 || this.MustAliasses.Count != other.MustAliasses.Count)
             {
@@ -94,6 +99,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             return HashSetTools.EqualsSet(this.MustAliasses, other.MustAliasses) 
                 || HashSetTools.EqualsSet(this.MayAliasses, other.MayAliasses);
+        }
+
+        internal static bool AreEqual(MemoryAlias objA, MemoryAlias objB)
+        {
+            if (objA == objB)
+            {
+                return true;
+            }
+
+            if (objA != null)
+            {
+                return objA.DataEquals(objB);
+            }
+            else
+            {
+                return objB.DataEquals(objA);
+            }
         }
     }
 

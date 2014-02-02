@@ -50,6 +50,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal bool DataEquals(ObjectValueContainer other)
         {
+            if (other == null)
+            {
+                return this.values.Count == 0;
+            }
+
             if (this.values.Count != other.values.Count)
             {
                 return false;
@@ -64,6 +69,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return true;
+        }
+
+        internal static bool AreEqual(ObjectValueContainer objA, ObjectValueContainer objB)
+        {
+            if (objA == objB)
+            {
+                return true;
+            }
+
+            if (objA != null)
+            {
+                return objA.DataEquals(objB);
+            }
+            else
+            {
+                return objB.DataEquals(objA);
+            }
         }
     }
 

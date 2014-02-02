@@ -22,10 +22,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     abstract class IndexCollector : IIndexCollector
     {
         public GlobalContext Global { get; private set; }
+        public int CallLevel { get; private set; }
 
         public void ProcessPath(MemoryPath path)
         {
             Global = path.Global;
+            CallLevel = path.CallLevel;
 
             foreach (PathSegment segment in path.PathSegments)
             {

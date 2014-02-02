@@ -405,6 +405,12 @@ $obj->f('newValue');
 $FieldValue = $obj->field;
 ".AssertVariable("FieldValue").HasValues("newValue");
 
+        readonly static TestCase SimpleInclude_CASE = @"
+include 'file_a.php';
+".AssertVariable("IncludedVar").HasValues("ValueA")
+ .Include("file_a.php", @"
+    $IncludedVar='ValueA';
+");
 
         readonly static TestCase DynamicIncludeMerge_CASE = @"
 if($unknown){
@@ -897,6 +903,17 @@ write_argument($argument);
 
 ".AssertVariable("argument").HasValues("Value_WrittenInArgument");
 
+        readonly static TestCase SimpleNew_CASE = @"
+class Obj{ 
+    function __construct() { $this->c = ""constructed""; }
+    function test($g) { $this->a = ""Value""; }
+}
+
+$obj=new Obj();
+$obj->test(1);
+$result=$obj->a;
+".AssertVariable("result").HasValues("Value");
+
         readonly static TestCase IndirectNewEx_CASE = @"
 class Obj{
     var $a;
@@ -1085,7 +1102,7 @@ while(true){
 $test='NotAffected';
 
 $i=0;
-while($i<1000){
+while($i<2){
     ++$i;
 }
 $test2='Reachable';
@@ -1111,6 +1128,55 @@ $a = 2;
 $a = f(1);
 ".AssertVariable("a").HasValues(3)
 ;
+        readonly static TestCase ArrayReturnValueTest_CASE = @"
+function f() {
+    $a[1] = ""index1"";
+    $a[2] = ""index2"";
+    return $a;    
+}
+
+$arr = f();
+$result = $arr[1];
+".AssertVariable("result").HasValues("index1")
+            ;
+
+        readonly static TestCase ArrayMergeReturnValueTest_CASE = @"
+function f() {
+    $a[1] = ""f.index1"";
+    $a[2] = ""f.index2"";
+    return $a;    
+}
+
+function g() {
+    $a[1] = ""g.index1"";
+    $a[2] = ""g.index2"";
+    return $a;    
+}
+
+if ($unknown) {
+    $x = ""f"";
+}
+else {
+    $x = ""g"";
+}
+
+$arr = $x();
+$result = $arr[1];
+".AssertVariable("result").HasValues("f.index1", "g.index1")
+            ;
+
+        readonly static TestCase ArrayAliasedReturnValueTest_CASE = @"
+function f() {
+    $a[1] = ""f.index1"";
+    $a[2] = ""f.index2"";
+    return $a;    
+}
+
+$arr = & f();
+$result = $arr[1];
+".AssertVariable("result").HasValues("f.index1")
+            ;
+
 
         readonly static TestCase ArrayCopySemantic_CASE = @"
 $a[0]='initial';
@@ -1148,12 +1214,30 @@ $d=&$a;
             .AssertVariable("d").HasValues("valueB")
             ;
 
-
+        
         [TestMethod]
         public void FunctionTest()
         {
             AnalysisTestUtils.RunTestCase(FunctionTest_CASE);
         }
+
+        [TestMethod]
+        public void ArrayReturnValueTest()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayReturnValueTest_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayMergeReturnValueTest()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayMergeReturnValueTest_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayAliasedReturnValueTest()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayAliasedReturnValueTest_CASE);
+        }        
 
         [TestMethod]
         public void BranchMerge()
@@ -1343,6 +1427,12 @@ $d=&$a;
         }
 
         [TestMethod]
+        public void SimpleInclude()
+        {
+            AnalysisTestUtils.RunTestCase(SimpleInclude_CASE);
+        }
+
+        [TestMethod]
         public void IncludeReturn()
         {
             AnalysisTestUtils.RunTestCase(IncludeReturn_CASE);
@@ -1508,6 +1598,12 @@ $d=&$a;
         public void ArgumentWrite_ExplicitAliasToUndefinedItem()
         {
             AnalysisTestUtils.RunTestCase(ArgumentWrite_ExplicitAliasToUndefinedItem_CASE);
+        }
+
+        [TestMethod]
+        public void SimpleNew()
+        {
+            AnalysisTestUtils.RunTestCase(SimpleNew_CASE);
         }
 
         [TestMethod]

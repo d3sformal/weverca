@@ -44,7 +44,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (this.MemoryEntry != other.MemoryEntry)
             {
-                if (MemoryEntry == null || !this.MemoryEntry.Equals(other.MemoryEntry))
+                if (MemoryEntry == null || other.MemoryEntry == null || !this.MemoryEntry.Equals(other.MemoryEntry))
                 {
                     return false;
                 }
@@ -52,7 +52,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (this.Aliases != other.Aliases)
             {
-                if (Aliases == null || !this.Aliases.DataEquals(other.Aliases))
+                if (!MemoryAlias.AreEqual(Aliases, other.Aliases))
                 {
                     return false;
                 }
@@ -60,7 +60,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (this.Array != other.Array)
             {
-                if (Array == null || !this.Array.Equals(other.Array))
+                if (Array == null || other.Array == null || !this.Array.Equals(other.Array))
                 {
                     return false;
                 }
@@ -68,7 +68,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (this.Objects != other.Objects)
             {
-                if (Objects == null || !this.Objects.DataEquals(other.Objects))
+                if (!ObjectValueContainer.AreEqual(Objects, other.Objects))
                 {
                     return false;
                 }

@@ -68,17 +68,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal bool DataEquals(DeclarationContainer<T> other)
         {
-            foreach (var decl in this.declarations)
+            HashSet<QualifiedName> names = new HashSet<QualifiedName>();
+            HashSetTools.AddAll(names, this.declarations.Keys);
+            HashSetTools.AddAll(names, other.declarations.Keys);
+
+            foreach (var name in names)
             {
-                HashSet<T> otherDecl;
-                if (other.declarations.TryGetValue(decl.Key, out otherDecl))
+                HashSet<T> otherDecl, thisDecl;
+                if (!other.declarations.TryGetValue(name, out otherDecl))
                 {
-                    if (!HashSetTools.EqualsSet(decl.Value, otherDecl))
-                    {
-                        return false;
-                    }
+                    return false;
                 }
-                else
+
+                if (!this.declarations.TryGetValue(name, out thisDecl))
+                {
+                    return false;
+                }
+
+                if (!HashSetTools.EqualsSet(thisDecl, otherDecl))
                 {
                     return false;
                 }

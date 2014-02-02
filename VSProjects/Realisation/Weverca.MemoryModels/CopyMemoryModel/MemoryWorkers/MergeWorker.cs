@@ -24,18 +24,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private LinkedList<MergeOperation> operationStack = new LinkedList<MergeOperation>();
 
-        public MergeWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots)
+        private bool isCallMerge;
+
+        public MergeWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
         {
-            Data = new SnapshotData(targetSnapshot);
+            Data = SnapshotData.CreateEmpty(targetSnapshot);
 
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
+            this.isCallMerge = isCallMerge;
         }
 
         internal void Merge()
         {
             ContainerOperations[] collectVariables = new ContainerOperations[targetSnapshot.CallLevel + 1];
             ContainerOperations[] collectControl = new ContainerOperations[targetSnapshot.CallLevel + 1];
+            MergeOperation returnOperation = new MergeOperation();
 
             for (int x = 0; x <= targetSnapshot.CallLevel; x++)
             {
@@ -48,21 +52,43 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 collectControl[x] = new ContainerOperations(this, control, control.UnknownIndex, control.UnknownIndex);
 
                 Data.Temporary[x] = new IndexSet<TemporaryIndex>();
+                Data.Arrays[x] = new IndexSet<AssociativeArray>();
             }
 
             foreach (Snapshot snapshot in sourceSnapshots)
             {
                 collectObjects(snapshot);
 
-                for (int x = 0; x <= targetSnapshot.CallLevel; x++)
+
+                for (int sourceLevel = 0, targetLevel = 0; targetLevel <= targetSnapshot.CallLevel; sourceLevel++, targetLevel++)
                 {
-                    collectVariables[x].CollectIndexes(snapshot, Data.Variables[x].UnknownIndex, snapshot.Data.Variables[x]);
-                    collectControl[x].CollectIndexes(snapshot, Data.ContolVariables[x].UnknownIndex, snapshot.Data.ContolVariables[x]);
-                    collectTemporary(snapshot, x);
+                    if (sourceLevel == snapshot.CallLevel && snapshot.CallLevel != targetSnapshot.CallLevel)
+                    {
+                        if (isCallMerge)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            targetLevel = targetSnapshot.CallLevel;
+                        }
+                    }
+
+                    collectVariables[targetLevel].CollectIndexes(snapshot, Data.Variables[targetLevel].UnknownIndex, snapshot.Data.Variables[sourceLevel]);
+                    collectControl[targetLevel].CollectIndexes(snapshot, Data.ContolVariables[targetLevel].UnknownIndex, snapshot.Data.ContolVariables[sourceLevel]);
+                    collectTemporary(snapshot, targetLevel);
                 }
 
                 mergeDeclarations(Data.FunctionDecl, snapshot.Data.FunctionDecl);
                 mergeDeclarations(Data.ClassDecl, snapshot.Data.ClassDecl);
+
+                if (isCallMerge)
+                {
+                    foreach (AssociativeArray array in snapshot.Data.Arrays.Local)
+                    {
+                        Data.CallArrays.Add(array, snapshot);
+                    }
+                }
             }
 
             mergeObjects();
@@ -206,8 +232,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             collectVariables.MergeContainer();
 
-            Data.SetDescriptor(targetArray, builder.Build());
             Data.SetArray(operation.TargetIndex, targetArray);
+            Data.SetDescriptor(targetArray, builder.Build());
 
             return targetArray;
         }

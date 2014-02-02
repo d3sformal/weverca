@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using PHP.Core;
-
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
@@ -17,15 +16,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal static ReadWriteSnapshotEntryBase CreateVariableEntry(AnalysisFramework.VariableIdentifier variable, GlobalContext global)
         {
+            return CreateVariableEntry(variable, global, Snapshot.GLOBAL_CALL_LEVEL);
+        }
+
+        internal static ReadWriteSnapshotEntryBase CreateVariableEntry(AnalysisFramework.VariableIdentifier variable, GlobalContext global, int callLevel)
+        {
             MemoryPath path;
             if (variable.IsUnknown)
             {
-                path = MemoryPath.MakePathAnyVariable(global);
+                path = MemoryPath.MakePathAnyVariable(global, callLevel);
             }
             else
             {
                 var names = from name in variable.PossibleNames select name.Value;
-                path = MemoryPath.MakePathVariable(names, global);
+                path = MemoryPath.MakePathVariable(names, global, callLevel);
             }
 
             return new SnapshotEntry(path, variable);
@@ -33,14 +37,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal static ReadWriteSnapshotEntryBase CreateControlEntry(VariableName name, GlobalContext global)
         {
-            MemoryPath path = MemoryPath.MakePathControl(new string[]{name.ToString()}, global);
+            return CreateControlEntry(name, global, Snapshot.GLOBAL_CALL_LEVEL);
+        }
+
+        internal static ReadWriteSnapshotEntryBase CreateControlEntry(VariableName name, GlobalContext global, int callLevel)
+        {
+            MemoryPath path = MemoryPath.MakePathControl(new string[] { name.ToString() }, global, callLevel);
             return new SnapshotEntry(path);
         }
 
-        public SnapshotEntry()
-            : this(MemoryPath.MakePathAnyVariable(GlobalContext.LocalOnly))
-        {
-        }
 
         public SnapshotEntry(MemoryPath path)
         {
@@ -97,6 +102,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             Snapshot snapshot = ToSnapshot(context);
+            // Logger.append(context, "write: " + this.ToString() + " value: " + value.ToString());
 
             TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
             MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
@@ -119,6 +125,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             Snapshot snapshot = ToSnapshot(context);
+            // Logger.append(context, "write without copy:" + this.ToString());
 
             AssignCollector collector = new AssignCollector(snapshot);
             collector.ProcessPath(path);
@@ -130,6 +137,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             Snapshot snapshot = ToSnapshot(context);
+            // Logger.append(context, "set alias:" + this.ToString());
 
             ICopyModelSnapshotEntry entry = ToEntry(aliasedEntry);
             AliasData data = entry.CreateAliasToEntry(snapshot);
@@ -151,6 +159,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override bool isDefined(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
+            // Logger.append(context, "is defined:" + this.ToString());
 
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
@@ -167,12 +176,30 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
+            // Logger.append(context, "read: " + this.ToString());
 
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
 
             ReadWorker worker = new ReadWorker(snapshot);
-            return worker.ReadValue(collector);
+            MemoryEntry entry = worker.ReadValue(collector);
+            // Logger.appendToSameLine(" value: " + entry.ToString());
+
+            return entry;
+        }
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
+        {
+            Snapshot snapshot = ToSnapshot(context);
+            // Logger.append(context, "resolve method - path: " + this.ToString() + " method: " + methodName); 
+            
+            ReadCollector collector = new ReadCollector(snapshot);
+            collector.ProcessPath(path);
+
+            ReadWorker worker = new ReadWorker(snapshot);
+            MemoryEntry memory = worker.ReadValue(collector);
+
+            return snapshot.resolveMethod(memory, methodName);
         }
 
         protected override AnalysisFramework.VariableIdentifier getVariableIdentifier(SnapshotBase context)
@@ -249,25 +276,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return data;
         }
 
-
-        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
+        protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override IEnumerable<AnalysisFramework.VariableIdentifier> iterateFields(SnapshotBase context)
-        {
-            throw new NotImplementedException();
+            return SnapshotEntryHelper.IterateFields(context, this);
         }
 
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return SnapshotEntryHelper.IterateIndexes(context, this);
         }
 
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return SnapshotEntryHelper.ResolveType(context, this);
+        }
+
+        public MemoryEntry ReadMemory(Snapshot snapshot)
+        {
+            return this.readMemory(snapshot);
         }
     }
 }

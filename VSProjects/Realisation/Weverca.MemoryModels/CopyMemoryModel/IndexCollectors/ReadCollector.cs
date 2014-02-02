@@ -64,7 +64,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    process(variableSegment, snapshot.Data.Variables.Local);
+                    process(variableSegment, snapshot.Data.Variables[CallLevel]);
                     break;
                 case GlobalContext.GlobalOnly:
                     process(variableSegment, snapshot.Data.Variables.Global);
@@ -79,7 +79,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    process(controlPathSegment, snapshot.Data.ContolVariables.Local);
+                    process(controlPathSegment, snapshot.Data.ContolVariables[CallLevel]);
                     break;
                 case GlobalContext.GlobalOnly:
                     process(controlPathSegment, snapshot.Data.ContolVariables.Global);
@@ -160,6 +160,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 if (isUnknown)
                 {
+                    IsDefined = false;
                     mustIndexesProcess.Add(container.UnknownIndex);
                 } 
             }

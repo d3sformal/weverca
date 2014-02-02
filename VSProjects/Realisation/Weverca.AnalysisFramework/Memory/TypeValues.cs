@@ -43,5 +43,10 @@ namespace Weverca.AnalysisFramework.Memory
         {
             return GetType() == obj.GetType();
         }
+
+        public override string ToString()
+        {
+            return base.ToString() + " type: " + QualifiedName;
+        }
     }
 }

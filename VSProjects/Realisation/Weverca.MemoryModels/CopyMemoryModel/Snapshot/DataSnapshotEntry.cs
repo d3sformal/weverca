@@ -20,6 +20,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             dataEntry = entry;
         }
 
+        public override string ToString()
+        {
+            if (temporaryIndex != null)
+            {
+                return "temporary data: " + temporaryIndex.ToString();
+            }
+            else
+            {
+                return "temporary data: " + dataEntry.ToString();
+            }
+        }
+
         private SnapshotEntry getTemporary(SnapshotBase context)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
@@ -49,11 +61,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
+            // Logger.append(context, "read index - " + this.ToString());
+
             return getTemporary(context).ReadIndex(context, index);
         }
 
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
         {
+            // Logger.append(context, "read index - " + this.ToString());
+
             return getTemporary(context).ReadField(context, field);
         }
 
@@ -63,11 +79,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
+            // Logger.append(context, "write memory - " + this.ToString());
+
             getTemporary(context).WriteMemory(context, value, forceStrongWrite);
         }
 
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
+            // Logger.append(context, "set aliases - " + this.ToString());
+
             getTemporary(context).SetAliases(context, aliasedEntry);
         }
 
@@ -77,6 +97,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override bool isDefined(SnapshotBase context)
         {
+            // Logger.append(context, "is defined - " + this.ToString());
+
             if (isTemporarySet(context))
             {
                 return temporaryLocation.IsDefined(context);
@@ -89,6 +111,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
+            // Logger.append(context, "aliases - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -102,6 +125,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
+            // Logger.append(context, "read memory - " + this.ToString());
+
             if (isTemporarySet(context))
             {
                 return temporaryLocation.ReadMemory(context);
@@ -109,6 +134,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             else
             {
                 return dataEntry;
+            }
+        }
+
+        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
+        {
+            // Logger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
+
+            if (isTemporarySet(context))
+            {
+                return temporaryLocation.ResolveMethod(context, methodName);
+            }
+            else
+            {
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+                return snapshot.resolveMethod(dataEntry, methodName);
             }
         }
 
@@ -128,27 +168,34 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
-            throw new NotImplementedException();
-        }
-
-        protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
-        {
-            throw new NotImplementedException();
+            if (temporaryLocation == null)
+            {
+                dataEntry = value;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return SnapshotEntryHelper.IterateFields(context, this);
         }
 
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return SnapshotEntryHelper.IterateIndexes(context, this);
         }
 
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return SnapshotEntryHelper.ResolveType(context, this);
+        }
+
+        public MemoryEntry ReadMemory(Snapshot snapshot)
+        {
+            return this.readMemory(snapshot);
         }
     }
 }

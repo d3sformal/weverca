@@ -45,6 +45,11 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         public override abstract void Accept(IValueVisitor visitor);
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + Name;
+        }
     }
 
     public class NativeAnalyzerValue : FunctionValue

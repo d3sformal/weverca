@@ -12,6 +12,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public bool IsUndefined { get; private set; }
         public MemoryIndex TargetIndex { get; private set; }
+        public bool IsRoot { get; set; }
 
         public MergeOperation(MemoryIndex targetIndex)
         {
@@ -50,7 +51,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
-    class MergeWithinSnapshotOperation
+    /*class MergeWithinSnapshotOperation
     {
         public readonly HashSet<MemoryIndex> Indexes = new HashSet<MemoryIndex>();
 
@@ -84,5 +85,5 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         public bool IsRoot { get; set; }
-    }
+    }*/
 }

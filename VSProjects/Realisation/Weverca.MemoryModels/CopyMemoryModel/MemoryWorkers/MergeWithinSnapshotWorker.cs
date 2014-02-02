@@ -13,13 +13,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class MergeWithinSnapshotWorker
     {
-        private Snapshot snapshot;
+        private Snapshot targetSnapshot;
 
-        private LinkedList<MergeWithinSnapshotOperation> operationStack = new LinkedList<MergeWithinSnapshotOperation>();
+        private LinkedList<MergeOperation> operationStack = new LinkedList<MergeOperation>();
 
         public MergeWithinSnapshotWorker(Snapshot snapshot)
         {
-            this.snapshot = snapshot;
+            this.targetSnapshot = snapshot;
         }
 
         int arrayCount = 0;
@@ -34,14 +34,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             processMerge();
 
-            snapshot.Data.SetMemoryEntry(targetIndex, new MemoryEntry(values));
+            targetSnapshot.Data.SetMemoryEntry(targetIndex, new MemoryEntry(values));
         }
 
         public void MergeIndexes(MemoryIndex targetIndex, MemoryIndex sourceIndex)
         {
-            MergeWithinSnapshotOperation operation = new MergeWithinSnapshotOperation(targetIndex);
-            operation.Add(targetIndex);
-            operation.Add(sourceIndex);
+            MergeOperation operation = new MergeOperation(targetIndex);
+            operation.Add(targetIndex, targetSnapshot);
+            operation.Add(sourceIndex, targetSnapshot);
             operation.IsRoot = true;
             addOperation(operation);
 
@@ -54,19 +54,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             while (operationStack.Count > 0)
             {
-                MergeWithinSnapshotOperation operation = getOperation();
+                MergeOperation operation = getOperation();
 
                 processMergeOperation(operation);
             }
         }
 
-        private void processMergeOperation(MergeWithinSnapshotOperation operation)
+        private void processMergeOperation(MergeOperation operation)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
             ReferenceCollector references = new ReferenceCollector();
 
-            foreach (var index in operation.Indexes)
+            foreach (var item in operation.Indexes)
             {
+                Snapshot snapshot = item.Item2;
+                MemoryIndex index = item.Item1;
                 MemoryEntry entry = snapshot.Data.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
@@ -80,32 +82,45 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     references.InvalidateMust();
                 }
-
-                //TODO - merge aliases, infos
             }
 
             if (references.HasAliases && !operation.IsRoot)
             {
                 if (!operation.IsUndefined && operation.Indexes.Count == 1 && references.HasMustAliases)
                 {
-                    references.AddMustAlias(operation.Indexes.First());
+                    if (targetSnapshot == operation.Indexes.First().Item2)
+                    {
+                        references.AddMustAlias(operation.Indexes.First().Item1);
+                    }
                 }
                 else
                 {
-                    references.CollectMay(operation.Indexes, snapshot.CallLevel);
+                    HashSet<MemoryIndex> referenceIndexes = new HashSet<MemoryIndex>();
+                    foreach (var item in operation.Indexes)
+                    {
+                        MemoryIndex index = item.Item1;
+                        Snapshot snapshot = item.Item2;
+
+                        if (targetSnapshot == snapshot)
+                        {
+                            referenceIndexes.Add(index);
+                        }
+                    }
+
+                    references.CollectMay(referenceIndexes, targetSnapshot.CallLevel);
                 }
             }
 
-            references.SetAliases(operation.TargetIndex, snapshot, !operation.IsUndefined);
+            references.SetAliases(operation.TargetIndex, targetSnapshot, !operation.IsUndefined);
 
             HashSet<Value> values = getValues(operation.TargetIndex, visitor, operation.IsUndefined);
 
             if (operation.IsUndefined)
             {
-                values.Add(snapshot.UndefinedValue);
+                values.Add(targetSnapshot.UndefinedValue);
             }
 
-            snapshot.Data.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            targetSnapshot.Data.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
         }
 
         private HashSet<Value> getValues(MemoryIndex targetIndex, CollectComposedValuesVisitor visitor, bool includeUndefined)
@@ -141,17 +156,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 if (mustBeObject)
                 {
-                    snapshot.MakeMustReferenceObject(objectValue, targetIndex);
+                    targetSnapshot.MakeMustReferenceObject(objectValue, targetIndex);
                 }
                 else
                 {
-                    snapshot.MakeMayReferenceObject(objects, targetIndex);
+                    targetSnapshot.MakeMayReferenceObject(objects, targetIndex);
                 }
 
             }
             else if (objects.Count > 1)
             {
-                snapshot.MakeMayReferenceObject(objects, targetIndex);
+                targetSnapshot.MakeMayReferenceObject(objects, targetIndex);
 
                 foreach (ObjectValue objectValue in objects)
                 {
@@ -166,21 +181,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             bool includeUndefined)
         {
             AssociativeArray arrayValue;
-            if (!snapshot.Data.TryGetArray(targetIndex, out arrayValue))
+            if (!targetSnapshot.Data.TryGetArray(targetIndex, out arrayValue))
             {
-                arrayValue = snapshot.CreateArray(targetIndex);
+                arrayValue = targetSnapshot.CreateArray(targetIndex);
             }
-            ArrayDescriptor newDescriptor = snapshot.Data.GetDescriptor(arrayValue);
+            ArrayDescriptor newDescriptor = targetSnapshot.Data.GetDescriptor(arrayValue);
             
-            MergeWithinSnapshotOperation unknownMerge = new MergeWithinSnapshotOperation(newDescriptor.UnknownIndex);
+            MergeOperation unknownMerge = new MergeOperation(newDescriptor.UnknownIndex);
             unknownMerge.SetUndefined();
             addOperation(unknownMerge);
 
             HashSet<string> indexNames = new HashSet<string>();
-            foreach (var array in arrays)
+            foreach (AssociativeArray array in arrays)
             {
-                ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(array);
-                unknownMerge.Add(descriptor.UnknownIndex);
+                Snapshot snapshot;
+                ArrayDescriptor descriptor;
+                getArrayDescriptor(array, out snapshot, out descriptor);
+
+                unknownMerge.Add(descriptor.UnknownIndex, snapshot);
 
                 foreach (var index in descriptor.Indexes)
                 {
@@ -190,7 +208,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (string indexName in indexNames)
             {
-                MergeWithinSnapshotOperation operation = new MergeWithinSnapshotOperation();
+                MergeOperation operation = new MergeOperation();
 
                 if (includeUndefined)
                 {
@@ -199,22 +217,25 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 foreach (var array in arrays)
                 {
-                    ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(array);
+                    Snapshot snapshot;
+                    ArrayDescriptor descriptor;
+                    getArrayDescriptor(array, out snapshot, out descriptor);
+
                     MemoryIndex sourceIndex;
                     if (descriptor.Indexes.TryGetValue(indexName, out sourceIndex))
                     {
-                        operation.Add(sourceIndex);
+                        operation.Add(sourceIndex, snapshot);
                     }
                     else
                     {
-                        operation.Add(descriptor.UnknownIndex);
+                        operation.Add(descriptor.UnknownIndex, snapshot);
                     }
                 }
 
                 MemoryIndex arrayIndex;
                 if (!newDescriptor.Indexes.TryGetValue(indexName, out arrayIndex))
                 {
-                    arrayIndex = snapshot.CreateIndex(indexName, arrayValue, true, false);
+                    arrayIndex = targetSnapshot.CreateIndex(indexName, arrayValue, true, false);
                 }
                 operation.SetTargetIndex(arrayIndex);
                 addOperation(operation);
@@ -223,17 +244,33 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return arrayValue;
         }
 
-        private void addOperation(MergeWithinSnapshotOperation operation)
+        private void addOperation(MergeOperation operation)
         {
             operationStack.AddLast(operation);
         }
 
-        private MergeWithinSnapshotOperation getOperation()
+        private MergeOperation getOperation()
         {
-            MergeWithinSnapshotOperation operation = operationStack.First.Value;
+            MergeOperation operation = operationStack.First.Value;
             operationStack.RemoveFirst();
 
             return operation;
+        }
+
+        private void getArrayDescriptor(AssociativeArray array, out Snapshot snapshot, out ArrayDescriptor descriptor)
+        {
+            if (targetSnapshot.Data.TryGetDescriptor(array, out descriptor))
+            {
+                snapshot = targetSnapshot;
+            }
+            else if (targetSnapshot.Data.TryGetCallArraySnapshot(array, out snapshot))
+            {
+                descriptor = snapshot.Data.GetDescriptor(array);
+            }
+            else
+            {
+                throw new Exception("Missing array descriptor");
+            }
         }
     }
 }

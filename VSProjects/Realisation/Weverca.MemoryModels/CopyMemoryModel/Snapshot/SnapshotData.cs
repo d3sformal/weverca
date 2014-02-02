@@ -12,10 +12,30 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         static int DATA_ID = 0;
         int dataId = DATA_ID++;
+        private CopyMemoryModel.Snapshot targetSnapshot;
+        private int p;
+
+        public int DataId { get { return dataId; } }
 
         public override string ToString()
         {
-            return dataId.ToString();
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var index in IndexData)
+            {
+                builder.Append(index.ToString());
+                builder.Append("\n");
+                builder.Append(index.Value.MemoryEntry.ToString());
+
+                if (index.Value.Aliases != null)
+                {
+                    index.Value.Aliases.ToString(builder);
+                }
+
+                builder.Append("\n\n");
+            }
+
+            return builder.ToString();
         }
 
         internal Dictionary<AssociativeArray, ArrayDescriptor> ArrayDescriptors { get; private set; }
@@ -29,17 +49,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal MemoryStack<IndexSet<TemporaryIndex>> Temporary { get; private set; }
         internal MemoryStack<IndexContainer> Variables { get; private set; }
         internal MemoryStack<IndexContainer> ContolVariables { get; private set; }
-
-        internal int CallLevel { get; private set; }
-
+        internal MemoryStack<IndexSet<AssociativeArray>> Arrays { get; private set; }
+        internal Dictionary<AssociativeArray, Snapshot> CallArrays { get; private set; }
+        
         internal Snapshot Snapshot { get; private set; }
 
-        public SnapshotData(Snapshot snapshot)
+        private SnapshotData(Snapshot snapshot)
         {
             Snapshot = snapshot;
-            CallLevel = snapshot.CallLevel;
 
-            ArrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
+            /*ArrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
             ObjectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
             IndexData = new Dictionary<MemoryIndex, IndexData>();
             FunctionDecl = new DeclarationContainer<FunctionValue>();
@@ -50,10 +69,90 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             FunctionDecl = new DeclarationContainer<FunctionValue>();
             ClassDecl = new DeclarationContainer<TypeValue>();
 
-            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(new IndexSet<TemporaryIndex>());
+            Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(new IndexSet<TemporaryIndex>());*/
         }
 
-        public SnapshotData(Snapshot snapshot, SnapshotData data)
+        public static SnapshotData CreateEmpty(Snapshot snapshot)
+        {
+            SnapshotData data = new SnapshotData(snapshot);
+
+            data.ArrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
+            data.ObjectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
+            data.IndexData = new Dictionary<MemoryIndex, IndexData>();
+
+            data.Variables = new MemoryStack<IndexContainer>(snapshot.CallLevel);
+            data.ContolVariables = new MemoryStack<IndexContainer>(snapshot.CallLevel);
+            data.FunctionDecl = new DeclarationContainer<FunctionValue>();
+            data.ClassDecl = new DeclarationContainer<TypeValue>();
+
+            data.Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(snapshot.CallLevel);
+            data.Arrays = new MemoryStack<IndexSet<AssociativeArray>>(snapshot.CallLevel);
+            data.CallArrays = new Dictionary<AssociativeArray, Snapshot>();
+
+            return data;
+        }
+
+        public static SnapshotData CreateGlobal(Snapshot snapshot)
+        {
+            SnapshotData data = new SnapshotData(snapshot);
+
+            data.ArrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>();
+            data.ObjectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
+            data.IndexData = new Dictionary<MemoryIndex, IndexData>();
+
+            data.Variables = data.createMemoryStack(VariableIndex.CreateUnknown(Snapshot.GLOBAL_CALL_LEVEL));
+            data.ContolVariables = data.createMemoryStack(ControlIndex.CreateUnknown(Snapshot.GLOBAL_CALL_LEVEL));
+            data.FunctionDecl = new DeclarationContainer<FunctionValue>();
+            data.ClassDecl = new DeclarationContainer<TypeValue>();
+
+            data.Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(new IndexSet<TemporaryIndex>());
+            data.Arrays = new MemoryStack<IndexSet<AssociativeArray>>(new IndexSet<AssociativeArray>());
+            data.CallArrays = new Dictionary<AssociativeArray, Snapshot>();
+
+            return data;
+        }
+
+        public SnapshotData Copy(Snapshot snapshot)
+        {
+            SnapshotData data = new SnapshotData(snapshot);
+
+            data.ArrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(ArrayDescriptors);
+            data.ObjectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>(ObjectDescriptors);
+            data.IndexData = new Dictionary<MemoryIndex, IndexData>(IndexData);
+            data.FunctionDecl = new DeclarationContainer<FunctionValue>(FunctionDecl);
+            data.ClassDecl = new DeclarationContainer<TypeValue>(ClassDecl);
+
+            data.Variables = new MemoryStack<IndexContainer>(Variables);
+            data.ContolVariables = new MemoryStack<IndexContainer>(ContolVariables);
+
+            data.Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(Temporary);
+            data.Arrays = new MemoryStack<IndexSet<AssociativeArray>>(Arrays);
+            data.CallArrays = new Dictionary<AssociativeArray, Snapshot>(CallArrays);
+
+            return data;
+        }
+
+        public SnapshotData CopyAndAddLocalLevel(Snapshot snapshot)
+        {
+            SnapshotData data = new SnapshotData(snapshot);
+
+            data.ArrayDescriptors = new Dictionary<AssociativeArray, ArrayDescriptor>(ArrayDescriptors);
+            data.ObjectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>(ObjectDescriptors);
+            data.IndexData = new Dictionary<MemoryIndex, IndexData>(IndexData);
+            data.FunctionDecl = new DeclarationContainer<FunctionValue>(FunctionDecl);
+            data.ClassDecl = new DeclarationContainer<TypeValue>(ClassDecl);
+
+            data.Variables = new MemoryStack<IndexContainer>(Variables, data.createIndexContainer(VariableIndex.CreateUnknown(Variables.Length)));
+            data.ContolVariables = new MemoryStack<IndexContainer>(ContolVariables, data.createIndexContainer(ControlIndex.CreateUnknown(ContolVariables.Length)));
+
+            data.Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(Temporary, new IndexSet<TemporaryIndex>());
+            data.Arrays = new MemoryStack<IndexSet<AssociativeArray>>(Arrays, new IndexSet<AssociativeArray>());
+            data.CallArrays = new Dictionary<AssociativeArray, Snapshot>(CallArrays);
+
+            return data;
+        }
+
+        /*public SnapshotData(Snapshot snapshot, SnapshotData data)
         {
             Snapshot = snapshot;
             CallLevel = snapshot.CallLevel;
@@ -68,7 +167,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ContolVariables = new MemoryStack<IndexContainer>(data.ContolVariables);
 
             Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(data.Temporary);
-        }
+        }*/
 
         private MemoryStack<IndexContainer> createMemoryStack(MemoryIndex unknownIndex)
         {
@@ -105,6 +204,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     return false;
                 }
             }
+            else
+            {
+                return false;
+            }
 
             return true;
         }
@@ -115,13 +218,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             bool classCount = this.ClassDecl.Count == oldValue.ClassDecl.Count;
             bool indexCount = this.IndexData.Count == oldValue.IndexData.Count;
 
-            if (indexCount && classCount && funcCount)
+            if (!compareData(oldValue))
             {
-                if (!compareData(oldValue))
-                {
-                    return false;
-                }
+                return false;
+            }
 
+            if (classCount && funcCount)
+            {
                 if (!this.FunctionDecl.DataEquals(oldValue.FunctionDecl))
                 {
                     return false;
@@ -131,6 +234,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     return false;
                 }
+            }
+            else
+            {
+                return false;
             }
 
             return true;
@@ -142,30 +249,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSetTools.AddAll(indexes, this.IndexData.Keys);
             HashSetTools.AddAll(indexes, oldValue.IndexData.Keys);
 
+            IndexData emptyData = new CopyMemoryModel.IndexData(new MemoryEntry(Snapshot.UndefinedValue), null, null, null);
+
             bool areEqual = true;
             foreach (MemoryIndex index in indexes)
             {
                 IndexData newData = null;
-                IndexData oldData = null;
-                if (this.IndexData.TryGetValue(index, out newData)
-                    && oldValue.IndexData.TryGetValue(index, out oldData))
+                if (!this.IndexData.TryGetValue(index, out newData)) 
                 {
-                    if (!newData.DataEquals(oldData))
-                    {
-                        MemoryEntry newEntry = assistant.Widen(oldData.MemoryEntry, newData.MemoryEntry);
-                        this.SetMemoryEntry(index, newEntry);
-
-                        areEqual = false;
-                    }
+                    newData = emptyData;
                 }
-                else if (newData != null && oldData == null)
+
+                IndexData oldData = null;
+                if (!oldValue.IndexData.TryGetValue(index, out oldData))
                 {
-                    MemoryEntry newEntry = assistant.Widen(new MemoryEntry(Snapshot.UndefinedValue), newData.MemoryEntry);
+                    oldData = emptyData;
+                }
+
+                if (!newData.MemoryEntry.Equals(oldData.MemoryEntry))
+                {
+                    MemoryEntry newEntry = assistant.Widen(oldData.MemoryEntry, newData.MemoryEntry);
                     this.SetMemoryEntry(index, newEntry);
 
-                    areEqual = false;
+                    this.IndexData.TryGetValue(index, out newData);
                 }
-                else
+                
+                if (!newData.DataEquals(oldData))
                 {
                     areEqual = false;
                 }
@@ -174,19 +283,34 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return areEqual;
         }
 
-        private bool compareData(SnapshotData compare)
+        private bool compareData(SnapshotData oldValue)
         {
-            foreach (var index in this.IndexData)
+            HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
+            HashSetTools.AddAll(usedIndexes, this.IndexData.Keys);
+            HashSetTools.AddAll(usedIndexes, oldValue.IndexData.Keys);
+
+            IndexData emptyData = new CopyMemoryModel.IndexData(new MemoryEntry(Snapshot.UndefinedValue), null, null, null);
+
+            foreach (MemoryIndex index in usedIndexes)
             {
-                IndexData data;
-                if (compare.IndexData.TryGetValue(index.Key, out data))
+                if (index is TemporaryIndex)
                 {
-                    if (!data.DataEquals(index.Value))
-                    {
-                        return false;
-                    }
+                    continue;
                 }
-                else
+
+                IndexData newData = null;
+                if (!this.IndexData.TryGetValue(index, out newData))
+                {
+                    newData = emptyData;
+                }
+
+                IndexData oldData = null;
+                if (!oldValue.IndexData.TryGetValue(index, out oldData))
+                {
+                    oldData = emptyData;
+                }
+
+                if (!newData.DataEquals(oldData))
                 {
                     return false;
                 }
@@ -352,6 +476,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        internal bool TryGetCallArraySnapshot(AssociativeArray array, out Snapshot snapshot)
+        {
+            return CallArrays.TryGetValue(array, out snapshot);
+        }
+
         internal void SetArray(MemoryIndex index, AssociativeArray arrayValue)
         {
             IndexData data;
@@ -364,6 +493,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             builder.Array = arrayValue;
 
             IndexData[index] = builder.Build();
+            
+            ArrayDescriptor descriptor;
+            if (TryGetDescriptor(arrayValue, out descriptor))
+            {
+                if (descriptor.ParentVariable != null)
+                {
+                    Arrays[descriptor.ParentVariable.CallLevel].Remove(arrayValue);
+                }
+            }
+            Arrays[index.CallLevel].Add(arrayValue);
         }
 
         internal void RemoveArray(MemoryIndex index, AssociativeArray arrayValue)
@@ -380,6 +519,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             builder.Array = null;
 
             IndexData[index] = builder.Build();
+            Arrays[index.CallLevel].Remove(arrayValue);
         }
 
         #endregion
@@ -413,6 +553,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal void SetClass(PHP.Core.QualifiedName name, TypeValue declaration)
         {
             ClassDecl.Add(name, declaration);
+        }
+
+        internal IEnumerable<TypeValue> GetClass(PHP.Core.QualifiedName className)
+        {
+            return ClassDecl.GetValue(className);
         }
 
         #endregion
@@ -521,5 +666,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             IndexData[index] = builder.Build();
         }
         #endregion
+
     }
 }

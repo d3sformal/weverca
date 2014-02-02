@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class IndexSet<T> : IGenericCloneable<IndexSet<T>>, IEnumerable<T> where T : MemoryIndex
+    class IndexSet<T> : IGenericCloneable<IndexSet<T>>, IEnumerable<T>
     {
         private HashSet<T> indexes;
 

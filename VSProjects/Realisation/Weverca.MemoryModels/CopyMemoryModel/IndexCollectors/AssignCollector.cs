@@ -55,7 +55,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public AssignCollector(Snapshot snapshot)
         {
             this.snapshot = snapshot;
-            creatorVisitor = new CreatorVisitor(snapshot, Global);
+            creatorVisitor = new CreatorVisitor(snapshot, this);
 
             AliasesProcessing = AliasesProcessing.AfterCollecting;
         }
@@ -128,7 +128,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    processSegment(segment, snapshot.Data.Variables.Local);
+                    processSegment(segment, snapshot.Data.Variables[CallLevel]);
                     break;
                 case GlobalContext.GlobalOnly:
                     processSegment(segment, snapshot.Data.Variables.Global);
@@ -143,7 +143,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    processSegment(segment, snapshot.Data.ContolVariables.Local);
+                    processSegment(segment, snapshot.Data.ContolVariables[CallLevel]);
                     break;
                 case GlobalContext.GlobalOnly:
                     processSegment(segment, snapshot.Data.ContolVariables.Global);
@@ -311,7 +311,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private class CreatorVisitor : IPathSegmentVisitor
         {
             private Snapshot snapshot;
-            private GlobalContext global;
+            private IndexCollector collector;
             public MemoryIndex CreatedIndex { get; private set; }
 
             public string Name { get; set; }
@@ -322,18 +322,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             public ObjectValue ObjectValue { get; set; }
 
-            public CreatorVisitor(Snapshot snapshot, GlobalContext Global)
+            public CreatorVisitor(Snapshot snapshot, IndexCollector collector)
             {
                 this.snapshot = snapshot;
-                this.global = Global;
+                this.collector = collector;
             }
 
             public void VisitVariable(VariablePathSegment variableSegment)
             {
-                switch (global)
+                switch (collector.Global)
                 {
                     case GlobalContext.LocalOnly:
-                        CreatedIndex = snapshot.CreateLocalVariable(Name);
+                        CreatedIndex = snapshot.CreateLocalVariable(Name, collector.CallLevel);
                         break;
                     case GlobalContext.GlobalOnly:
                         CreatedIndex = snapshot.CreateGlobalVariable(Name);
@@ -345,10 +345,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             public void VisitControl(ControlPathSegment controlPathSegment)
             {
-                switch (global)
+                switch (collector.Global)
                 {
                     case GlobalContext.LocalOnly:
-                        CreatedIndex = snapshot.CreateLocalControll(Name);
+                        CreatedIndex = snapshot.CreateLocalControll(Name, collector.CallLevel);
                         break;
                     case GlobalContext.GlobalOnly:
                         CreatedIndex = snapshot.CreateGlobalControll(Name);

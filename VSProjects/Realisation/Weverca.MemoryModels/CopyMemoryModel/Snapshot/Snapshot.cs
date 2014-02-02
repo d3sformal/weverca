@@ -4,14 +4,67 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 using PHP.Core;
-
+using PHP.Core.AST;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /*class // Logger
+    {
+        static readonly string logFile = @"C:\Users\Pavel\Desktop\weverca_log.txt";
+
+        static Snapshot oldOne = null;
+
+        static // Logger() {
+            System.IO.File.Delete(logFile);
+        }
+
+        public static void append(string message)
+        {
+            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
+            {
+                w.Write("\r\n" + message);
+            }
+        }
+
+        public static void append(Snapshot snapshot)
+        {
+            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
+            {
+                w.Write("\r\n\r\n");
+                w.WriteLine(snapshot.DumpSnapshotSimplified());
+                w.WriteLine("-------------------------------");
+            }
+
+            oldOne = snapshot;
+        }
+
+        public static void append(Snapshot snapshot, String message)
+        {
+            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
+            {
+                w.Write("\r\n" + snapshot.getSnapshotIdentification() + " > " + message);
+            }
+        }
+
+        public static void append(SnapshotBase snapshotBase, String message)
+        {
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(snapshotBase);
+            append(snapshot, message);
+        }
+
+        public static void appendToSameLine(String message)
+        {
+            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
+            {
+                w.Write(message);
+            }
+        }
+    }*/
+
+
     /// <summary>
     /// Implementation of the memory snapshot based on copy semantics.
     /// This implementation stores every possible value for the single memory location in one place.
@@ -30,6 +83,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         private static int SNAP_ID = 0;
         private int snapId = SNAP_ID++;
+
+        public static readonly string THIS_VARIABLE_IDENTIFIER = "this";
+        public static readonly string RETURN_VARIABLE_IDENTIFIER = ".return";
 
 
         /// <summary>
@@ -54,19 +110,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </value>
         internal int CallLevel { get; private set; }
 
-        /// <summary>
-        /// Gets the this object for actual call level of the snapshot. Null for global code or function calls.
-        /// </summary>
-        /// <value>
-        /// The this object.
-        /// </value>
-        internal MemoryEntry ThisObject { get; private set; }
-
-        /// <summary>
-        /// Snapshot where the call was made. CallLevel value of this is incremented value of callerContext.
-        /// Null for global code.
-        /// </summary>
-        Snapshot callerContext;
+        private TemporaryIndex returnIndex;
 
         /// <summary>
         /// Backup of the snapshot data after the start of transaction.
@@ -79,11 +123,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         public Snapshot()
         {
-            callerContext = null;
-            ThisObject = null;
             CallLevel = GLOBAL_CALL_LEVEL;
 
-            Data = new SnapshotData(this);
+            Data = SnapshotData.CreateGlobal(this);
+            // Logger.append(this, "Constructed snapshot");
         }
 
         /// <summary>
@@ -93,7 +136,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             StringBuilder builder = new StringBuilder();
 
-            builder.Append(snapId.ToString() + "::" + Data.ToString() + "\n");
+            builder.Append(snapId.ToString() + "::" + Data.DataId.ToString() + "\n");
             foreach (var index in Data.IndexData)
             {
                 builder.Append(index.ToString());
@@ -109,6 +152,41 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Creates the string representation of the data.
+        /// </summary>
+        public String DumpSnapshotSimplified()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.Append(snapId.ToString() + "::" + Data.DataId.ToString() + "\n");
+            foreach (var index in Data.IndexData)
+            {
+                if (index.Key is TemporaryIndex)
+                {
+                    continue;
+                }
+
+                builder.Append(index.Key.ToString());
+                builder.Append("\t");
+                builder.Append(index.Value.MemoryEntry.ToString());
+
+                if (index.Value.Aliases != null)
+                {
+                    index.Value.Aliases.ToString(builder);
+                }
+
+                builder.Append("\n");
+            }
+
+            return builder.ToString();
+        }
+
+        public String getSnapshotIdentification()
+        {
+            return snapId.ToString() + "::" + Data.DataId.ToString();
         }
 
         /// <summary>
@@ -132,18 +210,35 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void startTransaction()
         {
+            // Logger.append(this, "Start");
+
             oldData = Data;
-            Data = new SnapshotData(this, oldData);
+            Data = oldData.Copy(this);
         }
 
         protected override bool commitTransaction()
         {
-            return Data.Equals(oldData);
+            // Logger.append(this, "Commit " + Data.DataEquals(oldData));
+            // Logger.append(this);
+
+            if (!Data.DataEquals(oldData))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         protected override bool widenAndCommitTransaction()
         {
-            return Data.WidenNotEqual(oldData, Assistant);
+            // Logger.append(this, "Commit and widen");
+            bool result = !Data.WidenNotEqual(oldData, Assistant);
+            // Logger.appendToSameLine(" " + result);
+            // Logger.append(this);
+
+            return result;
         }
 
         #endregion
@@ -152,6 +247,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
+            // Logger.append(this, "Init object " + createdObject + " " + type);
             ObjectDescriptor descriptor = new ObjectDescriptor(createdObject, type, ObjectIndex.CreateUnknown(createdObject));
             Data.NewIndex(descriptor.UnknownIndex);
             Data.SetDescriptor(createdObject, descriptor);
@@ -159,6 +255,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
+            // Logger.append(this, "Iterate object " + iteratedObject);
             ObjectDescriptor descriptor;
             if (Data.TryGetDescriptor(iteratedObject, out descriptor))
             {
@@ -177,6 +274,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override TypeValue objectType(ObjectValue objectValue)
         {
+            // Logger.append(this, "Get object type " + objectValue);
             ObjectDescriptor descriptor;
             if (Data.TryGetDescriptor(objectValue, out descriptor))
             {
@@ -188,22 +286,65 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+
+
+        protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
+        {
+            throw new NotImplementedException("Deprecated - should not be used in analysis");
+        }
+
+        internal IEnumerable<FunctionValue> resolveMethod(MemoryEntry entry, QualifiedName methodName)
+        {
+            HashSet<FunctionValue> functions = new HashSet<FunctionValue>();
+            foreach (Value value in entry.PossibleValues)
+            {
+                HashSetTools.AddAll(functions, resolveMethod(value, methodName));
+            }
+
+            return functions;
+        }
+
+        internal IEnumerable<FunctionValue> resolveMethod(Value value, QualifiedName methodName)
+        {
+            IEnumerable<FunctionValue> objectMethods;
+            TypeValue type;
+
+            ObjectValue objectValue = value as ObjectValue;
+            if (objectValue == null)
+            {
+                type = null;
+                objectMethods = new FunctionValue[0];
+            }
+            else
+            {
+                type = objectType(objectValue);
+                objectMethods = Weverca.MemoryModels.VirtualReferenceModel.TypeMethodResolver.ResolveMethods(type, this);
+            }
+
+            var resolvedMethods = Assistant.ResolveMethods(objectValue, type, methodName, objectMethods);
+
+            return resolvedMethods;
+        }
+
         #endregion
 
         #region Arrays
 
         protected override void initializeArray(AssociativeArray createdArray)
         {
+            // Logger.append(this, "Init array " + createdArray);
             TemporaryIndex arrayIndex = CreateTemporary();
 
             ArrayDescriptor descriptor = new ArrayDescriptor(createdArray, arrayIndex);
             Data.NewIndex(descriptor.UnknownIndex);
+            Data.SetArray(arrayIndex, createdArray);
             Data.SetDescriptor(createdArray, descriptor);
             Data.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
         }
 
         protected IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
+            // Logger.append(this, "Iterate array " + iteratedArray);
             ArrayDescriptor descriptor;
             if (Data.TryGetDescriptor(iteratedArray, out descriptor))
             {
@@ -226,6 +367,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void extend(ISnapshotReadonly[] inputs)
         {
+            // Logger.append(this, "extend");
+
             if (inputs.Length == 1)
             {
                 extendSnapshot(inputs[0]);
@@ -239,39 +382,36 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(callerContext);
+            // Logger.append(this, "call extend: " + snapshot.getSnapshotIdentification() + " level: " + snapshot.CallLevel + " this: " + thisObject);
 
-            this.callerContext = snapshot;
             CallLevel = snapshot.CallLevel + 1;
-            ThisObject = thisObject;
 
-            Data = new SnapshotData(this, snapshot.Data);
+            Data = snapshot.Data.CopyAndAddLocalLevel(this);
+
+            if (thisObject != null)
+            {
+                ReadWriteSnapshotEntryBase snapshotEntry = SnapshotEntry.CreateVariableEntry(new VariableIdentifier(THIS_VARIABLE_IDENTIFIER), GlobalContext.LocalOnly, CallLevel);
+                snapshotEntry.WriteMemory(this, thisObject);
+            }
+
+            int level = CallLevel > GLOBAL_CALL_LEVEL ? CallLevel - 1 : GLOBAL_CALL_LEVEL;
+            returnIndex = new TemporaryIndex(level);
+            Data.NewIndex(returnIndex);
+            Data.Temporary[level].Add(returnIndex);
         }
 
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
-            Snapshot parentCallerContext = null;
-
+            // Logger.append(this, "call merge");
             List<Snapshot> snapshots = new List<Snapshot>(callOutputs.Length);
             foreach (ISnapshotReadonly input in callOutputs)
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+                // Logger.append(this, snapshot.getSnapshotIdentification() + " call merge " + snapshot.CallLevel);
                 snapshots.Add(snapshot);
-
-                if (parentCallerContext == null)
-                {
-                    parentCallerContext = snapshot.callerContext;
-                }
-                else if (snapshot.callerContext != parentCallerContext)
-                {
-                    throw new Exception("Call outputs don't have the same call context.");
-                }
             }
 
-            this.callerContext = parentCallerContext.callerContext;
-            CallLevel = parentCallerContext.CallLevel;
-            ThisObject = parentCallerContext.ThisObject;
-
-            MergeWorker worker = new MergeWorker(this, snapshots);
+            MergeWorker worker = new MergeWorker(this, snapshots, true);
             worker.Merge();
 
             Data = worker.Data;
@@ -279,8 +419,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
+            // Logger.append(this, "Fetch from global");
             foreach (VariableName name in variables)
             {
+                // Logger.append(this, "Fetch from global " + name);
                 ReadWriteSnapshotEntryBase localEntry = getVariable(new VariableIdentifier(name), false);
                 ReadWriteSnapshotEntryBase globalEntry = getVariable(new VariableIdentifier(name), true);
 
@@ -290,6 +432,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override IEnumerable<VariableName> getGlobalVariables()
         {
+            // Logger.append(this, "Get global ");
+
             List<VariableName> names = new List<VariableName>();
 
             foreach (var variable in Data.Variables.Global.Indexes)
@@ -306,22 +450,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override void setInfo(Value value, params InfoValue[] info)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Info values - waiting for final approach");
         }
 
         protected override void setInfo(VariableName variable, params InfoValue[] info)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Info values - waiting for final approach");
         }
 
         protected override InfoValue[] readInfo(Value value)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Info values - waiting for final approach");
         }
 
         protected override InfoValue[] readInfo(VariableName variable)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Info values - waiting for final approach");
         }
 
         #endregion
@@ -330,19 +474,34 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
+            // Logger.append(this, "Resolve function " + functionName);
             if (Data.IsFunctionDefined(functionName))
             {
                 return Data.GetFunction(functionName);
             }
             else
             {
-                throw new Exception("Function " + functionName + " is not defined in this context.");
+                return new List<FunctionValue>(0);
+            }
+        }
+
+        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
+        {
+            // Logger.append(this, "Resolve type " + typeName);
+            if (Data.IsClassDefined(typeName))
+            {
+                return Data.GetClass(typeName);
+            }
+            else
+            {
+                return new List<TypeValue>(0);
             }
         }
 
         protected override void declareGlobal(FunctionValue declaration)
         {
             QualifiedName name = new QualifiedName(declaration.Name);
+            // Logger.append(this, "Declare function - " + name);
 
             if (!Data.IsFunctionDefined(name))
             {
@@ -350,13 +509,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                throw new Exception("Function " + name + " is already defined in this context.");
+                Data.SetFunction(name, declaration);
             }
         }
 
         protected override void declareGlobal(TypeValue declaration)
         {
             QualifiedName name = declaration.QualifiedName;
+            // Logger.append(this, "Declare class - " + name);
 
             if (!Data.IsClassDefined(name))
             {
@@ -364,7 +524,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                throw new Exception("Class " + name + " is already defined in this context.");
+                Data.SetClass(name, declaration);
             }
         }
 
@@ -374,39 +534,33 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
         {
-            GlobalContext global = forceGlobalContext ? GlobalContext.GlobalOnly : GlobalContext.LocalOnly;
-            return SnapshotEntry.CreateVariableEntry(variable, global);
+            // Logger.append(this, "Get variable - " + variable);
+            if (forceGlobalContext)
+            {
+                return SnapshotEntry.CreateVariableEntry(variable, GlobalContext.GlobalOnly);
+            }
+            else
+            {
+                return SnapshotEntry.CreateVariableEntry(variable, GlobalContext.LocalOnly, CallLevel);
+            }
         }
 
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
+            // Logger.append(this, "Get control variable - " + name);
             return SnapshotEntry.CreateControlEntry(name, GlobalContext.GlobalOnly);
         }
 
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
+            // Logger.append(this, "Get entry snap - " + entry);
             return new DataSnapshotEntry(entry);
         }
 
         protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
-            return SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly);
-        }
-
-        #endregion
-
-        #region OBSOLETE
-                        
-
-        //OBSOLETE
-        protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
-        {
-            throw new NotImplementedException();
+            // Logger.append(this, "Get local control variable - " + name);
+            return SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly, CallLevel);
         }
 
         #endregion
@@ -423,15 +577,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the local variable. Stack level of the local variable is equal to CallLevel.
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
-        /// <returns>Index of newly created variable.</returns>
-        internal MemoryIndex CreateLocalVariable(string variableName)
+        /// <param name="callLevel">The call level of variable.</param>
+        /// <returns>
+        /// Index of newly created variable.
+        /// </returns>
+        internal MemoryIndex CreateLocalVariable(string variableName, int callLevel)
         {
-            MemoryIndex variableIndex = VariableIndex.Create(variableName, CallLevel);
+            MemoryIndex variableIndex = VariableIndex.Create(variableName, callLevel);
 
             Data.NewIndex(variableIndex);
-            Data.Variables.Local.Indexes.Add(variableName, variableIndex);
+            Data.Variables[callLevel].Indexes.Add(variableName, variableIndex);
 
-            CopyMemory(Data.Variables.Local.UnknownIndex, variableIndex, false);
+            CopyMemory(Data.Variables[callLevel].UnknownIndex, variableIndex, false);
 
             return variableIndex;
         }
@@ -461,15 +618,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the local controll variable. Stack level of the local variable is equal to CallLevel.
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
-        /// <returns>Index of newly created variable.</returns>
-        internal MemoryIndex CreateLocalControll(string variableName)
+        /// <param name="callLevel">The call level of variable.</param>
+        /// <returns>
+        /// Index of newly created variable.
+        /// </returns>
+        internal MemoryIndex CreateLocalControll(string variableName, int callLevel)
         {
-            MemoryIndex ctrlIndex = ControlIndex.Create(variableName, CallLevel);
+            MemoryIndex ctrlIndex = ControlIndex.Create(variableName, callLevel);
 
             Data.NewIndex(ctrlIndex);
-            Data.ContolVariables.Local.Indexes.Add(variableName, ctrlIndex);
+            Data.ContolVariables[callLevel].Indexes.Add(variableName, ctrlIndex);
 
-            CopyMemory(Data.Variables.Local.UnknownIndex, ctrlIndex, false);
+            CopyMemory(Data.ContolVariables[callLevel].UnknownIndex, ctrlIndex, false);
 
             return ctrlIndex;
         }
@@ -735,8 +895,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 .Build();
 
             Data.NewIndex(newDescriptor.UnknownIndex);
-            Data.SetDescriptor(value, newDescriptor);
             Data.SetArray(parentIndex, value);
+            Data.SetDescriptor(value, newDescriptor);
             return value;
         }
 
@@ -946,11 +1106,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
 
-            this.callerContext = snapshot.callerContext;
-            CallLevel = snapshot.CallLevel;
-            ThisObject = snapshot.ThisObject;
+            // Logger.append(this, snapshot.getSnapshotIdentification() + " extend");
 
-            Data = new SnapshotData(this, snapshot.Data);
+            CallLevel = snapshot.CallLevel;
+            returnIndex = snapshot.returnIndex;
+
+            Data = snapshot.Data.Copy(this);
         }
 
         /// <summary>
@@ -966,42 +1127,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </exception>
         private void mergeSnapshots(ISnapshotReadonly[] inputs)
         {
-            bool inputSet = false;
-            Snapshot callerContext = null;
             int callLevel = 0;
-            MemoryEntry thisObject = null;
 
             List<Snapshot> snapshots = new List<Snapshot>(inputs.Length);
             foreach (ISnapshotReadonly input in inputs)
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+                // Logger.append(this, snapshot.getSnapshotIdentification() + " merge");
                 snapshots.Add(snapshot);
 
-                if (!inputSet)
+                if (snapshot.CallLevel > callLevel)
                 {
-                    callerContext = snapshot.callerContext;
                     callLevel = snapshot.CallLevel;
-                    thisObject = snapshot.ThisObject;
-
-                    inputSet = true;
-                }
-                else if (snapshot.callerContext != callerContext)
-                {
-                    throw new Exception("Merged snapshots don't have the same call context.");
-                }
-                else if (snapshot.CallLevel != callLevel)
-                {
-                    throw new Exception("Merged snapshots don't have the same call level.");
-                }
-                else if (snapshot.ThisObject != thisObject)
-                {
-                    throw new Exception("Merged snapshots don't have the same this object value.");
                 }
             }
 
-            this.callerContext = callerContext;
             CallLevel = callLevel;
-            ThisObject = thisObject;
 
             MergeWorker worker = new MergeWorker(this, snapshots);
             worker.Merge();
