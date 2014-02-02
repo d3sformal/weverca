@@ -203,7 +203,7 @@ namespace Weverca.Analysis.FlowResolver
                 BinaryEx binaryExpression = (BinaryEx)langElement;
                 if (binaryExpression.PublicOperation == Operations.Equal)
                 {
-                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, memoryContext);
+                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.NotEqual)
                 {
@@ -289,7 +289,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else if (binaryExpression.PublicOperation == Operations.NotEqual)
                 {
-                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, memoryContext);
+                    AssumeEquals(binaryExpression.LeftExpr, binaryExpression.RightExpr, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThan)
                 {
@@ -386,11 +386,11 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
-        void AssumeEquals(LangElement left, LangElement right, MemoryContext memoryContext)
+        void AssumeEquals(LangElement left, LangElement right, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeEquals(right, left, memoryContext);
+                AssumeEquals(right, left, memoryContext, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
@@ -427,7 +427,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else if (right is VariableUse)
                 {
-                    //nothing to do
+                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues);
                 }
                 else
                 {
@@ -490,10 +490,10 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(bound, long.MaxValue));
                 }
-                else if (right is VariableUse)
-                {
-                    //nothing to do
-                }
+                //else if (right is VariableUse)
+                //{
+                //    //TODO: get lower bound of right and intersect with left
+                //}
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
@@ -554,10 +554,10 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
                 }
-                else if (right is VariableUse)
-                {
-                    //nothing to do
-                }
+                //else if (right is VariableUse)
+                //{
+                //    //TODO: get upper bound of right and intersect with left
+                //}
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));

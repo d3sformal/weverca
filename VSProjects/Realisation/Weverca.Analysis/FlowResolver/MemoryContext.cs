@@ -96,6 +96,14 @@ namespace Weverca.Analysis.FlowResolver
             }
         }
 
+        public void IntersectionAssign(VariableName variableName, LangElement element, IEnumerable<Value> values)
+        {
+            foreach (var value in values)
+            {
+                IntersectionAssign(variableName, element, value);
+            }
+        }
+
         /// <summary>
         /// Assign a new value for a variable.
         /// New value will be intersected with values already registered.
