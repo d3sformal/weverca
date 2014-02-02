@@ -425,6 +425,10 @@ namespace Weverca.Analysis.FlowResolver
                     //TODO: Is that proper null?
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.UndefinedValue);
                 }
+                else if (right is VariableUse)
+                {
+                    //nothing to do
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
@@ -486,6 +490,10 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(bound, long.MaxValue));
                 }
+                else if (right is VariableUse)
+                {
+                    //nothing to do
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
@@ -545,6 +553,10 @@ namespace Weverca.Analysis.FlowResolver
                         bound--;
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
+                }
+                else if (right is VariableUse)
+                {
+                    //nothing to do
                 }
                 else
                 {

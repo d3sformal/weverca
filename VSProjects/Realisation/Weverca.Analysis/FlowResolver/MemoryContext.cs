@@ -71,7 +71,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    variableValues[variable.Key].AddRange(variable.Value);
                 }
             }
         }
