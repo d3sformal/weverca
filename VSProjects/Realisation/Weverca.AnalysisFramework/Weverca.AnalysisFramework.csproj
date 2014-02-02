@@ -42,7 +42,6 @@
     <Compile Include="Expressions\FunctionResolverBase.cs" />
     <Compile Include="Expressions\LiteralValueFactory.cs" />
     <Compile Include="Expressions\LValueFactory.cs" />
-    <Compile Include="Expressions\ObjectInitializer.cs" />
     <Compile Include="Expressions\PostfixExpression.cs" />
     <Compile Include="Expressions\RValueFactory.cs" />
     <Compile Include="ForwardAnalysisServices.cs" />
