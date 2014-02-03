@@ -1095,7 +1095,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
                     if (analyzer.ExistClass(typeName) && analyzer.GetClass(typeName).IsInterface == false)
                     {
-                        InsertNativeObjectStaticVariablesIntoMM(typeName, OutSet);
+                        InsertNativeObjectStaticVariablesIntoMM(typeName);
                         classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
                         if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value)).IsDefined(OutSet.Snapshot))
                         {
@@ -1927,13 +1927,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                 if (result.BaseClasses.Count > 0)
                 {
-                    for (int i = result.BaseClasses.Count - 1; i >= 0; i--)
+                    for (int i = 0; i<result.BaseClasses.Count ; i++)
                     {
                         if (Flow.OutSet.ResolveType(result.BaseClasses[i]).Count() == 0)
                         {
-                            InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses[i], OutSet);
+                            InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses[i]);
 
                         }
+                    }
+                }
+
+                foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName != result.QualifiedName)))
+                {
+                    var baseClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.ClassName.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot,new MemberIdentifier(field.Name.Value));
+
+                    var currentClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(result.QualifiedName.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value));
+                    if (result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.QualifiedName && a.Name == field.Name)).Count() == 0)
+                    {
+                        currentClassVariable.SetAliases(OutSet.Snapshot, baseClassVariable);
                     }
                 }
                 HashSet<VariableName> usedFields = new HashSet<VariableName>();
@@ -1976,7 +1987,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        public static void InsertNativeObjectStaticVariablesIntoMM(QualifiedName qualifiedName, FlowOutputSet OutSet)
+        private void InsertNativeObjectStaticVariablesIntoMM(QualifiedName qualifiedName)
         {
             NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             Debug.Assert(objectAnalyzer.ExistClass(qualifiedName));
@@ -1991,9 +2002,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     staticVariables.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
 
+                    foreach (var field in currentClass.Fields.Values.Where(a => (a.ClassName != currentClass.QualifiedName && a.IsStatic == true)))
+                    {
+                        var baseClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.ClassName.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value));
+                        if (currentClass.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == name && a.Name == field.Name)).Count() == 0)
+                        {
+                            var currentClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(name.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value));
+                            currentClassVariable.SetAliases(OutSet.Snapshot, baseClassVariable);
+                        }
+                    }
+
                     foreach (var field in currentClass.Fields.Values.Where(a => (a.ClassName == currentClass.QualifiedName && a.IsStatic == true)))
                     {
-                        staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, field.InitValue);
+                        var fieldIndex = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value));
+                        fieldIndex.WriteMemory(OutSet.Snapshot, field.InitValue);
                     }
                 }
             }

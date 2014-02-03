@@ -89,7 +89,7 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outSet, AnalysisWarningCause.CLASS_DOESNT_EXIST));
         }
 
-         string StaticFieldTest3 = @"
+        string StaticFieldTest3 = @"
             $result=MongoCursor ::$timeout;
         ";
 
@@ -129,6 +129,89 @@ namespace Weverca.Analysis.UnitTest
             var result = TestUtils.ResultTest(StaticFieldInitTest);
             TestUtils.testType(result, typeof(IntegerValue));
             TestUtils.testValue(result, 4);
+
+        }
+
+        string StaticInheritedFieldTest = @"
+        class a 
+        {
+        public static $x=4;
+
+        }
+        class b extends a 
+        {
+
+
+        }
+
+        $result = b::$x;
+        a::$x=2;
+        $result+=b::$x;
+        ";
+
+        [TestMethod]
+        public void StaticInheritedField()
+        {
+            var result = TestUtils.ResultTest(StaticInheritedFieldTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 6);
+
+        }
+
+        string StaticInheritedFieldTest2 = @"
+        class a 
+        {
+        public static $x=4;
+
+        }
+        class b extends a 
+        {
+         public static $x=6;
+
+        }
+
+        $result = b::$x+a::$x;
+        ";
+
+        [TestMethod]
+        public void StaticInheritedField2()
+        {
+            var result = TestUtils.ResultTest(StaticInheritedFieldTest2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 10);
+
+        }
+
+        string StaticInheritedFieldTest3 = @"
+        class a 
+        {
+        public static $x=3;
+
+        }
+        class b extends a 
+        {
+
+        }
+
+        class c extends b 
+        {
+
+        }
+
+         class d extends a 
+        {
+
+        }
+
+        $result = b::$x*a::$x*c::$x*d::$x;
+        ";
+
+        [TestMethod]
+        public void StaticInheritedField3()
+        {
+            var result = TestUtils.ResultTest(StaticInheritedFieldTest3);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 81);
 
         }
 
