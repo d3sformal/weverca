@@ -36,6 +36,10 @@ namespace Weverca.Analysis
 
         private static readonly VariableName calledObjectTypeName = new VariableName(".calledObject");
 
+        public static readonly VariableName staticVariables=new VariableName(".staticVariables");
+
+        public static readonly VariableName staticVariableSink=new VariableName(".staticVariableSink");
+
         public static Dictionary<LangElement, QualifiedName> methodToClass = new Dictionary<LangElement, QualifiedName>();
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
@@ -139,7 +143,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            var resolvedTypes = resolveType(typeName);
+            var resolvedTypes = ResolveType(typeName, OutSet,Element);
             foreach (var resolvedType in resolvedTypes)
             {
                 staticMethodCall(resolvedType, name, arguments);
@@ -182,7 +186,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
         {
-            foreach (var resolvedType in resolveType(typeName))
+            foreach (var resolvedType in ResolveType(typeName, OutSet, Element))
             {
                 indirectStaticMethodCall(resolvedType, name, arguments);
             }
@@ -210,7 +214,7 @@ namespace Weverca.Analysis
         }
 
 
-        private IEnumerable<QualifiedName> resolveType(QualifiedName typeName)
+        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName,FlowOutputSet OutSet, LangElement element)
         {
             List<QualifiedName> result = new List<QualifiedName>();
             if (typeName.Name.Value == "self" || typeName.Name.Value == "parent")
@@ -238,7 +242,7 @@ namespace Weverca.Analysis
                             }
                             else
                             {
-                                setWarning("Cannot acces parrent:: current class has no parrent", AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT);
+                                AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Cannot acces parrent:: current class has no parrent",element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
                             }
                         }
                     }
@@ -247,11 +251,11 @@ namespace Weverca.Analysis
                 {
                     if (typeName.Name.Value == "self")
                     {
-                        setWarning("Cannot acces self:: when not in class", AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS);
+                        AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Cannot acces self:: when not in class", element,AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
                     }
                     else
                     {
-                        setWarning("Cannot acces parent:: when not in class", AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS);
+                        AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Cannot acces parent:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
                     }
 
                 }
@@ -1176,12 +1180,9 @@ namespace Weverca.Analysis
             }
             if (result.IsInterface == false)
             {
-                var staticVariables = OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(OutSet.Snapshot, new MemberIdentifier(result.QualifiedName.Name.LowercaseValue));
+                var staticVariables = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(result.QualifiedName.Name.LowercaseValue));
                 staticVariables.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
-                ReadWriteSnapshotEntryBase publicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("public"));
-                publicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
-                ReadWriteSnapshotEntryBase nonPublicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("non-public"));
-                nonPublicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
+
 
                 if (result.BaseClasses.Count > 0)
                 {
@@ -1189,7 +1190,7 @@ namespace Weverca.Analysis
                     {
                         if (Flow.OutSet.ResolveType(result.BaseClasses[i]).Count() == 0)
                         {
-                            InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses[i]);
+                            InsertNativeObjectStaticVariablesIntoMM(result.BaseClasses[i],OutSet);
 
                         }
                     }
@@ -1201,14 +1202,8 @@ namespace Weverca.Analysis
                     if (field.Initializer != null)
                     {
                         string index = "";
-                        if (field.Visibility == Visibility.PUBLIC)
-                        {
-                            index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->publicfield@" + field.Name + "@";
-                        }
-                        else
-                        {
-                            index = "@class@" + result.QualifiedName.Name.LowercaseValue + "@->nonpublicfield@(" + field.Name + "@";
-                        }
+                        index = "class(" + result.QualifiedName.Name.LowercaseValue + ")->static(" + field.Name + ")";
+                        
                         code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(field.Initializer.Position) + ";\n";
                     }
                     else
@@ -1223,16 +1218,7 @@ namespace Weverca.Analysis
                             fieldValue = new MemoryEntry(OutSet.UndefinedValue);
                         }
 
-                        ReadWriteSnapshotEntryBase container = null;
-                        if (field.Visibility == Visibility.PUBLIC)
-                        {
-                            container = publicContainer;
-                        }
-                        else
-                        {
-                            container = nonPublicContainer;
-                        }
-                        container.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, fieldValue);
+                        staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, fieldValue);
                     }
                 }
 
@@ -1272,35 +1258,24 @@ namespace Weverca.Analysis
             }
         }
 
-        private void InsertNativeObjectStaticVariablesIntoMM(QualifiedName qualifiedName)
+        public static void InsertNativeObjectStaticVariablesIntoMM(QualifiedName qualifiedName,FlowOutputSet OutSet)
         {
             NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             Debug.Assert(objectAnalyzer.ExistClass(qualifiedName));
             ClassDecl classs = objectAnalyzer.GetClass(qualifiedName);
-
-            for (int i = 0; i < classs.BaseClasses.Count; i++)
+            List<QualifiedName> classHierarchy = new List<QualifiedName>(classs.BaseClasses);
+            classHierarchy.Add(qualifiedName);
+            foreach(var name in classHierarchy)
             {
-                var staticVariables = OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(OutSet.Snapshot, new MemberIdentifier(classs.BaseClasses[i].Name.LowercaseValue));
+                ClassDecl currentClass = objectAnalyzer.GetClass(name);
+                var staticVariables = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(name.Name.LowercaseValue));
                 if (!staticVariables.IsDefined(OutSet.Snapshot))
                 {
                     staticVariables.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
-                    ReadWriteSnapshotEntryBase publicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("public"));
-                    publicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
-                    ReadWriteSnapshotEntryBase nonPublicContainer = staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier("non-public"));
-                    nonPublicContainer.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateArray()));
-                    ClassDecl currentClass = objectAnalyzer.GetClass(classs.BaseClasses[i]);
-                    ReadWriteSnapshotEntryBase currentContainer = null;
+                    
                     foreach (var field in currentClass.Fields.Values.Where(a => (a.ClassName == currentClass.QualifiedName && a.IsStatic == true)))
                     {
-                        if (field.Visibility == Visibility.PUBLIC)
-                        {
-                            currentContainer = publicContainer;
-                        }
-                        else
-                        {
-                            currentContainer = nonPublicContainer;
-                        }
-                        currentContainer.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, field.InitValue);
+                        staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, field.InitValue);
                     }
                 }
             }

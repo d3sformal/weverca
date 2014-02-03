@@ -578,27 +578,17 @@ namespace Weverca.Analysis
                 }
                 else 
                 {
-                    var publicFieldPattern = @"^@class@(.*)@->publicfield@(.*)@$";
-                    var nonPublicFieldPattern = @"^@class@(.*)@->nonpublicfield@(.*)@$";
-                    var publicRegularExpression = new Regex(publicFieldPattern, RegexOptions.None);
-                    var nonPublicRegularExpression = new Regex(nonPublicFieldPattern, RegexOptions.None);
-                    var match = publicRegularExpression.Match(index.DirectName);
-                    
-                    string visibility="";
-                    if (!match.Success)
-                    {
-                        match = nonPublicRegularExpression.Match(index.DirectName);
-                        visibility = "nonpublic";
-                    }
-                    else 
-                    {
-                        visibility = "public";
-                    }
+                    var pattern = @"^class\((.*)\)->static\((.*)\)$";
 
+                    var regularExpression = new Regex(pattern, RegexOptions.None);
+
+                    var match = regularExpression.Match(index.DirectName);
+                    
+              
                     string className = match.Groups[1].Value;
                     string fieldname = match.Groups[2].Value;
                     SnapshotBase snapshot = flow.OutSet.Snapshot;
-                    var staticField = flow.OutSet.GetControlVariable(new VariableName(".staticVariables")).ReadIndex(snapshot, new MemberIdentifier(className)).ReadIndex(snapshot, new MemberIdentifier(visibility)).ReadIndex(snapshot, new MemberIdentifier(fieldname));
+                    var staticField = flow.OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(snapshot, new MemberIdentifier(className)).ReadIndex(snapshot, new MemberIdentifier(fieldname));
                     List<Value> values = new List<Value>();
                     if (staticField.IsDefined(snapshot))
                     {

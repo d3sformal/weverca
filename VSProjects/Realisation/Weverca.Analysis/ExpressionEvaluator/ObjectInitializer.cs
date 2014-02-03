@@ -149,6 +149,56 @@ namespace Weverca.Analysis.ExpressionEvaluator
             initializationValue = expressionResolver.NullLiteral(x);
         }
 
+        public override void VisitGlobalConstUse(GlobalConstUse x)
+        {
+            initializationValue = expressionResolver.Constant(x);
+        }
+
+        public override void VisitClassConstUse(ClassConstUse x)
+        {
+            initializationValue = expressionResolver.ClassConstant(new MemoryEntry(OutSet.CreateString(x.ClassName.QualifiedName.Name.Value)),new VariableName(x.Name.Value));
+        }
+
+        public override void VisitArrayEx(ArrayEx x)
+        {
+      
+
+            List<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs=new List<KeyValuePair<MemoryEntry,MemoryEntry>>();
+
+            foreach (var item in x.Items)
+            {
+                MemoryEntry index = null;
+                if (item.Index != null)
+                {
+                    item.Index.VisitMe(this);
+                    index = initializationValue;
+                }
+
+                MemoryEntry value = null;
+                var valueItem = item as ValueItem;
+                if (valueItem != null)
+                {
+                    valueItem.ValueExpr.VisitMe(this);
+                    value = initializationValue;
+                }
+                else
+                {
+                    var refItem = item as RefItem;
+                    if (refItem != null)
+                    {
+                        throw new NotImplementedException();
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("There is no other array item type");
+                    }
+                }
+
+                keyValuePairs.Add(new KeyValuePair<MemoryEntry, MemoryEntry>(index, value));
+            }
+
+            initializationValue = expressionResolver.ArrayEx(keyValuePairs);
+        }
         #endregion
     }
 }

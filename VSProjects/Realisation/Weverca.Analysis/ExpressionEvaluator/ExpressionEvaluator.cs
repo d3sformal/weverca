@@ -1,5 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
+using System.IO;
 using PHP.Core;
 using PHP.Core.AST;
 
@@ -38,6 +42,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// The partial evaluator of one binary operation
         /// </summary>
         private BinaryOperationEvaluator binaryOperationVisitor;
+
+        public GlobalCode globalCode { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionEvaluator" /> class.
@@ -1015,22 +1021,144 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-
-
-
+        /// <inheritdoc />
         public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, VariableIdentifier field)
         {
-            throw new System.NotImplementedException();
+            NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+            string value = type.QualifiedName.Name.Value;
+            IEnumerable<QualifiedName> resolverdTypes=FunctionResolver.ResolveType(type.QualifiedName, OutSet, Element);
+            if (resolverdTypes.Count() > 0)
+            {
+                if (!analyzer.ExistClass(resolverdTypes.First()))
+                {
+                    var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(resolverdTypes.First().Name.LowercaseValue));
+                    if (!classStorage.IsDefined(OutSet.Snapshot))
+                    {
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class " + resolverdTypes.First().Name.Value + " doesn't exist", Element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                        return getStaticVariableSink();
+                    }
+                }
+              
+
+                var list = new List<QualifiedName>();
+                list.Add(resolverdTypes.First());
+                return resolveStaticVariable(list, field);
+            }
+            else
+            {
+                return getStaticVariableSink();
+            }
         }
 
+        /// <inheritdoc />
         public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, VariableIdentifier field)
         {
-            throw new System.NotImplementedException();
+            NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+            List<QualifiedName> classes = new List<QualifiedName>();
+            foreach (var name in possibleTypes)
+            {
+                if (!analyzer.ExistClass(name.QualifiedName))
+                {
+                    var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(name.QualifiedName.Name.LowercaseValue));
+                    if (!classStorage.IsDefined(OutSet.Snapshot))
+                    {
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class " + name.QualifiedName.Name.Value + " doesn't exist", Element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                    }
+                    else
+                    {
+                        classes.Add(name.QualifiedName);
+                    }
+                }
+                else
+                {
+                    classes.Add(name.QualifiedName);
+                }
+            }
+
+            return resolveStaticVariable(classes, field);
         }
 
+        private ReadWriteSnapshotEntryBase resolveStaticVariable(List<QualifiedName> classes, VariableIdentifier field)
+        {
+            List<string> names = new List<string>();
+
+            foreach (var typeName in classes)
+            {
+                var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
+                if (!classStorage.IsDefined(OutSet.Snapshot))
+                {
+                    NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+                    if (analyzer.ExistClass(typeName) && analyzer.GetClass(typeName).IsInterface == false)
+                    {
+                        FunctionResolver.InsertNativeObjectStaticVariablesIntoMM(typeName, OutSet);
+                        classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
+                        if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value)).IsDefined(OutSet.Snapshot))
+                        {
+                            names.Add(typeName.Name.LowercaseValue);
+                        }
+                        else
+                        {
+                            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));                   
+                        }
+                    }
+                    else
+                    {
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class " + typeName.Name.Value + " doesn't exist", Element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                    }
+                }
+                else
+                {
+                    if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value)).IsDefined(OutSet.Snapshot))
+                    {
+                        names.Add(typeName.Name.LowercaseValue);
+                    }
+                    else
+                    {
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));
+                    }
+                }
+            }
+
+             var storage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
+             return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value));
+
+        }
+
+
+
+
+        /// <inheritdoc />
         public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
         {
-            throw new System.NotImplementedException();
+            List<GenericQualifiedName> result = new List<GenericQualifiedName>();
+            foreach(var value in typeValue.PossibleValues)
+            {
+                StaticObjectVisitor visitor = new StaticObjectVisitor(Flow);
+                value.Accept(visitor);
+                switch (visitor.Result)
+                {
+                    case StaticObjectVisitorResult.NO_RESULT:
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces static variable on non object", Element, AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_OM_NON_OBJECT));
+                        break;
+                    case StaticObjectVisitorResult.ONE_RESULT:
+                        result.Add(new GenericQualifiedName(visitor.className));
+                        break;
+                    case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        break;
+                }
+            }
+            return result;
         }
+
+        /// <summary>
+        /// Returns static variable sink, when static variable doesn't exist, this empty space in memory model is returned.
+        /// </summary>
+        /// <returns>Empty space in memory model</returns>
+        private ReadWriteSnapshotEntryBase getStaticVariableSink()
+        {
+            OutSet.GetControlVariable(FunctionResolver.staticVariableSink).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
+            return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+        }
+
     }
 }

@@ -36,7 +36,9 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
-            return new ExpressionEvaluator.ExpressionEvaluator();
+            var ee= new ExpressionEvaluator.ExpressionEvaluator();
+            ee.globalCode = EntryCFG.globalCode;
+            return ee;
         }
 
         /// <inheritdoc />
@@ -79,9 +81,9 @@ namespace Weverca.Analysis
             var getVariable = EntryInput.GetVariable(new VariableIdentifier(get), true);
             getVariable.WriteMemory(EntryInput.Snapshot , new MemoryEntry(getValue));
 
-            var staticVariables = new VariableName(".staticVariables");
+            
             var staticVariablesArray = EntryInput.CreateArray();
-            var staticVariable = EntryInput.GetControlVariable(staticVariables);
+            var staticVariable = EntryInput.GetControlVariable(FunctionResolver.staticVariables);
             staticVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(staticVariablesArray));
 
             var warnings = new VariableName(".analysisWarning");
@@ -89,9 +91,8 @@ namespace Weverca.Analysis
             warningsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
 
             var securityWarnings = new VariableName(".analysisSecurityWarning");
-            var securityWarningsVariable = EntryInput.GetControlVariable(warnings);
+            var securityWarningsVariable = EntryInput.GetControlVariable(securityWarnings);
             securityWarningsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
-
 
             //stack for catchblocks
             EntryInput.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInfo(new TryBlockStack())));
@@ -99,6 +100,10 @@ namespace Weverca.Analysis
             //array for global Constants
             var constantsVariable = EntryInput.GetControlVariable(UserDefinedConstantHandler.constantVariable);
             constantsVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateArray()));
+
+            var staticVariableSink = FunctionResolver.staticVariableSink;
+            var staticVariableSinkVariable = EntryInput.GetControlVariable(staticVariableSink);
+            staticVariableSinkVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
 
             nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
 
