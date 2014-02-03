@@ -185,7 +185,7 @@ namespace Weverca.Analysis.UnitTest
         string StaticInheritedFieldTest3 = @"
         class a 
         {
-        public static $x=3;
+        public static $x=2;
 
         }
         class b extends a 
@@ -202,7 +202,7 @@ namespace Weverca.Analysis.UnitTest
         {
 
         }
-
+        d::$x=3;
         $result = b::$x*a::$x*c::$x*d::$x;
         ";
 
