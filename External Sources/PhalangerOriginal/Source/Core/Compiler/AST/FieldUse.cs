@@ -35,6 +35,8 @@ namespace PHP.Core.AST
 
         /// <summary>Position of the field name.</summary>
         public Position NamePosition { get; private set; }
+        
+        public TypeRef TypeRef { get { return typeRef; } }
 
         protected TypeRef typeRef;
 		protected DType/*!*/ type;
