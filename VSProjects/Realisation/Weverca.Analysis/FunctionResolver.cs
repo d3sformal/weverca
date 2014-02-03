@@ -26,7 +26,6 @@ namespace Weverca.Analysis
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
             = new Dictionary<FunctionDecl, FunctionHints>();
-        public GlobalCode globalCode { get; set; }
 
         private readonly Dictionary<FunctionValue, ProgramPointGraph> sharedProgramPoints = new Dictionary<FunctionValue, ProgramPointGraph>();
 
@@ -1157,7 +1156,8 @@ namespace Weverca.Analysis
                     constants[constant.Name] = constant;
                 }
             }
-            string code = "function _static_intialization_of_" + result.QualifiedName + "(){$res=array();";
+
+            var initiliazer = new ObjectInitializer(new Weverca.Analysis.ExpressionEvaluator.ExpressionEvaluator(Flow));
             foreach (var constant in constants.Values)
             {
 
@@ -1175,7 +1175,8 @@ namespace Weverca.Analysis
                 else
                 {
                     string index = ".class(" + result.QualifiedName.Name.LowercaseValue + ")->constant(" + constant.Name + ")";
-                    code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(constant.Initializer.Position) + ";\n";
+                    constant.Initializer.VisitMe(initiliazer);
+                    variable.WriteMemory(OutSet.Snapshot, initiliazer.initializationValue);
                 }
             }
             if (result.IsInterface == false)
@@ -1201,10 +1202,8 @@ namespace Weverca.Analysis
                     usedFields.Add(field.Name);
                     if (field.Initializer != null)
                     {
-                        string index = "";
-                        index = "class(" + result.QualifiedName.Name.LowercaseValue + ")->static(" + field.Name + ")";
-                        
-                        code += "$res[\"" + index + "\"]=" + globalCode.SourceUnit.GetSourceCode(field.Initializer.Position) + ";\n";
+                        field.Initializer.VisitMe(initiliazer);
+                        staticVariables.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value)).WriteMemory(OutSet.Snapshot, initiliazer.initializationValue);
                     }
                     else
                     {
@@ -1234,27 +1233,6 @@ namespace Weverca.Analysis
                         }
                     }
                 }
-            }
-            string key = "staticInit" + result.QualifiedName.Name.LowercaseValue;
-            if (!Flow.ExtensionKeys.Contains(key))
-            {
-                var fileName = "./cfg_test.php";
-                var fullPath = new FullPath(Path.GetDirectoryName(fileName));
-                var sourceFile = new PhpSourceFile(fullPath, new FullPath(fileName));
-                code = @"<?php " + code + " } ?>";
-
-                var parser = new SyntaxParser(sourceFile, code);
-                parser.Parse();
-
-                var function = (parser.Ast.Statements[0] as FunctionDecl);
-                var parameters = new List<ActualParam>();
-                parameters.Add(new ActualParam(Position.Invalid, new DirectVarUse(Position.Invalid, "res"), false));
-                function.Body.Add(new ExpressionStmt(Position.Invalid,
-                new DirectFcnCall(Position.Invalid, new QualifiedName(new Name(".initStaticProperties")), null, Position.Invalid, parameters, new List<TypeRef>())));
-
-                var ppGraph = ProgramPointGraph.From(OutSet.CreateFunction(function));
-
-                Flow.AddExtension(key, ppGraph, ExtensionType.ParallelCall);
             }
         }
 

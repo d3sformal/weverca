@@ -492,11 +492,6 @@ namespace Weverca.Analysis
         /// <returns>True if function exist, false otherwise</returns>
         public bool existNativeFunction(QualifiedName name)
         {
-            //function for intialization of static properties and constants in objects
-            if(name==new QualifiedName(new Name(".initStaticProperties")))
-            {
-                return true;
-            }
             return typeModeledFunctions.ContainsKey(name);
         }
 
@@ -519,11 +514,6 @@ namespace Weverca.Analysis
             if (!existNativeFunction(name))
             {
                 return null;
-            }
-
-            if (name == new QualifiedName(new Name(".initStaticProperties")))
-            {
-                return new NativeAnalyzerMethod(InsetStaticPropertiesIntoMemoryModel);
             }
 
             if (specialFunctions.Keys.Contains(name))
@@ -551,54 +541,6 @@ namespace Weverca.Analysis
             {
                 TypeModeledFunctionAnalyzerHelper analyzer = new TypeModeledFunctionAnalyzerHelper(typeModeledFunctions[name]);
                 typeModeledFunctions[name][0].Analyzer = new NativeAnalyzerMethod(analyzer.analyze);
-            }
-        }
-
-
-        /// <summary>
-        /// Function which initlializes static properties and constant and insert then into memory model
-        /// </summary>
-        /// <param name="flow">FlowController</param>
-        public void InsetStaticPropertiesIntoMemoryModel(FlowController flow)
-        {
-            var res=flow.OutSet.GetVariable(NativeAnalyzerUtils.Argument(0));
-            foreach (MemberIdentifier index in res.IterateIndexes(flow.OutSet.Snapshot))
-            {
-                if (index.DirectName.StartsWith("."))
-                {
-                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, index);
-                    List<Value> valueToWrite = new List<Value>();
-                    valueToWrite.AddRange(mmValue.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
-                    if (flow.OutSet.GetControlVariable(new VariableName(index.DirectName)).IsDefined(flow.OutSet.Snapshot))
-                    {
-                        valueToWrite.AddRange(flow.OutSet.GetControlVariable(new VariableName(index.DirectName)).ReadMemory(flow.OutSet.Snapshot).PossibleValues);
-                    }
-
-                    flow.OutSet.GetControlVariable(new VariableName(index.DirectName)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(valueToWrite));
-                }
-                else 
-                {
-                    var pattern = @"^class\((.*)\)->static\((.*)\)$";
-
-                    var regularExpression = new Regex(pattern, RegexOptions.None);
-
-                    var match = regularExpression.Match(index.DirectName);
-                    
-              
-                    string className = match.Groups[1].Value;
-                    string fieldname = match.Groups[2].Value;
-                    SnapshotBase snapshot = flow.OutSet.Snapshot;
-                    var staticField = flow.OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(snapshot, new MemberIdentifier(className)).ReadIndex(snapshot, new MemberIdentifier(fieldname));
-                    List<Value> values = new List<Value>();
-                    if (staticField.IsDefined(snapshot))
-                    {
-                        values.AddRange(staticField.ReadMemory(snapshot).PossibleValues);
-                    }
-                    var mmValue = res.ReadIndex(flow.OutSet.Snapshot, index);
-                    values.AddRange(mmValue.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
-                    staticField.WriteMemory(snapshot, new MemoryEntry(values));
-                    //store static variable
-                }
             }
         }
     }

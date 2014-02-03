@@ -43,7 +43,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         private BinaryOperationEvaluator binaryOperationVisitor;
 
-        public GlobalCode globalCode { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionEvaluator" /> class.
@@ -57,6 +56,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             binaryOperationVisitor = new BinaryOperationEvaluator(Flow, stringConverter);
         }
 
+        internal ExpressionEvaluator(FlowController flow) : this()
+        {
+            Flow = flow;
+
+        }
         #region ExpressionEvaluatorBase overrides
 
         /// <inheritdoc />

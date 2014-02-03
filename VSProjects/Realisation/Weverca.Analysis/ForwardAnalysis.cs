@@ -36,9 +36,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         protected override ExpressionEvaluatorBase createExpressionEvaluator()
         {
-            var ee= new ExpressionEvaluator.ExpressionEvaluator();
-            ee.globalCode = EntryCFG.globalCode;
-            return ee;
+            return new ExpressionEvaluator.ExpressionEvaluator();
         }
 
         /// <inheritdoc />
@@ -51,7 +49,6 @@ namespace Weverca.Analysis
         protected override FunctionResolverBase createFunctionResolver()
         {
             var functionResolver = new FunctionResolver();
-            functionResolver.globalCode = EntryCFG.globalCode;
             return functionResolver;
         }
 

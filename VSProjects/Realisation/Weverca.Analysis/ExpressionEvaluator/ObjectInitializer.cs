@@ -35,7 +35,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// The temporary value storing current initialization value used to initialize current property
         /// </summary>
-        private MemoryEntry initializationValue;
+        public MemoryEntry initializationValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectInitializer" /> class.
@@ -45,6 +45,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             expressionResolver = resolver;
         }
+
 
         /// <summary>
         /// Gets current output set of the given expression evaluation
@@ -109,9 +110,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 thisObject = null;
             }
         }
-
-
-
+        
         #region Literals
 
         public override void VisitIntLiteral(IntLiteral x)
@@ -161,8 +160,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void VisitArrayEx(ArrayEx x)
         {
-      
-
             List<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs=new List<KeyValuePair<MemoryEntry,MemoryEntry>>();
 
             foreach (var item in x.Items)

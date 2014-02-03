@@ -114,5 +114,24 @@ namespace Weverca.Analysis.UnitTest
         }
 
 
+        string StaticFieldInitTest = @"
+            class a
+            {    
+                static $x=4;  
+            }
+
+            $result=a::$x;
+        ";
+
+        [TestMethod]
+        public void StaticFieldInit()
+        {
+            var result = TestUtils.ResultTest(StaticFieldInitTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
+
+        }
+
+
     }
 }
