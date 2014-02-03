@@ -24,7 +24,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Services.FunctionResolver.DeclareGlobal(Declaration);
+            Services.Evaluator.DeclareGlobal(Declaration);
         }
 
         internal override void Accept(ProgramPointVisitor visitor)

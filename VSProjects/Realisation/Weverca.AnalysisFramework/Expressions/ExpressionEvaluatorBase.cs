@@ -16,7 +16,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Gets current flow controller available for expression evaluation
         /// </summary>
-        public FlowController Flow { get; protected set; }
+        public FlowController Flow { get; private set; }
 
         /// <summary>
         /// Gets current output set of expression evaluation
@@ -398,6 +398,12 @@ namespace Weverca.AnalysisFramework.Expressions
                 OutSet.FetchFromGlobal(variable.PossibleNames);
             }
         }
+
+        /// <summary>
+        /// Declare type into global context
+        /// </summary>
+        /// <param name="declaration">Declared type</param>
+        public abstract void DeclareGlobal(TypeDecl declaration);
 
         #endregion
 

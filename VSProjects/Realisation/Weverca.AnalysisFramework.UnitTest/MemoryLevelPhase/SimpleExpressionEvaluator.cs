@@ -8,6 +8,7 @@ using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
+using PHP.Core.Reflection;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -478,6 +479,102 @@ namespace Weverca.AnalysisFramework.UnitTest
             return OutSet.CreateObject(type);
         }
 
+        public override void DeclareGlobal(TypeDecl declaration)
+        {
+            var type = OutSet.CreateType(convertToType(declaration));
+            OutSet.DeclareGlobal(type);
+        }
+
+        private ClassDecl convertToType(TypeDecl declaration)
+        {
+            ClassDeclBuilder result = new ClassDeclBuilder();
+            result.BaseClasses = new List<QualifiedName>();
+            if (declaration.BaseClassName.HasValue)
+            {
+                result.BaseClasses.Add(declaration.BaseClassName.Value.QualifiedName);
+            }
+
+            result.IsFinal = declaration.Type.IsFinal;
+            result.IsInterface = declaration.Type.IsInterface;
+            result.IsAbstract = declaration.Type.IsAbstract;
+            result.QualifiedName = new QualifiedName(declaration.Name);
+
+
+
+            foreach (var member in declaration.Members)
+            {
+                if (member is FieldDeclList)
+                {
+                    foreach (FieldDecl field in (member as FieldDeclList).Fields)
+                    {
+                        Visibility visibility;
+                        if (member.Modifiers.HasFlag(PhpMemberAttributes.Private))
+                        {
+                            visibility = Visibility.PRIVATE;
+                        }
+                        else if (member.Modifiers.HasFlag(PhpMemberAttributes.Protected))
+                        {
+                            visibility = Visibility.PROTECTED;
+                        }
+                        else
+                        {
+                            visibility = Visibility.PUBLIC;
+                        }
+                        bool isStatic = member.Modifiers.HasFlag(PhpMemberAttributes.Static);
+                        //multiple declaration of fields
+                        if (result.Fields.ContainsKey(new FieldIdentifier(result.QualifiedName, field.Name)))
+                        {
+                            //dont need to set warning in simpleAnalysis
+                            // setWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
+                        }
+                        else
+                        {
+                            result.Fields.Add(new FieldIdentifier(result.QualifiedName, field.Name), new FieldInfo(field.Name, result.QualifiedName, "any", visibility, field.Initializer, isStatic));
+                        }
+                    }
+
+                }
+                else if (member is ConstDeclList)
+                {
+                    foreach (var constant in (member as ConstDeclList).Constants)
+                    {
+                        if (result.Constants.ContainsKey(new FieldIdentifier(result.QualifiedName, constant.Name)))
+                        {
+                            //dont need to set warning in simpleAnalysis
+                            // setWarning("Cannot redeclare constant " + constant.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                        }
+                        else
+                        {
+                            //in php all object constatns are public
+                            Visibility visbility = Visibility.PUBLIC;
+                            result.Constants.Add(new FieldIdentifier(result.QualifiedName, constant.Name), new ConstantInfo(constant.Name, result.QualifiedName, visbility, constant.Initializer));
+                        }
+                    }
+                }
+                else if (member is MethodDecl)
+                {
+                    var methosIdentifier = new MethodIdentifier(result.QualifiedName, (member as MethodDecl).Name);
+                    if (!result.SourceCodeMethods.ContainsKey(methosIdentifier))
+                    {
+                        result.SourceCodeMethods.Add(methosIdentifier, OutSet.CreateFunction(member as MethodDecl));
+                    }
+                    else
+                    {
+                        //dont need to set warning in simpleAnalysis
+                        // setWarning("Cannot redeclare constant " + (member as MethodDecl).Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                    }
+                }
+                else
+                {
+                    //ignore traits are not supported by AST, only by parser
+                }
+            }
+
+
+            // NativeTypeDecl result=new NativeTypeDecl();
+
+            return result.Build();
+        }
 
     }
 }

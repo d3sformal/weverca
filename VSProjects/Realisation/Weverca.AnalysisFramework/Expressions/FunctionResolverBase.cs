@@ -165,11 +165,7 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name,
            MemoryEntry[] arguments);
 
-        /// <summary>
-        /// Declare type into global context
-        /// </summary>
-        /// <param name="declaration">Declared type</param>
-        public abstract void DeclareGlobal(TypeDecl declaration);
+        
 
         #endregion
 
