@@ -79,6 +79,26 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             throw new NotSupportedException("Given element is not supported RValue");
         }
+        
+        public override void VisitDirectStFldUse(DirectStFldUse x)
+        {
+            var indirectType = x.TypeRef as IndirectTypeRef;
+
+            if (indirectType == null)
+            {
+                Result(new StaticFieldPoint(x));
+            }
+            else
+            {
+                var typeName = CreateRValue(indirectType);
+                Result(new IndirectStaticFieldPoint(x, typeName));
+            }
+        }
+
+        public override void VisitIndirectStFldUse(IndirectStFldUse x)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {

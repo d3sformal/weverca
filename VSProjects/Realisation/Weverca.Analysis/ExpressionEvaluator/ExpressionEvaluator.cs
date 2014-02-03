@@ -93,14 +93,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
-        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField,
-            MemoryEntry assignedValue)
-        {
-            var fieldEntry = objectValue.ReadField(OutSnapshot, targetField);
-            fieldEntry.WriteMemory(OutSnapshot, assignedValue);
-        }
-
-        /// <inheritdoc />
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
             MemoryEntry rightOperand)
         {
@@ -256,15 +248,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             return names;
-        }
-
-        /// <inheritdoc />
-        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index,
-            MemoryEntry assignedValue)
-        {
-            var indexIdentifier = MemberIdentifier(index);
-            var indexEntry = indexedValue.ReadIndex(OutSnapshot, indexIdentifier);
-            indexEntry.WriteMemory(OutSnapshot, assignedValue);
         }
 
         /// <inheritdoc />
@@ -1032,7 +1015,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-       
 
+
+
+        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, VariableIdentifier field)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, VariableIdentifier field)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

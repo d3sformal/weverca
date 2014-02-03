@@ -26,6 +26,27 @@ namespace Weverca.AnalysisFramework.UnitTest
             return objectValue.ReadField(OutSnapshot, field);
         }
 
+        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, VariableIdentifier field)
+        {
+            var varName = string.Format("{0}::{1}", type, field.DirectName);
+
+            return OutSet.GetVariable(new VariableIdentifier(varName));
+        }
+
+            
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> typeNames, VariableIdentifier field)
+        {
+            var variables = new List<string>();
+            foreach (var typeName in typeNames)
+            {
+                var varName = string.Format("{0}::{1}", typeName, field.DirectName);
+                variables.Add(varName);
+            }
+
+            var identifier = new VariableIdentifier(variables.ToArray());
+            return OutSet.GetVariable(identifier);
+        }
+
         public override ReadWriteSnapshotEntryBase ResolveIndex(ReadSnapshotEntryBase arrayValue, MemberIdentifier index)
         {
             return arrayValue.ReadIndex(OutSnapshot, index);
@@ -62,6 +83,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             var value = OutSet.GetVariable(variable);
             return value;
+        }
+    
+        public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
+        {
+            return from StringValue possible in typeValue.PossibleValues select new GenericQualifiedName(new QualifiedName(new Name(possible.Value)));
         }
 
         public override IEnumerable<string> VariableNames(MemoryEntry value)
@@ -437,16 +463,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             return new MemberIdentifier(possibleNames);
         }
 
-        public override void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField, MemoryEntry assignedValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index, MemoryEntry assignedValue)
-        {
-            throw new NotImplementedException();
-        }
-
         public override MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName)
         {
             throw new NotImplementedException();
@@ -461,5 +477,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             return OutSet.CreateObject(type);
         }
+
+
     }
 }

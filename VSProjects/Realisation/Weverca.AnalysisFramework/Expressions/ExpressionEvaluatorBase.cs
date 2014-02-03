@@ -71,6 +71,14 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>Possible variable names</returns>
         public abstract IEnumerable<string> VariableNames(MemoryEntry variableSpecifier);
 
+
+        /// <summary>
+        /// Resolves possible names of type identified by value
+        /// </summary>
+        /// <param name="typeValue">Value representing possible names of type</param>
+        /// <returns>Possible type names</returns>
+        public abstract IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue);
+
         /// <summary>
         /// Creates member identifier of possible names from the given values
         /// </summary>
@@ -104,6 +112,22 @@ namespace Weverca.AnalysisFramework.Expressions
             VariableIdentifier field);
 
         /// <summary>
+        /// Resolve value, determined by given static field specifier on given type
+        /// </summary>
+        /// <param name="type">Type which static field is resolved</param>
+        /// <param name="field">Specifier of resolved field</param>
+        /// <returns>Snapshot entry for static field</returns>
+        public abstract ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, VariableIdentifier field);
+
+        /// <summary>
+        /// Resolve value, determined by given static field specifier on given indirect type
+        /// </summary>
+        /// <param name="possibleTypes">Indirect types which static field is resolved</param>
+        /// <param name="field">Specifier of resolved field</param>
+        /// <returns>Snapshot entry for static field</returns>
+        public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, VariableIdentifier field);
+
+        /// <summary>
         /// Resolves value at indexedValue[index]
         /// </summary>
         /// <param name="indexedValue">Value which index is resolved</param>
@@ -126,26 +150,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="target">Target snapshot entry</param>
         /// <param name="entry">Possible values to be assigned</param>
         public abstract void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry);
-
-        /// <summary>
-        /// Assign possible values to given targetField of an objectValue
-        /// </summary>
-        /// <param name="objectValue">Object containing assigned field</param>
-        /// <param name="targetField">Specifier of an field</param>
-        /// <param name="assignedValue">Possible values to be assigned</param>
-        public abstract void FieldAssign(ReadSnapshotEntryBase objectValue, VariableIdentifier targetField,
-            MemoryEntry assignedValue);
-
-        /// <summary>
-        /// Assign assignedValue at indexedValue[index]
-        /// NOTE:
-        ///     Array/object/string can be indexed
-        /// </summary>
-        /// <param name="indexedValue">Value which index is assigned</param>
-        /// <param name="index">Specifier of an index</param>
-        /// <param name="assignedValue">Value that is assigned</param>
-        public abstract void IndexAssign(ReadSnapshotEntryBase indexedValue, MemoryEntry index,
-            MemoryEntry assignedValue);
+         
 
         /// <summary>
         /// Process binary operation on given operands
@@ -404,5 +409,7 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             Flow = flow;
         }
+
+
     }
 }

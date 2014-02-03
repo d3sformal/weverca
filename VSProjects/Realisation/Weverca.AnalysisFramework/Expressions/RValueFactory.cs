@@ -193,6 +193,26 @@ namespace Weverca.AnalysisFramework.Expressions
 
         #region Variable visiting
 
+        public override void VisitDirectStFldUse(DirectStFldUse x)
+        {
+            var indirectType=x.TypeRef as IndirectTypeRef;
+
+            if (indirectType == null)
+            {
+                Result(new StaticFieldPoint(x));
+            }
+            else
+            {
+                var typeName = CreateRValue(indirectType);
+                Result(new IndirectStaticFieldPoint(x, typeName));                
+            }
+        }
+
+        public override void VisitIndirectStFldUse(IndirectStFldUse x)
+        {
+            throw new NotImplementedException();
+        }
+
         public override void VisitDirectVarUse(DirectVarUse x)
         {
             ValuePoint thisObj = null;
@@ -221,6 +241,12 @@ namespace Weverca.AnalysisFramework.Expressions
             var variable = CreateRValue(x.ClassNameVar);
             Result(variable);
         }
+
+        public override void VisitStaticStmt(StaticStmt x)
+        {
+            base.VisitStaticStmt(x);
+        }
+
 
         #endregion
 
@@ -357,12 +383,12 @@ namespace Weverca.AnalysisFramework.Expressions
             var arguments = CreateArguments(x.CallSignature);
 
             ValuePoint thisObj = null;
-            if (x.ClassName.QualifiedName.Name.Value=="")
+            if (x.ClassName.QualifiedName.Name.Value == "")
             {
                 thisObj = CreateRValue(x.PublicTypeRef);
             }
 
-            Result(new StaticMethodCallPoint(x,thisObj, arguments));
+            Result(new StaticMethodCallPoint(x, thisObj, arguments));
         }
 
         public override void VisitIndirectStMtdCall(IndirectStMtdCall x)

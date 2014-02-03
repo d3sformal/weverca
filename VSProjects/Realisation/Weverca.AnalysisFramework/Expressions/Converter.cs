@@ -119,6 +119,11 @@ namespace Weverca.AnalysisFramework.Expressions
             VisitElement(x.VarNameEx);
         }
 
+        public override void VisitDirectStFldUse(DirectStFldUse x)
+        {
+            //Force traversing
+            VisitElement(x.TypeRef as IndirectTypeRef);            
+        }
 
 
         public override void VisitDirectVarUse(DirectVarUse x)

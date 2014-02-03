@@ -185,6 +185,29 @@ if($unknown){
 $CallResult=testFunction();
 ".AssertVariable("CallResult").HasValues("ValueA", "ValueB");
 
+
+        readonly static TestCase StaticFieldUse_CASE = @"
+class Obj{
+    static $a;
+}
+
+Obj::$a='abc';
+
+$result=Obj::$a;
+".AssertVariable("result").HasValues("abc");
+
+        readonly static TestCase IndirectStaticFieldUse_CASE = @"
+class Obj{
+    static $a;
+}
+
+$name='Obj';
+$name::$a='abc';
+
+$result=$name::$a;
+".AssertVariable("result").HasValues("abc");
+
+
         readonly static TestCase ObjectFieldMerge_CASE = @"
 class Obj{
     var $a;
@@ -1369,6 +1392,19 @@ $d=&$a;
         {
             AnalysisTestUtils.RunTestCase(ObjectFieldMerge_CASE);
         }
+
+        [TestMethod]
+        public void StaticFieldUse()
+        {
+            AnalysisTestUtils.RunTestCase(StaticFieldUse_CASE);
+        }
+
+        [TestMethod]
+        public void IndirectStaticFieldUse()
+        {
+            AnalysisTestUtils.RunTestCase(IndirectStaticFieldUse_CASE);
+        }
+
 
         [TestMethod]
         public void ArrayFieldMerge()

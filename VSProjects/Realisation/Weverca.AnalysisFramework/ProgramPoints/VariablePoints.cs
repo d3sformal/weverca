@@ -4,12 +4,80 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.AnalysisFramework.ProgramPoints
 {
+    /// <summary>
+    /// Representation of direct static field use, that can be assigned.
+    /// </summary>
+    public class StaticFieldPoint : LValuePoint
+    {
+        public readonly DirectStFldUse Field;
+
+        public readonly VariableIdentifier FieldName;
+
+        public GenericQualifiedName TypeName { get { return Field.TypeName; } }
+
+        public override LangElement Partial { get { return Field; } }
+
+        public StaticFieldPoint(DirectStFldUse field)
+        {
+            Field = field;
+            FieldName = new VariableIdentifier(field.PropertyName);
+        }
+
+        protected override void flowThrough()
+        {
+            LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    /// <summary>
+    /// Representation of indirect static field use, that can be assigned.
+    /// </summary>
+    public class IndirectStaticFieldPoint : LValuePoint
+    {
+        public readonly DirectStFldUse Field;
+
+        public readonly VariableIdentifier FieldName;
+
+        public readonly ValuePoint TypeName;
+
+        public IEnumerable<GenericQualifiedName> ResolvedTypeNames { get; private set; }
+
+        public override LangElement Partial { get { return Field; } }
+
+        public IndirectStaticFieldPoint(DirectStFldUse field, ValuePoint typeName)
+        {
+            Field = field;
+            FieldName = new VariableIdentifier(field.PropertyName);
+
+            TypeName = typeName;
+        }
+
+        protected override void flowThrough()
+        {
+            var typeValue = TypeName.Value.ReadMemory(OutSnapshot);
+            ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
+
+            LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName);
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     /// <summary>
     /// Representation of direct variable use, that can be assigned
     /// </summary>
