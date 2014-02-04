@@ -45,7 +45,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="dispatchType">Type of merged call</param>
         public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var ends = dispatchedExtensions.Select(c => c.Graph.End.OutSet).ToArray();
+            var ends = dispatchedExtensions.Select(c => c.Graph.End.OutSet).Where(a => a != null).ToArray();
             callerOutput.MergeWithCallLevel(ends);
         }
 
