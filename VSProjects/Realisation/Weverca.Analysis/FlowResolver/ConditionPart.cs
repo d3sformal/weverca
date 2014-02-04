@@ -211,19 +211,19 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThan)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThanOrEqual)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThan)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.And ||
                     binaryExpression.PublicOperation == Operations.Or ||
@@ -293,19 +293,19 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThan)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.GreaterThanOrEqual)
                 {
-                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext);
+                    AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThan)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.LessThanOrEqual)
                 {
-                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext);
+                    AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext, flowOutputSet.Snapshot);
                 }
                 else if (binaryExpression.PublicOperation == Operations.And ||
                     binaryExpression.PublicOperation == Operations.Or ||
@@ -447,11 +447,11 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
         /// <param name="equal">if set to <c>true</c> greater or equals is assumed.</param>
-        void AssumeGreaterThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext)
+        void AssumeGreaterThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeLesserThan(right, left, equal, memoryContext);
+                AssumeLesserThan(right, left, equal, memoryContext, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
@@ -490,10 +490,42 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(bound, long.MaxValue));
                 }
-                //else if (right is VariableUse)
-                //{
-                //    //TODO: get lower bound of right and intersect with left
-                //}
+                else if (right is VariableUse)
+                {
+                    //get lower bound of right and intersect with left
+                    int? minInt;
+                    long? minLong;
+                    double? minDouble;
+                    ValueHelper.TryGetMinimumValue(log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues, out minInt, out minLong, out minDouble);
+
+                    if (minInt.HasValue)
+                    {
+                        if (!equal)
+                        {
+                            minInt++;
+                        }
+
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(minInt.Value, int.MaxValue));
+                    }
+                    else if (minLong.HasValue)
+                    {
+                        if (!equal)
+                        {
+                            minLong++;
+                        }
+
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(minLong.Value, long.MaxValue));
+                    }
+                    else if (minDouble.HasValue)
+                    {
+                        if (!equal)
+                        {
+                            minDouble += double.Epsilon;
+                        }
+
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(minDouble.Value, double.MaxValue));
+                    }
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
@@ -511,11 +543,11 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
         /// <param name="equal">if set to <c>true</c> lesser or equals is assumed.</param>
-        void AssumeLesserThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext)
+        void AssumeLesserThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeGreaterThan(right, left, equal, memoryContext);
+                AssumeGreaterThan(right, left, equal, memoryContext, flowOutputSet);
             }
             else if (left is DirectVarUse)
             {
@@ -557,7 +589,38 @@ namespace Weverca.Analysis.FlowResolver
                 else if (right is VariableUse)
                 {
                     //TODO: get upper bound of right and intersect with left
-                    //memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
+                    int? maxInt;
+                    long? maxLong;
+                    double? maxDouble;
+                    ValueHelper.TryGetMaximumValue(log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues, out maxInt, out maxLong, out maxDouble);
+
+                    if (maxInt.HasValue)
+                    {
+                        if (!equal)
+                        {
+                            maxInt--;
+                        }
+
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(int.MinValue, maxInt.Value));
+                    }
+                    else if (maxLong.HasValue)
+                    {
+                        if (!equal)
+                        {
+                            maxLong--;
+                        }
+
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, maxLong.Value));
+                    }
+                    else if (maxDouble.HasValue)
+                    {
+                        if (!equal)
+                        {
+                            maxDouble -= double.Epsilon;
+                        }
+
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
+                    }
                 }
                 else
                 {
