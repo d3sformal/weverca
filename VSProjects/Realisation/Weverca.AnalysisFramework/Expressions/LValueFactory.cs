@@ -91,13 +91,23 @@ namespace Weverca.AnalysisFramework.Expressions
             else
             {
                 var typeName = CreateRValue(indirectType);
-                Result(new IndirectStaticFieldPoint(x, typeName));
+                Result(new StaticFieldPoint(x, typeName));
             }
         }
 
         public override void VisitIndirectStFldUse(IndirectStFldUse x)
         {
-            throw new NotImplementedException();
+            var indirectType = x.TypeRef as IndirectTypeRef;
+            var variableName = CreateRValue(x.FieldNameExpr);
+            if (indirectType == null)
+            {
+                Result(new IndirectStaticFieldPoint(x, variableName));
+            }
+            else
+            {
+                var typeName = CreateRValue(indirectType);
+                Result(new IndirectStaticFieldPoint(x,variableName, typeName));
+            }
         }
 
         public override void VisitDirectVarUse(DirectVarUse x)

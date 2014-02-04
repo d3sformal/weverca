@@ -19,7 +19,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// </summary>
     public partial class ExpressionEvaluator : ExpressionEvaluatorBase
     {
-       #region Object Model
+        #region Object Model
 
         /// <inheritdoc />
         public override void DeclareGlobal(TypeDecl declaration)
@@ -780,7 +780,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                 if (result.BaseClasses.Count > 0)
                 {
-                    for (int i = 0; i<result.BaseClasses.Count ; i++)
+                    for (int i = 0; i < result.BaseClasses.Count; i++)
                     {
                         if (Flow.OutSet.ResolveType(result.BaseClasses[i]).Count() == 0)
                         {
@@ -792,7 +792,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                 foreach (var field in result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName != result.QualifiedName)))
                 {
-                    var baseClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.ClassName.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot,new MemberIdentifier(field.Name.Value));
+                    var baseClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.ClassName.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value));
 
                     var currentClassVariable = OutSet.GetControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(result.QualifiedName.Name.LowercaseValue)).ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.Name.Value));
                     if (result.Fields.Values.Where(a => (a.IsStatic == true && a.ClassName == result.QualifiedName && a.Name == field.Name)).Count() == 0)
@@ -875,6 +875,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion
+
 
     }
 }

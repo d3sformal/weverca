@@ -1155,6 +1155,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return result;
         }
 
+        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, MemoryEntry field)
+        {
+            return ResolveStaticField(type, new VariableIdentifier(this.VariableNames(field)));
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field)
+        {
+            return ResolveIndirectStaticField(possibleTypes, new VariableIdentifier( this.VariableNames(field)));
+        }
+
+
         /// <summary>
         /// Returns static variable sink, when static variable doesn't exist, this empty space in memory model is returned.
         /// </summary>

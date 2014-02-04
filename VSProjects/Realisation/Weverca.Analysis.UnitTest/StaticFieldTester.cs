@@ -280,6 +280,107 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string IndirectObjectStaticTest = @"
+        class a 
+        {
+        public static $x=2;
+
+        }
+        $a=new a();
+        $result =$a::$x;
+        ";
+
+        [TestMethod]
+        public void IndirectObjectStatic()
+        {
+            var result = TestUtils.ResultTest(IndirectObjectStaticTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 2);
+
+        }
+
+        string IndirectObjectStaticTest2 = @"
+        class a 
+        {
+        public static $x=2;
+
+        }
+        $a=""a"";
+        $a::$x=3;
+        $result =$a::$x;
+        ";
+
+        [TestMethod]
+        public void IndirectObjectStatic2()
+        {
+            var result = TestUtils.ResultTest(IndirectObjectStaticTest2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 3);
+
+        }
+
+        string IndirectObjectIndirectFieldTest = @"
+        class a 
+        {
+        public static $x=2;
+
+        }
+        $a=new a();
+		$x=""x"";
+        $a::$$x=4;
+		$result=$a::$$x;
+        ";
+
+        [TestMethod]
+        public void IndirectObjectIndirectField()
+        {
+            var result = TestUtils.ResultTest(IndirectObjectIndirectFieldTest);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
+
+        }
+
+        string IndirectObjectIndirectFieldTest2 = @"
+        class a 
+        {
+        public static $x=2;
+
+        }
+        $a=""a"";
+		$x=""x"";
+        $a::$$x=4;
+		$result=$a::$$x;
+        ";
+
+        [TestMethod]
+        public void IndirectObjectIndirectField2()
+        {
+            var result = TestUtils.ResultTest(IndirectObjectIndirectFieldTest2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
+
+        }
+
+
+        string DirectObjectIndirectFieldTest3 = @"
+        class a 
+        {
+        public static $x=2;
+
+        }
+		$x=""x"";
+        a::$$x=4;
+		$result=a::$$x;
+        ";
+
+        [TestMethod]
+        public void IndirectObjectIndirectField3()
+        {
+            var result = TestUtils.ResultTest(DirectObjectIndirectFieldTest3);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 4);
+
+        }
 
     }
 }

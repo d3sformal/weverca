@@ -22,17 +22,37 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public GenericQualifiedName TypeName { get { return Field.TypeName; } }
 
+        public ValuePoint Obj;
+
         public override LangElement Partial { get { return Field; } }
 
         public StaticFieldPoint(DirectStFldUse field)
         {
             Field = field;
             FieldName = new VariableIdentifier(field.PropertyName);
+            Obj = null;
+        }
+
+        public StaticFieldPoint(DirectStFldUse field, ValuePoint typeName)
+        {
+            Field = field;
+            FieldName = new VariableIdentifier(field.PropertyName);
+            Obj = typeName;
         }
 
         protected override void flowThrough()
         {
-            LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName);
+            if (Obj==null)
+            {
+                LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName);
+            }
+            else
+            {
+                var typeValue = Obj.Value.ReadMemory(OutSnapshot);
+                var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
+
+                LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName);
+            }
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
@@ -46,30 +66,44 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class IndirectStaticFieldPoint : LValuePoint
     {
-        public readonly DirectStFldUse Field;
+        public readonly IndirectStFldUse Field;
 
-        public readonly VariableIdentifier FieldName;
+        public readonly ValuePoint FieldName;
 
-        public readonly ValuePoint TypeName;
+        public GenericQualifiedName TypeName { get { return Field.TypeName; } }
 
-        public IEnumerable<GenericQualifiedName> ResolvedTypeNames { get; private set; }
+        public ValuePoint Obj;
 
         public override LangElement Partial { get { return Field; } }
 
-        public IndirectStaticFieldPoint(DirectStFldUse field, ValuePoint typeName)
+        public IndirectStaticFieldPoint(IndirectStFldUse field, ValuePoint variable)
         {
             Field = field;
-            FieldName = new VariableIdentifier(field.PropertyName);
+            FieldName = variable;
+            Obj = null;
+        }
 
-            TypeName = typeName;
+        public IndirectStaticFieldPoint(IndirectStFldUse field, ValuePoint variable, ValuePoint typeName)
+        {
+            Field = field;
+            FieldName = variable;
+            Obj = typeName;
         }
 
         protected override void flowThrough()
         {
-            var typeValue = TypeName.Value.ReadMemory(OutSnapshot);
-            ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
+            if (Obj==null)
+            {
 
-            LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName);
+                LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName.Value.ReadMemory(InSet.Snapshot));
+            }
+            else
+            {
+                var typeValue = Obj.Value.ReadMemory(OutSnapshot);
+                var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
+
+                LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName.Value.ReadMemory(InSet.Snapshot));
+            }
         }
 
         internal override void Accept(ProgramPointVisitor visitor)

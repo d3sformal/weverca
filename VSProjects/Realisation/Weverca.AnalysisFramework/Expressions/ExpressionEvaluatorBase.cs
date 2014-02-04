@@ -127,6 +127,23 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>Snapshot entry for static field</returns>
         public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, VariableIdentifier field);
 
+
+        /// <summary>
+        /// Resolve value, determined by given static field specifier on given type
+        /// </summary>
+        /// <param name="type">Type which static field is resolved</param>
+        /// <param name="field">Possible fields</param>
+        /// <returns>Snapshot entry for static field</returns>
+        public abstract ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, MemoryEntry field);
+
+        /// <summary>
+        /// Resolve value, determined by given static field specifier on given indirect type
+        /// </summary>
+        /// <param name="possibleTypes">Indirect types which static field is resolved</param>
+        /// <param name="field">Possible fields</param>
+        /// <returns>Snapshot entry for static field</returns>
+        public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field);
+
         /// <summary>
         /// Resolves value at indexedValue[index]
         /// </summary>

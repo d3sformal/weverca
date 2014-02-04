@@ -576,5 +576,15 @@ namespace Weverca.AnalysisFramework.UnitTest
             return result.Build();
         }
 
+
+        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, MemoryEntry field)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
