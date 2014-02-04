@@ -310,7 +310,7 @@ namespace Weverca.Analysis.FlowResolver
             }
             else
             {
-                return null;
+                return valueFactory.UndefinedValue;
             }
         }
 
