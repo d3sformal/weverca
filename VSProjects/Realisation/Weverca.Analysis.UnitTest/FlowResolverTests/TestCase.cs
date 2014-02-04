@@ -75,7 +75,6 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
                 FlowResolver.FlowResolver flowResolver = new FlowResolver.FlowResolver();
                 foreach (var association in variableAssociations)
                 {
-                    //flowOutputSet.Assign(new VariableName(association.Key), association.Value);
                     flowOutputSet.GetVariable(new VariableIdentifier(new VariableName(association.Key))).WriteMemory(flowOutputSet.Snapshot, new MemoryEntry(association.Value));
                 }
 

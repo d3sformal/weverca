@@ -130,28 +130,28 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
         [TestMethod]
         public void NonequelityExpressions()
         {
-            //BinaryEx.Operation, boudary (like a > boundary), positiveResult, negativeResult
-            Tuple<Operations, Literal, Value, Value>[] tests = new Tuple<Operations, Literal, Value, Value>[]
+            //BinaryEx.Operation, boudary (like a > boundary), positiveResult, negativeResult, positiveResultFlipped, negativeResultFlipped
+            Tuple<Operations, Literal, Value, Value, Value, Value>[] tests = new Tuple<Operations, Literal, Value, Value, Value, Value>[]
             {
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2), new IntegerIntervalValue(3, int.MaxValue), new IntegerIntervalValue(int.MinValue, 2)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2), new IntegerIntervalValue(2, int.MaxValue), new IntegerIntervalValue(int.MinValue, 1)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThan, LiteralFactory.Create(2), new IntegerIntervalValue(int.MinValue, 1), new IntegerIntervalValue(2, int.MaxValue)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2), new IntegerIntervalValue(int.MinValue, 2), new IntegerIntervalValue(3, int.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2), new IntegerIntervalValue(3, int.MaxValue), new IntegerIntervalValue(int.MinValue, 2), new IntegerIntervalValue(int.MinValue, 1), new IntegerIntervalValue(2, int.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2), new IntegerIntervalValue(2, int.MaxValue), new IntegerIntervalValue(int.MinValue, 1), new IntegerIntervalValue(int.MinValue, 2), new IntegerIntervalValue(3, int.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThan, LiteralFactory.Create(2), new IntegerIntervalValue(int.MinValue, 1), new IntegerIntervalValue(2, int.MaxValue), new IntegerIntervalValue(3, int.MaxValue), new IntegerIntervalValue(int.MinValue, 2)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2), new IntegerIntervalValue(int.MinValue, 2), new IntegerIntervalValue(3, int.MaxValue), new IntegerIntervalValue(2, int.MaxValue), new IntegerIntervalValue(int.MinValue, 1)),
 
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2L), new LongintIntervalValue(3, long.MaxValue), new LongintIntervalValue(long.MinValue, 2)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2L), new LongintIntervalValue(2, long.MaxValue), new LongintIntervalValue(long.MinValue, 1)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThan, LiteralFactory.Create(2L), new LongintIntervalValue(long.MinValue, 1), new LongintIntervalValue(2, long.MaxValue)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2L), new LongintIntervalValue(long.MinValue, 2), new LongintIntervalValue(3, long.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2L), new LongintIntervalValue(3, long.MaxValue), new LongintIntervalValue(long.MinValue, 2), new LongintIntervalValue(long.MinValue, 1), new LongintIntervalValue(2, long.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2L), new LongintIntervalValue(2, long.MaxValue), new LongintIntervalValue(long.MinValue, 1), new LongintIntervalValue(long.MinValue, 2), new LongintIntervalValue(3, long.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThan, LiteralFactory.Create(2L), new LongintIntervalValue(long.MinValue, 1), new LongintIntervalValue(2, long.MaxValue), new LongintIntervalValue(3, long.MaxValue), new LongintIntervalValue(long.MinValue, 2)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2L), new LongintIntervalValue(long.MinValue, 2), new LongintIntervalValue(3, long.MaxValue), new LongintIntervalValue(2, long.MaxValue), new LongintIntervalValue(long.MinValue, 1)),
                 
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThan, LiteralFactory.Create(2.2), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon), new FloatIntervalValue(2.2, double.MaxValue)),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2.2), new FloatIntervalValue(double.MinValue, 2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThan, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon), new FloatIntervalValue(2.2, double.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create(2.2), new FloatIntervalValue(2.2, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon), new FloatIntervalValue(double.MinValue, 2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThan, LiteralFactory.Create(2.2), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon), new FloatIntervalValue(2.2, double.MaxValue), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2)),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create(2.2), new FloatIntervalValue(double.MinValue, 2.2), new FloatIntervalValue(2.2 + double.Epsilon, double.MaxValue), new FloatIntervalValue(2.2, double.MaxValue), new FloatIntervalValue(double.MinValue, 2.2 - double.Epsilon)),
 
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThan, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue()),
-                new Tuple<Operations, Literal, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue()),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThan, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue()),
-                new Tuple<Operations, Literal, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue())
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThan, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue(), new AnyStringValue(), new AnyStringValue()),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.GreaterThanOrEqual, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue(), new AnyStringValue(), new AnyStringValue()),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThan, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue(), new AnyStringValue(), new AnyStringValue()),
+                new Tuple<Operations, Literal, Value, Value, Value, Value>(Operations.LessThanOrEqual, LiteralFactory.Create("aaa"), new AnyStringValue(), new AnyStringValue(), new AnyStringValue(), new AnyStringValue())
             };
 
             string variableName = "a";
@@ -166,9 +166,9 @@ namespace Weverca.Analysis.UnitTest.FlowResolverTests
 
                 //flipped
                 TestCase.Create(new BinaryEx(test.Item1, test.Item2, new DirectVarUse(new Position(), new VariableName(variableName))))
-                    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue(variableName, test.Item3)
+                    .AddResult(ConditionForm.All, true, ConditionResults.True).AddResultValue(variableName, test.Item5)
                     .AddResult(ConditionForm.None, false, ConditionResults.True)
-                    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue(variableName, test.Item4)
+                    .AddResult(ConditionForm.None, true, ConditionResults.False).AddResultValue(variableName, test.Item6)
                     .Run();
             }
         }
