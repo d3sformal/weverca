@@ -451,7 +451,7 @@ namespace Weverca.Analysis.FlowResolver
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeGreaterThan(right, left, equal, memoryContext);
+                AssumeLesserThan(right, left, equal, memoryContext);
             }
             else if (left is DirectVarUse)
             {
@@ -515,7 +515,7 @@ namespace Weverca.Analysis.FlowResolver
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
             {
-                AssumeLesserThan(right, left, equal, memoryContext);
+                AssumeGreaterThan(right, left, equal, memoryContext);
             }
             else if (left is DirectVarUse)
             {
@@ -554,10 +554,11 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
                 }
-                //else if (right is VariableUse)
-                //{
-                //    //TODO: get upper bound of right and intersect with left
-                //}
+                else if (right is VariableUse)
+                {
+                    //TODO: get upper bound of right and intersect with left
+                    //memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
+                }
                 else
                 {
                     throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
