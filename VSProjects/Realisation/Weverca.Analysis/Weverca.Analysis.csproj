@@ -82,6 +82,7 @@
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftResourceOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftScalarOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftStringOperandVisitor.cs" />
+    <Compile Include="ExpressionEvaluator\ObjectDeclaration.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\IncrementDecrementEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\ObjectInitializer.cs" />
