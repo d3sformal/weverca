@@ -132,7 +132,11 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
-        string StaticInheritedFieldTest = @"
+        /// <summary>
+        /// Inherited static fields that are not redefined are connected using aliasing.
+        /// If a field is changed in one class, it is changed also in other classes
+        /// </summary>
+        string StaticInheritedFieldAliasingTest1 = @"
         class a 
         {
         public static $x=4;
@@ -150,11 +154,72 @@ namespace Weverca.Analysis.UnitTest
         ";
 
         [TestMethod]
-        public void StaticInheritedField()
+        public void StaticInheritedFieldAliasing1()
         {
-            var result = TestUtils.ResultTest(StaticInheritedFieldTest);
+            var result = TestUtils.ResultTest(StaticInheritedFieldAliasingTest1);
             TestUtils.testType(result, typeof(IntegerValue));
             TestUtils.testValue(result, 6);
+
+        }
+
+        /// <summary>
+        /// Inherited static fields that are not redefined are connected using aliasing.
+        /// If a field is set to be an alias of another variable, it is no longer an alias of fields in other classes.
+        /// </summary>
+        string StaticInheritedFieldAliasingTest2 = @"
+        class a 
+        {
+        public static $x=4;
+
+        }
+        class b extends a 
+        {
+
+
+        }
+
+        // a::$x will not be an alias of b::$x
+        a::$x = &$c;
+        // changes the value of $c and a::$x, does not change the value of b::$x
+        $c = 5;
+        $result = a::$x + b::$x;
+        ";
+
+        [TestMethod]
+        public void StaticInheritedFieldAliasing2()
+        {
+            var result = TestUtils.ResultTest(StaticInheritedFieldAliasingTest2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 9);
+
+        }
+
+        /// <summary>
+        /// Inherited static fields that are redefined are not connected using aliasing.
+        /// </summary>
+        string StaticInheritedFieldAliasingTest3 = @"
+        class a 
+        {
+        public static $x=4;
+
+        }
+        class b extends a 
+        {
+        public static $x=4;
+
+        }
+
+        // does not change b::$x
+        a::$x = 5;
+        $result = a::$x + b::$x;
+        ";
+
+        [TestMethod]
+        public void StaticInheritedFieldAliasing3()
+        {
+            var result = TestUtils.ResultTest(StaticInheritedFieldAliasingTest3);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 9);
 
         }
 
