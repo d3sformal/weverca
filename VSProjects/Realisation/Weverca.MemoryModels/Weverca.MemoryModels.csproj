@@ -93,6 +93,7 @@
     <Compile Include="VirtualReferenceModel\SnapshotEntries\IndexStorageVisitor.cs" />
     <Compile Include="VirtualReferenceModel\Memory\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
+    <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotAliasEntry.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotMemoryEntry.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotStorageEntry.cs" />
     <Compile Include="VirtualReferenceModel\Memory\ReferenceAliasEntry.cs" />

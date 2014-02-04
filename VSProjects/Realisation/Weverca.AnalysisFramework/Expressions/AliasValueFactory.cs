@@ -60,6 +60,17 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
+        /// Create alias from rvalue defined by x
+        /// </summary>
+        /// <param name="x">Element which alias is needed</param>
+        private void RValueResult(LangElement x)
+        {
+            var value = CreateRValue(x);
+
+            Result(value);
+        }
+
+        /// <summary>
         /// Create RValue from given element
         /// </summary>
         /// <param name="el">Element which value will be created</param>
@@ -81,6 +92,11 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var thisObj=CreateRValue(x.IsMemberOf);
             Result(new VariablePoint(x,thisObj));
+        }
+
+        public override void VisitFunctionCall(FunctionCall x)
+        {
+            RValueResult(x);
         }
 
         public override void VisitIndirectVarUse(IndirectVarUse x)

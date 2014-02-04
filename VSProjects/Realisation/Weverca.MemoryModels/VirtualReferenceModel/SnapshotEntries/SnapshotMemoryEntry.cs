@@ -13,7 +13,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     internal class SnapshotMemoryEntry : ReadWriteSnapshotEntryBase
     {
-        private MemoryEntry WrappedEntry;
+        internal MemoryEntry WrappedEntry;
         private MemoryEntry WrappedEntryInfoLevel = null;
         private static MemoryEntry UndefinedEntry = null;
 
@@ -56,7 +56,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            yield return new SnapshotAliasEntry(this);
         }
 
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)

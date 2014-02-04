@@ -425,7 +425,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        internal void SetAliases(VariableKey[] storages, IEnumerable<ReferenceAliasEntry> aliases)
+        internal void SetAliases(VariableKey[] storages, IEnumerable<AliasEntry> aliases)
         {
             foreach (var storage in storages)
             {
@@ -755,24 +755,42 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return readValue(info);
         }
 
-        void assignAlias(VariableInfo target, IEnumerable<ReferenceAliasEntry> aliases)
+        void assignAlias(VariableInfo target, IEnumerable<AliasEntry> aliases)
         {
             var references = new HashSet<VirtualReference>();
+            var aliasedValues = new List<Value>();
             foreach (var alias in aliases)
             {
-                var contextVariable = getOrCreateInfo(alias.Key);
-
-                if (contextVariable.References.Count == 0)
+                var referenceAlias = alias as ReferenceAliasEntry;
+                if (referenceAlias != null)
                 {
-                    var implicitRef = new VirtualReference(contextVariable, alias.ContextStamp);
-                    contextVariable.References.Add(implicitRef);
-                }
+                    var contextVariable = getOrCreateInfo(referenceAlias.Key);
 
-                references.UnionWith(contextVariable.References);
+                    if (contextVariable.References.Count == 0)
+                    {
+                        var implicitRef = new VirtualReference(contextVariable, referenceAlias.ContextStamp);
+                        contextVariable.References.Add(implicitRef);
+                    }
+
+                    references.UnionWith(contextVariable.References);
+                }
+                else
+                {
+                    //TODO this is just workaround
+                    var snapshotAlias = alias as SnapshotAliasEntry;
+                    aliasedValues.AddRange(snapshotAlias.SnapshotEntry.WrappedEntry.PossibleValues);
+                }
             }
 
             target.References.Clear();
             target.References.AddRange(references);
+
+            if (aliasedValues.Count > 0)
+            {
+                //TODO strong update
+                REPORT(Statistic.MemoryEntryCreation);
+                assign(target, new MemoryEntry(aliasedValues.ToArray()));
+            }
         }
 
         private void weakUpdate(List<VirtualReference> references, MemoryEntry update)

@@ -177,9 +177,14 @@ namespace Weverca.AnalysisFramework.Expressions
             return result;
         }
 
+        internal void Register(ProgramPointBase point)
+        {
+            _programPoints.Add(point.Partial, point);
+        }
+
         private void Result(ProgramPointBase point)
         {
-            _programPoints.Add(_statement, point);
+            Register(point);
         }
 
         /// <summary>

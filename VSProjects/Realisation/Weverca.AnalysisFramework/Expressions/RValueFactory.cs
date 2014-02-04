@@ -77,6 +77,15 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
+        /// All program points that are not returne via Result method has to be registered by current method
+        /// </summary>
+        /// <param name="point">Registered point</param>
+        private void RegisterPoint(ProgramPointBase point)
+        {
+            _valueCreator.Register(point);
+        }
+
+        /// <summary>
         /// Create RValue from given element
         /// </summary>
         /// <param name="el">Element which value will be created</param>
@@ -195,7 +204,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectStFldUse(DirectStFldUse x)
         {
-            var indirectType=x.TypeRef as IndirectTypeRef;
+            var indirectType = x.TypeRef as IndirectTypeRef;
 
             if (indirectType == null)
             {
@@ -204,7 +213,7 @@ namespace Weverca.AnalysisFramework.Expressions
             else
             {
                 var typeName = CreateRValue(indirectType);
-                Result(new IndirectStaticFieldPoint(x, typeName));                
+                Result(new IndirectStaticFieldPoint(x, typeName));
             }
         }
 
@@ -435,13 +444,37 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitItemUse(ItemUse x)
         {
-            if (x.IsMemberOf != null)
-            {
-                throw new NotImplementedException();
-            }
-
-            var array = CreateRValue(x.Array);
             var index = CreateRValue(x.Index);
+
+            ValuePoint array;
+            if (x.IsMemberOf == null)
+            {
+                array = CreateRValue(x.Array);
+            }
+            else
+            {
+                var thisObj = CreateRValue(x.IsMemberOf);
+
+                var indirectArray = x.Array as IndirectVarUse;
+                var directArray = x.Array as DirectVarUse;
+                if (indirectArray != null)
+                {
+                    var arrayName = CreateRValue(indirectArray.VarNameEx);
+                    array = new IndirectVariablePoint(indirectArray, arrayName, thisObj);
+
+                    RegisterPoint(array);
+                }
+                else if (directArray != null)
+                {
+                    array = new VariablePoint(directArray, thisObj);
+
+                    RegisterPoint(array);
+                }
+                else
+                {
+                    throw new NotImplementedException("Unknown array construct");
+                }
+            }
 
             Result(new ItemUsePoint(x, array, index));
         }

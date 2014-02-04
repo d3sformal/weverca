@@ -169,11 +169,19 @@ namespace Weverca.AnalysisFramework.Expressions
             // No recursive traversing
         }
 
+        public override void VisitItemUse(ItemUse x)
+        {
+            // Force traversing
 
+            VisitElement(x.IsMemberOf);
+            VisitElement(x.Index);
+            VisitElement(x.Array);            
+        }
 
         public override void VisitArrayEx(ArrayEx x)
         {
             // Force traversing
+                       
             foreach (Item item in x.Items)
             {
                 // It may not be listed and can be null

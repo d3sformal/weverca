@@ -1142,7 +1142,7 @@ $test2='Reachable';
 
 ".AssertVariable("test").HasValues("NotAffected")
  .AssertVariable("test2").HasValues("Reachable")
- //|.WideningLimit(20)
+            //|.WideningLimit(20)
  .WideningLimit(1) // for debuging
 ;
 
@@ -1247,7 +1247,7 @@ $d=&$a;
             .AssertVariable("d").HasValues("valueB")
             ;
 
-        
+
         [TestMethod]
         public void FunctionTest()
         {
@@ -1270,7 +1270,7 @@ $d=&$a;
         public void ArrayAliasedReturnValueTest()
         {
             AnalysisTestUtils.RunTestCase(ArrayAliasedReturnValueTest_CASE);
-        }        
+        }
 
         [TestMethod]
         public void BranchMerge()

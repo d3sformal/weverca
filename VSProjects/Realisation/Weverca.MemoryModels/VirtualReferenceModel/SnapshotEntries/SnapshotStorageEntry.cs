@@ -88,9 +88,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         {
             var snapshot = C(context);
             var aliasEntries = aliasedEntry.Aliases(context);
-            var aliases = from entry in aliasEntries select entry as ReferenceAliasEntry;
 
-            snapshot.SetAliases(_storages, aliases);
+            snapshot.SetAliases(_storages, aliasEntries);
         }
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
@@ -128,7 +127,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
-            var memory=readMemory(context);
+            var memory = readMemory(context);
 
             return C(context).IterateFields(memory);
         }
