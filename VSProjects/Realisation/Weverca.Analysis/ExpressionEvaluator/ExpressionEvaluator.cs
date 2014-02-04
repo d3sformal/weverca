@@ -1128,10 +1128,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
             }
-
-             var storage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
-             return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames.ToArray()));
-
+            if (field.PossibleNames.Count() > 0 && fieldNames.Count == 0)
+            {
+                return getStaticVariableSink();
+            }
+            else
+            {
+                var storage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
+                return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames.ToArray()));
+            }
         }
 
 
