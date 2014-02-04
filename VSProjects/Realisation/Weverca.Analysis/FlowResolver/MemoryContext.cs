@@ -200,7 +200,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
 
                 //if there are some other intarvalu values, we must delete those, which doesn't intersect the new one. We will add the intersection of those, which intersects the new one and the new one
-                IntervalValue intersection = IntersectIntervals((IntervalValue)newValue, values.Where(a => a is IntervalValue).Select(a => (IntervalValue)a));
+                Value intersection = IntersectIntervals((IntervalValue)newValue, values.Where(a => a is IntervalValue).Select(a => (IntervalValue)a));
 
                 //we will also delete more general values (any value, anystring, anyint, ...) also the intervals are already counted in.
                 values.Clear();
@@ -221,7 +221,7 @@ namespace Weverca.Analysis.FlowResolver
             }
         }
 
-        IntervalValue IntersectIntervals(IntervalValue interval, IEnumerable<IntervalValue> intervals)
+        Value IntersectIntervals(IntervalValue interval, IEnumerable<IntervalValue> intervals)
         {
             if (intervals == null || intervals.Count() == 0)
             {
@@ -250,13 +250,11 @@ namespace Weverca.Analysis.FlowResolver
             }
         }
 
-        IntervalValue IntersectIntervals<T>(IntervalValue<T> interval, IEnumerable<IntervalValue<T>> intervals)
+        Value IntersectIntervals<T>(IntervalValue<T> interval, IEnumerable<IntervalValue<T>> intervals)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            IntervalValue<T> result = interval;
-            
-            T maxStart = result.Start;
-            T minEnd = result.End;
+            T maxStart = interval.Start;
+            T minEnd = interval.End;
 
             foreach (var item in intervals)
             {
@@ -271,7 +269,26 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-            if (minEnd.CompareTo(maxStart) <= 0)
+            if (maxStart.Equals(minEnd))
+            {
+                if (maxStart is int)
+                {
+                    return valueFactory.CreateInt(System.Convert.ToInt32(maxStart));
+                }
+                else if (maxStart is long)
+                {
+                    return valueFactory.CreateLong(System.Convert.ToInt64(maxStart));
+                }
+                if (maxStart is double)
+                {
+                    return valueFactory.CreateDouble(System.Convert.ToDouble(maxStart));
+                }
+                else
+                {
+                    throw new NotSupportedException(string.Format("Interval type \"{0}\" is not supported.", interval.GetType()));
+                }
+            }
+            if (maxStart.CompareTo(minEnd) < 0)
             {
 
                 if (maxStart is int)
