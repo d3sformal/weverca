@@ -244,10 +244,6 @@ namespace Weverca.Analysis.FlowResolver
                     condition.MakeAssumption(currentMemoryContext);
                     memoryContext.UnionMerge(currentMemoryContext);
                 }
-                else
-                {
-                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, langElement.GetType().Name));
-                }
             }
             else if (langElement is UnaryEx)
             {
@@ -256,20 +252,11 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     AssumeFalse(unaryExpression.Expr, memoryContext, flowOutputSet);
                 }
-                else
-                {
-                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", unaryExpression.PublicOperation, langElement.GetType().Name));
-                }
             }
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
                 AssumeTrueDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
-            }
-            else
-            {
-                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", langElement.GetType().Name));
-                //TODO: deal with IssetEx
             }
         }
 
@@ -326,10 +313,6 @@ namespace Weverca.Analysis.FlowResolver
                     condition.MakeAssumption(currentMemoryContext);
                     memoryContext.UnionMerge(currentMemoryContext);
                 }
-                else
-                {
-                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", binaryExpression.PublicOperation, langElement.GetType().Name));
-                }
             }
             else if (langElement is UnaryEx)
             {
@@ -338,19 +321,11 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     AssumeTrue(unaryExpression.Expr, memoryContext, flowOutputSet);
                 }
-                else
-                {
-                    throw new NotSupportedException(string.Format("Operation \"{0}\" is not supported for expression type \"{1}\"", unaryExpression.PublicOperation, langElement.GetType().Name));
-                }
             }
             else if (langElement is DirectVarUse)
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
                 AssumeFalseDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
-            }
-            else
-            {
-                throw new NotSupportedException(string.Format("Expression type \"{0}\" is not supported", langElement.GetType().Name));
             }
         }
 
@@ -420,10 +395,6 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues);
                 }
-            }
-            else
-            {
-                throw new NotSupportedException(string.Format("Element \"{0}\" is not supported on the left side", left.GetType().Name));
             }
         }
 
@@ -515,10 +486,6 @@ namespace Weverca.Analysis.FlowResolver
                     }
                 }
             }
-            else
-            {
-                throw new NotSupportedException(string.Format("Element \"{0}\" is not supported on the left side", left.GetType().Name));
-            }
         }
 
         /// <summary>
@@ -608,10 +575,6 @@ namespace Weverca.Analysis.FlowResolver
                         memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
                     }
                 }
-            }
-            else
-            {
-                throw new NotSupportedException(string.Format("Element \"{0}\" is not supported on the left side", left.GetType().Name));
             }
         }
 
