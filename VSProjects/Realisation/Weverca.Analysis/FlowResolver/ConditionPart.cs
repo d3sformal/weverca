@@ -361,24 +361,13 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="right">The right side of the expression.</param>
         void AssumeNotEquals(LangElement left, LangElement right, MemoryContext memoryContext)
         {
-            if (right is DirectVarUse && !(left is DirectVarUse))
-            {
-                AssumeNotEquals(right, left, memoryContext);
-            }
+            //There is nothing to do.
+            //if (right is DirectVarUse && !(left is DirectVarUse))
+            //{
+            //    AssumeNotEquals(right, left, memoryContext);
+            //}
 
             //there is nothoing to do otherwise
-
-            //else if (left is DirectVarUse)
-            //{
-            //    var leftVar = (DirectVarUse)left;
-            //    //TODO: this can be done more accurate with negative set.
-            //    //flowOutputSet.Assign(leftVar.VarName, flowOutputSet.AnyValue);
-            //    //leave current set in the evaluation of the variable. There can be current values - {value}
-            //}
-            //else
-            //{
-            //    throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
-            //}
         }
 
         /// <summary>
@@ -395,6 +384,7 @@ namespace Weverca.Analysis.FlowResolver
             else if (left is DirectVarUse)
             {
                 var leftVar = (DirectVarUse)left;
+                // this is probably not neceserry {{
                 if (right is StringLiteral)
                 {
                     var rigthValue = (StringLiteral)right;
@@ -425,19 +415,15 @@ namespace Weverca.Analysis.FlowResolver
                     //TODO: Is that proper null?
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.UndefinedValue);
                 }
-                else if (right is VariableUse)
-                {
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues);
-                }
+                //}}
                 else
                 {
-                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
-                    //TODO: deal with DirectVarUse on the right
+                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues);
                 }
             }
             else
             {
-                throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+                throw new NotSupportedException(string.Format("Element \"{0}\" is not supported on the left side", left.GetType().Name));
             }
         }
 
@@ -456,6 +442,7 @@ namespace Weverca.Analysis.FlowResolver
             else if (left is DirectVarUse)
             {
                 var leftVar = (DirectVarUse)left;
+                //this is probably not necessary{
                 if (right is StringLiteral)
                 {
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.AnyStringValue);
@@ -490,7 +477,8 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(bound, long.MaxValue));
                 }
-                else if (right is VariableUse)
+                //}
+                else
                 {
                     //get lower bound of right and intersect with left
                     int? minInt;
@@ -526,14 +514,10 @@ namespace Weverca.Analysis.FlowResolver
                         memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(minDouble.Value, double.MaxValue));
                     }
                 }
-                else
-                {
-                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
-                }
             }
             else
             {
-                throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+                throw new NotSupportedException(string.Format("Element \"{0}\" is not supported on the left side", left.GetType().Name));
             }
         }
 
@@ -552,6 +536,7 @@ namespace Weverca.Analysis.FlowResolver
             else if (left is DirectVarUse)
             {
                 var leftVar = (DirectVarUse)left;
+                //this is probably not necessary{
                 if (right is StringLiteral)
                 {
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.AnyStringValue);
@@ -586,9 +571,10 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
                 }
-                else if (right is VariableUse)
+                //}
+                else
                 {
-                    //TODO: get upper bound of right and intersect with left
+                    //get upper bound of right and intersect with left
                     int? maxInt;
                     long? maxLong;
                     double? maxDouble;
@@ -622,14 +608,10 @@ namespace Weverca.Analysis.FlowResolver
                         memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
                     }
                 }
-                else
-                {
-                    throw new NotSupportedException(string.Format("right type \"{0}\" is not supported for \"{1}\"", right.GetType().Name, left.GetType().Name));
-                }
             }
             else
             {
-                throw new NotSupportedException(string.Format("Element \"{0}\" is not supprted on the left side", left.GetType().Name));
+                throw new NotSupportedException(string.Format("Element \"{0}\" is not supported on the left side", left.GetType().Name));
             }
         }
 
