@@ -1085,47 +1085,52 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         private ReadWriteSnapshotEntryBase resolveStaticVariable(List<QualifiedName> classes, VariableIdentifier field)
         {
-            List<string> names = new List<string>();
-
+            HashSet<string> names = new HashSet<string>();
+            HashSet<string> fieldNames = new HashSet<string>();
             foreach (var typeName in classes)
             {
-                var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
-                if (!classStorage.IsDefined(OutSet.Snapshot))
+                foreach (var fieldName in field.PossibleNames)
                 {
-                    NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
-                    if (analyzer.ExistClass(typeName) && analyzer.GetClass(typeName).IsInterface == false)
+                    var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
+                    if (!classStorage.IsDefined(OutSet.Snapshot))
                     {
-                        InsertNativeObjectStaticVariablesIntoMM(typeName);
-                        classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
-                        if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value)).IsDefined(OutSet.Snapshot))
+                        NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+                        if (analyzer.ExistClass(typeName) && analyzer.GetClass(typeName).IsInterface == false)
                         {
-                            names.Add(typeName.Name.LowercaseValue);
+                            InsertNativeObjectStaticVariablesIntoMM(typeName);
+                            classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
+                            if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldName.Value)).IsDefined(OutSet.Snapshot))
+                            {
+                                names.Add(typeName.Name.LowercaseValue);
+                                fieldNames.Add(fieldName.Value);
+                            }
+                            else
+                            {
+                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));
+                            }
                         }
                         else
                         {
-                            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));                   
+                            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class " + typeName.Name.Value + " doesn't exist", Element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
                         }
                     }
                     else
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class " + typeName.Name.Value + " doesn't exist", Element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
-                    }
-                }
-                else
-                {
-                    if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value)).IsDefined(OutSet.Snapshot))
-                    {
-                        names.Add(typeName.Name.LowercaseValue);
-                    }
-                    else
-                    {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));
+                        if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldName.Value)).IsDefined(OutSet.Snapshot))
+                        {
+                            names.Add(typeName.Name.LowercaseValue);
+                            fieldNames.Add(fieldName.Value);
+                        }
+                        else
+                        {
+                            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));
+                        }
                     }
                 }
             }
 
              var storage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
-             return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(field.DirectName.Value));
+             return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames.ToArray()));
 
         }
 

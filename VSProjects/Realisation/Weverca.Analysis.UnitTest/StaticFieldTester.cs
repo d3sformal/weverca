@@ -382,5 +382,34 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string DirectObjectIndirectFieldTest4 = @"
+        class a 
+        {
+	        public static $x=2;
+	        public static $y=3;
+        }
+
+        if(chdir(''))
+        {
+	        $x='x';
+        }
+        else
+        {
+	        $x='y';
+        }
+        $result=a::$$x;
+
+        ";
+
+        [TestMethod]
+        public void IndirectObjectIndirectField4()
+        {
+            var outSet = TestUtils.Analyze(DirectObjectIndirectFieldTest4);
+            var result = outSet.ReadVariable(new VariableIdentifier("result")).ReadMemory(outSet.Snapshot);
+            TestUtils.HasValues(result, 2, 3);
+
+        }
+
+
     }
 }
