@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using PHP.Core;
 using PHP.Core.AST;
+using Weverca.Analysis.Properties;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -106,7 +107,7 @@ namespace Weverca.Analysis
         /// <param name="outSet">FlowOutputSet</param>
         private NativeObjectAnalyzer(FlowOutputSet outSet)
         {
-            var reader = XmlReader.Create(new StreamReader("php_classes.xml"));
+            var reader = XmlReader.Create(new StreamReader(Settings.Default.PhpClassesFile));
             nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
             NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, ClassDeclBuilder>();
 

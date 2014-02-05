@@ -31,5 +31,14 @@ namespace Weverca.Analysis.Properties {
                 return ((string)(this["PhpFunctionsFile"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("php_classes.xml")]
+        public string PhpClassesFile {
+            get {
+                return ((string)(this["PhpClassesFile"]));
+            }
+        }
     }
 }
