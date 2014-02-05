@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Mvc;
+
 using Common.WebDefinitions.Helpers;
+using Weverca.CodeMetrics;
 using Weverca.Web.Models;
+using Weverca.Web.Properties;
 
 namespace Weverca.Web.Controllers
 {
@@ -23,6 +24,21 @@ namespace Weverca.Web.Controllers
             }
 
             return selectList;
+        }
+
+        public static string FormatMetricsResult(Quantity quantity, MetricResult<int> metricResult)
+        {
+            return string.Format(MetricsResources.ResourceManager.GetString(quantity.ToString()), string.Format(Resources.IntegerFormat, metricResult.Result));
+        }
+
+        public static string FormatMetricsResult(Rating quantity, MetricResult<double> metricResult)
+        {
+            return string.Format(MetricsResources.ResourceManager.GetString(quantity.ToString()), string.Format(Resources.DoubleFormat, metricResult.Result));
+        }
+
+        public static string FormatMetricsResult(ConstructIndicator quantity, MetricResult<bool> metricResult)
+        {
+            return string.Format(MetricsResources.ResourceManager.GetString(quantity.ToString()), metricResult.Result ? Resources.Yes : Resources.No);
         }
     }
 }

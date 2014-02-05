@@ -122,6 +122,11 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Properties\MetricsResources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MetricsResources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Models\AnalysisModel.cs" />
     <Compile Include="Models\MessageModel.cs" />
     <Compile Include="Models\ResultModel.cs" />
@@ -232,6 +237,10 @@
     <Content Include="NLog.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\MetricsResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>MetricsResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

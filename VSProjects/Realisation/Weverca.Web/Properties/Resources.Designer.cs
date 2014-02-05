@@ -70,6 +70,15 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0:### ### ##0.##}.
+        /// </summary>
+        public static string DoubleFormat {
+            get {
+                return ResourceManager.GetString("DoubleFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
         public static string Error {
@@ -84,6 +93,15 @@ namespace Weverca.Web.Properties {
         public static string IndexTitle {
             get {
                 return ResourceManager.GetString("IndexTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicator Metrics.
+        /// </summary>
+        public static string IndicatorMetrics {
+            get {
+                return ResourceManager.GetString("IndicatorMetrics", resourceCulture);
             }
         }
         
@@ -179,11 +197,29 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0:### ### ##0}.
+        /// </summary>
+        public static string IntegerFormat {
+            get {
+                return ResourceManager.GetString("IntegerFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Metrics Results.
         /// </summary>
         public static string MetricsResults {
             get {
                 return ResourceManager.GetString("MetricsResults", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        public static string No {
+            get {
+                return ResourceManager.GetString("No", resourceCulture);
             }
         }
         
@@ -206,6 +242,24 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Quantity Metrics.
+        /// </summary>
+        public static string QuantityMetrics {
+            get {
+                return ResourceManager.GetString("QuantityMetrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rating Metrics.
+        /// </summary>
+        public static string RatingMetrics {
+            get {
+                return ResourceManager.GetString("RatingMetrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Verification results.
         /// </summary>
         public static string ResultTitle {
@@ -215,7 +269,7 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Run metrics indicating construct indication.
+        ///   Looks up a localized string similar to Run metrics indicating construct presence.
         /// </summary>
         public static string RunIndicatorMetrics {
             get {
@@ -224,7 +278,7 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Run metrics measuring quality of the code.
+        ///   Looks up a localized string similar to Run metrics measuring quantity of constructs in the code.
         /// </summary>
         public static string RunQuantityMetrics {
             get {
@@ -292,6 +346,15 @@ namespace Weverca.Web.Properties {
         public static string Warnings {
             get {
                 return ResourceManager.GetString("Warnings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        public static string Yes {
+            get {
+                return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
     }

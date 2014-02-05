@@ -117,92 +117,70 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AnalysisTimeouted" xml:space="preserve">
-    <value>We are sorry, but the analysis over your source code timeouted.</value>
+  <data name="Alias" xml:space="preserve">
+    <value>Alias presence: {0}</value>
   </data>
-  <data name="DoubleFormat" xml:space="preserve">
-    <value>{0:### ### ##0.##}</value>
+  <data name="Autoload" xml:space="preserve">
+    <value>__autoload redeclaration presence or spl_autoload_register call: {0}</value>
   </data>
-  <data name="Error" xml:space="preserve">
-    <value>Error</value>
+  <data name="Class" xml:space="preserve">
+    <value>Class construct presence: {0}</value>
   </data>
-  <data name="IndexTitle" xml:space="preserve">
-    <value>PHP Code verification</value>
+  <data name="ClassAlias" xml:space="preserve">
+    <value>Class alias construction presence: {0}</value>
   </data>
-  <data name="IndicatorMetrics" xml:space="preserve">
-    <value>Indicator Metrics</value>
+  <data name="ClassCoupling" xml:space="preserve">
+    <value>Class coupling: {0}</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="Input1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Input1.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+  <data name="Cyclomacity" xml:space="preserve">
+    <value>Cyclomatic complexity: {0}</value>
   </data>
-  <data name="Input1Description" xml:space="preserve">
-    <value>Input 1</value>
+  <data name="DuckTyping" xml:space="preserve">
+    <value>Duck Typing presence: {0}</value>
   </data>
-  <data name="Input2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Input2.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+  <data name="DynamicCall" xml:space="preserve">
+    <value>Dynamic call presence: {0}</value>
   </data>
-  <data name="Input2Description" xml:space="preserve">
-    <value>Input 2</value>
+  <data name="DynamicDereference" xml:space="preserve">
+    <value>Dynamic dereference presence: {0}</value>
   </data>
-  <data name="InputCustomDescription" xml:space="preserve">
-    <value>Custom Input</value>
+  <data name="DynamicInclude" xml:space="preserve">
+    <value>Include based on dynamic variable presence: {0}</value>
   </data>
-  <data name="InputType" xml:space="preserve">
-    <value>Input</value>
+  <data name="Eval" xml:space="preserve">
+    <value>Eval function usage: {0}</value>
   </data>
-  <data name="IntegerFormat" xml:space="preserve">
-    <value>{0:### ### ##0}</value>
+  <data name="InsideFunctionDeclaration" xml:space="preserve">
+    <value>Declaration of class/function inside another function presence: {0}</value>
   </data>
-  <data name="MetricsResults" xml:space="preserve">
-    <value>Metrics Results</value>
+  <data name="MagicMethod" xml:space="preserve">
+    <value>Magic function presence: {0}</value>
   </data>
-  <data name="No" xml:space="preserve">
-    <value>No</value>
+  <data name="MaxInheritanceDepth" xml:space="preserve">
+    <value>Maximum inheritance depth: {0}</value>
   </data>
-  <data name="OtherWarnings" xml:space="preserve">
-    <value>Other Warnings</value>
+  <data name="MaxMethodOverridingDepth" xml:space="preserve">
+    <value>Maximum method overriding depth: {0}</value>
   </data>
-  <data name="PhpCode" xml:space="preserve">
-    <value>Php Code</value>
+  <data name="MySQL" xml:space="preserve">
+    <value>My SQL functions presence: {0}</value>
   </data>
-  <data name="QuantityMetrics" xml:space="preserve">
-    <value>Quantity Metrics</value>
+  <data name="NumberOfLines" xml:space="preserve">
+    <value>Number of lines: {0}</value>
   </data>
-  <data name="RatingMetrics" xml:space="preserve">
-    <value>Rating Metrics</value>
+  <data name="NumberOfSources" xml:space="preserve">
+    <value>Number of sources: {0}</value>
   </data>
-  <data name="ResultTitle" xml:space="preserve">
-    <value>Verification results</value>
+  <data name="PassingByReferenceAtCallSide" xml:space="preserve">
+    <value>Passing variable by reference at call side: {0}</value>
   </data>
-  <data name="RunIndicatorMetrics" xml:space="preserve">
-    <value>Run metrics indicating construct presence</value>
+  <data name="PhpFunctionsCoupling" xml:space="preserve">
+    <value>PHP standard functions coupling: {0}</value>
   </data>
-  <data name="RunQuantityMetrics" xml:space="preserve">
-    <value>Run metrics measuring quantity of constructs in the code</value>
+  <data name="Session" xml:space="preserve">
+    <value>Session usage: {0}</value>
   </data>
-  <data name="RunRatingMetrics" xml:space="preserve">
-    <value>Run metrics rating the code</value>
-  </data>
-  <data name="RunVerification" xml:space="preserve">
-    <value>Run verification</value>
-  </data>
-  <data name="SecurityWarnings" xml:space="preserve">
-    <value>Security Warnings</value>
-  </data>
-  <data name="Settings" xml:space="preserve">
-    <value>Verification settings</value>
-  </data>
-  <data name="VerificationResults" xml:space="preserve">
-    <value>Verifications Results</value>
-  </data>
-  <data name="Verify" xml:space="preserve">
-    <value>Verify</value>
-  </data>
-  <data name="Warnings" xml:space="preserve">
-    <value>Warnings</value>
-  </data>
-  <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+  <data name="SuperGlobalVariable" xml:space="preserve">
+    <value>Super global variable usage: {0}</value>
   </data>
 </root>

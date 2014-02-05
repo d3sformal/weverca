@@ -60,7 +60,10 @@ namespace Weverca.Web.Controllers
             var thread = new Thread(() => t = func());
             thread.Start();
             var completed = thread.Join(timeout);
-            if (!completed) thread.Abort();
+            if (!completed)
+            {
+                thread.Abort();
+            }
             result = t;
             return completed;
         }

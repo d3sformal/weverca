@@ -1,4 +1,5 @@
-﻿@using Weverca.Web.Models
+﻿@using Weverca.Web.Controllers
+@using Weverca.Web.Models
 @using Weverca.Web.Properties
 
 @model ResultModel
@@ -43,7 +44,29 @@
         }
     </div>
     <div id="tabs-2">
-        <p>TODO: here there will be the results.</p>
+        <fieldset>
+            <legend>@Resources.QuantityMetrics</legend>
+            @foreach (var metric in Model.QuantityMetricsResult)
+            {
+                <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+            }
+        </fieldset>
+
+        <fieldset>
+            <legend>@Resources.RatingMetrics</legend>
+            @foreach (var metric in Model.RatingMetricsResult)
+            {
+                <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+            }
+        </fieldset>
+
+        <fieldset>
+            <legend>@Resources.IndicatorMetrics</legend>
+            @foreach (var metric in Model.IndicatorMetricsResult)
+            {
+                <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+            }
+        </fieldset>
     </div>
     <div id="tabs-3">
         @Model.Output.ToHtmlString()
