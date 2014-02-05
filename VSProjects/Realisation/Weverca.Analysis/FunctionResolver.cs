@@ -317,11 +317,11 @@ namespace Weverca.Analysis
             //include
             if (extensionGraph.FunctionName == null)
             {
-                StringValue thisFile = OutSet.CreateString(extensionGraph.OwningScript.FullName);
+                string thisFile = extensionGraph.OwningScript.FullName;
                 var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
-                List<Value> files=includedFiles.ReadMemory(OutSnapshot).PossibleValues.ToList();
-                files.Add(thisFile);
-                includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(files));
+                IEnumerable<Value> files=includedFiles.ReadMemory(OutSnapshot).PossibleValues;
+                List<Value> result = IncreaseCalledInfo(thisFile, files);
+                includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
             }
             else
             {
@@ -365,16 +365,44 @@ namespace Weverca.Analysis
                             new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
                     }
                 }
-                List<Value> newCalledFunctions = new List<Value>();
-                if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
-                {
-                    MemoryEntry calledFunctions = caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSet.Snapshot);
-                    newCalledFunctions = new List<Value>(calledFunctions.PossibleValues);
-                }
 
-                newCalledFunctions.AddRange(OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues);
+               ;
+
+                FunctionValue thisFunction=OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
+                List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
                 OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
             }
+        }
+
+        private List<Value> IncreaseCalledInfo<T>(T thisFile, IEnumerable<Value> files)
+        {
+            List<Value> result = new List<Value>();
+            bool containsInclude = false;
+            foreach (var value in files)
+            {
+                InfoValue<NumberOfCalledFunctions<T>> info = value as InfoValue<NumberOfCalledFunctions<T>>;
+                if (info != null)
+                {
+                    if (info.Data.Function.Equals(thisFile))
+                    {
+                        containsInclude = true;
+                        result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled + 1)));
+                    }
+                    else
+                    {
+                        result.Add(value);
+                    }
+                }
+                else
+                {
+                    result.Add(value);
+                }
+            }
+            if (containsInclude == false)
+            {
+                result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, 1)));
+            }
+            return result;
         }
 
         /// <inheritdoc />
@@ -578,15 +606,21 @@ namespace Weverca.Analysis
                     }
                 }
             }
-
-            if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot) &&
-                OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues
-                .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >= 2)
+            int max = 0;
+            foreach(var value in OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues)
+            {
+                InfoValue<NumberOfCalledFunctions<FunctionValue>> info = value as InfoValue<NumberOfCalledFunctions<FunctionValue>>;
+                if (info!=null && info.Data.Function.Equals(function))
+                {
+                    max = Math.Max(max, info.Data.TimesCalled);
+                }
+            }
+            if (max >= 2)
             {
                 useSharedFunctions = true;
             }
 
-            if (useSharedFunctions)
+            if (sharedFunctions.Contains(function) || useSharedFunctions)
             {
                 if (sharedFunctions.Contains(function))
                 {
@@ -987,4 +1021,18 @@ namespace Weverca.Analysis
         }
     }
     #endregion
+
+    class NumberOfCalledFunctions<T>
+    { 
+        public readonly T Function;
+        public readonly int TimesCalled;
+
+        public NumberOfCalledFunctions(T function,int timesCalled)
+        {
+            Function=function;
+            TimesCalled = timesCalled;
+        }
+    
+    }
+
 }

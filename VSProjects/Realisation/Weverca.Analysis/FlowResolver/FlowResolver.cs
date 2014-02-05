@@ -79,23 +79,33 @@ namespace Weverca.Analysis.FlowResolver
             foreach (var file in files)
             {
                 var fileInfo = findFile(flow, file);
+                
                 if (fileInfo == null)
                 {
                     AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
                     continue;
                 }
 
+                string fileName = fileInfo.FullName;
+
                 var includedFiles = flow.OutSet.GetControlVariable(new VariableName(".includedFiles")).ReadMemory(flow.OutSet.Snapshot);
-                int numberOfIncludes = includedFiles.PossibleValues.Where(a => (a is StringValue) && (a as StringValue).Value == fileInfo.FullName).Count();
+                int numberOfIncludes = 0;
+                foreach (InfoValue<NumberOfCalledFunctions<string>> includeInfo in includedFiles.PossibleValues.Where(a => (a is InfoValue<NumberOfCalledFunctions<string>>)))
+                {
+                    if (includeInfo.Data.Function == fileName)
+                    {
+                        numberOfIncludes = Math.Max(numberOfIncludes, includeInfo.Data.TimesCalled);
+                    }
+                }
                 if (numberOfIncludes > 0)
                 {
                     if (includeExpression.InclusionType == InclusionTypes.IncludeOnce || includeExpression.InclusionType == InclusionTypes.RequireOnce)
                     {
                         continue;
                     }
-                    else if (numberOfIncludes > 2)
+                    else if (numberOfIncludes >= 2 || sharedFiles.Contains(fileName))
                     {
-                        string fileName = fileInfo.FullName;
+                        
                         if (sharedFiles.Contains(fileName))
                         {
                             //set graph sharing for this function
