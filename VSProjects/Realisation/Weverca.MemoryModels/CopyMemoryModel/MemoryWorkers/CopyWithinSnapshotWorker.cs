@@ -35,27 +35,27 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void Copy(MemoryIndex sourceIndex, MemoryIndex targetIndex)
         {
-            MemoryEntry entry = snapshot.Data.GetMemoryEntry(sourceIndex);
+            MemoryEntry entry = snapshot.Structure.GetMemoryEntry(sourceIndex);
 
             CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(this, targetIndex);
             visitor.VisitMemoryEntry(entry);
 
             if (isMust && visitor.GetValuesCount() == 1 && objectValues.Count == 1)
             {
-                ObjectValueContainerBuilder objectsValues = snapshot.Data.GetObjects(targetIndex).Builder();
+                ObjectValueContainerBuilder objectsValues = snapshot.Structure.GetObjects(targetIndex).Builder();
 
                 ObjectValue value = objectValues.First();
                 objectsValues.Add(value);
-                snapshot.Data.SetObjects(targetIndex, objectsValues.Build());
+                snapshot.Structure.SetObjects(targetIndex, objectsValues.Build());
             }
             else if (objectValues.Count > 0)
             {
-                ObjectValueContainerBuilder objectsValues = snapshot.Data.GetObjects(targetIndex).Builder();
+                ObjectValueContainerBuilder objectsValues = snapshot.Structure.GetObjects(targetIndex).Builder();
                 foreach (ObjectValue value in objectValues)
                 {
                     objectsValues.Add(value);
                 }
-                snapshot.Data.SetObjects(targetIndex, objectsValues.Build());
+                snapshot.Structure.SetObjects(targetIndex, objectsValues.Build());
             } 
             
             if (!isMust)
@@ -65,15 +65,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             
             snapshot.CopyAliases(sourceIndex, targetIndex, isMust);
 
-            snapshot.Data.SetMemoryEntry(targetIndex, visitor.GetCopiedEntry());
+            snapshot.Structure.SetMemoryEntry(targetIndex, visitor.GetCopiedEntry());
         }
 
         internal AssociativeArray ProcessArrayValue(MemoryIndex targetIndex, AssociativeArray value)
         {
             AssociativeArray arrayValue = snapshot.CreateArray(targetIndex, isMust);
 
-            ArrayDescriptor sourceDescriptor = snapshot.Data.GetDescriptor(value);
-            ArrayDescriptor targetDescriptor = snapshot.Data.GetDescriptor(arrayValue);
+            ArrayDescriptor sourceDescriptor = snapshot.Structure.GetDescriptor(value);
+            ArrayDescriptor targetDescriptor = snapshot.Structure.GetDescriptor(arrayValue);
 
             CopyAliasState oldState = AliasState;
 

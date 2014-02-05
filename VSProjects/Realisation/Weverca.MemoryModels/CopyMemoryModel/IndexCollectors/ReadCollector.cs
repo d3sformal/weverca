@@ -64,10 +64,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    process(variableSegment, snapshot.Data.Variables[CallLevel]);
+                    process(variableSegment, snapshot.Structure.Variables[CallLevel]);
                     break;
                 case GlobalContext.GlobalOnly:
-                    process(variableSegment, snapshot.Data.Variables.Global);
+                    process(variableSegment, snapshot.Structure.Variables.Global);
                     break;
                 default:
                     break;
@@ -79,10 +79,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    process(controlPathSegment, snapshot.Data.ContolVariables[CallLevel]);
+                    process(controlPathSegment, snapshot.Structure.ContolVariables[CallLevel]);
                     break;
                 case GlobalContext.GlobalOnly:
-                    process(controlPathSegment, snapshot.Data.ContolVariables.Global);
+                    process(controlPathSegment, snapshot.Structure.ContolVariables.Global);
                     break;
                 default:
                     break;
@@ -98,13 +98,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
-                ObjectValueContainer objectValues = snapshot.Data.GetObjects(parentIndex);
+                ObjectValueContainer objectValues = snapshot.Structure.GetObjects(parentIndex);
 
                 if (objectValues.Count > 0)
                 {
                     foreach (ObjectValue objectValue in objectValues)
                     {
-                        ObjectDescriptor descriptor = snapshot.Data.GetDescriptor(objectValue);
+                        ObjectDescriptor descriptor = snapshot.Structure.GetDescriptor(objectValue);
                         process(fieldSegment, descriptor);
                     }
                 }
@@ -120,9 +120,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             foreach (MemoryIndex parentIndex in mustIndexes)
             {
                 AssociativeArray arrayValue;
-                if (snapshot.Data.TryGetArray(parentIndex, out arrayValue))
+                if (snapshot.Structure.TryGetArray(parentIndex, out arrayValue))
                 {
-                    ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(arrayValue);
+                    ArrayDescriptor descriptor = snapshot.Structure.GetDescriptor(arrayValue);
                     process(indexSegment, descriptor);
                 }
                 else

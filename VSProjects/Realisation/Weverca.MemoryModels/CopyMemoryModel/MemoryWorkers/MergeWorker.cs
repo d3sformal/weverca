@@ -15,6 +15,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         private Dictionary<MemoryIndex, MemoryAliasBuilder> memoryAliases = new Dictionary<MemoryIndex, MemoryAliasBuilder>();
 
+        internal SnapshotStructure Structure { get; private set; }
         internal SnapshotData Data { get; private set; }
 
         internal Snapshot targetSnapshot;
@@ -29,6 +30,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public MergeWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
         {
             Data = SnapshotData.CreateEmpty(targetSnapshot);
+            Structure = SnapshotStructure.CreateEmpty(targetSnapshot);
+            Structure.Data = Data;
 
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
@@ -44,15 +47,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             for (int x = 0; x <= targetSnapshot.CallLevel; x++)
             {
                 IndexContainer variables = new IndexContainer(VariableIndex.CreateUnknown(x));
-                Data.Variables[x] = variables;
+                Structure.Variables[x] = variables;
                 collectVariables[x] = new ContainerOperations(this, variables, variables.UnknownIndex, variables.UnknownIndex);
 
                 IndexContainer control = new IndexContainer(ControlIndex.CreateUnknown(x));
-                Data.ContolVariables[x] = control;
+                Structure.ContolVariables[x] = control;
                 collectControl[x] = new ContainerOperations(this, control, control.UnknownIndex, control.UnknownIndex);
 
-                Data.Temporary[x] = new IndexSet<TemporaryIndex>();
-                Data.Arrays[x] = new IndexSet<AssociativeArray>();
+                Structure.Temporary[x] = new IndexSet<TemporaryIndex>();
+                Structure.Arrays[x] = new IndexSet<AssociativeArray>();
             }
 
             foreach (Snapshot snapshot in sourceSnapshots)
@@ -74,19 +77,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                         }
                     }
 
-                    collectVariables[targetLevel].CollectIndexes(snapshot, Data.Variables[targetLevel].UnknownIndex, snapshot.Data.Variables[sourceLevel]);
-                    collectControl[targetLevel].CollectIndexes(snapshot, Data.ContolVariables[targetLevel].UnknownIndex, snapshot.Data.ContolVariables[sourceLevel]);
+                    collectVariables[targetLevel].CollectIndexes(snapshot, Structure.Variables[targetLevel].UnknownIndex, snapshot.Structure.Variables[sourceLevel]);
+                    collectControl[targetLevel].CollectIndexes(snapshot, Structure.ContolVariables[targetLevel].UnknownIndex, snapshot.Structure.ContolVariables[sourceLevel]);
                     collectTemporary(snapshot, targetLevel);
                 }
 
-                mergeDeclarations(Data.FunctionDecl, snapshot.Data.FunctionDecl);
-                mergeDeclarations(Data.ClassDecl, snapshot.Data.ClassDecl);
+                mergeDeclarations(Structure.FunctionDecl, snapshot.Structure.FunctionDecl);
+                mergeDeclarations(Structure.ClassDecl, snapshot.Structure.ClassDecl);
 
                 if (isCallMerge)
                 {
-                    foreach (AssociativeArray array in snapshot.Data.Arrays.Local)
+                    foreach (AssociativeArray array in snapshot.Structure.Arrays.Local)
                     {
-                        Data.CallArrays.Add(array, snapshot);
+                        Structure.AddCallArray(array, snapshot);
                     }
                 }
             }
@@ -105,7 +108,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (var alias in memoryAliases)
             {
-                Data.SetAlias(alias.Key, alias.Value.Build());
+                Structure.SetAlias(alias.Key, alias.Value.Build());
             }
         }
 
@@ -140,11 +143,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 MemoryIndex index = operationData.Item1;
                 Snapshot snapshot = operationData.Item2;
 
-                MemoryEntry entry = snapshot.Data.GetMemoryEntry(index);
+                MemoryEntry entry = snapshot.Structure.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
                 MemoryAlias aliases;
-                if (snapshot.Data.TryGetAliases(index, out aliases))
+                if (snapshot.Structure.TryGetAliases(index, out aliases))
                 {
                     references.CollectMust(aliases.MustAliasses, targetSnapshot.CallLevel);
                     references.CollectMay(aliases.MayAliasses, targetSnapshot.CallLevel);
@@ -167,8 +170,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 values.Add(targetSnapshot.UndefinedValue);
             }
 
-            Data.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
-            Data.SetObjects(operation.TargetIndex, new ObjectValueContainer(visitor.Objects));
+            Structure.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            Structure.SetObjects(operation.TargetIndex, new ObjectValueContainer(visitor.Objects));
         }
 
         private HashSet<Value> getValues(MergeOperation operation, CollectComposedValuesVisitor visitor)
@@ -204,7 +207,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 Snapshot snapshot = operationData.Item2;
 
                 AssociativeArray arrayValue;
-                if (snapshot.Data.TryGetArray(index, out arrayValue))
+                if (snapshot.Structure.TryGetArray(index, out arrayValue))
                 {
 
                     if (targetArray == null)
@@ -215,7 +218,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                         }
                     }
 
-                    ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(arrayValue);
+                    ArrayDescriptor descriptor = snapshot.Structure.GetDescriptor(arrayValue);
                     collectVariables.CollectIndexes(snapshot, index, descriptor);
                 }
                 else
@@ -232,8 +235,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             collectVariables.MergeContainer();
 
-            Data.SetArray(operation.TargetIndex, targetArray);
-            Data.SetDescriptor(targetArray, builder.Build());
+            Structure.SetArray(operation.TargetIndex, targetArray);
+            Structure.SetDescriptor(targetArray, builder.Build());
 
             return targetArray;
         }
@@ -242,25 +245,25 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private void collectTemporary(Snapshot snapshot, int index)
         {
-            foreach (TemporaryIndex temp in snapshot.Data.Temporary[index])
+            foreach (TemporaryIndex temp in snapshot.Structure.Temporary[index])
             {
-                if (!Data.Temporary[index].Contains(temp))
+                if (!Structure.Temporary[index].Contains(temp))
                 {
-                    Data.Temporary[index].Add(temp);
+                    Structure.Temporary[index].Add(temp);
                 }
             }
         }
 
         private void mergeTemporary(int index)
         {
-            foreach (var temp in Data.Temporary[index])
+            foreach (var temp in Structure.Temporary[index])
             {
                 MergeOperation operation = new MergeOperation(temp);
                 addOperation(operation);
 
                 foreach (Snapshot snapshot in sourceSnapshots)
                 {
-                    if (snapshot.Data.IsDefined(temp))
+                    if (snapshot.Structure.IsDefined(temp))
                     {
                         operation.Add(temp, snapshot);
                     }
@@ -278,9 +281,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private void collectObjects(Snapshot snapshot)
         {
-            foreach (var obj in snapshot.Data.ObjectDescriptors)
+            foreach (var obj in snapshot.Structure.ObjectDescriptors)
             {
-                if (!Data.ObjectDescriptors.ContainsKey(obj.Key))
+                if (!Structure.ObjectDescriptors.ContainsKey(obj.Key))
                 {
                     objects.Add(obj.Key);
                 }
@@ -306,7 +309,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             foreach (Snapshot snapshot in sourceSnapshots)
             {
                 ObjectDescriptor descriptor;
-                if (snapshot.Data.TryGetDescriptor(objectValue, out descriptor))
+                if (snapshot.Structure.TryGetDescriptor(objectValue, out descriptor))
                 {
                     collectVariables.CollectIndexes(snapshot, builder.UnknownIndex, descriptor);
                     builder.Type = descriptor.Type;
@@ -318,7 +321,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             collectVariables.MergeContainer();
-            Data.ObjectDescriptors.Add(objectValue, builder.Build());
+            Structure.ObjectDescriptors.Add(objectValue, builder.Build());
         }
 
         #endregion

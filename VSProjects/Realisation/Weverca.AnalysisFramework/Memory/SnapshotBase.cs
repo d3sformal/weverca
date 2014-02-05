@@ -68,7 +68,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Current operational mode of snapshot
         /// </summary>
-        public SnapshotMode CurrentMode { get; private set; }
+        public virtual SnapshotMode CurrentMode { get; protected set; }
 
         /// <summary>
         /// Determine that transaction of this snapshot is started - updates can be written

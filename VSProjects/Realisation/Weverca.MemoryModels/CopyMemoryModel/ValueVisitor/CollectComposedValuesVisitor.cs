@@ -36,7 +36,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<VariableIdentifier> fields = new HashSet<VariableIdentifier>();
             foreach (ObjectValue objectValue in Objects)
             {
-                ObjectDescriptor descriptor = snapshot.Data.GetDescriptor(objectValue);
+                ObjectDescriptor descriptor = snapshot.Structure.GetDescriptor(objectValue);
                 foreach (string index in descriptor.Indexes.Keys)
                 {
                     fields.Add(new VariableIdentifier(index));
@@ -51,7 +51,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<MemberIdentifier> indexes = new HashSet<MemberIdentifier>();
             foreach (AssociativeArray arrayValue in Arrays)
             {
-                ArrayDescriptor descriptor = snapshot.Data.GetDescriptor(arrayValue);
+                ArrayDescriptor descriptor = snapshot.Structure.GetDescriptor(arrayValue);
                 foreach (string index in descriptor.Indexes.Keys)
                 {
                     indexes.Add(new MemberIdentifier(index));
@@ -66,7 +66,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<TypeValue> types = new HashSet<TypeValue>();
             foreach (ObjectValue objectValue in Objects)
             {
-                ObjectDescriptor descriptor = snapshot.Data.GetDescriptor(objectValue);
+                ObjectDescriptor descriptor = snapshot.Structure.GetDescriptor(objectValue);
                 types.Add(descriptor.Type);
             }
 

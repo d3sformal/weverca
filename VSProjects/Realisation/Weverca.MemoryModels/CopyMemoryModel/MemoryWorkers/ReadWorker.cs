@@ -26,7 +26,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             if (collector.MustIndexesCount == 1 && collector.IsDefined)
             {
                 MemoryIndex index = collector.MustIndexes.First();
-                return snapshot.Data.GetMemoryEntry(index);
+                return snapshot.Structure.GetMemoryEntry(index);
             }
             else
             {
@@ -38,7 +38,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 foreach (MemoryIndex index in collector.MustIndexes)
                 {
-                    MemoryEntry entry = snapshot.Data.GetMemoryEntry(index);
+                    MemoryEntry entry = snapshot.Structure.GetMemoryEntry(index);
                     foreach (Value value in entry.PossibleValues)
                     {
                         values.Add(value);

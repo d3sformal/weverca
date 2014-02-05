@@ -38,7 +38,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private void assignMust(MemoryIndex mustIndex, CollectComposedValuesVisitor composedValues)
         {
-            IndexData data = snapshot.Data.GetIndexData(mustIndex);
+            IndexData data = snapshot.Structure.GetIndexData(mustIndex);
             HashSet<Value> values = new HashSet<Value>(composedValues.Values);
 
             if (data.Array != null)
@@ -48,29 +48,29 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (composedValues.Objects.Count > 0)
             {
-                snapshot.Data.SetObjects(mustIndex, new ObjectValueContainer(composedValues.Objects));
+                snapshot.Structure.SetObjects(mustIndex, new ObjectValueContainer(composedValues.Objects));
                 HashSetTools.AddAll(values, data.Objects);
             }
 
-            snapshot.Data.SetMemoryEntry(mustIndex, new MemoryEntry(values));
+            snapshot.Structure.SetMemoryEntry(mustIndex, new MemoryEntry(values));
         }
 
         private void assignMay(MemoryIndex mayIndex, CollectComposedValuesVisitor composedValues)
         {
-            IndexData data = snapshot.Data.GetIndexData(mayIndex);
+            IndexData data = snapshot.Structure.GetIndexData(mayIndex);
             HashSet<Value> values = new HashSet<Value>(composedValues.Values);
             
             if (composedValues.Objects.Count > 0)
             {
                 HashSet<ObjectValue> objects = new HashSet<ObjectValue>(data.Objects);
                 HashSetTools.AddAll(objects, composedValues.Objects);
-                snapshot.Data.SetObjects(mayIndex, new ObjectValueContainer(objects));
+                snapshot.Structure.SetObjects(mayIndex, new ObjectValueContainer(objects));
 
                 HashSetTools.AddAll(values, data.Objects);
             }
 
-            HashSetTools.AddAll(values, data.MemoryEntry.PossibleValues);
-            snapshot.Data.SetMemoryEntry(mayIndex, new MemoryEntry(values));
+            HashSetTools.AddAll(values, snapshot.Structure.GetMemoryEntry(mayIndex).PossibleValues);
+            snapshot.Structure.SetMemoryEntry(mayIndex, new MemoryEntry(values));
         }
     }
 }

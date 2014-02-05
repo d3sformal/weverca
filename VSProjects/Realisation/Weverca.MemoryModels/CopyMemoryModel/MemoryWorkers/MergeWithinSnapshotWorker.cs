@@ -34,7 +34,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             processMerge();
 
-            targetSnapshot.Data.SetMemoryEntry(targetIndex, new MemoryEntry(values));
+            targetSnapshot.Structure.SetMemoryEntry(targetIndex, new MemoryEntry(values));
         }
 
         public void MergeIndexes(MemoryIndex targetIndex, MemoryIndex sourceIndex)
@@ -69,11 +69,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 Snapshot snapshot = item.Item2;
                 MemoryIndex index = item.Item1;
-                MemoryEntry entry = snapshot.Data.GetMemoryEntry(index);
+                MemoryEntry entry = snapshot.Structure.GetMemoryEntry(index);
                 visitor.VisitMemoryEntry(entry);
 
                 MemoryAlias aliases;
-                if (snapshot.Data.TryGetAliases(index, out aliases))
+                if (snapshot.Structure.TryGetAliases(index, out aliases))
                 {
                     references.CollectMust(aliases.MustAliasses, snapshot.CallLevel);
                     references.CollectMay(aliases.MayAliasses, snapshot.CallLevel);
@@ -120,7 +120,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 values.Add(targetSnapshot.UndefinedValue);
             }
 
-            targetSnapshot.Data.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            targetSnapshot.Structure.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
         }
 
         private HashSet<Value> getValues(MemoryIndex targetIndex, CollectComposedValuesVisitor visitor, bool includeUndefined)
@@ -181,11 +181,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             bool includeUndefined)
         {
             AssociativeArray arrayValue;
-            if (!targetSnapshot.Data.TryGetArray(targetIndex, out arrayValue))
+            if (!targetSnapshot.Structure.TryGetArray(targetIndex, out arrayValue))
             {
                 arrayValue = targetSnapshot.CreateArray(targetIndex);
             }
-            ArrayDescriptor newDescriptor = targetSnapshot.Data.GetDescriptor(arrayValue);
+            ArrayDescriptor newDescriptor = targetSnapshot.Structure.GetDescriptor(arrayValue);
             
             MergeOperation unknownMerge = new MergeOperation(newDescriptor.UnknownIndex);
             unknownMerge.SetUndefined();
@@ -194,15 +194,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<string> indexNames = new HashSet<string>();
             foreach (AssociativeArray array in arrays)
             {
-                Snapshot snapshot;
-                ArrayDescriptor descriptor;
-                getArrayDescriptor(array, out snapshot, out descriptor);
-
-                unknownMerge.Add(descriptor.UnknownIndex, snapshot);
-
-                foreach (var index in descriptor.Indexes)
+                foreach (Tuple<Snapshot, ArrayDescriptor> item in getArrayDescriptor(array))
                 {
-                    indexNames.Add(index.Key);
+                    Snapshot snapshot = item.Item1;
+                    ArrayDescriptor descriptor = item.Item2;
+
+                    unknownMerge.Add(descriptor.UnknownIndex, snapshot);
+
+                    foreach (var index in descriptor.Indexes)
+                    {
+                        indexNames.Add(index.Key);
+                    }
                 }
             }
 
@@ -217,18 +219,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 foreach (var array in arrays)
                 {
-                    Snapshot snapshot;
-                    ArrayDescriptor descriptor;
-                    getArrayDescriptor(array, out snapshot, out descriptor);
+                    foreach (Tuple<Snapshot, ArrayDescriptor> item in getArrayDescriptor(array))
+                    {
+                        Snapshot snapshot = item.Item1;
+                        ArrayDescriptor descriptor = item.Item2;
 
-                    MemoryIndex sourceIndex;
-                    if (descriptor.Indexes.TryGetValue(indexName, out sourceIndex))
-                    {
-                        operation.Add(sourceIndex, snapshot);
-                    }
-                    else
-                    {
-                        operation.Add(descriptor.UnknownIndex, snapshot);
+                        MemoryIndex sourceIndex;
+                        if (descriptor.Indexes.TryGetValue(indexName, out sourceIndex))
+                        {
+                            operation.Add(sourceIndex, snapshot);
+                        }
+                        else
+                        {
+                            operation.Add(descriptor.UnknownIndex, snapshot);
+                        }
                     }
                 }
 
@@ -257,20 +261,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return operation;
         }
 
-        private void getArrayDescriptor(AssociativeArray array, out Snapshot snapshot, out ArrayDescriptor descriptor)
+        private IEnumerable<Tuple<Snapshot, ArrayDescriptor>> getArrayDescriptor(AssociativeArray array)
         {
-            if (targetSnapshot.Data.TryGetDescriptor(array, out descriptor))
+            List<Tuple<Snapshot, ArrayDescriptor>> results = new List<Tuple<Snapshot, ArrayDescriptor>>();
+
+            ArrayDescriptor descriptor;
+            IEnumerable<Snapshot> snapshots;
+            if (targetSnapshot.Structure.TryGetDescriptor(array, out descriptor))
             {
-                snapshot = targetSnapshot;
+                results.Add(new Tuple<Snapshot, ArrayDescriptor>(targetSnapshot, descriptor));
             }
-            else if (targetSnapshot.Data.TryGetCallArraySnapshot(array, out snapshot))
+            else if (targetSnapshot.Structure.TryGetCallArraySnapshot(array, out snapshots))
             {
-                descriptor = snapshot.Data.GetDescriptor(array);
+                foreach (Snapshot snapshot in snapshots)
+                {
+                    ArrayDescriptor snapDescriptor = snapshot.Structure.GetDescriptor(array);
+                    results.Add(new Tuple<Snapshot, ArrayDescriptor>(snapshot, snapDescriptor));
+                }
+
+                
             }
             else
             {
                 throw new Exception("Missing array descriptor");
             }
+
+            return results;
         }
     }
 }
