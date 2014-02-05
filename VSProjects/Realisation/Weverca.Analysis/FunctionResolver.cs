@@ -35,9 +35,9 @@ namespace Weverca.Analysis
 
         private static readonly VariableName calledObjectTypeName = new VariableName(".calledObject");
 
-        public static readonly VariableName staticVariables=new VariableName(".staticVariables");
+        public static readonly VariableName staticVariables = new VariableName(".staticVariables");
 
-        public static readonly VariableName staticVariableSink=new VariableName(".staticVariableSink");
+        public static readonly VariableName staticVariableSink = new VariableName(".staticVariableSink");
 
         public static Dictionary<LangElement, QualifiedName> methodToClass = new Dictionary<LangElement, QualifiedName>();
         /// <summary>
@@ -142,7 +142,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            var resolvedTypes = ResolveType(typeName, OutSet,Element);
+            var resolvedTypes = ResolveType(typeName, OutSet, Element);
             foreach (var resolvedType in resolvedTypes)
             {
                 staticMethodCall(resolvedType, name, arguments);
@@ -208,12 +208,12 @@ namespace Weverca.Analysis
                     }
                 }
             }
-          
+
             setCallBranching(functions);
         }
 
 
-        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName,FlowOutputSet OutSet, LangElement element)
+        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName, FlowOutputSet OutSet, LangElement element)
         {
             List<QualifiedName> result = new List<QualifiedName>();
             if (typeName.Name.Value == "self" || typeName.Name.Value == "parent")
@@ -222,7 +222,7 @@ namespace Weverca.Analysis
                 {
                     MemoryEntry calledObjects =
                     OutSet.GetLocalControlVariable(calledObjectTypeName).ReadMemory(OutSet.Snapshot);
-                
+
                     if (typeName.Name.Value == "self")
                     {
                         foreach (var calledObject in calledObjects.PossibleValues)
@@ -241,7 +241,7 @@ namespace Weverca.Analysis
                             }
                             else
                             {
-                                AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Cannot acces parrent:: current class has no parrent",element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
+                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces parrent:: current class has no parrent", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
                             }
                         }
                     }
@@ -250,11 +250,11 @@ namespace Weverca.Analysis
                 {
                     if (typeName.Name.Value == "self")
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Cannot acces self:: when not in class", element,AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces self:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
                     }
                     else
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet,new AnalysisWarning("Cannot acces parent:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces parent:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
                     }
 
                 }
@@ -314,54 +314,67 @@ namespace Weverca.Analysis
         public override void InitializeCall(ProgramPointBase caller, ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments)
         {
-            IncreaseStackSize(caller.OutSet);
-
-            var declaration = extensionGraph.SourceObject;
-            var signature = getSignature(declaration);
-            var hasNamedSignature = signature.HasValue;
-
-            if (declaration != null && methodToClass.ContainsKey(declaration))
+            //include
+            if (extensionGraph.FunctionName == null)
             {
-                QualifiedName calledClass = methodToClass[declaration];
-                MemoryEntry types = new MemoryEntry(OutSet.ResolveType(calledClass));
-                OutSet.GetLocalControlVariable(calledObjectTypeName).WriteMemory(OutSet.Snapshot, types);
-            }
-
-            if (hasNamedSignature)
-            {
-                // We have names for passed arguments
-                setNamedArguments(OutSet, arguments, signature.Value);
+                StringValue thisFile = OutSet.CreateString(extensionGraph.OwningScript.FullName);
+                var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
+                List<Value> files=includedFiles.ReadMemory(OutSnapshot).PossibleValues.ToList();
+                files.Add(thisFile);
+                includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(files));
             }
             else
             {
-                // There are no names - use numbered arguments
-                setOrderedArguments(OutSet, arguments);
-            }
+                //function
+                IncreaseStackSize(caller.OutSet);
 
-            var functionDeclaration = declaration as FunctionDecl;
-            if (functionDeclaration != null)
-            {
-                OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
-                    new MemoryEntry(OutSet.CreateFunction(functionDeclaration)));
-            }
-            else
-            {
-                var methodDeclaration = declaration as MethodDecl;
-                if (methodDeclaration != null)
+                var declaration = extensionGraph.SourceObject;
+                var signature = getSignature(declaration);
+                var hasNamedSignature = signature.HasValue;
+
+                if (declaration != null && methodToClass.ContainsKey(declaration))
+                {
+                    QualifiedName calledClass = methodToClass[declaration];
+                    MemoryEntry types = new MemoryEntry(OutSet.ResolveType(calledClass));
+                    OutSet.GetLocalControlVariable(calledObjectTypeName).WriteMemory(OutSet.Snapshot, types);
+                }
+
+                if (hasNamedSignature)
+                {
+                    // We have names for passed arguments
+                    setNamedArguments(OutSet, arguments, signature.Value);
+                }
+                else
+                {
+                    // There are no names - use numbered arguments
+                    setOrderedArguments(OutSet, arguments);
+                }
+
+                var functionDeclaration = declaration as FunctionDecl;
+                if (functionDeclaration != null)
                 {
                     OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
-                        new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
+                        new MemoryEntry(OutSet.CreateFunction(functionDeclaration)));
                 }
-            }
-            List<Value> newCalledFunctions = new List<Value>();
-            if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
-            {
-                MemoryEntry calledFunctions = caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSet.Snapshot);
-                newCalledFunctions = new List<Value>(calledFunctions.PossibleValues);
-            }
+                else
+                {
+                    var methodDeclaration = declaration as MethodDecl;
+                    if (methodDeclaration != null)
+                    {
+                        OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
+                            new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
+                    }
+                }
+                List<Value> newCalledFunctions = new List<Value>();
+                if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
+                {
+                    MemoryEntry calledFunctions = caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSet.Snapshot);
+                    newCalledFunctions = new List<Value>(calledFunctions.PossibleValues);
+                }
 
-            newCalledFunctions.AddRange(OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues);
-            OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
+                newCalledFunctions.AddRange(OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues);
+                OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
+            }
         }
 
         /// <inheritdoc />
@@ -415,7 +428,7 @@ namespace Weverca.Analysis
             }
         }
 
-       
+
         /// <inheritdoc />
         public override MemoryEntry Return(MemoryEntry value)
         {
@@ -427,7 +440,7 @@ namespace Weverca.Analysis
 
         #region Private helpers
 
-       
+
 
         private void applyHints(FlowOutputSet outSet)
         {
@@ -568,7 +581,7 @@ namespace Weverca.Analysis
 
             if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot) &&
                 OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues
-                .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >=2)
+                .Where(a => a is FunctionValue && (a as FunctionValue).Equals(function)).Count() >= 2)
             {
                 useSharedFunctions = true;
             }
@@ -609,19 +622,7 @@ namespace Weverca.Analysis
         /// <returns></returns>
         private List<QualifiedName> getSubroutineNames(MemoryEntry functionName)
         {
-            var names = new HashSet<string>();
-            foreach (var possibleValue in functionName.PossibleValues)
-            {
-                var stringValue = possibleValue as StringValue;
-                // TODO: Other values convert to string
-                if (stringValue == null)
-                {
-                    continue;
-                }
-
-                names.Add(stringValue.Value);
-            }
-
+            var names = GetFunctionNames(functionName, Flow);
             var qualifiedNames = new List<QualifiedName>(names.Count);
             foreach (var name in names)
             {
@@ -630,6 +631,27 @@ namespace Weverca.Analysis
 
             return qualifiedNames;
         }
+
+        public static List<string> GetFunctionNames(MemoryEntry functionName, FlowController flow)
+        {
+            var names = new HashSet<string>();
+            foreach (var possibleValue in functionName.PossibleValues)
+            {
+                var visitor = new UnaryOperationEvaluator(flow, new StringConverter(flow));
+                Value result = visitor.Evaluate(Operations.StringCast, possibleValue);
+                var stringValue = result as StringValue;
+                // TODO: Other values convert to string
+                if (stringValue == null)
+                {
+                    continue;
+                }
+
+                names.Add(stringValue.Value);
+            }
+            return names.ToList();
+        }
+
+
 
         private Dictionary<object, FunctionValue> resolveFunction(QualifiedName name,
             MemoryEntry[] arguments)

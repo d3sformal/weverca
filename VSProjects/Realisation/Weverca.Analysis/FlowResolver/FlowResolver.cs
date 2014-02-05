@@ -10,6 +10,7 @@ using Weverca.AnalysisFramework.ProgramPoints;
 using PHP.Core;
 using PHP.Core.AST;
 using System.Collections.ObjectModel;
+using PHP.Core.Reflection;
 
 namespace Weverca.Analysis.FlowResolver
 {
@@ -19,6 +20,10 @@ namespace Weverca.Analysis.FlowResolver
     /// </summary>
     public class FlowResolver : FlowResolverBase
     {
+        private readonly Dictionary<string, ProgramPointGraph> sharedProgramPoints = new Dictionary<string, ProgramPointGraph>();
+
+        private readonly HashSet<string> sharedFiles = new HashSet<string>();
+
         #region FlowResolverBase overrides
 
         /// <summary>
@@ -57,12 +62,9 @@ namespace Weverca.Analysis.FlowResolver
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
             //extend current program point as Include
+            List<string> files = FunctionResolver.GetFunctionNames(includeFile,flow);
 
-            var files = new HashSet<string>();
-            foreach (StringValue possibleFile in includeFile.PossibleValues)
-            {
-                files.Add(possibleFile.Value);
-            }
+            IncludingEx includeExpression = flow.CurrentPartial as IncludingEx;
 
             foreach (var branchKey in flow.ExtensionKeys)
             {
@@ -72,16 +74,48 @@ namespace Weverca.Analysis.FlowResolver
                     flow.RemoveExtension(branchKey);
                 }
             }
+            
 
             foreach (var file in files)
             {
                 var fileInfo = findFile(flow, file);
                 if (fileInfo == null)
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("The file " + file + " was included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
                     continue;
                 }
 
+                var includedFiles = flow.OutSet.GetControlVariable(new VariableName(".includedFiles")).ReadMemory(flow.OutSet.Snapshot);
+                int numberOfIncludes = includedFiles.PossibleValues.Where(a => (a is StringValue) && (a as StringValue).Value == fileInfo.FullName).Count();
+                if (numberOfIncludes > 0)
+                {
+                    if (includeExpression.InclusionType == InclusionTypes.IncludeOnce || includeExpression.InclusionType == InclusionTypes.RequireOnce)
+                    {
+                        continue;
+                    }
+                    else if (numberOfIncludes > 2)
+                    {
+                        string fileName = fileInfo.FullName;
+                        if (sharedFiles.Contains(fileName))
+                        {
+                            //set graph sharing for this function
+                            if (!sharedProgramPoints.ContainsKey(fileName))
+                            {
+                                //create single graph instance
+                                sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFilename(fileInfo.FullName), fileInfo);
+                            }
+
+                            //get shared instance of program point graph
+                            flow.AddExtension(file, sharedProgramPoints[fileName], ExtensionType.ParallelInclude);
+                            continue;
+                        }
+                        else
+                        {
+                            sharedFiles.Add(fileName);
+                        }
+                        
+                    }
+                }
                 //Create graph for every include - NOTE: we can share pp graphs
                 var cfg = ControlFlowGraph.ControlFlowGraph.FromFilename(fileInfo.FullName);
                 var ppGraph = ProgramPointGraph.FromSource(cfg, fileInfo);
