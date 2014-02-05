@@ -103,7 +103,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
             MemoryEntry rightOperand)
         {
             binaryOperationVisitor.SetContext(Flow);
-            return binaryOperationVisitor.Evaluate(leftOperand, operation, rightOperand);
+            MemoryEntry result = binaryOperationVisitor.Evaluate(leftOperand, operation, rightOperand);
+            //to save memory and coputation time
+            if (result.PossibleValues.Count() > 10)
+            {
+                var wideningVisitor=new WidenningVisitor();
+                return wideningVisitor.Widen(result.PossibleValues, OutSet.Snapshot);
+            }
+            
+            return result;
         }
 
         /// <inheritdoc />

@@ -77,7 +77,11 @@ namespace Weverca.Analysis
         {
             if (current == null)
             {
-                return old;
+                current = new MemoryEntry();
+            }
+            if (old == null)
+            {
+                old = new MemoryEntry();
             }
 
             //todo copy info
@@ -86,12 +90,7 @@ namespace Weverca.Analysis
             //todo maybe make more precise
             List<Value> allValues = new List<Value>(old.PossibleValues);
             allValues.AddRange(current.PossibleValues);
-           
-            foreach (var value in allValues)
-            {
-                value.Accept(visitor); 
-            }
-            return visitor.GetResult(Context);          
+            return visitor.Widen(allValues,Context);          
         }
 
         #endregion
@@ -170,12 +169,24 @@ namespace Weverca.Analysis
         /// </summary>
         private bool containsOnlyString = true;
 
+        private Flags flags=new Flags();
+
+        public MemoryEntry Widen(IEnumerable<Value> values,SnapshotBase Context)
+        {
+            flags = FlagsHandler.GetFlags(values);
+            foreach (var value in values)
+            {
+                value.Accept(this);
+            }
+            return GetResult(Context);
+        }
+
         /// <summary>
         /// Return Widen memory entry for all visited values
         /// </summary>
         /// <param name="Context">Output set</param>
         /// <returns>Widen memory entry for all visited values</returns>
-        public MemoryEntry GetResult(SnapshotBase Context)
+        private MemoryEntry GetResult(SnapshotBase Context)
         {
             if (containsOnlyBool)
             {
@@ -188,10 +199,10 @@ namespace Weverca.Analysis
             }
             if (containsOnlyString)
             {
-                return new MemoryEntry(Context.AnyStringValue);
+                return new MemoryEntry(Context.AnyStringValue.SetInfo(flags));
             }
 
-            return new MemoryEntry(Context.AnyValue);
+            return new MemoryEntry(Context.AnyValue.SetInfo(flags));
         }
 
         /// <summary>
