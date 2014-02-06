@@ -186,13 +186,13 @@ $a = strlen($b);
  .Analysis(Analyses.WevercaAnalysis);
 
         readonly static TestCase SimpleTaintAnalysisExpressions_CASE = @"
-$x = $POST;
+$x = $_POST;
 $y = 1;
 $a = $x + $y;
 $b = $y + $x;
 $c = $x + $x;
 $d = $y + $y;
-".AssertVariable("POST").HasTaintStatus(true)
+".AssertVariable("_POST").HasTaintStatus(true)
  .AssertVariable("a").HasTaintStatus(true)
  .AssertVariable("b").HasTaintStatus(true)
  .AssertVariable("c").HasTaintStatus(true)

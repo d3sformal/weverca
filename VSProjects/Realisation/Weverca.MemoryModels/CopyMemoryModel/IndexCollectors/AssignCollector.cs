@@ -26,7 +26,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private Snapshot snapshot;
 
         private CreatorVisitor creatorVisitor;
-        private bool createNewStructure;
+        private bool createNewStructure = true;
 
         public override bool IsDefined { get; protected set; }
 

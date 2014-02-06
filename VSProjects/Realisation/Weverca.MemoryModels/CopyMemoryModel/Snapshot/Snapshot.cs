@@ -104,6 +104,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal SnapshotData Data { get; private set; }
         internal SnapshotData Infos { get; private set; }
 
+        /// <summary>
+        /// Unlock the snapshot for structure changes.
+        /// </summary>
+        public void UnlockStructureChanges()
+        {
+            Structure.Locked = false;
+        }
+        /// <summary>
+        /// Lock the snapshot for structure changes.
+        /// </summary>
+        public void LockStructureChanges()
+        {
+            Structure.Locked = true;
+        }
+
         public override SnapshotMode CurrentMode
         {
             get
@@ -175,7 +190,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             foreach (var index in Structure.IndexData)
             {
                 builder.Append(index.ToString());
-                builder.Append("\n");
+                builder.Append("\r\n");
 
                 MemoryEntry entry;
                 if (Data.TryGetMemoryEntry(index.Key, out entry))
@@ -189,7 +204,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 if (Infos.TryGetMemoryEntry(index.Key, out entry))
                 {
-                    builder.Append("\n  Info: ");
+                    builder.Append("\r\n  Info: ");
                     builder.Append(entry.ToString());
                 }
                 
@@ -199,7 +214,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     index.Value.Aliases.ToString(builder);
                 }
 
-                builder.Append("\n\n");
+                builder.Append("\r\n\n");
             }
 
             return builder.ToString();
@@ -212,7 +227,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             StringBuilder builder = new StringBuilder();
 
-            builder.Append(snapId.ToString() + "::" + Structure.DataId.ToString() + "\n");
+            builder.Append(snapId.ToString() + "::" + Structure.DataId.ToString() + "\r\n");
             foreach (var index in Structure.IndexData)
             {
                 if (index.Key is TemporaryIndex)
@@ -243,7 +258,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     index.Value.Aliases.ToString(builder);
                 }
 
-                builder.Append("\n");
+                builder.Append("\r\n");
             }
 
             return builder.ToString();
