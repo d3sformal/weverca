@@ -34,7 +34,7 @@ namespace Weverca
             {
                 Console.WriteLine("Missing argument");
                 Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa FILENAME [FILENAME]...");
+                Console.WriteLine(@"-sa [-mm CopyMM|VrMM FILENAME] [FILENAME]...");
                 Console.WriteLine(@"  Static analysis");
                 Console.WriteLine(@"-cmide [-options_cmide]");
                 Console.WriteLine(@"  Code metrics for IDE integration");
@@ -49,9 +49,16 @@ namespace Weverca
             switch (args[0])
             {
                 case "-sa":
-                    var analysisFiles = new string[args.Length - 1];
-                    Array.Copy(args, 1, analysisFiles, 0, args.Length - 1);
-                    RunStaticAnalysis(analysisFiles);
+                    int filesIndex = 1;
+                    MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
+                    if (args[1] == "-mm")
+                    {
+                        filesIndex = 3;
+                        if (args[2] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
+                    }
+                    var analysisFiles = new string[args.Length - filesIndex];
+                    Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
+                    RunStaticAnalysis(analysisFiles, memoryModel);
                     break;
                 case "-cmide":
                     var metricsArgs = new string[args.Length - 3];
@@ -68,7 +75,8 @@ namespace Weverca
         /// Execute the static analysis and print results
         /// </summary>
         /// <param name="filenames">List of file name patterns from command line</param>
-        private static void RunStaticAnalysis(string[] filenames)
+        /// <param name="memoryModel">The memory model used for analysis</param>
+        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
         {
             foreach (var argument in filenames)
             {
@@ -92,16 +100,17 @@ namespace Weverca
                 {
                     // TODO: This is for time consumption analyzing only
                     // Analyze twice - because of omitting .NET initialization we get better analysis time
-                    Analyzer.Run(fileInfo);
+                    //Analyzer.Run(fileInfo, memoryModel);
 
                     // Process analysis
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    var ppGraph = Analyzer.Run(fileInfo);
+                    var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                     watch.Stop();
 
                     // Build output
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+                    /*
                     var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
@@ -110,6 +119,7 @@ namespace Weverca
                     console.Warnings(AnalysisWarningHandler.GetWarnings());
 
                     console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+                     */
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     Console.ReadKey();

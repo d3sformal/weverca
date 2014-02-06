@@ -1248,146 +1248,28 @@ $d=&$a;
             ;
 
         readonly static TestCase HauzarTest_CASE = @"
-$unknown = $_POST;
+//$unknown = $unknownnown;
 if ($unknown) {
-    $arr[$unknown] = &$alias;
-    $t = $arr[1];
-    $t[2] = 1;
-    $arr[1][2] = 2;
-    $arr[1][3] = 3;
-    $arr[2][3] = 6;
+$arr[$unknown] = &$alias;
+$t = $arr[1];
+$t[2] = 1;$arr[1][2] = 2;
+$arr[1][3] = 3;
+$arr[2][3] = 6;
 } else {
-    $arr[$unknown][2] = 4;
-    $arr[1][$unknown] = 5;
+$arr[$unknown][2] = 4;
+$arr[1][$unknown] = 5;
 }
 $arr[2][1] = &$alias2; // {$arr[2][1], $alias[1], $alias2}
 $arr[2] = &$alias3; // {$arr[2], $alias3}, {$alias[1], $alias2}
 $arr2 = $arr;
 $arr2[2] = 6; // updates also $arr[2] and $alias3
 $arr2[3] = 7; // updates also $arr[3] and $alias
-$arr[$unknown] = arr2;
-if ($unknown) {
-    $aaarr[$unknown] = &$aaalias;
-    $aat = $aaarr[1];
-    $aat[2] = 1;
-    $aaarr[1][2] = 2;
-    $aaarr[1][3] = 3;
-    $aaarr[2][3] = 6;
-} else {
-    $aaarr[$unknown][2] = 4;
-    $aaarr[1][$unknown] = 5;
-}
-$aaarr[2][1] = &$aaalias2; // {$aaarr[2][1], $aaalias[1], $aaalias2}
-$aaarr[2] = &$aaalias3; // {$aaarr[2], $aaalias3}, {$aaalias[1], $aaalias2}
-$aaarr2 = $aaarr;
-$aaarr2[2] = 6; // updates also $aaarr[2] and $aaalias3
-$aaarr2[3] = 7; // updates also $aaarr[3] and $aaalias
-$aaarr[$unknown] = arr2;
-if ($unknown) {
-    $aaaarr[$unknown] = &$aaaalias;
-    $aaat = $aaaarr[1];
-    $aaat[2] = 1;
-    $aaaarr[1][2] = 2;
-    $aaaarr[1][3] = 3;
-    $aaaarr[2][3] = 6;
-} else {
-    $aaaarr[$unknown][2] = 4;
-    $aaaarr[1][$unknown] = 5;
-}
-$aaaarr[2][1] = &$aaaalias2; // {$aaaarr[2][1], $aaaalias[1], $aaaalias2}
-$aaaarr[2] = &$aaaalias3; // {$aaaarr[2], $aaaalias3}, {$aaaalias[1], $aaaalias2}
-$aaaarr2 = $aaaarr;
-$aaaarr2[2] = 6; // updates also $aaaarr[2] and $aaaalias3
-$aaaarr2[3] = 7; // updates also $aaaarr[3] and $aaaalias
-$aaaarr[$unknown] = arr2;
-if ($unknown) {
-    $aaaaaarr[$unknown] = &$aaaaaalias;
-    $aaaaat = $aaaaaarr[1];
-    $aaaaat[2] = 1;
-    $aaaaaarr[1][2] = 2;
-    $aaaaaarr[1][3] = 3;
-    $aaaaaarr[2][3] = 6;
-} else {
-    $aaaaaarr[$unknown][2] = 4;
-    $aaaaaarr[1][$unknown] = 5;
-}
-$aaaaaarr[2][1] = &$aaaaaalias2; // {$aaaaaarr[2][1], $aaaaaalias[1], $aaaaaalias2}
-$aaaaaarr[2] = &$aaaaaalias3; // {$aaaaaarr[2], $aaaaaalias3}, {$aaaaaalias[1], $aaaaaalias2}
-$aaaaaarr2 = $aaaaaarr;
-$aaaaaarr2[2] = 6; // updates also $aaaaaarr[2] and $aaaaaalias3
-$aaaaaarr2[3] = 7; // updates also $aaaaaarr[3] and $aaaaaalias
-$aaaaaarr[$unknown] = arr2;
-if ($unknown) {
-    $aaaaarr[$unknown] = &$aaaaalias;
-    $aaaat = $aaaaarr[1];
-    $aaaat[2] = 1;
-    $aaaaarr[1][2] = 2;
-    $aaaaarr[1][3] = 3;
-    $aaaaarr[2][3] = 6;
-} else {
-    $aaaaarr[$unknown][2] = 4;
-    $aaaaarr[1][$unknown] = 5;
-}
-$aaaaarr[2][1] = &$aaaaalias2; // {$aaaaarr[2][1], $aaaaalias[1], $aaaaalias2}
-$aaaaarr[2] = &$aaaaalias3; // {$aaaaarr[2], $aaaaalias3}, {$aaaaalias[1], $aaaaalias2}
-$aaaaarr2 = $aaaaarr;
-$aaaaarr2[2] = 6; // updates also $aaaaarr[2] and $aaaaalias3
-$aaaaarr2[3] = 7; // updates also $aaaaarr[3] and $aaaaalias
-$aaaaarr[$unknown] = arr2;
-if ($unknown) {
-    $aaaaaaarr[$unknown] = &$aaaaaaalias;
-    $aaaaaat = $aaaaaaarr[1];
-    $aaaaaat[2] = 1;
-    $aaaaaaarr[1][2] = 2;
-    $aaaaaaarr[1][3] = 3;
-    $aaaaaaarr[2][3] = 6;
-} else {
-    $aaaaaaarr[$unknown][2] = 4;
-    $aaaaaaarr[1][$unknown] = 5;
-}
-$aaaaaaarr[2][1] = &$aaaaaaalias2; // {$aaaaaaarr[2][1], $aaaaaaalias[1], $aaaaaaalias2}
-$aaaaaaarr[2] = &$aaaaaaalias3; // {$aaaaaaarr[2], $aaaaaaalias3}, {$aaaaaaalias[1], $aaaaaaalias2}
-$aaaaaaarr2 = $aaaaaaarr;
-$aaaaaaarr2[2] = 6; // updates also $aaaaaaarr[2] and $aaaaaaalias3
-$aaaaaaarr2[3] = 7; // updates also $aaaaaaarr[3] and $aaaaaaalias
-$aaaaaaarr[$unknown] = arr2;
-if ($unknown) {
-    $aaaaaaaarr[$unknown] = &$aaaaaaaalias;
-    $aaaaaaat = $aaaaaaaarr[1];
-    $aaaaaaat[2] = 1;
-    $aaaaaaaarr[1][2] = 2;
-    $aaaaaaaarr[1][3] = 3;
-    $aaaaaaaarr[2][3] = 6;
-} else {
-    $aaaaaaaarr[$unknown][2] = 4;
-    $aaaaaaaarr[1][$unknown] = 5;
-}
-$aaaaaaaarr[2][1] = &$aaaaaaaalias2; // {$aaaaaaaarr[2][1], $aaaaaaaalias[1], $aaaaaaaalias2}
-$aaaaaaaarr[2] = &$aaaaaaaalias3; // {$aaaaaaaarr[2], $aaaaaaaalias3}, {$aaaaaaaalias[1], $aaaaaaaalias2}
-$aaaaaaaarr2 = $aaaaaaaarr;
-$aaaaaaaarr2[2] = 6; // updates also $aaaaaaaarr[2] and $aaaaaaaalias3
-$aaaaaaaarr2[3] = 7; // updates also $aaaaaaaarr[3] and $aaaaaaaalias
-$aaaaaaaarr[$unknown] = arr2;
-if ($unknown) {
-    $aaaaaaaaaarr[$unknown] = &$aaaaaaaaaalias;
-    $aaaaaaaaat = $aaaaaaaaaarr[1];
-    $aaaaaaaaat[2] = 1;
-    $aaaaaaaaaarr[1][2] = 2;
-    $aaaaaaaaaarr[1][3] = 3;
-    $aaaaaaaaaarr[2][3] = 6;
-} else {
-    $aaaaaaaaaarr[$unknown][2] = 4;
-    $aaaaaaaaaarr[1][$unknown] = 5;
-}
-$aaaaaaaaaarr[2][1] = &$aaaaaaaaaalias2; // {$aaaaaaaaaarr[2][1], $aaaaaaaaaalias[1], $aaaaaaaaaalias2}
-$aaaaaaaaaarr[2] = &$aaaaaaaaaalias3; // {$aaaaaaaaaarr[2], $aaaaaaaaaalias3}, {$aaaaaaaaaalias[1], $aaaaaaaaaalias2}
-$aaaaaaaaaarr2 = $aaaaaaaaaarr;
-$aaaaaaaaaarr2[2] = 6; // updates also $aaaaaaaaaarr[2] and $aaaaaaaaaalias3
-$aaaaaaaaaarr2[3] = 7; // updates also $aaaaaaaaaarr[3] and $aaaaaaaaaalias
-$aaaaaaaaaarr[$unknown] = arr2;
+//$arr[$unknown] = $arr2;
 
-$str = ""1"";
-".AssertVariable("str").HasValues("1");
+
+$str = $arr[1][3];
+
+".AssertVariable("str").HasUndefinedAndValues(3, 5);
 
 
         [TestMethod]

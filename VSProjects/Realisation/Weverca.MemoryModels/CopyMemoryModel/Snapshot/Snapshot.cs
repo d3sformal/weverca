@@ -13,7 +13,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class Logger
     {
-        static readonly string logFile = @"C:\Users\Pavel\Desktop\weverca_log.txt";
+        static readonly string logFile = @"weverca_log.txt";
 
         static Snapshot oldOne = null;
 
