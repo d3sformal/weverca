@@ -217,7 +217,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
 
-            POSTVar = outSet.GetVariable(new VariableIdentifier("POST"), true);
+            POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
             POST = outSet.CreateInfo(true);
 
             POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
