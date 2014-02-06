@@ -76,6 +76,22 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
+        /// <summary>
+        /// Gets statistics about usage of output snapshots of all program points.
+        /// </summary>
+        /// <returns>Snapshot statistis</returns>
+        public SnapshotStatistics GetStatistics()
+        {
+            SnapshotStatistics statistics = new SnapshotStatistics();
+            foreach (var point in Points)
+            {
+                SnapshotStatistics tempStat = point.InSnapshot.GetStatistics();
+                tempStat.MergeWith(point.OutSnapshot.GetStatistics());
+                statistics.MergeWith( tempStat );
+            }
+            return statistics;
+        }
+
         #region Program point graph creating
 
 

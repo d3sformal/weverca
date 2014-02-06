@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.Analysis;
 using Weverca.Output;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca
 {
@@ -110,6 +111,7 @@ namespace Weverca
                     // Build output
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+                    
                     /*
                     var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
@@ -122,6 +124,20 @@ namespace Weverca
                      */
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+                    console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));
+                    console.CommentLine(string.Format("The number of variables is: {0}\n", ppGraph.End.OutSnapshot.NumVariables()));
+                    int[] statistics = ppGraph.GetStatistics().GetStatisticsValues();
+                    /*
+                    console.CommentLine(string.Format("The number of memory entry assigns is: {0}\n", statistics[(int)Statistic.MemoryEntryAssigns]));
+                    console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));
+                    console.CommentLine(string.Format("The number of memory entry merges is: {0}\n", statistics[(int)Statistic.MemoryEntryMerges]));
+                    console.CommentLine(string.Format("The number of index assings is: {0}\n", statistics[(int)Statistic.IndexAssigns]));
+                    console.CommentLine(string.Format("The number of index alias assings is: {0}\n", statistics[(int)Statistic.IndexAliasAssigns]));
+                    console.CommentLine(string.Format("The number of index reads is: {0}\n", statistics[(int)Statistic.IndexReads]));
+                    console.CommentLine(string.Format("The number of index reads attmpts is: {0}\n", statistics[(int)Statistic.IndexReadAttempts]));
+                    console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));
+                    console.CommentLine(string.Format("The number of value read attempts is: {0}\n", statistics[(int)Statistic.ValueReadAttempts]));
+                     */
                     Console.ReadKey();
                     Console.WriteLine();
                 }

@@ -1248,27 +1248,7 @@ $d=&$a;
             ;
 
         readonly static TestCase HauzarTest_CASE = @"
-$unk = $_POST;
-if ($unk) {
-$arr[$unk] = &$alias;
-$t = $arr[1];
-$t[2] = 1;$arr[1][2] = 2;
-$arr[1][3] = 3;
-$arr[2][3] = 6;
-} else {
-$arr[$unk][2] = 4;
-$arr[1][$unk] = 5;
-}
-$arr[2][1] = &$alias2; // {$arr[2][1], $alias[1], $alias2}
-$arr[2] = &$alias3; // {$arr[2], $alias3}, {$alias[1], $alias2}
-$arr2 = $arr;
-$arr2[2] = 6; // updates also $arr[2] and $alias3
-$arr2[3] = 7; // updates also $arr[3] and $alias
-$arr[$unk] = arr2;
-
-
-$str = $arr[1][3];
-".AssertVariable("str").HasUndefinedAndValues(3, 5);
+".AssertVariable("");
 
 
         [TestMethod]
