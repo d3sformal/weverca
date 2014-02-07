@@ -111,8 +111,7 @@ namespace Weverca
                     // Build output
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
-                    
-                    /*
+
                     var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
@@ -121,7 +120,6 @@ namespace Weverca
                     console.Warnings(AnalysisWarningHandler.GetWarnings());
 
                     console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
-                     */
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));
