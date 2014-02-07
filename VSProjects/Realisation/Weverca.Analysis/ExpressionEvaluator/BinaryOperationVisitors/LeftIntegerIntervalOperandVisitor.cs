@@ -6,17 +6,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with interval of integer values as the left operand
+    /// Evaluates one binary operation with interval of integer values as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftIntegerIntervalOperandVisitor : LeftIntervalOperandVisitor<int>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftIntegerIntervalOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftIntegerIntervalOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftIntegerIntervalOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftIntegerIntervalOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -170,7 +177,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -193,19 +201,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
-            if (result != null)
-            {
-                // Arithmetic with resources is nonsence
-                return;
-            }
-
-            base.VisitResourceValue(value);
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -367,7 +362,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 

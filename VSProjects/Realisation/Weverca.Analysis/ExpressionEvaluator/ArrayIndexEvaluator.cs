@@ -8,7 +8,7 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates values during the analysis so that they can be used as index of array
+    /// Evaluates values during the analysis so that they can be used as index of array.
     /// </summary>
     /// <remarks>
     /// An array in PHP is actually an ordered map with strings as indices. However in fact, PHP can
@@ -24,44 +24,53 @@ namespace Weverca.Analysis.ExpressionEvaluator
     public class ArrayIndexEvaluator : PartialExpressionEvaluator
     {
         /// <summary>
-        /// Value which can be converted from any value into integer index
+        /// Value which can be converted from any value into integer index.
         /// </summary>
         private IntegerValue integerIndex;
 
         /// <summary>
-        /// Value which cannot be converted into integer index and is represented as string
+        /// Value which cannot be converted into integer index and is represented as string.
         /// </summary>
         private StringValue stringIndex;
 
         /// <summary>
-        /// Indicates that the given value cannot be converted to an integer value
+        /// Indicates that the given value cannot be converted to an integer value.
         /// </summary>
         private bool isNotConvertibleToInteger;
 
         /// <summary>
-        /// Indicates that the given value is compound and cannot be used as index
+        /// Indicates that the given value is compound and cannot be used as index.
         /// </summary>
         private bool isCompoundValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayIndexEvaluator" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
-        public ArrayIndexEvaluator(FlowController flowController)
-            : base(flowController) { }
+        public ArrayIndexEvaluator()
+        {
+        }
 
         /// <summary>
-        /// Evaluates all values to integer or string index of array if it is possible
+        /// Initializes a new instance of the <see cref="ArrayIndexEvaluator" /> class.
         /// </summary>
-        /// <param name="entry">Memory entry with all possible values to convert to index</param>
-        /// <param name="integerValues">Integer indices converted from values that are suited for it</param>
-        /// <param name="stringValues">String indices that cannot be converted to integer values</param>
+        /// <param name="flowController">Flow controller of program point.</param>
+        public ArrayIndexEvaluator(FlowController flowController)
+            : base(flowController)
+        {
+        }
+
+        /// <summary>
+        /// Evaluates all values to integer or string index of array if it is possible.
+        /// </summary>
+        /// <param name="entry">Memory entry with all possible values to convert to index.</param>
+        /// <param name="integerValues">Integer indices converted from values that are suited for it.</param>
+        /// <param name="stringValues">String indices that cannot be converted to integer values.</param>
         /// <param name="isAlwaysConcrete">
         /// Indicates that there are combination of values that can be used as concrete index or
-        /// they are compound values. Then element does not need to be stored into unknown index
+        /// they are compound values. Then element does not need to be stored into unknown index.
         /// </param>
-        /// <param name="isAlwaysInteger">Indicates that all values can be converted to integer</param>
-        /// <param name="isAlwaysLegal">Indicates that there is no compound (forbidden) value</param>
+        /// <param name="isAlwaysInteger">Indicates that all values can be converted to integer.</param>
+        /// <param name="isAlwaysLegal">Indicates that there is no compound (forbidden) value.</param>
         public void Evaluate(MemoryEntry entry, HashSet<IntegerValue> integerValues,
             HashSet<StringValue> stringValues, out bool isAlwaysConcrete,
             out bool isAlwaysInteger, out bool isAlwaysLegal)
@@ -140,11 +149,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Evaluates all values to string if it is possible and creates index identifier
+        /// Evaluates all values to string if it is possible and creates index identifier.
         /// </summary>
-        /// <param name="entry">Memory entry with all possible values to convert to index</param>
-        /// <param name="isAlwaysLegal">Indicates that there is no compound (forbidden) value</param>
-        /// <returns>Member identifier created from all values of the memory entry</returns>
+        /// <param name="entry">Memory entry with all possible values to convert to index.</param>
+        /// <param name="isAlwaysLegal">Indicates that there is no compound (forbidden) value.</param>
+        /// <returns>Member identifier created from all values of the memory entry.</returns>
         public MemberIdentifier EvaluateToIdentifiers(MemoryEntry entry, out bool isAlwaysLegal)
         {
             var integerValues = new HashSet<IntegerValue>();
@@ -196,7 +205,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             integerIndex = TypeConversion.ToInteger(OutSet, value);
             stringIndex = null;
             isNotConvertibleToInteger = false;
-            VisitGenericScalarValue(value);
+
+            base.VisitBooleanValue(value);
         }
 
         #region Numeric values
@@ -206,14 +216,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             stringIndex = null;
             isNotConvertibleToInteger = false;
-            VisitGenericScalarValue(value);
+
+            base.VisitGenericNumericValue(value);
         }
 
         /// <inheritdoc />
         public override void VisitIntegerValue(IntegerValue value)
         {
             integerIndex = value;
-            VisitGenericNumericValue(value);
+
+            base.VisitIntegerValue(value);
         }
 
         /// <inheritdoc />
@@ -229,7 +241,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 integerIndex = null;
             }
 
-            VisitGenericNumericValue(value);
+            base.VisitLongintValue(value);
         }
 
         /// <inheritdoc />
@@ -245,7 +257,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 integerIndex = null;
             }
 
-            VisitGenericNumericValue(value);
+            base.VisitFloatValue(value);
         }
 
         #endregion Numeric values
@@ -256,7 +268,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             integerIndex = null;
             stringIndex = value;
             isNotConvertibleToInteger = true;
-            VisitGenericScalarValue(value);
+
+            base.VisitStringValue(value);
         }
 
         #endregion Scalar values
@@ -336,7 +349,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitAnyBooleanValue(AnyBooleanValue value)
         {
             isNotConvertibleToInteger = false;
-            VisitAnyScalarValue(value);
+
+            base.VisitAnyBooleanValue(value);
         }
 
         #region Abstract numeric values
@@ -345,7 +359,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitAnyNumericValue(AnyNumericValue value)
         {
             isNotConvertibleToInteger = false;
-            VisitAnyScalarValue(value);
+
+            base.VisitAnyNumericValue(value);
         }
 
         #endregion Abstract numeric values
@@ -354,7 +369,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override void VisitAnyStringValue(AnyStringValue value)
         {
             isNotConvertibleToInteger = true;
-            VisitAnyScalarValue(value);
+
+            base.VisitAnyStringValue(value);
         }
 
         #endregion Abstract scalar values
@@ -366,8 +382,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             integerIndex = null;
             stringIndex = null;
-            isCompoundValue = true;
             isNotConvertibleToInteger = true;
+            isCompoundValue = true;
         }
 
         #endregion Abstract compound values
@@ -377,8 +393,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             integerIndex = null;
             stringIndex = null;
-            isCompoundValue = false;
             isNotConvertibleToInteger = true;
+            isCompoundValue = false;
         }
 
         #endregion Abstract values

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using PHP.Core;
@@ -6,15 +7,11 @@ using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
-using System.Collections;
-using System.Text;
-using System;
 
 namespace Weverca.Analysis
 {
-
     /// <summary>
-    /// Handler, which provides functionality for reading and storiny analysis warnings
+    /// Handler which provides functionality for reading and storing analysis warnings
     /// </summary>
     public class AnalysisWarningHandler
     {
@@ -26,7 +23,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Variable where security warning values are stored
         /// </summary>
-        private static readonly VariableName SECUTIRTY_WARNING_STORAGE = new VariableName(".analysisSecurityWarning");
+        private static readonly VariableName SECUTIRTY_WARNING_STORAGE
+            = new VariableName(".analysisSecurityWarning");
 
         /// <summary>
         /// Stores all analysis warnings for user output
@@ -36,13 +34,14 @@ namespace Weverca.Analysis
         /// <summary>
         /// Stores all security warnings for user output
         /// </summary>
-        private static HashSet<AnalysisSecurityWarning> SecurityWarnings = new HashSet<AnalysisSecurityWarning>();
+        private static HashSet<AnalysisSecurityWarning> SecurityWarnings
+            = new HashSet<AnalysisSecurityWarning>();
 
         /// <summary>
         /// Returns name of variable for specified kind of warning
         /// </summary>
-        /// <typeparam name="T">type of warning</typeparam>
-        /// <returns>Returns name of variable for specified kind of warning</returns>
+        /// <typeparam name="T">Type of warning</typeparam>
+        /// <returns>Name of variable for specified kind of warning</returns>
         private static VariableName getStorage<T>() where T : AnalysisWarning
         {
             if (typeof(T) == typeof(AnalysisWarning))
@@ -53,15 +52,16 @@ namespace Weverca.Analysis
             {
                 return SECUTIRTY_WARNING_STORAGE;
             }
-            else 
+            else
             {
                 throw new NotSupportedException();
             }
         }
 
         /// <summary>
-        /// Insert warning inte FlowOutputSet
+        /// Insert warning into <see cref="FlowOutputSet"/>
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="flowOutSet"></param>
         /// <param name="warning"></param>
         public static void SetWarning<T>(FlowOutputSet flowOutSet, T warning) where T : AnalysisWarning
@@ -83,24 +83,27 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Read warnings from FlowOutputSet
+        /// Read warnings from <see cref="FlowOutputSet"/>
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="flowOutSet"></param>
         /// <returns></returns>
-        public static IEnumerable<Value> ReadWarnings<T>(FlowOutputSet flowOutSet) where T : AnalysisWarning
+        public static IEnumerable<Value> ReadWarnings<T>(FlowOutputSet flowOutSet)
+            where T : AnalysisWarning
         {
             //flowOutSet.FetchFromGlobal(WARNING_STORAGE);
-            var result = flowOutSet.ReadControlVariable(getStorage<T>()).ReadMemory(flowOutSet.Snapshot).PossibleValues;
+            var snapshotEntry = flowOutSet.ReadControlVariable(getStorage<T>());
+            var result = snapshotEntry.ReadMemory(flowOutSet.Snapshot).PossibleValues;
             return from value in result where !(value is UndefinedValue) select value;
         }
 
         /// <summary>
         /// Returns sorted list of analysis warnings
         /// </summary>
-        /// <returns> Returns sorted list of analysis warnings</returns>
+        /// <returns>Sorted list of analysis warnings</returns>
         public static List<AnalysisWarning> GetWarnings()
         {
-            var arr=Warnings.ToArray();
+            var arr = Warnings.ToArray();
             Array.Sort(arr);
             return new List<AnalysisWarning>(arr);
         }
@@ -128,7 +131,7 @@ namespace Weverca.Analysis
         public string Message { get; protected set; }
 
         /// <summary>
-        /// Langelement of AST, which produced the warning
+        /// <see cref="LangElement"/> of AST, which produced the warning
         /// </summary>
         public LangElement LangElement { get; protected set; }
 
@@ -161,28 +164,32 @@ namespace Weverca.Analysis
             Cause = cause;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalysisWarning" /> class.
+        /// </summary>
         protected AnalysisWarning()
-        { 
-        
+        {
         }
 
         /// <summary>
         /// Return the warning message, with position in source code
         /// </summary>
-        /// <returns>Return the warning message, with position in source code</returns>
+        /// <returns>The warning message, with position in source code</returns>
         public override string ToString()
         {
-            return "Warning at line " + LangElement.Position.FirstLine + " char " + LangElement.Position.FirstColumn + ": " + Message.ToString();
+            return "Warning at line " + LangElement.Position.FirstLine + " char "
+                + LangElement.Position.FirstColumn + ": " + Message.ToString();
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Cause.GetHashCode();
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode()
+                + Cause.GetHashCode();
         }
 
         /// <summary>
-        /// Comparing function for sorting warning acoriding to line numbers
+        /// Comparing function for sorting warning according to line numbers
         /// </summary>
         /// <param name="other">Other warning</param>
         /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
@@ -202,35 +209,32 @@ namespace Weverca.Analysis
         /// <summary>
         /// Compares warnings based of message, element a warning cause
         /// </summary>
-        /// <param name="other">other warning</param>
-        /// <returns>true, if they are the same, false otherwise</returns>
+        /// <param name="other">Other warning</param>
+        /// <returns><c>true</c>, if they are the same, <c>false</c> otherwise</returns>
         public bool Equals(AnalysisWarning other)
         {
-            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Cause == other.Cause)
-            {
-                return true;
-            }
-            return false;
+            return (other.Message == Message)
+                && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
+                && (other.Cause == Cause);
         }
-
-       
     }
 
     /// <summary>
     /// Special type of analysis warnings
     /// </summary>
-    public class AnalysisSecurityWarning : AnalysisWarning, IComparable<AnalysisSecurityWarning>, IEquatable<AnalysisSecurityWarning>
-    {   
+    public class AnalysisSecurityWarning : AnalysisWarning, IComparable<AnalysisSecurityWarning>,
+        IEquatable<AnalysisSecurityWarning>
+    {
         /// <summary>
         /// Type of flag which triggered the warning
         /// </summary>
-        public FlagType  Flag { get; protected set; }
+        public FlagType Flag { get; protected set; }
 
         /// <summary>
-        /// Construct new instance of AnalysisSecurityWarning
+        /// Construct new instance of <see cref="AnalysisSecurityWarning"/>
         /// </summary>
         /// <param name="message">Warning message</param>
-        /// <param name="element">>Element, where the warning was produced</param>
+        /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(string message, LangElement element, FlagType cause)
         {
@@ -240,22 +244,22 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Construct new instance of AnalysisSecurityWarning,message will be generated automaticly
+        /// Construct new instance of <see cref="AnalysisSecurityWarning"/>, message will be generated automatically
         /// </summary>
-        /// <param name="element">>Element, where the warning was produced</param>
+        /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(LangElement element, FlagType cause)
         {
             switch (cause)
-            { 
+            {
                 case FlagType.HTMLDirty:
-                    Message="Unchecked value goes into browser";
+                    Message = "Unchecked value goes into browser";
                     break;
                 case FlagType.FilePathDirty:
                     Message = "File name has to be checked before open";
                     break;
                 case FlagType.SQLDirty:
-                    Message="Unchecked value goes into database";
+                    Message = "Unchecked value goes into database";
                     break;
             }
 
@@ -266,11 +270,12 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + Flag.GetHashCode();
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode()
+                + Flag.GetHashCode();
         }
 
         /// <summary>
-        /// Comparing function for sorting warning acoriding to line numbers
+        /// Comparing function for sorting warning according to line numbers
         /// </summary>
         /// <param name="other">Other warning</param>
         /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
@@ -290,32 +295,30 @@ namespace Weverca.Analysis
         /// <summary>
         /// Compares warnings based of message, element a warning cause
         /// </summary>
-        /// <param name="other">other warning</param>
-        /// <returns>true, if they are the same, false otherwise</returns>
+        /// <param name="other">Other warning</param>
+        /// <returns><c>true</c>, if they are the same, <c>false</c> otherwise</returns>
         public bool Equals(AnalysisSecurityWarning other)
         {
-            if (other.Message == this.Message && other.LangElement.Position.FirstOffset == this.LangElement.Position.FirstOffset && Flag == other.Flag)
-            {
-                return true;
-            }
-            return false;
+            return (other.Message == Message)
+                && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
+                && (other.Flag == Flag);
         }
     }
 
-    
     /// <summary>
-    /// Posiible warning causes, Fell free to add more.
+    /// Possible warning causes, feel free to add more.
     /// </summary>
     public enum AnalysisWarningCause
     {
         WRONG_NUMBER_OF_ARGUMENTS,
         WRONG_ARGUMENTS_TYPE,
         DIVISION_BY_ZERO,
+        OBJECT_CONVERTED_TO_INTEGER,
         PROPERTY_OF_NON_OBJECT_VARIABLE,
         ELEMENT_OF_NON_ARRAY_VARIABLE,
         METHOD_CALL_ON_NON_OBJECT_VARIABLE,
         UNDEFINED_VALUE,
-   
+
         CLASS_DOESNT_EXIST,
         CLASS_ALLREADY_EXISTS,
         FINAL_CLASS_CANNOT_BE_EXTENDED,
@@ -350,7 +353,7 @@ namespace Weverca.Analysis
         CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS,
         CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS,
         CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT,
-        
+
         CLASS_CONSTANT_DOESNT_EXIST,
         CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT,
 
@@ -359,5 +362,4 @@ namespace Weverca.Analysis
         STATIC_VARIABLE_DOESNT_EXIST,
         CANNOT_ACCES_STATIC_VARIABLE_OM_NON_OBJECT,
     }
-   
 }

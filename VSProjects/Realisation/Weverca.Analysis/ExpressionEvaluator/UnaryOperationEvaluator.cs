@@ -10,7 +10,7 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one unary operation during the analysis
+    /// Evaluates one unary operation during the analysis.
     /// </summary>
     /// <remarks>
     /// The class can evaluate the following unary operations:
@@ -22,7 +22,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <item><term><see cref="Operations.AtSign" /></term></item>
     /// <item><term><see cref="Operations.Print" /></term></item>
     /// <item><term><see cref="Operations.Clone" /></term></item>
-    /// <item><term><see cref="Operations.BoolCast" /></term></item>
     /// <item><term><see cref="Operations.Int32Cast" /></term></item>
     /// <item><term><see cref="Operations.DoubleCast" /></term></item>
     /// <item><term><see cref="Operations.FloatCast" /></term></item>
@@ -42,53 +41,83 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// <item><term><see cref="Operations.DecimalCast" /></term></item>
     /// <item><term><see cref="Operations.BinaryCast" /></term></item>
     /// </list>
+    /// Conversion to boolean provides <see cref="BooleanConverter" /> for this operation:
+    /// <list type="bullet">
+    /// <item><term><see cref="Operations.BoolCast" /></term></item>
+    /// </list>
     /// Conversion to string provides <see cref="StringConverter" /> for these operations:
     /// <list type="bullet">
     /// <item><term><see cref="Operations.StringCast" /></term></item>
     /// <item><term><see cref="Operations.UnicodeCast" /></term></item>
     /// </list>
     /// </remarks>
+    /// <seealso cref="BooleanConverter" />
+    /// <seealso cref="StringConverter" />
+    /// <seealso cref="BinaryOperationEvaluator" />
     public class UnaryOperationEvaluator : PartialExpressionEvaluator
     {
         /// <summary>
-        /// String converter used for casting values to string
+        /// Boolean converter used for casting values to boolean.
         /// </summary>
-        private StringConverter converter;
+        private BooleanConverter booleanConverter;
 
         /// <summary>
-        /// Unary operation that determines the proper action with operand
+        /// String converter used for casting values to string.
+        /// </summary>
+        private StringConverter stringConverter;
+
+        /// <summary>
+        /// Unary operation that determines the proper action with operand.
         /// </summary>
         private Operations operation;
 
         /// <summary>
-        /// Result of performing the unary operation on the given value
+        /// Result of performing the unary operation on the given value.
         /// </summary>
         private Value result;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnaryOperationEvaluator" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
-        /// <param name="stringConverter">Converter for string casting</param>
-        public UnaryOperationEvaluator(FlowController flowController, StringConverter stringConverter)
-            : base(flowController)
+        /// <param name="booleanEvaluator">Converter for boolean casting.</param>
+        /// <param name="stringEvaluator">Converter for string casting.</param>
+        public UnaryOperationEvaluator(BooleanConverter booleanEvaluator, StringConverter stringEvaluator)
+            : this(null, booleanEvaluator, stringEvaluator)
         {
-            converter = stringConverter;
         }
 
         /// <summary>
-        /// Evaluates the unary operation of the value
+        /// Initializes a new instance of the <see cref="UnaryOperationEvaluator" /> class.
         /// </summary>
-        /// <param name="unaryOperation">Unary operation to be performed</param>
-        /// <param name="operand">One operand of unary operation</param>
-        /// <returns>Result of performing the unary operation on the operand</returns>
+        /// <param name="flowController">Flow controller of program point.</param>
+        /// <param name="booleanEvaluator">Converter for boolean casting.</param>
+        /// <param name="stringEvaluator">Converter for string casting.</param>
+        public UnaryOperationEvaluator(FlowController flowController, BooleanConverter booleanEvaluator,
+            StringConverter stringEvaluator)
+            : base(flowController)
+        {
+            booleanConverter = booleanEvaluator;
+            stringConverter = stringEvaluator;
+        }
+
+        /// <summary>
+        /// Evaluates the unary operation of the value.
+        /// </summary>
+        /// <param name="unaryOperation">Unary operation to be performed.</param>
+        /// <param name="operand">One operand of unary operation.</param>
+        /// <returns>Result of performing the unary operation on the operand.</returns>
         public Value Evaluate(Operations unaryOperation, Value operand)
         {
             if ((unaryOperation == Operations.StringCast)
                 || (unaryOperation == Operations.UnicodeCast))
             {
-                converter.SetContext(flow);
-                return converter.Evaluate(operand);
+                stringConverter.SetContext(flow);
+                return stringConverter.Evaluate(operand);
+            }
+            else if (unaryOperation == Operations.BoolCast)
+            {
+                booleanConverter.SetContext(OutSet);
+                return booleanConverter.Evaluate(operand);
             }
 
             // Sets current operation
@@ -104,18 +133,23 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Evaluates the unary operation of all possible values in memory entry
+        /// Evaluates the unary operation of all possible values in memory entry.
         /// </summary>
-        /// <param name="unaryOperation">Unary operation to be performed</param>
-        /// <param name="entry">Memory entry with all possible operands of unary operation</param>
-        /// <returns>Resulting entry after performing the unary operation on all possible operands</returns>
+        /// <param name="unaryOperation">Unary operation to be performed.</param>
+        /// <param name="entry">Memory entry with all possible operands of unary operation.</param>
+        /// <returns>Resulting entry after performing the unary operation on all possible operands.</returns>
         public MemoryEntry Evaluate(Operations unaryOperation, MemoryEntry entry)
         {
             if ((unaryOperation == Operations.StringCast)
                 || (unaryOperation == Operations.UnicodeCast))
             {
-                converter.SetContext(flow);
-                return converter.Evaluate(entry);
+                stringConverter.SetContext(flow);
+                return stringConverter.Evaluate(entry);
+            }
+            else if (unaryOperation == Operations.BoolCast)
+            {
+                booleanConverter.SetContext(OutSet);
+                return new MemoryEntry(booleanConverter.Evaluate(entry));
             }
 
             // Sets current operation
@@ -180,10 +214,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitScalarValue(ScalarValue value)
         {
-            if (!PerformUsualOperation(value))
+            if (PerformUsualOperation(value))
             {
-                base.VisitScalarValue(value);
+                return;
             }
+
+            base.VisitScalarValue(value);
         }
 
         /// <inheritdoc />
@@ -205,9 +241,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     SetWarning("Unsupported operand types: Bit negation of boolean value");
                     result = OutSet.AnyValue;
                     break;
-                case Operations.BoolCast:
-                    result = value;
-                    break;
                 case Operations.Int32Cast:
                     result = TypeConversion.ToInteger(OutSet, value);
                     break;
@@ -228,9 +261,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.LogicNegation:
                     result = OutSet.CreateBool(!TypeConversion.ToBoolean(value));
                     break;
@@ -417,9 +447,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     // TODO: Implement. PHP string is stored as array of bytes, but printed in UTF8 encoding
                     result = OutSet.AnyStringValue;
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.Int32Cast:
                     result = TypeConversion.ToInteger(OutSet, value);
                     break;
@@ -445,11 +472,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 // TODO: This must be fatal error
                 SetWarning("Unsupported operand types: Bit negation of compound value");
                 result = OutSet.AnyValue;
+                return;
             }
-            else
-            {
-                base.VisitCompoundValue(value);
-            }
+
+            base.VisitCompoundValue(value);
         }
 
         /// <inheritdoc />
@@ -458,26 +484,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Plus:
-                    SetWarning("Object cannot be converted to integer by unary plus operation");
+                    SetWarning("Object cannot be converted to integer by unary plus operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.Minus:
-                    SetWarning("Object cannot be converted to integer by unary minus operation");
+                    SetWarning("Object cannot be converted to integer by unary minus operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.LogicNegation:
                     result = OutSet.CreateBool(!TypeConversion.ToBoolean(value));
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.Int32Cast:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    SetWarning("Object cannot be converted to float");
+                    SetWarning("Object cannot be converted to float",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyFloatValue;
                     break;
                 case Operations.Print:
@@ -521,9 +548,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.LogicNegation:
                     var booleanValue = TypeConversion.ToBoolean(OutSet, value);
                     result = OutSet.CreateBool(!booleanValue.Value);
-                    break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
                     break;
                 case Operations.Int32Cast:
                     result = TypeConversion.ToInteger(OutSet, value);
@@ -576,9 +600,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     SetWarning("Unsupported operand types: Bit negation of resource reference");
                     result = OutSet.AnyValue;
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.Int32Cast:
                     result = OutSet.AnyIntegerValue;
                     break;
@@ -587,10 +608,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyFloatValue;
                     break;
                 default:
-                    if (!PerformUsualOperation(value))
+                    if (PerformUsualOperation(value))
                     {
-                        base.VisitResourceValue(value);
+                        break;
                     }
+
+                    base.VisitResourceValue(value);
                     break;
             }
         }
@@ -614,9 +637,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     SetWarning("Unsupported operand types: Bit negation of null value");
                     result = OutSet.AnyValue;
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.Int32Cast:
                     result = TypeConversion.ToInteger(OutSet, value);
                     break;
@@ -625,10 +645,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = TypeConversion.ToFloat(OutSet, value);
                     break;
                 default:
-                    if (!PerformUsualOperation(value))
+                    if (PerformUsualOperation(value))
                     {
-                        base.VisitUndefinedValue(value);
+                        break;
                     }
+
+                    base.VisitUndefinedValue(value);
                     break;
             }
         }
@@ -656,14 +678,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result = OutSet.AnyBooleanValue;
                     }
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean<T>(OutSet, value);
-                    break;
                 default:
-                    if (!PerformUsualOperation(value))
+                    if (PerformUsualOperation(value))
                     {
-                        base.VisitGenericIntervalValue(value);
+                        break;
                     }
+
+                    base.VisitGenericIntervalValue(value);
                     break;
             }
         }
@@ -818,7 +839,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyValue;
                     break;
                 case Operations.LogicNegation:
-                case Operations.BoolCast:
                     result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.BitNegation:
@@ -863,9 +883,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             switch (operation)
             {
-                case Operations.BoolCast:
-                    result = OutSet.AnyBooleanValue;
-                    break;
                 case Operations.Int32Cast:
                     result = OutSet.AnyIntegerValue;
                     break;
@@ -874,11 +891,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyFloatValue;
                     break;
                 default:
-                    if (!PerformUsualOperation(value))
+                    if (PerformUsualOperation(value))
                     {
                         // AnyValue has its own implementation, thou must be skipped
-                        base.VisitAnyValue(value);
+                        break;
                     }
+
+                    base.VisitAnyScalarValue(value);
                     break;
             }
         }
@@ -1020,12 +1039,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 // TODO: This must be fatal error
                 SetWarning("Unsupported operand types: Bit negation of compound value");
                 result = OutSet.AnyValue;
+                return;
             }
-            else
-            {
-                // AnyValue has its own implementation, thou must be skipped
-                base.VisitAnyValue(value);
-            }
+
+            // AnyValue has its own implementation, thou must be skipped
+            base.VisitAnyCompoundValue(value);
         }
 
         /// <inheritdoc />
@@ -1034,26 +1052,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Plus:
-                    SetWarning("Object cannot be converted to integer by unary plus operation");
+                    SetWarning("Object cannot be converted to integer by unary plus operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.Minus:
-                    SetWarning("Object cannot be converted to integer by unary minus operation");
+                    SetWarning("Object cannot be converted to integer by unary minus operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.LogicNegation:
                     result = OutSet.CreateBool(!TypeConversion.ToBoolean(value));
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.Int32Cast:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    SetWarning("Object cannot be converted to float");
+                    SetWarning("Object cannot be converted to float",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyFloatValue;
                     break;
                 case Operations.Print:
@@ -1095,9 +1114,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyValue;
                     break;
                 case Operations.LogicNegation:
-                    result = OutSet.AnyBooleanValue;
-                    break;
-                case Operations.BoolCast:
                     result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.Int32Cast:
@@ -1151,9 +1167,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     SetWarning("Unsupported operand types: Bit negation of resource reference");
                     result = OutSet.AnyValue;
                     break;
-                case Operations.BoolCast:
-                    result = TypeConversion.ToBoolean(OutSet, value);
-                    break;
                 case Operations.Int32Cast:
                     result = OutSet.AnyIntegerValue;
                     break;
@@ -1162,11 +1175,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyFloatValue;
                     break;
                 default:
-                    if (!PerformUsualOperation(value))
+                    if (PerformUsualOperation(value))
                     {
-                        // AnyValue has its own implementation, thou must be skipped
-                        base.VisitAnyValue(value);
+                        break;
                     }
+
+                    // AnyValue has its own implementation, thou must be skipped
+                    base.VisitAnyResourceValue(value);
                     break;
             }
         }
@@ -1178,10 +1193,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Helper methods
 
         /// <summary>
-        /// Performs unary operations that behave in the same way for almost every value types
+        /// Performs unary operations that behave in the same way for almost every value types.
         /// </summary>
-        /// <param name="value">The value which operation will be performed on</param>
-        /// <returns><c>true</c> whether the operation is performed, otherwise <c>false</c></returns>
+        /// <param name="value">The value which operation will be performed on.</param>
+        /// <returns><c>true</c> whether the operation is performed, otherwise <c>false</c>.</returns>
         private bool PerformUsualOperation(Value value)
         {
             switch (operation)

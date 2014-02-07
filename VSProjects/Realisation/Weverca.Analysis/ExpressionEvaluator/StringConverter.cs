@@ -8,35 +8,44 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Converts a value to string during the analysis
+    /// Converts a value to string during the analysis.
     /// </summary>
     /// <remarks>
     /// String casting is defined by operations <see cref="Operations.StringCast" /> and
-    /// <see cref="Operations.UnicodeCast" />
+    /// <see cref="Operations.UnicodeCast" />.
     /// </remarks>
     public class StringConverter : PartialExpressionEvaluator
     {
         /// <summary>
-        /// Result of conversion when the value can be converted to a concrete string
+        /// Result of conversion when the value can be converted to a concrete string.
         /// </summary>
         private StringValue result;
 
         /// <summary>
-        /// Result of conversion that gives no concrete string value
+        /// Result of conversion that gives no concrete string value.
         /// </summary>
         private AnyStringValue abstractResult;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringConverter" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
-        public StringConverter(FlowController flowController)
-            : base(flowController) { }
+        public StringConverter()
+        {
+        }
 
         /// <summary>
-        /// Converts the value to string, concrete or abstract, depending on success of conversion
+        /// Initializes a new instance of the <see cref="StringConverter" /> class.
         /// </summary>
-        /// <param name="value">Value to convert</param>
+        /// <param name="flowController">Flow controller of program point.</param>
+        public StringConverter(FlowController flowController)
+            : base(flowController)
+        {
+        }
+
+        /// <summary>
+        /// Converts the value to string, concrete or abstract, depending on success of conversion.
+        /// </summary>
+        /// <param name="value">Value to convert.</param>
         /// <returns>Concrete value if conversion succeeds, otherwise <see cref="AnyStringValue" /></returns>
         public Value Evaluate(Value value)
         {
@@ -57,10 +66,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Converts the value to concrete string representation
+        /// Converts the value to concrete string representation.
         /// </summary>
-        /// <param name="value">Value to convert</param>
-        /// <returns>Concrete string value if conversion is successful, otherwise <c>null</c></returns>
+        /// <param name="value">Value to convert.</param>
+        /// <returns>Concrete string value if conversion is successful, otherwise <c>null</c>.</returns>
         public StringValue EvaluateToString(Value value)
         {
             // Gets type of value and convert to string
@@ -73,10 +82,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Converts the value to abstract string representation
+        /// Converts the value to abstract string representation.
         /// </summary>
-        /// <param name="value">Value to convert</param>
-        /// <returns>Abstract string value if conversion is successful, otherwise <c>null</c></returns>
+        /// <param name="value">Value to convert.</param>
+        /// <returns>Abstract string value if conversion is successful, otherwise <c>null</c>.</returns>
         public AnyStringValue EvaluateToAnyString(Value value)
         {
             // Gets type of value and convert to string
@@ -89,11 +98,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Converts all possible values in memory entry to string representation
+        /// Converts all possible values in memory entry to string representation.
         /// </summary>
-        /// <param name="entry">Memory entry with all possible values to convert</param>
-        /// <param name="isAlwaysConcrete">Indicates whether every value converts to concrete string</param>
-        /// <returns>List of strings after conversion of all possible values</returns>
+        /// <param name="entry">Memory entry with all possible values to convert.</param>
+        /// <param name="isAlwaysConcrete">Indicates whether every value converts to concrete string.</param>
+        /// <returns>List of strings after conversion of all possible values.</returns>
         public IEnumerable<StringValue> Evaluate(MemoryEntry entry, out bool isAlwaysConcrete)
         {
             var values = new HashSet<StringValue>();
@@ -124,11 +133,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Converts all possible values in memory entry to string representation
+        /// Converts all possible values in memory entry to string representation.
         /// </summary>
-        /// <param name="entry">Memory entry with all possible values to convert</param>
-        /// <param name="abstractString">Abstract string value if any conversion fails</param>
-        /// <returns>List of strings after conversion of all possible values</returns>
+        /// <param name="entry">Memory entry with all possible values to convert.</param>
+        /// <param name="abstractString">Abstract string value if any conversion fails.</param>
+        /// <returns>List of strings after conversion of all possible values.</returns>
         public IEnumerable<StringValue> Evaluate(MemoryEntry entry, out AnyStringValue abstractString)
         {
             var values = new HashSet<StringValue>();
@@ -167,10 +176,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Converts all possible values in memory entry to concrete or abstract strings
+        /// Converts all possible values in memory entry to concrete or abstract strings.
         /// </summary>
-        /// <param name="entry">Memory entry with all possible values to convert</param>
-        /// <returns>Resulting entry after converting of all possible values to strings</returns>
+        /// <param name="entry">Memory entry with all possible values to convert.</param>
+        /// <returns>Resulting entry after converting of all possible values to strings.</returns>
         public MemoryEntry Evaluate(MemoryEntry entry)
         {
             var values = new HashSet<Value>();
@@ -184,11 +193,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Convert values to string representation and concatenate them
+        /// Convert values to string representation and concatenate them.
         /// </summary>
-        /// <param name="leftOperand">The left operand of concatenation</param>
-        /// <param name="rightOperand">The right operand of concatenation</param>
-        /// <returns>Concatenated string of both operands</returns>
+        /// <param name="leftOperand">The left operand of concatenation.</param>
+        /// <param name="rightOperand">The right operand of concatenation.</param>
+        /// <returns>Concatenated string of both operands.</returns>
         public Value EvaluateConcatenation(Value leftOperand, Value rightOperand)
         {
             // Gets type of left operand and convert to string
@@ -218,11 +227,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Convert all possible values to string representation and concatenate every combination of them
+        /// Convert all possible values to string representation and concatenate every combination of them.
         /// </summary>
-        /// <param name="leftOperand">The left operand of concatenation</param>
-        /// <param name="rightOperand">The right operand of concatenation</param>
-        /// <returns>All string ​​resulting from the combination of left and right operand values</returns>
+        /// <param name="leftOperand">The left operand of concatenation.</param>
+        /// <param name="rightOperand">The right operand of concatenation.</param>
+        /// <returns>All string ​​resulting from the combination of left and right operand values.</returns>
         public MemoryEntry EvaluateConcatenation(MemoryEntry leftOperand, MemoryEntry rightOperand)
         {
             var values = new HashSet<Value>();
@@ -333,7 +342,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
-            // TODO: Object can by converted only if it has __toString magic method implemented
+            // TODO: Object can be converted only if it has __toString magic method implemented
             result = null;
             abstractResult = OutSet.AnyStringValue;
         }
@@ -428,7 +437,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyObjectValue(AnyObjectValue value)
         {
-            // TODO: Object can by converted only if it has __toString magic method implemented
+            // TODO: Object can be converted only if it has __toString magic method implemented
             result = null;
             abstractResult = OutSet.AnyStringValue;
         }

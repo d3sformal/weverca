@@ -668,21 +668,18 @@ namespace Weverca.Analysis
 
         public static List<string> GetFunctionNames(MemoryEntry functionName, FlowController flow)
         {
-            var names = new HashSet<string>();
-            foreach (var possibleValue in functionName.PossibleValues)
-            {
-                var visitor = new UnaryOperationEvaluator(flow, new StringConverter(flow));
-                Value result = visitor.Evaluate(Operations.StringCast, possibleValue);
-                var stringValue = result as StringValue;
-                // TODO: Other values convert to string
-                if (stringValue == null)
-                {
-                    continue;
-                }
+            var stringConverter = new StringConverter(flow);
+            bool isAlwaysConcrete;
+            // TODO: What happen if isAlwaysConcrete is true?
+            var stringEntry = stringConverter.Evaluate(functionName, out isAlwaysConcrete);
+            var names = new List<string>();
 
+            foreach (var stringValue in stringEntry)
+            {
                 names.Add(stringValue.Value);
             }
-            return names.ToList();
+
+            return names;
         }
 
 

@@ -8,19 +8,26 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with abstract scalar value as the left operand
+    /// Evaluates one binary operation with abstract scalar value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
-    /// <typeparam name="TScalar">Type of left abstract scalar operand</typeparam>
+    /// <typeparam name="TScalar">Type of left abstract scalar operand.</typeparam>
     public abstract class LeftAnyScalarOperandVisitor<TScalar> : GenericLeftOperandVisitor<TScalar>
         where TScalar : AnyScalarValue
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftAnyScalarOperandVisitor{TScalar}" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        protected LeftAnyScalarOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftAnyScalarOperandVisitor{TScalar}" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         protected LeftAnyScalarOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -38,23 +45,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    DivisionByBooleanValue(value.Value);
+                    result = ModuloOperation.ModuloByBooleanValue(flow, value.Value);
                     break;
                 default:
                     base.VisitBooleanValue(value);
                     break;
             }
         }
-
-        #region Numeric values
-
-        /// <inheritdoc />
-        public override void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
-        }
-
-        #endregion Numeric values
 
         #endregion Scalar values
 
@@ -83,10 +80,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    SetWarning("Object cannot be converted to integer by modulo operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        SetWarning("Object cannot be converted to integer by bitwise operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
+                        break;
+                    }
+
                     base.VisitObjectValue(value);
                     break;
             }
@@ -115,33 +121,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Compound values
 
         /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            switch (operation)
-            {
-                case Operations.Identical:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Mod:
-                    result = ModuloOperation.AbstractModulo(flow);
-                    break;
-                default:
-                    result = BitwiseOperation.Bitwise(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Bitwise operation with resource can give any integer
-                        break;
-                    }
-
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
-
-        /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
             // When comparing, both operands are converted to boolean
@@ -168,8 +147,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateInt(0);
                     break;
                 case Operations.Div:
+                    result = ArithmeticOperation.DivisionByNull(flow);
+                    break;
                 case Operations.Mod:
-                    DivisionByNull();
+                    result = ModuloOperation.ModuloByNull(flow);
                     break;
                 default:
                     base.VisitUndefinedValue(value);
@@ -198,12 +179,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             base.VisitGenericIntervalValue(value);
-        }
-
-        /// <inheritdoc />
-        public override void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         #endregion Interval values
@@ -277,7 +252,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    DivisionByAnyBooleanValue();
+                    result = ModuloOperation.ModuloByAnyBooleanValue(flow);
                     break;
                 default:
                     base.VisitAnyBooleanValue(value);
@@ -299,12 +274,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitAnyNumericValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         #endregion Abstract numeric values
@@ -350,14 +319,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    SetWarning("Object cannot be converted to integer by modulo operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
+                        SetWarning("Object cannot be converted to integer by bitwise operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                         break;
                     }
 

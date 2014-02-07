@@ -799,16 +799,12 @@ namespace Weverca.Analysis
                 {
                     foreach (var arg2 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(2)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                     {
-                        var unaryVisitor = new UnaryOperationEvaluator(flow, new StringConverter(flow));
-                        Value result = unaryVisitor.Evaluate(Operations.BoolCast, arg2);
-                        if (result is UndefinedValue)
+                        var booleanConverter = new BooleanConverter(flow.OutSet);
+                        var result = booleanConverter.EvaluateToBoolean(arg2);
+
+                        if (result != null)
                         {
-                            canBeCaseSensitive = true;
-                            canBeCaseInsensitive = true;
-                        }
-                        else if (result is BooleanValue)
-                        {
-                            if ((result as BooleanValue).Value == true)
+                            if (result.Value)
                             {
                                 canBeCaseInsensitive = true;
                             }
@@ -816,14 +812,12 @@ namespace Weverca.Analysis
                             {
                                 canBeCaseSensitive = true;
                             }
-
                         }
                         else
                         {
                             canBeCaseSensitive = true;
                             canBeCaseInsensitive = true;
                         }
-
                     }
                 }
                 foreach (var arg0 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)

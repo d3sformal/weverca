@@ -21,7 +21,7 @@ namespace Weverca.Analysis
     {
         #region Utility methods and fields
 
-        private static readonly StringConverter stringConverter = new StringConverter(null);
+        private static readonly StringConverter stringConverter = new StringConverter();
 
         /// <summary>
         /// Adds concrete functions implemented in this class to the the dictionary of concrete native functions.

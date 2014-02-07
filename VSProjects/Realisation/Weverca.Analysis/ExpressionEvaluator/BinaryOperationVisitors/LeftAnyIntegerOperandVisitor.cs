@@ -6,17 +6,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with abstract integer value as the left operand
+    /// Evaluates one binary operation with abstract integer value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftAnyIntegerOperandVisitor : LeftAnyNumericOperandVisitor<AnyIntegerValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftAnyIntegerOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftAnyIntegerOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftAnyIntegerOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftAnyIntegerOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -126,7 +133,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -134,19 +142,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
-            if (result != null)
-            {
-                // Arithmetic with resources is nonsence
-                return;
-            }
-
-            base.VisitResourceValue(value);
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -278,7 +273,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
                     if (result != null)
                     {
-                        return;
+                        break;
                     }
 
                     base.VisitAnyFloatValue(value);
@@ -311,7 +306,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -319,6 +315,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Abstract compound values
+
+        /// <inheritdoc />
+        public override void VisitAnyResourceValue(AnyResourceValue value)
+        {
+            result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
+            if (result != null)
+            {
+                // Arithmetic with resources is nonsence
+                return;
+            }
+
+            base.VisitAnyResourceValue(value);
+        }
 
         #endregion Abstract values
 

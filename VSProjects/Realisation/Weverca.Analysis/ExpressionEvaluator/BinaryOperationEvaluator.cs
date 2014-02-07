@@ -10,7 +10,7 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation during the analysis
+    /// Evaluates one binary operation during the analysis.
     /// </summary>
     /// <remarks>
     /// Every evaluator must determine type of the value in the expression. Double dispatch is
@@ -23,139 +23,169 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// one operand operation, i.e. using double dispatch, because the typed left operand is part of it.
     /// There should exist a left operand visitor for every value type.
     /// </remarks>
+    /// <seealso cref="LeftOperandVisitor" />
+    /// <seealso cref="UnaryOperationEvaluator" />
     public class BinaryOperationEvaluator : PartialExpressionEvaluator
     {
         /// <summary>
-        /// String converter used for concatenation of values to strings
+        /// Boolean converter used for evaluation of logical operations.
         /// </summary>
-        private StringConverter converter;
+        private BooleanConverter booleanConverter;
 
         /// <summary>
-        /// Visitor of left operand that has concrete boolean value
+        /// String converter used for concatenation of values to strings.
+        /// </summary>
+        private StringConverter stringConverter;
+
+        /// <summary>
+        /// Visitor of left operand that has concrete boolean value.
         /// </summary>
         private LeftBooleanOperandVisitor booleanVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has concrete integer value
+        /// Visitor of left operand that has concrete integer value.
         /// </summary>
         private LeftIntegerOperandVisitor integerVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has concrete floating-point value
+        /// Visitor of left operand that has concrete floating-point value.
         /// </summary>
         private LeftFloatOperandVisitor floatVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has concrete string value
+        /// Visitor of left operand that has concrete string value.
         /// </summary>
         private LeftStringOperandVisitor stringVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has concrete object value
+        /// Visitor of left operand that has concrete object value.
         /// </summary>
         private LeftObjectOperandVisitor objectVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has concrete array value
+        /// Visitor of left operand that has concrete array value.
         /// </summary>
         private LeftArrayOperandVisitor arrayVisitor;
 
         /// <summary>
-        /// Visitor of left operand that is null value
+        /// Visitor of left operand that is null value.
         /// </summary>
         private LeftNullOperandVisitor nullVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has interval of integer values
+        /// Visitor of left operand that has interval of integer values.
         /// </summary>
         private LeftIntegerIntervalOperandVisitor integerIntervalVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has interval of floating-point numbers
+        /// Visitor of left operand that has interval of floating-point numbers.
         /// </summary>
         private LeftFloatIntervalOperandVisitor floatIntervalVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has any abstract  value
+        /// Visitor of left operand that has any abstract value.
         /// </summary>
         private LeftAnyValueOperandVisitor anyValueVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has abstract boolean value
+        /// Visitor of left operand that has abstract boolean value.
         /// </summary>
         private LeftAnyBooleanOperandVisitor anyBooleanVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has abstract integer value
+        /// Visitor of left operand that has abstract integer value.
         /// </summary>
         private LeftAnyIntegerOperandVisitor anyIntegerVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has abstract floating-point number value
+        /// Visitor of left operand that has abstract floating-point number value.
         /// </summary>
         private LeftAnyFloatOperandVisitor anyFloatVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has abstract string value
+        /// Visitor of left operand that has abstract string value.
         /// </summary>
         private LeftAnyStringOperandVisitor anyStringVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has abstract array value
+        /// Visitor of left operand that has abstract array value.
         /// </summary>
         private LeftAnyArrayOperandVisitor anyArrayVisitor;
 
         /// <summary>
-        /// Visitor of left operand that has concrete or abstract resource value
+        /// Visitor of left operand that has concrete or abstract resource value.
         /// </summary>
         private LeftResourceOperandVisitor resourceVisitor;
 
         /// <summary>
-        /// Selected visitor of left operand that performs binary operations with the given right operand
+        /// Selected visitor of left operand that performs binary operations with the given right operand.
         /// </summary>
         private LeftOperandVisitor visitor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryOperationEvaluator" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
-        /// <param name="stringConverter">String converter for concatenation</param>
-        public BinaryOperationEvaluator(FlowController flowController, StringConverter stringConverter)
-            : base(flowController)
+        /// <param name="booleanEvaluator">Boolean converter for logical operations.</param>
+        /// <param name="stringEvaluator">String converter for concatenation.</param>
+        public BinaryOperationEvaluator(BooleanConverter booleanEvaluator, StringConverter stringEvaluator)
+            : this(null, booleanEvaluator, stringEvaluator)
         {
-            converter = stringConverter;
-            booleanVisitor = new LeftBooleanOperandVisitor(flowController);
-            integerVisitor = new LeftIntegerOperandVisitor(flowController);
-            floatVisitor = new LeftFloatOperandVisitor(flowController);
-            stringVisitor = new LeftStringOperandVisitor(flowController);
-            objectVisitor = new LeftObjectOperandVisitor(flowController);
-            arrayVisitor = new LeftArrayOperandVisitor(flowController);
-            resourceVisitor = new LeftResourceOperandVisitor(flowController);
-            nullVisitor = new LeftNullOperandVisitor(flowController);
-            integerIntervalVisitor = new LeftIntegerIntervalOperandVisitor(flowController);
-            floatIntervalVisitor = new LeftFloatIntervalOperandVisitor(flowController);
-            anyValueVisitor = new LeftAnyValueOperandVisitor(flowController);
-            anyBooleanVisitor = new LeftAnyBooleanOperandVisitor(flowController);
-            anyIntegerVisitor = new LeftAnyIntegerOperandVisitor(flowController);
-            anyFloatVisitor = new LeftAnyFloatOperandVisitor(flowController);
-            anyStringVisitor = new LeftAnyStringOperandVisitor(flowController);
-            anyArrayVisitor = new LeftAnyArrayOperandVisitor(flowController);
         }
 
         /// <summary>
-        /// Evaluates binary operation on the given left and right operands
+        /// Initializes a new instance of the <see cref="BinaryOperationEvaluator" /> class.
         /// </summary>
-        /// <param name="leftOperand">The left operand of binary operation</param>
-        /// <param name="binaryOperation">Binary operation to be performed</param>
-        /// <param name="rightOperand">The right operand of binary operation</param>
-        /// <returns>Result of performing the binary operation on the operands</returns>
+        /// <param name="flowController">Flow controller of program point.</param>
+        /// <param name="booleanEvaluator">Boolean converter for logical operations.</param>
+        /// <param name="stringEvaluator">String converter for concatenation.</param>
+        public BinaryOperationEvaluator(FlowController flowController, BooleanConverter booleanEvaluator,
+            StringConverter stringEvaluator)
+            : base(flowController)
+        {
+            booleanConverter = booleanEvaluator;
+            stringConverter = stringEvaluator;
+            booleanVisitor = new LeftBooleanOperandVisitor();
+            integerVisitor = new LeftIntegerOperandVisitor();
+            floatVisitor = new LeftFloatOperandVisitor();
+            stringVisitor = new LeftStringOperandVisitor();
+            objectVisitor = new LeftObjectOperandVisitor();
+            arrayVisitor = new LeftArrayOperandVisitor();
+            resourceVisitor = new LeftResourceOperandVisitor();
+            nullVisitor = new LeftNullOperandVisitor();
+            integerIntervalVisitor = new LeftIntegerIntervalOperandVisitor();
+            floatIntervalVisitor = new LeftFloatIntervalOperandVisitor();
+            anyValueVisitor = new LeftAnyValueOperandVisitor();
+            anyBooleanVisitor = new LeftAnyBooleanOperandVisitor();
+            anyIntegerVisitor = new LeftAnyIntegerOperandVisitor();
+            anyFloatVisitor = new LeftAnyFloatOperandVisitor();
+            anyStringVisitor = new LeftAnyStringOperandVisitor();
+            anyArrayVisitor = new LeftAnyArrayOperandVisitor();
+        }
+
+        /// <summary>
+        /// Evaluates binary operation on the given left and right operands.
+        /// </summary>
+        /// <param name="leftOperand">The left operand of binary operation.</param>
+        /// <param name="binaryOperation">Binary operation to be performed.</param>
+        /// <param name="rightOperand">The right operand of binary operation.</param>
+        /// <returns>Result of performing the binary operation on the operands.</returns>
         public Value Evaluate(Value leftOperand, Operations binaryOperation, Value rightOperand)
         {
             if (binaryOperation == Operations.Concat)
             {
-                converter.SetContext(flow);
-                return converter.EvaluateConcatenation(leftOperand, rightOperand);
+                stringConverter.SetContext(flow);
+                return stringConverter.EvaluateConcatenation(leftOperand, rightOperand);
             }
+
+            /* TODO: Replace logical operations in binary operation visitors with boolean converter
+            booleanConverter.SetContext(OutSet);
+            var booleanValue = booleanConverter.EvaluateLogicalOperation(leftOperand,
+                binaryOperation, rightOperand);
+            if (booleanValue != null)
+            {
+                return booleanValue;
+            }
+             */
 
             // Gets visitor of left operand
             leftOperand.Accept(this);
@@ -166,20 +196,30 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Evaluates binary operation on all value combinations of the left and right operands
+        /// Evaluates binary operation on all value combinations of the left and right operands.
         /// </summary>
-        /// <param name="leftOperand">Entry with all possible left operands of binary operation</param>
-        /// <param name="binaryOperation">Binary operation to be performed</param>
-        /// <param name="rightOperand">Entry with all possible right operands of binary operation</param>
-        /// <returns>Resulting entry after performing the binary operation on all possible operands</returns>
+        /// <param name="leftOperand">Entry with all possible left operands of binary operation.</param>
+        /// <param name="binaryOperation">Binary operation to be performed.</param>
+        /// <param name="rightOperand">Entry with all possible right operands of binary operation.</param>
+        /// <returns>Resulting entry of performing the binary operation on all possible operands.</returns>
         public MemoryEntry Evaluate(MemoryEntry leftOperand, Operations binaryOperation,
             MemoryEntry rightOperand)
         {
             if (binaryOperation == Operations.Concat)
             {
-                converter.SetContext(flow);
-                return converter.EvaluateConcatenation(leftOperand, rightOperand);
+                stringConverter.SetContext(flow);
+                return stringConverter.EvaluateConcatenation(leftOperand, rightOperand);
             }
+
+            /* TODO: Replace logical operations in binary operation visitors with boolean converter
+            booleanConverter.SetContext(OutSet);
+            var booleanValue = booleanConverter.EvaluateLogicalOperation(leftOperand,
+                binaryOperation, rightOperand);
+            if (booleanValue != null)
+            {
+                return new MemoryEntry(booleanValue);
+            }
+             */
 
             var values = new HashSet<Value>();
 
@@ -294,6 +334,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        /// <exception cref="System.NotSupportedException">Thrown always</exception>
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");
@@ -336,6 +377,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        /// <exception cref="System.NotSupportedException">Thrown always</exception>
         public override void VisitAnyLongintValue(AnyLongintValue value)
         {
             throw new NotSupportedException("Long integer is not currently supported");

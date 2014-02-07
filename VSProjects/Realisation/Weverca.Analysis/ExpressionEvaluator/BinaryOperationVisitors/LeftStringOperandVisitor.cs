@@ -8,17 +8,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed string value as the left operand
+    /// Evaluates one binary operation with fixed string value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftStringOperandVisitor : LeftScalarOperandVisitor<StringValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftStringOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftStringOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftStringOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftStringOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -400,13 +407,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return;
             }
 
-            result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result != null)
-            {
-                SetWarning("Object cannot be converted to integer by bitwise operation");
-                return;
-            }
-
             int integerValue;
             double floatValue;
             bool isInteger;
@@ -419,7 +419,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -463,47 +464,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            switch (operation)
-            {
-                default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Comapring of resource and string makes no sence.
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    int integerValue;
-                    double floatValue;
-                    bool isInteger;
-                    TypeConversion.TryConvertToNumber(leftOperand.Value, true,
-                        out integerValue, out floatValue, out isInteger);
-
-                    result = isInteger
-                        ? ArithmeticOperation.RightAbstractArithmetic(flow, operation, integerValue)
-                        : ArithmeticOperation.RightAbstractArithmetic(flow, operation, floatValue);
-
-                    if (result != null)
-                    {
-                        // Arithmetic with resources is nonsence
-                        break;
-                    }
-
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -903,7 +863,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -934,42 +895,37 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
         {
-            switch (operation)
+            result = Comparison.AbstractCompare(OutSet, operation);
+            if (result != null)
             {
-                default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Comapring of resource and string makes no sence.
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    int integerValue;
-                    double floatValue;
-                    bool isInteger;
-                    TypeConversion.TryConvertToNumber(leftOperand.Value, true,
-                        out integerValue, out floatValue, out isInteger);
-
-                    result = isInteger
-                        ? ArithmeticOperation.RightAbstractArithmetic(flow, operation, integerValue)
-                        : ArithmeticOperation.RightAbstractArithmetic(flow, operation, floatValue);
-
-                    if (result != null)
-                    {
-                        // Arithmetic with resources is nonsence
-                        break;
-                    }
-
-                    base.VisitAnyResourceValue(value);
-                    break;
+                // Comapring of resource and string makes no sence.
+                return;
             }
+
+            result = LogicalOperation.Logical(OutSet, operation,
+                TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value));
+            if (result != null)
+            {
+                return;
+            }
+
+            int integerValue;
+            double floatValue;
+            bool isInteger;
+            TypeConversion.TryConvertToNumber(leftOperand.Value, true,
+                out integerValue, out floatValue, out isInteger);
+
+            result = isInteger
+                ? ArithmeticOperation.RightAbstractArithmetic(flow, operation, integerValue)
+                : ArithmeticOperation.RightAbstractArithmetic(flow, operation, floatValue);
+
+            if (result != null)
+            {
+                // Arithmetic with resources is nonsence
+                return;
+            }
+
+            base.VisitAnyResourceValue(value);
         }
 
         #endregion Abstract values

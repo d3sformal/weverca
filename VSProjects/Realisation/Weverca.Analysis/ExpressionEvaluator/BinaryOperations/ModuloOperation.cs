@@ -15,7 +15,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             IntervalValue<int> divisor);
 
         /// <summary>
-        /// Interval of all values converted from a boolean value
+        /// Interval of all values converted from a boolean value.
         /// </summary>
         private static IntervalValue<int> booleanInterval;
 
@@ -24,10 +24,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform modulo operation for given integer dividend and divisor. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Integer dividend of modulo operation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer dividend of modulo operation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static ScalarValue Modulo(FlowController flow, int dividend, int divisor)
         {
             if (divisor != 0)
@@ -37,17 +37,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnDivideByZero(flow);
+                return WarnModuloByZero(flow);
             }
         }
 
         /// <summary>
         /// Try to convert dividend into integer and perform modulo operation. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Floating-point dividend of modulo operation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point dividend of modulo operation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, double dividend, int divisor)
         {
             if (divisor != 0)
@@ -67,17 +67,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnDivideByZero(flow);
+                return WarnModuloByZero(flow);
             }
         }
 
         /// <summary>
         /// Try to convert dividend into integer and perform modulo operation. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">String dividend of modulo operation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">String dividend of modulo operation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, string dividend, int divisor)
         {
             if (divisor != 0)
@@ -101,17 +101,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnDivideByZero(flow);
+                return WarnModuloByZero(flow);
             }
         }
 
         /// <summary>
         /// Perform modulo operation of interval dividend and integer divisor. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Integer interval dividend of modulo operation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer interval dividend of modulo operation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, IntervalValue<int> dividend, int divisor)
         {
             if (divisor != 0)
@@ -120,17 +120,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnDivideByZero(flow);
+                return WarnModuloByZero(flow);
             }
         }
 
         /// <summary>
         /// Try to convert dividend into interval and perform modulo operation. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Floating-point interval dividend of modulo operation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point interval dividend of modulo operation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, IntervalValue<double> dividend, int divisor)
         {
             if (divisor != 0)
@@ -149,16 +149,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnDivideByZero(flow);
+                return WarnModuloByZero(flow);
             }
         }
 
         /// <summary>
         /// Perform modulo operation of abstract boolean dividend and integer divisor.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value LeftAbstractBooleanModulo(FlowController flow, int divisor)
         {
             InitalizeInternals(flow.OutSet);
@@ -169,9 +169,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Specify possible result of modulo operation when dividend is unknown. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="divisor">Integer divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">Integer divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value AbstractModulo(FlowController flow, int divisor)
         {
             if (divisor != 0)
@@ -180,7 +180,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnDivideByZero(flow);
+                return WarnModuloByZero(flow);
             }
         }
 
@@ -191,10 +191,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Try to convert divisor into integer and perform modulo operation. Warn if modulo by zero.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Integer dividend of modulo operation</param>
-        /// <param name="divisor">Floating-point divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer dividend of modulo operation.</param>
+        /// <param name="divisor">Floating-point divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, int dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
@@ -203,25 +203,46 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Try to convert dividend and divisor into integer and perform modulo operation.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Floating-point dividend of modulo operation</param>
-        /// <param name="divisor">Floating-point divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point dividend of modulo operation.</param>
+        /// <param name="divisor">Floating-point divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, double dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
+        /// <summary>
+        /// Try to convert dividend and divisor into integer and perform modulo operation.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">String dividend of modulo operation.</param>
+        /// <param name="divisor">Floating-point divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, string dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
+        /// <summary>
+        /// Try to convert divisor into integer and perform modulo operation. Warn if modulo by zero.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer interval dividend of modulo operation.</param>
+        /// <param name="divisor">Floating-point divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, IntervalValue<int> dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
         }
 
+        /// <summary>
+        /// Try to convert dividend into interval and divisor to integer and perform modulo operation.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point interval dividend of modulo operation.</param>
+        /// <param name="divisor">Floating-point divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value Modulo(FlowController flow, IntervalValue<double> dividend, double divisor)
         {
             return Modulo(flow, Modulo, dividend, divisor);
@@ -230,9 +251,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform modulo operation of abstract boolean dividend and floating-point number divisor.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="divisor">Floating-point number divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">Floating-point number divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value LeftAbstractBooleanModulo(FlowController flow, double divisor)
         {
             InitalizeInternals(flow.OutSet);
@@ -240,6 +261,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Modulo(flow, booleanInterval, divisor);
         }
 
+        /// <summary>
+        /// Specify possible result of modulo operation when dividend is unknown. Warn if modulo by zero.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">Floating-point divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value AbstractModulo(FlowController flow, double divisor)
         {
             int convertedValue;
@@ -251,7 +278,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
@@ -287,9 +314,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform modulo operation of abstract boolean dividend and string divisor.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="divisor">String divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">String divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value LeftAbstractBooleanModulo(FlowController flow, string divisor)
         {
             InitalizeInternals(flow.OutSet);
@@ -297,6 +324,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Modulo(flow, booleanInterval, divisor);
         }
 
+        /// <summary>
+        /// Specify possible result of modulo operation when dividend is unknown. Warn if modulo by zero.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">String divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value AbstractModulo(FlowController flow, string divisor)
         {
             int integerValue;
@@ -312,7 +345,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
@@ -388,7 +421,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        return WarnPossibleDivideByZero(flow);
+                        return WarnPossibleModuloByZero(flow);
                     }
                 }
                 else
@@ -408,7 +441,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    return WarnPossibleDivideByZero(flow);
+                    return WarnPossibleModuloByZero(flow);
                 }
             }
         }
@@ -443,7 +476,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
@@ -473,9 +506,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform modulo operation of abstract boolean dividend and integer interval divisor.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="divisor">Integer interval divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">Integer interval divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value LeftAbstractBooleanModulo(FlowController flow, IntervalValue<int> divisor)
         {
             InitalizeInternals(flow.OutSet);
@@ -498,11 +531,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 if ((divisor.Start < 0) || (divisor.End > 0))
                 {
-                    return WarnPossibleDivideByZero(flow);
+                    return WarnPossibleModuloByZero(flow);
                 }
                 else
                 {
-                    return WarnDivideByZero(flow);
+                    return WarnModuloByZero(flow);
                 }
             }
         }
@@ -541,9 +574,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform modulo operation of abstract boolean dividend and floating-point number interval divisor.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="divisor">Floating-point number interval divisor of modulo operation</param>
-        /// <returns><c>false</c> whether <paramref name="divisor"/> is zero, otherwise remainder</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="divisor">Floating-point number interval divisor of modulo operation.</param>
+        /// <returns><c>false</c> whether <paramref name="divisor" /> is zero, otherwise remainder.</returns>
         public static Value LeftAbstractBooleanModulo(FlowController flow, IntervalValue<double> divisor)
         {
             InitalizeInternals(flow.OutSet);
@@ -560,15 +593,65 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
         #endregion Float interval divisor
 
+        public static ScalarValue ModuloByBooleanValue(FlowController flow, bool value)
+        {
+            if (value)
+            {
+                // Modulo by 1 (true) is always 0
+                return flow.OutSet.CreateInt(0);
+            }
+            else
+            {
+                SetWarning(flow, "Modulo by zero (converted from boolean false)",
+                    AnalysisWarningCause.DIVISION_BY_ZERO);
+
+                // Division or modulo by false returns false boolean value
+                return flow.OutSet.CreateBool(false);
+            }
+        }
+
+        /// <summary>
+        /// Warn that modulo by abstract boolean value has occurred and return any abstract value.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <returns>Any abstract value.</returns>
+        public static AnyValue ModuloByAnyBooleanValue(FlowController flow)
+        {
+            SetWarning(flow, "Possible division by zero (converted from boolean false)",
+                AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Division or modulo by false returns false boolean value
+            return flow.OutSet.AnyValue;
+        }
+
+        /// <summary>
+        /// Warn that modulo by null has occurred and return result of operation, <c>false</c> value.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <returns><c>false</c> value that is result of modulo by zero.</returns>
+        public static BooleanValue ModuloByNull(FlowController flow)
+        {
+            SetWarning(flow, "Modulo by zero (converted from null)",
+                AnalysisWarningCause.DIVISION_BY_ZERO);
+
+            // Modulo by null returns false boolean value
+            return flow.OutSet.CreateBool(false);
+        }
+
+        /// <summary>
+        /// Specify possible result of modulo operation when both dividend and divisor are unknown.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <returns>Any abstract value.</returns>
         public static AnyValue AbstractModulo(FlowController flow)
         {
-            return WarnPossibleDivideByZero(flow);
+            return WarnPossibleModuloByZero(flow);
         }
 
         #region Helper methods
@@ -593,7 +676,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
@@ -613,7 +696,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
@@ -627,7 +710,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return WarnPossibleDivideByZero(flow);
+                return WarnPossibleModuloByZero(flow);
             }
         }
 
@@ -764,7 +847,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        private static BooleanValue WarnDivideByZero(FlowController flow)
+        private static BooleanValue WarnModuloByZero(FlowController flow)
         {
             SetWarning(flow, "Modulo by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
 
@@ -772,7 +855,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return flow.OutSet.CreateBool(false);
         }
 
-        private static AnyValue WarnPossibleDivideByZero(FlowController flow)
+        private static AnyValue WarnPossibleModuloByZero(FlowController flow)
         {
             // As right operant can be range of values, can possibly be 0 too
             // That causes division by zero and returns false
@@ -782,11 +865,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Report a warning for the position of current expression
+        /// Report a warning for the position of current expression.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="message">Message of the warning</param>
-        /// <param name="cause">Cause of the warning</param>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="message">Message of the warning.</param>
+        /// <param name="cause">Cause of the warning.</param>
         private static void SetWarning(FlowController flow, string message, AnalysisWarningCause cause)
         {
             var warning = new AnalysisWarning(message, flow.CurrentPartial, cause);

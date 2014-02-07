@@ -8,12 +8,12 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed number value as the left operand
+    /// Evaluates one binary operation with fixed number value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
-    /// <typeparam name="TComparable">Native type of values in left operand number</typeparam>
+    /// <typeparam name="TComparable">Native type of values in left operand number.</typeparam>
     public abstract class LeftNumericOperandVisitor<TComparable>
         : LeftScalarOperandVisitor<NumericValue<TComparable>>
         where TComparable : IComparable, IComparable<TComparable>, IEquatable<TComparable>
@@ -21,7 +21,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftNumericOperandVisitor{TComparable}" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        protected LeftNumericOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftNumericOperandVisitor{TComparable}" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         protected LeftNumericOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -77,7 +84,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = Comparison.AbstractCompare(OutSet, operation);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by comparison");
+                SetWarning("Object cannot be converted to integer by comparison",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -97,24 +105,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            switch (operation)
-            {
-                default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Comapring of resource and number makes no sence.
-                        break;
-                    }
-
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -240,7 +230,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = Comparison.AbstractCompare(OutSet, operation);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by comparison");
+                SetWarning("Object cannot be converted to integer by comparison",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -264,19 +255,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
         {
-            switch (operation)
+            result = Comparison.AbstractCompare(OutSet, operation);
+            if (result != null)
             {
-                default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Comapring of resource and number makes no sence.
-                        break;
-                    }
-
-                    base.VisitAnyResourceValue(value);
-                    break;
+                // Comapring of resource and number makes no sence.
+                return;
             }
+
+            base.VisitAnyResourceValue(value);
         }
 
         #endregion Abstract values

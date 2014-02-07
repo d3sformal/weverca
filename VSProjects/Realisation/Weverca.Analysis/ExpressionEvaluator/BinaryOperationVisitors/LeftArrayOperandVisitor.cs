@@ -8,23 +8,45 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed integer value as the left operand
+    /// Evaluates one binary operation with fixed array value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftArrayOperandVisitor : GenericLeftOperandVisitor<AssociativeArray>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftArrayOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftArrayOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftArrayOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftArrayOperandVisitor(FlowController flowController)
             : base(flowController)
         {
         }
 
         #region AbstractValueVisitor Members
+
+        /// <inheritdoc />
+        public override void VisitValue(Value value)
+        {
+            if (ArithmeticOperation.IsArithmetic(operation))
+            {
+                // Ommitted warning message that object cannot be converted to integer
+                // TODO: This must be fatal error
+                SetWarning("Unsupported operand type: Arithmetic of two arrays");
+                result = OutSet.AnyValue;
+                return;
+            }
+
+            base.VisitValue(value);
+        }
 
         #region Concrete values
 
@@ -42,14 +64,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
                     base.VisitScalarValue(value);
                     break;
             }
@@ -61,7 +75,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    DivisionByBooleanValue(value.Value);
+                    result = ModuloOperation.ModuloByBooleanValue(flow, value.Value);
                     break;
                 default:
                     var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
@@ -131,12 +145,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -221,7 +229,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    SetWarning("Object cannot be converted to integer by modulo operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
@@ -242,17 +251,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
+                        SetWarning("Object cannot be converted to integer by bitwise operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                         break;
                     }
 
@@ -302,69 +302,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
                     base.VisitAssociativeArray(value);
                     break;
             }
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            switch (operation)
-            {
-                case Operations.Identical:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                    result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Mod:
-                    result = ModuloOperation.AbstractModulo(flow);
-                    break;
-                default:
-                    result = Comparison.LeftAlwaysGreater(OutSet, operation);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
-                        TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = BitwiseOperation.Bitwise(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Bitwise operation with resource can give any integer
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -399,18 +342,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.ShiftRight:
                     result = TypeConversion.ToInteger(OutSet, leftOperand);
                     break;
+                case Operations.Div:
+                    result = ArithmeticOperation.DivisionByNull(flow);
+                    break;
                 case Operations.Mod:
-                    DivisionByNull();
+                    result = ModuloOperation.ModuloByNull(flow);
                     break;
                 default:
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and null type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
                     base.VisitUndefinedValue(value);
                     break;
             }
@@ -435,14 +373,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = Comparison.LeftAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
                         break;
                     }
 
@@ -480,12 +410,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
-        public override void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
-        }
-
-        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             switch (operation)
@@ -495,12 +419,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         TypeConversion.ToNativeInteger(OutSet, leftOperand), value);
                     break;
                 default:
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
                     result = LogicalOperation.Logical(OutSet, operation,
                         TypeConversion.ToNativeBoolean(OutSet, leftOperand), value);
                     if (result != null)
@@ -534,7 +452,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
                     {
-                        // Ommitted warning message that object cannot be converted to integer
                         break;
                     }
 
@@ -542,22 +459,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         TypeConversion.ToNativeBoolean(OutSet, leftOperand));
                     if (result != null)
                     {
-                        return;
+                        break;
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
                         // Ommitted warning message that object cannot be converted to integer
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // Ommitted warning message that object cannot be converted to integer
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
                         break;
                     }
 
@@ -584,20 +492,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         TypeConversion.ToNativeBoolean(OutSet, leftOperand));
                     if (result != null)
                     {
-                        return;
+                        break;
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
                         break;
                     }
 
@@ -612,7 +512,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    DivisionByAnyBooleanValue();
+                    result = ModuloOperation.ModuloByAnyBooleanValue(flow);
                     break;
                 default:
                     result = Comparison.RightAbstractBooleanCompare(OutSet, operation,
@@ -641,18 +541,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = Comparison.LeftAlwaysGreater(OutSet, operation);
                     if (result != null)
                     {
-                        return;
+                        break;
                     }
 
                     base.VisitAnyNumericValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         #endregion Abstract numeric values
@@ -693,7 +587,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    SetWarning("Object cannot be converted to integer by modulo operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
@@ -714,17 +609,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = BitwiseOperation.Bitwise(OutSet, operation);
                     if (result != null)
                     {
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
-
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
+                        SetWarning("Object cannot be converted to integer by bitwise operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                         break;
                     }
 
@@ -765,14 +651,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
-                        break;
-                    }
-
                     base.VisitAnyArrayValue(value);
                     break;
             }
@@ -801,13 +679,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Comapring of resource and integer makes no sence.
-                        break;
-                    }
-
                     result = LogicalOperation.Logical(OutSet, operation,
                         TypeConversion.ToNativeBoolean(OutSet, leftOperand),
                         TypeConversion.ToBoolean(value));
@@ -820,14 +691,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (result != null)
                     {
                         // Bitwise operation with resource can give any integer
-                        break;
-                    }
-
-                    if (ArithmeticOperation.IsArithmetic(operation))
-                    {
-                        // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
-                        result = OutSet.AnyValue;
                         break;
                     }
 

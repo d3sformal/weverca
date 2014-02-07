@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 using PHP.Core;
@@ -9,36 +8,46 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates prefix or postfix increment or decrement during the analysis
+    /// Evaluates prefix or postfix increment or decrement during the analysis.
     /// </summary>
     /// <remarks>
-    /// Increment or decrement is defined by operation <see cref="Operations.IncDec" />
+    /// Increment or decrement is defined by operation <see cref="Operations.IncDec" />.
     /// </remarks>
+    /// <seealso cref="UnaryOperationEvaluator" />
     public class IncrementDecrementEvaluator : PartialExpressionEvaluator
     {
         /// <summary>
-        /// Determines whether operation is increment, otherwise it is decrement
+        /// Determines whether operation is increment, otherwise it is decrement.
         /// </summary>
         private bool isIncrement;
 
         /// <summary>
-        /// Result of performing the unary operation on the given value
+        /// Result of performing the unary operation on the given value.
         /// </summary>
         private Value result;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IncrementDecrementEvaluator" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
-        public IncrementDecrementEvaluator(FlowController flowController)
-            : base(flowController) { }
+        public IncrementDecrementEvaluator()
+        {
+        }
 
         /// <summary>
-        /// Evaluates prefix or postfix increment or decrement of the value
+        /// Initializes a new instance of the <see cref="IncrementDecrementEvaluator" /> class.
         /// </summary>
-        /// <param name="isIncrementOperation">Determines whether to perform increment operation</param>
-        /// <param name="operand">One operand of increment or decrement</param>
-        /// <returns>Result of operand increment or decrement</returns>
+        /// <param name="flowController">Flow controller of program point.</param>
+        public IncrementDecrementEvaluator(FlowController flowController)
+            : base(flowController)
+        {
+        }
+
+        /// <summary>
+        /// Evaluates prefix or postfix increment or decrement of the value.
+        /// </summary>
+        /// <param name="isIncrementOperation">Determines whether to perform increment operation.</param>
+        /// <param name="operand">One operand of increment or decrement.</param>
+        /// <returns>Result of operand increment or decrement.</returns>
         public Value Evaluate(bool isIncrementOperation, Value operand)
         {
             // Sets current operation
@@ -54,11 +63,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Evaluates prefix or postfix increment or decrement of all possible values in memory entry
+        /// Evaluates prefix or postfix increment or decrement of all possible values in memory entry.
         /// </summary>
-        /// <param name="isIncrementOperation">Determines whether to perform increment operation</param>
-        /// <param name="entry">Memory entry with all possible operands of increment or decrement</param>
-        /// <returns>Result of performing the increment or decrement on all possible operands</returns>
+        /// <param name="isIncrementOperation">Determines whether to perform increment operation.</param>
+        /// <param name="entry">Memory entry with all possible operands of increment or decrement.</param>
+        /// <returns>Result of performing the increment or decrement on all possible operands.</returns>
         public MemoryEntry Evaluate(bool isIncrementOperation, MemoryEntry entry)
         {
             // Sets current operation

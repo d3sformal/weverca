@@ -8,17 +8,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed integer value as the left operand
+    /// Evaluates one binary operation with fixed integer value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftNullOperandVisitor : GenericLeftOperandVisitor<UndefinedValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftNullOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftNullOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftNullOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftNullOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -86,8 +93,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateInt(0);
                     break;
                 case Operations.Div:
+                    if (value.Value)
+                    {
+                        // Division of 0 (null) by non-null is always 0
+                        result = OutSet.CreateInt(0);
+                    }
+                    else
+                    {
+                        SetWarning("Division by zero (converted from boolean false)",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+
+                        // Division or modulo by false returns false boolean value
+                        result = OutSet.CreateBool(false);
+                    }
+                    break;
                 case Operations.Mod:
-                    DivisionByBooleanValue(value.Value);
+                    result = ModuloOperation.ModuloByBooleanValue(flow, value.Value);
                     break;
                 default:
                     base.VisitBooleanValue(value);
@@ -160,19 +181,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        DivisionByZero();
+                        SetWarning("Division by zero", AnalysisWarningCause.DIVISION_BY_ZERO);
+
+                        // Division or modulo by zero returns false boolean value
+                        result = OutSet.CreateBool(false);
                     }
                     break;
                 default:
                     base.VisitIntegerValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -220,7 +238,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        DivisionByFloatingPointZero();
+                        SetWarning("Division by floating-point zero",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+
+                        // Division by floating-point zero does not return NaN
+                        // or infinite, but false boolean value
+                        result = OutSet.CreateBool(false);
                     }
                     break;
                 case Operations.Mod:
@@ -324,19 +347,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.CreateInt(0);
                     break;
                 case Operations.Add:
                 case Operations.Sub:
                 case Operations.BitOr:
                 case Operations.BitXor:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     // We can assume that object is not zero, because null is zero
                     result = OutSet.CreateInt(0);
                     break;
@@ -378,7 +404,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        DivisionByZero();
+                        SetWarning("Division by zero (converted from array)",
+                            AnalysisWarningCause.DIVISION_BY_ZERO);
+
+                        // Division or modulo by zero returns false boolean value
+                        result = OutSet.CreateBool(false);
                     }
                     break;
                 default:
@@ -396,50 +426,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            // Resource is always greater than null
-            switch (operation)
-            {
-                case Operations.Identical:
-                case Operations.Equal:
-                case Operations.GreaterThan:
-                case Operations.GreaterThanOrEqual:
-                case Operations.And:
-                    result = OutSet.CreateBool(false);
-                    break;
-                case Operations.NotIdentical:
-                case Operations.NotEqual:
-                case Operations.LessThan:
-                case Operations.LessThanOrEqual:
-                case Operations.Or:
-                case Operations.Xor:
-                    result = OutSet.CreateBool(true);
-                    break;
-                case Operations.Mul:
-                case Operations.BitAnd:
-                case Operations.ShiftLeft:
-                case Operations.ShiftRight:
-                    result = OutSet.CreateInt(0);
-                    break;
-                case Operations.Add:
-                case Operations.Sub:
-                case Operations.BitOr:
-                case Operations.BitXor:
-                    result = OutSet.AnyIntegerValue;
-                    break;
-                case Operations.Div:
-                case Operations.Mod:
-                    // We can assume that resource is not zero, because it is always true
-                    result = OutSet.CreateInt(0);
-                    break;
-                default:
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -472,8 +458,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateInt(0);
                     break;
                 case Operations.Div:
+                    result = ArithmeticOperation.DivisionByNull(flow);
+                    break;
                 case Operations.Mod:
-                    DivisionByNull();
+                    result = ModuloOperation.ModuloByNull(flow);
                     break;
                 default:
                     base.VisitUndefinedValue(value);
@@ -564,12 +552,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
-        public override void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
-        }
-
-        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             // When comparing, both operands are converted to boolean
@@ -618,7 +600,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
-                    result = value;
+                    result = OutSet.AnyBooleanValue;
                     break;
                 case Operations.Add:
                 case Operations.Sub:
@@ -655,7 +637,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 default:
                     if (PerformCommonAnyOperandOperations())
                     {
-                        return;
+                        break;
                     }
 
                     base.VisitAnyValue(value);
@@ -678,7 +660,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 default:
                     if (PerformCommonAnyOperandOperations())
                     {
-                        return;
+                        break;
                     }
 
                     base.VisitAnyScalarValue(value);
@@ -712,8 +694,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateInt(0);
                     break;
                 case Operations.Div:
+                    SetWarning("Possible division by zero (converted from boolean false)",
+                        AnalysisWarningCause.DIVISION_BY_ZERO);
+
+                    // Division or modulo by false returns false boolean value
+                    result = OutSet.AnyValue;
+                    break;
                 case Operations.Mod:
-                    DivisionByAnyBooleanValue();
+                    result = ModuloOperation.ModuloByAnyBooleanValue(flow);
                     break;
                 default:
                     base.VisitAnyBooleanValue(value);
@@ -767,12 +755,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitAnyIntegerValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -866,19 +848,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.CreateInt(0);
                     break;
                 case Operations.Add:
                 case Operations.Sub:
                 case Operations.BitOr:
                 case Operations.BitXor:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = OutSet.AnyIntegerValue;
                     break;
                 case Operations.Div:
                 case Operations.Mod:
-                    SetWarning("Object cannot be converted to integer");
+                    SetWarning("Object cannot be converted to integer",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     // We can assume that object is not zero, because null is zero
                     result = OutSet.CreateInt(0);
                     break;
@@ -965,7 +950,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 default:
                     if (PerformCommonAnyOperandOperations())
                     {
-                        return;
+                        break;
                     }
 
                     base.VisitAnyResourceValue(value);

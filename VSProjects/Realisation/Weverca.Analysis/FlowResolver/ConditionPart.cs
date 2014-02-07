@@ -148,46 +148,20 @@ namespace Weverca.Analysis.FlowResolver
         /// <returns>see <see cref="PossibleValues"/> for details of possible result.</returns>
         PossibleValues GetConditionResult(FlowOutputSet flowOutputSet)
         {
-            bool onlyTrue = true;
-            bool onlyFalse = true;
+            var converter = new BooleanConverter(flowOutputSet);
+            var value = converter.EvaluateToBoolean(evaluatedPart);
 
-            foreach (var value in evaluatedPart.PossibleValues)
+            if (value == null)
             {
-                var boolean = value as BooleanValue;
-                if (boolean == null)
-                {
-                    boolean = TypeConversion.ToBoolean(flowOutputSet, value);
-                }
-
-                if (boolean != null)
-                {
-                    if (!boolean.Value)
-                    {
-                        onlyTrue = false;
-                    }
-                    else
-                    {
-                        onlyFalse = false;
-                    }
-                }
-                else
-                {
-                    onlyFalse = false;
-                    onlyTrue = false;
-                }
+                return PossibleValues.Unknown;
             }
-
-            if (onlyTrue)
+            else if (value.Value)
             {
                 return PossibleValues.OnlyTrue;
             }
-            else if (onlyFalse)
-            {
-                return PossibleValues.OnlyFalse;
-            }
             else
             {
-                return PossibleValues.Unknown;
+                return PossibleValues.OnlyFalse;
             }
         }
 

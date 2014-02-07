@@ -6,19 +6,26 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with abstract number of integer values as the left operand
+    /// Evaluates one binary operation with abstract number of integer values as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
-    /// <typeparam name="TNumeric">Type of left abstract number operand</typeparam>
+    /// <typeparam name="TNumeric">Type of left abstract number operand.</typeparam>
     public abstract class LeftAnyNumericOperandVisitor<TNumeric> : LeftAnyScalarOperandVisitor<TNumeric>
         where TNumeric : AnyNumericValue
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftAnyNumericOperandVisitor{TNumeric}" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        protected LeftAnyNumericOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftAnyNumericOperandVisitor{TNumeric}" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         protected LeftAnyNumericOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -166,7 +173,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = Comparison.AbstractCompare(OutSet, operation);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by comparison");
+                SetWarning("Object cannot be converted to integer by comparison",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -174,13 +182,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToBoolean(value));
             if (result != null)
             {
-                return;
-            }
-
-            result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result != null)
-            {
-                SetWarning("Object cannot be converted to integer by bitwise operation");
                 return;
             }
 
@@ -216,26 +217,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            result = Comparison.AbstractCompare(OutSet, operation);
-            if (result != null)
-            {
-                // Comapring of resource and integer makes no sence.
-                return;
-            }
-
-            result = LogicalOperation.AbstractLogical(OutSet, operation,
-                TypeConversion.ToBoolean(value));
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitResourceValue(value);
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -297,9 +278,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     result = OutSet.CreateBool(true);
                     break;
-                case Operations.Mod:
-                    DivisionByAnyBooleanValue();
-                    break;
                 default:
                     result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
@@ -339,9 +317,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.NotIdentical:
                     result = OutSet.CreateBool(true);
                     break;
-                case Operations.Mod:
-                    result = ModuloOperation.AbstractModulo(flow);
-                    break;
                 default:
                     result = Comparison.AbstractCompare(OutSet, operation);
                     if (result != null)
@@ -364,7 +339,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = Comparison.AbstractCompare(OutSet, operation);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by comparison");
+                SetWarning("Object cannot be converted to integer by comparison",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -406,13 +382,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToBoolean(value));
             if (result != null)
             {
-                return;
-            }
-
-            result = ArithmeticOperation.AbstractIntegerArithmetic(flow, operation);
-            if (result != null)
-            {
-                // Arithmetic with resources is nonsence
                 return;
             }
 

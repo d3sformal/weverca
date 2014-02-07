@@ -6,17 +6,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed boolean value as the left operand
+    /// Evaluates one binary operation with fixed boolean value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftBooleanOperandVisitor : LeftScalarOperandVisitor<BooleanValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftBooleanOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftBooleanOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftBooleanOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftBooleanOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -273,20 +280,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToInteger(leftOperand.Value));
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
             result = LogicalOperation.Logical(OutSet, operation, leftOperand.Value, rightBoolean);
             if (result != null)
             {
-                return;
-            }
-
-            result = BitwiseOperation.Bitwise(OutSet, operation);
-            if (result != null)
-            {
-                SetWarning("Object cannot be converted to integer by bitwise operation");
                 return;
             }
 
@@ -330,38 +331,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            switch (operation)
-            {
-                default:
-                    var rightBoolean = TypeConversion.ToBoolean(value);
-                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, rightBoolean);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand.Value, rightBoolean);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.RightAbstractArithmetic(flow, operation,
-                        TypeConversion.ToInteger(leftOperand.Value));
-                    if (result != null)
-                    {
-                        // Arithmetic with resources is nonsence
-                        break;
-                    }
-
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -648,7 +617,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToInteger(leftOperand.Value));
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
@@ -684,33 +654,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
         {
-            switch (operation)
+            var rightBoolean = TypeConversion.ToBoolean(value);
+            result = Comparison.Compare(OutSet, operation, leftOperand.Value, rightBoolean);
+            if (result != null)
             {
-                default:
-                    var rightBoolean = TypeConversion.ToBoolean(value);
-                    result = Comparison.Compare(OutSet, operation, leftOperand.Value, rightBoolean);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = LogicalOperation.Logical(OutSet, operation, leftOperand.Value, rightBoolean);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = ArithmeticOperation.RightAbstractArithmetic(flow, operation,
-                        TypeConversion.ToInteger(leftOperand.Value));
-                    if (result != null)
-                    {
-                        // Arithmetic with resources is nonsence
-                        break;
-                    }
-
-                    base.VisitAnyResourceValue(value);
-                    break;
+                return;
             }
+
+            result = LogicalOperation.Logical(OutSet, operation, leftOperand.Value, rightBoolean);
+            if (result != null)
+            {
+                return;
+            }
+
+            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation,
+                TypeConversion.ToInteger(leftOperand.Value));
+            if (result != null)
+            {
+                // Arithmetic with resources is nonsence
+                return;
+            }
+
+            base.VisitAnyResourceValue(value);
         }
 
         #endregion Abstract values

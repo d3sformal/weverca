@@ -8,17 +8,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with any abstract value as the left operand
+    /// Evaluates one binary operation with any abstract value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftAnyValueOperandVisitor : GenericLeftOperandVisitor<AnyValue>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftAnyValueOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftAnyValueOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftAnyValueOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftAnyValueOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -73,7 +80,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     // Ommitted warning message that object cannot be converted to integer
-                    DivisionByBooleanValue(value.Value);
+                    result = ModuloOperation.ModuloByBooleanValue(flow, value.Value);
                     break;
                 default:
                     result = Comparison.LeftAbstractBooleanCompare(OutSet, operation, value.Value);
@@ -128,12 +135,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntegerValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitLongintValue(LongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -196,36 +197,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitCompoundValue(CompoundValue value)
         {
-            switch (operation)
+            result = Comparison.AbstractCompare(OutSet, operation);
+            if (result != null)
             {
-                case Operations.Mod:
-                    // Ommitted warnings messages that objects cannot be converted to integers
-                    result = ModuloOperation.AbstractModulo(flow);
-                    break;
-                default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Ommitted warning message that object cannot be converted to integer
-                        break;
-                    }
-
-                    result = LogicalOperation.AbstractLogical(OutSet, operation);
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = BitwiseOperation.Bitwise(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Ommitted warnings messages that objects cannot be converted to integers
-                        break;
-                    }
-
-                    base.VisitCompoundValue(value);
-                    break;
+                // Ommitted warning message that object cannot be converted to integer
+                return;
             }
+
+            base.VisitCompoundValue(value);
         }
 
         /// <inheritdoc />
@@ -234,7 +213,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.Mod:
-                    // Ommitted warnings messages that objects cannot be converted to integers
+                    // Ommitted warning message that object cannot be converted to integer
+                    SetWarning("Object cannot be converted to integer by modulo operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
@@ -243,6 +224,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         // Ommitted warning message that object cannot be converted to integer
                         // Ommitted error report that array is unsupported operand in arithmetic operation
+                        SetWarning("Object cannot be converted to integer by arithmetic operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
+                        break;
+                    }
+
+                    result = LogicalOperation.AbstractLogical(OutSet, operation,
+                        TypeConversion.ToBoolean(value));
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Ommitted warning message that object cannot be converted to integer
+                        SetWarning("Object cannot be converted to integer by bitwise operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                         break;
                     }
 
@@ -262,11 +261,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         TypeConversion.ToNativeInteger(OutSet, value));
                     break;
                 default:
+                    result = LogicalOperation.AbstractLogical(OutSet, operation);
+                    if (result != null)
+                    {
+                        break;
+                    }
+
+                    result = BitwiseOperation.Bitwise(OutSet, operation);
+                    if (result != null)
+                    {
+                        // Ommitted warnings messages that objects cannot be converted to integers
+                        break;
+                    }
+
                     if (ArithmeticOperation.IsArithmetic(operation))
                     {
                         // Ommitted warning message that object cannot be converted to integer
                         // TODO: This must be fatal error
-                        SetWarning("Unsupported operand type: Arithmetic of array and scalar type");
+                        SetWarning("Unsupported operand type: Arithmetic of array and other value");
                         result = OutSet.AnyValue;
                         break;
                     }
@@ -277,50 +289,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            switch (operation)
-            {
-                case Operations.Mod:
-                    // Ommitted warning message that object cannot be converted to integer
-                    result = ModuloOperation.AbstractModulo(flow);
-                    break;
-                default:
-                    result = Comparison.AbstractCompare(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Ommitted warning message that object cannot be converted to integer
-                        break;
-                    }
-
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Ommitted warning message that object cannot be converted to integer
-                        // Ommitted error report that array is unsupported operand in arithmetic operation
-                        break;
-                    }
-
-                    result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToBoolean(value));
-                    if (result != null)
-                    {
-                        break;
-                    }
-
-                    result = BitwiseOperation.Bitwise(OutSet, operation);
-                    if (result != null)
-                    {
-                        // Ommitted warning message that object cannot be converted to integer
-                        break;
-                    }
-
-                    base.VisitResourceValue(value);
-                    break;
-            }
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -358,7 +326,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Mod:
                     // Ommitted warning message that object cannot be converted to integer
-                    DivisionByNull();
+                    result = ModuloOperation.ModuloByNull(flow);
                     break;
                 case Operations.BitAnd:
                     // Ommitted warning message that object cannot be converted to integer
@@ -443,12 +411,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitIntervalIntegerValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitIntervalLongintValue(LongintIntervalValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         /// <inheritdoc />
@@ -556,7 +518,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     // Ommitted warnings messages that objects cannot be converted to integers
-                    DivisionByAnyBooleanValue();
+                    result = ModuloOperation.ModuloByAnyBooleanValue(flow);
                     break;
                 default:
                     base.VisitAnyBooleanValue(value);
@@ -579,12 +541,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     base.VisitAnyNumericValue(value);
                     break;
             }
-        }
-
-        /// <inheritdoc />
-        public override void VisitAnyLongintValue(AnyLongintValue value)
-        {
-            throw new NotSupportedException("Long integer is not currently supported");
         }
 
         #endregion Abstract numeric values
@@ -628,7 +584,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     // Ommitted warning message that object cannot be converted to integer
-                    SetWarning("Object cannot be converted to integer by modulo operation");
+                    SetWarning("Object cannot be converted to integer by modulo operation",
+                        AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                     result = ModuloOperation.AbstractModulo(flow);
                     break;
                 default:
@@ -637,7 +594,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         // Ommitted warning message that object cannot be converted to integer
                         // Ommitted error report that array is unsupported operand in arithmetic operation
-                        SetWarning("Object cannot be converted to integer by arithmetic operation");
+                        SetWarning("Object cannot be converted to integer by arithmetic operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                         break;
                     }
 
@@ -652,7 +610,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (result != null)
                     {
                         // Ommitted warning message that object cannot be converted to integer
-                        SetWarning("Object cannot be converted to integer by bitwise operation");
+                        SetWarning("Object cannot be converted to integer by bitwise operation",
+                            AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                         break;
                     }
 

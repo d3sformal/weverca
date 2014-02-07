@@ -6,17 +6,27 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// The class is used as base class for evaluation of specific type of expression during the analysis
+    /// The class is used as base class for evaluation of specific type of expression during the analysis.
     /// </summary>
+    /// <remarks>
+    /// Evaluation of every expression has common characteristics. The evaluation can need context of
+    /// the program. Class <see cref="FlowController" /> represent the context, that every construct
+    /// in analysis can use. It contains <see cref="FlowOutputSet" /> class, that is necessary, among
+    /// other things, for access to variables and creating new values, which most expressions do.
+    /// The correct context must be set before every use of class by <see cref="SetContext" /> method.
+    /// Sometimes an expression is not correct in some way. Therefore, there is "SetContext" method
+    /// to create a warning. Some values ??cannot appear in the expression, i.e. type or function values.
+    /// Then the exception is thrown.
+    /// </remarks>
     public abstract class PartialExpressionEvaluator : AbstractValueVisitor
     {
         /// <summary>
-        /// Flow controller of program point providing data for evaluation (output set, position etc.)
+        /// Flow controller of program point providing data for evaluation (output set, position etc.).
         /// </summary>
         protected FlowController flow;
 
         /// <summary>
-        /// Gets output set of a program point
+        /// Gets output set of a program point.
         /// </summary>
         public FlowOutputSet OutSet
         {
@@ -26,7 +36,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Initializes a new instance of the <see cref="PartialExpressionEvaluator" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        /// <remarks>
+        /// Context must be set by <see cref="SetContext" /> method before the first use of evaluator.
+        /// </remarks>
+        protected PartialExpressionEvaluator()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PartialExpressionEvaluator" /> class.
+        /// </summary>
+        /// <remarks>
+        /// Constructor with <see cref="FlowController" /> parameter is very useful when object is utilized.
+        /// immediately for one particular task.
+        /// </remarks>
+        /// <param name="flowController">Flow controller of program point.</param>
         protected PartialExpressionEvaluator(FlowController flowController)
         {
             SetContext(flowController);
@@ -36,9 +60,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Set current evaluation context.
         /// </summary>
         /// <remarks>
-        /// The flow controller changes for every expression, so it must be always called again
+        /// The flow controller changes for every expression, so it must be always called again.
         /// </remarks>
-        /// <param name="flowController">Flow controller of program point available for evaluation</param>
+        /// <param name="flowController">Flow controller of program point available for evaluation.</param>
         public void SetContext(FlowController flowController)
         {
             flow = flowController;
@@ -47,7 +71,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region AbstractValueVisitor Members
 
         /// <inheritdoc />
-        /// <exception cref="NotImplementedException">Thrown always</exception>
+        /// <exception cref="System.NotImplementedException">Thrown always</exception>
         public override void VisitValue(Value value)
         {
             throw new NotImplementedException("There is no way to evaluate a value of the type");
@@ -95,13 +119,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Function values
 
         /// <inheritdoc />
-        /// <exception cref="ArgumentException">Thrown always since function value is not valid</exception>
+        /// <exception cref="System.ArgumentException">
+        /// Thrown always since function value is not valid in an expression
+        /// </exception>
         public override void VisitFunctionValue(FunctionValue value)
         {
             throw new ArgumentException("Expression cannot contain any function value");
         }
 
         /// <inheritdoc />
+        /// <exception cref="System.NotSupportedException">Thrown always</exception>
         public override void VisitLambdaFunctionValue(LambdaFunctionValue value)
         {
             // TODO: There is no special lambda type, it is implemented as Closure object with __invoke()
@@ -113,7 +140,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Type values
 
         /// <inheritdoc />
-        /// <exception cref="ArgumentException">Thrown always since type value is not valid</exception>
+        /// <exception cref="System.ArgumentException">Thrown always since type value is not valid</exception>
         public override void VisitTypeValue(TypeValue value)
         {
             throw new ArgumentException("Expression cannot contain any type value");
@@ -124,7 +151,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Special values
 
         /// <inheritdoc />
-        /// <exception cref="ArgumentException">Thrown always since special value is not valid</exception>
+        /// <exception cref="System.ArgumentException">
+        /// Thrown always since special value is not valid in an expression
+        /// </exception>
         public override void VisitSpecialValue(SpecialValue value)
         {
             throw new ArgumentException("Expression cannot contain any special value");
@@ -137,9 +166,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Helper methods
 
         /// <summary>
-        /// Report a warning for the position of current expression
+        /// Report a warning for the position of current expression.
         /// </summary>
-        /// <param name="message">Message of the warning</param>
+        /// <param name="message">Message of the warning.</param>
         protected void SetWarning(string message)
         {
             var warning = new AnalysisWarning(message, flow.CurrentPartial);
@@ -147,10 +176,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Report a warning for the position of current expression
+        /// Report a warning for the position of current expression.
         /// </summary>
-        /// <param name="message">Message of the warning</param>
-        /// <param name="cause">Cause of the warning</param>
+        /// <param name="message">Message of the warning.</param>
+        /// <param name="cause">Cause of the warning.</param>
         protected void SetWarning(string message, AnalysisWarningCause cause)
         {
             var warning = new AnalysisWarning(message, flow.CurrentPartial, cause);

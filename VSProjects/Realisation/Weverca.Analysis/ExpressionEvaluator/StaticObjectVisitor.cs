@@ -1,9 +1,9 @@
-﻿using PHP.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
+using PHP.Core;
+
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
@@ -21,9 +21,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public StaticObjectVisitorResult Result;
         public QualifiedName className;
 
-        public StaticObjectVisitor(FlowController flowController) : base(flowController)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StaticObjectVisitor" /> class.
+        /// </summary>
+        public StaticObjectVisitor()
         {
-            
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StaticObjectVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
+        public StaticObjectVisitor(FlowController flowController)
+            : base(flowController)
+        {
         }
 
         public override void VisitValue(Value value)
@@ -52,8 +63,5 @@ namespace Weverca.Analysis.ExpressionEvaluator
             className = new QualifiedName(new Name(value.Value));
             Result = StaticObjectVisitorResult.ONE_RESULT;
         }
-
-
-
     }
 }

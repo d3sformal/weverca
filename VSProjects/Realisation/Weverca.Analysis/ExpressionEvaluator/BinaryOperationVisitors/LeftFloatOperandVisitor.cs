@@ -6,17 +6,24 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Evaluates one binary operation with fixed floating-point value as the left operand
+    /// Evaluates one binary operation with fixed floating-point value as the left operand.
     /// </summary>
     /// <remarks>
-    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />
+    /// Supported binary operations are listed in the <see cref="LeftOperandVisitor" />.
     /// </remarks>
     public class LeftFloatOperandVisitor : LeftNumericOperandVisitor<double>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LeftFloatOperandVisitor" /> class.
         /// </summary>
-        /// <param name="flowController">Flow controller of program point</param>
+        public LeftFloatOperandVisitor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LeftFloatOperandVisitor" /> class.
+        /// </summary>
+        /// <param name="flowController">Flow controller of program point.</param>
         public LeftFloatOperandVisitor(FlowController flowController)
             : base(flowController)
         {
@@ -212,9 +219,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         // If at least one operand can not be recognized, result can be any integer value.
-                        if (BitwiseOperation.IsBitwise(operation))
+                        result = BitwiseOperation.Bitwise(OutSet, operation);
+                        if (result != null)
                         {
-                            result = OutSet.AnyIntegerValue;
                             break;
                         }
                     }
@@ -234,18 +241,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand.Value);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
             result = LogicalOperation.Logical(OutSet, operation,
                 TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value));
-            if (result != null)
-            {
-                return;
-            }
-
-            result = BitwiseOperation.Bitwise(OutSet, operation);
             if (result != null)
             {
                 return;
@@ -285,26 +287,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         #endregion Compound values
-
-        /// <inheritdoc />
-        public override void VisitResourceValue(ResourceValue value)
-        {
-            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand.Value);
-            if (result != null)
-            {
-                // Arithmetic with resources is nonsence
-                return;
-            }
-
-            result = LogicalOperation.Logical(OutSet, operation,
-                TypeConversion.ToBoolean(leftOperand.Value), TypeConversion.ToBoolean(value));
-            if (result != null)
-            {
-                return;
-            }
-
-            base.VisitResourceValue(value);
-        }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
@@ -549,11 +531,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyObjectValue(AnyObjectValue value)
         {
-            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation,
-                leftOperand.Value);
+            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand.Value);
             if (result != null)
             {
-                SetWarning("Object cannot be converted to integer by arithmetic operation");
+                SetWarning("Object cannot be converted to integer by arithmetic operation",
+                    AnalysisWarningCause.OBJECT_CONVERTED_TO_INTEGER);
                 return;
             }
 
