@@ -85,9 +85,12 @@ namespace Weverca.AnalysisFramework
             SnapshotStatistics statistics = new SnapshotStatistics();
             foreach (var point in Points)
             {
-                SnapshotStatistics tempStat = point.InSnapshot.GetStatistics();
-                tempStat.MergeWith(point.OutSnapshot.GetStatistics());
-                statistics.MergeWith( tempStat );
+                if (point.InSet != null)
+                {
+                    SnapshotStatistics tempStat = point.InSnapshot.GetStatistics();
+                    tempStat.MergeWith(point.OutSnapshot.GetStatistics());
+                    statistics.MergeWith(tempStat);
+                }
             }
             return statistics;
         }

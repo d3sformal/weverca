@@ -93,7 +93,6 @@ namespace Weverca.Analysis
             initVariable("_ENV",EntryInput.AnyArrayValue);
             initVariable("_COOKIE",EntryInput.AnyArrayValue);
             initVariable("php_errormsg",EntryInput.AnyStringValue);
-            initVariable("_SESSION",EntryInput.AnyArrayValue);
             initVariable("argc",EntryInput.AnyIntegerValue);
             initVariable("argv",EntryInput.AnyArrayValue);
             initVariable("GLOBALS", EntryInput.AnyArrayValue); 
