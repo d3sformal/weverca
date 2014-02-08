@@ -566,6 +566,22 @@ namespace Weverca.Analysis
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
+            Dictionary<object, FunctionValue> newFunctions=new Dictionary<object,FunctionValue>();
+            foreach (var entry in functions)
+            {
+                if (entry.Value.MethodDecl != null)
+                {
+                    if (entry.Value.MethodDecl.Body == null)
+                    {
+                        setWarning("Cannot call function without body", AnalysisWarningCause.CANNOT_CALL_METHOD_WITHOUT_BODY);
+                        continue;
+                    }
+                }
+                newFunctions.Add(entry.Key, entry.Value);
+            }
+            functions = newFunctions;
+
+
             foreach (var branchKey in Flow.ExtensionKeys)
             {
                 if (!functions.Remove(branchKey))

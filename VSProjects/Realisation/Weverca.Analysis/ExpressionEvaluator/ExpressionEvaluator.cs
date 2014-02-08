@@ -107,11 +107,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             binaryOperationVisitor.SetContext(Flow);
             var result = binaryOperationVisitor.Evaluate(leftOperand, operation, rightOperand);
             //to save memory and coputation time
+            /*
+            TODO move to memory assistent
             if (result.PossibleValues.Count() > 10)
             {
                 var wideningVisitor = new WidenningVisitor();
                 return wideningVisitor.Widen(result.PossibleValues, OutSet.Snapshot);
-            }
+            }*/
 
             return result;
         }
