@@ -366,7 +366,16 @@ namespace Weverca.Analysis
                     }
                 }
 
-               ;
+                //superglobal variables
+                OutSet.FetchFromGlobal(new VariableName("GLOBALS"));
+                OutSet.FetchFromGlobal(new VariableName("_SERVER"));
+                OutSet.FetchFromGlobal(new VariableName("_GET"));
+                OutSet.FetchFromGlobal(new VariableName("_POST"));
+                OutSet.FetchFromGlobal(new VariableName("_FILES"));
+                OutSet.FetchFromGlobal(new VariableName("_COOKIE"));
+                OutSet.FetchFromGlobal(new VariableName("_SESSION"));
+                OutSet.FetchFromGlobal(new VariableName("_REQUEST"));
+                OutSet.FetchFromGlobal(new VariableName("_ENV"));
 
                 FunctionValue thisFunction=OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
                 List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);

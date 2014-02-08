@@ -60,6 +60,14 @@ namespace Weverca.Analysis
 
         #endregion
 
+        protected void initVariable(string name,Value value)
+        {
+            var variable = new VariableName(name);
+            EntryInput.FetchFromGlobal(variable);
+            EntryInput.GetVariable(new VariableIdentifier(variable), true).WriteMemory(EntryInput.Snapshot , new MemoryEntry(value));        
+        }
+
+
         /// <summary>
         /// Initialize php variables and control variables user by static analyser
         /// </summary>
@@ -78,7 +86,18 @@ namespace Weverca.Analysis
             var getVariable = EntryInput.GetVariable(new VariableIdentifier(get), true);
             getVariable.WriteMemory(EntryInput.Snapshot , new MemoryEntry(getValue));
 
-            
+            initVariable("_SERVER",EntryInput.AnyArrayValue);
+            initVariable("_FILES",EntryInput.AnyArrayValue);
+            initVariable("_REQUEST",EntryInput.AnyArrayValue);
+            initVariable("_SESSION",EntryInput.AnyArrayValue);
+            initVariable("_ENV",EntryInput.AnyArrayValue);
+            initVariable("_COOKIE",EntryInput.AnyArrayValue);
+            initVariable("php_errormsg",EntryInput.AnyStringValue);
+            initVariable("_SESSION",EntryInput.AnyArrayValue);
+            initVariable("argc",EntryInput.AnyIntegerValue);
+            initVariable("argv",EntryInput.AnyArrayValue);
+            initVariable("GLOBALS", EntryInput.AnyArrayValue); 
+
             var staticVariablesArray = EntryInput.CreateArray();
             var staticVariable = EntryInput.GetControlVariable(FunctionResolver.staticVariables);
             staticVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(staticVariablesArray));
