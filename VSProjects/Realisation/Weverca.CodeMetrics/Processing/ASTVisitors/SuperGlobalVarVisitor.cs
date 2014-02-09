@@ -1,39 +1,28 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core.AST;
 
-namespace Weverca.CodeMetrics.Processing.ASTVisitors
+namespace Weverca.CodeMetrics.Processing.AstVisitors
 {
     /// <summary>
-    /// Visitor which collect super global variable usage
+    /// Visitor which collect super global variable usage.
     /// </summary>
-    class SuperGlobalVarVisitor : TreeVisitor
+    internal class SuperGlobalVarVisitor : OccurrenceVisitor
     {
-        List<AstNode> foundSuperGlobals = new List<AstNode>();
-
-        /// <summary>
-        /// Returns calls which were founded during visiting tree
-        /// </summary>
-        /// <returns></returns>
-        internal IEnumerable<AstNode> GetVariables()
-        {
-            //Copy result because of make it immutable
-            return foundSuperGlobals.ToArray();
-        }
-
         #region TreeVisitor overrides
 
+        /// <inheritdoc />
         public override void VisitDirectVarUse(DirectVarUse x)
         {
             var name = x.VarName;
             if (name.IsAutoGlobal)
             {
-                foundSuperGlobals.Add(x);
+                occurrenceNodes.Enqueue(x);
             }
 
             base.VisitDirectVarUse(x);
         }
 
-        #endregion
+        #endregion TreeVisitor overrides
     }
 }

@@ -1,28 +1,30 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using PHP.Core.AST;
 using PHP.Core.Reflection;
 
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Calculates how many user-defined functions a single function calls on average
+    /// Calculates how many user-defined functions a single function calls on average.
     /// </summary>
     [Metric(Rating.PhpFunctionsCoupling)]
-    class FunctionCouplingProcessor : RatingProcessor
+    internal class FunctionCouplingProcessor : RatingProcessor
     {
         #region MetricProcessor overrides
 
-        protected override Result process(bool resolveOccurances, Rating category,
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, Rating category,
             SyntaxParser parser)
         {
-            Debug.Assert(category == Rating.PhpFunctionsCoupling);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == Rating.PhpFunctionsCoupling,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
             if (parser.Functions == null)
             {
@@ -37,19 +39,19 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            var functionReferences = new Stack<KeyValuePair<FunctionDecl, DirectFcnCall[]>>();
+            var functionReferences = new Queue<KeyValuePair<FunctionDecl, DirectFcnCall[]>>();
             foreach (var routine in parser.Functions)
             {
-                Debug.Assert(routine.Value.Member is PhpFunction);
                 var phpFunction = routine.Value.Member as PhpFunction;
+                Debug.Assert(phpFunction != null);
 
-                Debug.Assert(phpFunction.Declaration.GetNode() is FunctionDecl);
                 var declaration = phpFunction.Declaration.GetNode() as FunctionDecl;
+                Debug.Assert(declaration != null);
 
                 var visitor = new FunctionCouplingVisitor(declaration.Function);
                 declaration.VisitMe(visitor);
                 var references = visitor.GetReferences();
-                functionReferences.Push(new KeyValuePair<FunctionDecl, DirectFcnCall[]>(
+                functionReferences.Enqueue(new KeyValuePair<FunctionDecl, DirectFcnCall[]>(
                     declaration, references));
             }
 
@@ -57,12 +59,12 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             if (resolveOccurances)
             {
-                var allFunctionReferences = new Stack<DirectFcnCall>();
+                var allFunctionReferences = new Queue<DirectFcnCall>();
                 foreach (var functionReference in functionReferences)
                 {
                     foreach (var reference in functionReference.Value)
                     {
-                        allFunctionReferences.Push(reference);
+                        allFunctionReferences.Enqueue(reference);
                     }
                 }
 
@@ -75,15 +77,16 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
 
         /// <summary>
-        /// Calculate average number of unique function references that a function contains
+        /// Calculate average number of unique function references that a function contains.
         /// </summary>
+        /// <param name="functionCouplings">List of function with connections to another function.s</param>
         /// <returns>
-        /// Measurement of average number of unique function reference inside a function implementation
+        /// Measurement of average number of unique function reference inside a function implementation.
         /// </returns>
-        private double CalculateRating(KeyValuePair<FunctionDecl, DirectFcnCall[]>[]/*!*/ functionCouplings)
+        private static double CalculateRating(KeyValuePair<FunctionDecl, DirectFcnCall[]>[] functionCouplings)
         {
             if (functionCouplings.Length <= 0)
             {
@@ -96,6 +99,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 Debug.Assert(functionDeclaration.Value != null);
                 numberOfReferences += functionDeclaration.Value.Length;
             }
+
             return System.Convert.ToDouble(numberOfReferences) / functionCouplings.Length;
         }
     }

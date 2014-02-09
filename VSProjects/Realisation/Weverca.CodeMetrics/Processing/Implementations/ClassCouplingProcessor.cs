@@ -1,26 +1,28 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using PHP.Core.AST;
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Calculates how many user-defined classes a single class uses on average
+    /// Calculates how many user-defined classes a single class uses on average.
     /// </summary>
     [Metric(Rating.ClassCoupling)]
-    class ClassCouplingProcessor : RatingProcessor
+    internal class ClassCouplingProcessor : RatingProcessor
     {
         #region MetricProcessor overrides
 
-        protected override Result process(bool resolveOccurances, Rating category,
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, Rating category,
             SyntaxParser parser)
         {
-            Debug.Assert(category == Rating.ClassCoupling);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == Rating.ClassCoupling,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
             if (parser.Types == null)
             {
@@ -35,27 +37,27 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            var types = new Stack<TypeDecl>();
+            var types = new Queue<TypeDecl>();
             foreach (var type in parser.Types)
             {
                 var node = type.Value.Declaration.GetNode();
-                Debug.Assert(node is TypeDecl);
-
                 var typeNode = node as TypeDecl;
+                Debug.Assert(typeNode != null);
+
                 // As a type, we consider class and interface too
                 if ((typeNode.AttributeTarget & PhpAttributeTargets.Types) != 0)
                 {
-                    types.Push(typeNode);
+                    types.Enqueue(typeNode);
                 }
             }
 
-            var typeReferences = new Stack<KeyValuePair<TypeDecl, DirectTypeRef[]>>();
+            var typeReferences = new Queue<KeyValuePair<TypeDecl, DirectTypeRef[]>>();
             foreach (var type in types)
             {
                 var visitor = new ClassCouplingVisitor(type.Type);
                 type.VisitMe(visitor);
                 var references = visitor.GetReferences();
-                typeReferences.Push(new KeyValuePair<TypeDecl, DirectTypeRef[]>(
+                typeReferences.Enqueue(new KeyValuePair<TypeDecl, DirectTypeRef[]>(
                     type, references));
             }
 
@@ -63,12 +65,12 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             if (resolveOccurances)
             {
-                var allTypeReferences = new Stack<DirectTypeRef>();
+                var allTypeReferences = new Queue<DirectTypeRef>();
                 foreach (var typeReference in typeReferences)
                 {
                     foreach (var reference in typeReference.Value)
                     {
-                        allTypeReferences.Push(reference);
+                        allTypeReferences.Enqueue(reference);
                     }
                 }
 
@@ -81,13 +83,14 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
 
         /// <summary>
-        /// Calculate average number of unique type references that a type contains
+        /// Calculate average number of unique type references that a type contains.
         /// </summary>
-        /// <returns>Measurement of average number of unique type references inside a type</returns>
-        private double CalculateRating(KeyValuePair<TypeDecl, DirectTypeRef[]>[] classCouplings)
+        /// <param name="classCouplings">List of types with connections to another types.</param>
+        /// <returns>Measurement of average number of unique type references inside a type.</returns>
+        private static double CalculateRating(KeyValuePair<TypeDecl, DirectTypeRef[]>[] classCouplings)
         {
             if (classCouplings.Length <= 0)
             {
@@ -100,6 +103,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 Debug.Assert(classDeclaration.Value != null);
                 numberOfReferences += classDeclaration.Value.Length;
             }
+
             return System.Convert.ToDouble(numberOfReferences) / classCouplings.Length;
         }
     }

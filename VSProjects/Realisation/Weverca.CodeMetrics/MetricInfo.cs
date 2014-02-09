@@ -1,204 +1,222 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core;
 using PHP.Core.AST;
 
-using Weverca.Parsers;
 using Weverca.CodeMetrics.Processing;
-using Weverca.CodeMetrics.Processing.Implementations;
-
+using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics
 {
     /// <summary>
-    /// Class representing code metrics for specified sources.
-    /// NOTE: Is immutable.
+    /// Class representing code metrics for specified sources. It is immutable.
     /// </summary>
+    /// <remarks>
+    /// The class store information about result of analysis. There are three categories of metrics:
+    /// Ratings, quantities and indicators. The object can be create only by static constructor
+    /// <see cref="FromParsers" /> that executes analysis and gather results. They are then accessible.
+    /// </remarks>
     public class MetricInfo
     {
         /// <summary>
-        /// Determine that occurances has been resolved
+        /// Determine that occurrences has been resolved.
         /// </summary>
-        public readonly bool HasResolvedOccurances;
+        public readonly bool HasResolvedOccurrences;
 
         #region ResultBatches collected from MetricProcessors
 
         /// <summary>
-        /// Here is stored info about indicators
+        /// Info about indicators.
         /// </summary>
-        readonly IndicatorProcessor.ResultBatch indicatorBatch;
-        /// <summary>
-        /// Here is stored info about ratings
-        /// </summary>
-        readonly RatingProcessor.ResultBatch ratingBatch;
-        /// <summary>
-        /// Here is stored info about quantities
-        /// </summary>
-        readonly QuantityProcessor.ResultBatch quantityBatch;
+        private readonly IndicatorProcessor.ResultBatch indicatorBatch;
 
-        #endregion
+        /// <summary>
+        /// Info about ratings.
+        /// </summary>
+        private readonly RatingProcessor.ResultBatch ratingBatch;
+
+        /// <summary>
+        /// Info about quantities.
+        /// </summary>
+        private readonly QuantityProcessor.ResultBatch quantityBatch;
+
+        #endregion ResultBatches collected from MetricProcessors
 
         #region Included sources
+
         /// <summary>
-        /// Contains syntax parsers according to included source files
+        /// Contains syntax parsers according to included source files.
         /// </summary>
-        Dictionary<PhpSourceFile, SyntaxParser> includedFiles = new Dictionary<PhpSourceFile, SyntaxParser>();
-        #endregion
+        private Dictionary<PhpSourceFile, SyntaxParser> includedFiles
+            = new Dictionary<PhpSourceFile, SyntaxParser>();
+
+        #endregion Included sources
 
         #region MetricInfo constructors
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="MetricInfo" /> class.
         /// Creates metric info for given sources.
         /// </summary>
-        /// <param name="resolveOccurances"></param>
-        /// <param name="parser"></param>
+        /// <param name="resolveOccurances">
+        /// Determine whether evidences of occurrences in sources code should be stored.
+        /// </param>
+        /// <param name="parser">Syntax parser of source code.</param>
         private MetricInfo(bool resolveOccurances, SyntaxParser parser)
         {
             if (!parser.IsParsed)
             {
-                //we need content in parser to be parsed
+                // We need content in parser to be parsed
                 parser.Parse();
             }
 
-           // TODO check for parser errors
+            // TODO: Check for parser errors
 
             indicatorBatch = ProcessingServices.ProcessIndicators(resolveOccurances, parser);
             ratingBatch = ProcessingServices.ProcessRatings(resolveOccurances, parser);
             quantityBatch = ProcessingServices.ProcessQuantities(resolveOccurances, parser);
 
-            HasResolvedOccurances = resolveOccurances;
-            includeParsers(parser);
+            HasResolvedOccurrences = resolveOccurances;
+            IncludeParsers(parser);
         }
 
         /// <summary>
-        /// Creates metric info from given indicators
+        /// Initializes a new instance of the <see cref="MetricInfo" /> class.
+        /// Creates metric info from given indicators.
         /// </summary>
-        /// <param name="indicatorBatch"></param>
-        /// <param name="ratingBatch"></param>
-        /// <param name="quantityBatch"></param>
+        /// <param name="indicatorBatch">Info about indicators.</param>
+        /// <param name="ratingBatch">Info about ratings.</param>
+        /// <param name="quantityBatch">Info about quantities.</param>
+        /// <param name="includedParsers">Syntax parsers of included source files.</param>
+        /// <param name="hasResolvedOccurances">
+        /// Determine whether info will contains occurrences of nodes related to metric.
+        /// </param>
         private MetricInfo(
             IndicatorProcessor.ResultBatch indicatorBatch,
             RatingProcessor.ResultBatch ratingBatch,
             QuantityProcessor.ResultBatch quantityBatch,
             IEnumerable<SyntaxParser> includedParsers,
-            bool hasResolvedOccurances
-            )
+            bool hasResolvedOccurances)
         {
             this.indicatorBatch = indicatorBatch;
             this.ratingBatch = ratingBatch;
             this.quantityBatch = quantityBatch;
-            this.HasResolvedOccurances = hasResolvedOccurances;
-            includeParsers(includedParsers.ToArray());
+            this.HasResolvedOccurrences = hasResolvedOccurances;
+            IncludeParsers(includedParsers.ToArray());
         }
-        #endregion
+
+        #endregion MetricInfo constructors
 
         #region MetricInfo API
 
         /// <summary>
-        /// Create MetricInfo which is merged from given parsers
+        /// Create MetricInfo which is merged from given parsers.
         /// </summary>
-        /// <param name="resolveOccurances">Determine that info will contains occurances of nodes related to metric</param>
-        /// <param name="parsers">Parsers to be merged by metric info</param>
-        /// <returns>Metric info according to parsers</returns>
-        public static MetricInfo FromParsers(bool resolveOccurances, params SyntaxParser[] parsers)
+        /// <param name="resolveOccurrences">
+        /// Determine whether info will contains occurrences of nodes related to metric.
+        /// </param>
+        /// <param name="parsers">Parsers to be merged by metric info.</param>
+        /// <returns>Metric info according to parsers.</returns>
+        public static MetricInfo FromParsers(bool resolveOccurrences, params SyntaxParser[] parsers)
         {
             if (parsers.Length < 1)
             {
                 throw new ArgumentException("Needs at least one syntax parser specified");
             }
 
-            var buffer = new MetricInfo(resolveOccurances, parsers[0]);
+            var buffer = new MetricInfo(resolveOccurrences, parsers[0]);
 
-            //merge info for all parsers together
+            // merge info for all parsers together
             for (var i = 1; i < parsers.Length; ++i)
             {
-                buffer = MergeWithParser(resolveOccurances, buffer, parsers[i]);
+                buffer = MergeWithParser(resolveOccurrences, buffer, parsers[i]);
             }
 
             return buffer;
         }
 
         #region Indicator metrics API
+
         /// <summary>
-        /// Determine that metric info has specified indicator set on true
+        /// Determine that metric info has specified indicator set on true.
         /// </summary>
-        /// <param name="indicators"></param>
-        /// <returns></returns>
+        /// <param name="indicator">A concrete metric from indicators category.</param>
+        /// <returns><c>true</c> whether construct appeared in source code.</returns>
         public bool HasIndicator(ConstructIndicator indicator)
         {
             return indicatorBatch.GetResult(indicator).Property;
         }
 
         /// <summary>
-        /// Get occurances for given metric.
-        /// NOTE: Occurance resolving has to be enabled when creating metric info for GetOccurances usage.
+        /// Get occurrences for given metric.
+        /// NOTE: Occurrence resolving has to be enabled when creating metric info for GetOccurrences usage.
         /// </summary>
-        /// <param name="indicator">Metrich whic occurances will be returned</param>
-        /// <returns>Resolved occurances.</returns>
-        public IEnumerable<AstNode> GetOccurances(ConstructIndicator indicator)
+        /// <param name="indicator">Metric which occurrences will be returned.</param>
+        /// <returns>Resolved occurrences.</returns>
+        public IEnumerable<AstNode> GetOccurrences(ConstructIndicator indicator)
         {
-            throwOnUnresolvedOccurances();
-            return indicatorBatch.GetResult(indicator).Occurances;
+            ThrowOnUnresolvedOccurrences();
+            return indicatorBatch.GetResult(indicator).Occurrences;
         }
         #endregion
 
         #region Rating metrics API
+
         /// <summary>
         /// Returns value of given rating.
         /// </summary>
-        /// <param name="rating"></param>
-        /// <returns></returns>
+        /// <param name="rating">A concrete metric from ratings category.</param>
+        /// <returns>Rating value of the metric.</returns>
         public double GetRating(Rating rating)
         {
             return ratingBatch.GetResult(rating).Property;
         }
 
         /// <summary>
-        /// Get occurances for given metric.
-        /// NOTE: Occurance resolving has to be enabled when creating metric info for GetOccurances usage.
+        /// Get occurrences for given metric.
+        /// NOTE: Occurrence resolving has to be enabled when creating metric info for GetOccurrences usage.
         /// </summary>
-        /// <param name="rating">Metrich whic occurances will be returned</param>
-        /// <returns>Resolved occurances.</returns>
-        public IEnumerable<AstNode> GetOccurances(Rating rating)
+        /// <param name="rating">Metric which occurrences will be returned.</param>
+        /// <returns>Resolved occurrences.</returns>
+        public IEnumerable<AstNode> GetOccurrences(Rating rating)
         {
-            throwOnUnresolvedOccurances();
-            return ratingBatch.GetResult(rating).Occurances;
+            ThrowOnUnresolvedOccurrences();
+            return ratingBatch.GetResult(rating).Occurrences;
         }
         #endregion
 
         #region Quantity metrics API
+
         /// <summary>
         /// Returns quantity of given quantitative metric.
         /// </summary>
-        /// <param name="quantity"></param>
-        /// <returns></returns>
+        /// <param name="quantity">A concrete metric from quantities category.</param>
+        /// <returns>Number representing any property of source code.</returns>
         public int GetQuantity(Quantity quantity)
         {
             return quantityBatch.GetResult(quantity).Property;
         }
 
         /// <summary>
-        /// Get occurances for given metric.
-        /// NOTE: Occurance resolving has to be enabled when creating metric info for GetOccurances usage.
+        /// Get occurrences for given metric.
+        /// NOTE: Occurrence resolving has to be enabled when creating metric info for GetOccurrences usage.
         /// </summary>
-        /// <param name="quantity">Metrich whic occurances will be returned</param>
-        /// <returns>Resolved occurances.</returns>
-        public IEnumerable<AstNode> GetOccurances(Quantity quantity)
+        /// <param name="quantity">Metric which occurrences will be returned.</param>
+        /// <returns>Resolved occurrences.</returns>
+        public IEnumerable<AstNode> GetOccurrences(Quantity quantity)
         {
-            throwOnUnresolvedOccurances();
-            return quantityBatch.GetResult(quantity).Occurances;
+            ThrowOnUnresolvedOccurrences();
+            return quantityBatch.GetResult(quantity).Occurrences;
         }
         #endregion
 
         /// <summary>
-        /// Determine that given file is included in metric info
+        /// Determine that given file is included in metric info.
         /// </summary>
         /// <param name="file">File to be checked.</param>
-        /// <returns>True if file is included, false otherwise</returns>
+        /// <returns>True if file is included, false otherwise.</returns>
         public bool IsFileIncluded(PhpSourceFile file)
         {
             return includedFiles.ContainsKey(file);
@@ -207,50 +225,55 @@ namespace Weverca.CodeMetrics
         /// <summary>
         /// Create new metric info by merging this info with given other info.
         /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
+        /// <param name="other">The other <see cref="MetricInfo" /> object.</param>
+        /// <returns><see cref="MetricInfo" /> merged from two other objects.</returns>
         public MetricInfo Merge(MetricInfo other)
         {
             var commonFiles = includedFiles.Keys.Intersect(other.includedFiles.Keys);
             if (commonFiles.Count() > 0)
             {
-                var notIncludedParsers = new List<SyntaxParser>();
+                var notIncludedParsers = new Queue<SyntaxParser>();
                 var notInlcudedFiles = other.includedFiles.Keys.Except(commonFiles);
                 foreach (var file in notInlcudedFiles)
                 {
-                    notIncludedParsers.Add(other.includedFiles[file]);
+                    notIncludedParsers.Enqueue(other.includedFiles[file]);
                 }
-                other = FromParsers(other.HasResolvedOccurances, notIncludedParsers.ToArray());
+
+                other = FromParsers(other.HasResolvedOccurrences, notIncludedParsers.ToArray());
             }
 
-            var resultIndicators = ProcessingServices.MergeIndicators(this.indicatorBatch, other.indicatorBatch);
-            var resultRatings = ProcessingServices.MergeRatings(this.ratingBatch, other.ratingBatch);
-            var resultQuantities = ProcessingServices.MergeQuantities(this.quantityBatch, other.quantityBatch);
+            var resultIndicators = ProcessingServices.MergeIndicators(indicatorBatch, other.indicatorBatch);
+            var resultRatings = ProcessingServices.MergeRatings(ratingBatch, other.ratingBatch);
+            var resultQuantities = ProcessingServices.MergeQuantities(quantityBatch, other.quantityBatch);
             var includedParsers = includedFiles.Values.Union(other.includedFiles.Values);
 
-            return new MetricInfo(resultIndicators, resultRatings, resultQuantities, includedParsers, HasResolvedOccurances && other.HasResolvedOccurances);
+            return new MetricInfo(resultIndicators, resultRatings, resultQuantities, includedParsers,
+                HasResolvedOccurrences && other.HasResolvedOccurrences);
         }
-        #endregion
+
+        #endregion MetricInfo API
 
         #region Utility methods
+
         /// <summary>
-        /// Merge given metric with new metric created from parser
+        /// Merge given metric with new metric created from parser.
         /// </summary>
-        /// <param name="resolveOccurances"></param>
+        /// <param name="resolveOccurrences"></param>
         /// <param name="metric"></param>
         /// <param name="parser"></param>
         /// <returns></returns>
-        private static MetricInfo MergeWithParser(bool resolveOccurances, MetricInfo metric, SyntaxParser parser)
+        private static MetricInfo MergeWithParser(bool resolveOccurrences, MetricInfo metric,
+            SyntaxParser parser)
         {
-            var metricInfo = new MetricInfo(resolveOccurances, parser);
+            var metricInfo = new MetricInfo(resolveOccurrences, parser);
             return metric.Merge(metricInfo);
         }
 
         /// <summary>
-        /// Add files parsed by parsers into includedFiles
+        /// Add files parsed by parsers into <c>includedFiles</c>.
         /// </summary>
-        /// <param name="parser"></param>
-        private void includeParsers(params SyntaxParser[] parsers)
+        /// <param name="parsers">Syntax parsers of source code.</param>
+        private void IncludeParsers(params SyntaxParser[] parsers)
         {
             foreach (var parser in parsers)
             {
@@ -260,15 +283,16 @@ namespace Weverca.CodeMetrics
         }
 
         /// <summary>
-        /// Throws exception if occurances hasn't been resolved.
+        /// Throws exception if occurrences has not been resolved.
         /// </summary>
-        private void throwOnUnresolvedOccurances()
+        private void ThrowOnUnresolvedOccurrences()
         {
-            if (!HasResolvedOccurances)
+            if (!HasResolvedOccurrences)
             {
-                throw new NotSupportedException("Cannot get occurances, when they hasn't been resolved");
+                throw new NotSupportedException("Cannot get occurrences, when they have not been resolved");
             }
         }
-        #endregion
+
+        #endregion Utility methods
     }
 }

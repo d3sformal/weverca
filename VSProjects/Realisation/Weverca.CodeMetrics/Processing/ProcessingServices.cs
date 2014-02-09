@@ -1,110 +1,127 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Reflection;
 
-using PHP.Core.AST;
-
 using Weverca.Parsers;
-using Weverca.CodeMetrics.Processing.Implementations;
 
 namespace Weverca.CodeMetrics.Processing
 {
-    static class ProcessingServices
+    internal static class ProcessingServices
     {
+        // TODO: Collect all implemented MetricProcessors
         #region Private members
-        static ProcessingService<ConstructIndicator, bool> indicatorProcessors;
-        static ProcessingService<Rating, double> ratingProcessors;
-        static ProcessingService<Quantity, int> quantityProcessors;
-        #endregion
 
-        static ProcessingServices()
-        {
-            //Collect all implemented MetricProcessors
-            indicatorProcessors = new ProcessingService<ConstructIndicator, bool>();
-            ratingProcessors = new ProcessingService<Rating, double>();
-            quantityProcessors = new ProcessingService<Quantity, int>();
-        }
+        private static ProcessingService<ConstructIndicator, bool> indicatorProcessors
+            = new ProcessingService<ConstructIndicator, bool>();
+
+        private static ProcessingService<Rating, double> ratingProcessors
+            = new ProcessingService<Rating, double>();
+
+        private static ProcessingService<Quantity, int> quantityProcessors
+            = new ProcessingService<Quantity, int>();
+
+        #endregion Private members
 
         #region Indicator services
-        internal static IndicatorProcessor.ResultBatch MergeIndicators(IndicatorProcessor.ResultBatch b1, IndicatorProcessor.ResultBatch b2)
+
+        internal static IndicatorProcessor.ResultBatch MergeIndicators(IndicatorProcessor.ResultBatch b1,
+            IndicatorProcessor.ResultBatch b2)
         {
             return indicatorProcessors.MergeResults(b1, b2);
         }
 
-        internal static IndicatorProcessor.ResultBatch ProcessIndicators(bool resolveOccurances, SyntaxParser parser)
+        internal static IndicatorProcessor.ResultBatch ProcessIndicators(bool resolveOccurances,
+            SyntaxParser parser)
         {
             return indicatorProcessors.Process(resolveOccurances, parser);
         }
 
-        #endregion
+        #endregion Indicator services
 
         #region Rating services
-        internal static RatingProcessor.ResultBatch MergeRatings(RatingProcessor.ResultBatch b1, RatingProcessor.ResultBatch b2)
+
+        internal static RatingProcessor.ResultBatch MergeRatings(RatingProcessor.ResultBatch b1,
+            RatingProcessor.ResultBatch b2)
         {
             return ratingProcessors.MergeResults(b1, b2);
         }
 
-        internal static RatingProcessor.ResultBatch ProcessRatings(bool resolveOccurances, SyntaxParser parser)
+        internal static RatingProcessor.ResultBatch ProcessRatings(bool resolveOccurances,
+            SyntaxParser parser)
         {
             return ratingProcessors.Process(resolveOccurances, parser);
         }
-        #endregion
+
+        #endregion Rating services
 
         #region Quantity services
-        internal static QuantityProcessor.ResultBatch MergeQuantities(QuantityProcessor.ResultBatch b1, QuantityProcessor.ResultBatch b2)
+
+        internal static QuantityProcessor.ResultBatch MergeQuantities(QuantityProcessor.ResultBatch b1,
+            QuantityProcessor.ResultBatch b2)
         {
             return quantityProcessors.MergeResults(b1, b2);
         }
 
-        internal static QuantityProcessor.ResultBatch ProcessQuantities(bool resolveOccurances, SyntaxParser parser)
+        internal static QuantityProcessor.ResultBatch ProcessQuantities(bool resolveOccurances,
+            SyntaxParser parser)
         {
             return quantityProcessors.Process(resolveOccurances, parser);
         }
-        #endregion
+
+        #endregion Quantity services
     }
 
     /// <summary>
     /// Service collecting MetricProcessors with matching Category,Property signature.
     /// </summary>
-    /// <typeparam name="Category">Type of metric which processors will be collected</typeparam>
-    /// <typeparam name="Property">Type of property, which metric works with</typeparam>
-    class ProcessingService<Category, Property>
+    /// <typeparam name="TCategory">Type of metric which processors will be collected.</typeparam>
+    /// <typeparam name="TProperty">Type of property, which metric works with.</typeparam>
+    internal class ProcessingService<TCategory, TProperty>
+         where TCategory : struct, IComparable, IFormattable, IConvertible
     {
-        Dictionary<Category, MetricProcessor<Category, Property>> processors = new Dictionary<Category, MetricProcessor<Category, Property>>();
+        private Dictionary<TCategory, MetricProcessor<TCategory, TProperty>> processors
+            = new Dictionary<TCategory, MetricProcessor<TCategory, TProperty>>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="{TCategory,TProperty}" /> class.
+        /// </summary>
         public ProcessingService()
         {
-            var types = getTypesWithAttribute(typeof(MetricAttribute));
+            var types = GetTypesWithAttribute(typeof(MetricAttribute));
             foreach (var type in types)
             {
-                var categories = getMetricCategories(type);
+                var categories = GetMetricCategories(type);
                 if (categories == null)
+                {
                     continue;
+                }
 
-                var processor = Activator.CreateInstance(type) as MetricProcessor<Category, Property>;
+                var processor = Activator.CreateInstance(type) as MetricProcessor<TCategory, TProperty>;
                 if (processor == null)
+                {
                     continue;
+                }
 
                 foreach (var category in categories)
                 {
-                    setProcessor(category, processor);
+                    SetProcessor(category, processor);
                 }
             }
         }
 
         #region Processing methods
+
         /// <summary>
         /// Returns info about indicators in code.
         /// </summary>
         /// <param name="resolveOccurances"></param>
-        /// <param name="code"></param>
+        /// <param name="parser"></param>
         /// <returns></returns>
-        internal MetricProcessor<Category, Property>.ResultBatch Process(bool resolveOccurances, SyntaxParser parser)
+        internal MetricProcessor<TCategory, TProperty>.ResultBatch Process(bool resolveOccurances,
+            SyntaxParser parser)
         {
-            var batch = createBatch();
+            var batch = CreateBatch();
 
             foreach (var indicator in processors.Keys)
             {
@@ -117,15 +134,16 @@ namespace Weverca.CodeMetrics.Processing
             return batch;
         }
 
-        internal MetricProcessor<Category, Property>.ResultBatch MergeResults(MetricProcessor<Category, Property>.ResultBatch b1, MetricProcessor<Category, Property>.ResultBatch b2)
+        internal MetricProcessor<TCategory, TProperty>.ResultBatch MergeResults(
+            MetricProcessor<TCategory, TProperty>.ResultBatch b1,
+            MetricProcessor<TCategory, TProperty>.ResultBatch b2)
         {
             if (!b1.IsFrozen || !b2.IsFrozen)
             {
                 throw new ArgumentException("Merged batches has to be frozen");
             }
 
-
-            var batch = createBatch();
+            var batch = CreateBatch();
             foreach (var indicator in processors.Keys)
             {
                 var processor = processors[indicator];
@@ -136,18 +154,20 @@ namespace Weverca.CodeMetrics.Processing
             batch.Freeze();
             return batch;
         }
-        #endregion
+
+        #endregion Processing methods
 
         #region Metric processors collecting utils
+
         /// <summary>
-        /// Collect types from current assembly with given attribute
+        /// Collect types from current assembly with given attribute.
         /// </summary>
         /// <param name="attributeType"></param>
         /// <returns></returns>
-        private static IEnumerable<Type> getTypesWithAttribute(Type attributeType)
+        private static IEnumerable<Type> GetTypesWithAttribute(Type attributeType)
         {
             var currentAssembly = typeof(ProcessingServices).Assembly;
-            foreach (Type type in currentAssembly.GetTypes())
+            foreach (var type in currentAssembly.GetTypes())
             {
                 if (type.GetCustomAttributes(typeof(MetricAttribute), true).Length > 0)
                 {
@@ -161,51 +181,60 @@ namespace Weverca.CodeMetrics.Processing
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        private static IEnumerable<Category> getMetricCategories(Type type)
+        private static IEnumerable<TCategory> GetMetricCategories(Type type)
         {
-            foreach (var attr in type.CustomAttributes)
-            {
-                if (attr.AttributeType == typeof(MetricAttribute))
-                {
-                    var constructorArgument = attr.ConstructorArguments[0];
-                    if (constructorArgument.ArgumentType != typeof(Category[]))
-                        continue;
+            var attributesData = type.GetCustomAttributesData();
+            var customAttributes = type.GetCustomAttributes(true);
+            var attributes = attributesData.Zip(customAttributes, (a, b) => new { data = a, attribute = b });
 
-                    return getMetricAttributeArgument(constructorArgument);
+            foreach (var attr in attributes)
+            {
+                if (attr.attribute is MetricAttribute)
+                {
+                    var constructorArgument = attr.data.ConstructorArguments[0];
+                    if (constructorArgument.ArgumentType == typeof(TCategory[]))
+                    {
+                        return GetMetricAttributeArgument(constructorArgument);
+                    }
                 }
             }
+
             return null;
         }
 
-        private static IEnumerable<Category> getMetricAttributeArgument(CustomAttributeTypedArgument constructorArgument)
+        private static IEnumerable<TCategory> GetMetricAttributeArgument(
+            CustomAttributeTypedArgument constructorArgument)
         {
-            var typedArgs = constructorArgument.Value as IReadOnlyCollection<CustomAttributeTypedArgument>;
-            var categories = new List<Category>();
+            var typedArgs = constructorArgument.Value as IEnumerable<CustomAttributeTypedArgument>;
+            var categories = new List<TCategory>();
             foreach (var arg in typedArgs)
             {
-                categories.Add((Category)arg.Value);
+                categories.Add((TCategory)arg.Value);
             }
 
-            //Metric attribute doesnt allow multiples so we return first one
+            // Metric attribute doesnt allow multiples so we return first one
             return categories;
         }
-        #endregion
+
+        #endregion Metric processors collecting utils
 
         #region Private utilities
 
-        private void setProcessor(Category property, MetricProcessor<Category, Property> processor)
+        private void SetProcessor(TCategory property, MetricProcessor<TCategory, TProperty> processor)
         {
             if (processors.ContainsKey(property))
             {
-                throw new NotSupportedException("Cannot set twice processor for cateogry: " + property);
+                throw new NotSupportedException("Cannot set twice processor for category: " + property);
             }
+
             processors[property] = processor;
         }
 
-        private MetricProcessor<Category, Property>.ResultBatch createBatch()
+        private static MetricProcessor<TCategory, TProperty>.ResultBatch CreateBatch()
         {
-            return new MetricProcessor<Category, Property>.ResultBatch();
+            return new MetricProcessor<TCategory, TProperty>.ResultBatch();
         }
-        #endregion
+
+        #endregion Private utilities
     }
 }

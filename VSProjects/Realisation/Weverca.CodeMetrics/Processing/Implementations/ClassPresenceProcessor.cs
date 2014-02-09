@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 using PHP.Core.AST;
 
@@ -10,27 +10,36 @@ namespace Weverca.CodeMetrics.Processing.Implementations
     /// <summary>
     /// Determines whether there is class presence.
     /// </summary>
-    [Metric(ConstructIndicator.Class)]
-    class ClassPresenceProcessor : IndicatorProcessor
+    [Metric(ConstructIndicator.ClassOrInterface)]
+    internal class ClassPresenceProcessor : IndicatorProcessor
     {
-        #region IndicatorProcessor overrides
+        #region MetricProcessor overrides
 
-        protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
         {
-            Debug.Assert(category == ConstructIndicator.Class);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == ConstructIndicator.ClassOrInterface,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
-            var classes = parser.Types.Where(t => !t.Value.IsInterface);
-            bool classPresent = classes.Count() > 0;
+            var types = new Queue<TypeDecl>();
 
-            var occurences = classes.Select(t => t.Value.Declaration.GetNode() as TypeDecl).Where(t => t != null).ToArray(); // they all should not be null
+            foreach (var type in parser.Types)
+            {
+                var node = type.Value.Declaration.GetNode();
+                var typeDeclaration = node as TypeDecl;
+                Debug.Assert(typeDeclaration != null, "PhpType is always in type declaration node");
 
-            Debug.Assert(occurences.Length == classes.Count(), "The number of the occurences is invalid!");
+                types.Enqueue(typeDeclaration);
+            }
 
-            return new Result(classPresent, occurences);
+            var hasTypes = types.GetEnumerator().MoveNext();
+
+            return new Result(hasTypes, types);
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
     }
 }

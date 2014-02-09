@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Dictionary>
+  <Words>
+    <Recognized>
+      <Word>autoload</Word>
+      <Word>cyclomatic</Word>
+      <Word>eval</Word>
+      <!-- PHP: Hypertext Preprocessor -->
+      <Word>php</Word>
+      <Word>redeclaration</Word>
+      <!-- Standard PHP Library -->
+      <Word>spl</Word>
+    </Recognized>
+  </Words>
+  <Acronyms>
+    <CasingExceptions>
+      <!-- PHP: Hypertext Preprocessor -->
+      <Acronym>PHP</Acronym>
+      <!-- Standard PHP Library -->
+      <Acronym>SPL</Acronym>
+    </CasingExceptions>
+  </Acronyms>
+</Dictionary>

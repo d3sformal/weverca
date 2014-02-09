@@ -1,52 +1,59 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Reflection;
 
-namespace Weverca.CodeMetrics.Processing.ASTVisitors
+namespace Weverca.CodeMetrics.Processing.AstVisitors
 {
     /// <summary>
-    /// Represents the visitor that finds all couplings from a given type (class or interface)
+    /// Represents the visitor that finds all couplings from a given type (class or interface).
     /// </summary>
-    class ClassCouplingVisitor : TreeVisitor
+    internal class ClassCouplingVisitor : TreeVisitor
     {
         /// <summary>
-        /// Class or interface whose subtree is traversed for type references at this point
+        /// Class or interface whose sub-tree is traversed for type references at this point.
         /// </summary>
         private readonly PhpType currentType;
+
         /// <summary>
-        /// References to other types used within the current type declaration
+        /// References to other types used within the current type declaration.
         /// </summary>
         private readonly Dictionary<QualifiedName, DirectTypeRef> currentReferences
             = new Dictionary<QualifiedName, DirectTypeRef>();
+
         /// <summary>
-        /// Indicate whether type subtree is traversing. No subtype is accessed
+        /// Indicate whether type sub-tree is traversing. No sub-type is accessed.
         /// </summary>
         private bool isInsideDeclaration = false;
 
-        public ClassCouplingVisitor(PhpType/*!*/ type)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ClassCouplingVisitor" /> class.
+        /// </summary>
+        /// <param name="type"></param>
+        public ClassCouplingVisitor(PhpType type)
         {
             currentType = type;
         }
 
         /// <summary>
-        /// Return all nodes with references to types that occur within a given type declaration
+        /// Return all nodes with references to types that occur within a given type declaration.
         /// </summary>
-        /// <returns>References of types within a given type declaration</returns>
+        /// <returns>References of types within a given type declaration.</returns>
         public DirectTypeRef[] GetReferences()
         {
             var couplings = new DirectTypeRef[currentReferences.Count];
+
             // Copy result to an array to make it immutable
             currentReferences.Values.CopyTo(couplings, 0);
             return couplings;
         }
 
         /// <summary>
-        /// Add found reference to a type used within the currently traversed type declaration
+        /// Add found reference to a type used within the currently traversed type declaration.
         /// </summary>
-        /// <param name="x">Reference to class or interface</param>
-        public void AddCoupling(DirectTypeRef/*!*/ x)
+        /// <param name="x">Reference to class or interface.</param>
+        public void AddCoupling(DirectTypeRef x)
         {
             Debug.Assert(isInsideDeclaration);
 
@@ -60,6 +67,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
 
         #region TreeVisitor overrides
 
+        /// <inheritdoc />
         public override void VisitTypeDecl(TypeDecl x)
         {
             // As a type, we consider class and interface too
@@ -95,6 +103,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
         // public override void VisitDirectStFldUse(DirectStFldUse x)
         // public override void VisitIndirectStFldUse(IndirectStFldUse x)
 
+        /// <inheritdoc />
         public override void VisitNewEx(NewEx x)
         {
             // Use of type can only be determined by DirectTypeRef
@@ -103,15 +112,17 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
                 var typeRef = x.ClassNameRef as DirectTypeRef;
                 AddCoupling(typeRef);
             }
+
             base.VisitNewEx(x);
         }
 
+        /// <inheritdoc />
         public override void VisitDirectTypeRef(DirectTypeRef x)
         {
             AddCoupling(x);
             base.VisitDirectTypeRef(x);
         }
 
-        #endregion
+        #endregion TreeVisitor overrides
     }
 }

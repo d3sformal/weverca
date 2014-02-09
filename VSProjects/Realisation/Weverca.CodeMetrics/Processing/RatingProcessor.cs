@@ -1,37 +1,32 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PHP.Core.AST;
 
 namespace Weverca.CodeMetrics.Processing
 {
-    abstract class RatingProcessor : MetricProcessor<Rating, double>
+    internal abstract class RatingProcessor : MetricProcessor<Rating, double>
     {
-        /// <summary>
-        /// Merging of almost all ratings should be easy. Others can override this beahviour
-        /// </summary>
-        /// <param name="r1"></param>
-        /// <param name="r2"></param>
-        /// <returns></returns>
-        protected override double merge(double r1, double r2)
+        /// <remarks>
+        /// Merging of almost all quantities should be easy. Others can override this behavior.
+        /// </remarks>
+        /// <inheritdoc />
+        protected override double Merge(double firstProperty, double secondProperty)
         {
-            return Math.Max(r1, r2);
+            return Math.Max(firstProperty, secondProperty);
         }
 
-        /// <summary>
-        /// Merging of almost all ratings should be easy. Others can override this beahviour
-        /// </summary>
-        /// <param name="o1"></param>
-        /// <param name="o2"></param>
-        /// <returns></returns>
-        protected override IEnumerable<AstNode> merge(IEnumerable<AstNode> o1, IEnumerable<AstNode> o2)
+        /// <remarks>
+        /// Merging of almost all indicators should be easy. All occurrences from the first result are just
+        /// appended to occurrences from the second result. Derived classes can override this behavior.
+        /// </remarks>
+        /// <inheritdoc />
+        protected override IEnumerable<AstNode> Merge(IEnumerable<AstNode> firstOccurrences,
+            IEnumerable<AstNode> secondOccurrences)
         {
-            var mergedResult = new List<AstNode>(o1);
-            mergedResult.AddRange(o2);
-            return mergedResult;
+            var occurrences = new List<AstNode>(firstOccurrences);
+            occurrences.AddRange(secondOccurrences);
+            return occurrences;
         }
     }
 }

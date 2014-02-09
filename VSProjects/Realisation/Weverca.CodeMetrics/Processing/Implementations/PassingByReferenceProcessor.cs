@@ -1,28 +1,30 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Reflection;
 
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Identifies all function and static method calls with a parameter passed by reference
+    /// Identifies all function and static method calls with a parameter passed by reference.
     /// </summary>
     [Metric(ConstructIndicator.PassingByReferenceAtCallSide)]
-    class PassingByReferenceProcessor : IndicatorProcessor
+    internal class PassingByReferenceProcessor : IndicatorProcessor
     {
         #region MetricProcessor overrides
 
-        protected override IndicatorProcessor.Result process(bool resolveOccurances,
-            ConstructIndicator category, SyntaxParser parser)
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
         {
-            System.Diagnostics.Debug.Assert(category == ConstructIndicator.PassingByReferenceAtCallSide);
-            System.Diagnostics.Debug.Assert(parser.IsParsed);
-            System.Diagnostics.Debug.Assert(!parser.Errors.AnyError);
+            System.Diagnostics.Debug.Assert(category == ConstructIndicator.PassingByReferenceAtCallSide,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
             if ((parser.Functions == null) && (parser.Types == null))
             {
@@ -47,11 +49,12 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             var occurrences = visitor.GetOccurrences();
             var hasOccurrence = occurrences.GetEnumerator().MoveNext();
+
             // Return function (DirectFcnCall) or static method (DirectStMtdCall) calls
             // (both are subtypes of FunctionCall) which pass at least one parameter by reference
             return new Result(hasOccurrence, occurrences);
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
     }
 }

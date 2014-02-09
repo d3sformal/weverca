@@ -1,4 +1,3 @@
-﻿using System;
 using System.Collections.Generic;
 
 using PHP.Core.Reflection;
@@ -6,18 +5,26 @@ using PHP.Core.Reflection;
 namespace Weverca.CodeMetrics
 {
     /// <summary>
-    /// Contains php functions which are important for metric
+    /// Contains PHP functions which are important for metric.
     /// </summary>
     public static class MetricRelatedFunctions
     {
         /// <summary>
-        /// Functions that indicates usage of autoload
+        /// Functions that indicates usage of autoload. Phalanger detects __autoload method automatically,
+        /// other can be registered by spl_autoload_register.
         /// </summary>
-        static readonly string[] Autoload_Register = new string[] { "spl_autoload_register" };
+        /// <seealso cref="ConstructIndicator.Autoload" />
+        /// <seealso href="http://php.net/manual/en/function.spl-autoload-register.php" />
+        private static readonly string[] autoloadRegister = new string[]
+        {
+            "spl_autoload_register"
+        };
+
         /// <summary>
-        /// Names of magic methods
+        /// Functions that indicates usage of magic methods.
         /// </summary>
-        static readonly string[] Magic_Methods = new string[]{
+        private static readonly string[] magicMethods = new string[]
+        {
             DObject.SpecialMethodNames.Call.LowercaseValue,
             DObject.SpecialMethodNames.CallStatic.LowercaseValue,
             DObject.SpecialMethodNames.Clone.LowercaseValue,
@@ -33,10 +40,15 @@ namespace Weverca.CodeMetrics
             DObject.SpecialMethodNames.Unset.LowercaseValue,
             DObject.SpecialMethodNames.Wakeup.LowercaseValue,
         };
+
         /// <summary>
-        /// One-argument functions that operate with strings (implemented in PHP.Library.PhpStrings)
+        /// One-argument functions that operate with strings (implemented in PHP.Library.PhpStrings).
         /// </summary>
-        static readonly string[] String_Functions = new string[]{
+        /// <remarks>
+        /// All html* functions are skipped.
+        /// </remarks>
+        private static readonly string[] stringFunctions = new string[]
+        {
             "addslashes",
             "bin2hex",
             "convert_uudecode",
@@ -44,7 +56,6 @@ namespace Weverca.CodeMetrics
             "hebrev",
             "hebrevc",
             "hex2bin",
-            // All html* functions are skipped
             "lcfirst",
             "md5",
             "metaphone",
@@ -63,14 +74,20 @@ namespace Weverca.CodeMetrics
             "ucfirst",
             "ucwords",
         };
+
         /// <summary>
-        /// Functions that indicates usage of eval
+        /// Functions that indicates usage of eval.
         /// </summary>
-        static readonly string[] Eval = new string[] { "eval" };
+        private static readonly string[] eval = new string[]
+        {
+            "eval"
+        };
+
         /// <summary>
-        /// Functions that indicates usage of sessiosn
+        /// Functions that indicates usage of sessions.
         /// </summary>
-        static readonly string[] Session = new string[]{
+        private static readonly string[] session = new string[]
+        {
             "session_cache_expire",
             "session_cache_limiter",
             "session_commit",
@@ -96,10 +113,11 @@ namespace Weverca.CodeMetrics
         };
 
         /// <summary>
-        /// MySQL function list
-        /// <seealso cref="http://www.php.net/manual/en/ref.mysql.php"/>
+        /// MySQL function list.
         /// </summary>
-        static readonly string[] mySqlFunctions = new string[] {
+        /// <seealso href="http://www.php.net/manual/en/ref.mysql.php" />
+        private static readonly string[] mySqlFunctions = new string[]
+        {
             "mysql_affected_rows",
             "mysql_client_encoding",
             "mysql_close",
@@ -150,34 +168,44 @@ namespace Weverca.CodeMetrics
             "mysql_unbuffered_query"
         };
 
-        static readonly string[] classAliasFunction = new string[] { "class_alias" };
+        /// <summary>
+        /// Name of function that creates an alias for a class.
+        /// </summary>
+        /// <seealso href="http://www.php.net/manual/en/function.class-alias.php" />
+        private static readonly string[] classAliasFunction = new string[]
+        {
+            "class_alias"
+        };
 
         /// <summary>
-        /// Indicators to its related functions
+        /// Indicators to its related functions.
         /// </summary>
-        static readonly Dictionary<ConstructIndicator, string[]> functions = new Dictionary<ConstructIndicator, string[]>();
+        private static readonly Dictionary<ConstructIndicator, string[]> functions
+            = new Dictionary<ConstructIndicator, string[]>();
 
+        /// <summary>
+        /// Initializes static members of the <see cref="MetricRelatedFunctions" /> class.
+        /// </summary>
         static MetricRelatedFunctions()
         {
-            functions.Add(ConstructIndicator.MagicMethod, Magic_Methods);
-            functions.Add(ConstructIndicator.DynamicInclude, String_Functions);
-            functions.Add(ConstructIndicator.Session, Session);
-            functions.Add(ConstructIndicator.Autoload, Autoload_Register);
-            functions.Add(ConstructIndicator.Eval, Eval);
-            functions.Add(ConstructIndicator.MySQL, mySqlFunctions);
+            functions.Add(ConstructIndicator.Autoload, autoloadRegister);
+            functions.Add(ConstructIndicator.MagicMethods, magicMethods);
+            functions.Add(ConstructIndicator.DynamicInclude, stringFunctions);
+            functions.Add(ConstructIndicator.Eval, eval);
+            functions.Add(ConstructIndicator.Session, session);
+            functions.Add(ConstructIndicator.MySql, mySqlFunctions);
             functions.Add(ConstructIndicator.ClassAlias, classAliasFunction);
-            // TODO: Add other metric related functions
         }
 
         /// <summary>
-        /// Returns functions which presence indicates category usage
+        /// Returns functions which presence indicates metric usage.
         /// </summary>
-        /// <param name="category"></param>
-        /// <returns></returns>
-        internal static IReadOnlyCollection<string> Get(ConstructIndicator category)
+        /// <param name="metric">Metric that looks for presence of returned functions.</param>
+        /// <returns>Functions which presence indicates metric usage.</returns>
+        public static IEnumerable<string> Get(ConstructIndicator metric)
         {
             string[] output;
-            if (!functions.TryGetValue(category, out output))
+            if (!functions.TryGetValue(metric, out output))
             {
                 return new string[0];
             }

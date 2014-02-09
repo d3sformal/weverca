@@ -1,38 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
-using PHP.Core.AST;
-using PHP.Core.Parsers;
 
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.UnitTest
 {
-    delegate bool MetricPredicate(MetricInfo info);
+    internal delegate bool MetricPredicate(MetricInfo info);
 
-    static class TestingUtilities
+    internal static class TestingUtilities
     {
         /// <summary>
         /// Keeps UID for test files. Is incremented whenever new file is generated.
         /// </summary>
         private static int testFileUID = 0;
+
         /// <summary>
-        /// Source of hello world php source
+        /// Source of hello world php source.
         /// </summary>
-        internal static readonly string HelloWorldSource = @"echo 'Hello world';";
+        internal const string HelloWorldSource = @"echo 'Hello world';";
+
         /// <summary>
-        /// Test given source according to predicate. On fail throws assertion error with testDescrpition        
+        /// Test given source according to predicate. On fail throws assertion error with testDescription.
         /// </summary>
         /// <param name="predicate"></param>
-        /// <param name="sourceCode"></param>
-        /// <param name="testDescription"></param>
+        /// <param name="test"></param>
         internal static void RunTest(MetricPredicate predicate, SourceTest test)
         {
             var metricInfo = GetInfo(test);
@@ -40,7 +36,7 @@ namespace Weverca.CodeMetrics.UnitTest
         }
 
         /// <summary>
-        /// Test given source tests against predicate. On fail throws assertion error with failed test description
+        /// Test given source tests against predicate. On fail throws assertion error with failed test description.
         /// </summary>
         /// <param name="predicate"></param>
         /// <param name="tests"></param>
@@ -52,9 +48,8 @@ namespace Weverca.CodeMetrics.UnitTest
             }
         }
 
-
         /// <summary>
-        /// Test given source tests against predicate. On fail throws assertion error with failed test description
+        /// Test given source tests against predicate. On fail throws assertion error with failed test description.
         /// </summary>
         /// <param name="predicate"></param>
         /// <param name="tests"></param>
@@ -64,21 +59,25 @@ namespace Weverca.CodeMetrics.UnitTest
         }
 
         /// <summary>
-        /// Returns metric info created from given test
+        /// Returns metric info created from given test.
         /// </summary>
         /// <param name="test">Test which source will be used for metric info generating.</param>
         /// <returns>Generated metric info.</returns>
         internal static MetricInfo GetInfo(SourceTest test)
         {
-            var uid = getTestFileUID();
-            string fileName = string.Format("./test{0}.php",uid);            
-            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            var parser = new SyntaxParser(source_file, "<?php " + test.SourceCode + " ?>");
-            return MetricInfo.FromParsers(true, parser);
+            var uid = GetTestFileUID();
+            var fileName = string.Format(CultureInfo.InvariantCulture, "./test{0}.php", uid);
+            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)),
+                new FullPath(fileName));
+
+            using (var parser = new SyntaxParser(sourceFile, "<?php " + test.SourceCode + " ?>"))
+            {
+                return MetricInfo.FromParsers(true, parser);
+            }
         }
 
         /// <summary>
-        /// Get predicate for testing of presence given indicator
+        /// Get predicate for testing of presence given indicator.
         /// </summary>
         /// <param name="indicator"></param>
         /// <returns></returns>
@@ -88,10 +87,10 @@ namespace Weverca.CodeMetrics.UnitTest
         }
 
         /// <summary>
-        /// Get predicate for testing quantity metric value
+        /// Get predicate for testing quantity metric value.
         /// </summary>
         /// <param name="quantity"></param>
-        /// <param name="p"></param>
+        /// <param name="value"></param>
         /// <returns></returns>
         internal static MetricPredicate GetQuantityPredicate(Quantity quantity, int value)
         {
@@ -99,7 +98,7 @@ namespace Weverca.CodeMetrics.UnitTest
         }
 
         /// <summary>
-        /// Get negation to given predicate
+        /// Get negation to given predicate.
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
@@ -111,22 +110,23 @@ namespace Weverca.CodeMetrics.UnitTest
         /// <summary>
         /// Get UID for test file.
         /// </summary>
-        /// <returns>UID for test file</returns>
-        private static int getTestFileUID()
+        /// <returns>UID for test file.</returns>
+        private static int GetTestFileUID()
         {
             return ++testFileUID;
         }
     }
 
     /// <summary>
-    /// Represents test on source code
+    /// Represents test on source code.
     /// </summary>
-    class SourceTest
+    internal class SourceTest
     {
         /// <summary>
-        /// Descrpition for this test.
+        /// Description for this test.
         /// </summary>
         public readonly string Description;
+
         /// <summary>
         /// Source code for this test.
         /// </summary>

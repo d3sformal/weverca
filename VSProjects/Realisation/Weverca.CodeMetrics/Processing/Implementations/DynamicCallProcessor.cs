@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics;
 
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
@@ -10,21 +9,28 @@ namespace Weverca.CodeMetrics.Processing.Implementations
     /// Determines whether there is a dynamic function call in the code.
     /// </summary>
     [Metric(ConstructIndicator.DynamicCall)]
-    class DynamicCallProcessor : IndicatorProcessor
+    internal class DynamicCallProcessor : IndicatorProcessor
     {
-        protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
-        {
+        #region MetricProcessor overrides
 
-            Debug.Assert(category == ConstructIndicator.DynamicCall);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
-            
-            DynamicCallVisitor visitor = new DynamicCallVisitor();
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
+        {
+            Debug.Assert(category == ConstructIndicator.DynamicCall,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
+
+            var visitor = new DynamicCallVisitor();
             parser.Ast.VisitMe(visitor);
 
-            var occurences = visitor.GetOccurrences();
+            var occurrences = visitor.GetOccurrences();
+            var hasOccurrence = occurrences.GetEnumerator().MoveNext();
 
-            return new Result(occurences.Count() > 0, occurences);
+            return new Result(hasOccurrence, occurrences);
         }
+
+        #endregion MetricProcessor overrides
     }
 }

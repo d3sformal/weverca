@@ -1,32 +1,36 @@
-﻿using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics;
 
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Check if there is costruct like $a = &$b used, which is an alias.
+    /// Check if there is construct like $a = &amp;$b used, which is an alias.
     /// </summary>
-    [Metric(ConstructIndicator.Alias)]
-    class AliasProcessor : IndicatorProcessor
+    [Metric(ConstructIndicator.References)]
+    internal class AliasProcessor : IndicatorProcessor
     {
-        #region IndicatorProcessor
+        #region MetricProcessor overrides
 
-        protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
         {
-            Debug.Assert(category == ConstructIndicator.Alias);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == ConstructIndicator.References,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
-            AliasVisitor visitor = new AliasVisitor();
+            var visitor = new AliasVisitor();
             parser.Ast.VisitMe(visitor);
-            var occurences = visitor.GetOccurrences();
 
-            return new Result(occurences.Count() > 0, occurences);
+            var occurrences = visitor.GetOccurrences();
+            var hasOccurrence = occurrences.GetEnumerator().MoveNext();
+
+            return new Result(hasOccurrence, occurrences);
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
     }
 }

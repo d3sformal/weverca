@@ -1,19 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
+
+using PHP.Core.AST;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     [Metric(Quantity.NumberOfLines)]
-    class NumberOfLinesProcessor:QuantityProcessor
+    internal class NumberOfLinesProcessor : QuantityProcessor
     {
-        protected override Result process(bool resolveOccurances, Quantity category, Parsers.SyntaxParser parser)
-        {
-            var lastStatementPosition = parser.Ast.Statements.Last().Position;
+        #region MetricProcessor overrides
 
-            return new Result(lastStatementPosition.LastLine);
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, Quantity category,
+            Parsers.SyntaxParser parser)
+        {
+            Debug.Assert(category == Quantity.NumberOfLines,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
+
+            var statements = parser.Ast.Statements;
+            if (statements.Count > 0)
+            {
+                var lastStatement = statements[statements.Count - 1];
+                var occurrences = new Statement[] { lastStatement };
+                return new Result(lastStatement.Position.LastLine, occurrences);
+            }
+            else
+            {
+                return new Result(0);
+            }
         }
+
+        #endregion MetricProcessor overrides
     }
 }

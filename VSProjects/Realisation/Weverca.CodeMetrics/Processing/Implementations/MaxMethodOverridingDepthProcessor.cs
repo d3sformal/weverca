@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
-using Diagnostics = System.Diagnostics;
-using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 
-using PHP.Core;
-using Weverca.Parsers;
 using PHP.Core.AST;
+
+using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
@@ -12,22 +13,33 @@ namespace Weverca.CodeMetrics.Processing.Implementations
     /// Determines the maximum depth of method overriding.
     /// </summary>
     [Metric(Quantity.MaxMethodOverridingDepth)]
-    class MaxMethodOverridingDepthProcessor : QuantityProcessor
+    internal class MaxMethodOverridingDepthProcessor : QuantityProcessor
     {
-        #region QualityProcessor overrides
+        #region MetricProcessor overrides
 
-        protected override Result process(bool resolveOccurances, Quantity category, SyntaxParser parser)
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, Quantity category,
+            SyntaxParser parser)
         {
-            Diagnostics.Debug.Assert(category == Quantity.MaxMethodOverridingDepth);
-            Diagnostics.Debug.Assert(parser.IsParsed);
-            Diagnostics.Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == Quantity.MaxMethodOverridingDepth,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
-            List<TypeDeclWrapper> inheritanceTrees = new List<TypeDeclWrapper>();
+            var types = new Queue<TypeDecl>();
 
-            var types = parser.Types.Values.Select(t => t.Declaration.GetNode() as TypeDecl).Where(t => t != null).AsEnumerable();
-            Diagnostics.Debug.Assert(types.Count() == parser.Types.Count);
+            foreach (var type in parser.Types)
+            {
+                var node = type.Value.Declaration.GetNode();
+                var typeDeclaration = node as TypeDecl;
+                Debug.Assert(typeDeclaration != null, "PhpType is always in type declaration node");
 
-            //build inheritance trees
+                types.Enqueue(typeDeclaration);
+            }
+
+            var inheritanceTrees = new List<TypeDeclWrapper>();
+
+            // Build inheritance trees
             foreach (var typeDeclaration in types)
             {
                 if (typeDeclaration.BaseClassName.HasValue)
@@ -36,17 +48,17 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            Dictionary<string, List<MethodDecl>> occurences = new Dictionary<string, List<MethodDecl>>();
+            var occurences = new Dictionary<string, List<MethodDecl>>();
             Dictionary<string, List<MethodDecl>> methods;
 
-            //find max override depth for each tree
+            // Find max override depth for each tree
             foreach (var inheritanceTree in inheritanceTrees)
             {
                 methods = CheckTree(inheritanceTree);
                 MergeResults(methods, occurences);
             }
 
-            List<MethodDecl> maxOccurences = new List<MethodDecl>();
+            var maxOccurences = new List<MethodDecl>();
             foreach (var item in occurences.Values)
             {
                 if (item.Count > maxOccurences.Count)
@@ -57,24 +69,26 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             // -1 because the first declaration is not overrided.
             int maxOverrides = maxOccurences.Count - 1;
-            if (maxOverrides < 0) // occures when there is no method declared
+            if (maxOverrides < 0)
             {
+                // It occures when there is no method declared
                 maxOverrides = 0;
             }
+
             return new Result(maxOverrides, maxOccurences);
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
 
         #region Private Methods
 
         /// <summary>
-        /// Finds the type in a set of inheritance trees
+        /// Finds the type in a set of inheritance trees.
         /// </summary>
         /// <param name="types">The types.</param>
         /// <param name="type">The type.</param>
         /// <returns></returns>
-        TypeDeclWrapper FindDTypeWrapper(List<TypeDeclWrapper> types, TypeDecl type)
+        private static TypeDeclWrapper FindDTypeWrapper(List<TypeDeclWrapper> types, TypeDecl type)
         {
             foreach (var inheritanceTree in types)
             {
@@ -94,14 +108,28 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// <param name="types">The types.</param>
         /// <param name="inheritanceTrees">The inheritance trees.</param>
         /// <param name="newType">The new type.</param>
-        void AddToInheritanceTrees(IEnumerable<TypeDecl> types, List<TypeDeclWrapper> inheritanceTrees, TypeDecl newType)
+        private static void AddToInheritanceTrees(IEnumerable<TypeDecl> types,
+            List<TypeDeclWrapper> inheritanceTrees, TypeDecl newType)
         {
-            TypeDecl baseClass = types.FirstOrDefault(t => t.Name.Value == newType.BaseClassName.Value.QualifiedName.Name.Value);
-            Diagnostics.Trace.WriteIf(baseClass == null, string.Format("The base type \"{0}\" for \"{1}\" is not available in the source",
-                newType.BaseClassName.Value.QualifiedName.Name.Value, newType.Name.Value));
+            var baseClassName = newType.BaseClassName.Value.QualifiedName.Name.Value;
+            TypeDecl baseClass = null;
 
-            TypeDeclWrapper baseTypeWrapper = FindDTypeWrapper(inheritanceTrees, baseClass);
-            TypeDeclWrapper existingTypeWrapper = FindDTypeWrapper(inheritanceTrees, newType);
+            foreach (var type in types)
+            {
+                if (type.Name.Value.Equals(baseClassName, StringComparison.Ordinal))
+                {
+                    baseClass = type;
+                    break;
+                }
+            }
+
+            var message = string.Format(CultureInfo.InvariantCulture,
+                "The base type \"{0}\" for \"{1}\" is not available in the source",
+                baseClassName, newType.Name.Value);
+            Trace.WriteIf(baseClass == null, message);
+
+            var baseTypeWrapper = FindDTypeWrapper(inheritanceTrees, baseClass);
+            var existingTypeWrapper = FindDTypeWrapper(inheritanceTrees, newType);
 
             if (baseTypeWrapper == null && existingTypeWrapper == null)
             {
@@ -122,7 +150,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
             else if (baseTypeWrapper == null && existingTypeWrapper != null)
             {
-                Diagnostics.Debug.Assert(inheritanceTrees.Contains(existingTypeWrapper));
+                Debug.Assert(inheritanceTrees.Contains(existingTypeWrapper));
 
                 baseTypeWrapper = new TypeDeclWrapper(baseClass);
                 baseTypeWrapper.Children.Add(existingTypeWrapper);
@@ -131,7 +159,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
             else
             {
-                Diagnostics.Debug.Fail("Unsupported state");
+                Debug.Fail("Unsupported state");
             }
         }
 
@@ -140,7 +168,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// </summary>
         /// <param name="root">The root of the tree of the types to check.</param>
         /// <returns></returns>
-        Dictionary<string, List<MethodDecl>> CheckTree(TypeDeclWrapper root)
+        private Dictionary<string, List<MethodDecl>> CheckTree(TypeDeclWrapper root)
         {
             Dictionary<string, List<MethodDecl>> result = new Dictionary<string, List<MethodDecl>>();
 
@@ -152,14 +180,14 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             foreach (var member in root.TypeDeclaration.Members)
             {
-                MethodDecl method = member as MethodDecl;
-
+                var method = member as MethodDecl;
                 if (method != null)
                 {
                     if (!result.ContainsKey(method.Name.Value))
                     {
                         result.Add(method.Name.Value, new List<MethodDecl>());
                     }
+
                     result[method.Name.Value].Insert(0, method);
                 }
             }
@@ -172,7 +200,8 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// </summary>
         /// <param name="toMerge">A list of results to merge into the second parameter.</param>
         /// <param name="mergeInto">Result - The first parameter will be merged into this one.</param>
-        void MergeResults(Dictionary<string, List<MethodDecl>> toMerge, Dictionary<string, List<MethodDecl>> mergeInto)
+        private static void MergeResults(Dictionary<string, List<MethodDecl>> toMerge,
+            Dictionary<string, List<MethodDecl>> mergeInto)
         {
             foreach (var item in toMerge)
             {
@@ -191,14 +220,14 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
         }
 
-        #endregion
+        #endregion Private Methods
     }
 
     /// <summary>
-    /// Wrapper for the <see cref="TypeDecl"/> to maitain an inheritance tree.
+    /// Wrapper for the <see cref="TypeDecl"/> to maintain an inheritance tree.
     /// The edges leeds from the base type to derived type.
     /// </summary>
-    sealed class TypeDeclWrapper
+    internal sealed class TypeDeclWrapper
     {
         #region Properties
 
@@ -212,17 +241,21 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         /// </summary>
         public List<TypeDeclWrapper> Children { get; private set; }
 
-        #endregion
+        #endregion Properties
 
         #region Constructor
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeDeclWrapper" /> class.
+        /// </summary>
+        /// <param name="typeDeclaration"></param>
         public TypeDeclWrapper(TypeDecl typeDeclaration)
         {
             TypeDeclaration = typeDeclaration;
             Children = new List<TypeDeclWrapper>();
         }
 
-        #endregion
+        #endregion Constructor
 
         #region Methods
 
@@ -250,6 +283,6 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             return null;
         }
 
-        #endregion
+        #endregion Methods
     }
 }

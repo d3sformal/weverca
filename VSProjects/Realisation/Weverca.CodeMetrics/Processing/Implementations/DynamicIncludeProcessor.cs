@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using PHP.Core.AST;
@@ -8,19 +8,21 @@ using Weverca.Parsers;
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Identifies all inclusions which can be evaluated statically
+    /// Identifies all inclusions which can be evaluated statically.
     /// </summary>
     [Metric(ConstructIndicator.DynamicInclude)]
-    class DynamicIncludeProcessor : IndicatorProcessor
+    internal class DynamicIncludeProcessor : IndicatorProcessor
     {
         #region MetricProcessor overrides
 
-        protected override IndicatorProcessor.Result process(bool resolveOccurances,
-            ConstructIndicator category, SyntaxParser parser)
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
         {
-            Debug.Assert(category == ConstructIndicator.DynamicInclude);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == ConstructIndicator.DynamicInclude,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
             if (parser.Inclusions == null)
             {
@@ -35,7 +37,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            var occurrences = new Stack<IncludingEx>();
+            var occurrences = new Queue<IncludingEx>();
             var stringFunctions = MetricRelatedFunctions.Get(category);
             Debug.Assert(stringFunctions.GetEnumerator().MoveNext());
             var functions = new HashSet<string>(stringFunctions);
@@ -51,55 +53,55 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                     var expression = expressions.Dequeue();
 
                     // Note that the strings beginning with quotes are automatically broken down by variables
-                    if (expression is ConcatEx)
+                    var concatenation = expression as ConcatEx;
+                    if (concatenation != null)
                     {
-                        var concatenation = expression as ConcatEx;
                         foreach (var operand in concatenation.Expressions)
                         {
                             expressions.Enqueue(operand);
                         }
                     }
-                    else if (expression is DirectFcnCall)
+                    else
                     {
                         var functionCall = expression as DirectFcnCall;
-
-                        // The subroutine must be function, i.e. it must not be member of a class
-                        if (functionCall.IsMemberOf == null
-                            // The number of parameters must be exactly 1
-                            && functionCall.CallSignature.Parameters.Count == 1
-                            // Function names are case-insensitive
-                            && functions.Contains(functionCall.QualifiedName.Name.LowercaseValue))
+                        if (functionCall != null)
                         {
-                            expressions.Enqueue(functionCall.CallSignature.Parameters[0].Expression);
+                            // The subroutine must be function, i.e. it must not be member of a class
+                            if (functionCall.IsMemberOf == null
+                                // The number of parameters must be exactly 1
+                                && functionCall.CallSignature.Parameters.Count == 1
+                                // Function names are case-insensitive
+                                && functions.Contains(functionCall.QualifiedName.Name.LowercaseValue))
+                            {
+                                expressions.Enqueue(functionCall.CallSignature.Parameters[0].Expression);
+                            }
+                            else
+                            {
+                                isDynamic = true;
+                                break;
+                            }
                         }
-                        else
+                        else if (!(expression is StringLiteral))
                         {
+                            // It is not correct terminal symbol of the expression, a string
                             isDynamic = true;
                             break;
                         }
-                    }
-                    else if (expression is StringLiteral)
-                    {
-                        // Correct terminal symbol of the expression
-                    }
-                    else
-                    {
-                        isDynamic = true;
-                        break;
                     }
                 }
 
                 if (isDynamic)
                 {
-                    occurrences.Push(inclusion);
+                    occurrences.Enqueue(inclusion);
                 }
             }
 
             var hasOccurrence = occurrences.GetEnumerator().MoveNext();
+
             // Return inclusions (IncludingEx) that cannot be evaluated statically
             return new Result(hasOccurrence, occurrences);
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
     }
 }

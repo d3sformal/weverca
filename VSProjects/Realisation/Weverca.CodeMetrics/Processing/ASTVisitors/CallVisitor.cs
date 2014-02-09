@@ -1,69 +1,69 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
 
-namespace Weverca.CodeMetrics.Processing.ASTVisitors
+namespace Weverca.CodeMetrics.Processing.AstVisitors
 {
     /// <summary>
-    /// Visitor which collect function calls
+    /// Represents the visitor that collects all occurrences the given function calls.
     /// </summary>
-    class CallVisitor : TreeVisitor
+    internal class CallVisitor : OccurrenceVisitor
     {
-        HashSet<string> searchedCalls;
-        List<AstNode> foundCalls = new List<AstNode>();
+        /// <summary>
+        /// Functions whose calls are looked for.
+        /// </summary>
+        private HashSet<string> searchedCalls;
 
         /// <summary>
-        /// Create call visitor, which collect occurances of given functions
+        /// Initializes a new instance of the <see cref="CallVisitor" /> class.
         /// </summary>
-        /// <param name="functions"></param>
+        /// <param name="functions">List of functions to be detected.</param>
         public CallVisitor(IEnumerable<string> functions)
         {
             searchedCalls = new HashSet<string>(functions);
         }
 
-        /// <summary>
-        /// Returns calls which were founded during visiting tree
-        /// </summary>
-        /// <returns></returns>
-        internal IEnumerable<AstNode> GetCalls()
-        {
-            //Copy result because of make it immutable
-            return foundCalls.ToArray();
-        }
-
         #region TreeVisitor overrides
+
+        /// <inheritdoc />
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
-            if (isSearched(x.QualifiedName))
+            if (IsSearched(x.QualifiedName))
             {
-                foundCalls.Add(x);
+                occurrenceNodes.Enqueue(x);
             }
+
             base.VisitDirectFcnCall(x);
         }
 
-        /// <summary>
+        /// <inheritdoc />
+        /// <remarks>
         /// Phalanger resolves eval as special expression
-        /// </summary>
-        /// <param name="x"></param>
+        /// </remarks>
         public override void VisitEvalEx(EvalEx x)
         {
             if (searchedCalls.Contains("eval"))
             {
-                foundCalls.Add(x);
+                occurrenceNodes.Enqueue(x);
             }
         }
-        #endregion
 
+        #endregion TreeVisitor overrides
 
         #region Private utilities for function matching
 
-        private bool isSearched(QualifiedName qualifiedName)
+        /// <summary>
+        /// Indicate whether the function is in the list of searched function calls.
+        /// </summary>
+        /// <param name="qualifiedName">Name of the function.</param>
+        /// <returns><c>true</c> if it is searched, otherwise <c>false</c>.</returns>
+        private bool IsSearched(QualifiedName qualifiedName)
         {
             var name = qualifiedName.Name.Value;
             return searchedCalls.Contains(name);
         }
 
-        #endregion
+        #endregion Private utilities for function matching
     }
 }

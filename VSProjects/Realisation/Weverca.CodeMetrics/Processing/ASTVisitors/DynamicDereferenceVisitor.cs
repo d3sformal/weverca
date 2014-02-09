@@ -1,28 +1,29 @@
-﻿using PHP.Core.AST;
+using PHP.Core.AST;
 
-namespace Weverca.CodeMetrics.Processing.ASTVisitors
+namespace Weverca.CodeMetrics.Processing.AstVisitors
 {
     /// <summary>
-    /// Checks AST for Dynamic dereference like $$a
+    /// Checks AST for Dynamic dereference like $$a.
     /// </summary>
-    class DynamicDereferenceVisitor : OccurrenceVisitor
+    internal class DynamicDereferenceVisitor : OccurrenceVisitor
     {
         #region TreeVisitor overrides
 
-        /// <summary>
-        /// Visits the indirect variable use and checks it for dynamic dereference.
-        /// </summary>
-        /// <param name="x">The x.</param>
+        /// <remarks>
+        /// The method checks indirect variable use for dynamic dereference.
+        /// </remarks>
+        /// <inheritdoc />
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
             // variable is dynamicaly dereferenced, if it has a variable use in it's name.
             if (x.VarNameEx is VariableUse)
             {
-                occurrenceNodes.Push(x);
+                occurrenceNodes.Enqueue(x);
             }
+
             base.VisitIndirectVarUse(x);
         }
 
-        #endregion
+        #endregion TreeVisitor overrides
     }
 }

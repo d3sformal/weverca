@@ -1,37 +1,45 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Reflection;
 
 using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Reflection;
 
-namespace Weverca.CodeMetrics.Processing.ASTVisitors
+namespace Weverca.CodeMetrics.Processing.AstVisitors
 {
     /// <summary>
     /// Represents the visitor that finds all calls of functions and static methods
     /// that declares at least one parameter as passing by reference.
     /// </summary>
-    class PassingByReferenceVisitor : OccurrenceVisitor
+    internal class PassingByReferenceVisitor : OccurrenceVisitor
     {
         /// <summary>
-        /// Function declarations in the source
+        /// Function declarations in the source.
         /// </summary>
         private Dictionary<QualifiedName, ScopedDeclaration<DRoutine>> functions;
+
         /// <summary>
-        /// Type declarations in the source
+        /// Type declarations in the source.
         /// </summary>
         private Dictionary<QualifiedName, PhpType> types;
+
         /// <summary>
-        /// Type whose subtree is traversed at this point
+        /// Type whose sub-tree is traversed at this point.
         /// </summary>
         private TypeDecl currentType = null;
+
         /// <summary>
-        /// Name of base class of current type
+        /// Name of base class of current type.
         /// </summary>
         private GenericQualifiedName? baseClassName = null;
 
-        public PassingByReferenceVisitor(Dictionary<QualifiedName, ScopedDeclaration<DRoutine>>/*!*/
-            functions, Dictionary<QualifiedName, PhpType>/*!*/ types)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PassingByReferenceVisitor" /> class.
+        /// </summary>
+        /// <param name="functions">Function declarations in the source.</param>
+        /// <param name="types">Type declarations in the source.</param>
+        public PassingByReferenceVisitor(Dictionary<QualifiedName, ScopedDeclaration<DRoutine>> functions,
+            Dictionary<QualifiedName, PhpType> types)
         {
             // If there exist the same conditional declarations, dictionaries contain only
             // one instance of them, so "may" information cannot be detected correctly
@@ -41,6 +49,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
 
         #region TreeVisitor overrides
 
+        /// <inheritdoc />
         public override void VisitTypeDecl(TypeDecl x)
         {
             var previousCurrentType = currentType;
@@ -50,6 +59,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             {
                 currentType = x;
                 baseClassName = x.BaseClassName;
+
                 base.VisitTypeDecl(x);
             }
             finally
@@ -59,6 +69,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             }
         }
 
+        /// <inheritdoc />
         public override void VisitDirectFcnCall(DirectFcnCall x)
         {
             // It must be function call, not method call of an object
@@ -68,18 +79,20 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
                 ScopedDeclaration<DRoutine> routine;
                 if (functions.TryGetValue(x.QualifiedName, out routine))
                 {
-                    System.Diagnostics.Debug.Assert(routine.Member is PhpFunction);
                     var phpFunction = routine.Member as PhpFunction;
+                    Debug.Assert(phpFunction != null,
+                        "It must be function, because it is not called as method of a object");
 
                     // It is not possible to determine what function definition has been declared
                     if (!phpFunction.Declaration.IsConditional)
                     {
-                        System.Diagnostics.Debug.Assert(phpFunction.Declaration.GetNode() is FunctionDecl);
                         var declaration = phpFunction.Declaration.GetNode() as FunctionDecl;
+                        Debug.Assert(declaration != null,
+                            "PhpFunction is always in function declaration node");
 
                         if (IsPassedByRef(declaration.Signature.FormalParams, x.CallSignature.Parameters))
                         {
-                            occurrenceNodes.Push(x);
+                            occurrenceNodes.Enqueue(x);
                         }
                     }
                 }
@@ -88,6 +101,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             base.VisitDirectFcnCall(x);
         }
 
+        /// <inheritdoc />
         public override void VisitDirectStMtdCall(DirectStMtdCall x)
         {
             // TODO: Reflection used because field "typeRef" should be public
@@ -95,8 +109,8 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             var field = type.GetField("typeRef", BindingFlags.NonPublic | BindingFlags.Instance);
             var typeRef = field.GetValue(x);
 
-            System.Diagnostics.Debug.Assert(typeRef is DirectTypeRef);
             var directTypeRef = typeRef as DirectTypeRef;
+            Debug.Assert(directTypeRef != null);
 
             TypeDecl typeNode = null;
             if (directTypeRef.ClassName.IsSelfClassName)
@@ -131,8 +145,8 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
                         if (!phpType.Declaration.IsConditional)
                         {
                             var node = phpType.Declaration.GetNode();
-                            Debug.Assert(node is TypeDecl);
                             typeNode = node as TypeDecl;
+                            Debug.Assert(typeNode != null, "PhpType is always in type declaration node");
                         }
                     }
                 }
@@ -142,9 +156,9 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             {
                 foreach (var member in typeNode.Members)
                 {
-                    if (member is MethodDecl)
+                    var declaration = member as MethodDecl;
+                    if (declaration != null)
                     {
-                        var declaration = member as MethodDecl;
                         if (declaration.Name.Equals(x.MethodName))
                         {
                             if (directTypeRef.ClassName.IsSelfClassName
@@ -155,7 +169,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
                                 if (IsPassedByRef(declaration.Signature.FormalParams,
                                     x.CallSignature.Parameters))
                                 {
-                                    occurrenceNodes.Push(x);
+                                    occurrenceNodes.Enqueue(x);
                                 }
                             }
                         }
@@ -166,18 +180,18 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
             base.VisitDirectStMtdCall(x);
         }
 
-        #endregion
+        #endregion TreeVisitor overrides
 
         /// <summary>
-        /// Test the number of parameters and whether any parameter is passed by reference
+        /// Test the number of parameters and whether any parameter is passed by reference.
         /// </summary>
-        /// <param name="formalParams">The variables used to stand for the values passed by a caller</param>
-        /// <param name="actualParams">The values that are passed into the function by a caller</param>
-        /// <returns>Returns whether any parameter is passed by reference</returns>
-        private bool IsPassedByRef(ICollection<FormalParam>/*!*/ formalParams,
-            ICollection<ActualParam>/*!*/ actualParams)
+        /// <param name="formalParams">The variables used to stand for the values passed by a caller.</param>
+        /// <param name="actualParams">The values that are passed into the function by a caller.</param>
+        /// <returns>Returns whether any parameter is passed by reference.</returns>
+        private static bool IsPassedByRef(ICollection<FormalParam> formalParams,
+            ICollection<ActualParam> actualParams)
         {
-            // Number of parameters must be the same within call and declaraton too
+            // Number of parameters must be the same within call and declaraton too.
             if (actualParams.Count == formalParams.Count)
             {
                 foreach (var param in formalParams)

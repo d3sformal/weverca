@@ -1,21 +1,33 @@
-﻿using System.Linq;
+using System.Diagnostics;
 
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     [Metric(ConstructIndicator.SuperGlobalVariable)]
-    class SuperGlobalVarProcessor:IndicatorProcessor
+    internal class SuperGlobalVarProcessor : IndicatorProcessor
     {
-        protected override IndicatorProcessor.Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
+        #region MetricProcessor overrides
+
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
         {
+            Debug.Assert(category == ConstructIndicator.SuperGlobalVariable,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
+
             var visitor = new SuperGlobalVarVisitor();
             parser.Ast.VisitMe(visitor);
 
-            var variables=visitor.GetVariables();
-            var hasOccurance = variables.Count() > 0;
-            return new Result(hasOccurance, variables);
+            var occurrences = visitor.GetOccurrences();
+            var hasOccurrence = occurrences.GetEnumerator().MoveNext();
+
+            return new Result(hasOccurrence, occurrences);
         }
+
+        #endregion MetricProcessor overrides
     }
 }

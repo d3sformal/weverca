@@ -1,21 +1,21 @@
 ﻿using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-using Weverca.Parsers;
-using Weverca.CodeMetrics;
 using PHP.Core;
 using PHP.Core.AST;
+
+using Weverca.CodeMetrics;
+using Weverca.Parsers;
 
 namespace Weverca
 {
     /// <summary>
-    /// Computation of code metrics for IDE integration
+    /// Computation of code metrics for IDE integration.
     /// </summary>
-    class MetricsForIDEIntegration
+    internal class MetricsForIDEIntegration
     {
         public static readonly string PHP_FILE_EXTENSION = ".php";
 
@@ -23,9 +23,12 @@ namespace Weverca
         /// Runs computation of code metrics for IDE integration (option -cmide of the analyzer)
         /// Do not modify the format of the output. For another format of output use another option of the analyzer.
         /// </summary>
+        /// <param name="metricsType"></param>
+        /// <param name="analyzedFile"></param>
+        /// <param name="metricsArgs"></param>
         internal static void Run(string metricsType, string analyzedFile, string[] metricsArgs)
         {
-            //The first argument determines an action
+            // The first argument determines an action
             if (metricsType == "-quantity")
             {
                 if (Directory.Exists(analyzedFile))
@@ -58,8 +61,8 @@ namespace Weverca
             }
             else if (metricsType == "-constructsFromFileOfFiles" && metricsArgs.Length > 0)
             {
-                System.IO.StreamReader fileToRead = new System.IO.StreamReader(analyzedFile);
-                String line;
+                var fileToRead = new StreamReader(analyzedFile);
+                string line;
                 while ((line = fileToRead.ReadLine()) != null)
                 {
                     if (Directory.Exists(line))
@@ -68,7 +71,7 @@ namespace Weverca
                     }
                     else if (File.Exists(line))
                     {
-                        string fileExtension = Path.GetExtension(line);
+                        var fileExtension = Path.GetExtension(line);
                         if (fileExtension == PHP_FILE_EXTENSION)
                         {
                             ProcessFile(line, metricsArgs);
@@ -78,7 +81,6 @@ namespace Weverca
 
                 fileToRead.Close();
             }
-
         }
 
         /// <summary>
@@ -88,26 +90,28 @@ namespace Weverca
         private static void ProcessDirectory(string directoryName)
         {
             Console.WriteLine("Processing directory: {0}", directoryName);
-            System.Diagnostics.Debug.Assert(Directory.Exists(directoryName));
+            Debug.Assert(Directory.Exists(directoryName));
 
-            foreach (string fileName in Directory.EnumerateFiles(directoryName, "*.php", SearchOption.AllDirectories))
+            foreach (var fileName in Directory.EnumerateFiles(directoryName, "*.php",
+                SearchOption.AllDirectories))
             {
-                string fileExtension = Path.GetExtension(fileName);
+                var fileExtension = Path.GetExtension(fileName);
                 if (fileExtension == PHP_FILE_EXTENSION)
                 {
                     ProcessFile(fileName);
                 }
             }
         }
+
         private static void ProcessDirectory(string directoryName, string[] constructs)
         {
             Console.WriteLine("Processing directory: {0}", directoryName);
-            System.Diagnostics.Debug.Assert(Directory.Exists(directoryName));
+            Debug.Assert(Directory.Exists(directoryName));
 
-            foreach (string fileName in Directory.EnumerateFiles(directoryName, "*.php", SearchOption.AllDirectories))
+            foreach (string fileName in Directory.EnumerateFiles(directoryName, "*.php",
+                SearchOption.AllDirectories))
             {
-
-                string fileExtension = Path.GetExtension(fileName);
+                var fileExtension = Path.GetExtension(fileName);
                 if (fileExtension == PHP_FILE_EXTENSION)
                 {
                     ProcessFile(fileName, constructs);
@@ -116,60 +120,70 @@ namespace Weverca
         }
 
         /// <summary>
+        /// 
         /// </summary>
         /// <param name="fileName">Name of the file.</param>
         private static void ProcessFile(string fileName)
         {
             Console.WriteLine("Process file: {0}", fileName);
 
-            System.Diagnostics.Debug.Assert(File.Exists(fileName));
+            Debug.Assert(File.Exists(fileName));
 
             Console.WriteLine("Processing file: {0}", fileName);
-            SyntaxParser parser = GenerateParser(fileName);
+            var parser = GenerateParser(fileName);
             parser.Parse();
-            if (parser.Errors.AnyError) return;
-            MetricInfo info = MetricInfo.FromParsers(true, parser);
-            Console.WriteLine(fileName + "," + info.GetQuantity(Quantity.NumberOfLines) + "," + info.GetQuantity(Quantity.NumberOfSources) + "," +
-            info.GetQuantity(Quantity.MaxInheritanceDepth) + "," + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + "," +
-                //info.GetRating(Rating.Cyclomacity + "," +  NOT IMPLEMENTED
-            info.GetRating(Rating.ClassCoupling) + "," + info.GetRating(Rating.PhpFunctionsCoupling));
+            if (parser.Errors.AnyError)
+            {
+                return;
+            }
+
+            var info = MetricInfo.FromParsers(true, parser);
+            Console.WriteLine(fileName + "," + info.GetQuantity(Quantity.NumberOfLines) + ","
+                + info.GetQuantity(Quantity.NumberOfSources) + ","
+                + info.GetQuantity(Quantity.MaxInheritanceDepth) + ","
+                + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + "," +
+                // info.GetRating(Rating.Cyclomacity + "," +  NOT IMPLEMENTED
+                info.GetRating(Rating.ClassCoupling) + "," + info.GetRating(Rating.PhpFunctionsCoupling));
         }
 
         private static void ProcessFile(string fileName, string[] constructs)
         {
             Console.WriteLine("Process file: {0}", fileName);
 
-            System.Diagnostics.Debug.Assert(File.Exists(fileName));
+            Debug.Assert(File.Exists(fileName));
 
             Console.WriteLine("Processing file: {0}", fileName);
-            SyntaxParser parser = GenerateParser(fileName);
+            var parser = GenerateParser(fileName);
             try
             {
                 parser.Parse();
             }
-            catch 
-            { 
-                return; 
+            catch
+            {
+                return;
             }
+
             if (parser.Errors.AnyError)
             {
                 Console.WriteLine("error");
                 return;
             }
-            MetricInfo info = MetricInfo.FromParsers(true, parser);
-            foreach (string construct in constructs)
+
+            var info = MetricInfo.FromParsers(true, parser);
+            foreach (var construct in constructs)
             {
                 if (info.HasIndicator(StringToIndicator(construct)))
-                    foreach (AstNode node in info.GetOccurances(StringToIndicator(construct)))
+                {
+                    foreach (var node in info.GetOccurrences(StringToIndicator(construct)))
                     {
-                        Console.WriteLine("File *" + fileName + "* contains indicator *" + construct + "*" + ((LangElement)node).Position.FirstLine.ToString() + "," + ((LangElement)node).Position.FirstOffset.ToString() +
-                                          "," + ((LangElement)node).Position.LastLine.ToString() + "," + ((LangElement)node).Position.LastOffset.ToString());
+                        Console.WriteLine("File *" + fileName + "* contains indicator *" + construct
+                            + "*" + ((LangElement)node).Position.FirstLine.ToString()
+                            + "," + ((LangElement)node).Position.FirstOffset.ToString()
+                            + "," + ((LangElement)node).Position.LastLine.ToString()
+                            + "," + ((LangElement)node).Position.LastOffset.ToString());
                     }
+                }
             }
-
-
-
-
         }
 
         private static ConstructIndicator StringToIndicator(string construct)
@@ -177,11 +191,11 @@ namespace Weverca
             // TODO pouzit Dictionary - nie je kompletny
 
             if (construct == "Aliasing")
-            { return ConstructIndicator.Alias; }
+            { return ConstructIndicator.References; }
             if (construct == "Autoload")
             { return ConstructIndicator.Autoload; }
             if (construct == "Class presence")
-            { return ConstructIndicator.Class; }
+            { return ConstructIndicator.ClassOrInterface; }
             if (construct == "Dynamic call")
             { return ConstructIndicator.DynamicCall; }
             if (construct == "Dynamic dereference")
@@ -193,19 +207,17 @@ namespace Weverca
             if (construct == "Inside function declaration")
             { return ConstructIndicator.InsideFunctionDeclaration; }
             if (construct == "Magic methods")
-            { return ConstructIndicator.MagicMethod; }
+            { return ConstructIndicator.MagicMethods; }
             if (construct == "SQL")
-            { return ConstructIndicator.MySQL; }
+            { return ConstructIndicator.MySql; }
             if (construct == "Passing by reference at call side")
             { return ConstructIndicator.PassingByReferenceAtCallSide; }
             if (construct == "Sessions")
             { return ConstructIndicator.Session; }
-            else //(construct == "Use of super global variable")
+            else // (construct == "Use of super global variable")
             { return ConstructIndicator.SuperGlobalVariable; }
-            // return null; - non-nullable         
+            // return null; - non-nullable
         }
-
-
 
         private static SyntaxParser GenerateParser(string fileName)
         {
@@ -215,8 +227,9 @@ namespace Weverca
                 code = reader.ReadToEnd();
             }
 
-            PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
-            return new SyntaxParser(source_file, code);
+            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)),
+                new FullPath(fileName));
+            return new SyntaxParser(sourceFile, code);
         }
     }
 }

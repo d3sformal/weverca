@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -9,19 +9,21 @@ using Weverca.Parsers;
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
-    /// Identifies all functions and methods that can be registered as __autoload() implementations
+    /// Identifies all functions and methods that can be registered as __autoload() implementations.
     /// </summary>
     [Metric(ConstructIndicator.Autoload)]
-    sealed class AutoloadProcessor : IndicatorProcessor
+    internal class AutoloadProcessor : IndicatorProcessor
     {
         #region MetricProcessor overrides
 
-        protected override Result process(bool resolveOccurances, ConstructIndicator category,
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
             SyntaxParser parser)
         {
-            Debug.Assert(category == ConstructIndicator.Autoload);
-            Debug.Assert(parser.IsParsed);
-            Debug.Assert(!parser.Errors.AnyError);
+            Debug.Assert(category == ConstructIndicator.Autoload,
+                "Metric of class must be same as passed metric");
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
 
             if ((parser.Functions == null) && (parser.Types == null))
             {
@@ -36,31 +38,33 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 }
             }
 
-            var occurrences = new Stack<LangElement>();
+            var occurrences = new Queue<LangElement>();
             foreach (var routine in parser.Functions)
             {
-                Debug.Assert(routine.Value.Member is PhpFunction);
                 var phpFunction = routine.Value.Member as PhpFunction;
+                Debug.Assert(phpFunction != null);
 
-                Debug.Assert(phpFunction.Declaration.GetNode() is FunctionDecl);
                 var declaration = phpFunction.Declaration.GetNode() as FunctionDecl;
+                Debug.Assert(declaration != null,
+                    "PhpFunction is always in function declaration node");
 
                 // Check whether name of the function is "__autoload"
                 if (routine.Key.IsAutoloadName)
                 {
                     // Does not check that __autoload takes exactly 1 argument
-                    occurrences.Push(declaration);
+                    occurrences.Enqueue(declaration);
                 }
             }
 
             var functions = MetricRelatedFunctions.Get(category);
+
             // All occurrences of autoload register function calls
-            var calls = findCalls(parser, functions);
+            var calls = FindCalls(parser, functions);
 
             foreach (var node in calls)
             {
-                Debug.Assert(node is DirectFcnCall);
                 var call = node as DirectFcnCall;
+                Debug.Assert(call != null);
 
                 var parameters = call.CallSignature.Parameters;
                 // If no parameter is provided, then the default implementation
@@ -70,16 +74,17 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                     var expression = parameters[0].Expression;
 
                     // If expression is null, all callbacks are unregistered
-                    if (expression is StringLiteral)
+
+                    var literal = expression as StringLiteral;
+                    if (literal != null)
                     {
-                        var literal = expression as StringLiteral;
-                        Debug.Assert(literal.Value is string);
                         var value = literal.Value as string;
+                        Debug.Assert(value != null);
 
                         var declaration = FindFunctionDeclaration(value, parser.Functions);
                         if (declaration != null)
                         {
-                            occurrences.Push(declaration);
+                            occurrences.Enqueue(declaration);
                         }
                     }
                     else if (expression is ArrayEx)
@@ -90,30 +95,27 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                         // Array define class (reference or name) and function name
                         if (items.Count == 2)
                         {
-                            var item = array.Items[0];
-                            if (item is ValueItem)
+                            var valueItem = array.Items[0] as ValueItem;
+                            if (valueItem != null)
                             {
-                                var valueItem = item as ValueItem;
                                 // Expression that define class (reference or name)
                                 var classExpression = valueItem.ValueExpr;
 
-                                item = array.Items[1];
-                                if (item is ValueItem)
+                                valueItem = array.Items[1] as ValueItem;
+                                if (valueItem != null)
                                 {
-                                    valueItem = item as ValueItem;
-                                    var valueExpression = valueItem.ValueExpr;
-                                    if (valueExpression is StringLiteral)
+                                    var stringLiteral = valueItem.ValueExpr as StringLiteral;
+                                    if (stringLiteral != null)
                                     {
-                                        var literal = valueItem.ValueExpr as StringLiteral;
-                                        Debug.Assert(literal.Value is string);
                                         // Name of method
-                                        var methodName = literal.Value as string;
+                                        var methodName = stringLiteral.Value as string;
+                                        Debug.Assert(methodName != null);
 
                                         var declaration = FindMethodDeclaration(classExpression,
                                             methodName, parser.Types);
                                         if (declaration != null)
                                         {
-                                            occurrences.Push(declaration);
+                                            occurrences.Enqueue(declaration);
                                         }
                                     }
                                 }
@@ -124,21 +126,22 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             }
 
             var hasOccurrence = occurrences.GetEnumerator().MoveNext();
+
             // Return functions (FunctionDecl) or methods (MethodDecl) possibly
-            // registered as __autoload() implementations
+            // registered as __autoload() implementations.
             return new Result(hasOccurrence, occurrences.ToArray());
         }
 
-        #endregion
+        #endregion MetricProcessor overrides
 
         /// <summary>
-        /// Find function declaration AST node of given name
+        /// Find function declaration AST node of given name.
         /// </summary>
-        /// <param name="name">Name of function</param>
-        /// <param name="functions">List of all declared types</param>
-        /// <returns>Function declaration of given name</returns>
-        private FunctionDecl FindFunctionDeclaration(string name, IReadOnlyDictionary<QualifiedName,
-            ScopedDeclaration<DRoutine>> functions)
+        /// <param name="name">Name of function.</param>
+        /// <param name="functions">List of all declared types.</param>
+        /// <returns>Function declaration of given name.</returns>
+        private static FunctionDecl FindFunctionDeclaration(string name,
+            IDictionary<QualifiedName, ScopedDeclaration<DRoutine>> functions)
         {
             var functionName = new Name(name);
             var qualifiedName = new QualifiedName(functionName);
@@ -146,14 +149,15 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 
             if (functions.TryGetValue(qualifiedName, out routine))
             {
-                Debug.Assert(routine.Member is PhpFunction);
                 var phpFunction = routine.Member as PhpFunction;
+                Debug.Assert(phpFunction != null);
 
                 // It is not possible to determine what function definition has been declared
                 if (!phpFunction.Declaration.IsConditional)
                 {
-                    Debug.Assert(phpFunction.Declaration.GetNode() is FunctionDecl);
                     var node = phpFunction.Declaration.GetNode() as FunctionDecl;
+                    Debug.Assert(node != null);
+
                     // Does not check that function takes exactly 1 argument
                     return node;
                 }
@@ -163,37 +167,41 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         }
 
         /// <summary>
-        /// Find method declaration AST node of given name declared in class defined by given expression
+        /// Find method declaration AST node of given name declared in class defined by given expression.
         /// </summary>
-        /// <param name="classExpression">Expression defining class (reference or name)</param>
-        /// <param name="methodName">Name of method</param>
-        /// <param name="types">List of all declared types</param>
-        /// <returns>Method declaration of given name</returns>
-        private MethodDecl FindMethodDeclaration(Expression classExpression, string methodName,
-            IReadOnlyDictionary<QualifiedName, PhpType> types)
+        /// <param name="classExpression">Expression defining class (reference or name).</param>
+        /// <param name="methodName">Name of method.</param>
+        /// <param name="types">List of all declared types.</param>
+        /// <returns>Method declaration of given name.</returns>
+        private static MethodDecl FindMethodDeclaration(Expression classExpression, string methodName,
+            IDictionary<QualifiedName, PhpType> types)
         {
             List<TypeMemberDecl> list = null;
             bool isOnlyStatic = true;
 
-            if (classExpression is StringLiteral)
+            var literal = classExpression as StringLiteral;
+            if (literal != null)
             {
-                var literal = classExpression as StringLiteral;
-                Debug.Assert(literal.Value is string);
                 var value = literal.Value as string;
+                Debug.Assert(value != null);
 
                 var name = new Name(value);
                 var qualifiedName = new QualifiedName(name);
                 list = FindClass(qualifiedName, types);
             }
-            else if (classExpression is NewEx)
+            else
             {
-                var literal = classExpression as NewEx;
-                if (literal.ClassNameRef is DirectTypeRef)
+                var newExpression = classExpression as NewEx;
+                if (newExpression != null)
                 {
-                    var type = literal.ClassNameRef as DirectTypeRef;
-                    list = FindClass(type.ClassName, types);
-                    // Instance of class is created, so non-static methods can be used too
-                    isOnlyStatic = false;
+                    var type = newExpression.ClassNameRef as DirectTypeRef;
+                    if (type != null)
+                    {
+                        list = FindClass(type.ClassName, types);
+
+                        // Instance of class is created, so non-static methods can be used too
+                        isOnlyStatic = false;
+                    }
                 }
             }
 
@@ -201,9 +209,9 @@ namespace Weverca.CodeMetrics.Processing.Implementations
             {
                 foreach (var member in list)
                 {
-                    if (member is MethodDecl)
+                    var method = member as MethodDecl;
+                    if (method != null)
                     {
-                        var method = member as MethodDecl;
                         if (method.Name.Equals(methodName))
                         {
                             if (!isOnlyStatic || ((method.Modifiers & PhpMemberAttributes.Static)
@@ -224,13 +232,13 @@ namespace Weverca.CodeMetrics.Processing.Implementations
         }
 
         /// <summary>
-        /// Find class declaration AST node of given name
+        /// Find class declaration AST node of given name.
         /// </summary>
-        /// <param name="name">Name of class</param>
-        /// <param name="types">List of all declared types</param>
-        /// <returns>Class declaration of given name</returns>
-        private List<TypeMemberDecl> FindClass(QualifiedName name,
-            IReadOnlyDictionary<QualifiedName, PhpType> types)
+        /// <param name="name">Name of class.</param>
+        /// <param name="types">List of all declared types.</param>
+        /// <returns>Class declaration of given name.</returns>
+        private static List<TypeMemberDecl> FindClass(QualifiedName name,
+            IDictionary<QualifiedName, PhpType> types)
         {
             PhpType type;
             if (types.TryGetValue(name, out type))
@@ -239,8 +247,8 @@ namespace Weverca.CodeMetrics.Processing.Implementations
                 if (!declaration.IsConditional)
                 {
                     var node = declaration.GetNode();
-                    Debug.Assert(node is TypeDecl);
                     var typeDeclaration = node as TypeDecl;
+                    Debug.Assert(typeDeclaration != null);
 
                     // Interface cannot be instantiated
                     if ((typeDeclaration.AttributeTarget & PhpAttributeTargets.Types)

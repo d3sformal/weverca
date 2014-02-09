@@ -1,18 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
     [Metric(Quantity.NumberOfSources)]
-    class NumberOfSourcesProcessor:QuantityProcessor
+    internal class NumberOfSourcesProcessor : QuantityProcessor
     {
-        protected override Result process(bool resolveOccurances, Quantity category, Parsers.SyntaxParser parser)
+        #region MetricProcessor overrides
+
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, Quantity category,
+            Parsers.SyntaxParser parser)
         {
-            //processing is made on single source
+            Debug.Assert(category == Quantity.NumberOfSources,
+                "Metric of class must be same as passed metric");
+
+            // Processing is made on single source
             return new Result(1);
         }
+
+        #endregion MetricProcessor overrides
     }
 }

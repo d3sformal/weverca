@@ -1,53 +1,60 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using PHP.Core.AST;
-using Weverca.CodeMetrics.Processing.ASTVisitors;
+
+using Weverca.CodeMetrics.Processing.AstVisitors;
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing
 {
-
-    abstract class IndicatorProcessor : MetricProcessor<ConstructIndicator, bool>
+    /// <summary>
+    /// Processor of metric that indicates whether a construct is in the source code.
+    /// </summary>
+    /// <remarks>
+    /// The language can contain many constructs that can be problematic for analysis of program.
+    /// In this case, we just want to know whether the structure, function or technique is appearing or not
+    /// in the code. Moreover, information about places of the property occurrence are also important.
+    /// </remarks>
+    internal abstract class IndicatorProcessor : MetricProcessor<ConstructIndicator, bool>
     {
-        #region MetricProcessor abstract method implementations
-        /// <summary>
-        /// Merging of almost all indicators should be easy. Others can override this beahviour
-        /// </summary>
-        /// <param name="r1"></param>
-        /// <param name="r2"></param>
-        /// <returns></returns>
-        protected override bool merge(bool r1, bool r2)
+        #region MetricProcessor overrides
+
+        /// <remarks>
+        /// Merging of almost all indicators should be easy. If the metric property appeared in one
+        /// piece of code, it appeared in the entire source code. Derived classes can override this behavior.
+        /// </remarks>
+        /// <inheritdoc />
+        protected override bool Merge(bool firstProperty, bool secondProperty)
         {
-            return r1 || r2;
+            return firstProperty || secondProperty;
         }
 
-        /// <summary>
-        /// Merging of almost all indicators should be easy. Others can override this beahviour
-        /// </summary>
-        /// <param name="r1"></param>
-        /// <param name="r2"></param>
-        /// <returns></returns>
-        protected override IEnumerable<AstNode> merge(IEnumerable<AstNode> o1, IEnumerable<AstNode> o2)
+        /// <remarks>
+        /// Merging of almost all indicators should be easy. All occurrences from the first result are just
+        /// appended to occurrences from the second result. Derived classes can override this behavior.
+        /// </remarks>
+        /// <inheritdoc />
+        protected override IEnumerable<AstNode> Merge(IEnumerable<AstNode> firstOccurrences,
+            IEnumerable<AstNode> secondOccurrences)
         {
-            var merged = new List<AstNode>(o1);
-            merged.AddRange(o2);
-
-            return merged;
+            var occurrences = new List<AstNode>(firstOccurrences);
+            occurrences.AddRange(secondOccurrences);
+            return occurrences;
         }
-        #endregion
+
+        #endregion MetricProcessor overrides
 
         #region Utility methods for child classes
+
         /// <summary>
-        /// Determine that source in given parser contains any method from calls or not
+        /// Determine that source in given parser contains any method from calls or not.
         /// </summary>
+        /// <param name="parser">Syntax parser of source code.</param>
         /// <param name="calls"></param>
-        /// <param name="parser"></param>
         /// <returns></returns>
-        protected IEnumerable<AstNode> findCalls(SyntaxParser parser, IEnumerable<string> calls)
+        protected static IEnumerable<AstNode> FindCalls(SyntaxParser parser, IEnumerable<string> calls)
         {
-            if (calls.Count() == 0)
+            if (!calls.GetEnumerator().MoveNext())
             {
                 return new FunctionCall[0];
             }
@@ -55,15 +62,9 @@ namespace Weverca.CodeMetrics.Processing
             var visitor = new CallVisitor(calls);
 
             parser.Ast.VisitMe(visitor);
-            return visitor.GetCalls();
-        }        
-
-        protected IEnumerable<FunctionCall> findMethods(SyntaxParser parser, IEnumerable<string> methods)
-        {
-            throw new NotImplementedException();
+            return visitor.GetOccurrences();
         }
-        #endregion
 
+        #endregion Utility methods for child classes
     }
-
 }

@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Weverca.CodeMetrics.UnitTest
 {
     [TestClass]
-    public class IndicatorCodeMetricTests
+    public class IndicatorCodeMetricsTests
     {
-
         #region Eval indicator tests
-        readonly IEnumerable<SourceTest> EvalPositiveTests = new SourceTest[]{
+
+        private readonly IEnumerable<SourceTest> evalPositiveTests = new SourceTest[]
+        {
             new SourceTest("Test on eval detection outside function/method.", @"
                 eval('$x=3');
             "),
@@ -30,24 +30,28 @@ namespace Weverca.CodeMetrics.UnitTest
             ")
         };
 
-        readonly IEnumerable<SourceTest> EvalNegativeTests = new SourceTest[]{
-            new SourceTest("No eval is present",TestingUtilities.HelloWorldSource)
+        private readonly IEnumerable<SourceTest> evalNegativeTests = new SourceTest[]
+        {
+            new SourceTest("No eval is present", TestingUtilities.HelloWorldSource)
         };
 
-        #endregion
-
+        #endregion Eval indicator tests
 
         #region Session indicator tests
-        readonly IEnumerable<SourceTest> SessionPositiveTests = new SourceTest[]{
-            new SourceTest("Session function call outside function/method",@"
+
+        private readonly IEnumerable<SourceTest> sessionPositiveTests = new SourceTest[]
+        {
+            new SourceTest("Session function call outside function/method", @"
                 session_start();
             "),
-            new SourceTest("Session function call inside global function",@"
+
+            new SourceTest("Session function call inside global function", @"
                 function test($param){
                     session_write_close();
                 }
             "),
-            new SourceTest("Session function call inside method",@"
+
+            new SourceTest("Session function call inside method", @"
                 class testClass{
                     function testMethod($param){
                         session_unset();
@@ -56,29 +60,36 @@ namespace Weverca.CodeMetrics.UnitTest
             ")
         };
 
-        readonly IEnumerable<SourceTest> SessionNegativeTests = new SourceTest[]{
-            new SourceTest("No session is present",TestingUtilities.HelloWorldSource)
+        private readonly IEnumerable<SourceTest> sessionNegativeTests = new SourceTest[]
+        {
+            new SourceTest("No session is present", TestingUtilities.HelloWorldSource)
         };
-        #endregion
+
+        #endregion Session indicator tests
 
         #region SuperGlobal variable indicator tests
-        readonly IEnumerable<SourceTest> SuperGlobalVarPositiveTests = new SourceTest[]{
-            new SourceTest("Super global outside function/method",@"
+
+        private readonly IEnumerable<SourceTest> superGlobalVarPositiveTests = new SourceTest[]
+        {
+            new SourceTest("Super global outside function/method", @"
                 $_POST['test']='hello';
             "),
-            new SourceTest("Super global inside global function",@"
+
+            new SourceTest("Super global inside global function", @"
                 function test($param){
                     $_GET['test']='world';
                 }
             "),
-            new SourceTest("Super global inside method",@"
+
+            new SourceTest("Super global inside method", @"
                 class testClass{
                     function testMethod($param){
                         $_SESSION['test']='!';
                     }
                 }
             "),
-            new SourceTest("Super global as rvalue",@"
+
+            new SourceTest("Super global as rvalue", @"
                 class testClass{
                     function testMethod($param){
                         $test=$GLOBALS['test'];
@@ -87,9 +98,11 @@ namespace Weverca.CodeMetrics.UnitTest
             ")
         };
 
-        readonly IEnumerable<SourceTest> SuperGlobalVarNegativeTests = new SourceTest[]{
-            new SourceTest("No session is present",TestingUtilities.HelloWorldSource),
-            new SourceTest("No super global variable",@"
+        private readonly IEnumerable<SourceTest> superGlobalVarNegativeTests = new SourceTest[]
+        {
+            new SourceTest("No session is present", TestingUtilities.HelloWorldSource),
+
+            new SourceTest("No super global variable", @"
                 $notSuperGlobal=3;
                 function test($param){
                     global $notSuperGlobal;
@@ -97,17 +110,19 @@ namespace Weverca.CodeMetrics.UnitTest
                 }
             "),
         };
-        #endregion
+
+        #endregion SuperGlobal variable indicator tests
 
         #region ClassPresence tests
 
-        readonly SourceTest[] classPresencePositiveTests = new SourceTest[] {
+        private readonly SourceTest[] classPresencePositiveTests = new SourceTest[]
+        {
             new SourceTest("basic class", @"
                 class TestClass{
-	                public static function TestMethod($Prava, $Patka){
-		                return false;
-		            }
-	            }"),
+                    public static function TestMethod($Prava, $Patka){
+                        return false;
+                    }
+                }"),
             new SourceTest("class implementing interface", @"
                 interface iTemplate
                 {
@@ -120,28 +135,20 @@ namespace Weverca.CodeMetrics.UnitTest
                 class Template implements iTemplate
                 {
                     private $vars = array();
-  
+
                     public function setVariable($name, $var)
                     {
                         $this->vars[$name] = $var;
                     }
-  
+
                     public function getHtml($template)
                     {
                         foreach($this->vars as $name => $value) {
                             $template = str_replace('{' . $name . '}', $value, $template);
                         }
- 
+
                         return $template;
                     }
-                }")
-        };
-
-        readonly SourceTest[] classPresenceNegativeTests = new SourceTest[] {
-            new SourceTest("function only", @"
-                function setVariable($name, $var)
-                {
-                    $this->vars[$name] = $var;
                 }"),
             new SourceTest("interface only", @"
                 interface iTemplate
@@ -151,36 +158,50 @@ namespace Weverca.CodeMetrics.UnitTest
                 }")
         };
 
-        #endregion
+        private readonly SourceTest[] classPresenceNegativeTests = new SourceTest[]
+        {
+            new SourceTest("function only", @"
+                function setVariable($name, $var)
+                {
+                    $this->vars[$name] = $var;
+                }")
+        };
+
+        #endregion ClassPresence tests
 
         #region DynamicDereference tests
 
-        readonly SourceTest[] dynamicDereferencePositiveTests = new SourceTest[] {
+        private readonly SourceTest[] dynamicDereferencePositiveTests = new SourceTest[]
+        {
             new SourceTest("basic test", " $aaa = 12; $c = \"aaa\"; $b = $$c;"),
             new SourceTest("just access", " $aaa = 12; $c = \"aaa\"; $$c;"),
             new SourceTest("tripple dereference", " $aaa = \"bbb\"; $bbb = 12; $c = \"aaa\"; $b = $$$c;"),
-            new SourceTest("class-function test", " class A { function b() {$aaa = 12; $c = \"aaa\"; $b = $$c;}}")
+            new SourceTest("class-function test",
+                " class A { function b() {$aaa = 12; $c = \"aaa\"; $b = $$c;}}")
         };
 
-        readonly SourceTest[] dynamicDereferenceNegativeTests = new SourceTest[] {
+        private readonly SourceTest[] dynamicDereferenceNegativeTests = new SourceTest[]
+        {
             new SourceTest("array test", " $aaa = 12; $c = \"aaa\"; $b = $c[0];"),
             new SourceTest("basic negative test", "$c = \"aaa\";"),
         };
 
-        #endregion
+        #endregion DynamicDereference tests
 
         #region MySQL tests
 
-        readonly SourceTest[] mySQLPositiveTests = new SourceTest[] {
+        private readonly SourceTest[] mySqlPositiveTests = new SourceTest[]
+        {
             new SourceTest("mysql_connect", "$link = @mysql_connect(\"localhost\", \"login\", \"password\") or die (\"<p>Connection failed!</p>\");"),
             new SourceTest("mysql_query", "$result = mysql_query(\"SELECT * FROM Table\");")
         };
 
-        #endregion
+        #endregion MySQL tests
 
         #region Dynamic function call tests
 
-        readonly SourceTest[] dynamicCallPositiveTests = new SourceTest[] {
+        private readonly SourceTest[] dynamicCallPositiveTests = new SourceTest[]
+        {
             new SourceTest("basic test", @"
                 $fxname = ""helloWorld"";
 
@@ -202,8 +223,9 @@ namespace Weverca.CodeMetrics.UnitTest
                 $instance = new $fxname();")
         };
 
-        readonly SourceTest[] dynamicCallNegativeTests = new SourceTest[] {
-             new SourceTest("basic negative test", @"
+        private readonly SourceTest[] dynamicCallNegativeTests = new SourceTest[]
+        {
+            new SourceTest("basic negative test", @"
                 function helloWorld(){
                     echo ""What a beautiful world!"";
                 }
@@ -212,41 +234,41 @@ namespace Weverca.CodeMetrics.UnitTest
             new SourceTest("no function call test", "$c = \"aaa\";"),
         };
 
-        #endregion
+        #endregion Dynamic function call tests
 
         #region Alias tests
 
-        readonly SourceTest[] aliasPositiveTests = new SourceTest[]
-            {
-                new SourceTest("basic test", @"
+        private readonly SourceTest[] aliasPositiveTests = new SourceTest[]
+        {
+            new SourceTest("basic test", @"
                     $a = 1;
                     $b = &$a;"),
-                new SourceTest("alias to array", @"
+            new SourceTest("alias to array", @"
                     $a = [];
                     $b = &$a[1];"),
-                new SourceTest("class field alias", @"
+            new SourceTest("class field alias", @"
                     class A {
                         public $field = ""asdf"";
                     }
                     $a = new A();
                     $b = &$a->field;"),
-                new SourceTest("class indirect field alias", @"
+            new SourceTest("class indirect field alias", @"
                     class A {
                         public $field = ""asdf"";
                     }
                     $a = new A();
                     $c = ""field"";
                     $b = &$a->$c;")
-            };
+        };
 
-        readonly SourceTest[] aliasNegativeTests = new SourceTest[]
-            {
-                new SourceTest("basic test", @"
-                    $a = 1;
-                    $b = $a;")
-            };
+        private readonly SourceTest[] aliasNegativeTests = new SourceTest[]
+        {
+            new SourceTest("basic test", @"
+                $a = 1;
+                $b = $a;")
+        };
 
-        #endregion
+        #endregion Alias tests
 
         [TestMethod]
         public void Eval()
@@ -254,8 +276,8 @@ namespace Weverca.CodeMetrics.UnitTest
             var hasEval = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Eval);
             var doesntHaveEval = TestingUtilities.GetNegation(hasEval);
 
-            TestingUtilities.RunTests(hasEval, EvalPositiveTests);
-            TestingUtilities.RunTests(doesntHaveEval, EvalNegativeTests);
+            TestingUtilities.RunTests(hasEval, evalPositiveTests);
+            TestingUtilities.RunTests(doesntHaveEval, evalNegativeTests);
         }
 
         [TestMethod]
@@ -264,24 +286,26 @@ namespace Weverca.CodeMetrics.UnitTest
             var hasSession = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Session);
             var doesntHaveSession = TestingUtilities.GetNegation(hasSession);
 
-            TestingUtilities.RunTests(hasSession, SessionPositiveTests);
-            TestingUtilities.RunTests(doesntHaveSession, SessionNegativeTests);
+            TestingUtilities.RunTests(hasSession, sessionPositiveTests);
+            TestingUtilities.RunTests(doesntHaveSession, sessionNegativeTests);
         }
 
         [TestMethod]
         public void SuperGlobalVar()
         {
-            var hasSuperGlobalVar= TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.SuperGlobalVariable);
+            var hasSuperGlobalVar = TestingUtilities.GetContainsIndicatorPredicate(
+                ConstructIndicator.SuperGlobalVariable);
             var doesntHaveSuperGlobalVar = TestingUtilities.GetNegation(hasSuperGlobalVar);
 
-            TestingUtilities.RunTests(hasSuperGlobalVar, SuperGlobalVarPositiveTests);
-            TestingUtilities.RunTests(doesntHaveSuperGlobalVar, SuperGlobalVarNegativeTests);
+            TestingUtilities.RunTests(hasSuperGlobalVar, superGlobalVarPositiveTests);
+            TestingUtilities.RunTests(doesntHaveSuperGlobalVar, superGlobalVarNegativeTests);
         }
 
         [TestMethod]
         public void ClassPresence()
         {
-            var hasClass = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Class);
+            var hasClass = TestingUtilities.GetContainsIndicatorPredicate(
+                ConstructIndicator.ClassOrInterface);
             var doesntHaveClass = TestingUtilities.GetNegation(hasClass);
 
             TestingUtilities.RunTests(hasClass, classPresencePositiveTests);
@@ -289,20 +313,21 @@ namespace Weverca.CodeMetrics.UnitTest
         }
 
         [TestMethod]
-        public void MySQLFunctions()
+        public void MySqlFunctions()
         {
-            var hasMySQLFunction = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.MySQL);
-            var doesntHaveMySQLFunction = TestingUtilities.GetNegation(hasMySQLFunction);
+            var hasMySqlFunction = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.MySql);
+            var doesntHaveMySqlFunction = TestingUtilities.GetNegation(hasMySqlFunction);
 
-            TestingUtilities.RunTests(hasMySQLFunction, mySQLPositiveTests);
-            TestingUtilities.RunTests(doesntHaveMySQLFunction, SessionPositiveTests);
-            TestingUtilities.RunTests(doesntHaveMySQLFunction, EvalPositiveTests);
+            TestingUtilities.RunTests(hasMySqlFunction, mySqlPositiveTests);
+            TestingUtilities.RunTests(doesntHaveMySqlFunction, sessionPositiveTests);
+            TestingUtilities.RunTests(doesntHaveMySqlFunction, evalPositiveTests);
         }
-        
+
         [TestMethod]
         public void DynamicDereference()
         {
-            var hasDynamicDereference = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.DynamicDereference);
+            var hasDynamicDereference = TestingUtilities.GetContainsIndicatorPredicate(
+                ConstructIndicator.DynamicDereference);
             var doesntHaveDynamicDereference = TestingUtilities.GetNegation(hasDynamicDereference);
 
             TestingUtilities.RunTests(hasDynamicDereference, dynamicDereferencePositiveTests);
@@ -312,7 +337,8 @@ namespace Weverca.CodeMetrics.UnitTest
         [TestMethod]
         public void DynamicCalls()
         {
-            var hasDynamicCall = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.DynamicCall);
+            var hasDynamicCall = TestingUtilities.GetContainsIndicatorPredicate(
+                ConstructIndicator.DynamicCall);
             var doesntHaveDynamicCall = TestingUtilities.GetNegation(hasDynamicCall);
 
             TestingUtilities.RunTests(hasDynamicCall, dynamicCallPositiveTests);
@@ -322,7 +348,7 @@ namespace Weverca.CodeMetrics.UnitTest
         [TestMethod]
         public void Alias()
         {
-            var hasAlias = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.Alias);
+            var hasAlias = TestingUtilities.GetContainsIndicatorPredicate(ConstructIndicator.References);
             var doesntHaveAlias = TestingUtilities.GetNegation(hasAlias);
 
             TestingUtilities.RunTests(hasAlias, aliasPositiveTests);

@@ -1,23 +1,23 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using PHP.Core.AST;
 
-namespace Weverca.CodeMetrics.Processing.ASTVisitors
+namespace Weverca.CodeMetrics.Processing.AstVisitors
 {
     /// <summary>
-    /// Enriched tree with a place to store AST nodes which represent some wanted language construct
+    /// Enriched tree with a place to store AST nodes which represent some wanted language construct.
     /// </summary>
-    class OccurrenceVisitor : TreeVisitor
+    internal class OccurrenceVisitor : TreeVisitor
     {
         /// <summary>
-        /// All occurrences of searched language constructs
+        /// All occurrences of searched language constructs.
         /// </summary>
-        protected Stack<AstNode> occurrenceNodes = new Stack<AstNode>();
+        protected Queue<AstNode> occurrenceNodes = new Queue<AstNode>();
 
         /// <summary>
-        /// Return all nodes with occurences of searched language constructs
+        /// Return all nodes with occurrences of searched language constructs.
         /// </summary>
-        /// <returns>Occurrences of appropriate nodes</returns>
+        /// <returns>Occurrences of appropriate nodes.</returns>
         internal IEnumerable<AstNode> GetOccurrences()
         {
             // Copy result to an array to make it immutable
@@ -25,7 +25,7 @@ namespace Weverca.CodeMetrics.Processing.ASTVisitors
         }
 
         /// <summary>
-        /// Remove all stored occurrences
+        /// Remove all stored occurrences.
         /// </summary>
         internal void ResetContent()
         {

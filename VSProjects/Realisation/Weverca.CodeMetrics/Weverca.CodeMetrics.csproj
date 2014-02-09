@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Weverca.CodeMetrics</RootNamespace>
     <AssemblyName>Weverca.CodeMetrics</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,12 +31,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MetricCategories.cs" />
@@ -74,7 +68,6 @@
     <Compile Include="Processing\IndicatorProcessor.cs" />
     <Compile Include="Processing\MetricAttribute.cs" />
     <Compile Include="Processing\MetricProcessor.cs" />
-    <Compile Include="Processing\MetricResultBatch.cs" />
     <Compile Include="Processing\ProcessingServices.cs" />
     <Compile Include="Processing\QuantityProcessor.cs" />
     <Compile Include="Processing\RatingProcessor.cs" />
@@ -90,7 +83,9 @@
       <Name>Weverca.Parser</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

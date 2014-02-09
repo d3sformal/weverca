@@ -1,22 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 using Weverca.Parsers;
 
 namespace Weverca.CodeMetrics.Processing.Implementations
 {
-    [Metric(ConstructIndicator.Eval, ConstructIndicator.Session, ConstructIndicator.MySQL, ConstructIndicator.ClassAlias)]
-    sealed class FunctionPresenceProcessor : IndicatorProcessor
+    [Metric(ConstructIndicator.Eval, ConstructIndicator.Session, ConstructIndicator.MySql,
+        ConstructIndicator.ClassAlias)]
+    internal class FunctionPresenceProcessor : IndicatorProcessor
     {
-        protected override Result process(bool resolveOccurances, ConstructIndicator category, SyntaxParser parser)
-        {
-            var functions=MetricRelatedFunctions.Get(category);
+        #region MetricProcessor overrides
 
-            var calls = findCalls(parser, functions);
-            return new Result(calls.Count() > 0, calls);            
+        /// <inheritdoc />
+        public override Result Process(bool resolveOccurances, ConstructIndicator category,
+            SyntaxParser parser)
+        {
+            Debug.Assert(parser.IsParsed, "Source code must be parsed");
+            Debug.Assert(!parser.Errors.AnyError, "Source code must not have any syntax error");
+
+            var functions = MetricRelatedFunctions.Get(category);
+
+            var calls = FindCalls(parser, functions);
+            var hasCalls = calls.GetEnumerator().MoveNext();
+
+            return new Result(hasCalls, calls);
         }
+
+        #endregion MetricProcessor overrides
     }
 }
