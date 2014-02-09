@@ -11,7 +11,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    public class MergeWorker : IReferenceHolder
+    public class MergeWorker : IReferenceHolder, IMergeWorker
     {
         private Dictionary<MemoryIndex, MemoryAliasBuilder> memoryAliases = new Dictionary<MemoryIndex, MemoryAliasBuilder>();
 
@@ -326,7 +326,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
-        internal void addOperation(MergeOperation operation)
+        public void addOperation(MergeOperation operation)
         {
             operationStack.AddLast(operation);
         }
@@ -397,7 +397,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     class ContainerOperations
     {
         private IWriteableIndexContainer targetContainer;
-        private MergeWorker worker;
+        private IMergeWorker worker;
         private MergeOperation unknownOperation;
         private List<Tuple<ReadonlyIndexContainer, Snapshot>> sources = new List<Tuple<ReadonlyIndexContainer, Snapshot>>();
         private bool isUndefined = false;
@@ -406,7 +406,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         HashSet<string> undefinedIndexes = new HashSet<string>();
 
         public ContainerOperations(
-            MergeWorker worker, 
+            IMergeWorker worker, 
             IWriteableIndexContainer targetContainer, 
             MemoryIndex targetIndex, 
             MemoryIndex unknownIndex)
@@ -453,6 +453,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        public void AddContainer(ReadonlyIndexContainer sourceContainer, Snapshot sourceSnapshot)
+        {
+            sources.Add(new Tuple<ReadonlyIndexContainer, Snapshot>(sourceContainer, sourceSnapshot));
+
+            unknownOperation.Add(sourceContainer.UnknownIndex, sourceSnapshot);
+        }
+
         public void MergeContainer()
         {
             foreach (string indexName in undefinedIndexes)
@@ -491,24 +498,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal void SetUndefined()
         {
             isUndefined = true;
-        }
-    }
-
-    
-    class CollectValuesVisitor : AbstractValueVisitor
-    {
-        public readonly HashSet<Value> Values = new HashSet<Value>();
-
-        public Snapshot Snapshot { get; set; }
-
-        public override void VisitValue(Value value)
-        {
-            Values.Add(value);
-        }
-
-        public override void VisitAssociativeArray(AssociativeArray value)
-        {
-
         }
     }
 }

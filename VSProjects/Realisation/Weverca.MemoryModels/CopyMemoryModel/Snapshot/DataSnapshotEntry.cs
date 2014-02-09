@@ -22,9 +22,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 case SnapshotMode.MemoryLevel:
                     dataEntry = entry;
+                    infoEntry = new MemoryEntry();
                     break;
 
                 case SnapshotMode.InfoLevel:
+                    dataEntry = new MemoryEntry();
                     infoEntry = entry;
                     break;
 

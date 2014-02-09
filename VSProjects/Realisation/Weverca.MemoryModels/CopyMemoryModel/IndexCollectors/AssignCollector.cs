@@ -191,20 +191,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             if (!snapshot.Structure.HasObjects(parentIndex))
             {
-                if (!createNewStructure)
-                {
-                    return;
-                }
-
                 ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
             }
             else if (!snapshot.ContainsOnlyReferences(parentIndex))
             {
-                if (!createNewStructure)
-                {
-                    return;
-                }
-
                 ObjectValue objectValue = snapshot.CreateObject(parentIndex, false);
             }
             
@@ -235,20 +225,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             AssociativeArray arrayValue;
             if (!snapshot.Structure.TryGetArray(parentIndex, out arrayValue))
             {
-                if (!createNewStructure)
-                {
-                    return;
-                }
-
                 arrayValue = snapshot.CreateArray(parentIndex, isMust);
             }
             else if (isMust)
             {
-                if (!createNewStructure)
-                {
-                    return;
-                }
-
                 snapshot.ClearForArray(parentIndex);
             }
 

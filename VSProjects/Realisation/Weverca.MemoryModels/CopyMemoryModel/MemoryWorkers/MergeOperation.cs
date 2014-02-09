@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class MergeOperation
+    public class MergeOperation
     {
         public readonly List<Tuple<MemoryIndex, Snapshot>> Indexes = new List<Tuple<MemoryIndex, Snapshot>>();
 

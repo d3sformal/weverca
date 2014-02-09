@@ -206,12 +206,6 @@ namespace Weverca.AnalysisFramework.UnitTest
         private static void GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(FlowOutputSet outSet)
         {
             outSet.Snapshot.SetMode(SnapshotMode.InfoLevel);
-
-            if (outSet.Snapshot is Weverca.MemoryModels.CopyMemoryModel.Snapshot)
-            {
-                ((Weverca.MemoryModels.CopyMemoryModel.Snapshot)outSet.Snapshot).UnlockStructureChanges();
-            }
-
             var POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
             var POST = outSet.CreateInfo(true);
 
@@ -221,11 +215,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             POST = outSet.CreateInfo(true);
 
             POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
-
-            if (outSet.Snapshot is Weverca.MemoryModels.CopyMemoryModel.Snapshot)
-            {
-                ((Weverca.MemoryModels.CopyMemoryModel.Snapshot)outSet.Snapshot).LockStructureChanges();
-            }
         }
 
         internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
@@ -544,7 +533,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
-        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM };
+        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.CopyMM };
         private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.WevercaAnalysis };
 
         /// <summary>

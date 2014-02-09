@@ -1248,7 +1248,8 @@ $d=&$a;
             ;
 
         readonly static TestCase HauzarTest_CASE = @"
-".AssertVariable("");
+
+".AssertVariable("str").HasValues("1");
 
 
         [TestMethod]

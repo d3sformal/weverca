@@ -13,7 +13,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class Logger
     {
-        static readonly string logFile = @"weverca_log.txt";
+        static readonly string logFile = @"copy_memory_model.log";
 
         static Snapshot oldOne = null;
 
@@ -87,11 +87,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public static readonly string THIS_VARIABLE_IDENTIFIER = "this";
         public static readonly string RETURN_VARIABLE_IDENTIFIER = ".return";
 
-        override public int NumVariables()
-        {
-            return Structure.IndexData.Count();
-        }
-
 
         /// <summary>
         /// Identifier for the bottom of the call stack. At this level the global variables are stored.
@@ -108,21 +103,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         internal SnapshotData Data { get; private set; }
         internal SnapshotData Infos { get; private set; }
-
-        /// <summary>
-        /// Unlock the snapshot for structure changes.
-        /// </summary>
-        public void UnlockStructureChanges()
-        {
-            Structure.Locked = false;
-        }
-        /// <summary>
-        /// Lock the snapshot for structure changes.
-        /// </summary>
-        public void LockStructureChanges()
-        {
-            Structure.Locked = true;
-        }
 
         public override SnapshotMode CurrentMode
         {
@@ -195,7 +175,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             foreach (var index in Structure.IndexData)
             {
                 builder.Append(index.ToString());
-                builder.Append("\r\n");
+                builder.Append("\n");
 
                 MemoryEntry entry;
                 if (Data.TryGetMemoryEntry(index.Key, out entry))
@@ -209,7 +189,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 if (Infos.TryGetMemoryEntry(index.Key, out entry))
                 {
-                    builder.Append("\r\n  Info: ");
+                    builder.Append("\n  Info: ");
                     builder.Append(entry.ToString());
                 }
                 
@@ -219,7 +199,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     index.Value.Aliases.ToString(builder);
                 }
 
-                builder.Append("\r\n\n");
+                builder.Append("\n\n");
             }
 
             return builder.ToString();
@@ -232,7 +212,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             StringBuilder builder = new StringBuilder();
 
-            builder.Append(snapId.ToString() + "::" + Structure.DataId.ToString() + "\r\n");
+            builder.Append(snapId.ToString() + "::" + Structure.DataId.ToString() + "\n");
             foreach (var index in Structure.IndexData)
             {
                 if (index.Key is TemporaryIndex)
@@ -263,7 +243,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     index.Value.Aliases.ToString(builder);
                 }
 
-                builder.Append("\r\n");
+                builder.Append("\n");
             }
 
             return builder.ToString();
@@ -539,15 +519,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    MergeWorker worker = new MergeWorker(this, snapshots, true);
-                    worker.Merge();
+                    {
+                        MergeWorker worker = new MergeWorker(this, snapshots, true);
+                        worker.Merge();
 
-                    Structure = worker.Structure;
-                    Data = worker.Data;
+                        Structure = worker.Structure;
+                        Data = worker.Data;
+                    }
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    throw new NotImplementedException();
+                    {
+                        MergeInfoWorker worker = new MergeInfoWorker(this, snapshots, true);
+                        worker.Merge();
+
+                        Structure = worker.Structure;
+                        Infos = worker.Infos;
+                    }
                     break;
 
                 default:
@@ -1259,10 +1247,37 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 case SnapshotMode.InfoLevel:
                     Infos = snapshot.Infos.Copy(this);
                     Structure.Data = Infos;
+                    assignCreatedAliases();
                     break;
 
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
+            }
+        }
+
+        private void assignCreatedAliases()
+        {
+            foreach (AliasData aliasData in Structure.CreatedAliases)
+            {
+                MemoryEntry entry = Structure.GetMemoryEntry(aliasData.SourceIndex);
+                foreach (MemoryIndex mustAlias in aliasData.MustIndexes)
+                {
+                    if (mustAlias != null)
+                    {
+                        Structure.SetMemoryEntry(mustAlias, entry);
+                    }
+                }
+
+                foreach (MemoryIndex mayAlias in aliasData.MayIndexes)
+                {
+                    if (mayAlias != null)
+                    {
+                        MemoryEntry aliasEntry = Structure.GetMemoryEntry(mayAlias);
+                        HashSet<Value> values = new HashSet<Value>(aliasEntry.PossibleValues);
+                        HashSetTools.AddAll(values, entry.PossibleValues);
+                        Structure.SetMemoryEntry(mayAlias, new MemoryEntry(values));
+                    }
+                }
             }
         }
 
@@ -1299,15 +1314,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    MergeWorker worker = new MergeWorker(this, snapshots);
-                    worker.Merge();
-                    
-                    Structure = worker.Structure;
-                    Data = worker.Data;
+                    {
+                        MergeWorker worker = new MergeWorker(this, snapshots);
+                        worker.Merge();
+
+                        Structure = worker.Structure;
+                        Data = worker.Data;
+                    }
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    throw new NotImplementedException();
+                    {
+                        MergeInfoWorker worker = new MergeInfoWorker(this, snapshots);
+                        worker.Merge();
+
+                        Structure = worker.Structure;
+                        Infos = worker.Infos;
+                    }
                     break;
 
                 default:
@@ -1357,6 +1380,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             Structure.SetAlias(index, alias.Build());
+            Structure.AddCreatedAlias(new AliasData(mustAliases, mayAliases, index));
         }
 
         /// <summary>
@@ -1395,6 +1419,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             Structure.SetAlias(index, alias.Build());
+            Structure.AddCreatedAlias(new AliasData(new MemoryIndex[] { mustAlias }, new MemoryIndex[] { mayAlias }, index));
         }
 
         /// <summary>

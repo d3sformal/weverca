@@ -50,6 +50,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal MemoryStack<IndexSet<AssociativeArray>> Arrays { get; private set; }
         internal Dictionary<AssociativeArray, IndexSet<Snapshot>> CallArrays { get; private set; }
 
+        internal List<AliasData> CreatedAliases { get; private set; }
+
         internal Snapshot Snapshot { get; private set; }
         public SnapshotData Data { get; set; }
         public bool Locked { get; set; }
@@ -57,6 +59,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private SnapshotStructure(Snapshot snapshot)
         {
             Snapshot = snapshot;
+
+            CreatedAliases = new List<AliasData>();
         }
 
         public static SnapshotStructure CreateEmpty(Snapshot snapshot)
@@ -434,6 +438,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ArrayDescriptors[arrayvalue] = descriptor;
         }
 
+        internal AssociativeArray GetArray(MemoryIndex index)
+        {
+            IndexData data;
+            if (IndexData.TryGetValue(index, out data))
+            {
+                if (data.Array != null)
+                {
+                    return data.Array;
+                }
+            }
+
+            throw new Exception("Missing array for index " + index);
+        }
+
         internal bool HasArray(MemoryIndex index)
         {
             IndexData data;
@@ -579,6 +597,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         #endregion
 
         #region Aliasses
+
+        internal void AddCreatedAlias(AliasData aliasData)
+        {
+            CreatedAliases.Add(aliasData);
+        }
 
         internal bool TryGetAliases(MemoryIndex index, out MemoryAlias aliases)
         {

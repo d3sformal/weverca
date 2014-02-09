@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.Analysis;
 using Weverca.Output;
-using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca
 {
@@ -35,7 +34,7 @@ namespace Weverca
             {
                 Console.WriteLine("Missing argument");
                 Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa [-mm CopyMM|VrMM FILENAME] [FILENAME]...");
+                Console.WriteLine(@"-sa FILENAME [FILENAME]...");
                 Console.WriteLine(@"  Static analysis");
                 Console.WriteLine(@"-cmide [-options_cmide]");
                 Console.WriteLine(@"  Code metrics for IDE integration");
@@ -50,16 +49,9 @@ namespace Weverca
             switch (args[0])
             {
                 case "-sa":
-                    int filesIndex = 1;
-                    MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
-                    if (args[1] == "-mm")
-                    {
-                        filesIndex = 3;
-                        if (args[2] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
-                    }
-                    var analysisFiles = new string[args.Length - filesIndex];
-                    Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
-                    RunStaticAnalysis(analysisFiles, memoryModel);
+                    var analysisFiles = new string[args.Length - 1];
+                    Array.Copy(args, 1, analysisFiles, 0, args.Length - 1);
+                    RunStaticAnalysis(analysisFiles);
                     break;
                 case "-cmide":
                     var metricsArgs = new string[args.Length - 3];
@@ -76,8 +68,7 @@ namespace Weverca
         /// Execute the static analysis and print results
         /// </summary>
         /// <param name="filenames">List of file name patterns from command line</param>
-        /// <param name="memoryModel">The memory model used for analysis</param>
-        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames)
         {
             foreach (var argument in filenames)
             {
@@ -101,11 +92,11 @@ namespace Weverca
                 {
                     // TODO: This is for time consumption analyzing only
                     // Analyze twice - because of omitting .NET initialization we get better analysis time
-                    //Analyzer.Run(fileInfo, memoryModel);
+                    Analyzer.Run(fileInfo);
 
                     // Process analysis
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    var ppGraph = Analyzer.Run(fileInfo, memoryModel);
+                    var ppGraph = Analyzer.Run(fileInfo);
                     watch.Stop();
 
                     // Build output
@@ -122,20 +113,6 @@ namespace Weverca
                     console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
-                    console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));
-                    console.CommentLine(string.Format("The number of variables is: {0}\n", ppGraph.End.OutSnapshot.NumVariables()));
-                    int[] statistics = ppGraph.GetStatistics().GetStatisticsValues();
-                    /*
-                    console.CommentLine(string.Format("The number of memory entry assigns is: {0}\n", statistics[(int)Statistic.MemoryEntryAssigns]));
-                    console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));
-                    console.CommentLine(string.Format("The number of memory entry merges is: {0}\n", statistics[(int)Statistic.MemoryEntryMerges]));
-                    console.CommentLine(string.Format("The number of index assings is: {0}\n", statistics[(int)Statistic.IndexAssigns]));
-                    console.CommentLine(string.Format("The number of index alias assings is: {0}\n", statistics[(int)Statistic.IndexAliasAssigns]));
-                    console.CommentLine(string.Format("The number of index reads is: {0}\n", statistics[(int)Statistic.IndexReads]));
-                    console.CommentLine(string.Format("The number of index reads attmpts is: {0}\n", statistics[(int)Statistic.IndexReadAttempts]));
-                    console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));
-                    console.CommentLine(string.Format("The number of value read attempts is: {0}\n", statistics[(int)Statistic.ValueReadAttempts]));
-                     */
                     Console.ReadKey();
                     Console.WriteLine();
                 }

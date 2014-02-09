@@ -90,12 +90,7 @@ namespace Weverca.AnalysisFramework.Memory
             return new SnapshotStatistics(statistics);
         }
 
-        public int[] GetStatisticsValues()
-        {
-            return (int[])_statistics.Clone();
-        }
-
-        public void MergeWith(SnapshotStatistics statistics)
+        internal void MergeWith(SnapshotStatistics statistics)
         {
             for (int i = 0; i < _statistics.Length; ++i)
             {

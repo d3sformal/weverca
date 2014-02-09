@@ -169,7 +169,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Logger.append(context, "set alias:" + this.ToString());
+            Logger.append(context, "set alias: " + this.ToString() + " from: " + aliasedEntry.ToString());
+
+            if (snapshot.CurrentMode == SnapshotMode.InfoLevel)
+            {
+                return;
+            }
 
             ICopyModelSnapshotEntry entry = ToEntry(aliasedEntry);
             AliasData data = entry.CreateAliasToEntry(snapshot);

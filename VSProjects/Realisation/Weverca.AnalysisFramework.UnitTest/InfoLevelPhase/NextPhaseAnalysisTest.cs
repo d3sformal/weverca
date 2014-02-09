@@ -44,6 +44,12 @@ $b[1] = $_POST;
 ".AssertVariable("_POST").HasTaintStatus(true)
  .AssertVariable("a").HasTaintStatus(true);
 
+        readonly static TestCase SimpleTaintAnalysisAliases_CASE = @"
+$x = $_POST;
+$y = &$x;
+".AssertVariable("_POST").HasTaintStatus(true)
+.AssertVariable("y").HasTaintStatus(true);
+
         // Tests weak updates
         // weak because of indirect variable accesses
         // weak because of aliasing
@@ -144,10 +150,10 @@ function f_sanitize(&$arg) {
 
 $x = $_POST;
 $y = 'str';
-$a = f_taint($x);
-$b = f_taint($y);
-$c = f_sanitize($x);
-$d = f_sanitize($y);
+f_taint($x); $a = $x;
+f_taint($y); $b = $y;
+f_sanitize($x); $c = $x;
+f_sanitize($y); $d = $y;
 ".AssertVariable("_POST").HasTaintStatus(true)
  .AssertVariable("a").HasTaintStatus(true)
  .AssertVariable("b").HasTaintStatus(true)
@@ -206,11 +212,17 @@ $d = $y + $y;
         {
             AnalysisTestUtils.RunInfoLevelBackwardPropagationCase(SimpleVariableTracking_CASE);
         }
-
+        
         [TestMethod]
         public void SimpleTaintAnalysisArraysAliases()
         {
             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(SimpleTaintAnalysisArraysAliases_CASE);
+        }
+
+        [TestMethod]
+        public void SimpleTaintAnalysisAliases()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(SimpleTaintAnalysisAliases_CASE);
         }
 
         [TestMethod]
