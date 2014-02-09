@@ -171,6 +171,8 @@ namespace Weverca.Analysis
 
         private Flags flags=new Flags();
 
+        HashSet<InfoValue> infoValues = new HashSet<InfoValue>();
+
         public MemoryEntry Widen(IEnumerable<Value> values,SnapshotBase Context)
         {
             flags = FlagsHandler.GetFlags(values);
@@ -188,21 +190,24 @@ namespace Weverca.Analysis
         /// <returns>Widen memory entry for all visited values</returns>
         private MemoryEntry GetResult(SnapshotBase Context)
         {
+            List<Value> result = new List<Value>(infoValues);
             if (containsOnlyBool)
             {
-                return new MemoryEntry(Context.AnyBooleanValue);
+                result.Add(Context.AnyBooleanValue);
+                return new MemoryEntry(result);
             }
             if (containsOnlyNumvericValues)
             {
-               return new MemoryEntry(Context.AnyFloatValue);
-                
+                result.Add(Context.AnyBooleanValue);
+                return new MemoryEntry(result);
             }
             if (containsOnlyString)
             {
-                return new MemoryEntry(Context.AnyStringValue.SetInfo(flags));
+                result.Add(Context.AnyStringValue.SetInfo(flags));
+                return new MemoryEntry(result);
             }
-
-            return new MemoryEntry(Context.AnyValue.SetInfo(flags));
+            result.Add(Context.AnyValue.SetInfo(flags));
+            return new MemoryEntry(result);
         }
 
         /// <summary>
@@ -239,6 +244,12 @@ namespace Weverca.Analysis
             containsOnlyBool = false;
             containsOnlyString = false;
             containsOnlyNumvericValues = false;
+        }
+
+        /// <inheritdoc />
+        public override void VisitInfoValue(InfoValue value)
+        {
+            infoValues.Add(value);
         }
 
         /// <inheritdoc />

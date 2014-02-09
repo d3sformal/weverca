@@ -398,6 +398,53 @@ namespace Weverca.Analysis.FlowResolver
             list.RemoveAt(list.Count - 1);
             return new TryBlockStack(list);
         }
+
+        /// <inheritdoc />
+        public override bool Equals(object obj)
+        {
+            TryBlockStack other = obj as TryBlockStack;
+            if (other == this)
+                return true;
+
+            if (obj != null)
+            {
+                if (this.blocks.Count != other.blocks.Count)
+                    return false;
+                for (int i = 0; i < this.blocks.Count; i++)
+                {
+                    var thisBlocks = this.blocks[i].ToList();
+                    var otherBlocks = this.blocks[i].ToList();
+                    if (thisBlocks.Count() != otherBlocks.Count())
+                        return false;
+                    for (int j = 0; j < thisBlocks.Count(); j++)
+                    {
+                        if (!thisBlocks[j].Equals(otherBlocks[j]))
+                            return false;
+                    }
+
+                }
+                return true;
+            }
+            else 
+            {
+                return false;
+            }
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            int res = 0;
+            foreach (var i in blocks)
+            {
+                foreach (var j in i)
+                {
+                    res += j.GetHashCode();
+                }
+            }
+            return res;
+        }
+
     }
 
 }
