@@ -1247,16 +1247,6 @@ $d=&$a;
             .AssertVariable("d").HasValues("valueB")
             ;
 
-        readonly static TestCase HauzarTest_CASE = @"
-
-".AssertVariable("str").HasValues("1");
-
-
-        [TestMethod]
-        public void HauzarTest()
-        {
-            AnalysisTestUtils.RunTestCase(HauzarTest_CASE);
-        }
 
         [TestMethod]
         public void FunctionTest()
