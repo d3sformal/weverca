@@ -18,19 +18,19 @@ namespace Weverca.ControlFlowGraph
         /// Enum sotring information about the cause of controflow exception
         /// </summary>
         public ControlFlowExceptionCause Cause { protected set; get; }
-        
+
         /// <summary>
         /// Position in code where error occured
         /// </summary>
         public Position position { protected set; get; }
-        
+
         /// <summary>
         /// Creates new istance of ControlFlowException
         /// </summary>
         /// <param name="cause">cause of exception</param>
         /// <param name="postion">position in the code</param>
-        public ControlFlowException(ControlFlowExceptionCause cause,Position postion) 
-            : base("Control flow creation error: " + cause.ToString()+" at line "+postion.FirstLine+" char "+postion.FirstColumn)
+        public ControlFlowException(ControlFlowExceptionCause cause, Position postion)
+            : base("Control flow creation error: " + cause.ToString() + " at line " + postion.FirstLine + " char " + postion.FirstColumn)
         {
             this.Cause = cause;
         }

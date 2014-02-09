@@ -31,13 +31,13 @@ namespace Weverca.ControlFlowGraph
         /// Analyzed code.
         /// </summary>
         public GlobalCode globalCode { get; private set; }
-        
+
         /// <summary>
         /// Visitor used for controflow graph construction.
         /// </summary>
         private CFGVisitor visitor;
 
-        public HashSet<LangElement> cfgAddedElements=new HashSet<LangElement>(); 
+        public HashSet<LangElement> cfgAddedElements = new HashSet<LangElement>();
 
         #endregion fields
 
@@ -68,7 +68,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode"></param>
         /// <returns></returns>
-        public static ControlFlowGraph FromSource(GlobalCode globalCode) 
+        public static ControlFlowGraph FromSource(GlobalCode globalCode)
         {
             return new ControlFlowGraph(globalCode, String.Empty);
         }
@@ -120,7 +120,7 @@ namespace Weverca.ControlFlowGraph
         {
             this.globalCode = globalCode;
             List<Statement> functionsAndClasses = new List<Statement>();
-            foreach(var statement in globalCode.Statements)
+            foreach (var statement in globalCode.Statements)
             {
                 if (statement is TypeDecl || statement is FunctionDecl)
                 {
@@ -134,12 +134,12 @@ namespace Weverca.ControlFlowGraph
             }
 
             globalCode.Statements.InsertRange(0, functionsAndClasses);
-            
+
             this.visitor = new CFGVisitor(this);
             globalCode.VisitMe(visitor);
 
             PostProcess(visitor);
-            
+
         }
 
         /// <summary>
@@ -147,11 +147,11 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
-        private ControlFlowGraph(GlobalCode globalCode,MethodDecl function)
+        private ControlFlowGraph(GlobalCode globalCode, MethodDecl function)
         {
             this.globalCode = globalCode;
             this.visitor = new CFGVisitor(this);
-            start = visitor.MakeFunctionCFG(function,function.Body);
+            start = visitor.MakeFunctionCFG(function, function.Body);
             PostProcess(visitor);
         }
 
@@ -163,7 +163,7 @@ namespace Weverca.ControlFlowGraph
         private ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
         {
             this.globalCode = globalCode;
-            
+
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
             PostProcess(visitor);
@@ -306,21 +306,21 @@ namespace Weverca.ControlFlowGraph
                     if (statement.GetType() == typeof(FunctionDecl))
                     {
                         FunctionDecl function = (FunctionDecl)statement;
-                        label += "function " + function.Function.Name+ Environment.NewLine;
-                        
+                        label += "function " + function.Function.Name + Environment.NewLine;
+
                         try
                         {
                             ControlFlowGraph cfg = new ControlFlowGraph(globalCode, function);
-                             functionsResult+=cfg.generateText((counter / 10000 + 1) * 10000);
-                            counter+=10000;
+                            functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
+                            counter += 10000;
                         }
                         catch (Weverca.ControlFlowGraph.ControlFlowException e)
                         {
                             Console.WriteLine(e.Message);
                             return "";
                         }
-                      
-                       
+
+
                     }
                     /*
                      * recursive generating cfg and text representation for objects
@@ -329,15 +329,15 @@ namespace Weverca.ControlFlowGraph
                     {
                         TypeDecl clas = (TypeDecl)statement;
                         label += "class " + clas.Name.ToString() + Environment.NewLine;
-                        foreach(var method in clas.Members)
+                        foreach (var method in clas.Members)
                         {
                             if (method.GetType() == typeof(MethodDecl))
                             {
                                 try
                                 {
-                                ControlFlowGraph cfg = new ControlFlowGraph(globalCode, method as MethodDecl);
-                                functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
-                                counter += 10000;
+                                    ControlFlowGraph cfg = new ControlFlowGraph(globalCode, method as MethodDecl);
+                                    functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
+                                    counter += 10000;
                                 }
                                 catch (Weverca.ControlFlowGraph.ControlFlowException e)
                                 {
@@ -346,7 +346,7 @@ namespace Weverca.ControlFlowGraph
                                 }
                             }
                         }
-                        
+
                     }
                     else
                     {
@@ -444,7 +444,7 @@ namespace Weverca.ControlFlowGraph
                         label = label.Replace("\"", "\\\"");
                         result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                     }
-                    else 
+                    else
                     {
                         result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"foreach direct edge\"]" + Environment.NewLine;
                     }

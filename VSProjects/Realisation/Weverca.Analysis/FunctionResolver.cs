@@ -1057,7 +1057,14 @@ namespace Weverca.Analysis
 
         public override int GetHashCode()
         {
-            return Function.GetHashCode() + TimesCalled.GetHashCode();
+            if (Function != null)
+            {
+                return Function.GetHashCode() + TimesCalled.GetHashCode();
+            }
+            else
+            {
+                return TimesCalled.GetHashCode();
+            }
         }
 
         public override bool Equals(object obj)
@@ -1065,9 +1072,21 @@ namespace Weverca.Analysis
             if (obj is NumberOfCalledFunctions<T>)
             {
                 NumberOfCalledFunctions<T> other = obj as NumberOfCalledFunctions<T>;
-                return this.TimesCalled == other.TimesCalled && this.Function.Equals(other.Function);
+                if (this.Function == null && other.Function == null)
+                {
+                    return this.TimesCalled == other.TimesCalled;
+
+                }
+                else if (this.Function != null && other.Function != null)
+                {
+                    return this.TimesCalled == other.TimesCalled && this.Function.Equals(other.Function);
+                }
+                else
+                {
+                    return false;
+                }
             }
-            else 
+            else
             {
                 return false;
             }

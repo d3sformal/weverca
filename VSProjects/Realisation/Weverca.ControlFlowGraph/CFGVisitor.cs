@@ -25,26 +25,30 @@ namespace Weverca.ControlFlowGraph
     /// Linked stack is stack using linked list and not resizeable field. It is creating only for performance purpose.
     /// </summary>
     /// <typeparam name="T">Anything</typeparam>
-    class LinkedStack<T> : LinkedList<T> {    
+    class LinkedStack<T> : LinkedList<T>
+    {
         /// <summary>
         /// Inserts an object at the top of the Stack.
         /// </summary>
         /// <param name="t">Object</param>
-        public void Push(T t) {
+        public void Push(T t)
+        {
             AddLast(t);
         }
         /// <summary>
         /// Returns the object at the top of the Stack without removing it.
         /// </summary>
         /// <returns>Returns the object at the top of the Stack.</returns>
-        public T Peek() {
+        public T Peek()
+        {
             return this.Last();
         }
         /// <summary>
         /// Removes and returns the object at the top of the Stack.
         /// </summary>
         /// <returns>Returns removed object.</returns>
-        public T Pop() {
+        public T Pop()
+        {
             T result = this.Last();
             RemoveLast();
             return result;
@@ -60,7 +64,7 @@ namespace Weverca.ControlFlowGraph
         /// Stores target for jump from continue statement.
         /// </summary>
         public BasicBlock ContinueTarget { get; private set; }
-        
+
         /// <summary>
         /// Stores target for jump from break statement.
         /// </summary>
@@ -88,7 +92,7 @@ namespace Weverca.ControlFlowGraph
         readonly LinkedList<BasicBlock> GotoQueue = new LinkedList<BasicBlock>();
         BasicBlock labelBlock = null;
 
-        public bool HasAssociatedLabel { get { return labelBlock != null;  } }
+        public bool HasAssociatedLabel { get { return labelBlock != null; } }
 
         public Position Position { get; private set; }
 
@@ -101,7 +105,7 @@ namespace Weverca.ControlFlowGraph
         /// Saves target block of this label and process all blocks in GOTO queue.
         /// </summary>
         /// <param name="labelBlock">The label block.</param>
-        public void AsociateLabel(BasicBlock labelBlock,Position position)
+        public void AsociateLabel(BasicBlock labelBlock, Position position)
         {
             if (HasAssociatedLabel)
             {
@@ -159,7 +163,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="key">´The name of the label.</param>
         /// <returns></returns>
-        public LabelData GetOrCreateLabelData(VariableName key,Position postion)
+        public LabelData GetOrCreateLabelData(VariableName key, Position postion)
         {
             LabelData data;
             if (!TryGetValue(key.Value, out data))
@@ -179,38 +183,38 @@ namespace Weverca.ControlFlowGraph
     {
 
         #region fields
-        
+
         /// <summary>
         /// Resulting controlgflow graph.
         /// </summary>
         ControlFlowGraph graph;
-        
+
         /// <summary>
         /// Stores current basic block, where the visitor insert statements.
         /// </summary>
         BasicBlock currentBasicBlock;
-        
+
         /// <summary>
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
         LinkedStack<LoopData> loopData = new LinkedStack<LoopData>();
-        
+
         /// <summary>
         /// Stack of block which ends by throw
         /// </summary>
-      //  LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
-                
+        //  LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
+
         /// <summary>
         /// Improved dictonary storing labels in context.
         /// </summary>
         private LabelDataDictionary labelDictionary = new LabelDataDictionary();
-        
+
         /// <summary>
         /// Stores the last blocks of defined functions.
         /// </summary>
         LinkedStack<BasicBlock> functionSinkStack = new LinkedStack<BasicBlock>();
-        
-        #endregion fields 
+
+        #endregion fields
 
         /// <summary>
         /// Creates instance of CFGVisitor.
@@ -251,16 +255,16 @@ namespace Weverca.ControlFlowGraph
         /// <param name="x">Globalcode</param>
         public override void VisitGlobalCode(GlobalCode x)
         {
-            foreach(Statement statement in x.Statements)
+            foreach (Statement statement in x.Statements)
             {
                 statement.VisitMe(this);
             }
             DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
-         /*   foreach (var block in throwBlocks.ElementAt(0)) {
-                block.Statements.RemoveLast();
-                DirectEdge.MakeNewAndConnect(block, functionSinkStack.Peek());
-            }*/
-       }
+            /*   foreach (var block in throwBlocks.ElementAt(0)) {
+                   block.Statements.RemoveLast();
+                   DirectEdge.MakeNewAndConnect(block, functionSinkStack.Peek());
+               }*/
+        }
 
         /// <summary>
         /// Visits GlobalStmt and apends the element to controlflow graph.
@@ -291,7 +295,7 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock labelBlock = new BasicBlock();
 
-            labelDictionary.GetOrCreateLabelData(x.Name,x.Position)
+            labelDictionary.GetOrCreateLabelData(x.Name, x.Position)
                 .AsociateLabel(labelBlock, x.Position);
 
             DirectEdge.MakeNewAndConnect(currentBasicBlock, labelBlock);
@@ -307,7 +311,7 @@ namespace Weverca.ControlFlowGraph
         /// <param name="x">GotoStmt</param>
         public override void VisitGotoStmt(GotoStmt x)
         {
-            labelDictionary.GetOrCreateLabelData(x.LabelName,x.Position)
+            labelDictionary.GetOrCreateLabelData(x.LabelName, x.Position)
                 .AsociateGoto(currentBasicBlock);
 
             //Next line could be used for label visualization, label statement shouldnt be in resulting cgf
@@ -317,7 +321,7 @@ namespace Weverca.ControlFlowGraph
             currentBasicBlock = new BasicBlock();
         }
 
-        #endregion 
+        #endregion
 
         #region conditions
 
@@ -414,7 +418,7 @@ namespace Weverca.ControlFlowGraph
         /// <param name="x">MethodDecl</param>
         public override void VisitMethodDecl(MethodDecl x)
         {
-             //BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
+            //BasicBlock functionBasicBlock = MakeFunctionCFG(x, x.Body);
         }
 
         /// <summary>
@@ -426,27 +430,27 @@ namespace Weverca.ControlFlowGraph
         /// <returns>The first basic block of the function's CFG.</returns>
         public BasicBlock MakeFunctionCFG<T>(T functionDeclaration, List<Statement> functionBody) where T : LangElement
         {
-            
+
             //Store actual basic block
             BasicBlock current = currentBasicBlock;
             BasicBlock functionBasicBlock = new BasicBlock();
             currentBasicBlock = functionBasicBlock;
 
             //Store actual Label data - function has its own label namespace 
-            
+
             labelDictionary = new LabelDataDictionary();
 
             //Add function sink to the stack for resolving returns
             BasicBlock functionSink = new BasicBlock();
-            functionSinkStack.Push(functionSink);        
-            
+            functionSinkStack.Push(functionSink);
+
             VisitStatementList(functionBody);
 
-           /* foreach (var block in throwBlocks.ElementAt(0))
-            {
-                block.Statements.RemoveLast();
-                DirectEdge.MakeNewAndConnect(block, functionSink);
-            }*/
+            /* foreach (var block in throwBlocks.ElementAt(0))
+             {
+                 block.Statements.RemoveLast();
+                 DirectEdge.MakeNewAndConnect(block, functionSink);
+             }*/
 
 
             //Connects return destination
@@ -459,7 +463,7 @@ namespace Weverca.ControlFlowGraph
             return functionBasicBlock;
         }
 
-        #endregion 
+        #endregion
 
         #region cycles
 
@@ -512,13 +516,14 @@ namespace Weverca.ControlFlowGraph
                 Expression forCondition = constructSimpleCondition(x.CondExList);
                 ConditionalEdge.MakeNewAndConnect(forTest, forBody, forCondition);
             }
-            else { 
+            else
+            {
                 //if there is no condition
-                ConditionalEdge.MakeNewAndConnect(forTest, forBody, new BoolLiteral(Position.Invalid,true));
+                ConditionalEdge.MakeNewAndConnect(forTest, forBody, new BoolLiteral(Position.Invalid, true));
             }
             //Adds connection behind the cycle
             DirectEdge.MakeNewAndConnect(forTest, forEnd);
-            
+
             //Loop body
             VisitExpressionList(x.InitExList);
             currentBasicBlock = forBody;
@@ -582,7 +587,7 @@ namespace Weverca.ControlFlowGraph
         /// <param name="x">SwitchStmt</param>
         public override void VisitSwitchStmt(SwitchStmt x)
         {
-            BasicBlock above=currentBasicBlock;
+            BasicBlock above = currentBasicBlock;
             BasicBlock last;
             bool containsDefault = false;
             currentBasicBlock = new BasicBlock();
@@ -591,8 +596,9 @@ namespace Weverca.ControlFlowGraph
             loopData.Push(new LoopData(underLoop, underLoop));
 
 
-            
-            for (int j = 0;j<x.SwitchItems.Count;j++) {
+
+            for (int j = 0; j < x.SwitchItems.Count; j++)
+            {
 
                 var switchItem = x.SwitchItems[j];
 
@@ -604,10 +610,10 @@ namespace Weverca.ControlFlowGraph
                     graph.cfgAddedElements.Add(condition);
                     ConditionalEdge.MakeNewAndConnect(above, currentBasicBlock, condition);
                 }
-                else 
+                else
                 {
                     bool hasMoreDefaults = false;
-                    for (int i = j+1; i < x.SwitchItems.Count; i++)
+                    for (int i = j + 1; i < x.SwitchItems.Count; i++)
                     {
                         if (x.SwitchItems[i].GetType() == typeof(DefaultItem))
                         {
@@ -615,21 +621,21 @@ namespace Weverca.ControlFlowGraph
                         }
                     }
 
-                        if (hasMoreDefaults == false)
-                        {
-                            //conecting only to last default
-                            DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
-                        }
+                    if (hasMoreDefaults == false)
+                    {
+                        //conecting only to last default
+                        DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
+                    }
                     containsDefault = true;
-                    
+
                 }
-                
-                
+
+
                 switchItem.VisitMe(this);
                 last = currentBasicBlock;
                 currentBasicBlock = new BasicBlock();
                 DirectEdge.MakeNewAndConnect(last, currentBasicBlock);
-                
+
             }
             loopData.Pop();
             DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
@@ -660,7 +666,7 @@ namespace Weverca.ControlFlowGraph
 
         #endregion
 
-        #region break continue return 
+        #region break continue return
 
         /// <summary>
         /// Visits JumpStmt (break, continue, return).
@@ -681,11 +687,11 @@ namespace Weverca.ControlFlowGraph
                         {
                             if (x.Type == JumpStmt.Types.Break)
                             {
-                                throw new ControlFlowException(ControlFlowExceptionCause.BREAK_NOT_IN_CYCLE,x.Position);
+                                throw new ControlFlowException(ControlFlowExceptionCause.BREAK_NOT_IN_CYCLE, x.Position);
                             }
-                            else 
+                            else
                             {
-                                throw new ControlFlowException(ControlFlowExceptionCause.CONTINUE_NOT_IN_CYCLE,x.Position);
+                                throw new ControlFlowException(ControlFlowExceptionCause.CONTINUE_NOT_IN_CYCLE, x.Position);
                             }
                         }
                         if (x.Type == JumpStmt.Types.Break)
@@ -712,7 +718,7 @@ namespace Weverca.ControlFlowGraph
                             {
                                 target = loopData.ElementAt(i).ContinueTarget;
                             }
-                            BinaryEx condition = new BinaryEx(x.Position,Operations.Equal, new IntLiteral(Position.Invalid, breakValue), x.Expression);
+                            BinaryEx condition = new BinaryEx(x.Position, Operations.Equal, new IntLiteral(Position.Invalid, breakValue), x.Expression);
                             graph.cfgAddedElements.Add(condition);
                             ConditionalEdge.MakeNewAndConnect(currentBasicBlock, target, condition);
                             ++breakValue;
@@ -728,10 +734,10 @@ namespace Weverca.ControlFlowGraph
                     DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
 
                     currentBasicBlock = new BasicBlock();
-                    
+
                     break;
             }
-            
+
 
             currentBasicBlock = new BasicBlock();
 
@@ -841,30 +847,31 @@ namespace Weverca.ControlFlowGraph
             BasicBlock followingBlock = new BasicBlock();
 
             TryBasicBlock tryBlock = new TryBasicBlock();
-            
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, tryBlock); 
+
+            DirectEdge.MakeNewAndConnect(currentBasicBlock, tryBlock);
             currentBasicBlock = tryBlock;
-            
+
             //throwBlocks.Push(new List<BasicBlock>());
             VisitStatementList(x.Statements);
             currentBasicBlock.EndIngTryBlocks.Add(tryBlock);
             DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
-            
-            
-            foreach(var catchItem in x.Catches){
 
-                CatchBasicBlock catchBlock = new CatchBasicBlock(catchItem.Variable,catchItem.ClassName);
+
+            foreach (var catchItem in x.Catches)
+            {
+
+                CatchBasicBlock catchBlock = new CatchBasicBlock(catchItem.Variable, catchItem.ClassName);
 
                 tryBlock.catchBlocks.Add(catchBlock);
-                currentBasicBlock=catchBlock;
+                currentBasicBlock = catchBlock;
                 VisitStatementList(catchItem.Statements);
-                DirectEdge.MakeNewAndConnect(currentBasicBlock,followingBlock);
+                DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
             }
-            
-            
+
+
             //throwBlocks.Pop();
-            currentBasicBlock=followingBlock;
-            
+            currentBasicBlock = followingBlock;
+
         }
 
         /// <summary>
@@ -874,11 +881,11 @@ namespace Weverca.ControlFlowGraph
         public override void VisitThrowStmt(ThrowStmt x)
         {
             currentBasicBlock.AddElement(x);
-           /* foreach(var item in throwBlocks)
-            {
-                item.Add(currentBasicBlock);
-            }*/
-            currentBasicBlock=new BasicBlock();
+            /* foreach(var item in throwBlocks)
+             {
+                 item.Add(currentBasicBlock);
+             }*/
+            currentBasicBlock = new BasicBlock();
         }
 
         #endregion
