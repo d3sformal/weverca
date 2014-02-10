@@ -72,7 +72,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         private ObjectValue getImplicitObject()
         {
             if (_implicitObject == null)
-                _implicitObject = _context.MemoryAssistant.GetImplicitObject();
+                _implicitObject = _context.MemoryAssistant.CreateImplicitObject();
           
             return _implicitObject;
         }

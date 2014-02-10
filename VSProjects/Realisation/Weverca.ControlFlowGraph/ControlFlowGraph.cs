@@ -39,6 +39,8 @@ namespace Weverca.ControlFlowGraph
 
         public HashSet<LangElement> cfgAddedElements = new HashSet<LangElement>();
 
+        public readonly FileInfo File;
+
         #endregion fields
 
         #region construction
@@ -48,9 +50,10 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="fileName"></param>
         /// <returns></returns>
-        public static ControlFlowGraph FromFilename(string fileName)
+        public static ControlFlowGraph FromFile(FileInfo file)
         {
             // TODO: check if the file exists?
+            var fileName = file.FullName;
             SyntaxParser parser = GenerateParser(fileName);
             parser.Parse();
             if (parser.Ast == null)
@@ -58,9 +61,7 @@ namespace Weverca.ControlFlowGraph
                 throw new ArgumentException("The specified file cannot be parsed.");
             }
 
-            return new ControlFlowGraph(parser.Ast, fileName);
-
-
+            return new ControlFlowGraph(parser.Ast, file);
         }
 
         /// <summary>
@@ -68,9 +69,9 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode"></param>
         /// <returns></returns>
-        public static ControlFlowGraph FromSource(GlobalCode globalCode)
+        public static ControlFlowGraph FromSource(GlobalCode globalCode, FileInfo sourceFile)
         {
-            return new ControlFlowGraph(globalCode, String.Empty);
+            return new ControlFlowGraph(globalCode, sourceFile);
         }
 
 
@@ -90,34 +91,34 @@ namespace Weverca.ControlFlowGraph
                 throw new ArgumentException("The specified input cannot be parsed.");
             }
 
-            return new ControlFlowGraph(parser.Ast, fileName);
+            return new ControlFlowGraph(parser.Ast, new FileInfo(fileName));
         }
 
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph<</param>
-        public static ControlFlowGraph FromFunction(FunctionDecl function)
+        public static ControlFlowGraph FromFunction(FunctionDecl function, FileInfo file)
         {
-            return new ControlFlowGraph(function);
+            return new ControlFlowGraph(function, file);
         }
 
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph</param>
-        public static ControlFlowGraph FromMethod(MethodDecl method)
+        public static ControlFlowGraph FromMethod(MethodDecl method, FileInfo file)
         {
-            return new ControlFlowGraph(method);
+            return new ControlFlowGraph(method, file);
         }
-
 
         /// <summary>
         /// Constructs a confrolflow graph 
         /// </summary>
         /// <param name="globalCode"></param>
-        private ControlFlowGraph(GlobalCode globalCode, string fileName)
+        private ControlFlowGraph(GlobalCode globalCode, FileInfo file)
         {
+            File = file;
             this.globalCode = globalCode;
             List<Statement> functionsAndClasses = new List<Statement>();
             foreach (var statement in globalCode.Statements)
@@ -147,8 +148,9 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
-        private ControlFlowGraph(GlobalCode globalCode, MethodDecl function)
+        private ControlFlowGraph(GlobalCode globalCode, MethodDecl function, FileInfo file)
         {
+            File = file;
             this.globalCode = globalCode;
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
@@ -160,8 +162,9 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">Globalcode needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
-        private ControlFlowGraph(GlobalCode globalCode, FunctionDecl function)
+        private ControlFlowGraph(GlobalCode globalCode, FunctionDecl function, FileInfo file)
         {
+            File = file;
             this.globalCode = globalCode;
 
             this.visitor = new CFGVisitor(this);
@@ -173,9 +176,9 @@ namespace Weverca.ControlFlowGraph
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph</param>
-        private ControlFlowGraph(MethodDecl function)
+        private ControlFlowGraph(MethodDecl function, FileInfo file)
         {
-
+            File = file;
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
             PostProcess(visitor);
@@ -185,8 +188,9 @@ namespace Weverca.ControlFlowGraph
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph<</param>
-        private ControlFlowGraph(FunctionDecl function)
+        private ControlFlowGraph(FunctionDecl function, FileInfo file)
         {
+            File = file;
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
             PostProcess(visitor);
@@ -310,7 +314,7 @@ namespace Weverca.ControlFlowGraph
 
                         try
                         {
-                            ControlFlowGraph cfg = new ControlFlowGraph(globalCode, function);
+                            ControlFlowGraph cfg = new ControlFlowGraph(globalCode, function, File);
                             functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
                             counter += 10000;
                         }
@@ -335,7 +339,7 @@ namespace Weverca.ControlFlowGraph
                             {
                                 try
                                 {
-                                    ControlFlowGraph cfg = new ControlFlowGraph(globalCode, method as MethodDecl);
+                                    ControlFlowGraph cfg = new ControlFlowGraph(globalCode, method as MethodDecl, File);
                                     functionsResult += cfg.generateText((counter / 10000 + 1) * 10000);
                                     counter += 10000;
                                 }

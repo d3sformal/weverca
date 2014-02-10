@@ -46,7 +46,12 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
-        public override ObjectValue GetImplicitObject()
+        public override ObjectValue CreateImplicitObject()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void TriedIterateFields(Value value)
         {
             throw new NotImplementedException();
         }

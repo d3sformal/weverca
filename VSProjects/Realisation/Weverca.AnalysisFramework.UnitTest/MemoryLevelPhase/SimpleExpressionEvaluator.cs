@@ -34,7 +34,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return OutSet.GetVariable(new VariableIdentifier(varName));
         }
 
-            
+
         public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> typeNames, VariableIdentifier field)
         {
             var variables = new List<string>();
@@ -85,7 +85,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             var value = OutSet.GetVariable(variable);
             return value;
         }
-    
+
         public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
         {
             return from StringValue possible in typeValue.PossibleValues select new GenericQualifiedName(new QualifiedName(new Name(possible.Value)));
@@ -556,7 +556,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                     var methosIdentifier = new MethodIdentifier(result.QualifiedName, (member as MethodDecl).Name);
                     if (!result.SourceCodeMethods.ContainsKey(methosIdentifier))
                     {
-                        result.SourceCodeMethods.Add(methosIdentifier, OutSet.CreateFunction(member as MethodDecl));
+                        result.SourceCodeMethods.Add(methosIdentifier, OutSet.CreateFunction(member as MethodDecl, Flow.CurrentScript));
                     }
                     else
                     {

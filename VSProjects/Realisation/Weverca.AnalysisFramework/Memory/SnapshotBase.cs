@@ -72,7 +72,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Assistant helping memory models resolving memory operations
         /// </summary>
-        protected MemoryAssistantBase Assistant { get; private set; }
+        internal protected MemoryAssistantBase Assistant { get; private set; }
 
         /// <summary>
         /// Current operational mode of snapshot
@@ -182,7 +182,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="createdObject">Created object that has to be initialized</param>
         /// <param name="type">Desired type of initialized object</param>
         protected abstract void initializeObject(ObjectValue createdObject, TypeValue type);
-        
+
         /// <summary>
         /// Determine type of given object
         /// </summary>
@@ -245,7 +245,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable which info is read</param>
         /// <returns>Stored info</returns>
         protected abstract InfoValue[] readInfo(VariableName variable);
-               
+
         /// <summary>
         /// Fetch variables from global context into current context
         /// </summary>
@@ -559,19 +559,19 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        public FunctionValue CreateFunction(FunctionDecl declaration)
+        public FunctionValue CreateFunction(FunctionDecl declaration, FileInfo declaringScript)
         {
             checkCanUpdate();
             _statistics.Report(Statistic.CreatedFunctionValues);
-            return new SourceFunctionValue(declaration);
+            return new SourceFunctionValue(declaration, declaringScript);
         }
 
         /// <inheritdoc />
-        public FunctionValue CreateFunction(MethodDecl declaration)
+        public FunctionValue CreateFunction(MethodDecl declaration, FileInfo declaringScript)
         {
             checkCanUpdate();
             _statistics.Report(Statistic.CreatedFunctionValues);
-            return new SourceMethodValue(declaration);
+            return new SourceMethodValue(declaration, declaringScript);
         }
 
         /// <summary>
@@ -593,12 +593,12 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="expression">Lambda function declaration</param>
         /// <returns>Created value</returns>
-        public FunctionValue CreateFunction(LambdaFunctionExpr expression)
+        public FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript)
         {
             checkCanUpdate();
 
             _statistics.Report(Statistic.CreatedFunctionValues);
-            return new LambdaFunctionValue(expression);
+            return new LambdaFunctionValue(expression, declaringScript);
         }
 
         public TypeValue CreateType(ClassDecl declaration)
@@ -681,7 +681,7 @@ namespace Weverca.AnalysisFramework.Memory
             _statistics.Report(Statistic.VariableInfoReads);
             return readInfo(variable);
         }
-   
+
         public void Extend(params ISnapshotReadonly[] inputs)
         {
             checkCanUpdate();
@@ -708,9 +708,9 @@ namespace Weverca.AnalysisFramework.Memory
             FetchFromGlobal(globals.ToArray());
         }
 
-        public void DeclareGlobal(FunctionDecl declaration)
+        public void DeclareGlobal(FunctionDecl declaration, FileInfo declaringScript)
         {
-            var function = CreateFunction(declaration);
+            var function = CreateFunction(declaration, declaringScript);
             _statistics.Report(Statistic.DeclaredFunctions);
             declareGlobal(function);
         }

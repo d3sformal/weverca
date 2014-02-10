@@ -26,14 +26,16 @@ namespace Weverca.Analysis.UnitTest
         {
             var fileName = "./cfg_test.php";
             var fullPath = new FullPath(Path.GetDirectoryName(fileName));
+            var file = new FileInfo(fileName);
+
             var sourceFile = new PhpSourceFile(fullPath, new FullPath(fileName));
             code = "<?php\n" + code + "\n?>";
 
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
-            var cfg = Weverca.ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast);
+            var cfg = Weverca.ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast, file);
 
-            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM, null);
+            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM);
         }
 
         /// <summary>
@@ -177,7 +179,7 @@ namespace Weverca.Analysis.UnitTest
             }
         }
 
-        public static void IsClean(Value value,FlagType type)
+        public static void IsClean(Value value, FlagType type)
         {
             var flag = value.GetInfo<Flags>();
             if (flag == null)
@@ -197,7 +199,7 @@ namespace Weverca.Analysis.UnitTest
                 bool match = false;
                 foreach (T t in types)
                 {
-                    if ((value as ScalarValue<T>).Value.Equals( t))
+                    if ((value as ScalarValue<T>).Value.Equals(t))
                     {
                         match = true;
                     }

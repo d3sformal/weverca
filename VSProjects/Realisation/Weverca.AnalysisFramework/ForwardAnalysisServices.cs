@@ -25,23 +25,6 @@ namespace Weverca.AnalysisFramework
         private readonly Queue<ProgramPointBase> _workListQueue;
 
         /// <summary>
-        /// The entry script of the analysis
-        /// </summary>
-        public static FileInfo EntryScript
-        {
-            get;
-            private set;
-        }
-        /// <summary>
-        /// The script in that elements of currently created program point graph are defined
-        /// </summary>
-        public static FileInfo CurrentScript
-        {
-            get;
-            internal set;
-        }
-
-        /// <summary>
         /// Available flow resolver obtained from analysis
         /// </summary>
         internal readonly FlowResolverBase FlowResolver;
@@ -66,15 +49,13 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal ProgramPointBase ProgramEnd { get; private set; }
 
-        internal ForwardAnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver, FileInfo entryScript)
+        internal ForwardAnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver)
         {
             _workListQueue = workListQueue;
             CreateEmptySet = emptySet;
             FlowResolver = flowResolver;
             FunctionResolver = functionResolver;
             Evaluator = evaluator;
-            EntryScript = entryScript;
-            CurrentScript = entryScript;            
         }
 
         internal bool ConfirmAssumption(FlowController flow, AssumptionCondition condition)
@@ -105,7 +86,7 @@ namespace Weverca.AnalysisFramework
         {
             foreach (var point in ppGraph.Points)
             {
-                SetServices(point);
+                SetServices(point);                
             }
         }
 

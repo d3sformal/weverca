@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.IO;
+
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
@@ -30,6 +32,21 @@ namespace Weverca.AnalysisFramework
         /// Currently analyzed program point
         /// </summary>
         public readonly ProgramPointBase ProgramPoint;
+
+        /// <summary>
+        /// Info about entry file where analysis has started
+        /// </summary>
+        public FileInfo EntryScript { get { return ProgramEnd.OwningPPGraph.OwningScript; } }
+
+        /// <summary>
+        /// Info about current file where program point comes from
+        /// </summary>
+        public FileInfo CurrentScript { get { return CurrentPPG.OwningScript; } }
+
+        /// <summary>
+        /// Currently processed program point graph
+        /// </summary>
+        public ProgramPointGraph CurrentPPG { get { return ProgramPoint.OwningPPGraph; } }
 
         /// <summary>
         /// Currently analyzed partial (elementary part of analyzed statement)
@@ -148,7 +165,7 @@ namespace Weverca.AnalysisFramework
             {
                 //create catch point according to specified throw info
                 var catchPoint = new CatchPoint(ProgramPoint, throwInfo.Catch);
-                initializeNewPoint(catchPoint);
+                InitializeNewPoint(catchPoint);
 
                 catchPoint.ReThrow(throwInfo);
 
@@ -158,10 +175,11 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        private void initializeNewPoint(ProgramPointBase point)
+        internal void InitializeNewPoint(ProgramPointBase point)
         {
             point.Initialize(Services.CreateEmptySet(), Services.CreateEmptySet());
             point.SetServices(Services);
+            point.SetOwningGraph(CurrentPPG);
         }
     }
 }

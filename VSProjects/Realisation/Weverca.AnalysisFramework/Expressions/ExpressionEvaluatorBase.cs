@@ -167,7 +167,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="target">Target snapshot entry</param>
         /// <param name="entry">Possible values to be assigned</param>
         public abstract void Assign(ReadWriteSnapshotEntryBase target, MemoryEntry entry);
-         
+
 
         /// <summary>
         /// Process binary operation on given operands
@@ -393,7 +393,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>New function implementation</returns>
         public virtual MemoryEntry CreateLambda(LambdaFunctionExpr lambda)
         {
-            return new MemoryEntry(OutSet.CreateFunction(lambda));
+            return new MemoryEntry(OutSet.CreateFunction(lambda, Flow.CurrentScript));
         }
 
         /// <summary>
@@ -402,7 +402,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="type">Type that is always needed when creating new object</param>
         /// <returns>New initialized object</returns>
         public abstract ObjectValue CreateInitializedObject(TypeValue type);
-       
+
 
         /// <summary>
         /// Fetches variables of given name from global to local function scope when global keyword is used

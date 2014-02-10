@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.IO;
+
 using PHP.Core;
 using PHP.Core.AST;
 
@@ -120,14 +122,14 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateDouble(number);
         }
 
-        public FunctionValue CreateFunction(FunctionDecl declaration)
+        public FunctionValue CreateFunction(FunctionDecl declaration, FileInfo declaringScript)
         {
-            return Snapshot.CreateFunction(declaration);
+            return Snapshot.CreateFunction(declaration, declaringScript);
         }
 
-        public FunctionValue CreateFunction(MethodDecl declaration)
+        public FunctionValue CreateFunction(MethodDecl declaration, FileInfo declaringScript)
         {
-            return Snapshot.CreateFunction(declaration);
+            return Snapshot.CreateFunction(declaration, declaringScript);
         }
 
         public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
@@ -135,9 +137,9 @@ namespace Weverca.AnalysisFramework
             return Snapshot.CreateFunction(name, analyzer);
         }
 
-        public FunctionValue CreateFunction(LambdaFunctionExpr expression)
+        public FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript)
         {
-            return Snapshot.CreateFunction(expression);
+            return Snapshot.CreateFunction(expression, declaringScript);
         }
 
         public TypeValue CreateType(ClassDecl declaration)
@@ -178,12 +180,12 @@ namespace Weverca.AnalysisFramework
         {
             Snapshot.SetInfo(value, info);
         }
-        
+
         public void SetInfo(VariableName variable, params InfoValue[] info)
         {
             Snapshot.SetInfo(variable, info);
         }
-        
+
         public void FetchFromGlobal(params VariableName[] variables)
         {
             Snapshot.FetchFromGlobal(variables);
@@ -194,9 +196,9 @@ namespace Weverca.AnalysisFramework
             Snapshot.FetchFromGlobalAll();
         }
 
-        public void DeclareGlobal(FunctionDecl declaration)
+        public void DeclareGlobal(FunctionDecl declaration, FileInfo declaringScript)
         {
-            Snapshot.DeclareGlobal(declaration);
+            Snapshot.DeclareGlobal(declaration, declaringScript);
         }
 
         public void DeclareGlobal(TypeValue declaration)
@@ -255,7 +257,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="input">input set which snapshot will be returned</param>
         /// <returns>Snapshot from FlowInputSet</returns>
         private SnapshotBase getSnapshot(FlowInputSet input)
-        {            
+        {
             return input.Snapshot;
         }
         #endregion

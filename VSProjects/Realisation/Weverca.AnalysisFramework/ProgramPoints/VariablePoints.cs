@@ -57,7 +57,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal override void Accept(ProgramPointVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitStaticField(this);
         }
     }
 
@@ -108,7 +108,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal override void Accept(ProgramPointVisitor visitor)
         {
-            throw new NotImplementedException();
+            visitor.VisitIndirectStaticField(this);
         }
     }
 

@@ -26,6 +26,11 @@ namespace Weverca.AnalysisFramework.Memory
         protected SnapshotBase Context { get; private set; }
 
         /// <summary>
+        /// ProgramPoint that is registered for memory asistant. If not available is null.
+        /// </summary>
+        protected ProgramPointBase Point { get; private set; }
+
+        /// <summary>
         /// Read index of any value
         /// </summary>
         /// <param name="value">Any value which index is read</param>
@@ -68,7 +73,21 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Resolved methods</returns>
         public abstract IEnumerable<FunctionValue> ResolveMethods(TypeValue value, QualifiedName methodName, IEnumerable<FunctionValue> objectMethods);
 
-        
+        /// <summary>
+        /// Create implicit object. Is used as an object for operations that can cause
+        /// object creation (indexing variable,...)
+        /// </summary>
+        /// <returns></returns>
+        public abstract ObjectValue CreateImplicitObject();
+
+        /// <summary>
+        /// Report that snapshot has been forced to iterate fields of given value, which is not an object.
+        /// </summary>
+        /// <param name="value">Value where fields has been tried to iterate</param>
+        public abstract void TriedIterateFields(Value value);
+
+
+
         /// <summary>
         /// Initialize context snapshot for current assistant
         /// </summary>
@@ -76,19 +95,22 @@ namespace Weverca.AnalysisFramework.Memory
         internal void InitContext(SnapshotBase context)
         {
             if (Context != null)
-                throw new NotSupportedException("Cannot set context twice");
+                throw new NotSupportedException("Cannot initialize Context twice");
 
             Context = context;
         }
 
-
-        public abstract ObjectValue GetImplicitObject();
-
-        public void TriedIterateFields(Value value)
+        /// <summary>
+        /// Register given program point with current assitant. Registered program point
+        /// is available in Point property.
+        /// </summary>
+        /// <param name="programPoint">Registered program point</param>
+        internal void RegisterProgramPoint(ProgramPointBase programPoint)
         {
-            throw new NotImplementedException();
-        }
+            if (Point != null)
+                throw new NotSupportedException("Cannot register Point twice");
 
-        
+            Point = programPoint;
+        }
     }
 }

@@ -49,8 +49,7 @@ namespace Weverca.AnalysisFramework
             }
             else
             {
-                Sink = new ExtensionSinkPoint(this);
-                Sink.SetServices(Owner.Services);
+                Sink = new ExtensionSinkPoint(this);                
             }
         }
 

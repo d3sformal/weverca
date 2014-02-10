@@ -54,11 +54,6 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
 
-        /// <summary>
-        /// Entry script of the analysis
-        /// </summary>
-        private readonly FileInfo _entryScript;
-
         #endregion
 
         #region Analysis result API
@@ -138,10 +133,9 @@ namespace Weverca.AnalysisFramework
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
         /// <param name="entryScript">The entry script of the analysis</param>
-        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate, FileInfo entryScript)
+        public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
-            _entryScript = entryScript;
             WideningLimit = int.MaxValue;
             EntryInput = createEmptySet();
             EntryInput.StartTransaction();
@@ -170,7 +164,7 @@ namespace Weverca.AnalysisFramework
         {
             EntryInput.CommitTransaction();
 
-            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG, ForwardAnalysisServices.EntryScript);
+            ProgramPointGraph = ProgramPointGraph.FromSource(EntryCFG);
             _services.SetProgramEnd(ProgramPointGraph.End);
             _services.SetServices(ProgramPointGraph);
 
@@ -229,7 +223,7 @@ namespace Weverca.AnalysisFramework
             _services = new ForwardAnalysisServices(
                 _workQueue,
                 _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver
-                , _entryScript
+
                 );
         }
 

@@ -142,9 +142,14 @@ namespace Weverca.Analysis
         }
 
         /// <inheritdoc />
-        public override ObjectValue GetImplicitObject()
+        public override ObjectValue CreateImplicitObject()
         {
             return Context.CreateObject(Context.CreateType(ForwardAnalysis.nativeObjectAnalyzer.GetClass(new QualifiedName(new Name("stdClass")))));
+        }
+
+        public override void TriedIterateFields(Value value)
+        {
+            throw new NotImplementedException();
         }
     }
 

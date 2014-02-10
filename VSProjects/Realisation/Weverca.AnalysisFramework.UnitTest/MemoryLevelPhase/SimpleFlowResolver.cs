@@ -59,7 +59,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
-            var ends = (from callOutput in dispatchedExtensions where callOutput.Graph.End.OutSet!=null select callOutput.Graph.End.OutSet as ISnapshotReadonly).ToArray();
+            var ends = (from callOutput in dispatchedExtensions where callOutput.Graph.End.OutSet != null select callOutput.Graph.End.OutSet as ISnapshotReadonly).ToArray();
 
             //TODO determine correct extension type
             var callType = dispatchedExtensions.First().Type;
@@ -144,11 +144,11 @@ namespace Weverca.AnalysisFramework.UnitTest
             //TODO this is simple catch demonstration - there should be catch stack unrolling
 
             var catchVariable = catchPoint.CatchDescription.CatchVariable;
-            var hasCatchVariable = catchVariable!=null;
+            var hasCatchVariable = catchVariable != null;
 
             if (hasCatchVariable)
             {
-                var catchVar=outSet.GetVariable(catchPoint.CatchDescription.CatchVariable);
+                var catchVar = outSet.GetVariable(catchPoint.CatchDescription.CatchVariable);
                 catchVar.WriteMemory(outSet.Snapshot, catchPoint.ThrowedValue);
             }
         }
@@ -175,8 +175,8 @@ namespace Weverca.AnalysisFramework.UnitTest
             foreach (var file in files)
             {
                 //Create graph for every include - NOTE: we can share pp graphs
-                var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
-                var ppGraph = ProgramPointGraph.FromSource(cfg, null);
+                var cfg = AnalysisTestUtils.CreateCFG(_includes[file], null);
+                var ppGraph = ProgramPointGraph.FromSource(cfg);
                 flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
             }
         }

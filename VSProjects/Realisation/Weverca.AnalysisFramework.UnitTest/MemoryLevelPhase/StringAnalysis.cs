@@ -17,7 +17,7 @@ namespace Weverca.AnalysisFramework.UnitTest
     /// </summary>
     class StringAnalysis : ForwardAnalysis<ValueInfo>
     {
-        
+
         /// <summary>
         /// Creates analysis object for given entryMethod. Uses SimpleEvaluator and SimpleResolver for computations.
         /// </summary>
@@ -36,18 +36,18 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="inSet2">Input set of block2 flow.</param>
         /// <param name="outSet">Output of merge.</param>
         protected override void BlockMerge(FlowInputSet<ValueInfo> inSet1, FlowInputSet<ValueInfo> inSet2, FlowOutputSet<ValueInfo> outSet)
-        {            
+        {
             outSet.FillFrom(inSet2); //everything in inSet2 will be in output
 
             //find ValueInfo objects that are in "collision" and merge them into outSet.
             foreach (var toMerge1 in inSet1.CollectedInfo)
             {
-                ValueInfo toMerge2,outInfo;                
+                ValueInfo toMerge2, outInfo;
                 if (inSet2.TryGetInfo(toMerge1.Name, out toMerge2))
                 {
                     //collision found
                     outInfo = new ValueInfo(toMerge1);
-                    outInfo.MergeWith(toMerge2);                    
+                    outInfo.MergeWith(toMerge2);
                 }
                 else
                 {
@@ -102,7 +102,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                     }
                 }
             }
-        }    
+        }
 
         /// <summary>
         /// Is called for applying call analysis result into caller flow.
@@ -111,7 +111,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <param name="callOutput">Output set acquired from call analysis.</param>
         /// <param name="outSet">Output of caller </param>
         protected override void ReturnedFromCall(FlowInputSet<ValueInfo> callerInSet, FlowInputSet<ValueInfo> callOutput, FlowOutputSet<ValueInfo> outSet)
-        {            
+        {
             outSet.FillFrom(callerInSet);
 
             //TODO this in fact fills also data from local context of callOutput
@@ -204,7 +204,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// <returns>BasicBlock which is entry point for given function.</returns>
         public override ControlFlowGraph.BasicBlock GetEntryPoint(FunctionDecl function)
         {
-            var cfg= ControlFlowGraph.ControlFlowGraph.FromFunction(function);
+            var cfg = ControlFlowGraph.ControlFlowGraph.FromFunction(function, null);
             return cfg.start;
         }
     }
@@ -350,7 +350,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
             return b.ToString();
         }
-        
+
         public void SetUnbounded()
         {
             IsUnbounded = true;

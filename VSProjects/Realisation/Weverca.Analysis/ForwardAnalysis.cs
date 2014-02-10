@@ -25,8 +25,8 @@ namespace Weverca.Analysis
         /// <param name="entryMethodGraph">ControlFlowGraph to analyze</param>
         /// <param name="memoryModel">Memory model used by analyser</param>
         /// <param name="entryScript">File to analyze</param>
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, FileInfo entryScript)
-            : base(entryMethodGraph, memoryModel.CreateSnapshot, entryScript)
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {
             GlobalsInitializer();
         }

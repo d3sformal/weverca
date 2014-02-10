@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.IO;
+
 using PHP.Core;
 using PHP.Core.AST;
 
@@ -61,7 +63,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="literal">String literal</param>
         /// <returns>Created value</returns>
         StringValue CreateString(string literal);
-        
+
         /// <summary>
         /// Create integer value from given number
         /// </summary>
@@ -89,7 +91,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="boolean">Boolean value</param>
         /// <returns>Created value</returns>
         BooleanValue CreateBool(bool boolean);
-        
+
         /// <summary>
         /// Create info value from given data
         /// NOTE:
@@ -105,14 +107,14 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="declaration">Function declaration</param>
         /// <returns>Created value</returns>
-        FunctionValue CreateFunction(FunctionDecl declaration);
+        FunctionValue CreateFunction(FunctionDecl declaration, FileInfo declaringScript);
 
         /// <summary>
         /// Create function value from given declaration
         /// </summary>
         /// <param name="declaration">Method declaration</param>
         /// <returns>Created value</returns>
-        FunctionValue CreateFunction(MethodDecl declaration);
+        FunctionValue CreateFunction(MethodDecl declaration, FileInfo declaringScript);
 
         /// <summary>
         /// Create function value from given declaration
@@ -120,21 +122,21 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="analyzer">Analyzer declaration</param>
         /// <param name="name">Name of created analyzer</param>
         /// <returns>Created value</returns>
-        FunctionValue CreateFunction(Name name,NativeAnalyzer analyzer);
+        FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer);
 
         /// <summary>
         /// Create type value from given declaration
         /// </summary>
         /// <param name="declaration">Native type declaration</param>
         /// <returns>Created value</returns>
-        TypeValue CreateType(ClassDecl declaration);        
+        TypeValue CreateType(ClassDecl declaration);
 
         /// <summary>
         /// Create function value from given expression
         /// </summary>
         /// <param name="expression">Lambda function declaration</param>        
         /// <returns>Created value</returns>
-        FunctionValue CreateFunction(LambdaFunctionExpr expression);
+        FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript);
 
         /// <summary>
         /// Create array empty array
@@ -210,7 +212,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="variable">Variable which info is stored</param>
         /// <param name="info">Info stored for variable</param>
         void SetInfo(VariableName variable, params InfoValue[] info);
-     
+
         #endregion
 
         #region Global context manipulation
@@ -219,7 +221,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Declare function into global scope
         /// </summary>
         /// <param name="declaration">Function declaration</param>
-        void DeclareGlobal(FunctionDecl declaration);
+        void DeclareGlobal(FunctionDecl declaration, FileInfo declaringScript);
 
         /// <summary>
         /// Declare type into global scope

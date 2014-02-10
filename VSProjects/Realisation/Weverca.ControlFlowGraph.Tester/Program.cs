@@ -40,9 +40,10 @@ namespace Weverca.ControlFlowGraph.Tester
         /// <returns></returns>
         static Weverca.ControlFlowGraph.ControlFlowGraph GenerateCFG(string fileName)
         {
-            try 
+            try
             {
-                return ControlFlowGraph.FromFilename(fileName);
+                var file = new FileInfo(fileName);
+                return ControlFlowGraph.FromFile(file);
             }
             catch (Weverca.ControlFlowGraph.ControlFlowException e)
             {

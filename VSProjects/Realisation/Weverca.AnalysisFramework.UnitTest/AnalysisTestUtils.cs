@@ -61,7 +61,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly WevercaFunctionResolverTest _functionResolver;
 
         public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
-            : base(entryMethodGraph, memoryModel, null)
+            : base(entryMethodGraph, memoryModel)
         {
             _flowResolver = new WevercaFlowResolverTest();
             _functionResolver = new WevercaFunctionResolverTest(initializer);
@@ -129,8 +129,8 @@ namespace Weverca.AnalysisFramework.UnitTest
             foreach (var file in files)
             {
                 //Create graph for every include - NOTE: we can share pp graphs
-                var cfg = AnalysisTestUtils.CreateCFG(_includes[file]);
-                var ppGraph = ProgramPointGraph.FromSource(cfg, new FileInfo(file));
+                var cfg = AnalysisTestUtils.CreateCFG(_includes[file], new FileInfo(file));
+                var ppGraph = ProgramPointGraph.FromSource(cfg);
                 flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
             }
         }
@@ -217,14 +217,14 @@ namespace Weverca.AnalysisFramework.UnitTest
             POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
         }
 
-        internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code)
+        internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code, FileInfo file)
         {
             var fileName = "./cfg_test.php";
             var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
             code = "<?php \n" + code + "?>";
             var parser = new SyntaxParser(sourceFile, code);
             parser.Parse();
-            var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast);
+            var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast, file);
 
             return cfg;
         }
@@ -289,7 +289,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static ValueInfo[] GetEndPointInfo(string code)
         {
-            var cfg = AnalysisTestUtils.CreateCFG(code);
+            var cfg = AnalysisTestUtils.CreateCFG(code, null);
             var analysis = new StringAnalysis(cfg);
             analysis.Analyse();
             var list = new List<ValueInfo>(analysis.ProgramPointGraph.End.OutSet.CollectedInfo);
@@ -316,8 +316,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void RunTestCase(TestCase testCase)
         {
-            var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
-            var analyses = testCase.CreateAnalyses(cfg);
+            var analyses = CreateAnalyses(testCase);
 
             foreach (var analysis in analyses)
             {
@@ -329,8 +328,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void RunInfoLevelBackwardPropagationCase(TestCase testCase)
         {
-            var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
-            var analyses = testCase.CreateAnalyses(cfg);
+            var analyses = CreateAnalyses(testCase);
 
             foreach (var analysis in analyses)
             {
@@ -345,8 +343,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void RunInfoLevelTaintAnalysisCase(TestCase testCase)
         {
-            var cfg = AnalysisTestUtils.CreateCFG(testCase.PhpCode);
-            var analyses = testCase.CreateAnalyses(cfg);
+            var analyses = CreateAnalyses(testCase);
 
             foreach (var analysis in analyses)
             {
@@ -513,6 +510,17 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
             Assert.IsTrue(taintStatus == computedTaintStatus, "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
 
+        }
+
+        private static ControlFlowGraph.ControlFlowGraph CreateCFG(TestCase testCase)
+        {
+            return CreateCFG(testCase.PhpCode, new FileInfo("test.php"));
+        }
+
+        private static IEnumerable<ForwardAnalysisBase> CreateAnalyses(TestCase testCase)
+        {
+            var cfg = CreateCFG(testCase);
+            return testCase.CreateAnalyses(cfg);
         }
     }
 

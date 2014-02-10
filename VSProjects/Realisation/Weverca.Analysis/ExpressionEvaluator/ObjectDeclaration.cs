@@ -718,7 +718,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var methosIdentifier = new MethodIdentifier(result.QualifiedName, (member as MethodDecl).Name);
                     if (!result.SourceCodeMethods.ContainsKey(methosIdentifier))
                     {
-                        result.SourceCodeMethods.Add(methosIdentifier, OutSet.CreateFunction(member as MethodDecl));
+                        result.SourceCodeMethods.Add(methosIdentifier, OutSet.CreateFunction(member as MethodDecl, Flow.CurrentScript));
                     }
                     else
                     {

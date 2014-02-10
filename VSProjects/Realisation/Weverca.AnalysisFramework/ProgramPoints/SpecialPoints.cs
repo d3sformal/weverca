@@ -208,8 +208,23 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public readonly ProgramPointBase Caller;
 
+        public override ProgramPointGraph OwningPPGraph
+        {
+            get
+            {
+                return Graph;
+            }
+        }
+
+        internal override ForwardAnalysisServices Services
+        {
+            get
+            {
+                return Caller.Services;
+            }
+        }
+
         internal ExtensionPoint(ProgramPointBase caller, ProgramPointGraph graph, ExtensionType type)
-            : base(graph)
         {
             Graph = graph;
             Type = type;
@@ -244,8 +259,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            ForwardAnalysisServices.CurrentScript = ppGraph.OwningScript;
-
             if (Flow.Arguments == null)
                 Flow.Arguments = new MemoryEntry[0];
 
@@ -269,9 +282,26 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <remarks>One sink is used per extension</remarks>
         /// </summary>
         public readonly FlowExtension OwningExtension;
+
         private static readonly VariableName returnVarName = new VariableName(".resultSinkPoint");
 
         public override LangElement Partial { get { return null; } }
+
+        internal override ForwardAnalysisServices Services
+        {
+            get
+            {
+                return OwningExtension.Owner.Services;
+            }
+        }
+
+        public override ProgramPointGraph OwningPPGraph
+        {
+            get
+            {
+                return OwningExtension.Owner.OwningPPGraph;
+            }
+        }
 
         internal ExtensionSinkPoint(FlowExtension owningExtension)
         {
@@ -289,7 +319,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             ResolveReturnValue();
-            ForwardAnalysisServices.CurrentScript = ppGraph.OwningScript;
         }
 
         public void ResolveReturnValue()

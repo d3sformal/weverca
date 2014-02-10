@@ -80,21 +80,15 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Program point graph that owns this program point
         /// </summary>
-        public ProgramPointGraph ppGraph { get; private set; }
+        public virtual ProgramPointGraph OwningPPGraph { get; private set; }
 
         /// <summary>
         /// Analysis services available for subclasses to handle flow through method
         /// </summary>
-        internal ForwardAnalysisServices Services { get; private set; }
+        internal virtual ForwardAnalysisServices Services { get; private set; }
 
         internal ProgramPointBase()
         {
-            Extension = new FlowExtension(this);
-        }
-
-        internal ProgramPointBase(ProgramPointGraph ppGraph)
-        {
-            this.ppGraph = ppGraph;
             Extension = new FlowExtension(this);
         }
 
@@ -258,8 +252,17 @@ namespace Weverca.AnalysisFramework
                 throw new NotSupportedException("Initialization can be run only once");
             }
             _isInitialized = true;
+
             _inSet = input;
             _outSet = output;
+
+            if (_inSet.Snapshot != null)
+                //can be null in TestEntry
+                _inSet.Snapshot.Assistant.RegisterProgramPoint(this);
+
+            if (_outSet.Snapshot != null)
+                //can be null in TestEntry
+                _outSet.Snapshot.Assistant.RegisterProgramPoint(this);
         }
 
         /// <summary>
@@ -279,6 +282,12 @@ namespace Weverca.AnalysisFramework
             setNewController();
         }
 
+        internal void SetOwningGraph(ProgramPointGraph owningGraph)
+        {
+            this.OwningPPGraph = owningGraph;
+            this.Extension.Sink.OwningPPGraph = owningGraph;
+        }
+
         internal void SetMode(SnapshotMode mode)
         {
             if (_inSet != null)
@@ -288,11 +297,6 @@ namespace Weverca.AnalysisFramework
                 _outSet.Snapshot.SetMode(mode);
         }
 
-        internal void SetOwningGraph(ProgramPointGraph owningGraph)
-        {
-            this.ppGraph = owningGraph;
-            Extension.Sink.ppGraph = owningGraph;
-        }
 
         /// <summary>
         /// Reset changes reported by output set - is used for Fix point computation

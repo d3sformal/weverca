@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.IO;
+using System.Collections.Generic;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -74,7 +75,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="calledObject">Object that is available for call</param>
         /// <returns>Object on which call is processed. Null if there is no object</returns>
-        public abstract MemoryEntry InitializeCalledObject(ProgramPointBase caller,ProgramPointGraph extensionGraph, MemoryEntry calledObject);
+        public abstract MemoryEntry InitializeCalledObject(ProgramPointBase caller, ProgramPointGraph extensionGraph, MemoryEntry calledObject);
 
         /// <summary>
         /// Initialization of call of function with given declaration and arguments
@@ -165,7 +166,7 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name,
            MemoryEntry[] arguments);
 
-        
+
 
         #endregion
 
@@ -177,7 +178,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="declaration">Declared function</param>
         public virtual void DeclareGlobal(FunctionDecl declaration)
         {
-            OutSet.DeclareGlobal(declaration);
+            OutSet.DeclareGlobal(declaration, Flow.CurrentScript);
         }
 
         /// <summary>
@@ -220,7 +221,7 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             if (outSet == null)
                 return null;
-            
+
             var outSnapshot = outSet.Snapshot;
             var returnVar = outSnapshot.GetLocalControlVariable(SnapshotBase.ReturnValue);
             return returnVar.ReadMemory(outSnapshot);

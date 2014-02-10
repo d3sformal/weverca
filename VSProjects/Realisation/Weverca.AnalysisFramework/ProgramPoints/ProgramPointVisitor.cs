@@ -250,6 +250,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         #endregion
 
         #region LValue points
+        
+        public virtual void VisitStaticField(StaticFieldPoint p)
+        {
+            VisitLValue(p);
+        }
+
+        public virtual void VisitIndirectStaticField(IndirectStaticFieldPoint p)
+        {
+            VisitLValue(p);
+        }
 
         public virtual void VisitVariable(VariablePoint p)
         {
@@ -267,5 +277,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         #endregion
+
     }
 }

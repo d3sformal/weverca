@@ -62,7 +62,7 @@ namespace Weverca.Analysis.FlowResolver
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
             //extend current program point as Include
-            List<string> files = FunctionResolver.GetFunctionNames(includeFile,flow);
+            List<string> files = FunctionResolver.GetFunctionNames(includeFile, flow);
 
             IncludingEx includeExpression = flow.CurrentPartial as IncludingEx;
 
@@ -74,12 +74,12 @@ namespace Weverca.Analysis.FlowResolver
                     flow.RemoveExtension(branchKey);
                 }
             }
-            
+
 
             foreach (var file in files)
             {
                 var fileInfo = findFile(flow, file);
-                
+
                 if (fileInfo == null)
                 {
                     AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
@@ -105,14 +105,14 @@ namespace Weverca.Analysis.FlowResolver
                     }
                     else if (numberOfIncludes >= 2 || sharedFiles.Contains(fileName))
                     {
-                        
+
                         if (sharedFiles.Contains(fileName))
                         {
                             //set graph sharing for this function
                             if (!sharedProgramPoints.ContainsKey(fileName))
                             {
                                 //create single graph instance
-                                sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFilename(fileInfo.FullName), fileInfo);
+                                sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo));
                             }
 
                             //get shared instance of program point graph
@@ -123,12 +123,12 @@ namespace Weverca.Analysis.FlowResolver
                         {
                             sharedFiles.Add(fileName);
                         }
-                        
+
                     }
                 }
                 //Create graph for every include - NOTE: we can share pp graphs
-                var cfg = ControlFlowGraph.ControlFlowGraph.FromFilename(fileInfo.FullName);
-                var ppGraph = ProgramPointGraph.FromSource(cfg, fileInfo);
+                var cfg = ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo);
+                var ppGraph = ProgramPointGraph.FromSource(cfg);
                 flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
             }
         }
@@ -139,11 +139,11 @@ namespace Weverca.Analysis.FlowResolver
         private FileInfo findFile(FlowController flow, string fileName)
         {
             // the file has relative path and it is in main script directory
-            var fileInfo = new FileInfo(ForwardAnalysisServices.EntryScript.DirectoryName + "/" + fileName);
+            var fileInfo = new FileInfo(flow.EntryScript.DirectoryName + "/" + fileName);
             if (fileInfo.Exists) return fileInfo;
 
             // the file has relative path and it is in current script directory
-            fileInfo = new FileInfo(flow.ProgramPoint.ppGraph.OwningScript.DirectoryName + "/" + fileName);
+            fileInfo = new FileInfo(flow.ProgramPoint.OwningPPGraph.OwningScript.DirectoryName + "/" + fileName);
             if (fileInfo.Exists) return fileInfo;
 
             // the file has absolute path
@@ -210,7 +210,7 @@ namespace Weverca.Analysis.FlowResolver
                 if (value is ObjectValue)
                 {
                     TypeValue type = outSet.ObjectType(value as ObjectValue);
-                    var exceptionName=new QualifiedName(new Name("Exception"));
+                    var exceptionName = new QualifiedName(new Name("Exception"));
                     if (type.Declaration.BaseClasses.Where(a => a.Equals(exceptionName)).Count() == 0 && !type.QualifiedName.Equals(exceptionName))
                     {
                         AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Only objects derived from Exception can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
@@ -425,7 +425,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 return true;
             }
-            else 
+            else
             {
                 return false;
             }

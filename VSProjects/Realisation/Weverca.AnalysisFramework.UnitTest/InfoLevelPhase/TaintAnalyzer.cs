@@ -32,8 +32,8 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
 
         public override void VisitNativeAnalyzer(NativeAnalyzerPoint p)
         {
-            string functionName = p.ppGraph.FunctionName;
-            if (nativeSanitizers.Contains(p.ppGraph.FunctionName))
+            string functionName = p.OwningPPGraph.FunctionName;
+            if (nativeSanitizers.Contains(p.OwningPPGraph.FunctionName))
             {
                 FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(false)));
                 return;

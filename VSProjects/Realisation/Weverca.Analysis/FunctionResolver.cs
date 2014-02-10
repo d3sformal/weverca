@@ -319,7 +319,7 @@ namespace Weverca.Analysis
             {
                 string thisFile = extensionGraph.OwningScript.FullName;
                 var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
-                IEnumerable<Value> files=includedFiles.ReadMemory(OutSnapshot).PossibleValues;
+                IEnumerable<Value> files = includedFiles.ReadMemory(OutSnapshot).PossibleValues;
                 List<Value> result = IncreaseCalledInfo(thisFile, files);
                 includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
             }
@@ -354,7 +354,7 @@ namespace Weverca.Analysis
                 if (functionDeclaration != null)
                 {
                     OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
-                        new MemoryEntry(OutSet.CreateFunction(functionDeclaration)));
+                        new MemoryEntry(OutSet.CreateFunction(functionDeclaration, Flow.CurrentScript)));
                 }
                 else
                 {
@@ -362,7 +362,7 @@ namespace Weverca.Analysis
                     if (methodDeclaration != null)
                     {
                         OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
-                            new MemoryEntry(OutSet.CreateFunction(methodDeclaration)));
+                            new MemoryEntry(OutSet.CreateFunction(methodDeclaration, Flow.CurrentScript)));
                     }
                 }
 
@@ -377,7 +377,7 @@ namespace Weverca.Analysis
                 OutSet.FetchFromGlobal(new VariableName("_REQUEST"));
                 OutSet.FetchFromGlobal(new VariableName("_ENV"));
 
-                FunctionValue thisFunction=OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
+                FunctionValue thisFunction = OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
                 List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
                 OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
             }
@@ -575,7 +575,7 @@ namespace Weverca.Analysis
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
-            Dictionary<object, FunctionValue> newFunctions=new Dictionary<object,FunctionValue>();
+            Dictionary<object, FunctionValue> newFunctions = new Dictionary<object, FunctionValue>();
             foreach (var entry in functions)
             {
                 if (entry.Value.MethodDecl != null)
@@ -632,10 +632,10 @@ namespace Weverca.Analysis
                 }
             }
             int max = 0;
-            foreach(var value in OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues)
+            foreach (var value in OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues)
             {
                 InfoValue<NumberOfCalledFunctions<FunctionValue>> info = value as InfoValue<NumberOfCalledFunctions<FunctionValue>>;
-                if (info!=null && info.Data.Function.Equals(function))
+                if (info != null && info.Data.Function.Equals(function))
                 {
                     max = Math.Max(max, info.Data.TimesCalled);
                 }
@@ -1045,13 +1045,13 @@ namespace Weverca.Analysis
     #endregion
 
     class NumberOfCalledFunctions<T>
-    { 
+    {
         public readonly T Function;
         public readonly int TimesCalled;
 
-        public NumberOfCalledFunctions(T function,int timesCalled)
+        public NumberOfCalledFunctions(T function, int timesCalled)
         {
-            Function=function;
+            Function = function;
             TimesCalled = timesCalled;
         }
 

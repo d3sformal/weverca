@@ -35,11 +35,15 @@ namespace Weverca.AnalysisFramework.Memory
             get { return DeclaringElement as MethodDecl; }
         }
 
-        internal FunctionValue(LangElement declaringElement, Name name)
+        internal FunctionValue(LangElement declaringElement, Name name, FileInfo declaringScript)
         {
-            DeclaringScript = ForwardAnalysisServices.CurrentScript;
             if (declaringElement == null)
                 throw new ArgumentNullException("declaringElement");
+
+            if (declaringScript == null)
+                throw new ArgumentNullException("declaringScript");
+
+            DeclaringScript = declaringScript;
             DeclaringElement = declaringElement;
             Name = name;
         }
@@ -57,7 +61,7 @@ namespace Weverca.AnalysisFramework.Memory
         public readonly NativeAnalyzer Analyzer;
 
         internal NativeAnalyzerValue(Name name, NativeAnalyzer analyzer)
-            : base(analyzer,name)
+            : base(analyzer, name, new FileInfo("native_functions.virtual"))
         {
             Analyzer = analyzer;
         }
@@ -92,8 +96,8 @@ namespace Weverca.AnalysisFramework.Memory
     {
         public readonly FunctionDecl Declaration;
 
-        internal SourceFunctionValue(FunctionDecl declaration)
-            : base(declaration,declaration.Name)
+        internal SourceFunctionValue(FunctionDecl declaration, FileInfo declaringScript)
+            : base(declaration, declaration.Name, declaringScript)
         {
             Declaration = declaration;
         }
@@ -128,15 +132,15 @@ namespace Weverca.AnalysisFramework.Memory
     {
         public readonly MethodDecl Declaration;
 
-        internal SourceMethodValue(MethodDecl declaration)
-            : base(declaration, declaration.Name)
+        internal SourceMethodValue(MethodDecl declaration, FileInfo declaringScript)
+            : base(declaration, declaration.Name, declaringScript)
         {
             Declaration = declaration;
         }
 
         public override void Accept(IValueVisitor visitor)
         {
-            visitor.VisitSourceMethodValue(this); 
+            visitor.VisitSourceMethodValue(this);
         }
 
         protected override int getHashCode()
@@ -164,15 +168,15 @@ namespace Weverca.AnalysisFramework.Memory
     {
         public readonly LambdaFunctionExpr Declaration;
 
-        internal LambdaFunctionValue(LambdaFunctionExpr declaration)
-            : base(declaration, new Name(".LambdaExpression"))
+        internal LambdaFunctionValue(LambdaFunctionExpr declaration, FileInfo declaringScript)
+            : base(declaration, new Name(".LambdaExpression"), declaringScript)
         {
             Declaration = declaration;
         }
 
         public override void Accept(IValueVisitor visitor)
         {
-            visitor.VisitLambdaFunctionValue(this); 
+            visitor.VisitLambdaFunctionValue(this);
         }
 
         protected override int getHashCode()

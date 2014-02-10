@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
+
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.AnalysisFramework
 {
-    class FunctionProgramPointBuilder:AbstractValueVisitor
+    class FunctionProgramPointBuilder : AbstractValueVisitor
     {
         internal ProgramPointGraph Output;
 
@@ -24,12 +26,12 @@ namespace Weverca.AnalysisFramework
 
         public override void VisitSourceFunctionValue(SourceFunctionValue value)
         {
-            Output = ProgramPointGraph.FromSource(value.Declaration);
+            Output = ProgramPointGraph.FromSource(value.Declaration, value.DeclaringScript);
         }
 
         public override void VisitSourceMethodValue(SourceMethodValue value)
         {
-            Output = ProgramPointGraph.FromSource(value.Declaration);
+            Output = ProgramPointGraph.FromSource(value.Declaration, value.DeclaringScript);
         }
 
         public override void VisitNativeAnalyzerValue(NativeAnalyzerValue value)

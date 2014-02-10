@@ -58,21 +58,13 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// The script in which program points in this program point graph are defined
         /// </summary>
-        public FileInfo OwningScript
-        {
-            get;
-            private set;
-        }
+        public readonly FileInfo OwningScript;
 
         /// <summary>
         /// The name of the function or method that is represented by this program point graph.
         /// Null in the case that this program point graph represetns script
         /// </summary>
-        public string FunctionName
-        {
-            get;
-            private set;
-        }
+        public string FunctionName { get; private set; }
 
         #endregion
 
@@ -97,6 +89,17 @@ namespace Weverca.AnalysisFramework
 
         #region Program point graph creating
 
+
+        /// <summary>
+        /// Create program point graph from source begining by entryPoint
+        /// </summary>
+        /// <param name="cfg">Entry cfg into source (all feasible basic blocks will be included in program point graph)</param>
+        /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
+        private ProgramPointGraph(ControlFlowGraph.ControlFlowGraph cfg, LangElement sourceObject)
+            : this(cfg.start, sourceObject)
+        {
+            OwningScript = cfg.File;
+        }
 
         /// <summary>
         /// Create program point graph from source begining by entryPoint
@@ -133,7 +136,7 @@ namespace Weverca.AnalysisFramework
         {
             var builder = new FunctionProgramPointBuilder();
             function.Accept(builder);
-            builder.Output.OwningScript = function.DeclaringScript;
+
             builder.Output.FunctionName = function.Name.Value;
             return builder.Output;
         }
@@ -155,11 +158,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="declaration">Function which program point graph will be created</param>
         /// <returns>Created program point graph</returns>
-        internal static ProgramPointGraph FromSource(FunctionDecl declaration)
+        internal static ProgramPointGraph FromSource(FunctionDecl declaration, FileInfo file)
         {
-            var cfg = ControlFlowGraph.ControlFlowGraph.FromFunction(declaration);
+            var cfg = ControlFlowGraph.ControlFlowGraph.FromFunction(declaration, file);
 
-            return new ProgramPointGraph(cfg.start, declaration);
+            return new ProgramPointGraph(cfg, declaration);
         }
 
         /// <summary>
@@ -167,11 +170,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="declaration">Method which program point graph will be created</param>
         /// <returns>Created program point graph</returns>
-        internal static ProgramPointGraph FromSource(MethodDecl declaration)
+        internal static ProgramPointGraph FromSource(MethodDecl declaration, FileInfo file)
         {
-            var cfg = ControlFlowGraph.ControlFlowGraph.FromMethod(declaration);
+            var cfg = ControlFlowGraph.ControlFlowGraph.FromMethod(declaration, file);
 
-            return new ProgramPointGraph(cfg.start, declaration);
+            return new ProgramPointGraph(cfg, declaration);
         }
 
         /// <summary>
@@ -179,10 +182,9 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="cfg">Input control flow graph</param>
         /// <returns>Created program point graph</returns>
-        public static ProgramPointGraph FromSource(ControlFlowGraph.ControlFlowGraph cfg, FileInfo owningScript)
+        public static ProgramPointGraph FromSource(ControlFlowGraph.ControlFlowGraph cfg)
         {
-            var ppgraph = new ProgramPointGraph(cfg.start, null);
-            ppgraph.OwningScript = owningScript;
+            var ppgraph = new ProgramPointGraph(cfg, null);
             return ppgraph;
         }
 
