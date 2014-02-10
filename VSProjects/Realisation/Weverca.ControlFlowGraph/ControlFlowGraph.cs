@@ -37,8 +37,15 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         private CFGVisitor visitor;
 
+        /// <summary>
+        /// HashSet of elements added by controlglow grah. Usualy there are conditions created by cfg.
+        /// This Hashset is used for cfg drawing purposes
+        /// </summary>
         public HashSet<LangElement> cfgAddedElements = new HashSet<LangElement>();
 
+        /// <summary>
+        /// File name of source code filet
+        /// </summary>
         public readonly FileInfo File;
 
         #endregion fields
@@ -48,7 +55,7 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Creates a confrolflow graph from script with given file name.
         /// </summary>
-        /// <param name="fileName"></param>
+        /// <param name="file">File</param>
         /// <returns></returns>
         public static ControlFlowGraph FromFile(FileInfo file)
         {
@@ -65,10 +72,11 @@ namespace Weverca.ControlFlowGraph
         }
 
         /// <summary>
-        /// Creates a confrolflow graph from parsed code.
+        /// Creates a confrolflow graph from globalCode in parameter.
         /// </summary>
-        /// <param name="globalCode"></param>
-        /// <returns></returns>
+        /// <param name="globalCode">Ast tree</param>
+        /// <param name="sourceFile">Information about source file</param>
+        /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromSource(GlobalCode globalCode, FileInfo sourceFile)
         {
             return new ControlFlowGraph(globalCode, sourceFile);
@@ -76,11 +84,11 @@ namespace Weverca.ControlFlowGraph
 
 
         /// <summary>
-        ///  Creates a confrolflow graph from string in parameter.
+        /// Creates a confrolflow graph from fileName in parameter.
         /// </summary>
         /// <param name="phpCode">source code in string</param>
         /// <param name="fileName">name of the file</param>
-        /// <returns></returns>
+        /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromSource(string phpCode, string fileName)
         {
             PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)), new FullPath(fileName));
@@ -97,7 +105,8 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
-        /// <param name="function">function to construct controlflow graph<</param>
+        /// <param name="function">function to construct controlflow graph</param>
+        /// <param name="file">Information about source file</param>
         public static ControlFlowGraph FromFunction(FunctionDecl function, FileInfo file)
         {
             return new ControlFlowGraph(function, file);
@@ -106,7 +115,8 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
-        /// <param name="function">function to construct controlflow graph</param>
+        /// <param name="method">method to construct controlflow graph</param>
+        /// <param name="file">Information about source file</param>
         public static ControlFlowGraph FromMethod(MethodDecl method, FileInfo file)
         {
             return new ControlFlowGraph(method, file);
@@ -115,7 +125,8 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Constructs a confrolflow graph 
         /// </summary>
-        /// <param name="globalCode"></param>
+        /// <param name="globalCode">Ast Tree</param>
+        /// <param name="file">Information about source file</param>
         private ControlFlowGraph(GlobalCode globalCode, FileInfo file)
         {
             File = file;
@@ -148,6 +159,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
+        /// <param name="file">Information about source file</param>
         private ControlFlowGraph(GlobalCode globalCode, MethodDecl function, FileInfo file)
         {
             File = file;
@@ -162,6 +174,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="globalCode">Globalcode needed for drawing</param>
         /// <param name="function">function to construct controlflow graph</param>
+        /// <param name="file">Information about source file</param>
         private ControlFlowGraph(GlobalCode globalCode, FunctionDecl function, FileInfo file)
         {
             File = file;
@@ -176,6 +189,7 @@ namespace Weverca.ControlFlowGraph
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
         /// <param name="function">function to construct controlflow graph</param>
+        /// <param name="file">Information about source file</param>
         private ControlFlowGraph(MethodDecl function, FileInfo file)
         {
             File = file;
@@ -187,7 +201,8 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>
-        /// <param name="function">function to construct controlflow graph<</param>
+        /// <param name="function">function to construct controlflow graph</param>
+        /// <param name="file">Information about source file</param>
         private ControlFlowGraph(FunctionDecl function, FileInfo file)
         {
             File = file;

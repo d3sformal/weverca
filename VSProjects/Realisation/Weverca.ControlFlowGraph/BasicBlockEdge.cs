@@ -111,7 +111,6 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="From">Source basic block.</param>
         /// <param name="To">Target basic block.</param>
-        /// <param name="Condition">Condition for this edge.</param>
         /// <returns>New edge</returns>
         public static ForEachSpecialEdge MakeNewAndConnect(BasicBlock From, BasicBlock To)
         {

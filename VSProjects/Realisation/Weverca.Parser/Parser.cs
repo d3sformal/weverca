@@ -332,7 +332,7 @@ namespace Weverca.Parsers
         /// <param name="id">Id of error</param>
         /// <param name="message">Error message</param>
         /// <param name="severity">Error severity</param>
-        /// <param name="group"></param>
+        /// <param name="group">Error group</param>
         /// <param name="fullPath">Full path of parser file</param>
         /// <param name="pos">Error position</param>
         /// <returns>Doesn't return anything ends with excpetion</returns>
@@ -343,12 +343,39 @@ namespace Weverca.Parsers
         }
     }
 
+    /// <summary>
+    /// Exxcption representing parser error. When this exception occures analysis cannot comtinue.
+    /// </summary>
     public class ParserException : Exception
     {
+        /// <summary>
+        /// Path of the filename where error occured
+        /// </summary>
         public string FullPath { get; protected set; }
+        
+        /// <summary>
+        /// Error severity
+        /// </summary>
         public ErrorSeverity Severity { get; protected set; }
+
+        /// <summary>
+        /// Error group
+        /// </summary>
         public int Group { get; protected set; }
+        
+        /// <summary>
+        /// Error position
+        /// </summary>
         public ErrorPosition Position { get; protected set; }
+        
+        /// <summary>
+        /// Creates a new instance of ParserException
+        /// </summary>
+        /// <param name="message">Error message</param>
+        /// <param name="severity">Error severity</param>
+        /// <param name="group">Error group</param>
+        /// <param name="path">File name where error ocuured</param>
+        /// <param name="pos">Error position</param>
         public ParserException(string message, ErrorSeverity severity, int group, string path, ErrorPosition pos)
             : base(message)
         {

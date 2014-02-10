@@ -101,10 +101,12 @@ namespace Weverca.ControlFlowGraph
             Position = position;
         }
 
+
         /// <summary>
         /// Saves target block of this label and process all blocks in GOTO queue.
         /// </summary>
-        /// <param name="labelBlock">The label block.</param>
+        /// <param name="labelBlock">>The label block.</param>
+        /// <param name="position">Label position</param>
         public void AsociateLabel(BasicBlock labelBlock, Position position)
         {
             if (HasAssociatedLabel)
@@ -161,14 +163,15 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Gets or creates label data in the label collection.
         /// </summary>
-        /// <param name="key">´The name of the label.</param>
-        /// <returns></returns>
-        public LabelData GetOrCreateLabelData(VariableName key, Position postion)
+        /// <param name="key">The name of the label.</param>
+        /// <param name="position">label position</param>
+        /// <returns>new Instance of LabelData</returns>
+        public LabelData GetOrCreateLabelData(VariableName key, Position position)
         {
             LabelData data;
             if (!TryGetValue(key.Value, out data))
             {
-                data = new LabelData(postion);
+                data = new LabelData(position);
                 Add(key.Value, data);
             }
 
@@ -198,11 +201,6 @@ namespace Weverca.ControlFlowGraph
         /// Stack of loops, for purposes of breaking cycles and switch
         /// </summary>
         LinkedStack<LoopData> loopData = new LinkedStack<LoopData>();
-
-        /// <summary>
-        /// Stack of block which ends by throw
-        /// </summary>
-        //  LinkedStack<List<BasicBlock>> throwBlocks = new LinkedStack<List<BasicBlock>>();
 
         /// <summary>
         /// Improved dictonary storing labels in context.
@@ -413,7 +411,7 @@ namespace Weverca.ControlFlowGraph
         }
 
         /// <summary>
-        /// Visits MethodDecl. This method will be not called during constructuion cfg. Analysis creates cfg of method via MakeFunctionCFG<T> method.
+        /// Visits MethodDecl. This method will be not called during constructuion cfg. Analysis creates cfg of method via MakeFunctionCFG &lt;T&gt; method.
         /// </summary>
         /// <param name="x">MethodDecl</param>
         public override void VisitMethodDecl(MethodDecl x)
