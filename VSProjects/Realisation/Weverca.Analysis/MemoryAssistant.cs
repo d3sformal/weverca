@@ -195,7 +195,7 @@ namespace Weverca.Analysis
         /// <returns>Widen memory entry for all visited values</returns>
         private MemoryEntry GetResult(SnapshotBase Context)
         {
-            List<Value> result = new List<Value>(infoValues);
+            List<Value> result = new List<Value>();
             if (containsOnlyBool)
             {
                 result.Add(Context.AnyBooleanValue);
