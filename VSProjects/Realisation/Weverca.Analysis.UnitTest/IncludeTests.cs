@@ -29,7 +29,7 @@ namespace Weverca.Analysis.UnitTest
         {
             // Run analysis
             FileInfo entryFile = new FileInfo(TrunkStructure.PHP_SOURCES_DIR + @"\test_programs\include_tests\include_test_01\index.php");
-            ProgramPointGraph ppGraph = Analyzer.Run(entryFile);
+            ProgramPointGraph ppGraph = Analyzer.Run(entryFile, MemoryModels.MemoryModels.VirtualReferenceMM);
             FlowOutputSet outSet = ppGraph.End.OutSet;
 
             // For each variable test whether it has given value

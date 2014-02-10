@@ -56,6 +56,15 @@ namespace Weverca.AnalysisFramework.Memory
         public static readonly VariableName ReturnValue = new VariableName(".return");
 
         /// <summary>
+        /// Returns the number of variables in the snapshot.
+        /// </summary>
+        /// <returns>the number of variables in the snapshot</returns>
+        public virtual int NumVariables()
+        {
+            return 0;
+        }
+
+        /// <summary>
         /// Statistics object - here are stored statistics
         /// </summary>
         private SnapshotStatistics _statistics = new SnapshotStatistics();

@@ -79,6 +79,15 @@ namespace Weverca.AnalysisFramework.Memory
         {
         }
 
+        /// <summary>
+        /// Gets statistics data stored in this object.
+        /// </summary>
+        /// <returns>statistics data stored in this object</returns>
+        public int[] GetStatisticsValues()
+        {
+            return (int[])_statistics.Clone();
+        }
+
         internal void Report(Statistic statistic, int value = 1)
         {
             _statistics[(int)statistic] += value;
