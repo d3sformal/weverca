@@ -1,0 +1,108 @@
+﻿<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:mshelp="http://msdn.microsoft.com/mshelp"><head><link rel="SHORTCUT ICON" href="./../icons/favicon.ico" /><style type="text/css">.OH_CodeSnippetContainerTabLeftActive, .OH_CodeSnippetContainerTabLeft,.OH_CodeSnippetContainerTabLeftDisabled { }.OH_CodeSnippetContainerTabRightActive, .OH_CodeSnippetContainerTabRight,.OH_CodeSnippetContainerTabRightDisabled { }.OH_footer { }</style><link rel="stylesheet" type="text/css" href="./../styles/branding.css" /><link rel="stylesheet" type="text/css" href="./../styles/branding-en-US.css" /><style type="text/css">
+			body
+			{
+			border-left:5px solid #e6e6e6;
+			overflow-x:scroll;
+			overflow-y:scroll;
+			}
+		</style><script src="./../scripts/branding.js" type="text/javascript"><!----></script><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>MethodInfo Constructor </title><meta name="Language" content="en-us" /><meta name="System.Keywords" content="MethodInfo class, constructor" /><meta name="System.Keywords" content="MethodInfo.MethodInfo constructor" /><meta name="Microsoft.Help.F1" content="Weverca.AnalysisFramework.MethodInfo.#ctor" /><meta name="Microsoft.Help.F1" content="Weverca.AnalysisFramework.MethodInfo.MethodInfo" /><meta name="Microsoft.Help.Id" content="M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)" /><meta name="Description" content="Weverca.AnalysisFramework.MethodInfo" /><meta name="Microsoft.Help.ContentType" content="Reference" /><meta name="BrandingAware" content="'true'" /><meta name="container" content="Weverca.AnalysisFramework" /><meta name="file" content="65eafec8-fd9f-0b08-a787-74b1b2a49ef3" /><meta name="guid" content="65eafec8-fd9f-0b08-a787-74b1b2a49ef3" /><meta name="SelfBranded" content="true" /></head><body onload="onLoad()" class="primary-mtps-offline-document"><div class="OH_outerDiv"><div class="OH_outerContent"><table class="TitleTable"><tr><td class="OH_tdTitleColumn">MethodInfo Constructor </td><td class="OH_tdRunningTitleColumn">A Sandcastle Documented Class Library</td></tr></table><div id="mainSection"><div id="mainBody"><span class="introStyle"></span><div class="summary">Initializes a new instance of the <a href="d0ec0fee-6f86-efad-5188-6f484bf347a7.htm" target="">MethodInfo</a> class</div><p></p><strong>Namespace:</strong> <a href="64b8a947-9718-3f4a-b7cd-7c2b57407968.htm" target="">Weverca.AnalysisFramework</a><br /><strong>Assembly:</strong> <span sdata="assembly">Weverca.AnalysisFramework</span> (in Weverca.AnalysisFramework.dll) Version: 1.0.0.0 (1.0.0.0)<div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Syntax</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><div id="snippetGroup_Syntax" class="code"><div id="ID0EDBCAAAAA" class="OH_CodeSnippetContainer"><div class="OH_CodeSnippetContainerTabs" id="ID0EDBCAAAAA_tabs"><div class="OH_CodeSnippetContainerTabLeftActive" id="ID0EDBCAAAAA_tabimgleft"></div><div id="ID0EDBCAAAAA_tab1" class="OH_CodeSnippetContainerTabActive" EnableCopyCode="true"><a href="#" onclick="javascript:ChangeTab('ID0EDBCAAAAA','C#','1','4');return false;">C#</a></div><div id="ID0EDBCAAAAA_tab2" class="OH_CodeSnippetContainerTab" EnableCopyCode="true"><a href="#" onclick="javascript:ChangeTab('ID0EDBCAAAAA','Visual Basic','2','4');return false;">VB</a></div><div id="ID0EDBCAAAAA_tab3" class="OH_CodeSnippetContainerTab" EnableCopyCode="true"><a href="#" onclick="javascript:ChangeTab('ID0EDBCAAAAA','Visual C++','3','4');return false;">C++</a></div><div id="ID0EDBCAAAAA_tab4" class="OH_CodeSnippetContainerTab" EnableCopyCode="true"><a href="#" onclick="javascript:ChangeTab('ID0EDBCAAAAA','F#','4','4');return false;">F#</a></div><div class="OH_CodeSnippetContainerTabRight" id="ID0EDBCAAAAA_tabimgright"></div></div><div id="ID0EDBCAAAAA_codecollection" class="OH_CodeSnippetContainerCodeCollection"><div class="OH_CodeSnippetToolBar"><div class="OH_CodeSnippetToolBarText"><a id="ID0EDBCAAAAA_ViewColorized" href="#" onclick="javascript:ExchangeTitleContent('ID0EDBCAAAAA','4')" title="View Colorized" style="display: none">View Colorized</a><a id="ID0EDBCAAAAA_copycode" href="#" onclick="javascript:CopyToClipboard('ID0EDBCAAAAA','4')" title="Copy to Clipboard">Copy to Clipboard</a><a id="ID0EDBCAAAAA_PrintText" class="OH_PrintText" href="#" onclick="javascript:Print('ID0EDBCAAAAA','4')" title="Print">Print</a></div></div><div id="ID0EDBCAAAAA_code_Div1" class="OH_CodeSnippetContainerCode" style="display: block"><pre><span class="keyword">public</span> <span class="identifier">MethodInfo</span>(
+	<span class="identifier">Name</span> <span class="parameter">name</span>,
+	<span class="identifier">QualifiedName</span> <span class="parameter">className</span>,
+	<span class="identifier">Visibility</span> <span class="parameter">visibility</span>,
+	<span class="identifier">NativeAnalyzerMethod</span> <span class="parameter">method</span>,
+	<span class="identifier">List</span>&lt;<span class="identifier">MethodArgument</span>&gt; <span class="parameter">args</span>,
+	<span class="identifier">bool</span> <span class="parameter">isFinal</span> = <span class="keyword">false</span>,
+	<span class="identifier">bool</span> <span class="parameter">isStatic</span> = <span class="keyword">false</span>,
+	<span class="identifier">bool</span> <span class="parameter">isAbstract</span> = <span class="keyword">false</span>
+)</pre></div><div id="ID0EDBCAAAAA_code_Plain_Div1" class="OH_CodeSnippetContainerCode" style="display: none"><pre>public MethodInfo(
+	Name name,
+	QualifiedName className,
+	Visibility visibility,
+	NativeAnalyzerMethod method,
+	List&lt;MethodArgument&gt; args,
+	bool isFinal = false,
+	bool isStatic = false,
+	bool isAbstract = false
+)</pre></div><div id="ID0EDBCAAAAA_code_Div2" class="OH_CodeSnippetContainerCode" style="display: none"><pre><span class="keyword">Public</span> <span class="keyword">Sub</span> <span class="identifier">New</span> ( 
+	<span class="parameter">name</span> <span class="keyword">As</span> <span class="identifier">Name</span>,
+	<span class="parameter">className</span> <span class="keyword">As</span> <span class="identifier">QualifiedName</span>,
+	<span class="parameter">visibility</span> <span class="keyword">As</span> <span class="identifier">Visibility</span>,
+	<span class="parameter">method</span> <span class="keyword">As</span> <span class="identifier">NativeAnalyzerMethod</span>,
+	<span class="parameter">args</span> <span class="keyword">As</span> <span class="identifier">List</span>(<span class="keyword">Of</span> <span class="identifier">MethodArgument</span>),
+	Optional <span class="parameter">isFinal</span> <span class="keyword">As</span> <span class="identifier">Boolean</span> = <span class="keyword">false</span>,
+	Optional <span class="parameter">isStatic</span> <span class="keyword">As</span> <span class="identifier">Boolean</span> = <span class="keyword">false</span>,
+	Optional <span class="parameter">isAbstract</span> <span class="keyword">As</span> <span class="identifier">Boolean</span> = <span class="keyword">false</span>
+)</pre></div><div id="ID0EDBCAAAAA_code_Plain_Div2" class="OH_CodeSnippetContainerCode" style="display: none"><pre>Public Sub New ( 
+	name As Name,
+	className As QualifiedName,
+	visibility As Visibility,
+	method As NativeAnalyzerMethod,
+	args As List(Of MethodArgument),
+	Optional isFinal As Boolean = false,
+	Optional isStatic As Boolean = false,
+	Optional isAbstract As Boolean = false
+)</pre></div><div id="ID0EDBCAAAAA_code_Div3" class="OH_CodeSnippetContainerCode" style="display: none"><pre><span class="keyword">public</span>:
+<span class="identifier">MethodInfo</span>(
+	<span class="identifier">Name</span> <span class="parameter">name</span>, 
+	<span class="identifier">QualifiedName</span> <span class="parameter">className</span>, 
+	<span class="identifier">Visibility</span> <span class="parameter">visibility</span>, 
+	<span class="identifier">NativeAnalyzerMethod</span>^ <span class="parameter">method</span>, 
+	<span class="identifier">List</span>&lt;<span class="identifier">MethodArgument</span>^&gt;^ <span class="parameter">args</span>, 
+	<span class="identifier">bool</span> <span class="parameter">isFinal</span> = <span class="keyword">false</span>, 
+	<span class="identifier">bool</span> <span class="parameter">isStatic</span> = <span class="keyword">false</span>, 
+	<span class="identifier">bool</span> <span class="parameter">isAbstract</span> = <span class="keyword">false</span>
+)</pre></div><div id="ID0EDBCAAAAA_code_Plain_Div3" class="OH_CodeSnippetContainerCode" style="display: none"><pre>public:
+MethodInfo(
+	Name name, 
+	QualifiedName className, 
+	Visibility visibility, 
+	NativeAnalyzerMethod^ method, 
+	List&lt;MethodArgument^&gt;^ args, 
+	bool isFinal = false, 
+	bool isStatic = false, 
+	bool isAbstract = false
+)</pre></div><div id="ID0EDBCAAAAA_code_Div4" class="OH_CodeSnippetContainerCode" style="display: none"><pre><span class="keyword">new</span> : 
+        <span class="parameter">name</span> : <span class="identifier">Name</span> * 
+        <span class="parameter">className</span> : <span class="identifier">QualifiedName</span> * 
+        <span class="parameter">visibility</span> : <span class="identifier">Visibility</span> * 
+        <span class="parameter">method</span> : <span class="identifier">NativeAnalyzerMethod</span> * 
+        <span class="parameter">args</span> : <span class="identifier">List</span>&lt;<span class="identifier">MethodArgument</span>&gt; * 
+        ?<span class="parameter">isFinal</span> : <span class="identifier">bool</span> * 
+        ?<span class="parameter">isStatic</span> : <span class="identifier">bool</span> * 
+        ?<span class="parameter">isAbstract</span> : <span class="identifier">bool</span> 
+(* Defaults:
+        <span class="keyword">let </span><span class="identifier">_</span><span class="identifier">isFinal</span> = defaultArg <span class="identifier">isFinal</span> <span class="keyword">false</span> 
+        <span class="keyword">let </span><span class="identifier">_</span><span class="identifier">isStatic</span> = defaultArg <span class="identifier">isStatic</span> <span class="keyword">false</span> 
+        <span class="keyword">let </span><span class="identifier">_</span><span class="identifier">isAbstract</span> = defaultArg <span class="identifier">isAbstract</span> <span class="keyword">false</span>
+*)
+<span class="keyword">-&gt;</span> <span class="identifier">MethodInfo</span></pre></div><div id="ID0EDBCAAAAA_code_Plain_Div4" class="OH_CodeSnippetContainerCode" style="display: none"><pre>new : 
+        name : Name * 
+        className : QualifiedName * 
+        visibility : Visibility * 
+        method : NativeAnalyzerMethod * 
+        args : List&lt;MethodArgument&gt; * 
+        ?isFinal : bool * 
+        ?isStatic : bool * 
+        ?isAbstract : bool 
+(* Defaults:
+        let _isFinal = defaultArg isFinal false 
+        let _isStatic = defaultArg isStatic false 
+        let _isAbstract = defaultArg isAbstract false
+*)
+-&gt; MethodInfo</pre></div></div></div><script>addSpecificTextLanguageTagSet('ID0EDBCAAAAA');</script></div><div id="parameters"><h4 class="subHeading">Parameters</h4><dl paramName="name"><dt><span class="parameter">name</span></dt><dd>Type: <span class="nolink">Name</span><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="name"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="className"><dt><span class="parameter">className</span></dt><dd>Type: <span class="nolink">QualifiedName</span><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="className"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="visibility"><dt><span class="parameter">visibility</span></dt><dd>Type: <a href="0a6bd4c1-f62f-7fec-d0e9-22b8e23adf3e.htm" target="">Weverca.AnalysisFramework<span id="ID0EBCAFACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EBCAFACAAAAA?vb=.|cpp=::|cs=.|fs=.|nu=.");
+				</script>Visibility</a><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="visibility"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="method"><dt><span class="parameter">method</span></dt><dd>Type: <a href="fea36af3-f3f9-37c3-d383-f73abe5f373d.htm" target="">Weverca.AnalysisFramework<span id="ID0EBCAEACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EBCAEACAAAAA?vb=.|cpp=::|cs=.|fs=.|nu=.");
+				</script>NativeAnalyzerMethod</a><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="method"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="args"><dt><span class="parameter">args</span></dt><dd>Type: <a href="http://msdn2.microsoft.com/en-us/library/6sh2ey19" target="_blank">System.Collections.Generic<span id="ID0EBFADACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EBFADACAAAAA?vb=.|cpp=::|cs=.|fs=.|nu=.");
+				</script>List</a><span id="ID0EEADACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EEADACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script><a href="ecc7ed6c-9f58-021e-6be5-5e1ef732429c.htm" target="">MethodArgument</a><span id="ID0ECADACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECADACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="args"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="isFinal"><dt><span class="parameter">isFinal</span> (Optional)</dt><dd>Type: <a href="http://msdn2.microsoft.com/en-us/library/a28wyd50" target="_blank">System<span id="ID0EBCACACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EBCACACAAAAA?vb=.|cpp=::|cs=.|fs=.|nu=.");
+				</script>Boolean</a><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="isFinal"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="isStatic"><dt><span class="parameter">isStatic</span> (Optional)</dt><dd>Type: <a href="http://msdn2.microsoft.com/en-us/library/a28wyd50" target="_blank">System<span id="ID0EBCABACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EBCABACAAAAA?vb=.|cpp=::|cs=.|fs=.|nu=.");
+				</script>Boolean</a><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="isStatic"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl><dl paramName="isAbstract"><dt><span class="parameter">isAbstract</span> (Optional)</dt><dd>Type: <a href="http://msdn2.microsoft.com/en-us/library/a28wyd50" target="_blank">System<span id="ID0EBCAAACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EBCAAACAAAAA?vb=.|cpp=::|cs=.|fs=.|nu=.");
+				</script>Boolean</a><br /><span><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;param name="isAbstract"/&gt; documentation for "M:Weverca.AnalysisFramework.MethodInfo.#ctor(PHP.Core.Name,PHP.Core.QualifiedName,Weverca.AnalysisFramework.Visibility,Weverca.AnalysisFramework.NativeAnalyzerMethod,System.Collections.Generic.List{Weverca.AnalysisFramework.MethodArgument},System.Boolean,System.Boolean,System.Boolean)"]</p></span></dd></dl></div><a name="seeAlsoSection"><!----></a><div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">See Also</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><div class="seeAlsoStyle"><a href="d0ec0fee-6f86-efad-5188-6f484bf347a7.htm" target="">MethodInfo Class</a></div><div class="seeAlsoStyle"><a href="46fd512f-31bb-318b-a114-1daa24ea6486.htm" target="">MethodInfo Members</a></div><div class="seeAlsoStyle"><a href="64b8a947-9718-3f4a-b7cd-7c2b57407968.htm" target="">Weverca.AnalysisFramework Namespace</a></div></div></div></div></div><div id="OH_footer" class="OH_footer"><p /><div class="OH_feedbacklink"><a href="mailto:?subject=A+Sandcastle+Documented+Class+Library+MethodInfo+Constructor++100+EN-US&amp;body=Your%20feedback%20is%20used%20to%20improve%20the%20documentation%20and%20the%20product.%20Your%20e-mail%20address%20will%20not%20be%20used%20for%20any%20other%20purpose%20and%20is%20disposed%20of%20after%20the%20issue%20you%20report%20is%20resolved.%20While%20working%20to%20resolve%20the%20issue%20that%20you%20report%2c%20you%20may%20be%20contacted%20via%20e-mail%20to%20get%20further%20details%20or%20clarification%20on%20the%20feedback%20you%20sent.%20After%20the%20issue%20you%20report%20has%20been%20addressed%2c%20you%20may%20receive%20an%20e-mail%20to%20let%20you%20know%20that%20your%20feedback%20has%20been%20addressed.">Send Feedback</a> on this topic.</div></div></body></html>

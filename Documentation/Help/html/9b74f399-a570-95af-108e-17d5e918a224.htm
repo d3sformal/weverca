@@ -1,0 +1,156 @@
+﻿<html xmlns:MSHelp="http://msdn.microsoft.com/mshelp" xmlns:mshelp="http://msdn.microsoft.com/mshelp"><head><link rel="SHORTCUT ICON" href="./../icons/favicon.ico" /><style type="text/css">.OH_CodeSnippetContainerTabLeftActive, .OH_CodeSnippetContainerTabLeft,.OH_CodeSnippetContainerTabLeftDisabled { }.OH_CodeSnippetContainerTabRightActive, .OH_CodeSnippetContainerTabRight,.OH_CodeSnippetContainerTabRightDisabled { }.OH_footer { }</style><link rel="stylesheet" type="text/css" href="./../styles/branding.css" /><link rel="stylesheet" type="text/css" href="./../styles/branding-en-US.css" /><style type="text/css">
+			body
+			{
+			border-left:5px solid #e6e6e6;
+			overflow-x:scroll;
+			overflow-y:scroll;
+			}
+		</style><script src="./../scripts/branding.js" type="text/javascript"><!----></script><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Weverca.AnalysisFramework.Memory Namespace</title><meta name="Language" content="en-us" /><meta name="System.Keywords" content="Weverca.AnalysisFramework.Memory namespace" /><meta name="Microsoft.Help.F1" content="Weverca.AnalysisFramework.Memory" /><meta name="Microsoft.Help.Id" content="N:Weverca.AnalysisFramework.Memory" /><meta name="Description" content="summaryN:Weverca.AnalysisFramework.Memory" /><meta name="Microsoft.Help.ContentType" content="Reference" /><meta name="BrandingAware" content="'true'" /><meta name="container" content="Weverca.AnalysisFramework.Memory" /><meta name="file" content="9b74f399-a570-95af-108e-17d5e918a224" /><meta name="guid" content="9b74f399-a570-95af-108e-17d5e918a224" /><meta name="SelfBranded" content="true" /></head><body onload="onLoad()" class="primary-mtps-offline-document"><div class="OH_outerDiv"><div class="OH_outerContent"><table class="TitleTable"><tr><td class="OH_tdTitleColumn">Weverca.AnalysisFramework.Memory Namespace</td><td class="OH_tdRunningTitleColumn">A Sandcastle Documented Class Library</td></tr></table><div id="mainSection"><div id="mainBody"><span class="introStyle"></span><div class="summary"><p style="color: #dc143c; font-size: 8.5pt; font-weight: bold;">[Missing &lt;summary&gt; documentation for "N:Weverca.AnalysisFramework.Memory"]</p></div><div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Classes</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><table id="typeList" class="members"><tr><th class="ps_iconColumn">
+					 
+				</th><th class="ps_nameColumn">Class</th><th class="ps_descriptionColumn">Description</th></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="94bffd25-05d6-232c-62fe-6f5fe0424ad1.htm" target="">AbstractValueVisitor</a></td><td><div class="summary">
+            Base class for value visitor.
+            <a href="94bffd25-05d6-232c-62fe-6f5fe0424ad1.htm" target="">AbstractValueVisitor</a> has to implement all methods from <a href="d7b7e962-8e1a-fdaa-8fb9-ae3678fe8c79.htm" target="">IValueVisitor</a>
+            interface. Every visit method calls visit method for object's supertype. Last method in the hierarchy
+            is abstract. Allows that visitor implementations does not have to implement all methods.
+            NOTE:
+                * Simplifies visitor implementations.
+                * Provides functionality for adding new visit methods into IValueVisitor.
+                * For implementers - implement VisitValue method and then just methods you need.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="a5b47143-9591-6a5a-ed1e-148ad82f6978.htm" target="">AliasEntry</a></td><td><div class="summary">
+            Represents alias that can be set between snapshot entries
+            Aliases provides semantic of PHP references
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="85d62fcc-80ca-8285-0104-72c694ac6d43.htm" target="">AliasValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b676cce8-b29e-06c2-7860-5619558d5fda.htm" target="">AnyArrayValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP arrays, thus all compositions of their elements
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="751933eb-1336-e9a6-8132-269d6bdbcfd9.htm" target="">AnyBooleanValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP boolean type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="9a24b5d4-3008-523b-ad03-968fa0e25417.htm" target="">AnyCompoundValue</a></td><td><div class="summary">
+            Class is representing any possible composition of PHP compound value, i.e. objects and arrays
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="4e0bf0d4-3799-ffcd-7524-525e13163e7b.htm" target="">AnyFloatValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP floating-point number type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="ae69aaf3-e5b7-783b-f593-f4dc65378104.htm" target="">AnyIntegerValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP integer type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="ddf3bf37-1e27-3bb4-d197-bab98ff68756.htm" target="">AnyLongintValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP long integer type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="7286740b-a92e-a345-ec87-7c76a5df6359.htm" target="">AnyNumericValue</a></td><td><div class="summary">
+            Class is abstract interpretation of all PHP numeric types
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="eee0dad4-8f1d-d8b3-e3e1-096180b1ee1f.htm" target="">AnyObjectValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP objects, thus all compositions of their fields
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="628da724-adab-1b08-93ca-6a94c34084bb.htm" target="">AnyResourceValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP resource type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="ea017226-dcce-7cf3-c8a0-f9618d374aa2.htm" target="">AnyScalarValue</a></td><td><div class="summary">
+            Class is abstract interpretation of all PHP scalar types
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="7f463350-d4a1-e2af-146e-1957ca6ce7a0.htm" target="">AnyStringValue</a></td><td><div class="summary">
+            Class is representing abstract interpretation of PHP string type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="c2554080-8889-b586-a899-1430f78d5a0e.htm" target="">AnyValue</a></td><td><div class="summary">
+            Class is abstract interpretation of all PHP types. It is used as unknown value
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="81005d10-4f56-c407-8aef-2324f55e3ff6.htm" target="">AssociativeArray</a></td><td><div class="summary">
+            AssociativeArray is used as "ticket" that allows snapshot API to operate on represented array
+            NOTE:
+                * Is supposed to be used as Hash key for getting stored info in snapshot
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b366fe50-9ae1-61f6-4dbb-2ff87cf9f315.htm" target="">BooleanValue</a></td><td><div class="summary">
+            Class is representing PHP boolean type with only two possible values: <span class="code">true</span> and <span class="code">false</span></div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="398b91dd-569e-fc70-f07a-31f889465708.htm" target="">CompoundValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="29ea6342-3716-12fa-05b0-250df543c8d4.htm" target="">ConcreteValue</a></td><td><div class="summary">
+            Class is representing a value of primitive PHP type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="ca8bbdad-3d54-30e9-ddc0-b1b030e30f0a.htm" target="">ContainerIndex</a></td><td><div class="summary">
+            Representation of index in container or object
+            
+            NOTE:
+                Can be used as hash itself
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="129da62c-c141-537b-6c5d-94ea8a9a8279.htm" target="">ContainerIteratorBase</a></td><td><div class="summary">
+            Represents iterator which is used for traversing arrays and objects
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="851a602d-094a-c2f0-ef09-9052657e2fa5.htm" target="">FloatIntervalValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="902ffd96-c1f7-1f18-33bb-102b01344ed7.htm" target="">FloatValue</a></td><td><div class="summary">
+            Class is representing PHP floating-point number
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="d26321f2-35e9-5eb8-8ab9-20a8f3edc57a.htm" target="">FunctionValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="03db9efd-01aa-2237-4d05-21eef9ad7753.htm" target="">InfoDataBase</a></td><td><div class="summary">
+            Base class for info data objects. Info data can be stored in Value.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="11c51a06-16ef-251c-fc58-73775f17c151.htm" target="">InfoDataStorage</a></td><td><div class="summary">
+            Storage for info data objects
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="33a5b145-b619-5a9a-4e5c-430547cac6b0.htm" target="">InfoValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="af894531-bf92-7c25-0907-1be7b341bc0e.htm" target="">InfoValue<span id="ID0ECAB2ACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECAB2ACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAAB2ACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAAB2ACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Stores meta information for variables and values
+            WARNING:
+                Has to be immutable - also generic type T
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b18b55e2-5640-eb1e-458d-295b164f1d52.htm" target="">IntegerIntervalValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="d40bb559-8d11-b2d1-8db8-4e5e63f6225d.htm" target="">IntegerValue</a></td><td><div class="summary">
+            Class is representing PHP integral number
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="14cdfc00-3620-602b-58c7-d7971ea31d3c.htm" target="">IntervalValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="4dba7774-57f1-8a50-f96e-7af994985ab5.htm" target="">IntervalValue<span id="ID0ECABXACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECABXACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAABXACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAABXACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Value representing interval of values
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="767d88b9-ecc1-69d2-1917-469a9e69898c.htm" target="">LambdaFunctionValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="2941c57c-771e-0c65-5c98-a23ef00716a4.htm" target="">LongintIntervalValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="0ef0a5e5-35e2-8858-dbc9-92fe016eb3a8.htm" target="">LongintValue</a></td><td><div class="summary">
+            Class is representing PHP long integral number
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="189ec8f9-cf06-69e5-bf55-f503032a0638.htm" target="">MemberIdentifier</a></td><td><div class="summary">
+            Is used as identifier of member (field, index, method) in scope of 
+            some value (e.g. object, string value, array,..)
+            
+            IS IMMUTABLE
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="ed54ef6e-8385-b7a2-b503-b6baaafd63ce.htm" target="">MemoryAssistantBase</a></td><td><div class="summary">
+            Assistant used for resolving and reporting memory based operations by snapshot.
+            Is usefull for tracking info values, reporting warnings,...
+            
+            TODO: Memory model implementors should design API needed for all operations reporting and resolving.
+            <div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Remarks</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div>
+            Analysis creates assistant for every created snapshot. This snapshot is
+            avalialable in Context member.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="4a0500fe-bb11-072b-a85c-5503f3e5728f.htm" target="">MemoryEntry</a></td><td><div class="summary">
+            Memory entry represents multiple possibilities that for example single variable can have
+            NOTE:
+                * Is immutable
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="70b56dfc-beea-d6e5-3382-a2a8016c1696.htm" target="">NativeAnalyzerValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b4c77fa8-25ac-e94f-4078-5050b03651ca.htm" target="">NumericValue<span id="ID0ECABPACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECABPACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAABPACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAABPACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Class is representing PHP number of arbitrary type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="c5c1cff6-e783-0b48-2336-bad1aed5a487.htm" target="">ObjectValue</a></td><td><div class="summary">
+            ObjectValue is used as "ticket" that allows snapshot API to operate on represented object
+            NOTE:
+                Is supposed to be used as Hash key for getting stored info in snapshot
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="89aedf74-3b6a-d171-f9f2-75f47d8f909f.htm" target="">ReadSnapshotEntryBase</a></td><td><div class="summary">
+            Represents entry provided by snapshots. Provides accessing to memory based operations that CANNOT MODIFY 
+            visible state of snapshot (read only operation abstraction)
+            
+            <div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Remarks</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div>
+            Even if this snapshot entry is read only, can be changed during time through 
+            another write read snapshot entries
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="8bc10895-add8-e261-be96-776a3ebbd4f7.htm" target="">ReadWriteSnapshotEntryBase</a></td><td><div class="summary">
+            Represents entry provided by snapshots. Provides accessing to memory based operations that CAN MODIFY
+            visible state of snapshot (read write operation abstraction)
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="53216d73-6fea-ce3c-8546-8da04424075d.htm" target="">ResourceValue</a></td><td><div class="summary">
+            Class is representing reference to an PHP external resource, identified by special internal ID
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="8cd79566-74fb-623e-1575-45eb3aabd13b.htm" target="">ScalarValue</a></td><td><div class="summary">
+            Abstract class for scalar value representation
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="6c3878bb-fa59-ac0d-e1f1-faeac359e500.htm" target="">ScalarValue<span id="ID0ECABJACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECABJACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAABJACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAABJACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Abstract class for scalar value representation specifying the concrete type
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="1b036613-2178-1349-6ba8-24c33c02d7d0.htm" target="">SnapshotBase</a></td><td><div class="summary">
+             Represents memory snapshot used for fix point analysis.
+             NOTES:
+                 * Snapshot will always work in context of some object.
+                 * Global variables behave in different way than objects variables (cross call stack)
+                 * Is correct for implementers to cast input Objects, Arrays, Snapshots to concrete implementation - Two snapshot implementations never won't be used together
+             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="0401b807-3e63-5c71-7bfb-6bff41fdf43f.htm" target="">SnapshotStatistics</a></td><td><div class="summary">
+            Storage used for snapshot statistic measuring
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="360486dc-e6af-3661-8d31-699bb9978369.htm" target="">SourceFunctionValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="d4b9bb52-2c84-6b39-268a-5256c26a3a69.htm" target="">SourceMethodValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="61d18fb1-23e3-e185-3f3e-5283a4d9af15.htm" target="">SpecialValue</a></td><td><div class="summary">
+            Represent special kind of value. For example these values can express some non-determinism.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="00ad3db0-1014-bbc8-778f-df9873d4f858.htm" target="">StringValue</a></td><td><div class="summary">
+            Class is representing PHP Unicode string constant
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="3560f4ab-d590-02f0-1087-b799ffc94d2e.htm" target="">TypeValue</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="de492221-5dec-015b-54eb-86b1c01999d9.htm" target="">UndefinedValue</a></td><td><div class="summary">
+            Class is representing PHP null type with the only one possible value: <span class="code">NULL</span></div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="29c110f0-8e5a-2595-c429-7f4607eabba3.htm" target="">Value</a></td><td><div class="summary">
+            All implementations of value has to be immutable
+            </div></td></tr></table><div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Interfaces</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><table id="typeList" class="members"><tr><th class="ps_iconColumn">
+					 
+				</th><th class="ps_nameColumn">Interface</th><th class="ps_descriptionColumn">Description</th></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="1f58efb7-1ee9-2109-7f4d-5f00cc0a41ef.htm" target="">ISnapshotReadonly</a></td><td></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="82413841-c713-0c2e-c0b1-9640a90a8b44.htm" target="">ISnapshotReadWrite</a></td><td></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="d7b7e962-8e1a-fdaa-8fb9-ae3678fe8c79.htm" target="">IValueVisitor</a></td><td><div class="summary">
+            Provides visitor functionality for Value class and its descendants.
+            If there will be any change in this interface, <a href="94bffd25-05d6-232c-62fe-6f5fe0424ad1.htm" target="">AbstractValueVisitor</a>
+            has to be changed with it.
+            </div></td></tr></table><div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Enumerations</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><table id="typeList" class="members"><tr><th class="ps_iconColumn">
+					 
+				</th><th class="ps_nameColumn">Enumeration</th><th class="ps_descriptionColumn">Description</th></tr><tr data="enumeration; public"><td><img src="./../icons/pubenumeration.gif" alt="Public enumeration" title="Public enumeration" /></td><td><a href="7724e438-8f86-6b72-b35d-5cf26a992c90.htm" target="">SnapshotMode</a></td><td><div class="summary">
+            Mode enumeration used for switching snapshots operational mode.
+            </div></td></tr><tr data="enumeration; public"><td><img src="./../icons/pubenumeration.gif" alt="Public enumeration" title="Public enumeration" /></td><td><a href="31894925-c798-b0b0-97d6-1bfee7f27560.htm" target="">Statistic</a></td><td></td></tr></table></div></div></div></div><div id="OH_footer" class="OH_footer"><p /><div class="OH_feedbacklink"><a href="mailto:?subject=A+Sandcastle+Documented+Class+Library+Weverca.AnalysisFramework.Memory+Namespace+100+EN-US&amp;body=Your%20feedback%20is%20used%20to%20improve%20the%20documentation%20and%20the%20product.%20Your%20e-mail%20address%20will%20not%20be%20used%20for%20any%20other%20purpose%20and%20is%20disposed%20of%20after%20the%20issue%20you%20report%20is%20resolved.%20While%20working%20to%20resolve%20the%20issue%20that%20you%20report%2c%20you%20may%20be%20contacted%20via%20e-mail%20to%20get%20further%20details%20or%20clarification%20on%20the%20feedback%20you%20sent.%20After%20the%20issue%20you%20report%20has%20been%20addressed%2c%20you%20may%20receive%20an%20e-mail%20to%20let%20you%20know%20that%20your%20feedback%20has%20been%20addressed.">Send Feedback</a> on this topic.</div></div></body></html>
