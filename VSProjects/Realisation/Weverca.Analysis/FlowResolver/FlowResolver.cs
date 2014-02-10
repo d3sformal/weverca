@@ -47,7 +47,6 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="callerOutput">Output of caller, which dispatch calls</param>
         /// <param name="dispatchedExtensions">Program point graphs obtained during analysis</param>
-        /// <param name="dispatchType">Type of merged call</param>
         public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
             var ends = dispatchedExtensions.Select(c => c.Graph.End.OutSet).Where(a => a != null).ToArray();

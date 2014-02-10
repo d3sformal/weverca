@@ -113,51 +113,61 @@ namespace Weverca.Analysis.ExpressionEvaluator
         
         #region Literals
 
+        /// <inheritdoc />
         public override void VisitIntLiteral(IntLiteral x)
         {
             initializationValue = expressionResolver.IntLiteral(x);
         }
 
+        /// <inheritdoc />
         public override void VisitLongIntLiteral(LongIntLiteral x)
         {
             initializationValue = expressionResolver.LongIntLiteral(x);
         }
 
+        /// <inheritdoc />
         public override void VisitDoubleLiteral(DoubleLiteral x)
         {
             initializationValue = expressionResolver.DoubleLiteral(x);
         }
 
+        /// <inheritdoc />
         public override void VisitStringLiteral(StringLiteral x)
         {
             initializationValue = expressionResolver.StringLiteral(x);
         }
 
+        /// <inheritdoc />
         public override void VisitBinaryStringLiteral(BinaryStringLiteral x)
         {
             throw new NotSupportedException();
         }
 
+        /// <inheritdoc />
         public override void VisitBoolLiteral(BoolLiteral x)
         {
             initializationValue = expressionResolver.BoolLiteral(x);
         }
 
+        /// <inheritdoc />
         public override void VisitNullLiteral(NullLiteral x)
         {
             initializationValue = expressionResolver.NullLiteral(x);
         }
 
+        /// <inheritdoc />
         public override void VisitGlobalConstUse(GlobalConstUse x)
         {
             initializationValue = expressionResolver.Constant(x);
         }
 
+        /// <inheritdoc />
         public override void VisitClassConstUse(ClassConstUse x)
         {
             initializationValue = expressionResolver.ClassConstant(new MemoryEntry(OutSet.CreateString(x.ClassName.QualifiedName.Name.Value)),new VariableName(x.Name.Value));
         }
 
+        /// <inheritdoc />
         public override void VisitArrayEx(ArrayEx x)
         {
             List<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs=new List<KeyValuePair<MemoryEntry,MemoryEntry>>();

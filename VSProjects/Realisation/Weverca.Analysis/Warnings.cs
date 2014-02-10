@@ -140,11 +140,15 @@ namespace Weverca.Analysis
         /// </summary>
         public AnalysisWarningCause Cause { get; private set; }
 
+        /// <summary>
+        /// Full name of source code file
+        /// </summary>
         public string FullFileName { get; protected set; }
 
         /// <summary>
         /// Construct new instance of AnalysisWarning, without cause
         /// </summary>
+        /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         public AnalysisWarning(string fullFileName,string message, LangElement element)
@@ -157,6 +161,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Construct new instance of AnalysisWarning
         /// </summary>
+        /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Warning cause</param>
@@ -192,6 +197,7 @@ namespace Weverca.Analysis
                 + Cause.GetHashCode();
         }
 
+        /// <inheritdoc />
         protected int compareTo(AnalysisWarning other)
         {
             if (this.FullFileName == other.FullFileName)
@@ -254,6 +260,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Construct new instance of <see cref="AnalysisSecurityWarning"/>
         /// </summary>
+        /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
@@ -268,6 +275,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Construct new instance of <see cref="AnalysisSecurityWarning"/>, message will be generated automatically
         /// </summary>
+        /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(string fullFileName, LangElement element, FlagType cause)
@@ -297,11 +305,7 @@ namespace Weverca.Analysis
                 + Flag.GetHashCode();
         }
 
-        /// <summary>
-        /// Comparing function for sorting warning according to line numbers
-        /// </summary>
-        /// <param name="other">Other warning</param>
-        /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
+        /// <inheritdoc />
         public int CompareTo(AnalysisSecurityWarning other)
         {
             return compareTo(other);
@@ -326,57 +330,224 @@ namespace Weverca.Analysis
     /// </summary>
     public enum AnalysisWarningCause
     {
+        /// <summary>
+        /// Warning, that occurs when called function has wrong number of arguments
+        /// </summary>
         WRONG_NUMBER_OF_ARGUMENTS,
+
+        /// <summary>
+        /// Warning, that occurs during type modeling, and some arguments doesnt have expected type
+        /// </summary>
         WRONG_ARGUMENTS_TYPE,
+
+        /// <summary>
+        /// Warning, that occurs when there is possible divisition by zero
+        /// </summary>
         DIVISION_BY_ZERO,
+
+        /// <summary>
+        /// Warning, that occurs when object is trying to be converted to integer 
+        /// </summary>
         OBJECT_CONVERTED_TO_INTEGER,
+
+        /// <summary>
+        /// Warning, that occurs when accesing property on non object variable
+        /// </summary>
         PROPERTY_OF_NON_OBJECT_VARIABLE,
+
+        /// <summary>
+        /// Warning, that occurs when indexin non array variable
+        /// </summary>
         ELEMENT_OF_NON_ARRAY_VARIABLE,
+
+        /// <summary>
+        /// Warning, that occurs when trying to call method on non object variable
+        /// </summary>
         METHOD_CALL_ON_NON_OBJECT_VARIABLE,
+
+        /// <summary>
+        /// Warning, that occurs when trying to work with undefined values
+        /// </summary>
         UNDEFINED_VALUE,
 
+        /// <summary>
+        /// Warning, that occurs when class doesnt exist
+        /// </summary>
         CLASS_DOESNT_EXIST,
+
+        /// <summary>
+        /// Warning, that occurs when class allready exists
+        /// </summary>
         CLASS_ALLREADY_EXISTS,
+
+        /// <summary>
+        /// Warning, that occurs when final class is tried to be extended
+        /// </summary>
         FINAL_CLASS_CANNOT_BE_EXTENDED,
+
+        /// <summary>
+        /// Warning, that occurs when class doenst implement all inteface methods
+        /// </summary>
         CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS,
+
+        /// <summary>
+        /// Warning, that occurs when requested interface doesnt exist
+        /// </summary>
         INTERFACE_DOESNT_EXIST,
+
+        /// <summary>
+        /// Warning, that occurs when trying to redeclare non static field with static
+        /// </summary>
         CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC,
+
+        /// <summary>
+        /// Warning, that occurs when trying to redeclare static field with non static
+        /// </summary>
         CANNOT_REDECLARE_STATIC_FIELD_WITH_NON_STATIC,
+
+        /// <summary>
+        /// Warning, that occurs when trying to redeclare non static method with static
+        /// </summary>
         CANNOT_REDECLARE_NON_STATIC_METHOD_WITH_STATIC,
+
+        /// <summary>
+        /// Warning, that occurs when trying to redeclare static method with non static
+        /// </summary>
         CANNOT_REDECLARE_STATIC_METHOD_WITH_NON_STATIC,
+
+        /// <summary>
+        /// Warning, that occurs when final method is beeing overidden
+        /// </summary>
         CANNOT_REDECLARE_FINAL_METHOD,
 
+        /// <summary>
+        /// Warning, that occurs when interface constant is beeing overridden
+        /// </summary>
         CANNOT_OVERRIDE_INTERFACE_CONSTANT,
+
+        /// <summary>
+        ///  Warning, that occurs when constant is declared in the same class more than once
+        /// </summary>
         CLASS_MULTIPLE_CONST_DECLARATION,
+
+        /// <summary>
+        ///  Warning, that occurs when field is declared in the same class more than once
+        /// </summary>
         CLASS_MULTIPLE_FIELD_DECLARATION,
+
+        /// <summary>
+        ///  Warning, that occurs when method is declared in the same class more than once
+        /// </summary>
         CLASS_MULTIPLE_FUNCTION_DECLARATION,
 
+        /// <summary>
+        ///  Warning, that occurs when non abstract class contains abstract method
+        /// </summary>
         NON_ABSTRACT_CLASS_CONTAINS_ABSTRACT_METHOD,
+
+        /// <summary>
+        /// Warning, that occurs when method is beeing overidden by abstract method
+        /// </summary>
         CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT,
+
+        /// <summary>
+        /// Warning, that occurs when method is beeing overidden by method that doesn't have the same argument types 
+        /// </summary>
         CANNOT_OVERWRITE_FUNCTION,
 
+        /// <summary>
+        /// Warning, that occurs when interface contains fields
+        /// </summary>
         INTERFACE_CANNOT_CONTAIN_FIELDS,
+
+        /// <summary>
+        /// Warning, that occurs when interface method is beeing overidden by method that doesn't have the same argument types 
+        /// </summary>
         CANNOT_REDECLARE_INTERFACE_FUNCTION,
+
+        /// <summary>
+        /// Warning, that occurs when interface method is not public
+        /// </summary>
         INTERFACE_METHOD_MUST_BE_PUBLIC,
+
+        /// <summary>
+        /// Warning, that occurs when interface method is final
+        /// </summary>
         INTERFACE_METHOD_CANNOT_BE_FINAL,
+
+        /// <summary>
+        /// Warning, that occurs when interface method has impelementation
+        /// </summary>
         INTERFACE_METHOD_CANNOT_HAVE_IMPLEMENTATION,
+
+        /// <summary>
+        /// Warning, that occurs when abstract method have body
+        /// </summary>
         ABSTRACT_METHOD_CANNOT_HAVE_BODY,
+
+        /// <summary>
+        /// Warning, that occurs when non-abstract method doesn't have body
+        /// </summary>
         NON_ABSTRACT_METHOD_MUST_HAVE_BODY,
 
+        /// <summary>
+        /// Warning, that occurs when included file is not found
+        /// </summary>
         FILE_TO_BE_INCLUDED_NOT_FOUND,
 
+        /// <summary>
+        /// Warning, that occurs when non object variable is beeing thrown 
+        /// </summary>
         ONLY_OBJECT_CAM_BE_THROWN,
+
+        /// <summary>
+        ///  Warning, that occurs when keyword self is used outside of method
+        /// </summary>
         CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS,
+
+        /// <summary>
+        ///  Warning, that occurs when keyword parent is used outside of method
+        /// </summary>
         CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS,
+
+        /// <summary>
+        ///  Warning, that occurs when keyword parent is used in class with no parent class
+        /// </summary>
         CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT,
 
+        /// <summary>
+        ///  Warning, that occurs when class constant doesn't exist 
+        /// </summary>
         CLASS_CONSTANT_DOESNT_EXIST,
+
+        /// <summary>
+        ///  Warning, that occurs when trying to access object constant on non object variable
+        /// </summary>
         CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT,
 
+        /// <summary>
+        /// Warning, that occurs when abstract class is beeing instaciated
+        /// </summary>
         CANNOT_INSTANCIATE_ABSTRACT_CLASS,
+
+        /// <summary>
+        /// Warning, that occurs when interface is beeing instaciated
+        /// </summary>
         CANNOT_INSTANCIATE_INTERFACE,
+
+        /// <summary>
+        /// Warning, that occurs when static variable doesn't exist
+        /// </summary>
         STATIC_VARIABLE_DOESNT_EXIST,
-        CANNOT_ACCES_STATIC_VARIABLE_OM_NON_OBJECT,
+
+        /// <summary>
+        /// Warning, that occurs when static variable is accessed on non object variable
+        /// </summary>
+        CANNOT_ACCES_STATIC_VARIABLE_ON_NON_OBJECT,
+
+        /// <summary>
+        /// Warning, that occurs when calling method without body
+        /// </summary>
         CANNOT_CALL_METHOD_WITHOUT_BODY,
     }
 }

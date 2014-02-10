@@ -308,7 +308,7 @@ namespace Weverca.Analysis
         ///     arguments has to be initialized
         ///     sharing program point graphs is possible
         /// </summary>
-        /// <param name="callInput">Input of initialized call</param>
+        /// <param name="caller">Information abour called program point</param>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
         public override void InitializeCall(ProgramPointBase caller, ProgramPointGraph extensionGraph,

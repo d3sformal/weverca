@@ -1181,7 +1181,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 switch (visitor.Result)
                 {
                     case StaticObjectVisitorResult.NO_RESULT:
-                        SetWarning("Cannot acces static variable on non object", AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_OM_NON_OBJECT);
+                        SetWarning("Cannot acces static variable on non object", AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_ON_NON_OBJECT);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
                         result.Add(new GenericQualifiedName(visitor.className));

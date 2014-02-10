@@ -17,6 +17,9 @@ namespace Weverca.Analysis
     /// </summary>
     public class ForwardAnalysis : ForwardAnalysisBase
     {
+        /// <summary>
+        /// Reference to singleton class native object analyzer
+        /// </summary>
         static public NativeObjectAnalyzer nativeObjectAnalyzer;
 
         /// <summary>
@@ -24,7 +27,6 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="entryMethodGraph">ControlFlowGraph to analyze</param>
         /// <param name="memoryModel">Memory model used by analyser</param>
-        /// <param name="entryScript">File to analyze</param>
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
             : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {
