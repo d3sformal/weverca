@@ -28,6 +28,12 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly ProgramPointBase TargetPoint;
 
+        /// <summary>
+        /// Creates new instance of CatchBlockDescription
+        /// </summary>
+        /// <param name="targetPoint">Point where to jump</param>
+        /// <param name="catchedType">Type of Exception</param>
+        /// <param name="catchVariable">Name of catched variables</param>
         public CatchBlockDescription(ProgramPointBase targetPoint, GenericQualifiedName catchedType, VariableIdentifier catchVariable)
         {
             TargetPoint = targetPoint;
@@ -35,11 +41,13 @@ namespace Weverca.AnalysisFramework
             CatchVariable = catchVariable;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return TargetPoint.GetHashCode() + CatchVariable.GetHashCode() + CatchedType.GetHashCode();
         }
-        
+
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var o = obj as CatchBlockDescription;

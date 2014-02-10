@@ -1675,53 +1675,106 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion Helper methods
     }
 
+    /// <summary>
+    /// Static class, which provides functionality for comparinf values types
+    /// </summary>
     public static class ValueTypeResolver
     {
+        /// <summary>
+        /// Indicates is value Bool
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value has boolean type</returns>
         public static bool IsBool(Value value)
         {
             return value is ScalarValue<bool> || value is AnyBooleanValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Int
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Int</returns>
         public static bool IsInt(Value value)
         {
             return value is NumericValue<int> || value is IntervalValue<int> || value is AnyIntegerValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Long
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Long</returns>
         public static bool IsLong(Value value)
         {
             return value is NumericValue<long> || value is IntervalValue<long> || value is AnyLongintValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Float
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Float</returns>
         public static bool IsFloat(Value value)
         {
             return value is NumericValue<double> || value is IntervalValue<double> || value is AnyFloatValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is String
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is String</returns>
         public static bool IsString(Value value)
         {
             return value is ScalarValue<string> || value is AnyStringValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Compond
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Compound</returns>
         public static bool IsCompound(Value value)
         {
             return value is CompoundValue || value is AnyCompoundValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Object
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Object</returns>
         public static bool IsObject(Value value)
         {
             return value is ObjectValue || value is AnyObjectValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Array
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Array</returns>
         public static bool IsArray(Value value)
         {
             return value is AssociativeArray || value is AnyArrayValue;
         }
 
+        /// <summary>
+        /// Indicates if Value is Resource
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Resource</returns>
         public static bool IsResource(Value value)
         {
             return value is ResourceValue || value is AnyResourceValue;
         }
 
+        /// <summary>
+        /// Indicates if Value can be dirty
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is dirty</returns>
         public static bool CanBeDirty(Value value)
         {
             return !(ValueTypeResolver.IsBool(value)
@@ -1730,6 +1783,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 || ValueTypeResolver.IsFloat(value));
         }
 
+        /// <summary>
+        /// Indicates if Value is Unknown
+        /// </summary>
+        /// <param name="value">Value</param>
+        /// <returns>True if value is Unknown</returns>
         public static bool IsUnknown(Value value)
         {
             return value is UndefinedValue
