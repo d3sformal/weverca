@@ -89,7 +89,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         override public int NumVariables()
         {
-            return Structure.IndexData.Count();
+            return Structure.Variables.GetNumberOfVariables();
         }
 
 
@@ -210,6 +210,37 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return builder.ToString();
         }
 
+        public string GetRepresentation()
+        {
+            var result = new StringBuilder();
+
+            if (CallLevel > GLOBAL_CALL_LEVEL)
+            {
+                result.AppendLine("===LOCALS===");
+                result.AppendLine(Structure.Variables.GetLocalRepresentation(Data, Infos));
+            }
+            result.AppendLine("===GLOBALS===");
+            result.AppendLine(Structure.Variables.GetGlobalRepresentation(Data, Infos));
+
+            result.AppendLine("===GLOBAL CONTROLS===");
+            result.AppendLine(Structure.ContolVariables.GetLocalRepresentation(Data, Infos));
+
+            result.AppendLine("===LOCAL CONTROLS===");
+            result.AppendLine(Structure.ContolVariables.GetGlobalRepresentation(Data, Infos));
+
+            result.AppendLine("===ALIASES===");
+            result.AppendLine(Structure.GetaliasesRepresentation());
+
+            result.AppendLine("\n===ARRAYS===");
+            result.AppendLine(Structure.GetArraysRepresentation(Data, Infos));
+
+            result.AppendLine("\n===FIELDS===");
+            result.AppendLine(Structure.GetFieldsRepresentation(Data, Infos));
+
+
+            return result.ToString();
+        }
+
         /// <summary>
         /// Creates the string representation of the data.
         /// </summary>
@@ -267,7 +298,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </returns>
         public override string ToString()
         {
-            return DumpSnapshot();
+            return GetRepresentation();
         }
 
         /// <summary>

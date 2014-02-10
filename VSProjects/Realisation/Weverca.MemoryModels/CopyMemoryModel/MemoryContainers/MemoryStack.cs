@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
     class MemoryStack<T> : IEnumerable<T> where T : IGenericCloneable<T>
     {
-        private readonly T[] stack;
+        protected readonly T[] stack;
         private readonly int localIndex;
 
         public int Length { get { return stack.Length; } }
@@ -68,6 +69,56 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 target[x] = source[x].Clone();
             }
+        }
+
+
+    }
+
+    class VariableStack : MemoryStack<IndexContainer>
+    {
+        public VariableStack(IndexContainer local)
+            : base(local)
+        {
+        }
+
+        public VariableStack(MemoryStack<IndexContainer> oldStack)
+            : base(oldStack)
+        {
+        }
+
+        public VariableStack(MemoryStack<IndexContainer> oldStack, IndexContainer local)
+            : base(oldStack, local)
+        {
+        }
+
+        public VariableStack(int callLevel)
+            : base(callLevel)
+        {
+        }
+
+        internal string GetLocalRepresentation(SnapshotData data, SnapshotData infos)
+        {
+            StringBuilder result = new StringBuilder();
+            for (int x = 1; x < stack.Length; x++)
+            {
+                stack[x].GetRepresentation(data, infos, result);
+            }
+            return result.ToString();
+        }
+
+        internal string GetGlobalRepresentation(SnapshotData data, SnapshotData infos)
+        {
+            return Global.GetRepresentation(data, infos);
+        }
+
+        internal int GetNumberOfVariables()
+        {
+            int variables = 0;
+            foreach (IndexContainer container in stack)
+            {
+                variables += container.Indexes.Count;
+            }
+            return variables;
         }
     }
 }

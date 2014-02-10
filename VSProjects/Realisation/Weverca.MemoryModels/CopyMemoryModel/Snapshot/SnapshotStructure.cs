@@ -45,8 +45,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal DeclarationContainer<TypeValue> ClassDecl { get; private set; }
 
         internal MemoryStack<IndexSet<TemporaryIndex>> Temporary { get; private set; }
-        internal MemoryStack<IndexContainer> Variables { get; private set; }
-        internal MemoryStack<IndexContainer> ContolVariables { get; private set; }
+        internal VariableStack Variables { get; private set; }
+        internal VariableStack ContolVariables { get; private set; }
         internal MemoryStack<IndexSet<AssociativeArray>> Arrays { get; private set; }
         internal Dictionary<AssociativeArray, IndexSet<Snapshot>> CallArrays { get; private set; }
 
@@ -71,8 +71,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             data.ObjectDescriptors = new Dictionary<ObjectValue, ObjectDescriptor>();
             data.IndexData = new Dictionary<MemoryIndex, IndexData>();
 
-            data.Variables = new MemoryStack<IndexContainer>(snapshot.CallLevel);
-            data.ContolVariables = new MemoryStack<IndexContainer>(snapshot.CallLevel);
+            data.Variables = new VariableStack(snapshot.CallLevel);
+            data.ContolVariables = new VariableStack(snapshot.CallLevel);
             data.FunctionDecl = new DeclarationContainer<FunctionValue>();
             data.ClassDecl = new DeclarationContainer<TypeValue>();
 
@@ -115,8 +115,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             data.FunctionDecl = new DeclarationContainer<FunctionValue>(FunctionDecl);
             data.ClassDecl = new DeclarationContainer<TypeValue>(ClassDecl);
 
-            data.Variables = new MemoryStack<IndexContainer>(Variables);
-            data.ContolVariables = new MemoryStack<IndexContainer>(ContolVariables);
+            data.Variables = new VariableStack(Variables);
+            data.ContolVariables = new VariableStack(ContolVariables);
 
             data.Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(Temporary);
             data.Arrays = new MemoryStack<IndexSet<AssociativeArray>>(Arrays);
@@ -136,8 +136,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             data.FunctionDecl = new DeclarationContainer<FunctionValue>(FunctionDecl);
             data.ClassDecl = new DeclarationContainer<TypeValue>(ClassDecl);
 
-            data.Variables = new MemoryStack<IndexContainer>(Variables, data.createIndexContainer(VariableIndex.CreateUnknown(Variables.Length)));
-            data.ContolVariables = new MemoryStack<IndexContainer>(ContolVariables, data.createIndexContainer(ControlIndex.CreateUnknown(ContolVariables.Length)));
+            data.Variables = new VariableStack(Variables, data.createIndexContainer(VariableIndex.CreateUnknown(Variables.Length)));
+            data.ContolVariables = new VariableStack(ContolVariables, data.createIndexContainer(ControlIndex.CreateUnknown(ContolVariables.Length)));
 
             data.Temporary = new MemoryStack<IndexSet<TemporaryIndex>>(Temporary, new IndexSet<TemporaryIndex>());
             data.Arrays = new MemoryStack<IndexSet<AssociativeArray>>(Arrays, new IndexSet<AssociativeArray>());
@@ -146,9 +146,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return data;
         }
 
-        private MemoryStack<IndexContainer> createMemoryStack(MemoryIndex unknownIndex)
+        private VariableStack createMemoryStack(MemoryIndex unknownIndex)
         {
-            return new MemoryStack<IndexContainer>(createIndexContainer(unknownIndex));
+            return new VariableStack(createIndexContainer(unknownIndex));
         }
 
         private IndexContainer createIndexContainer(MemoryIndex unknownIndex)
@@ -700,6 +700,66 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 throw new Exception("Snapshot structure is locked in this mode. Mode: " + Snapshot.CurrentMode);
             }
+        }
+
+        internal string GetArraysRepresentation(SnapshotData data, SnapshotData infos)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach (var item in ArrayDescriptors)
+            {
+                IndexContainer.GetRepresentation(item.Value, data, infos, result);
+                result.AppendLine();
+            }
+            
+            return result.ToString();
+        }
+
+        internal string GetFieldsRepresentation(SnapshotData data, SnapshotData infos)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach (var item in ObjectDescriptors)
+            {
+                IndexContainer.GetRepresentation(item.Value, data, infos, result);
+                result.AppendLine();
+            }
+
+            return result.ToString();
+        }
+
+        internal string GetaliasesRepresentation()
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach (var item in IndexData)
+            {
+                var aliases = item.Value.Aliases;
+                if (aliases != null && (aliases.MayAliasses.Count > 0 || aliases.MustAliasses.Count > 0))
+                {
+                    MemoryIndex index = item.Key;
+                    result.AppendFormat("{0}: {{ ", index);
+
+                    result.Append(" MUST: ");
+                    foreach (var alias in aliases.MustAliasses)
+                    {
+                        result.Append(alias);
+                        result.Append(", ");
+                    }
+                    result.Length -= 2;
+
+                    result.Append(" | MAY: ");
+                    foreach (var alias in aliases.MayAliasses)
+                    {
+                        result.Append(alias);
+                        result.Append(", ");
+                    }
+                    result.Length -= 2;
+                    result.AppendLine(" }");
+                }
+            }
+
+            return result.ToString();
         }
     }
 }

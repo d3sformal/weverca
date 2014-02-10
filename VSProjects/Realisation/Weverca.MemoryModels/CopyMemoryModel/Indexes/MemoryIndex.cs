@@ -117,7 +117,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 if (CallLevel > Snapshot.GLOBAL_CALL_LEVEL)
                 {
-                    return CallLevel + "::";
+                    return CallLevel + ".";
                 }
                 else
                 {
@@ -358,7 +358,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override string ToString()
         {
-            return String.Format("TEMP::{2}${0}{1}", rootId, base.ToString(), CallLevelPrefix);
+            return String.Format("TEMP--{2}${0}{1}", rootId, base.ToString(), CallLevelPrefix);
         }
 
         public override MemoryIndex ToAny()
@@ -402,7 +402,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public override string ToString()
         {
-            return String.Format("CTRL::{2}${0}{1}", MemoryRoot.Name, base.ToString(), CallLevelPrefix);
+            return String.Format("CTRL--{2}${0}{1}", MemoryRoot.Name, base.ToString(), CallLevelPrefix);
         }
 
         public override MemoryIndex ToAny()
