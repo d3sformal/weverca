@@ -317,7 +317,7 @@ namespace Weverca.Analysis
             //include
             if (extensionGraph.FunctionName == null)
             {
-                string thisFile = extensionGraph.OwningScript.FullName;
+                string thisFile = Flow.CurrentScript.FullName;
                 var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
                 IEnumerable<Value> files = includedFiles.ReadMemory(OutSnapshot).PossibleValues;
                 List<Value> result = IncreaseCalledInfo(thisFile, files);
