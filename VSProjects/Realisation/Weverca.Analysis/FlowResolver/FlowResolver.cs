@@ -82,7 +82,7 @@ namespace Weverca.Analysis.FlowResolver
 
                 if (fileInfo == null)
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
                     continue;
                 }
 
@@ -213,7 +213,7 @@ namespace Weverca.Analysis.FlowResolver
                     var exceptionName = new QualifiedName(new Name("Exception"));
                     if (type.Declaration.BaseClasses.Where(a => a.Equals(exceptionName)).Count() == 0 && !type.QualifiedName.Equals(exceptionName))
                     {
-                        AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Only objects derived from Exception can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                        AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName,"Only objects derived from Exception can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
                         foundMatch = false;
                     }
                     else
@@ -277,7 +277,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else
                 {
-                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Only objects can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName,"Only objects can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
                     foundMatch = false;
 
                 }

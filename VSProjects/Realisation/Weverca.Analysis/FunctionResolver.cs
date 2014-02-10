@@ -142,7 +142,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            var resolvedTypes = ResolveType(typeName, OutSet, Element);
+            var resolvedTypes = ResolveType(typeName, Flow,OutSet, Element);
             foreach (var resolvedType in resolvedTypes)
             {
                 staticMethodCall(resolvedType, name, arguments);
@@ -151,7 +151,7 @@ namespace Weverca.Analysis
 
         private void staticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName,Flow, OutSet, Element);
             foreach (var type in types)
             {
                 var methods = resolveStaticMethod(type, name, arguments);
@@ -185,7 +185,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
         {
-            foreach (var resolvedType in ResolveType(typeName, OutSet, Element))
+            foreach (var resolvedType in ResolveType(typeName, Flow, OutSet, Element))
             {
                 indirectStaticMethodCall(resolvedType, name, arguments);
             }
@@ -196,7 +196,7 @@ namespace Weverca.Analysis
             var functions = new Dictionary<object, FunctionValue>();
 
             var functionNames = getSubroutineNames(name);
-            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, OutSet, Element);
+            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, Flow, OutSet, Element);
             foreach (var type in types)
             {
                 foreach (var functionName in functionNames)
@@ -213,7 +213,7 @@ namespace Weverca.Analysis
         }
 
 
-        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName, FlowOutputSet OutSet, LangElement element)
+        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName,FlowController flow, FlowOutputSet OutSet, LangElement element)
         {
             List<QualifiedName> result = new List<QualifiedName>();
             if (typeName.Name.Value == "self" || typeName.Name.Value == "parent")
@@ -241,7 +241,7 @@ namespace Weverca.Analysis
                             }
                             else
                             {
-                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces parrent:: current class has no parrent", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
+                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"Cannot acces parrent:: current class has no parrent", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
                             }
                         }
                     }
@@ -250,11 +250,11 @@ namespace Weverca.Analysis
                 {
                     if (typeName.Name.Value == "self")
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces self:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces self:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
                     }
                     else
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces parent:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces parent:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
                     }
 
                 }
@@ -380,6 +380,8 @@ namespace Weverca.Analysis
                 FunctionValue thisFunction = OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
                 List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
                 OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
+
+                OutSet.GetLocalControlVariable(new VariableName("$currentScript")).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
         }
 
@@ -523,17 +525,17 @@ namespace Weverca.Analysis
 
         private void setWarning(string message)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element));
         }
 
         private void setWarning(string message, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element, cause));
         }
 
         private void setWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, element, cause));
         }
 
         /// <summary>

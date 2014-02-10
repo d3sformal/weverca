@@ -164,9 +164,17 @@ namespace Weverca.Output.Output
             {
                 comment("No warnings");
             }
-
+            string file = "/";
             foreach (var s in warnings)
             {
+                if (file != s.FullFileName)
+                {
+                    line();
+                    file = s.FullFileName;
+                    comment("File: "+file);
+                    line();
+                    line();
+                }
                 variableInfoLine(s.ToString());
                 line();
             }

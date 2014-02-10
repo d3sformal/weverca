@@ -125,7 +125,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 if (FlagsHandler.IsDirty(operand.PossibleValues, FlagType.HTMLDirty))
                 {
-                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Element, FlagType.HTMLDirty));
+                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName,Element, FlagType.HTMLDirty));
                 }
             }
 
@@ -437,7 +437,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (isDirty)
             {
-                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Element, FlagType.HTMLDirty));
+                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName,Element, FlagType.HTMLDirty));
             }
         }
 
@@ -679,7 +679,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="message">Text of warning</param>
         public void SetWarning(string message)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element));
         }
 
         /// <summary>
@@ -689,7 +689,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="cause">More specific warning type</param>
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element, cause));
         }
 
         /// <summary>
@@ -700,7 +700,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="cause">More specific warning type</param>
         public void SetWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, element, cause));
         }
 
         /// <summary>
@@ -761,7 +761,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="element"></param>
         /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>
         public static IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName,
-            FlowOutputSet outSet, LangElement element)
+            FlowController flow, FlowOutputSet outSet, LangElement element)
         {
             var typeValues = outSet.ResolveType(typeName);
             if (!typeValues.GetEnumerator().MoveNext())
@@ -787,7 +787,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 else
                 {
                     // TODO: This must be error
-                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning("Class doesn't exist", element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName, "Class doesn't exist", element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
                     return null;
                 }
             }
@@ -836,7 +836,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName, OutSet, Element);
+                var typeValues = ResolveSourceOrNativeType(typeName, Flow, OutSet, Element);
                 if (typeValues != null)
                 {
                     foreach (var type in typeValues)
@@ -882,7 +882,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName, OutSet, Element);
+                var typeValues = ResolveSourceOrNativeType(typeName,Flow, OutSet, Element);
                 if (typeValues == null)
                 {
                     // TODO: This must be error
@@ -1051,7 +1051,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             var value = type.QualifiedName.Name.Value;
-            var resolvedTypes = FunctionResolver.ResolveType(type.QualifiedName, OutSet, Element);
+            var resolvedTypes = FunctionResolver.ResolveType(type.QualifiedName,Flow, OutSet, Element);
 
             if (resolvedTypes.Count() > 0)
             {
@@ -1092,7 +1092,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(name.QualifiedName.Name.LowercaseValue));
                     if (!classStorage.IsDefined(OutSet.Snapshot))
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Class " + name.QualifiedName.Name.Value + " doesn't exist", Element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                        SetWarning("Class " + name.QualifiedName.Name.Value + " doesn't exist", AnalysisWarningCause.CLASS_DOESNT_EXIST);
                     }
                     else
                     {
@@ -1154,7 +1154,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         }
                         else
                         {
-                            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", Element, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST));
+                            SetWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared",AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST);
                         }
                     }
                 }
@@ -1181,7 +1181,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 switch (visitor.Result)
                 {
                     case StaticObjectVisitorResult.NO_RESULT:
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning("Cannot acces static variable on non object", Element, AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_OM_NON_OBJECT));
+                        SetWarning("Cannot acces static variable on non object", AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_OM_NON_OBJECT);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
                         result.Add(new GenericQualifiedName(visitor.className));

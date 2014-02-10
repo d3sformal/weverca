@@ -574,7 +574,7 @@ namespace Weverca.Analysis
             {
                 if (FlagsHandler.IsDirty(inputValues, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]))
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(flow.CurrentPartial, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]));
                 }
             }
 

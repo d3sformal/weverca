@@ -144,13 +144,18 @@ namespace Weverca.Analysis
                 {
                     s = "s";
                 }
-                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning("Function " + nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter" + s + " given.", flow.CurrentPartial, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), "Function " + nativeFunctions.ElementAt(0).Name.ToString() + " expects" + numberOfArgumentMessage + ", " + argumentCount + " parameter" + s + " given.", flow.CurrentPartial, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
                 return false;
             }
             else
             {
                 return true;
             }
+        }
+
+        public static string GetCallerScript(FlowOutputSet outSet)
+        {
+            return (outSet.GetLocalControlVariable(new VariableName("$currentScript")).ReadMemory(outSet.Snapshot).PossibleValues.First() as StringValue).Value;
         }
 
         /// <summary>
@@ -351,7 +356,7 @@ namespace Weverca.Analysis
             }
             if (argumentMatches == false)
             {
-                warnings.Add(new AnalysisWarning("Wrong type in argument No. " + argumentNumber + " in function " + functionName + ", expecting " + argument.Type, flow.CurrentPartial, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+                warnings.Add(new AnalysisWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), "Wrong type in argument No. " + argumentNumber + " in function " + functionName + ", expecting " + argument.Type, flow.CurrentPartial, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
             }
         }
 

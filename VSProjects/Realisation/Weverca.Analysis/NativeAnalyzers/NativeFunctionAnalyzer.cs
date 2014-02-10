@@ -616,8 +616,8 @@ namespace Weverca.Analysis
             {
                 FlagType type=analyzer.reportingFunctions[nativeFunctions[0].Name];
                 if (FlagsHandler.GetFlags(argumentValues).isDirty(type))
-                { 
-                    AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentPartial, type));  
+                {
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, type));  
                 }
             }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);

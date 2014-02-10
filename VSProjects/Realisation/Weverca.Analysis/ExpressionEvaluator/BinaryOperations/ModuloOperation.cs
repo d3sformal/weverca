@@ -872,7 +872,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="cause">Cause of the warning.</param>
         private static void SetWarning(FlowController flow, string message, AnalysisWarningCause cause)
         {
-            var warning = new AnalysisWarning(message, flow.CurrentPartial, cause);
+            var warning = new AnalysisWarning(flow.CurrentScript.FullName, message, flow.CurrentPartial, cause);
             AnalysisWarningHandler.SetWarning(flow.OutSet, warning);
         }
 

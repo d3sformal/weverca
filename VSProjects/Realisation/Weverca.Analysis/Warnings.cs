@@ -140,28 +140,32 @@ namespace Weverca.Analysis
         /// </summary>
         public AnalysisWarningCause Cause { get; private set; }
 
+        public string FullFileName { get; protected set; }
+
         /// <summary>
         /// Construct new instance of AnalysisWarning, without cause
         /// </summary>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
-        public AnalysisWarning(string message, LangElement element)
+        public AnalysisWarning(string fullFileName,string message, LangElement element)
         {
             Message = message;
             LangElement = element;
+            FullFileName = fullFileName;
         }
-
+        
         /// <summary>
         /// Construct new instance of AnalysisWarning
         /// </summary>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Warning cause</param>
-        public AnalysisWarning(string message, LangElement element, AnalysisWarningCause cause)
+        public AnalysisWarning(string fullFileName, string message, LangElement element, AnalysisWarningCause cause)
         {
             Message = message;
             LangElement = element;
             Cause = cause;
+            FullFileName = fullFileName;
         }
 
         /// <summary>
@@ -184,8 +188,32 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode()
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() +FullFileName.GetHashCode()
                 + Cause.GetHashCode();
+        }
+
+        protected int compareTo(AnalysisWarning other)
+        {
+            if (this.FullFileName == other.FullFileName)
+            {
+                if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
+                {
+                    return -1;
+                }
+                else if (this.LangElement.Position.FirstOffset > other.LangElement.Position.FirstOffset)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                return string.Compare(this.FullFileName, other.FullFileName);
+            }
+            
         }
 
         /// <summary>
@@ -195,15 +223,7 @@ namespace Weverca.Analysis
         /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
         public int CompareTo(AnalysisWarning other)
         {
-            if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
-            {
-                return -1;
-            }
-            else if (this.LangElement.Position.FirstOffset > other.LangElement.Position.FirstOffset)
-            {
-                return 1;
-            }
-            return 0;
+            return compareTo(other);
         }
 
         /// <summary>
@@ -215,6 +235,7 @@ namespace Weverca.Analysis
         {
             return (other.Message == Message)
                 && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
+                && this.FullFileName==other.FullFileName
                 && (other.Cause == Cause);
         }
     }
@@ -236,8 +257,9 @@ namespace Weverca.Analysis
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(string message, LangElement element, FlagType cause)
+        public AnalysisSecurityWarning(string fullFileName,string message, LangElement element, FlagType cause)
         {
+            FullFileName = fullFileName;
             Message = message;
             LangElement = element;
             Flag = cause;
@@ -248,8 +270,9 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(LangElement element, FlagType cause)
+        public AnalysisSecurityWarning(string fullFileName, LangElement element, FlagType cause)
         {
+            FullFileName = fullFileName;
             switch (cause)
             {
                 case FlagType.HTMLDirty:
@@ -270,7 +293,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode()
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
                 + Flag.GetHashCode();
         }
 
@@ -281,15 +304,7 @@ namespace Weverca.Analysis
         /// <returns>0 if they are the same, -1 or 1 if one has other position</returns>
         public int CompareTo(AnalysisSecurityWarning other)
         {
-            if (this.LangElement.Position.FirstOffset < other.LangElement.Position.FirstOffset)
-            {
-                return -1;
-            }
-            else if (this.LangElement.Position.FirstOffset > other.LangElement.Position.FirstOffset)
-            {
-                return 1;
-            }
-            return 0;
+            return compareTo(other);
         }
 
         /// <summary>
@@ -301,6 +316,7 @@ namespace Weverca.Analysis
         {
             return (other.Message == Message)
                 && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
+                && other.FullFileName==this.FullFileName
                 && (other.Flag == Flag);
         }
     }
