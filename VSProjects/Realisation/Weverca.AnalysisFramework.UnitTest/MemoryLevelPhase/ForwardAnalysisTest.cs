@@ -1247,6 +1247,60 @@ $resC=$b[1];
             .AssertVariable("resC").HasValues("valueC")
             ;
 
+        readonly static TestCase ArrayScalar2ArrayMust_CASE = @"
+$a = 1;
+// it is not possible to create array in the variable in that must be scalar value
+// the assignment will not be performed
+$a[1] = 2;
+$res1 = $a;
+$res2 = $a[1];
+"
+            .AssertVariable("res1").HasValues(1)
+            .AssertVariable("res2").HasUndefinedValue()
+            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            ;
+
+        readonly static TestCase ArrayScalar2ArrayMay_CASE = @"
+if ($unknown) {
+    $a = 1;
+}
+// in the variable only may be scalar value, tha assignment thus may be performed
+$a[1] = 2;
+$res1 = $a;
+$res2 = $a[1];
+"
+            // TODO: res1 should have also array value
+            .AssertVariable("res1").HasValues(1)
+            .AssertVariable("res2").HasUndefinedAndValues(2)
+            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            ;
+
+        readonly static TestCase ArrayArray2ScalarMust_CASE = @"
+$a[1] = 1;
+// the array in $a will be overwritten by scalar value
+// TODO: however, the analyzer should emit some warning!!
+$a = 2;
+$res1 = $a;
+$res2 = $a[1];
+"
+            .AssertVariable("res1").HasValues(2)
+            .AssertVariable("res2").HasUndefinedValue()
+            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            ;
+
+        readonly static TestCase ArrayArray2ScalarMay_CASE = @"
+$a[1] = 1;
+if ($unknown) $a = 2;
+$res1 = $a;
+$res2 = $a[1];
+"
+            // TODO: test whether r1 has also array value
+            .AssertVariable("res1").HasValues(2)
+            .AssertVariable("res2").HasUndefinedAndValues(1)
+            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            ;
+
+
         readonly static TestCase TransitiveAliasResolving_CASE = @"
 $a='valueA';
 $b='valueB';
@@ -1761,6 +1815,30 @@ $d=&$a;
         public void ArrayCopySemantic()
         {
             AnalysisTestUtils.RunTestCase(ArrayCopySemantic_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayArray2ScalarMay()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayArray2ScalarMay_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayArray2ScalarMust()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayArray2ScalarMust_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayScalar2ArrayMay()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayScalar2ArrayMay_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayScalar2ArrayMust()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayScalar2ArrayMust_CASE);
         }
 
         [TestMethod]
