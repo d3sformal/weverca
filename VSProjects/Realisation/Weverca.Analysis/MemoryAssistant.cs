@@ -203,10 +203,9 @@ namespace Weverca.Analysis
         public override IEnumerable<Value> WriteStringIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue)
         {
             HashSet<Value> result = new HashSet<Value>();
-            StringConverter converter = new StringConverter();
-
-            bool isConcrete;
-            foreach (var value in converter.Evaluate(writtenValue, out isConcrete))
+            SimpleStringConverter converter = new SimpleStringConverter(Context);
+            bool isConcrete = false;
+            foreach (var value in converter.Evaluate(writtenValue.PossibleValues, out isConcrete))
             {
                 string WrittenChar = value.Value;
                
@@ -220,12 +219,20 @@ namespace Weverca.Analysis
                         newString[number] = WrittenChar[0];
                         newValue = Context.CreateString(newString.ToString());
                     }
+                    else if (number == indexed.Value.Count())
+                    {
+                        newValue = Context.CreateString(indexed.Value + "" +WrittenChar[0].ToString());
+                    }
                     else
                     {
-                        newValue = Context.CreateString(indexed + " " + WrittenChar[0]);
+                        newValue = Context.CreateString(indexed.Value + " " + WrittenChar[0].ToString());
                     }
                     result.Add(newValue);
                 }
+            }
+            if (!isConcrete)
+            {
+                result.Add(Context.AnyStringValue);
             }
             return result;
         }
@@ -444,6 +451,97 @@ namespace Weverca.Analysis
             numberFound();
         }
         
+    }
+
+    class SimpleStringConverter : PartialExpressionEvaluator
+    {
+        bool IsConcrete = true;
+        string result;
+        private SnapshotBase Context;
+
+        public SimpleStringConverter(SnapshotBase Context)
+        {
+            this.Context = Context;
+        }
+        public List<StringValue> Evaluate(IEnumerable<Value> input, out bool isConcrete)
+        {
+            List<StringValue> res = new List<StringValue>();
+            
+            foreach (var value in input)
+            {
+                result = "";
+                value.Accept(this);
+                if (result != "")
+                {
+                    res.Add(Context.CreateString(result));
+                }
+            }
+            isConcrete = IsConcrete;
+            return res;
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyValue(AnyValue value)
+        {
+            IsConcrete = false;
+        }
+
+        /// <inheritdoc />
+        public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
+        {
+            IsConcrete = false;
+        }
+
+        /// <inheritdoc />
+        public override void VisitValue(Value value)
+        {
+            IsConcrete = false;
+        }
+
+        /// <inheritdoc />
+        public override void VisitStringValue(StringValue value)
+        {
+            result = value.Value;
+        }
+
+        /// <inheritdoc />
+        public override void VisitBooleanValue(BooleanValue value)
+        {
+            if (value.Value)
+                result = "1";
+            else
+                result = "0";
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntegerValue(IntegerValue value)
+        {
+            result = value.Value.ToString();
+        }
+
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            result = value.Value.ToString();
+        }
+
+        /// <inheritdoc />
+        public override void VisitFloatValue(FloatValue value)
+        {
+            result = value.Value.ToString();
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyArrayValue(AnyArrayValue value)
+        {
+            result = "Array";
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssociativeArray(AssociativeArray value)
+        {
+            result = "Array";
+        }
     }
 
 }

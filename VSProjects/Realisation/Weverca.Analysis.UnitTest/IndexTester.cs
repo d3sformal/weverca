@@ -42,6 +42,66 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string IndexStringTest = @"
+            $result=""Hello world"";
+            $result[0]=5;
+        ";
+
+
+        [TestMethod]
+        public void IndexString()
+        {
+            var result = TestUtils.ResultTest(IndexStringTest);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "5ello world");
+
+        }
+
+        string IndexStringTest2 = @"
+            $result=""Hello world"";
+            $result[2]=array();
+        ";
+
+
+        [TestMethod]
+        public void IndexString2()
+        {
+            var result = TestUtils.ResultTest(IndexStringTest2);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "HeAlo world");
+
+        }
+
+        string IndexStringTest3 = @"
+            $result=""Hello world"";
+            $result[2000]=array();
+        ";
+
+
+        [TestMethod]
+        public void IndexString3()
+        {
+            var result = TestUtils.ResultTest(IndexStringTest3);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "Hello world A");
+
+        }
+
+        string IndexStringTestTest4 = @"
+            $result=""Hello world"";
+            $result[0]=array();
+            $result[4]=true;
+        ";
+
+
+        [TestMethod]
+        public void IndexString4()
+        {
+            var result = TestUtils.ResultTest(IndexStringTestTest4);
+            TestUtils.testType(result, typeof(StringValue));
+            TestUtils.testValue(result, "Aell1 world");
+
+        }
 
     }
 }
