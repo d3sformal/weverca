@@ -49,7 +49,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Read index of value (that is not array, string or anyvalue)
         /// </summary>
-        /// <param name="value">Value whic index is read</param>
+        /// <param name="value">Value which index is read</param>
         /// <param name="index">Index used for given value</param>
         /// <returns>Value resolved by reading index on given value</returns>
         public abstract IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index);
@@ -70,7 +70,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="index">Index used for given value</param>
         /// <param name="writtenValue">Value that is written at specified index</param>
         /// <returns>Values that should be written back into value container</returns>
-        public abstract IEnumerable<Value> WriteValueIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue);
+        public abstract IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue);
 
         /// <summary>
         /// Read fied of any value

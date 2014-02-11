@@ -1,4 +1,5 @@
 ﻿using PHP.Core;
+using PHP.Core.AST;
 using PHP.Core.Reflection;
 using System;
 using System.Collections.Generic;
@@ -101,7 +102,7 @@ namespace Weverca.Analysis
         /// <param name="message">Text of warning</param>
         public void SetWarning(string message)
         {
-            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element));
+            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial));
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace Weverca.Analysis
         /// <param name="cause">More specific warning type</param>
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
-            // TODO: AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(message, Element, cause));
+            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, cause));
         }
 
         /// <inheritdoc />
@@ -147,31 +148,114 @@ namespace Weverca.Analysis
             return Context.CreateObject(Context.CreateType(ForwardAnalysis.nativeObjectAnalyzer.GetClass(new QualifiedName(new Name("stdClass")))));
         }
 
+        /// <inheritdoc />
         public override void TriedIterateFields(Value value)
         {
             throw new NotImplementedException();
         }
 
+        private IEnumerable<int> ResolveStringIndex(StringValue value,MemberIdentifier Index)
+        {
+            var NumberIndices=new HashSet<int>();
+            foreach (var i in Index.PossibleNames)
+            {
+                int p;
+                if (int.TryParse(i, out p))
+                {
+                    NumberIndices.Add(p);
+                }
+                else
+                {
+                    NumberIndices.Add(0);
+                }
+            }
+
+            if (NumberIndices.Count == 0)
+            {
+                for (int i = 0; i < value.Value.Count(); i++)
+                {
+                    NumberIndices.Add(i);
+                }
+            }
+            return NumberIndices;
+        }
+
+
+        /// <inheritdoc />
         public override IEnumerable<Value> ReadStringIndex(StringValue value, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            HashSet<Value> result = new HashSet<Value>();
+            foreach (var number in ResolveStringIndex(value,index))
+            {
+                if (number < value.Value.Count())
+                {
+                   result.Add(Context.CreateString(value.Value[number].ToString()));
+                }
+                else
+                {
+                    result.Add(Context.CreateString(""));
+                }
+            }
+            return result;
         }
 
+        /// <inheritdoc />
         public override IEnumerable<Value> WriteStringIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue)
         {
-            throw new NotImplementedException();
+            HashSet<Value> result = new HashSet<Value>();
+            StringConverter converter = new StringConverter();
+
+            bool isConcrete;
+            foreach (var value in converter.Evaluate(writtenValue, out isConcrete))
+            {
+                string WrittenChar = value.Value;
+               
+                foreach (var number in ResolveStringIndex(indexed, index))
+                {
+                    Value newValue;
+                    if (number < indexed.Value.Count())
+                    {
+                        StringBuilder newString = new StringBuilder();
+                        newString.Append(indexed.Value);
+                        newString[number] = WrittenChar[0];
+                        newValue = Context.CreateString(newString.ToString());
+                    }
+                    else
+                    {
+                        newValue = Context.CreateString(indexed + " " + WrittenChar[0]);
+                    }
+                    result.Add(newValue);
+                }
+            }
+            return result;
         }
 
+        /// <inheritdoc />
         public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            List<Value> result = new List<Value>();
+            result.Add(Context.UndefinedValue);
+            if (!(value is UndefinedValue))
+            {
+                SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
+            }
+
+            return result;
         }
 
-        public override IEnumerable<Value> WriteValueIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue)
+        /// <inheritdoc />
+        public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
         {
-            throw new NotImplementedException();
+            List<Value> result = new List<Value>();
+            result.Add(Context.UndefinedValue);
+            if (!(indexed is UndefinedValue))
+            {
+                SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
+            }
+            return result;
         }
 
+        /// <inheritdoc />
         public override MemoryEntry Simplify(MemoryEntry entry)
         {
             throw new NotImplementedException();

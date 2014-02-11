@@ -42,7 +42,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 
         public override void VisitValue(Value value)
         {
-            throw new NotImplementedException();
+            var subResult = _assistant.WriteValueIndex(value, _index, _writtenValue);
+            reportSubResult(subResult);
         }
 
         public override void VisitAssociativeArray(AssociativeArray value)

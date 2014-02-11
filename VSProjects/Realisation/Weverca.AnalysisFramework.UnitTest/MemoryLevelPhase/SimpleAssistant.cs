@@ -80,7 +80,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
-        public override IEnumerable<Value> WriteValueIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue)
+        public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
         {
             throw new NotImplementedException();
         }

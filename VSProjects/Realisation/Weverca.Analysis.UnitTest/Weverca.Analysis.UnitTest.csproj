@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="ClassConstantTests.cs" />
     <Compile Include="CondtionTester.cs" />
+    <Compile Include="IndexTester.cs" />
     <Compile Include="StaticFieldTester.cs" />
     <Compile Include="ExceptionTester.cs" />
     <Compile Include="FlagTester.cs" />

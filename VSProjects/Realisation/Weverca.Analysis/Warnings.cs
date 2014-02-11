@@ -82,6 +82,26 @@ namespace Weverca.Analysis
             }
         }
 
+
+        public static void SetWarning<T>(SnapshotBase flowOutSet, T warning) where T : AnalysisWarning
+        {
+            var warnings = flowOutSet.GetControlVariable(getStorage<T>());
+            var result = warnings.ReadMemory(flowOutSet).PossibleValues;
+            result= from value in result where !(value is UndefinedValue) select value;
+            var newEntry = new List<Value>(result);
+            newEntry.Add(flowOutSet.CreateInfo(warning));
+
+            warnings.WriteMemory(flowOutSet, new MemoryEntry(newEntry));
+            if (typeof(T) == typeof(AnalysisWarning))
+            {
+                Warnings.Add(warning);
+            }
+            if (typeof(T) == typeof(AnalysisSecurityWarning))
+            {
+                SecurityWarnings.Add(warning as AnalysisSecurityWarning);
+            }
+        }
+
         /// <summary>
         /// Read warnings from <see cref="FlowOutputSet"/>
         /// </summary>
@@ -549,5 +569,11 @@ namespace Weverca.Analysis
         /// Warning, that occurs when calling method without body
         /// </summary>
         CANNOT_CALL_METHOD_WITHOUT_BODY,
+
+        /// <summary>
+        /// Warning, that occurs when using operator [] on non array or string
+        /// </summary>
+        CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY,
+
     }
 }
