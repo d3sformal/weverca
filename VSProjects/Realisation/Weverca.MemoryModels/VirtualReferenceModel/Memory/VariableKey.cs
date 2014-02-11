@@ -36,12 +36,18 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         /// </summary>
         Meta = 16,
 
+        /// <summary>
+        /// Variables that are extended between calls
+        /// </summary>
         CallExtends = Global | GlobalControl | Meta,
 
+        /// <summary>
+        /// All Variable kinds
+        /// </summary>
         AllExtends = CallExtends | Local | LocalControl
     }
 
-    class VariableKey
+    class VariableKey : VariableKeyBase
     {
         internal readonly VariableKind Kind;
 
@@ -64,6 +70,21 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         public override string ToString()
         {
             return string.Format("{0}-{1}|{2}", Name, ContextStamp, Kind);
+        }
+
+        internal override VariableInfo GetOrCreateVariable(Snapshot snapshot)
+        {
+            return snapshot.GetOrCreateInfo(Name, Kind);
+        }
+
+        internal override VariableInfo GetVariable(Snapshot snapshot)
+        {
+            return snapshot.GetInfo(Name, Kind);
+        }
+
+        internal override VirtualReference CreateImplicitReference(Snapshot snapshot)
+        {
+            return new VirtualReference(Name, Kind, ContextStamp);
         }
     }
 }

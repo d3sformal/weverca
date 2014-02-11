@@ -279,6 +279,7 @@ namespace Weverca.AnalysisFramework
         {
             Services = services;
             Extension.Sink.Services = services;
+            Extension.Sink.setNewController();
             setNewController();
         }
 

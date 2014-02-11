@@ -88,6 +88,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public int WideningLimit { get; protected set; }
 
+        /// <summary>
+        /// Determine count of possible values within memory entry that is needed to start simplifying.
+        /// </summary>
+        public int SimplifyLimit { get; protected set; }
+
         #endregion
 
         #region Template methods for obtaining resolvers
@@ -239,7 +244,7 @@ namespace Weverca.AnalysisFramework
             snapshot.InitAssistant(assistant);
             assistant.InitContext(snapshot);
 
-            return new FlowOutputSet(snapshot, WideningLimit);
+            return new FlowOutputSet(snapshot, WideningLimit, SimplifyLimit);
         }
 
 

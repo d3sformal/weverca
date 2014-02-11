@@ -314,7 +314,7 @@ namespace Weverca.Analysis
         public override void InitializeCall(ProgramPointBase caller, ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments)
         {
-            //include
+            //include            
             if (extensionGraph.FunctionName == null)
             {
                 string thisFile = Flow.CurrentScript.FullName;

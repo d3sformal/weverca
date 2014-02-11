@@ -171,6 +171,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
                         if (!directExtend)
                         {
                             //undefined branch
+                            //TODO what about callback references ?
                             var reference = new VirtualReference(clone, _owner.CurrentContextStamp);
 
                             if (!clone.References.Contains(reference))

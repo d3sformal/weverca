@@ -12,8 +12,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     class IndexStorageVisitor : AbstractValueVisitor
     {
+        private bool _needsTemporaryIndex = false;
+        private bool _hasOnlyArrays = true;
+
         private readonly Snapshot _context;
-        private readonly List<VariableKey> _indexStorages = new List<VariableKey>();
+        private readonly List<VariableKeyBase> _indexStorages = new List<VariableKeyBase>();
         private readonly MemberIdentifier _index;
 
         private AssociativeArray implicitArray;
@@ -27,35 +30,38 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             _context = context;
             _index = index;
             var indexedValues = indexedEntry.ReadMemory(context);
-
-            var hasOnlyArrays = true;
-            foreach (var indexedValue in indexedValues.PossibleValues)
-            {
-                if (!(indexedValue is AssociativeArray))
-                    hasOnlyArrays = false;
-
-                indexedValue.Accept(this);
-            }
+            VisitMemoryEntry(indexedValues);
 
             if (implicitArray != null)
                 //TODO replace only undefined values
                 indexedEntry.WriteMemoryWithoutCopy(context, new MemoryEntry(implicitArray));
 
             var forceStrong = indexedEntry.ForceStrong;
-
-            if (hasOnlyArrays && indexedEntry.HasDirectIdentifier && index.IsDirect)
+            if (_hasOnlyArrays && indexedEntry.HasDirectIdentifier && index.IsDirect)
+                //optimization
                 forceStrong = true;
+
+            if (_needsTemporaryIndex)
+            {
+                foreach (var key in indexedEntry.Storages)
+                {
+                    _indexStorages.Add(new VariableIndexKey(key, _index));
+                }
+            }
 
             IndexedValue = new SnapshotStorageEntry(null, forceStrong, _indexStorages.ToArray());
         }
 
         public override void VisitValue(Value value)
         {
-            throw new NotImplementedException("Reading index of given value type is not implemented yet");
+            _hasOnlyArrays = false;
+            _needsTemporaryIndex = true;
         }
 
         public override void VisitUndefinedValue(UndefinedValue value)
         {
+            _hasOnlyArrays = false;
+
             var array = getImplicitArray();
 
             applyIndex(array);
@@ -68,16 +74,25 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         public override void VisitAnyValue(AnyValue value)
         {
-            var indexed = _context.MemoryAssistant.ReadIndex(value, _index);
+            //read indexed value through memory assistant
+            var indexed = _context.MemoryAssistant.ReadAnyValueIndex(value, _index);
 
-            var storages = _context.IndexStorages(value, _index).ToArray();
-            _context.Write(storages, indexed, false, false);
-            _indexStorages.AddRange(storages);
+            applyIndexWithWriteBack(value, indexed);
         }
 
         private void applyIndex(AssociativeArray array)
         {
             _indexStorages.AddRange(_context.IndexStorages(array, _index));
+        }
+
+        private void applyIndexWithWriteBack(Value value, MemoryEntry indexedValue)
+        {
+            //write back indexed value so it can be read back later
+            var storages = _context.IndexStorages(value, _index).ToArray();
+            _context.Write(storages, indexedValue, false, false);
+
+            //keep index storages because of overall reading
+            _indexStorages.AddRange(storages);
         }
 
         private AssociativeArray getImplicitArray()

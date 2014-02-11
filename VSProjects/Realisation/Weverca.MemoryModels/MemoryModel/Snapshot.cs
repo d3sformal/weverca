@@ -33,7 +33,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         }
 
-        protected override bool commitTransaction()
+        protected override bool commitTransaction(int simplifyLimit)
         {
             return true;
         }
@@ -915,7 +915,7 @@ namespace Weverca.MemoryModels.MemoryModel
             throw new NotImplementedException();
         }
 
-        protected override bool widenAndCommitTransaction()
+        protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             throw new NotImplementedException();
         }

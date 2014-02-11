@@ -223,6 +223,21 @@ if($unknown){
 $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
 
+
+        readonly static TestCase StringIndex_CASE = @"
+$string='test';
+$res1=$string[0];
+
+if($unknown){
+    $string[0]='b';
+}else{  
+    $string[0]='w';
+}
+"
+            .AssertVariable("res1").HasValues("t")
+            .AssertVariable("string").HasValues("best", "west")
+            ;
+
         readonly static TestCase ArrayFieldMerge_CASE = @"
 $arr[0]='init';
 if($unknown){
@@ -1403,6 +1418,13 @@ $d=&$a;
         public void IndirectStaticFieldUse()
         {
             AnalysisTestUtils.RunTestCase(IndirectStaticFieldUse_CASE);
+        }
+
+
+        [TestMethod]
+        public void StringIndex()
+        {
+            AnalysisTestUtils.RunTestCase(StringIndex_CASE);
         }
 
 

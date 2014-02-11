@@ -84,7 +84,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             // TODO: The method should return SnapshotMemoryEntry of read indices
 
             var snapshot = C(context);
-            var allKeys = new List<Memory.VariableKey>();
+            var allKeys = new List<Memory.VariableKeyBase>();
 
             foreach (var value in WrappedEntry.PossibleValues)
             {
@@ -111,7 +111,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             // TODO: The method should return SnapshotMemoryEntry of read fields
 
             var snapshot = C(context);
-            var allKeys = new List<Memory.VariableKey>();
+            var allKeys = new List<Memory.VariableKeyBase>();
 
             foreach (var value in WrappedEntry.PossibleValues)
             {

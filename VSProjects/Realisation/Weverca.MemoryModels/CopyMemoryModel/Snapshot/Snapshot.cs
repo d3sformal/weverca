@@ -17,7 +17,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         static Snapshot oldOne = null;
 
-        static Logger() {
+        static Logger()
+        {
             System.IO.File.Delete(logFile);
         }
 
@@ -197,7 +198,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     builder.Append("\n  Info: ");
                     builder.Append(entry.ToString());
                 }
-                
+
 
                 if (index.Value.Aliases != null)
                 {
@@ -352,11 +353,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             oldStructure.Data = oldInfos;
         }
 
-        protected override bool commitTransaction()
+        protected override bool commitTransaction(int simplifyLimit)
         {
             Logger.append(this, "Commit " + Structure.DataEquals(oldStructure));
             Logger.append(this);
-            
+
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
@@ -370,7 +371,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        protected override bool widenAndCommitTransaction()
+        protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             Logger.append(this, "Commit and widen");
             bool result = !Structure.WidenNotEqual(oldStructure, Assistant);

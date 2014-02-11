@@ -15,7 +15,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     class SnapshotStorageEntry : ReadWriteSnapshotEntryBase
     {
-        private readonly VariableKey[] _storages;
+        /// <summary>
+        /// Has not be modified from outside
+        /// </summary>
+        internal readonly VariableKeyBase[] Storages;
 
         /// <summary>
         /// If snapshot entry belongs to variable identifier, store it for next use
@@ -26,10 +29,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         internal bool HasDirectIdentifier { get { return _identifier != null && _identifier.IsDirect; } }
 
-        internal SnapshotStorageEntry(VariableIdentifier identifier, bool forceStrong, params VariableKey[] storage)
+        internal SnapshotStorageEntry(VariableIdentifier identifier, bool forceStrong, params VariableKeyBase[] storage)
         {
             _identifier = identifier;
-            _storages = storage;
+            Storages = storage;
             ForceStrong = forceStrong;
         }
 
@@ -37,17 +40,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         {
             forceStrongWrite |= ForceStrong;
 
-            C(context).Write(_storages, value, forceStrongWrite, false);
+            C(context).Write(Storages, value, forceStrongWrite, false);
         }
 
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
-            C(context).Write(_storages, value, false, true);
+            C(context).Write(Storages, value, false, true);
         }
 
         protected override bool isDefined(SnapshotBase context)
         {
-            foreach (var storage in _storages)
+            foreach (var storage in Storages)
             {
                 if (C(context).IsDefined(storage))
                     return true;
@@ -57,21 +60,21 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            return C(context).Aliases(_storages);
+            return C(context).Aliases(Storages);
         }
 
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
             var target = C(context);
-            switch (_storages.Length)
+            switch (Storages.Length)
             {
                 case 0:
                     return new MemoryEntry(target.UndefinedValue);
                 case 1:
-                    return target.ReadValue(_storages[0]);
+                    return target.ReadValue(Storages[0]);
                 default:
                     var entries = new List<MemoryEntry>();
-                    foreach (var storage in _storages)
+                    foreach (var storage in Storages)
                     {
                         entries.Add(target.ReadValue(storage));
                     }
@@ -89,7 +92,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             var snapshot = C(context);
             var aliasEntries = aliasedEntry.Aliases(context);
 
-            snapshot.SetAliases(_storages, aliasEntries);
+            snapshot.SetAliases(Storages, aliasEntries);
         }
 
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)

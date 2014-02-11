@@ -99,13 +99,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             CurrentContextStamp = 0;
         }
 
-        protected override bool commitTransaction()
+        protected override bool commitTransaction(int simplifyLimit)
         {
             return commit();
         }
 
 
-        protected override bool widenAndCommitTransaction()
+        protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             _data.WidenWith(Assistant);
             return commit();
@@ -310,7 +310,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             var kind = repairKind(VariableKind.Local, forceGlobal);
 
-            var storages = new List<VariableKey>();
+            var storages = new List<VariableKeyBase>();
             foreach (var name in variable.PossibleNames)
             {
                 var key = getOrCreateKey(name, kind);
@@ -339,7 +339,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region API for Snapshot entries
 
-        private void writeDirect(VariableKey storage, MemoryEntry value)
+        private void writeDirect(VariableKeyBase storage, MemoryEntry value)
         {
             var variable = getOrCreateInfo(storage);
             assign(variable, value);
@@ -355,7 +355,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        internal void Write(VariableKey[] storages, MemoryEntry value, bool forceStrongWrite, bool noArrayCopy)
+        internal void Write(VariableKeyBase[] storages, MemoryEntry value, bool forceStrongWrite, bool noArrayCopy)
         {
             var references = new List<VirtualReference>();
             var copiedValue = noArrayCopy ? value : copyArrays(value);
@@ -368,7 +368,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 if (variable.References.Count == 0)
                 {
                     //reserve new virtual reference for assigning
-                    var allocatedReference = new VirtualReference(variable.Name, variable.Kind, storage.ContextStamp);
+                    var allocatedReference = storage.CreateImplicitReference(this);
                     variable.References.Add(allocatedReference);
                 }
 
@@ -417,15 +417,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new MemoryEntry(values);
         }
 
-        internal IEnumerable<ReferenceAliasEntry> Aliases(VariableKey[] storages)
+        internal IEnumerable<ReferenceAliasEntry> Aliases(VariableKeyBase[] storages)
         {
             foreach (var storage in storages)
             {
-                yield return new ReferenceAliasEntry(storage, storage.ContextStamp);
+                yield return new ReferenceAliasEntry(storage);
             }
         }
 
-        internal void SetAliases(VariableKey[] storages, IEnumerable<AliasEntry> aliases)
+        internal void SetAliases(VariableKeyBase[] storages, IEnumerable<AliasEntry> aliases)
         {
             foreach (var storage in storages)
             {
@@ -435,29 +435,28 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        internal bool IsDefined(VariableKey storage)
+        internal bool IsDefined(VariableKeyBase storage)
         {
-            var variables = getVariableContainer(storage.Kind);
-            return variables.ContainsKey(storage.Name);
+            return storage.GetVariable(this) != null;
         }
 
-        internal MemoryEntry ReadValue(VariableKey key)
+        internal MemoryEntry ReadValue(VariableKeyBase key)
         {
             var variable = getOrCreateInfo(key);
 
             if (variable.References.Count == 0)
             {
                 //implicit reference creation, because of possible cross call aliases
-                variable.References.Add(new VirtualReference(variable, key.ContextStamp));
+                variable.References.Add(key.CreateImplicitReference(this));
             }
 
             var value = readValue(variable);
             return value;
         }
 
-        internal IEnumerable<VariableKey> IndexStorages(Value array, MemberIdentifier index)
+        internal IEnumerable<VariableKeyBase> IndexStorages(Value array, MemberIdentifier index)
         {
-            var storages = new List<VariableKey>();
+            var storages = new List<VariableKeyBase>();
             foreach (var indexName in index.PossibleNames)
             {
                 //TODO refactor ContainerIndex API
@@ -470,9 +469,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return storages;
         }
 
-        internal IEnumerable<VariableKey> FieldStorages(Value objectValue, VariableIdentifier field)
+        internal IEnumerable<VariableKeyBase> FieldStorages(Value objectValue, VariableIdentifier field)
         {
-            var storages = new List<VariableKey>();
+            var storages = new List<VariableKeyBase>();
             foreach (var fieldName in field.PossibleNames)
             {
                 //TODO refactor ContainerIndex API
@@ -587,7 +586,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         {
             foreach (var variable in variables)
             {
-                var global = getOrCreateInfo(variable, VariableKind.Global);
+                var global = GetOrCreateInfo(variable, VariableKind.Global);
                 _locals.Fetch(global);
             }
         }
@@ -680,11 +679,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private void assign(VariableName targetVar, MemoryEntry entry, VariableKind kind = VariableKind.Local)
         {
-            var info = getOrCreateInfo(targetVar, kind);
+            var info = GetOrCreateInfo(targetVar, kind);
             assign(info, entry);
         }
 
-        private void assign(VariableKey key, MemoryEntry entry)
+        private void assign(VariableKeyBase key, MemoryEntry entry)
         {
             var info = getOrCreateInfo(key);
             assign(info, entry);
@@ -730,7 +729,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        private MemoryEntry readValue(VariableKey key)
+        private MemoryEntry readValue(VariableKeyBase key)
         {
             var info = getOrCreateInfo(key);
 
@@ -750,7 +749,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private MemoryEntry readValue(VariableName sourceVar, VariableKind kind)
         {
-            var info = getInfo(sourceVar, kind);
+            var info = GetInfo(sourceVar, kind);
 
             return readValue(info);
         }
@@ -768,7 +767,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
                     if (contextVariable.References.Count == 0)
                     {
-                        var implicitRef = new VirtualReference(contextVariable, referenceAlias.ContextStamp);
+                        var implicitRef = referenceAlias.Key.CreateImplicitReference(this);
                         contextVariable.References.Add(implicitRef);
                     }
 
@@ -838,7 +837,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return entry.PossibleValues;
         }
 
-        private VariableInfo getOrCreateInfo(VariableName name, VariableKind kind)
+        internal VariableInfo GetOrCreateInfo(VariableName name, VariableKind kind)
         {
             //convert kind according to current scope
             kind = repairKind(kind, IsGlobalScope);
@@ -848,29 +847,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             if (!storage.TryGetValue(name, out result))
             {
-                result = new VariableInfo(name, kind);
-                storage.SetValue(name, result);
+                result = CreateEmptyVar(name, kind);
             }
 
             return result;
         }
 
-        private MemoryEntry getEntry(VirtualReference reference)
-        {
-            return getDataContainer().GetEntry(reference);
-        }
-
-        private void setEntry(VirtualReference reference, MemoryEntry entry)
-        {
-            if (entry == null)
-            {
-                throw new NotSupportedException("Entry cannot be null");
-            }
-
-            getDataContainer().SetEntry(reference, entry);
-        }
-
-        private VariableInfo getInfo(VariableName name, VariableKind kind = VariableKind.Local)
+        internal VariableInfo GetInfo(VariableName name, VariableKind kind = VariableKind.Local)
         {
             ReportSimpleHashSearch();
 
@@ -884,6 +867,39 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
             return null;
         }
+
+        /// <summary>
+        /// Expect repaired kind
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="kind"></param>
+        /// <returns></returns>
+        internal VariableInfo CreateEmptyVar(VariableName name, VariableKind kind)
+        {
+            var storage = getVariableContainer(kind);
+            var result=new VariableInfo(name, kind);
+            storage.SetValue(name, result);
+
+            return result;
+        }
+
+        private MemoryEntry getEntry(VirtualReference reference)
+        {
+            return reference.GetEntry(this, getDataContainer());
+            
+        }
+
+        private void setEntry(VirtualReference reference, MemoryEntry entry)
+        {
+            if (entry == null)
+            {
+                throw new NotSupportedException("Entry cannot be null");
+            }
+
+            reference.SetEntry(this, getDataContainer(), entry);            
+        }
+
+
 
         private bool hasSameReferences(VariableInfo info, List<VirtualReference> references)
         {
@@ -1050,52 +1066,52 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Special storages
 
-        private VariableKey getFunctionStorage(string functionName)
+        private VariableKeyBase getFunctionStorage(string functionName)
         {
             return getMeta("$function-" + functionName);
         }
 
-        private VariableKey getTypeStorage(string typeName)
+        private VariableKeyBase getTypeStorage(string typeName)
         {
             return getMeta("$type:" + typeName);
         }
 
-        private VariableKey getFieldStorage(Value obj, ContainerIndex field)
+        private VariableKeyBase getFieldStorage(Value obj, ContainerIndex field)
         {
             var name = string.Format("$obj{0}->{1}", obj.UID, field.Identifier);
             return getMeta(name);
         }
 
-        private VariableKey getObjectInfoStorage(ObjectValue obj)
+        private VariableKeyBase getObjectInfoStorage(ObjectValue obj)
         {
             var name = string.Format("$obj{0}#info", obj.UID);
             return getMeta(name);
         }
 
-        private VariableKey getIndexStorage(Value arr, ContainerIndex index)
+        private VariableKeyBase getIndexStorage(Value arr, ContainerIndex index)
         {
             return getIndex(arr, index.Identifier);
         }
 
-        private VariableKey getIndex(Value arr, string indexIdentifier)
+        private VariableKeyBase getIndex(Value arr, string indexIdentifier)
         {
             var name = string.Format("$arr{0}[{1}]", arr.UID, indexIdentifier);
             return getMeta(name);
         }
 
-        private VariableKey getThisObjectStorage()
+        private VariableKeyBase getThisObjectStorage()
         {
             //TODO this should be control (but it has different scope propagation)
             return new VariableKey(VariableKind.Local, new VariableName("this"), CurrentContextStamp);
         }
 
-        private VariableKey getArrayInfoStorage(AssociativeArray arr)
+        private VariableKeyBase getArrayInfoStorage(AssociativeArray arr)
         {
             var name = string.Format("$arr{0}#info", arr.UID);
             return getMeta(name);
         }
 
-        private VariableKey getMeta(string variableName)
+        private VariableKeyBase getMeta(string variableName)
         {
             return new VariableKey(VariableKind.Meta, new VariableName(variableName), CurrentContextStamp);
         }
@@ -1122,9 +1138,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        private VariableKey getOrCreateKey(VariableName name, VariableKind kind = VariableKind.Local)
+        private VariableKeyBase getOrCreateKey(VariableName name, VariableKind kind = VariableKind.Local)
         {
-            var info = getInfo(name, kind);
+            var info = GetInfo(name, kind);
             if (info != null)
                 return new VariableKey(info.Kind, info.Name, CurrentContextStamp);
 
@@ -1172,17 +1188,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        private VariableInfo getOrCreateInfo(VariableKey key)
+        private VariableInfo getOrCreateInfo(VariableKeyBase key)
         {
-            var variable = getOrCreateInfo(key.Name, key.Kind);
-            return variable;
+            return key.GetOrCreateVariable(this);
         }
 
-        private VariableInfo getInfo(VariableKey key)
+        private VariableInfo getInfo(VariableKeyBase key)
         {
-            var variable = getInfo(key.Name, key.Kind);
-
-            return variable;
+            return key.GetVariable(this);
         }
 
         #endregion
@@ -1263,7 +1276,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #region OLD API related methods (will be removed after backcompatibility won't be needed)
 
 
-        private AliasValue createAlias(VariableKey key)
+        private AliasValue createAlias(VariableKeyBase key)
         {
             var info = getOrCreateInfo(key);
             if (info.References.Count == 0)
@@ -1275,13 +1288,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         private AliasValue createAlias(VariableName sourceVar, VariableKind kind = VariableKind.Local)
         {
-            var info = getInfo(sourceVar, kind);
+            var info = GetInfo(sourceVar, kind);
             if (info == null)
             {
                 //force reference creation
                 ReportMemoryEntryCreation();
                 assign(sourceVar, new MemoryEntry(UndefinedValue), kind);
-                info = getInfo(sourceVar, kind);
+                info = GetInfo(sourceVar, kind);
             }
 
             return new ReferenceAlias(info.References);
@@ -1293,7 +1306,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return tryReadValue(new VariableKey(kind, sourceVar, CurrentContextStamp), out entry);
         }
 
-        private bool tryReadValue(VariableKey key, out MemoryEntry entry)
+        private bool tryReadValue(VariableKeyBase key, out MemoryEntry entry)
         {
             var info = getInfo(key);
 

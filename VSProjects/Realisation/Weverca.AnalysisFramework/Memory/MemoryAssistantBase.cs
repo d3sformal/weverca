@@ -36,7 +36,41 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">Any value which index is read</param>
         /// <param name="index">Index used for given value</param>
         /// <returns>Value resolved by reading index on given value</returns>
-        public abstract MemoryEntry ReadIndex(AnyValue value, MemberIdentifier index);
+        public abstract MemoryEntry ReadAnyValueIndex(AnyValue value, MemberIdentifier index);
+
+        /// <summary>
+        /// Read index of string value
+        /// </summary>
+        /// <param name="values">String value which index is read</param>
+        /// <param name="index">Index used for given value</param>
+        /// <returns>Value resolved by reading index on given value</returns>
+        public abstract IEnumerable<Value> ReadStringIndex(StringValue value, MemberIdentifier index);
+        
+        /// <summary>
+        /// Read index of value (that is not array, string or anyvalue)
+        /// </summary>
+        /// <param name="value">Value whic index is read</param>
+        /// <param name="index">Index used for given value</param>
+        /// <returns>Value resolved by reading index on given value</returns>
+        public abstract IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index);
+
+        /// <summary>
+        /// Write at index of string value
+        /// </summary>
+        /// <param name="indexed">String value which index is written</param>
+        /// <param name="index">Index used for given value</param>
+        /// <param name="writtenValue">Value that is written at specified index</param>
+        /// <returns>Values that should be written back into string container</returns>
+        public abstract IEnumerable<Value> WriteStringIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue);
+
+        /// <summary>
+        /// Write at index of value (that is not array, string or anyvalue)
+        /// </summary>
+        /// <param name="indexed">Value which index is written</param>
+        /// <param name="index">Index used for given value</param>
+        /// <param name="writtenValue">Value that is written at specified index</param>
+        /// <returns>Values that should be written back into value container</returns>
+        public abstract IEnumerable<Value> WriteValueIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue);
 
         /// <summary>
         /// Read fied of any value
@@ -53,6 +87,13 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="current">Value computed during transaction</param>
         /// <returns>Widened memory entry</returns>
         public abstract MemoryEntry Widen(MemoryEntry old, MemoryEntry current);
+
+        /// <summary>
+        /// Simplify handler that is used during commit on entries having more than SimplifyLimit possible values
+        /// </summary>
+        /// <param name="entry">Value computed during transaction</param>
+        /// <returns>Simplified memory entry</returns>
+        public abstract MemoryEntry Simplify(MemoryEntry entry);
 
         /// <summary>
         /// Resolve methods with given name for possible value
@@ -86,8 +127,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="value">Value where fields has been tried to iterate</param>
         public abstract void TriedIterateFields(Value value);
 
-
-
         /// <summary>
         /// Initialize context snapshot for current assistant
         /// </summary>
@@ -112,5 +151,7 @@ namespace Weverca.AnalysisFramework.Memory
 
             Point = programPoint;
         }
+
+
     }
 }

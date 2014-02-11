@@ -18,7 +18,7 @@ namespace Weverca.Analysis
         #region MemoryAssistantBase overrides
 
         /// <inheritdoc />
-        public override MemoryEntry ReadIndex(AnyValue value, MemberIdentifier index)
+        public override MemoryEntry ReadAnyValueIndex(AnyValue value, MemberIdentifier index)
         {
             // TODO: Copy info
             if (value is AnyStringValue)
@@ -148,6 +148,31 @@ namespace Weverca.Analysis
         }
 
         public override void TriedIterateFields(Value value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> ReadStringIndex(StringValue value, MemberIdentifier index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> WriteStringIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> WriteValueIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override MemoryEntry Simplify(MemoryEntry entry)
         {
             throw new NotImplementedException();
         }

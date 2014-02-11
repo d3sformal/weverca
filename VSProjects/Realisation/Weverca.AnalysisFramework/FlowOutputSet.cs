@@ -30,12 +30,15 @@ namespace Weverca.AnalysisFramework
 
         private readonly int _widenLimit;
 
-        internal FlowOutputSet(SnapshotBase snapshot, int widenLimit = int.MaxValue) :
+        private readonly int _simplifyLimit;
+
+        internal FlowOutputSet(SnapshotBase snapshot, int widenLimit = int.MaxValue, int simplifyLimit = int.MaxValue) :
             base(snapshot)
         {
             //because new snapshot has been initialized
             HasChanges = true;
             _widenLimit = widenLimit;
+            _simplifyLimit = simplifyLimit;
         }
 
         /// <summary>
@@ -48,11 +51,11 @@ namespace Weverca.AnalysisFramework
         {
             if (shouldWiden())
             {
-                Snapshot.WidenAndCommitTransaction();
+                Snapshot.WidenAndCommitTransaction(_simplifyLimit);
             }
             else
             {
-                Snapshot.CommitTransaction();
+                Snapshot.CommitTransaction(_simplifyLimit);
             }
 
             HasChanges = Snapshot.HasChanged || _commitCount == 0;

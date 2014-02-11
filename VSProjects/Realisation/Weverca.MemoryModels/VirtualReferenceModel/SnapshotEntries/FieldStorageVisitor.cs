@@ -14,12 +14,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
     class FieldStorageVisitor : AbstractValueVisitor
     {
         private readonly Snapshot _context;
-        private readonly List<VariableKey> _indexStorages = new List<VariableKey>();
+        private readonly List<VariableKeyBase> _indexStorages = new List<VariableKeyBase>();
         private readonly VariableIdentifier _field;
 
         private ObjectValue _implicitObject = null;
 
-        internal readonly VariableKey[] Storages;
+        internal readonly VariableKeyBase[] Storages;
 
         internal FieldStorageVisitor(ReadWriteSnapshotEntryBase fieldedEntry, Snapshot context, VariableIdentifier field)
         {

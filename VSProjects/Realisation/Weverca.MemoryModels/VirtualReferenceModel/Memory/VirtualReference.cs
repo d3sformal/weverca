@@ -5,6 +5,10 @@ using System.Text;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework.Memory;
+
+using Weverca.MemoryModels.VirtualReferenceModel.Containers;
+
 namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
     /// <summary>
@@ -68,6 +72,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         public override string ToString()
         {
             return string.Format("Ref: {0}-{1}|{2}", OriginatedVariable, ContextStamp, Kind);
+        }
+
+        internal virtual MemoryEntry GetEntry(Snapshot snapshot, DataContainer data)
+        {
+            return data.GetEntry(this);
+        }
+
+        internal virtual void SetEntry(Snapshot snapshot, DataContainer data, MemoryEntry entry)
+        {
+            data.SetEntry(this, entry);
         }
     }
 }

@@ -163,8 +163,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// NOTE:
         ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
         /// </summary>
+        /// <param name="simplifyLimit">Limit number of memory entry possible values count when does simplifying MemoryEntries start</param>
         /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
-        protected abstract bool commitTransaction();
+        protected abstract bool commitTransaction(int simplifyLimit);
 
         /// <summary>
         /// Widen current transaction and process commit.
@@ -173,8 +174,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// NOTE:
         ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
         /// </summary>
+        /// <param name="simplifyLimit">Limit number of memory entry possible values count when does simplifying MemoryEntries start</param>s
         /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
-        protected abstract bool widenAndCommitTransaction();
+        protected abstract bool widenAndCommitTransaction(int simplifyLimit);
 
         /// <summary>
         /// Initialize object of given type
@@ -383,7 +385,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// NOTE:
         ///     Difference is meant in semantic (two objects with different references but same content doesn't mean difference)
         /// </summary>
-        public void CommitTransaction()
+        public void CommitTransaction(int simplifyLimit = int.MaxValue)
         {
             checkFrozenState();
 
@@ -394,7 +396,7 @@ namespace Weverca.AnalysisFramework.Memory
 
             try
             {
-                HasChanged = commitTransaction();
+                HasChanged = commitTransaction(simplifyLimit);
             }
             finally
             {
@@ -402,7 +404,7 @@ namespace Weverca.AnalysisFramework.Memory
             }
         }
 
-        public void WidenAndCommitTransaction()
+        public void WidenAndCommitTransaction(int simplifyLimit)
         {
             checkFrozenState();
             if (!IsTransactionStarted)
@@ -412,7 +414,7 @@ namespace Weverca.AnalysisFramework.Memory
 
             try
             {
-                HasChanged = widenAndCommitTransaction();
+                HasChanged = widenAndCommitTransaction(simplifyLimit);
             }
             finally
             {
@@ -521,39 +523,30 @@ namespace Weverca.AnalysisFramework.Memory
 
         public StringValue CreateString(string literal)
         {
-            checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedStringValues);
             return new StringValue(literal);
         }
 
         public IntegerValue CreateInt(int number)
         {
-            checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedIntValues);
             return new IntegerValue(number);
         }
 
         public LongintValue CreateLong(long number)
         {
-            checkCanUpdate();
             _statistics.Report(Statistic.CreatedLongValues);
             return new LongintValue(number);
         }
 
         public BooleanValue CreateBool(bool boolean)
         {
-            checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedBooleanValues);
             return new BooleanValue(boolean);
         }
 
         public FloatValue CreateDouble(double number)
         {
-            checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedFloatValues);
             return new FloatValue(number);
         }
@@ -561,7 +554,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         public FunctionValue CreateFunction(FunctionDecl declaration, FileInfo declaringScript)
         {
-            checkCanUpdate();
             _statistics.Report(Statistic.CreatedFunctionValues);
             return new SourceFunctionValue(declaration, declaringScript);
         }
@@ -569,7 +561,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         public FunctionValue CreateFunction(MethodDecl declaration, FileInfo declaringScript)
         {
-            checkCanUpdate();
             _statistics.Report(Statistic.CreatedFunctionValues);
             return new SourceMethodValue(declaration, declaringScript);
         }
@@ -582,8 +573,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created value</returns>
         public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
         {
-            checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedFunctionValues);
             return new NativeAnalyzerValue(name, analyzer);
         }
@@ -595,16 +584,12 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created value</returns>
         public FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript)
         {
-            checkCanUpdate();
-
             _statistics.Report(Statistic.CreatedFunctionValues);
             return new LambdaFunctionValue(expression, declaringScript);
         }
 
         public TypeValue CreateType(ClassDecl declaration)
         {
-            checkCanUpdate();
-
             var type = new TypeValue(declaration);
             _statistics.Report(Statistic.CreatedNativeTypeValues);
 
@@ -637,21 +622,18 @@ namespace Weverca.AnalysisFramework.Memory
 
         public IntegerIntervalValue CreateIntegerInterval(int start, int end)
         {
-            checkCanUpdate();
             _statistics.Report(Statistic.CreatedIntIntervalValues);
             return new IntegerIntervalValue(start, end);
         }
 
         public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
-            checkCanUpdate();
             _statistics.Report(Statistic.CreatedLongIntervalValues);
             return new LongintIntervalValue(start, end);
         }
 
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
-            checkCanUpdate();
             _statistics.Report(Statistic.CreatedFloatIntervalValues);
             return new FloatIntervalValue(start, end);
         }
