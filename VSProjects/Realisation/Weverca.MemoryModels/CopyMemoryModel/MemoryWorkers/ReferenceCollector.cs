@@ -105,7 +105,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             foreach (MemoryIndex mayAlias in mayReferences)
             {
-                snapshot.AddAlias(memoryIndex, null, mayAlias);
+                snapshot.AddAlias(mayAlias, null, memoryIndex);
             }
 
             snapshot.AddAliases(memoryIndex, mustReferences, mayReferences);

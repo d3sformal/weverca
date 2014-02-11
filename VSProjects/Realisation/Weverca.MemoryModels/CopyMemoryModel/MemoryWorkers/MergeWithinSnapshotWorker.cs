@@ -39,15 +39,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void MergeIndexes(MemoryIndex targetIndex, MemoryIndex sourceIndex)
         {
-            MergeOperation operation = new MergeOperation(targetIndex);
-            operation.Add(targetIndex, targetSnapshot);
-            operation.Add(sourceIndex, targetSnapshot);
-            operation.IsRoot = true;
-            addOperation(operation);
+            if (!sourceIndex.IsPrefixOf(targetIndex) && !targetIndex.IsPrefixOf(sourceIndex))
+            {
+                MergeOperation operation = new MergeOperation(targetIndex);
+                operation.Add(targetIndex, targetSnapshot);
+                operation.Add(sourceIndex, targetSnapshot);
+                operation.IsRoot = true;
+                addOperation(operation);
 
-            arrayCount = 2;
+                arrayCount = 2;
 
-            processMerge();
+                processMerge();
+            }
         }
 
         private void processMerge()
@@ -101,7 +104,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                         MemoryIndex index = item.Item1;
                         Snapshot snapshot = item.Item2;
 
-                        if (targetSnapshot == snapshot)
+                        if (index != operation.TargetIndex && targetSnapshot == snapshot)
                         {
                             referenceIndexes.Add(index);
                         }

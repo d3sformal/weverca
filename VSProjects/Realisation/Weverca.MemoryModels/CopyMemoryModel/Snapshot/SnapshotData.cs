@@ -130,7 +130,25 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (!oldEntry.Equals(newEntry))
             {
-                SetMemoryEntry(index, assistant.Widen(oldEntry, newEntry));
+                MemoryEntry widenedEntry = assistant.Widen(oldEntry, newEntry);
+
+                CollectComposedValuesVisitor newVisitor = new CollectComposedValuesVisitor();
+                newVisitor.VisitMemoryEntry(newEntry);
+
+                CollectComposedValuesVisitor widenedVisitor = new CollectComposedValuesVisitor();
+                newVisitor.VisitMemoryEntry(widenedEntry);
+
+                if (newVisitor.Arrays.Count != widenedVisitor.Arrays.Count)
+                {
+                    snapshot.DestroyArray(index);
+                }
+
+                if (newVisitor.Objects.Count != widenedVisitor.Objects.Count)
+                {
+                    snapshot.Structure.SetObjects(index, null);
+                }
+
+                SetMemoryEntry(index, assistant.Widen(oldEntry, new MemoryEntry(widenedVisitor.Values)));
             }
         }
     }

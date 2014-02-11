@@ -1317,6 +1317,56 @@ $d=&$a;
             ;
 
 
+
+
+        readonly static TestCase OverridenAlias_CASE = @"
+$alias = 1;
+
+$arr[$_POST] = &$alias;
+
+$arr2 = $arr;
+$arr2 = $arr;
+
+$result = $arr2[1];
+".AssertVariable("result").HasUndefinedAndValues(1);
+
+        readonly static TestCase CycledAlias_CASE = @"
+$alias = 1;
+
+$arr[$_POST] = &$alias;
+$arr2 = $arr;
+$arr[$_POST] = $arr2;
+
+$result = $arr[1][1];
+".AssertVariable("result").HasUndefinedAndValues(1);
+
+        readonly static TestCase CycledAlias2_CASE = @"
+$a = array();
+$a[1] = &$a;
+$a[2] = $a;
+
+$result = 1;
+".AssertVariable("result").HasValues(1);
+
+
+        [TestMethod]
+        public void CycledAlias()
+        {
+            AnalysisTestUtils.RunTestCase(CycledAlias_CASE);
+        }
+
+        [TestMethod]
+        public void CycledAlias2()
+        {
+            AnalysisTestUtils.RunTestCase(CycledAlias2_CASE);
+        }
+
+        [TestMethod]
+        public void OverridenAlias()
+        {
+            AnalysisTestUtils.RunTestCase(OverridenAlias_CASE);
+        }
+
         [TestMethod]
         public void FunctionTest()
         {

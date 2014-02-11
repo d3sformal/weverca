@@ -140,6 +140,29 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public abstract MemoryIndex CreateUnknownIndex();
         public abstract MemoryIndex CreateIndex(string name);
+
+        internal virtual bool IsPrefixOf(MemoryIndex otherIndex)
+        {
+            if (otherIndex == null || otherIndex.Length < this.Length)
+            {
+                return false;
+            }
+
+            if (otherIndex.GetType() != this.GetType() || otherIndex.CallLevel != this.CallLevel)
+            {
+                return false;
+            }
+
+            for (int x = this.Length - 1; x >= 0; x--)
+            {
+                if (!this.MemoryPath[x].Equals(otherIndex.MemoryPath[x]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
 
     public abstract class NamedIndex : MemoryIndex
@@ -174,6 +197,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             if (otherIndex != null)
             {
                 return MemoryRoot.Equals(otherIndex.MemoryRoot) && base.Equals(obj);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        internal override bool IsPrefixOf(MemoryIndex otherIndex)
+        {
+            NamedIndex namedIndex = otherIndex as NamedIndex;
+            if (namedIndex != null)
+            {
+                return MemoryRoot.Equals(namedIndex.MemoryRoot) && base.IsPrefixOf(otherIndex);
             }
             else
             {
@@ -215,6 +251,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             if (otherIndex != null)
             {
                 return Object.Equals(otherIndex.Object) && base.Equals(obj);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        internal override bool IsPrefixOf(MemoryIndex otherIndex)
+        {
+            ObjectIndex objIndex = otherIndex as ObjectIndex;
+            if (objIndex != null)
+            {
+                return Object.Equals(objIndex.Object) && base.IsPrefixOf(otherIndex);
             }
             else
             {
@@ -349,6 +398,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             if (otherIndex != null)
             {
                 return rootId.Equals(otherIndex.rootId) && base.Equals(obj);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        internal override bool IsPrefixOf(MemoryIndex otherIndex)
+        {
+            TemporaryIndex tempIndex = otherIndex as TemporaryIndex;
+            if (tempIndex != null)
+            {
+                return rootId.Equals(tempIndex.rootId) && base.IsPrefixOf(otherIndex);
             }
             else
             {

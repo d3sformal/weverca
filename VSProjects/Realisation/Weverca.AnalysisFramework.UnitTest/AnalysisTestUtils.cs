@@ -541,7 +541,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
-        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.VirtualReferenceMM };
+        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.CopyMM };
         private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.WevercaAnalysis };
 
         /// <summary>

@@ -35,37 +35,41 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void Copy(MemoryIndex sourceIndex, MemoryIndex targetIndex)
         {
-            MemoryEntry entry = snapshot.Structure.GetMemoryEntry(sourceIndex);
-
-            CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(this, targetIndex);
-            visitor.VisitMemoryEntry(entry);
-
-            if (isMust && visitor.GetValuesCount() == 1 && objectValues.Count == 1)
+            if (!sourceIndex.IsPrefixOf(targetIndex) && !targetIndex.IsPrefixOf(sourceIndex))
             {
-                ObjectValueContainerBuilder objectsValues = snapshot.Structure.GetObjects(targetIndex).Builder();
 
-                ObjectValue value = objectValues.First();
-                objectsValues.Add(value);
-                snapshot.Structure.SetObjects(targetIndex, objectsValues.Build());
-            }
-            else if (objectValues.Count > 0)
-            {
-                ObjectValueContainerBuilder objectsValues = snapshot.Structure.GetObjects(targetIndex).Builder();
-                foreach (ObjectValue value in objectValues)
+                MemoryEntry entry = snapshot.Structure.GetMemoryEntry(sourceIndex);
+
+                CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(this, targetIndex);
+                visitor.VisitMemoryEntry(entry);
+
+                if (isMust && visitor.GetValuesCount() == 1 && objectValues.Count == 1)
                 {
-                    objectsValues.Add(value);
-                }
-                snapshot.Structure.SetObjects(targetIndex, objectsValues.Build());
-            } 
-            
-            if (!isMust)
-            {
-                visitor.AddValue(snapshot.UndefinedValue);
-            }
-            
-            snapshot.CopyAliases(sourceIndex, targetIndex, isMust);
+                    ObjectValueContainerBuilder objectsValues = snapshot.Structure.GetObjects(targetIndex).Builder();
 
-            snapshot.Structure.SetMemoryEntry(targetIndex, visitor.GetCopiedEntry());
+                    ObjectValue value = objectValues.First();
+                    objectsValues.Add(value);
+                    snapshot.Structure.SetObjects(targetIndex, objectsValues.Build());
+                }
+                else if (objectValues.Count > 0)
+                {
+                    ObjectValueContainerBuilder objectsValues = snapshot.Structure.GetObjects(targetIndex).Builder();
+                    foreach (ObjectValue value in objectValues)
+                    {
+                        objectsValues.Add(value);
+                    }
+                    snapshot.Structure.SetObjects(targetIndex, objectsValues.Build());
+                }
+
+                if (!isMust)
+                {
+                    visitor.AddValue(snapshot.UndefinedValue);
+                }
+
+                snapshot.CopyAliases(sourceIndex, targetIndex, isMust);
+
+                snapshot.Structure.SetMemoryEntry(targetIndex, visitor.GetCopiedEntry());
+            }
         }
 
         internal AssociativeArray ProcessArrayValue(MemoryIndex targetIndex, AssociativeArray value)

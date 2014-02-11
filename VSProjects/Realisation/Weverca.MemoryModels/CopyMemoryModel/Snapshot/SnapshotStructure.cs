@@ -305,7 +305,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             IndexData data = new IndexData(null, null, null);
 
-            IndexData.Add(index, data);
+            IndexData[index] = data;
             Data.SetMemoryEntry(index, new MemoryEntry(Snapshot.UndefinedValue));
         }
 
