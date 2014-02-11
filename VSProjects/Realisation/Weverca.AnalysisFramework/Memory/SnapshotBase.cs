@@ -117,7 +117,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// fetched some variables from global context also),
         /// or in global context in snapshot belonging to global code
         /// </remarks>
-        /// <param name="name">Name of variable</param>
+        /// <param name="variable">Name of variable</param>
         /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
         /// <returns>Readable snapshot entry for variable identifier</returns>
         protected abstract ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext);
@@ -127,7 +127,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
         /// entries.
         /// </summary>
-        /// <param name="variable">Variable determining control entry</param>
+        /// <param name="name">Variable determining control entry</param>
         /// <returns>Created control entry</returns>
         protected abstract ReadWriteSnapshotEntryBase getControlVariable(VariableName name);
 
@@ -136,7 +136,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
         /// entries.
         /// </summary>
-        /// <param name="variable">Variable determining control entry</param>
+        /// <param name="name">Variable determining control entry</param>
         /// <returns>Created control entry</returns>
         protected abstract ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name);
 
@@ -144,7 +144,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Creates snapshot entry containing given value. Created entry doesn't have
         /// explicit memory storage. But it still can be asked for saving indexes, fields, resolving aliases,... !!!
         /// </summary>
-        /// <param name="value">Value wrapped in snapshot entry</param>
+        /// <param name="entry">Value wrapped in snapshot entry</param>
         /// <returns>Created value entry</returns>
         protected abstract ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry);
 
@@ -755,7 +755,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// fetched some variables from global context also),
         /// or in global context in snapshot belonging to global code
         /// </remarks>
-        /// <param name="name">Name of variable</param>
+        /// <param name="variable">Name of variable</param>
         /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
         /// <returns>Readable snapshot entry for variable identifier</returns>
         public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
@@ -771,7 +771,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// fetched some variables from global context also),
         /// or in global context in snapshot belonging to global code
         /// </remarks>
-        /// <param name="name">Name of variable</param>
+        /// <param name="variable">Name of variable</param>
         /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
         /// <returns>Readable snapshot entry for variable identifier</returns>
         public ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false)

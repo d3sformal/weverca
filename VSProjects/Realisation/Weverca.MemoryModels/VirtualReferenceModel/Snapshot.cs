@@ -99,12 +99,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             CurrentContextStamp = 0;
         }
 
+        /// <inheritdoc />
         protected override bool commitTransaction(int simplifyLimit)
         {
             return commit();
         }
 
-
+        /// <inheritdoc />
         protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             _data.WidenWith(Assistant);
@@ -582,6 +583,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Global scope operations
 
+        /// <inheritdoc />
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
             foreach (var variable in variables)
@@ -591,11 +593,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<VariableName> getGlobalVariables()
         {
             return _globals.VariableNames;
         }
 
+        /// <inheritdoc />
         protected override void declareGlobal(TypeValue declaration)
         {
             var storage = getTypeStorage(declaration.QualifiedName.Name.Value);
@@ -606,6 +610,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(declaration));
         }
 
+        /// <inheritdoc />
         protected override void declareGlobal(FunctionValue function)
         {
             var storage = getFunctionStorage(function.Name.Value);
@@ -614,7 +619,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(function));
         }
 
-
+        /// <inheritdoc />
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
             var storage = getFunctionStorage(functionName.Name.Value);
@@ -638,6 +643,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             var storage = getTypeStorage(typeName.Name.Value);
@@ -661,6 +667,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
             List<FunctionValue> result = new List<FunctionValue>();
@@ -1300,6 +1307,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new ReferenceAlias(info.References);
         }
 
+        /// <inheritdoc />
         protected bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {
             var kind = repairKind(VariableKind.Local, forceGlobalContext);
@@ -1321,6 +1329,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return true;
         }
 
+        /// <inheritdoc />
         protected override void setInfo(Value value, params InfoValue[] info)
         {
             var storage = infoStorage(value);
@@ -1329,6 +1338,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(info), VariableKind.Global);
         }
 
+        /// <inheritdoc />
         protected override void setInfo(VariableName variable, params InfoValue[] info)
         {
             var storage = infoStorage(variable);
@@ -1337,6 +1347,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(info), VariableKind.Global);
         }
 
+        /// <inheritdoc />
         protected override InfoValue[] readInfo(Value value)
         {
             var storage = infoStorage(value);
@@ -1344,6 +1355,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return getInfoValues(storage);
         }
 
+        /// <inheritdoc />
         protected override InfoValue[] readInfo(VariableName variable)
         {
             var storage = infoStorage(variable);
@@ -1351,12 +1363,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return getInfoValues(storage);
         }
 
+        /// <inheritdoc />
         protected VariableName infoStorage(VariableName variable)
         {
             var storage = string.Format(".info_{0}", variable.Value);
             return new VariableName(storage);
         }
 
+        /// <inheritdoc />
         protected VariableName infoStorage(Value value)
         {
             var storage = string.Format(".value_info-{0}", value.UID);
