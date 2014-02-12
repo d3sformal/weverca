@@ -494,13 +494,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var variables = new VariableIdentifier[_variables.Length];
+            var entries = new ReadSnapshotEntryBase[_variables.Length];
             for (var i = 0; i < _variables.Length; ++i)
             {
-                variables[i] = _variables[i].LValue.GetVariableIdentifier(OutSnapshot);
+                entries[i] = _variables[i].LValue;
             }
 
-            var value = Services.Evaluator.IssetEx(variables);
+            var values = Services.Evaluator.IssetEx(entries);
+            var value = new MemoryEntry(values);
             Value = OutSet.CreateSnapshotEntry(value);
         }
 

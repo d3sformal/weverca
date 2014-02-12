@@ -125,7 +125,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 if (FlagsHandler.IsDirty(operand.PossibleValues, FlagType.HTMLDirty))
                 {
-                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName,Element, FlagType.HTMLDirty));
+                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName, Element, FlagType.HTMLDirty));
                 }
             }
 
@@ -437,21 +437,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (isDirty)
             {
-                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName,Element, FlagType.HTMLDirty));
+                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName, Element, FlagType.HTMLDirty));
             }
         }
 
         /// <inheritdoc />
-        public override MemoryEntry IssetEx(IEnumerable<VariableIdentifier> variables)
+        public override IEnumerable<Value> IssetEx(IEnumerable<ReadSnapshotEntryBase> entries)
         {
-            Debug.Assert(variables.GetEnumerator().MoveNext(),
+            Debug.Assert(entries.GetEnumerator().MoveNext(),
                 "isset expression must have at least one parameter");
 
             var isAlwaysDefined = true;
 
-            foreach (var variable in variables)
+            foreach (var snapshotEntry in entries)
             {
-                var snapshotEntry = OutSet.GetVariable(variable);
                 if (snapshotEntry.IsDefined(OutSnapshot))
                 {
                     var entry = snapshotEntry.ReadMemory(OutSnapshot);
@@ -488,22 +487,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (isOnlyUndefined)
                     {
-                        return new MemoryEntry(OutSet.CreateBool(false));
+                        return new[] { OutSet.CreateBool(false) };
                     }
                 }
                 else
                 {
-                    return new MemoryEntry(OutSet.CreateBool(false));
+                    return new[] { OutSet.CreateBool(false) };
                 }
             }
 
             if (isAlwaysDefined)
             {
-                return new MemoryEntry(OutSet.CreateBool(true));
+                return new[] { OutSet.CreateBool(true) };
             }
             else
             {
-                return new MemoryEntry(OutSet.AnyBooleanValue);
+                return new[] { OutSet.AnyBooleanValue };
             }
         }
 
@@ -882,7 +881,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName,Flow, OutSet, Element);
+                var typeValues = ResolveSourceOrNativeType(typeName, Flow, OutSet, Element);
                 if (typeValues == null)
                 {
                     // TODO: This must be error
@@ -1051,7 +1050,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             var value = type.QualifiedName.Name.Value;
-            var resolvedTypes = FunctionResolver.ResolveType(type.QualifiedName,Flow, OutSet, Element);
+            var resolvedTypes = FunctionResolver.ResolveType(type.QualifiedName, Flow, OutSet, Element);
 
             if (resolvedTypes.Count() > 0)
             {
@@ -1154,7 +1153,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         }
                         else
                         {
-                            SetWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared",AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST);
+                            SetWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST);
                         }
                     }
                 }

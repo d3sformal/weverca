@@ -231,14 +231,14 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract void Echo(EchoStmt echo, MemoryEntry[] entries);
 
         /// <summary>
-        /// Determine whether all variables are set and are not-NULL.
+        /// Determine whether snapshot entries can be defined or undefined.
         /// </summary>
-        /// <param name="variables">Variables to be checked</param>
+        /// <param name="entries">Snapshot entries to be checked</param>
         /// <returns>
-        /// <c>true</c> whether all variables are defined and no value is <c>null</c>, <c>false</c> whether
-        /// at least one variable is undefined or has one <c>null</c> value and otherwise any boolean value.
+        /// <c>true</c> whether some snapshot entry can be defined (is not <c>null</c>), <c>false</c> whether
+        /// at least one variable can be undefined or <c>null</c>.
         /// </returns>
-        public abstract MemoryEntry IssetEx(IEnumerable<VariableIdentifier> variables);
+        public abstract IEnumerable<Value> IssetEx(IEnumerable<ReadSnapshotEntryBase> entries);
 
         /// <summary>
         /// Determine whether a variable is considered to be empty (i.e. null, false, 0, 0.0, "" etc.)

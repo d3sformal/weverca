@@ -12,16 +12,39 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
     class IndexStorageVisitor : AbstractValueVisitor
     {
+        /// <summary>
+        /// Determine that index with active reference is needed
+        /// </summary>
         private bool _needsTemporaryIndex = false;
+
+        /// <summary>
+        /// Determine that memory entry has only AssociativeArray values
+        /// </summary>
         private bool _hasOnlyArrays = true;
 
+        /// <summary>
+        /// Context of visited snapshot
+        /// </summary>
         private readonly Snapshot _context;
+
+        /// <summary>
+        /// Storages resolved by walking possible values
+        /// </summary>
         private readonly List<VariableKeyBase> _indexStorages = new List<VariableKeyBase>();
+
+        /// <summary>
+        /// Index identifier
+        /// </summary>
         private readonly MemberIdentifier _index;
 
+        /// <summary>
+        /// Created implicit array (if needed)
+        /// </summary>
         private AssociativeArray implicitArray;
-
-
+        
+        /// <summary>
+        /// Result of indexing
+        /// </summary>
         internal readonly ReadWriteSnapshotEntryBase IndexedValue;
 
 

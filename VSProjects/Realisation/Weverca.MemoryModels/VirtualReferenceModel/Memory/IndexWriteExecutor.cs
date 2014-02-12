@@ -51,6 +51,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             //Nothing to do, arrays are resolved in snapshot entries
         }
 
+        public override void VisitAnyValue(AnyValue value)
+        {
+            //Nothing to do, AnyValues are resolved in snapshot entries
+        }
+
         public override void VisitStringValue(StringValue value)
         {
             var subResult = _assistant.WriteStringIndex(value, _index, _writtenValue);

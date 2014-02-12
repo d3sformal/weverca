@@ -52,7 +52,7 @@ namespace Weverca.Analysis
         }
 
         /// <inheritdoc />
-        public override MemoryEntry ReadField(AnyValue value, VariableIdentifier field)
+        public override MemoryEntry ReadAnyField(AnyValue value, VariableIdentifier field)
         {
             // TODO: Copy info
             if (value is AnyObjectValue)
@@ -263,6 +263,16 @@ namespace Weverca.Analysis
 
         /// <inheritdoc />
         public override MemoryEntry Simplify(MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
         {
             throw new NotImplementedException();
         }

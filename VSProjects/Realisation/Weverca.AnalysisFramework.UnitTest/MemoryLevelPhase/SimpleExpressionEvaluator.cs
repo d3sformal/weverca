@@ -366,21 +366,32 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
-        public override MemoryEntry IssetEx(IEnumerable<VariableIdentifier> variables)
+        public override IEnumerable<Value> IssetEx(IEnumerable<ReadSnapshotEntryBase> entries)
         {
-            Debug.Assert(variables.GetEnumerator().MoveNext(),
+            Debug.Assert(entries.GetEnumerator().MoveNext(),
                 "isset expression must have at least one parameter");
 
-            foreach (var variable in variables)
+
+            var canBeDefined = false;
+            var canBeUndefined = false;
+            foreach (var snapshotEntry in entries)
             {
-                var snapshotEntry = OutSet.GetVariable(variable);
-                if (!snapshotEntry.IsDefined(OutSnapshot))
+
+                if (snapshotEntry.IsDefined(OutSnapshot))
                 {
-                    return new MemoryEntry(OutSet.CreateBool(false));
+                    canBeDefined = true;
+                }
+                else
+                {
+                    canBeUndefined = true;
                 }
             }
 
-            return new MemoryEntry(OutSet.CreateBool(true));
+            if (canBeDefined)
+                yield return OutSet.CreateBool(true);
+
+            if (canBeUndefined)
+                yield return OutSet.CreateBool(false);
         }
 
         public override MemoryEntry EmptyEx(VariableIdentifier variable)

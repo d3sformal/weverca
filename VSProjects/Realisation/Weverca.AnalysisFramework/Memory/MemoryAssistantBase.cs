@@ -45,9 +45,10 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="index">Index used for given value</param>
         /// <returns>Value resolved by reading index on given value</returns>
         public abstract IEnumerable<Value> ReadStringIndex(StringValue value, MemberIdentifier index);
-        
+
+
         /// <summary>
-        /// Read index of value (that is not array, string or anyvalue)
+        /// Read index of value (that is not array, string, undefined or anyvalue)
         /// </summary>
         /// <param name="value">Value which index is read</param>
         /// <param name="index">Index used for given value</param>
@@ -64,7 +65,7 @@ namespace Weverca.AnalysisFramework.Memory
         public abstract IEnumerable<Value> WriteStringIndex(StringValue indexed, MemberIdentifier index, MemoryEntry writtenValue);
 
         /// <summary>
-        /// Write at index of value (that is not array, string or anyvalue)
+        /// Write at index of value (that is not array, string, undefined or anyvalue)
         /// </summary>
         /// <param name="indexed">Value which index is written</param>
         /// <param name="index">Index used for given value</param>
@@ -72,13 +73,31 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Values that should be written back into value container</returns>
         public abstract IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue);
 
+
+        /// <summary>
+        /// Write at field of value (that is not object, undefined or anyvalue)
+        /// </summary>
+        /// <param name="fielded">Value which field is written</param>
+        /// <param name="field">Field used for given value</param>
+        /// <param name="writtenValue">Value that is written at specified field</param>
+        /// <returns>Values that should be written back into value container</returns>
+        public abstract IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue);
+
         /// <summary>
         /// Read fied of any value
         /// </summary>
         /// <param name="value">Any value which field is read</param>
         /// <param name="field">Field used for given value</param>
         /// <returns>Value resolved by reading field on given value.</returns>
-        public abstract MemoryEntry ReadField(AnyValue value, VariableIdentifier field);
+        public abstract MemoryEntry ReadAnyField(AnyValue value, VariableIdentifier field);
+
+        /// <summary>
+        /// Read at field of value (that is not object, undefined or anyvalue)
+        /// </summary>
+        /// <param name="fielded">Value which field is read</param>
+        /// <param name="field">Field used for given value</param>
+        /// <returns>Value resolved by reading field on fielded value</returns>
+        public abstract IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field);
 
         /// <summary>
         /// Widening operation between old and current memory entries
@@ -151,7 +170,5 @@ namespace Weverca.AnalysisFramework.Memory
 
             Point = programPoint;
         }
-
-
     }
 }

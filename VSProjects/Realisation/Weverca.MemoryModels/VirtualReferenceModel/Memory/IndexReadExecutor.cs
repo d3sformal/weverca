@@ -29,7 +29,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         /// <summary>
         /// Result of index reading (only non array indexes are considered)
         /// </summary>
-        public readonly List<Value> Result = new List<Value>();
+        public readonly HashSet<Value> Result = new HashSet<Value>();
 
         public IndexReadExecutor(MemoryAssistantBase assistant, MemberIdentifier index)
         {
@@ -54,6 +54,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             Result.Add(value);
         }
 
+        public override void VisitUndefinedValue(UndefinedValue value)
+        {
+            //Nothing to do, undefined values are resolved as implicit arrays
+            Result.Add(value);
+        }
+
         public override void VisitStringValue(StringValue value)
         {
             var subResult = _assistant.ReadStringIndex(value, _index);
@@ -62,7 +68,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         
         private void reportSubResult(IEnumerable<Value> subResult)
         {
-            Result.AddRange(subResult);
+            Result.UnionWith(subResult);
         }
     }
 }

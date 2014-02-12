@@ -97,8 +97,10 @@
     <Compile Include="VirtualReferenceModel\Memory\CallbackReference.cs" />
     <Compile Include="VirtualReferenceModel\Memory\IndexReadExecutor.cs" />
     <Compile Include="VirtualReferenceModel\Memory\IndexWriteExecutor.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\VariableFieldKey.cs" />
     <Compile Include="VirtualReferenceModel\Memory\VariableIndexKey.cs" />
     <Compile Include="VirtualReferenceModel\Memory\VariableKeyBase.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\VariableVirtualKeyBase.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotEntries\IndexStorageVisitor.cs" />
     <Compile Include="VirtualReferenceModel\Memory\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />

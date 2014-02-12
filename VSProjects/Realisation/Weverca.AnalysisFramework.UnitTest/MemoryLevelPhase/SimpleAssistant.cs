@@ -18,7 +18,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return new MemoryEntry(indexed);
         }
 
-        public override MemoryEntry ReadField(AnyValue value, VariableIdentifier field)
+        public override MemoryEntry ReadAnyField(AnyValue value, VariableIdentifier field)
         {
             var info = value.GetInfo<SimpleInfo>();
             var indexed = Context.AnyValue.SetInfo(info);
@@ -86,6 +86,16 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         public override MemoryEntry Simplify(MemoryEntry entry)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
         {
             throw new NotImplementedException();
         }

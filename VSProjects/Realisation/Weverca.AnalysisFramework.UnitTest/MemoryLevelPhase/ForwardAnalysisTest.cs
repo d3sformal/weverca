@@ -949,7 +949,7 @@ $c=  $result[3];
 $argument=""Value"";
 write_argument($argument);
 
-".AssertVariable("argument").HasValues("Value_WrittenInArgument");
+".AssertVariable("argument").HasValues("Value_WrittenInArgument").Analysis(Analyses.SimpleAnalysis);
 
         readonly static TestCase SimpleNew_CASE = @"
 class Obj{ 
@@ -961,6 +961,24 @@ $obj=new Obj();
 $obj->test(1);
 $result=$obj->a;
 ".AssertVariable("result").HasValues("Value");
+
+        readonly static TestCase IsSet_CASE = @"
+$a='var';
+$variable_p=isset($a);
+$variable_n=isset($n);
+
+$b[4]=$a;
+
+$array_p=isset($b[4]);
+$array_n=isset($b[5]);
+
+"
+            .AssertVariable("variable_p").HasValues(true)
+            .AssertVariable("variable_n").HasValues(false)
+            .AssertVariable("array_p").HasValues(true)
+            .AssertVariable("array_n").HasValues(false)
+
+            ;
 
         readonly static TestCase IndirectNewEx_CASE = @"
 class Obj{
@@ -1822,6 +1840,13 @@ $resA = $a;
         public void SimpleNew()
         {
             AnalysisTestUtils.RunTestCase(SimpleNew_CASE);
+        }
+
+
+        [TestMethod]
+        public void IsSet()
+        {
+            AnalysisTestUtils.RunTestCase(IsSet_CASE);
         }
 
         [TestMethod]
