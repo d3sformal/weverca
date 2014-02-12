@@ -35,7 +35,7 @@ namespace Weverca
             {
                 Console.WriteLine("Missing argument");
                 Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa [-mm CopyMM|VrMM FILENAME] [FILENAME]...");
+                Console.WriteLine(@"-sa [-a SimpleAnalysis|WevercaAnalysis][-mm CopyMM|VrMM FILENAME] [FILENAME]...");
                 Console.WriteLine(@"  Static analysis");
                 Console.WriteLine(@"-cmide [-options_cmide]");
                 Console.WriteLine(@"  Code metrics for IDE integration");
@@ -52,14 +52,21 @@ namespace Weverca
                 case "-sa":
                     int filesIndex = 1;
                     MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
-                    if (args[1] == "-mm")
+                    Weverca.AnalysisFramework.UnitTest.Analyses analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
+                    if (args[filesIndex] == "-a")
                     {
-                        filesIndex = 3;
-                        if (args[2] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
+                        if (args[filesIndex+1] == "SimpleAnalysis") analysis = Weverca.AnalysisFramework.UnitTest.Analyses.SimpleAnalysis;
+                        filesIndex += 2;
                     }
+                    if (args.Length >= filesIndex && args[filesIndex] == "-mm")
+                    {
+                        if (args[filesIndex+1] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
+                        filesIndex += 2;
+                    }
+
                     var analysisFiles = new string[args.Length - filesIndex];
                     Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
-                    RunStaticAnalysis(analysisFiles, memoryModel);
+                    RunStaticAnalysis(analysisFiles, analysis, memoryModel);
                     break;
                 case "-cmide":
                     var metricsArgs = new string[args.Length - 3];
@@ -77,7 +84,7 @@ namespace Weverca
         /// </summary>
         /// <param name="filenames">List of file name patterns from command line</param>
         /// <param name="memoryModel">The memory model used for analysis</param>
-        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
         {
             foreach (var argument in filenames)
             {
@@ -105,7 +112,7 @@ namespace Weverca
 
                     // Process analysis
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    var ppGraph = Analyzer.Run(fileInfo, memoryModel);
+                    var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
                     watch.Stop();
 
                     // Build output

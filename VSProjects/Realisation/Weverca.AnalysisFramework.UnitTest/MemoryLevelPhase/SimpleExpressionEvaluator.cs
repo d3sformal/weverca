@@ -153,7 +153,12 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override MemoryEntry ArrayEx(IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
         {
-            throw new NotImplementedException();
+            // If the array expression does not have empty arguments, it is not supported
+            foreach (var keyValue in keyValuePairs)
+            {
+                throw new NotImplementedException();
+            }
+            return new MemoryEntry(OutSet.CreateArray());
         }
 
         #region Expression evaluation helpers

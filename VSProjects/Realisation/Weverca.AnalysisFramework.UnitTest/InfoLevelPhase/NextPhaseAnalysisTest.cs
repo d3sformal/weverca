@@ -168,7 +168,7 @@ $b = strtolower($y);
 ".AssertVariable("_POST").HasTaintStatus(true)
  .AssertVariable("a").HasTaintStatus(true)
  .AssertVariable("b").HasTaintStatus(false)
- .Analysis(Analyses.WevercaAnalysis);
+ .Analysis(Analyses.WevercaAnalysisTest);
 
         readonly static TestCase SimpleTaintAnalysisNativeFunctionsTwoArguments_CASE = @"
 $x = $_POST;
@@ -182,14 +182,14 @@ $d = concat($y, $y);
  .AssertVariable("b").HasTaintStatus(true)
  .AssertVariable("c").HasTaintStatus(true)
  .AssertVariable("d").HasTaintStatus(false)
- .Analysis(Analyses.WevercaAnalysis);
+ .Analysis(Analyses.WevercaAnalysisTest);
 
         readonly static TestCase SimpleTaintAnalysisNativeSanitizer_CASE = @"
 $x = $_POST;
 $a = strlen($b);
 ".AssertVariable("_POST").HasTaintStatus(true)
  .AssertVariable("a").HasTaintStatus(false)
- .Analysis(Analyses.WevercaAnalysis);
+ .Analysis(Analyses.WevercaAnalysisTest);
 
         readonly static TestCase SimpleTaintAnalysisExpressions_CASE = @"
 $x = $_POST;
@@ -203,7 +203,7 @@ $d = $y + $y;
  .AssertVariable("b").HasTaintStatus(true)
  .AssertVariable("c").HasTaintStatus(true)
  .AssertVariable("d").HasTaintStatus(false)
- .Analysis(Analyses.WevercaAnalysis);
+ .Analysis(Analyses.WevercaAnalysisTest);
 
         #endregion Taint analysis
 

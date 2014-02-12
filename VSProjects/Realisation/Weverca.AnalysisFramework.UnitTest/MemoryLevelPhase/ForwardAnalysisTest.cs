@@ -488,20 +488,20 @@ $IncludeResult=(include 'test.php');
         readonly static TestCase SimpleXSSDirty_CASE = @"
 $x=$_POST['dirty'];
 $x=$x;
-".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysis);
+".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysisTest);
 
 
         readonly static TestCase XSSSanitized_CASE = @"
 $x=$_POST['dirty'];
 $x='sanitized';
-".AssertVariable("x").IsXSSClean().Analysis(Analyses.SimpleAnalysis);
+".AssertVariable("x").IsXSSClean().Analysis(Analyses.SimpleAnalysisTest);
 
         readonly static TestCase XSSPossibleDirty_CASE = @"
 $x=$_POST['dirty'];
 if($unknown){
     $x='sanitized';
 }
-".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysis);
+".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysisTest);
 
 
         readonly static TestCase ConstantDeclaring_CASE = @"
@@ -1348,6 +1348,46 @@ $a[2] = $a;
 $result = 1;
 ".AssertVariable("result").HasValues(1);
 
+        readonly static TestCase UndefinedAlias_CASE = @"
+// $alias is undefined, no alias is created
+$a = &$alias;
+// $alias is not an alias of $a, thus it is not updated and stays undefined
+$a = 2;
+$resAlias = $alias;
+// $alias is not an alias of $a, $a is not updated
+$alias = 3;
+$resA = $a;
+".AssertVariable("resAlias").HasUndefinedValue()
+ .AssertVariable("resA").HasValues(2)
+ .MemoryModel(MemoryModels.MemoryModels.CopyMM);
+
+        readonly static TestCase UndefinedAliasMay_CASE = @"
+if ($unknown) $alias = 1;
+$a = &$alias;
+$a = 2;
+$resAlias = $alias;
+$alias = 3;
+$resA = $a;
+"
+ // Note that this is an overapproximation. $resAlias can have only values undefined, 2.
+ // if $alias is undefined at line 2, the alias is not created
+ // if $alias is defined at line 2, it has a single value 1 and the alias is created
+ // line 3 either does not affect $alias (it stays undefined) or set $alias to 2. It thus never has value 1 at line 4.
+ .AssertVariable("resAlias").HasUndefinedAndValues(1, 2)
+ .AssertVariable("resA").HasValues(2, 3)
+ .MemoryModel(MemoryModels.MemoryModels.CopyMM);
+
+        [TestMethod]
+        public void UndefinedAlias()
+        {
+            AnalysisTestUtils.RunTestCase(UndefinedAlias_CASE);
+        }
+
+        [TestMethod]
+        public void UndefinedAliasMay()
+        {
+            AnalysisTestUtils.RunTestCase(UndefinedAliasMay_CASE);
+        }
 
         [TestMethod]
         public void CycledAlias()

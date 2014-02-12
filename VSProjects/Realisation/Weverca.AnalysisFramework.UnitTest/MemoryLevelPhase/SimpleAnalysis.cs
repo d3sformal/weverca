@@ -55,6 +55,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             _flowResolver = new SimpleFlowResolver();
             _functionResolver = new SimpleFunctionResolver(initializer);
+            initializer(EntryInput);
         }
 
         #region Resolvers that are used during analysis
