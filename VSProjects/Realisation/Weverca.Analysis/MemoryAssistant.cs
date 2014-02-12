@@ -757,8 +757,8 @@ namespace Weverca.Analysis
         public override void VisitAnyFloatValue(AnyFloatValue value)
         {
             containsFloat = true;
-            minFloat = Math.Min(minFloat, float.MinValue);
-            maxFloat = Math.Max(maxFloat, float.MaxValue);
+            minFloat = Math.Min(minFloat, double.MinValue);
+            maxFloat = Math.Max(maxFloat, double.MaxValue);
         }
 
         /// <inheritdoc />
