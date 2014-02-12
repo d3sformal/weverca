@@ -17,7 +17,20 @@ namespace Weverca.Analysis
     /// </summary>
     public enum FlagType
     {
-        HTMLDirty = 1, SQLDirty = 2, FilePathDirty = 4
+        /// <summary>
+        /// Indicates that value shouldn't go into browser
+        /// </summary>
+        HTMLDirty = 1,
+
+        /// <summary>
+        /// Indicates that value shoudn't go into database
+        /// </summary>
+        SQLDirty = 2,
+
+        /// <summary>
+        /// Indicates that value shoudn't be used as file name
+        /// </summary>
+        FilePathDirty = 4
     }
 
     /// <summary>

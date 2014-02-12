@@ -31,14 +31,27 @@ namespace Weverca.Analysis
 
         private readonly HashSet<FunctionValue> sharedFunctions = new HashSet<FunctionValue>();
 
+
+        /// <summary>
+        /// Readonly variable name for storing depth of recursion
+        /// </summary>
         public static readonly VariableName callDepthName = new VariableName(".callDepth");
 
         private static readonly VariableName calledObjectTypeName = new VariableName(".calledObject");
 
+        /// <summary>
+        /// Readonly variable name for static variables
+        /// </summary>
         public static readonly VariableName staticVariables = new VariableName(".staticVariables");
 
+        /// <summary>
+        /// Readonly variable name for sink of static variables
+        /// </summary>
         public static readonly VariableName staticVariableSink = new VariableName(".staticVariableSink");
 
+        /// <summary>
+        /// Structure, that stores for every method, its coresponding class name
+        /// </summary>
         public static Dictionary<LangElement, QualifiedName> methodToClass = new Dictionary<LangElement, QualifiedName>();
         /// <summary>
         /// Initializes a new instance of the <see cref="FunctionResolver" /> class.
@@ -269,7 +282,7 @@ namespace Weverca.Analysis
 
         #endregion
 
-
+        /// <inheritdoc />
         public override MemoryEntry InitializeCalledObject(ProgramPointBase caller, ProgramPointGraph extensionGraph, MemoryEntry calledObject)
         {
 

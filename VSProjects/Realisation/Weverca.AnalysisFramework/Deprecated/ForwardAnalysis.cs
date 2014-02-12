@@ -20,7 +20,7 @@ namespace Weverca.AnalysisFramework
         ExpressionEvaluator<FlowInfo> _evaluator;
         DeclarationResolver<FlowInfo> _resolver;
 
-
+        /// <inheritdoc />
         public ForwardAnalysis(Weverca.ControlFlowGraph.ControlFlowGraph entryMethod, ExpressionEvaluator<FlowInfo> evaluator, DeclarationResolver<FlowInfo> resolver)
             : base(entryMethod)
         {
@@ -28,6 +28,7 @@ namespace Weverca.AnalysisFramework
             _resolver = resolver;
         }
 
+        /// <inheritdoc />
         protected override void FlowThrough(FlowControler<FlowInfo> flow, LangElement statement)
         {
             var walker = tryPush(statement);
@@ -40,7 +41,7 @@ namespace Weverca.AnalysisFramework
             tryPop();
         }
 
-
+        /// <inheritdoc />
         protected override bool ConfirmAssumption(FlowControler<FlowInfo> flow, AssumptionCondition_deprecated condition)
         {
             flow.FillOutputFromInSet();
@@ -134,21 +135,25 @@ namespace Weverca.AnalysisFramework
             //by default we won't assume anything
         }
 
+        /// <inheritdoc />
         protected override void CallMerge(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet)
         {
             BlockMerge(inSet1, inSet2, outSet);
         }
 
+        /// <inheritdoc />
         protected override void BlockMerge(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override void IncludeMerge(IEnumerable<FlowInputSet<FlowInfo>> inSets, FlowOutputSet<FlowInfo> outSet)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override void ReturnedFromCall(FlowInputSet<FlowInfo> callerInSet, FlowInputSet<FlowInfo> callOutput, FlowOutputSet<FlowInfo> outSet)
         {
             throw new NotImplementedException();

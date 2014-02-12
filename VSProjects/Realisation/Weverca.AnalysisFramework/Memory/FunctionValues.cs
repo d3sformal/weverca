@@ -50,6 +50,7 @@ namespace Weverca.AnalysisFramework.Memory
 
         public override abstract void Accept(IValueVisitor visitor);
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return base.ToString() + " " + Name;
@@ -66,16 +67,19 @@ namespace Weverca.AnalysisFramework.Memory
             Analyzer = analyzer;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitNativeAnalyzerValue(this);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return Analyzer.GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value other)
         {
             var o = other as NativeAnalyzerValue;
@@ -102,16 +106,19 @@ namespace Weverca.AnalysisFramework.Memory
             Declaration = declaration;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitSourceFunctionValue(this);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return Declaration.GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value other)
         {
             var o = other as SourceFunctionValue;
@@ -138,16 +145,19 @@ namespace Weverca.AnalysisFramework.Memory
             Declaration = declaration;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitSourceMethodValue(this);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return Declaration.GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value other)
         {
             var o = other as SourceMethodValue;
@@ -174,16 +184,19 @@ namespace Weverca.AnalysisFramework.Memory
             Declaration = declaration;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitLambdaFunctionValue(this);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return Declaration.GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value other)
         {
             var o = other as LambdaFunctionValue;

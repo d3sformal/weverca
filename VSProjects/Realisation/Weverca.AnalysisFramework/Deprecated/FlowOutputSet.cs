@@ -15,7 +15,9 @@ namespace Weverca.AnalysisFramework
     /// <typeparam name="FlowInfo">Type of object which hold information collected during statement analysis.</typeparam>
     public class FlowOutputSet<FlowInfo> : FlowInputSet<FlowInfo>
     {
-    
+        /// <summary>
+        /// Creates new instace of FlowOutputSet
+        /// </summary>
         public FlowOutputSet()
         {
         }

@@ -41,6 +41,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             _partial = partial;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             var value= _constantProvider(Services.Evaluator);
@@ -65,6 +66,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             this.ThisObj = thisObj;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             MemoryEntry value;

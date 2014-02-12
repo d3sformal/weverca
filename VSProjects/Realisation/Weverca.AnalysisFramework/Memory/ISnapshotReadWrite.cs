@@ -106,6 +106,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Create function value from given declaration
         /// </summary>
         /// <param name="declaration">Function declaration</param>
+        /// <param name="declaringScript">information about owning script</param>
         /// <returns>Created value</returns>
         FunctionValue CreateFunction(FunctionDecl declaration, FileInfo declaringScript);
 
@@ -113,6 +114,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Create function value from given declaration
         /// </summary>
         /// <param name="declaration">Method declaration</param>
+        /// <param name="declaringScript">information about owning script</param>
         /// <returns>Created value</returns>
         FunctionValue CreateFunction(MethodDecl declaration, FileInfo declaringScript);
 
@@ -134,7 +136,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Create function value from given expression
         /// </summary>
-        /// <param name="expression">Lambda function declaration</param>        
+        /// <param name="expression">Lambda function declaration</param>     
+        /// <param name="declaringScript">information about owning script</param>
         /// <returns>Created value</returns>
         FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript);
 

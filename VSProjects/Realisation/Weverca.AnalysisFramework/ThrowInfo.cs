@@ -25,6 +25,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly MemoryEntry ThrowedValue;
 
+        /// <summary>
+        /// Creates new instance of ThrowInfo
+        /// </summary>
+        /// <param name="catchBlock">inforamation about catchblocks</param>
+        /// <param name="throwedValue">possible throwd values</param>
         public ThrowInfo(CatchBlockDescription catchBlock, MemoryEntry throwedValue)
         {
             Catch = catchBlock;

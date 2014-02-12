@@ -97,17 +97,30 @@ namespace Weverca.AnalysisFramework.Memory
             return info as DataKey;
         }
 
+
+        /// <summary>
+        /// Method for calling IValueVisitor
+        /// </summary>
+        /// <param name="visitor">IValueVisitor</param>
         public virtual void Accept(IValueVisitor visitor)
         {
             visitor.VisitValue(this);
         }
 
+        /// <summary>
+        /// Set new InfoDataStorage and computes hash
+        /// </summary>
+        /// <param name="storage">new InfoDataStorage</param>
         protected void setStorage(InfoDataStorage storage)
         {
             _storage = storage;
             _precomputedHash = _storage.GetHashCode();
         }
 
+        /// <summary>
+        /// Returns Storage of aditional value information
+        /// </summary>
+        /// <returns>Storage of aditional value information</returns>
         protected InfoDataStorage getStorage()
         {
             return _storage;
@@ -115,6 +128,7 @@ namespace Weverca.AnalysisFramework.Memory
 
         #region Standard method overrides
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (base.Equals(obj))
@@ -133,6 +147,7 @@ namespace Weverca.AnalysisFramework.Memory
             return equals(o);
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return _precomputedHash + getHashCode();

@@ -521,30 +521,55 @@ namespace Weverca.AnalysisFramework.Memory
             return new ContainerIndex(identifier);
         }
 
+        /// <summary>
+        /// Creates new string vale from given string
+        /// </summary>
+        /// <param name="literal">string value</param>
+        /// <returns>new String value</returns>
         public StringValue CreateString(string literal)
         {
             _statistics.Report(Statistic.CreatedStringValues);
             return new StringValue(literal);
         }
 
+        /// <summary>
+        /// Creates new integer value from given integer
+        /// </summary>
+        /// <param name="number">interger value</param>
+        /// <returns>new interger value</returns>
         public IntegerValue CreateInt(int number)
         {
             _statistics.Report(Statistic.CreatedIntValues);
             return new IntegerValue(number);
         }
 
+        /// <summary>
+        /// Creates new integer value from given longint
+        /// </summary>
+        /// <param name="number">longint value</param>
+        /// <returns>new longint value</returns>
         public LongintValue CreateLong(long number)
         {
             _statistics.Report(Statistic.CreatedLongValues);
             return new LongintValue(number);
         }
 
+        /// <summary>
+        /// Creates new boolean value from given bool
+        /// </summary>
+        /// <param name="boolean">bool value</param>
+        /// <returns>Creates new boolean value</returns>
         public BooleanValue CreateBool(bool boolean)
         {
             _statistics.Report(Statistic.CreatedBooleanValues);
             return new BooleanValue(boolean);
         }
 
+        /// <summary>
+        /// Creates new float value from given double
+        /// </summary>
+        /// <param name="number">float value</param>
+        /// <returns> new float value</returns>
         public FloatValue CreateDouble(double number)
         {
             _statistics.Report(Statistic.CreatedFloatValues);

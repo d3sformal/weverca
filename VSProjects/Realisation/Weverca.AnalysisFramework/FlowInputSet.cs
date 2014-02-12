@@ -30,6 +30,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return Representation;
@@ -38,25 +39,37 @@ namespace Weverca.AnalysisFramework
         #region ISnapshotReadonly implementation
 
         #region Value singletons
+
+        /// <inheritdoc />
         public AnyStringValue AnyStringValue { get { return Snapshot.AnyStringValue; } }
 
+        /// <inheritdoc />
         public AnyBooleanValue AnyBooleanValue { get { return Snapshot.AnyBooleanValue; } }
 
+        /// <inheritdoc />
         public AnyIntegerValue AnyIntegerValue { get { return Snapshot.AnyIntegerValue; } }
 
+        /// <inheritdoc />
         public AnyFloatValue AnyFloatValue { get { return Snapshot.AnyFloatValue; } }
 
+        /// <inheritdoc />
         public AnyLongintValue AnyLongintValue { get { return Snapshot.AnyLongintValue; } }
 
+        /// <inheritdoc />
         public AnyObjectValue AnyObjectValue { get { return Snapshot.AnyObjectValue; } }
 
+        /// <inheritdoc />
         public AnyArrayValue AnyArrayValue { get { return Snapshot.AnyArrayValue; } }
 
+        /// <inheritdoc />
         public AnyResourceValue AnyResourceValue { get { return Snapshot.AnyResourceValue; } }
 
+        /// <inheritdoc />
         public AnyValue AnyValue { get { return Snapshot.AnyValue; } }
 
+        /// <inheritdoc />
         public UndefinedValue UndefinedValue { get { return Snapshot.UndefinedValue; } }
+ 
         #endregion
 
         public InfoValue[] ReadInfo(Value value)

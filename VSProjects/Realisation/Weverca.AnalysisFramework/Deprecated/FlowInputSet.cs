@@ -48,7 +48,7 @@ namespace Weverca.AnalysisFramework
             return functions.TryGetValue(name, out function);
         }
 
-
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var o = obj as FlowInputSet<FlowInfo>;
@@ -60,11 +60,13 @@ namespace Weverca.AnalysisFramework
             return sameCount && sameEls;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             var b = new StringBuilder();

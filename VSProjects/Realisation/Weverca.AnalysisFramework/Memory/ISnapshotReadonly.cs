@@ -8,14 +8,45 @@ namespace Weverca.AnalysisFramework.Memory
     public interface ISnapshotReadonly
     {
         #region Value singletons
-
+        
+        /// <summary>
+        /// Creates new AnyValue
+        /// </summary>
         AnyValue AnyValue { get; }
+        
+        /// <summary>
+        /// Creates new UndefinedValue
+        /// </summary>
         UndefinedValue UndefinedValue { get; }
+
+        /// <summary>
+        /// Creates new AnyStringValue
+        /// </summary>
         AnyStringValue AnyStringValue { get; }
+
+        /// <summary>
+        /// Creates new AnyBooleanValue
+        /// </summary>
         AnyBooleanValue AnyBooleanValue { get; }
+
+        /// <summary>
+        /// Creates new AnyIntegerValue
+        /// </summary>
         AnyIntegerValue AnyIntegerValue { get; }
+
+        /// <summary>
+        /// Creates new AnyLongintValue
+        /// </summary>
         AnyLongintValue AnyLongintValue { get; }
+
+        /// <summary>
+        /// Creates new AnyObjectValue
+        /// </summary>
         AnyObjectValue AnyObjectValue { get; }
+
+        /// <summary>
+        /// Creates new AnyArrayValue
+        /// </summary>
         AnyArrayValue AnyArrayValue { get; }
 
         #endregion

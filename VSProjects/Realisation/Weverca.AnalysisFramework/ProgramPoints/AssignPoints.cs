@@ -36,6 +36,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Assign = assign;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Value = ROperand.Value;
@@ -86,6 +87,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 throw new NotSupportedException("Given lOperand cannot be used ass assign target");
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             ValuePoint firstPart, secondPart;
@@ -151,6 +153,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 throw new NotSupportedException("Given lOperand cannot be used ass assign target");
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             var binaryOperation = toBinaryOperation(Assign.PublicOperation);
@@ -224,6 +227,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Assign = assign;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Services.Evaluator.AliasAssign(LOperand.LValue, ROperand.Value);

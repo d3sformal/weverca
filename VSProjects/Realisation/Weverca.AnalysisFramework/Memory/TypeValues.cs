@@ -9,10 +9,19 @@ using PHP.Core.AST;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+    /// <summary>
+    /// Value storing information about class declaration
+    /// </summary>
     public class TypeValue : Value
     {
+        /// <summary>
+        /// Stores information about class, linke ancestors, fields, methods and constants
+        /// </summary>
         public readonly ClassDecl Declaration;
 
+        /// <summary>
+        /// Class name
+        /// </summary>
         public readonly QualifiedName QualifiedName;
 
         internal TypeValue(ClassDecl declaration)
@@ -21,6 +30,7 @@ namespace Weverca.AnalysisFramework.Memory
             Declaration = declaration;
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitNativeTypeValue(this);
@@ -44,6 +54,7 @@ namespace Weverca.AnalysisFramework.Memory
             return GetType() == obj.GetType();
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return base.ToString() + " type: " + QualifiedName;

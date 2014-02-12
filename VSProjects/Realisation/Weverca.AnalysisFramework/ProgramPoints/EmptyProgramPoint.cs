@@ -13,8 +13,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class EmptyProgramPoint : ProgramPointBase
     {
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             //no action is needed

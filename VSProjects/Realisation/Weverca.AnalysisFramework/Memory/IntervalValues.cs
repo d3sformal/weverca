@@ -4,6 +4,10 @@ using PHP.Core;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+
+    /// <summary>
+    /// Abstract inteval value
+    /// </summary>
     public abstract class IntervalValue : Value
     { }
     
@@ -37,11 +41,13 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         public abstract T Zero { get; }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitGenericIntervalValue(this);
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value obj)
         {
             var o = obj as IntervalValue<T>;
@@ -53,17 +59,22 @@ namespace Weverca.AnalysisFramework.Memory
             return Start.Equals(o.Start) && End.Equals(o.End);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return Start.GetHashCode() + End.GetHashCode();
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format("'({0},{1})', Type: {2}", Start, End, typeof(T).Name);
         }
     }
 
+    /// <summary>
+    /// Represnets integer interval. Start and end are inclusive
+    /// </summary>
     public class IntegerIntervalValue : IntervalValue<int>
     {
         /// <summary>
@@ -81,6 +92,7 @@ namespace Weverca.AnalysisFramework.Memory
             get { return 0; }
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitIntervalIntegerValue(this);
@@ -93,6 +105,9 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
+    /// <summary>
+    /// Represent longint interval value
+    /// </summary>
     public class LongintIntervalValue : IntervalValue<long>
     {
         /// <summary>
@@ -110,6 +125,7 @@ namespace Weverca.AnalysisFramework.Memory
             get { return 0; }
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitIntervalLongintValue(this);
@@ -122,6 +138,9 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
+    /// <summary>
+    /// Represnets float interval value
+    /// </summary>
     public class FloatIntervalValue : IntervalValue<double>
     {
         /// <summary>
@@ -139,6 +158,7 @@ namespace Weverca.AnalysisFramework.Memory
             get { return 0.0; }
         }
 
+        /// <inheritdoc />
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitIntervalFloatValue(this);

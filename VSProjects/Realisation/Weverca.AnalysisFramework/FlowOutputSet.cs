@@ -99,111 +99,138 @@ namespace Weverca.AnalysisFramework
         #region Snapshot API wrapping
 
 
-
+        /// <inheritdoc />
         public StringValue CreateString(string literal)
         {
             return Snapshot.CreateString(literal);
         }
 
+        /// <inheritdoc />
         public IntegerValue CreateInt(int number)
         {
             return Snapshot.CreateInt(number);
         }
 
+        /// <inheritdoc />
         public LongintValue CreateLong(long number)
         {
             return Snapshot.CreateLong(number);
         }
 
+        /// <inheritdoc />
         public BooleanValue CreateBool(bool boolean)
         {
             return Snapshot.CreateBool(boolean);
         }
 
+        /// <inheritdoc />
         public FloatValue CreateDouble(double number)
         {
             return Snapshot.CreateDouble(number);
         }
 
+        /// <inheritdoc />
         public FunctionValue CreateFunction(FunctionDecl declaration, FileInfo declaringScript)
         {
             return Snapshot.CreateFunction(declaration, declaringScript);
         }
 
+        /// <inheritdoc />
         public FunctionValue CreateFunction(MethodDecl declaration, FileInfo declaringScript)
         {
             return Snapshot.CreateFunction(declaration, declaringScript);
         }
 
+        /// <inheritdoc />
         public FunctionValue CreateFunction(Name name, NativeAnalyzer analyzer)
         {
             return Snapshot.CreateFunction(name, analyzer);
         }
 
+        /// <inheritdoc />
         public FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript)
         {
             return Snapshot.CreateFunction(expression, declaringScript);
         }
 
+        /// <inheritdoc />
         public TypeValue CreateType(ClassDecl declaration)
         {
             return Snapshot.CreateType(declaration);
         }
 
+        /// <inheritdoc />
         public AssociativeArray CreateArray()
         {
             return Snapshot.CreateArray();
         }
 
+        /// <inheritdoc />
         public ObjectValue CreateObject(TypeValue type)
         {
             return Snapshot.CreateObject(type);
         }
 
+        /// <inheritdoc />
         public IntegerIntervalValue CreateIntegerInterval(int start, int end)
         {
             return Snapshot.CreateIntegerInterval(start, end);
         }
 
+        /// <inheritdoc />
         public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
             return Snapshot.CreateLongintInterval(start, end);
         }
 
+        /// <inheritdoc />
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
             return Snapshot.CreateFloatInterval(start, end);
         }
 
+        /// <inheritdoc />
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return Snapshot.CreateInfo(data);
         }
+
+        /// <inheritdoc />
         public void SetInfo(Value value, params InfoValue[] info)
         {
             Snapshot.SetInfo(value, info);
         }
 
+        /// <inheritdoc />
         public void SetInfo(VariableName variable, params InfoValue[] info)
         {
             Snapshot.SetInfo(variable, info);
         }
 
+        /// <summary>
+        /// Fetches given variables from global to local context
+        /// </summary>
+        /// <param name="variables">fetches variables</param>
         public void FetchFromGlobal(params VariableName[] variables)
         {
             Snapshot.FetchFromGlobal(variables);
         }
 
+        /// <summary>
+        /// Fetches all vrables from global to local context
+        /// </summary>
         public void FetchFromGlobalAll()
         {
             Snapshot.FetchFromGlobalAll();
         }
 
+        /// <inheritdoc />
         public void DeclareGlobal(FunctionDecl declaration, FileInfo declaringScript)
         {
             Snapshot.DeclareGlobal(declaration, declaringScript);
         }
 
+        /// <inheritdoc />
         public void DeclareGlobal(TypeValue declaration)
         {
             Snapshot.DeclareGlobal(declaration);
@@ -267,21 +294,25 @@ namespace Weverca.AnalysisFramework
 
         #region Snapshot output API
 
+        /// <inheritdoc />
         public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
             return Snapshot.GetVariable(variable, forceGlobalContext);
         }
 
+        /// <inheritdoc />
         public ReadSnapshotEntryBase CreateSnapshotEntry(MemoryEntry value)
         {
             return Snapshot.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         public ReadWriteSnapshotEntryBase GetControlVariable(VariableName variable)
         {
             return Snapshot.GetControlVariable(variable);
         }
 
+        /// <inheritdoc />
         public ReadWriteSnapshotEntryBase GetLocalControlVariable(VariableName variable)
         {
             return Snapshot.GetLocalControlVariable(variable);
