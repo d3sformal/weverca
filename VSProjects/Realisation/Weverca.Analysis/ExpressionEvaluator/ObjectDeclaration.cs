@@ -29,7 +29,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var method in type.SourceCodeMethods)
             {
-                FunctionResolver.methodToClass.Add(method.Value.DeclaringElement, type.QualifiedName);
+                FunctionResolver.methodToClass[method.Value.DeclaringElement]= type.QualifiedName;
             }
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
@@ -728,6 +728,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 else
                 {
                     //ignore traits are not supported by AST, only by parser
+                }
+            }
+            var contructIdentifier=new MethodIdentifier(result.QualifiedName,new Name("__construct"));
+            if(!result.SourceCodeMethods.ContainsKey(contructIdentifier))
+            {
+                var id=new MethodIdentifier(result.QualifiedName, result.QualifiedName.Name);
+                if (result.SourceCodeMethods.ContainsKey(id))
+                {
+                    var methodValue=result.SourceCodeMethods[id];
+                    var element=methodValue.DeclaringElement as MethodDecl;
+                    var newElement = new MethodDecl(element.Position,element.EntireDeclarationPosition,element.HeadingEndPosition,element.DeclarationBodyPosition,"__construct",
+                        element.Signature.AliasReturn,element.Signature.FormalParams,new List<FormalTypeParam>(),element.Body,element.Modifiers,element.BaseCtorParams,element.Attributes.Attributes);
+                    result.SourceCodeMethods.Add(contructIdentifier,OutSet.CreateFunction(newElement,methodValue.DeclaringScript));
                 }
             }
 
