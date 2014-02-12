@@ -606,6 +606,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Create function value from given expression
         /// </summary>
         /// <param name="expression">Lambda function declaration</param>
+        /// <param name="declaringScript">Information about owning script</param>
         /// <returns>Created value</returns>
         public FunctionValue CreateFunction(LambdaFunctionExpr expression, FileInfo declaringScript)
         {
@@ -613,6 +614,11 @@ namespace Weverca.AnalysisFramework.Memory
             return new LambdaFunctionValue(expression, declaringScript);
         }
 
+        /// <summary>
+        /// Creates new TypeValue from given ClassDecl
+        /// </summary>
+        /// <param name="declaration">Class declaration</param>
+        /// <returns>new TypeValue</returns>
         public TypeValue CreateType(ClassDecl declaration)
         {
             var type = new TypeValue(declaration);
@@ -621,6 +627,11 @@ namespace Weverca.AnalysisFramework.Memory
             return type;
         }
 
+        /// <summary>
+        /// Create new ObjectValue of given type
+        /// </summary>
+        /// <param name="type">Type of tthe object</param>
+        /// <returns>new ObjectValue</returns>
         public ObjectValue CreateObject(TypeValue type)
         {
             checkCanUpdate();
@@ -633,6 +644,10 @@ namespace Weverca.AnalysisFramework.Memory
             return createdObject;
         }
 
+        /// <summary>
+        /// Creates new AssociativeArray
+        /// </summary>
+        /// <returns>new AssociativeArray</returns>
         public AssociativeArray CreateArray()
         {
             checkCanUpdate();
@@ -645,24 +660,43 @@ namespace Weverca.AnalysisFramework.Memory
             return createdArray;
         }
 
+        /// <summary>
+        /// Creates new IntegerIntervalValue
+        /// </summary>
+        /// <param name="start">interval start</param>
+        /// <param name="end">interval end</param>
+        /// <returns>new IntegerIntervalValue</returns>
         public IntegerIntervalValue CreateIntegerInterval(int start, int end)
         {
             _statistics.Report(Statistic.CreatedIntIntervalValues);
             return new IntegerIntervalValue(start, end);
         }
 
+        /// <summary>
+        /// Creates new LongintIntervalValue
+        /// </summary>
+        /// <param name="start">Interval start</param>
+        /// <param name="end">Interval end</param>
+        /// <returns>new LongintIntervalValue</returns>
         public LongintIntervalValue CreateLongintInterval(long start, long end)
         {
             _statistics.Report(Statistic.CreatedLongIntervalValues);
             return new LongintIntervalValue(start, end);
         }
 
+        /// <summary>
+        /// Creates new FloatIntervalValue
+        /// </summary>
+        /// <param name="start">interval start</param>
+        /// <param name="end">interval end</param>
+        /// <returns>new FloatIntervalValue</returns>
         public FloatIntervalValue CreateFloatInterval(double start, double end)
         {
             _statistics.Report(Statistic.CreatedFloatIntervalValues);
             return new FloatIntervalValue(start, end);
         }
 
+        /// <inheritdoc />
         public void SetInfo(Value value, params InfoValue[] info)
         {
             checkCanUpdate();
@@ -670,6 +704,7 @@ namespace Weverca.AnalysisFramework.Memory
             setInfo(value, info);
         }
 
+        /// <inheritdoc />
         public void SetInfo(VariableName variable, params InfoValue[] info)
         {
             checkCanUpdate();
@@ -677,12 +712,14 @@ namespace Weverca.AnalysisFramework.Memory
             setInfo(variable, info);
         }
 
+        /// <inheritdoc />
         public InfoValue[] ReadInfo(Value value)
         {
             _statistics.Report(Statistic.ValueInfoReads);
             return readInfo(value);
         }
 
+        /// <inheritdoc />
         public InfoValue[] ReadInfo(VariableName variable)
         {
             _statistics.Report(Statistic.VariableInfoReads);
@@ -703,18 +740,21 @@ namespace Weverca.AnalysisFramework.Memory
             _statistics.Report(Statistic.CallLevelMerges);
         }
 
+        /// <inheritdoc />
         public void FetchFromGlobal(params VariableName[] variables)
         {
             _statistics.Report(Statistic.GlobalVariableFetches, variables.Length);
             fetchFromGlobal(variables);
         }
 
+        /// <inheritdoc />
         public void FetchFromGlobalAll()
         {
             var globals = getGlobalVariables();
             FetchFromGlobal(globals.ToArray());
         }
 
+        /// <inheritdoc />
         public void DeclareGlobal(FunctionDecl declaration, FileInfo declaringScript)
         {
             var function = CreateFunction(declaration, declaringScript);
@@ -722,6 +762,7 @@ namespace Weverca.AnalysisFramework.Memory
             declareGlobal(function);
         }
 
+        /// <inheritdoc />
         public void DeclareGlobal(TypeValue type)
         {
             _statistics.Report(Statistic.DeclaredTypes);

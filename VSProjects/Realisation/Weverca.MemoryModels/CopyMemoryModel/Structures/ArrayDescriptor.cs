@@ -37,6 +37,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
         /// </summary>
+        /// <param name="arrayValue">Asociative array</param>
         /// <param name="parentVariable">The parent variable.</param>
         public ArrayDescriptor(AssociativeArray arrayValue, MemoryIndex parentVariable)
         {

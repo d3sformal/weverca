@@ -100,7 +100,8 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// All dispatched calls are merged via this call.        
         /// </summary>
-        /// <param name="inSets">Input sets from all dispatched includes.</param>
+        /// <param name="inSet1">Input sets from all dispatched includes.</param>
+        /// <param name="inSet2">Input sets from all dispatched includes.</param>
         /// <param name="outSet">Output after merging.</param>
         protected abstract void CallMerge(FlowInputSet<FlowInfo> inSet1, FlowInputSet<FlowInfo> inSet2, FlowOutputSet<FlowInfo> outSet);
 

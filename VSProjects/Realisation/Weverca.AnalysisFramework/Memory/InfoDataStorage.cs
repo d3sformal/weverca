@@ -35,6 +35,7 @@ namespace Weverca.AnalysisFramework.Memory
 
         #region Standard method overrides
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             var hashcode = 0;
@@ -47,6 +48,7 @@ namespace Weverca.AnalysisFramework.Memory
             return hashcode;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var o = obj as InfoDataStorage;

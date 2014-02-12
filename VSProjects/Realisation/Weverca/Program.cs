@@ -83,6 +83,7 @@ namespace Weverca
         /// Execute the static analysis and print results
         /// </summary>
         /// <param name="filenames">List of file name patterns from command line</param>
+        /// <param name="analysis">type of analysis</param>
         /// <param name="memoryModel">The memory model used for analysis</param>
         private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
         {

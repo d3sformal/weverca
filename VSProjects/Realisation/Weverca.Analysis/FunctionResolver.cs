@@ -225,7 +225,14 @@ namespace Weverca.Analysis
             setCallBranching(functions);
         }
 
-
+        /// <summary>
+        /// This method resolves keyword self and parent and return list of possible QualifiedName
+        /// </summary>
+        /// <param name="typeName">type name to resolve</param>
+        /// <param name="flow">FlowController</param>
+        /// <param name="OutSet">FlowOutputSet</param>
+        /// <param name="element">element, where the call apears</param>
+        /// <returns>resolved QualifiedNames</returns>
         public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName,FlowController flow, FlowOutputSet OutSet, LangElement element)
         {
             List<QualifiedName> result = new List<QualifiedName>();
@@ -621,6 +628,7 @@ namespace Weverca.Analysis
             }
         }
 
+
         protected virtual void addCallBranch(FunctionValue function)
         {
             // Create graph for every function - NOTE: We can share pp graphs
@@ -706,6 +714,12 @@ namespace Weverca.Analysis
             return qualifiedNames;
         }
 
+        /// <summary>
+        /// Resolve function names from memory entry and resutrn list of possible called function names
+        /// </summary>
+        /// <param name="functionName">Input memory entry</param>
+        /// <param name="flow">FlowController</param>
+        /// <returns>List of string with possible function names</returns>
         public static List<string> GetFunctionNames(MemoryEntry functionName, FlowController flow)
         {
             var stringConverter = new StringConverter(flow);

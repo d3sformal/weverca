@@ -40,6 +40,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class FunctionDeclPoint : ProgramPointBase
     {
+        /// <summary>
+        /// function declaration ast node
+        /// </summary>
         public readonly FunctionDecl Declaration;
 
         /// <inheritdoc />

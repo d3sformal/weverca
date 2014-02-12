@@ -72,6 +72,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Fields
 
+        /// <inheritdoc />
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             ObjectDescriptor descriptor = new ObjectDescriptor(type);
@@ -117,6 +118,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Indexes
 
+        /// <inheritdoc />
         protected override void initializeArray(AssociativeArray createdArray)
         {
             ArrayDescriptor descriptor = new ArrayDescriptor();
@@ -166,6 +168,7 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Flow Controll
 
+        /// <inheritdoc />
         protected override void extend(ISnapshotReadonly[] inputs)
         {
             if (inputs.Length > 0)
@@ -248,6 +251,7 @@ namespace Weverca.MemoryModels.MemoryModel
             memoryInfos = new Dictionary<MemoryIndex, MemoryInfo>(baseSnapshot.memoryInfos);
         }
 
+        /// <inheritdoc />
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             throw new NotImplementedException();
@@ -257,11 +261,13 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #region Globals
 
+        /// <inheritdoc />
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<VariableName> getGlobalVariables()
         {
             throw new NotImplementedException();
@@ -275,43 +281,56 @@ namespace Weverca.MemoryModels.MemoryModel
 
 
         #region Something from interface
+      
+        /// <inheritdoc />
         protected override void declareGlobal(FunctionValue declaration)
         {
             throw new NotImplementedException();
         }
+      
+        /// <inheritdoc />
         protected override void declareGlobal(TypeValue declaration)
         {
             throw new NotImplementedException();
         }
+      
+        /// <inheritdoc />
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
             throw new NotImplementedException();
         }
+        
+        /// <inheritdoc />
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             throw new NotImplementedException();
         }
-
+      
+        /// <inheritdoc />
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             throw new NotImplementedException();
         }
-
+       
+        /// <inheritdoc />
         protected override void setInfo(Value value, params InfoValue[] info)
         {
             throw new NotImplementedException();
         }
-
+        
+        /// <inheritdoc />
         protected override void setInfo(VariableName variable, params InfoValue[] info)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override InfoValue[] readInfo(Value value)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override InfoValue[] readInfo(VariableName variable)
         {
             throw new NotImplementedException();
@@ -889,37 +908,43 @@ namespace Weverca.MemoryModels.MemoryModel
 
         #endregion
 
-
+        /// <inheritdoc />
         protected override TypeValue objectType(ObjectValue objectValue)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase getVariable(AnalysisFramework.VariableIdentifier variable, bool forceGlobalContext)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
             throw new NotImplementedException();

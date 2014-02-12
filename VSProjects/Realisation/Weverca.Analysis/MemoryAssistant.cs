@@ -574,8 +574,11 @@ namespace Weverca.Analysis
 
 
 
-
-    class Simplifier : AbstractValueVisitor
+    /// <summary>
+    /// Performs the simplification of memory entry, inca it contains to many values.
+    /// In some cases resulting memory entry contains leas accurate information
+    /// </summary>
+    public class Simplifier : AbstractValueVisitor
     {
         private HashSet<Value> result;
         private HashSet<Value> booleans;
@@ -591,11 +594,16 @@ namespace Weverca.Analysis
         private double maxFloat = double.MinValue;
         private SnapshotBase context;
 
+        /// <summary>
+        /// Creates new instance of Simplifier
+        /// </summary>
+        /// <param name="context">SnapshotBase</param>
         public Simplifier(SnapshotBase context)
         {
             this.context = context;
             result = new HashSet<Value>();
             booleans = new HashSet<Value>();
+            strings = new HashSet<Value>();
         }
 
         /// <inheritdoc />
@@ -604,6 +612,12 @@ namespace Weverca.Analysis
             result.Add(value);
         }
 
+        /// <summary>
+        /// Perform simplification of memory entry
+        /// In some cases resulting memory entry contains leas accurate information
+        /// </summary>
+        /// <param name="entry">Memory entry</param>
+        /// <returns>simplified memory entry</returns>
         public IEnumerable<Value> Simplify(MemoryEntry entry)
         {
             foreach (var value in entry.PossibleValues)

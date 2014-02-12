@@ -17,6 +17,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     {
         public readonly ValueAssignEx Assign;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Assign; } }
 
         /// <summary>

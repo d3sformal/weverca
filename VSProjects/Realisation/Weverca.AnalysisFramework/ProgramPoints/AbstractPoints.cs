@@ -38,6 +38,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             protected set { throw new NotSupportedException("You have to override Value to be able set it"); }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return LValue.ToString();

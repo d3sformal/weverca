@@ -41,7 +41,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Read index of string value
         /// </summary>
-        /// <param name="values">String value which index is read</param>
+        /// <param name="value">String value which index is read</param>
         /// <param name="index">Index used for given value</param>
         /// <returns>Value resolved by reading index on given value</returns>
         public abstract IEnumerable<Value> ReadStringIndex(StringValue value, MemberIdentifier index);
@@ -118,7 +118,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Resolve methods with given name for possible value
         /// </summary>
         /// <param name="thisObject">Value which methods are resolved</param>
-        /// <param name="value">Type of the object</param>
+        /// <param name="type">Type of the object</param>
         /// <param name="methodName">Name of resolved methods</param>
         /// <param name="objectMethods">Methods available for thisObject</param>
         /// <returns>Resolved methods</returns>

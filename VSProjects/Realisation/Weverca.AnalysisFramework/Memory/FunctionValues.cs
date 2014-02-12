@@ -10,6 +10,10 @@ using PHP.Core.AST;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+
+    /// <summary>
+    /// Type of values which stroes infromation about declared functions and method
+    /// </summary>
     public abstract class FunctionValue : Value
     {
         /// <summary>
@@ -48,6 +52,7 @@ namespace Weverca.AnalysisFramework.Memory
             Name = name;
         }
 
+        /// <inheritdoc />
         public override abstract void Accept(IValueVisitor visitor);
 
         /// <inheritdoc />
@@ -57,8 +62,14 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
+    /// <summary>
+    /// Function value, which stores information about native function
+    /// </summary>
     public class NativeAnalyzerValue : FunctionValue
     {
+        /// <summary>
+        /// Native analyzer delegated used for analysis
+        /// </summary>
         public readonly NativeAnalyzer Analyzer;
 
         internal NativeAnalyzerValue(Name name, NativeAnalyzer analyzer)
@@ -96,8 +107,14 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
+    /// <summary>
+    /// Function value which stroes information about function defined in source code
+    /// </summary>
     public class SourceFunctionValue : FunctionValue
     {
+        /// <summary>
+        /// Ast element of function declaration
+        /// </summary>
         public readonly FunctionDecl Declaration;
 
         internal SourceFunctionValue(FunctionDecl declaration, FileInfo declaringScript)
@@ -135,8 +152,14 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
+    /// <summary>
+    /// Method value which stroes information about method defined in source code
+    /// </summary>
     public class SourceMethodValue : FunctionValue
     {
+        /// <summary>
+        /// Ast element of method declaration
+        /// </summary>
         public readonly MethodDecl Declaration;
 
         internal SourceMethodValue(MethodDecl declaration, FileInfo declaringScript)

@@ -61,6 +61,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Expects expression parts that are already not connected into PPG !!!
         /// </summary>
+        /// <param name="owner">owner program point</param>
         /// <param name="expressionParts">Parts of condition expression</param>
         internal EvaluationLog(ProgramPointBase owner, IEnumerable<ProgramPointBase> expressionParts)
         {

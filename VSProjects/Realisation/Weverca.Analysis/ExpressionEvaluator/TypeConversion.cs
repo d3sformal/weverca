@@ -744,7 +744,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the string value to corresponding floating-point number.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out double)" />
+        /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">String to convert.</param>
