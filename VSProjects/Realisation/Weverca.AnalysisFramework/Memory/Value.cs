@@ -138,6 +138,12 @@ namespace Weverca.AnalysisFramework.Memory
             return _precomputedHash + getHashCode();
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return this.GetType().Name;
+        }
+      
         #endregion
     }
 }
