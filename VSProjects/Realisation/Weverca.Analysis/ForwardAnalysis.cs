@@ -124,7 +124,7 @@ namespace Weverca.Analysis
 
             nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
 
-            this.SimplifyLimit = 10;
+            this.SimplifyLimit = 15;
 
             this.WideningLimit = 10;
         }

@@ -227,22 +227,22 @@ namespace Weverca.Analysis
                         StringBuilder newString = new StringBuilder();
                         newString.Append(indexed.Value);
                         newString[number] = WrittenChar[0];
-                        newValue = Context.CreateString(newString.ToString());
+                        newValue = FlagsHandler.CopyFlags(indexed, Context.CreateString(newString.ToString())); 
                     }
                     else if (number == indexed.Value.Count())
                     {
-                        newValue = Context.CreateString(indexed.Value + "" +WrittenChar[0].ToString());
+                        newValue = FlagsHandler.CopyFlags(indexed, Context.CreateString(indexed.Value + "" + WrittenChar[0].ToString()));
                     }
                     else
                     {
-                        newValue = Context.CreateString(indexed.Value + " " + WrittenChar[0].ToString());
+                        newValue = FlagsHandler.CopyFlags(indexed, Context.CreateString(indexed.Value + " " + WrittenChar[0].ToString()));
                     }
                     result.Add(newValue);
                 }
             }
             if (!isConcrete)
             {
-                result.Add(Context.AnyStringValue);
+                result.Add(FlagsHandler.CopyFlags(indexed,Context.AnyStringValue));
             }
             return result;
         }
@@ -274,9 +274,11 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override MemoryEntry Simplify(MemoryEntry entry)
         {
-            throw new NotImplementedException();
+            var simplifier = new Simplifier(Context);
+            return new MemoryEntry(simplifier.Simplify(entry));
         }
 
+        /// <inheritdoc />
         public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
         {
             if (!(fielded is UndefinedValue))
@@ -286,6 +288,7 @@ namespace Weverca.Analysis
             yield return fielded;
         }
 
+        /// <inheritdoc />
         public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
         {
             if (!(fielded is UndefinedValue))
@@ -319,8 +322,12 @@ namespace Weverca.Analysis
 
         private Flags flags=new Flags();
 
-        HashSet<InfoValue> infoValues = new HashSet<InfoValue>();
-
+        /// <summary>
+        /// Widens given values
+        /// </summary>
+        /// <param name="values">input values</param>
+        /// <param name="Context">Snapshot</param>
+        /// <returns>Memory entry with widen values</returns>
         public MemoryEntry Widen(IEnumerable<Value> values,SnapshotBase Context)
         {
             flags = FlagsHandler.GetFlags(values);
@@ -392,12 +399,6 @@ namespace Weverca.Analysis
             containsOnlyBool = false;
             containsOnlyString = false;
             containsOnlyNumvericValues = false;
-        }
-
-        /// <inheritdoc />
-        public override void VisitInfoValue(InfoValue value)
-        {
-            infoValues.Add(value);
         }
 
         /// <inheritdoc />
@@ -571,4 +572,204 @@ namespace Weverca.Analysis
         }
     }
 
+
+
+
+    class Simplifier : AbstractValueVisitor
+    {
+        private HashSet<Value> result;
+        private HashSet<Value> booleans;
+        private HashSet<Value> strings;
+        private bool containsInt = false;
+        private int minInt = int.MaxValue;
+        private int maxInt = int.MinValue;
+        private bool containsLong = false;
+        private long minLong = long.MaxValue;
+        private long maxLong = long.MinValue;
+        private bool containsFloat = false;
+        private double minFloat = double.MaxValue;
+        private double maxFloat = double.MinValue;
+        private SnapshotBase context;
+
+        public Simplifier(SnapshotBase context)
+        {
+            this.context = context;
+            result = new HashSet<Value>();
+            booleans = new HashSet<Value>();
+        }
+
+        /// <inheritdoc />
+        public override void VisitValue(Value value)
+        {
+            result.Add(value);
+        }
+
+        public IEnumerable<Value> Simplify(MemoryEntry entry)
+        {
+            foreach (var value in entry.PossibleValues)
+            {
+                value.Accept(this);
+            }
+
+            if (booleans.Count >= 2)
+            {
+                result.Add(context.AnyBooleanValue);
+            }
+            else
+            {
+                foreach (var boolean in booleans)
+                {
+                    result.Add(boolean);
+                }
+            }
+
+            if (strings.Count >= 2)
+            {
+                result.Add(FlagsHandler.CopyFlags(strings,context.AnyStringValue));
+            }
+            else
+            {
+                foreach (var str in strings)
+                {
+                    result.Add(str);
+                }
+            }
+            
+            if (containsInt)
+            {
+                if (minInt == maxInt)
+                {
+                    result.Add(context.CreateInt(minInt));
+                }
+                else 
+                {
+                    result.Add(context.CreateIntegerInterval(minInt,maxInt));
+                }
+            }
+
+            if (containsLong)
+            {
+                if (minLong == maxLong)
+                {
+                    result.Add(context.CreateLong(minLong));
+                }
+                else
+                {
+                    result.Add(context.CreateLongintInterval(minLong, maxLong));
+                }
+            }
+
+            if (containsFloat)
+            {
+                if (minFloat == maxFloat)
+                {
+                    result.Add(context.CreateDouble(minFloat));
+                }
+                else
+                {
+                    result.Add(context.CreateFloatInterval(minFloat, maxFloat));
+                }
+            }
+
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntegerValue(IntegerValue value)
+        {
+            containsInt = true;
+            minInt = Math.Min(minInt, value.Value);
+            maxInt = Math.Max(maxInt, value.Value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitLongintValue(LongintValue value)
+        {
+            containsLong = true;
+            minLong = Math.Min(minLong, value.Value);
+            maxLong = Math.Max(maxLong, value.Value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitFloatValue(FloatValue value)
+        {
+            containsFloat = true;
+            minFloat = Math.Min(minFloat, value.Value);
+            maxFloat = Math.Max(maxFloat, value.Value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
+        {
+            containsInt = true;
+            minInt = Math.Min(Math.Min(minInt, value.Start),value.End);
+            maxInt = Math.Max(Math.Max(maxInt, value.Start), value.End);
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalLongintValue(LongintIntervalValue value)
+        {
+            containsLong = true;
+            minLong = Math.Min(Math.Min(minLong, value.Start), value.End);
+            maxLong = Math.Max(Math.Max(maxLong, value.Start), value.End);
+        }
+
+        /// <inheritdoc />
+        public override void VisitIntervalFloatValue(FloatIntervalValue value)
+        {
+            containsFloat = true;
+            minFloat = Math.Min(Math.Min(minFloat, value.Start), value.End);
+            maxFloat = Math.Max(Math.Max(maxFloat, value.Start), value.End);
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyIntegerValue(AnyIntegerValue value)
+        {
+            containsInt = true;
+            minInt = Math.Min(minInt, int.MinValue);
+            maxInt = Math.Max(maxInt, int.MaxValue);
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyLongintValue(AnyLongintValue value)
+        {
+            containsLong = true;
+            minLong = Math.Min(minLong, long.MinValue);
+            maxLong = Math.Max(maxLong, long.MaxValue);
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyFloatValue(AnyFloatValue value)
+        {
+            containsFloat = true;
+            minFloat = Math.Min(minFloat, float.MinValue);
+            maxFloat = Math.Max(maxFloat, float.MaxValue);
+        }
+
+        /// <inheritdoc />
+        public override void VisitBooleanValue(BooleanValue value)
+        {
+            booleans.Add(value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitAnyBooleanValue(AnyBooleanValue value)
+        {
+            booleans.Add(value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitStringValue(StringValue value)
+        {
+            strings.Add(value);
+        }
+        
+        /// <inheritdoc />
+        public override void VisitAnyStringValue(AnyStringValue value)
+        {
+            strings.Add(value);
+        }
+
+    }
 }

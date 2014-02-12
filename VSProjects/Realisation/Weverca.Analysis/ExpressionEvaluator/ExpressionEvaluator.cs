@@ -472,6 +472,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                 }
                             }
                         }
+                        else if (value is AnyValue)
+                        {
+                            return new[] { OutSet.AnyBooleanValue };
+                        }
                         else
                         {
                             if (isOnlyUndefined)
