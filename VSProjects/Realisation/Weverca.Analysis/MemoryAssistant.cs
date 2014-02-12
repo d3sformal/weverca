@@ -187,7 +187,12 @@ namespace Weverca.Analysis
             HashSet<Value> result = new HashSet<Value>();
             foreach (var number in ResolveStringIndex(value,index))
             {
-                if (number < value.Value.Count())
+                if (number < 0)
+                {
+                    result.Add(value);
+                    SetWarning("Cannot index string with negative numbers", AnalysisWarningCause.INDEX_OUT_OF_RANGE);
+                }
+                else if (number < value.Value.Count())
                 {
                    result.Add(Context.CreateString(value.Value[number].ToString()));
                 }
@@ -212,7 +217,12 @@ namespace Weverca.Analysis
                 foreach (var number in ResolveStringIndex(indexed, index))
                 {
                     Value newValue;
-                    if (number < indexed.Value.Count())
+                    if (number < 0)
+                    {
+                        newValue=indexed;
+                        SetWarning("Cannot index string with negative numbers", AnalysisWarningCause.INDEX_OUT_OF_RANGE);
+                    }
+                    else if (number < indexed.Value.Count())
                     {
                         StringBuilder newString = new StringBuilder();
                         newString.Append(indexed.Value);
@@ -269,12 +279,20 @@ namespace Weverca.Analysis
 
         public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
         {
-            throw new NotImplementedException();
+            if (!(fielded is UndefinedValue))
+            {
+                SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
+            }
+            yield return fielded;
         }
 
         public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
         {
-            throw new NotImplementedException();
+            if (!(fielded is UndefinedValue))
+            {
+                SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
+            }
+            yield return Context.UndefinedValue;
         }
     }
 

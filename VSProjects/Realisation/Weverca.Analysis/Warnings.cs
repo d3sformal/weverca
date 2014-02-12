@@ -77,6 +77,8 @@ namespace Weverca.Analysis
         /// <param name="warning"></param>
         public static void SetWarning<T>(SnapshotBase flowOutSet, T warning) where T : AnalysisWarning
         {
+            if (warning.LangElement == null)
+                return;
             var previousWarnings = ReadWarnings<T>(flowOutSet);
             var newEntry = new HashSet<Value>(previousWarnings);
             newEntry.Add(flowOutSet.CreateInfo(warning));
@@ -379,7 +381,7 @@ namespace Weverca.Analysis
         PROPERTY_OF_NON_OBJECT_VARIABLE,
 
         /// <summary>
-        /// Warning, that occurs when indexin non array variable
+        /// Warning, that occurs when indexing non array variable
         /// </summary>
         ELEMENT_OF_NON_ARRAY_VARIABLE,
 
@@ -577,6 +579,16 @@ namespace Weverca.Analysis
         /// Warning, that occurs when using operator [] on non array or string
         /// </summary>
         CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY,
+
+        /// <summary>
+        /// Warning, that occurs when using operator -> on non object
+        /// </summary>
+        CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT,
+
+        /// <summary>
+        /// Warning, that occurs when using operator [] and index is out of range
+        /// </summary>
+        INDEX_OUT_OF_RANGE,
 
     }
 }

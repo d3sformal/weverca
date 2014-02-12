@@ -103,5 +103,50 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string IndexStringTest5 = @"
+            $result=""Hello world"";
+            $result[-1]=array();
+          
+        ";
+
+
+        [TestMethod]
+        public void IndexString5()
+        {
+            var result = TestUtils.Analyze(IndexStringTest5);
+            Debug.Assert(TestUtils.ContainsWarning(result, AnalysisWarningCause.INDEX_OUT_OF_RANGE));
+        }
+
+
+        string PropertyAccessOnIntegerTest = @"
+            $result=4;
+            $result->a=array();
+          
+        ";
+
+
+        [TestMethod]
+        public void PropertyAccessOnInteger()
+        {
+            var result = TestUtils.Analyze(PropertyAccessOnIntegerTest);
+            Debug.Assert(TestUtils.ContainsWarning(result, AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT));
+        }
+
+
+        string PropertyAccessOnIntegerTest2 = @"
+            $result=4;
+            $x=$result->a;
+          
+        ";
+
+
+        [TestMethod]
+        public void PropertyAccessOnInteger2()
+        {
+            var result = TestUtils.Analyze(PropertyAccessOnIntegerTest2);
+            Debug.Assert(TestUtils.ContainsWarning(result, AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT));
+        }
+
+
     }
 }
