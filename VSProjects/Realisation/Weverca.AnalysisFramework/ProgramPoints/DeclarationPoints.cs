@@ -78,7 +78,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            Services.Evaluator.ConstantDeclaration(Declaration, Initializer.Value.ReadMemory(InSnapshot));
+            Services.Evaluator.ConstantDeclaration(Declaration, Initializer.Value.ReadMemory(OutSnapshot));
 
             Value = Initializer.Value;
         }

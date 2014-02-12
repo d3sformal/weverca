@@ -66,32 +66,24 @@ namespace Weverca.Analysis
         /// <param name="warning"></param>
         public static void SetWarning<T>(FlowOutputSet flowOutSet, T warning) where T : AnalysisWarning
         {
-            var previousWarnings = ReadWarnings<T>(flowOutSet);
-            var newEntry = new List<Value>(previousWarnings);
-            newEntry.Add(flowOutSet.CreateInfo(warning));
-
-            var warnings = flowOutSet.GetControlVariable(getStorage<T>());
-            warnings.WriteMemory(flowOutSet.Snapshot, new MemoryEntry(newEntry));
-            if (typeof(T) == typeof(AnalysisWarning))
-            {
-                Warnings.Add(warning);
-            }
-            if (typeof(T) == typeof(AnalysisSecurityWarning))
-            {
-                SecurityWarnings.Add(warning as AnalysisSecurityWarning);
-            }
+            SetWarning<T>(flowOutSet.Snapshot, warning);
         }
 
-
+        /// <summary>
+        /// Insert warning into <see cref="FlowOutputSet"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="flowOutSet"></param>
+        /// <param name="warning"></param>
         public static void SetWarning<T>(SnapshotBase flowOutSet, T warning) where T : AnalysisWarning
         {
-            var warnings = flowOutSet.GetControlVariable(getStorage<T>());
-            var result = warnings.ReadMemory(flowOutSet).PossibleValues;
-            result= from value in result where !(value is UndefinedValue) select value;
-            var newEntry = new List<Value>(result);
+            var previousWarnings = ReadWarnings<T>(flowOutSet);
+            var newEntry = new HashSet<Value>(previousWarnings);
             newEntry.Add(flowOutSet.CreateInfo(warning));
 
+            var warnings = flowOutSet.GetControlVariable(getStorage<T>());
             warnings.WriteMemory(flowOutSet, new MemoryEntry(newEntry));
+
             if (typeof(T) == typeof(AnalysisWarning))
             {
                 Warnings.Add(warning);
@@ -111,9 +103,20 @@ namespace Weverca.Analysis
         public static IEnumerable<Value> ReadWarnings<T>(FlowOutputSet flowOutSet)
             where T : AnalysisWarning
         {
-            //flowOutSet.FetchFromGlobal(WARNING_STORAGE);
+            return ReadWarnings<T>(flowOutSet.Snapshot);
+        }
+
+        /// <summary>
+        /// Read warnings from <see cref="FlowOutputSet"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="flowOutSet"></param>
+        /// <returns></returns>
+        public static IEnumerable<Value> ReadWarnings<T>(SnapshotBase flowOutSet)
+            where T : AnalysisWarning
+        {
             var snapshotEntry = flowOutSet.ReadControlVariable(getStorage<T>());
-            var result = snapshotEntry.ReadMemory(flowOutSet.Snapshot).PossibleValues;
+            var result = snapshotEntry.ReadMemory(flowOutSet).PossibleValues;
             return from value in result where !(value is UndefinedValue) select value;
         }
 
@@ -171,13 +174,13 @@ namespace Weverca.Analysis
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
-        public AnalysisWarning(string fullFileName,string message, LangElement element)
+        public AnalysisWarning(string fullFileName, string message, LangElement element)
         {
             Message = message;
             LangElement = element;
             FullFileName = fullFileName;
         }
-        
+
         /// <summary>
         /// Construct new instance of AnalysisWarning
         /// </summary>
@@ -213,7 +216,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() +FullFileName.GetHashCode()
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
                 + Cause.GetHashCode();
         }
 
@@ -239,7 +242,7 @@ namespace Weverca.Analysis
             {
                 return string.Compare(this.FullFileName, other.FullFileName);
             }
-            
+
         }
 
         /// <summary>
@@ -261,7 +264,7 @@ namespace Weverca.Analysis
         {
             return (other.Message == Message)
                 && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
-                && this.FullFileName==other.FullFileName
+                && this.FullFileName == other.FullFileName
                 && (other.Cause == Cause);
         }
     }
@@ -284,7 +287,7 @@ namespace Weverca.Analysis
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(string fullFileName,string message, LangElement element, FlagType cause)
+        public AnalysisSecurityWarning(string fullFileName, string message, LangElement element, FlagType cause)
         {
             FullFileName = fullFileName;
             Message = message;
@@ -340,7 +343,7 @@ namespace Weverca.Analysis
         {
             return (other.Message == Message)
                 && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
-                && other.FullFileName==this.FullFileName
+                && other.FullFileName == this.FullFileName
                 && (other.Flag == Flag);
         }
     }

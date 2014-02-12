@@ -42,7 +42,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(InSnapshot));
+            IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(OutSnapshot));
             LValue = Services.Evaluator.ResolveIndex(UsedItem.Value, IndexIdentifier);
         }
 

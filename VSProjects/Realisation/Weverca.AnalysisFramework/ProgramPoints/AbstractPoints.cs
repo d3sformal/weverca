@@ -93,12 +93,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var argumentValues = new MemoryEntry[_arguments.Length];
             for (int i = 0; i < _arguments.Length; ++i)
             {
-                argumentValues[i] = _arguments[i].Value.ReadMemory(InSnapshot);
+                argumentValues[i] = _arguments[i].Value.ReadMemory(OutSnapshot);
             }
 
             if (ThisObj != null)
             {
-                Flow.CalledObject = ThisObj.Value.ReadMemory(InSnapshot);
+                Flow.CalledObject = ThisObj.Value.ReadMemory(OutSnapshot);
             }
             Flow.Arguments = argumentValues;
         }

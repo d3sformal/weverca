@@ -240,26 +240,25 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
         {
-            List<Value> result = new List<Value>();
-            result.Add(Context.UndefinedValue);
             if (!(value is UndefinedValue))
             {
                 SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
             }
 
-            return result;
+            //reading of index returns undefined value
+            yield return Context.UndefinedValue;
         }
 
         /// <inheritdoc />
         public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
         {
-            List<Value> result = new List<Value>();
-            result.Add(Context.UndefinedValue);
             if (!(indexed is UndefinedValue))
             {
                 SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
             }
-            return result;
+
+            //we dont want to change indexed value itself
+            yield return indexed;
         }
 
         /// <inheritdoc />

@@ -109,12 +109,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (ThisObj == null)
             {
                 Services.FunctionResolver.IndirectCall(
-                    Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+                    Name.Value.ReadMemory(OutSnapshot), Flow.Arguments);
             }
             else
             {
                 Services.FunctionResolver.IndirectMethodCall(ThisObj.Value,
-                    Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+                    Name.Value.ReadMemory(OutSnapshot), Flow.Arguments);
             }
         }
 
@@ -231,12 +231,12 @@ new QualifiedName(StaticMethodCall.MethodName), Flow.Arguments);
             {
                 Flow.CalledObject = new MemoryEntry(OutSet.CreateString(StaticMethodCall.ClassName.QualifiedName.Name.LowercaseValue));
                 Services.FunctionResolver.IndirectStaticMethodCall(StaticMethodCall.ClassName.QualifiedName,
-                 Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+                 Name.Value.ReadMemory(OutSnapshot), Flow.Arguments);
             }
             else
             {
                 Services.FunctionResolver.IndirectStaticMethodCall(ThisObj.Value,
-Name.Value.ReadMemory(InSet.Snapshot), Flow.Arguments);
+Name.Value.ReadMemory(OutSnapshot), Flow.Arguments);
             }
 
 

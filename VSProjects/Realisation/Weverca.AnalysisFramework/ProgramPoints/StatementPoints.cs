@@ -37,7 +37,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 RemoveFlowChildren();
             }
 
-            ThrowBranches = Services.FlowResolver.Throw(Flow, OutSet, Throw, ThrowedValue.Value.ReadMemory(InSet.Snapshot));
+            ThrowBranches = Services.FlowResolver.Throw(Flow, OutSet, Throw, ThrowedValue.Value.ReadMemory(OutSnapshot));
             Flow.SetThrowBranching(ThrowBranches);
         }
 
@@ -75,7 +75,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var variables = new VariableIdentifier[_variables.Length];
             for (int i = 0; i < _variables.Length; ++i)
             {
-                variables[i] = _variables[i].LValue.GetVariableIdentifier(InSet.Snapshot);
+                variables[i] = _variables[i].LValue.GetVariableIdentifier(OutSnapshot);
             }
             Services.Evaluator.GlobalStatement(variables);
         }
@@ -114,7 +114,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             for (int i = 0; i < values.Length; ++i)
             {
-                values[i] = _parameters[i].Value.ReadMemory(InSnapshot);
+                values[i] = _parameters[i].Value.ReadMemory(OutSnapshot);
             }
             Services.Evaluator.Echo(Echo, values);
         }
@@ -162,7 +162,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var keyVar = KeyVar == null ? null : KeyVar.LValue;
             var valVar = ValVar == null ? null : ValVar.LValue;
 
-            Services.Evaluator.Foreach(Enumeree.Value.ReadMemory(InSet.Snapshot), keyVar, valVar);
+            Services.Evaluator.Foreach(Enumeree.Value.ReadMemory(OutSnapshot), keyVar, valVar);
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
@@ -204,7 +204,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     }
                     else
                     {
-                        value = Services.FunctionResolver.Return(Expression.Value.ReadMemory(InSnapshot));
+                        value = Services.FunctionResolver.Return(Expression.Value.ReadMemory(OutSnapshot));
                     }
                     break;
                 default:

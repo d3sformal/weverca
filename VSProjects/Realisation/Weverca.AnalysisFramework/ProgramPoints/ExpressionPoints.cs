@@ -58,7 +58,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var beforeIncrementValue = IncrementedValue.Value.ReadMemory(InSet.Snapshot);
+            var beforeIncrementValue = IncrementedValue.Value.ReadMemory(OutSnapshot);
             var afterIncrementValue = Services.Evaluator.IncDecEx(IncDecEx, beforeIncrementValue);
             IncrementTarget.LValue.WriteMemoryWithoutCopy(OutSnapshot, afterIncrementValue);
 
@@ -111,7 +111,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var partValues = from part in Parts select part.Value.ReadMemory(InSnapshot);
+            var partValues = from part in Parts select part.Value.ReadMemory(OutSnapshot);
             var concatedValue = Services.Evaluator.Concat(partValues);
 
             Value = OutSet.CreateSnapshotEntry(concatedValue);
@@ -156,7 +156,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             var value = Services.Evaluator.UnaryEx(
-                Expression.PublicOperation, Operand.Value.ReadMemory(InSnapshot));
+                Expression.PublicOperation, Operand.Value.ReadMemory(OutSnapshot));
 
             Value = OutSet.CreateSnapshotEntry(value);
         }
@@ -206,8 +206,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var value = Services.Evaluator.BinaryEx(LeftOperand.Value.ReadMemory(InSnapshot),
-                Expression.PublicOperation, RightOperand.Value.ReadMemory(InSnapshot));
+            var value = Services.Evaluator.BinaryEx(LeftOperand.Value.ReadMemory(OutSnapshot),
+                Expression.PublicOperation, RightOperand.Value.ReadMemory(OutSnapshot));
 
             Value = OutSet.CreateSnapshotEntry(value);
         }
@@ -257,7 +257,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             PrepareArguments();
-            Flow.FlowResolver.Include(Flow, IncludePath.Value.ReadMemory(InSnapshot));
+            Flow.FlowResolver.Include(Flow, IncludePath.Value.ReadMemory(OutSnapshot));
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
@@ -313,8 +313,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             {
                 //resolve initializing values to memory entries
 
-                var index = pair.Key == null ? null : pair.Key.Value.ReadMemory(InSnapshot);
-                var value = pair.Value.Value.ReadMemory(InSnapshot);
+                var index = pair.Key == null ? null : pair.Key.Value.ReadMemory(OutSnapshot);
+                var value = pair.Value.Value.ReadMemory(OutSnapshot);
                 initializer.Add(new KeyValuePair<MemoryEntry, MemoryEntry>(index, value));
             }
 
@@ -379,7 +379,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
             else
             {
-                value = Services.Evaluator.IndirectCreateObject(Name.Value.ReadMemory(InSnapshot));
+                value = Services.Evaluator.IndirectCreateObject(Name.Value.ReadMemory(OutSnapshot));
             }
 
             //initialize created object
@@ -434,7 +434,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var expression = Expression.Value.ReadMemory(InSet.Snapshot);
+            var expression = Expression.Value.ReadMemory(OutSnapshot);
             MemoryEntry value;
 
             if (Name == null)
@@ -445,7 +445,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             else
             {
                 value = Services.Evaluator.IndirectInstanceOfEx(expression,
-                    Name.Value.ReadMemory(InSnapshot));
+                    Name.Value.ReadMemory(OutSnapshot));
             }
 
             Value = OutSet.CreateSnapshotEntry(value);
@@ -497,7 +497,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var variables = new VariableIdentifier[_variables.Length];
             for (var i = 0; i < _variables.Length; ++i)
             {
-                variables[i] = _variables[i].LValue.GetVariableIdentifier(InSet.Snapshot);
+                variables[i] = _variables[i].LValue.GetVariableIdentifier(OutSnapshot);
             }
 
             var value = Services.Evaluator.IssetEx(variables);
@@ -542,7 +542,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var variable = Variable.LValue.GetVariableIdentifier(InSet.Snapshot);
+            var variable = Variable.LValue.GetVariableIdentifier(OutSnapshot);
             var value = Services.Evaluator.EmptyEx(variable);
 
             Value = OutSet.CreateSnapshotEntry(value);
@@ -593,7 +593,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
             else
             {
-                result = ResultExpression.Value.ReadMemory(InSnapshot);
+                result = ResultExpression.Value.ReadMemory(OutSnapshot);
             }
             var value = Services.Evaluator.Exit(Exit, result);
 

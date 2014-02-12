@@ -40,7 +40,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             Value = ROperand.Value;
 
-            Services.Evaluator.Assign(LOperand.LValue, Value.ReadMemory(InSet.Snapshot));
+            Services.Evaluator.Assign(LOperand.LValue, Value.ReadMemory(OutSnapshot));
         }
 
         internal override void Accept(ProgramPointVisitor visitor)
@@ -103,7 +103,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     throw new NotSupportedException("Given concat assign is not supported");
             }
 
-            var concatedValue = Services.Evaluator.Concat(new MemoryEntry[] { firstPart.Value.ReadMemory(InSnapshot), secondPart.Value.ReadMemory(InSnapshot) });
+            var concatedValue = Services.Evaluator.Concat(new MemoryEntry[] { firstPart.Value.ReadMemory(OutSnapshot), secondPart.Value.ReadMemory(OutSnapshot) });
             Value = OutSet.CreateSnapshotEntry(concatedValue);
             Services.Evaluator.Assign(AssignTarget.LValue, concatedValue);
         }
@@ -154,7 +154,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             var binaryOperation = toBinaryOperation(Assign.PublicOperation);
-            var value= Services.Evaluator.BinaryEx(LOperand.Value.ReadMemory(InSnapshot), binaryOperation, ROperand.Value.ReadMemory(InSnapshot));
+            var value= Services.Evaluator.BinaryEx(LOperand.Value.ReadMemory(OutSnapshot), binaryOperation, ROperand.Value.ReadMemory(OutSnapshot));
             Value = OutSet.CreateSnapshotEntry(value);
 
             Services.Evaluator.Assign(LOperand.LValue, value);

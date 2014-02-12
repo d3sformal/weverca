@@ -74,7 +74,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
             else
             {
-                value=Services.Evaluator.ClassConstant(ThisObj.Value.ReadMemory(InSet.Snapshot), _partial.Name);
+                value=Services.Evaluator.ClassConstant(ThisObj.Value.ReadMemory(OutSnapshot), _partial.Name);
             }
             Value = OutSet.CreateSnapshotEntry(value);
         }

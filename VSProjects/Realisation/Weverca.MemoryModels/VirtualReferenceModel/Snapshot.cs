@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 using PHP.Core;
 
@@ -441,7 +442,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return storage.GetVariable(this) != null;
         }
 
-        internal MemoryEntry ReadValue(VariableKeyBase key)
+        internal MemoryEntry ReadValue(VariableKeyBase key, bool resolveVirtualRefs = true)
         {
             var variable = getOrCreateInfo(key);
 
@@ -451,7 +452,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 variable.References.Add(key.CreateImplicitReference(this));
             }
 
-            var value = readValue(variable);
+            var value = readValue(variable, resolveVirtualRefs);
             return value;
         }
 
@@ -743,12 +744,18 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return readValue(info);
         }
 
-        private MemoryEntry readValue(VariableInfo info)
+        private MemoryEntry readValue(VariableInfo info, bool resolveVirtualRefs = true)
         {
             if (info == null)
             {
                 ReportMemoryEntryCreation();
                 return new MemoryEntry(UndefinedValue);
+            }
+
+            IEnumerable<VirtualReference> references = info.References;
+            if (!resolveVirtualRefs)
+            {
+                references = from reference in references where !(reference is CallbackReference) select reference;
             }
 
             return resolveReferences(info.References);
@@ -884,7 +891,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         internal VariableInfo CreateEmptyVar(VariableName name, VariableKind kind)
         {
             var storage = getVariableContainer(kind);
-            var result=new VariableInfo(name, kind);
+            var result = new VariableInfo(name, kind);
             storage.SetValue(name, result);
 
             return result;
@@ -893,7 +900,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         private MemoryEntry getEntry(VirtualReference reference)
         {
             return reference.GetEntry(this, getDataContainer());
-            
+
         }
 
         private void setEntry(VirtualReference reference, MemoryEntry entry)
@@ -903,7 +910,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 throw new NotSupportedException("Entry cannot be null");
             }
 
-            reference.SetEntry(this, getDataContainer(), entry);            
+            reference.SetEntry(this, getDataContainer(), entry);
         }
 
 

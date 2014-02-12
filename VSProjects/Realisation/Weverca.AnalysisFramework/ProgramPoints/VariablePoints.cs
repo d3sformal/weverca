@@ -95,14 +95,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (Obj==null)
             {
 
-                LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName.Value.ReadMemory(InSet.Snapshot));
+                LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName.Value.ReadMemory(OutSnapshot));
             }
             else
             {
                 var typeValue = Obj.Value.ReadMemory(OutSnapshot);
                 var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
 
-                LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName.Value.ReadMemory(InSet.Snapshot));
+                LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName.Value.ReadMemory(OutSnapshot));
             }
         }
 
@@ -179,7 +179,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         protected override void flowThrough()
         {
-            var varNames = Services.Evaluator.VariableNames(VariableName.Value.ReadMemory(InSnapshot));
+            var varNames = Services.Evaluator.VariableNames(VariableName.Value.ReadMemory(OutSnapshot));
             if (varNames == null)
             {
                 varNames = new string[0];
