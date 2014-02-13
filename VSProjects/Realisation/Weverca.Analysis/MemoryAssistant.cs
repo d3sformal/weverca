@@ -151,13 +151,13 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void TriedIterateFields(Value value)
         {
-            throw new NotImplementedException();
+            SetWarning("Field iteration has wrong argument type");
         }
 
         /// <inheritdoc />
         public override void TriedIterateIndexes(Value value)
         {
-            throw new NotImplementedException();
+            SetWarning("Index iteration has wrong argument type");
         }
 
         private IEnumerable<int> ResolveStringIndex(StringValue value,MemberIdentifier Index)

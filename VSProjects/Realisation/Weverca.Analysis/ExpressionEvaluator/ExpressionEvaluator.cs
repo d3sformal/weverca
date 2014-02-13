@@ -106,15 +106,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             binaryOperationVisitor.SetContext(Flow);
             var result = binaryOperationVisitor.Evaluate(leftOperand, operation, rightOperand);
-            //to save memory and coputation time
-            /*
-            TODO move to memory assistent
-            if (result.PossibleValues.Count() > 10)
-            {
-                var wideningVisitor = new WidenningVisitor();
-                return wideningVisitor.Widen(result.PossibleValues, OutSet.Snapshot);
-            }*/
-
+           
             return result;
         }
 
@@ -584,8 +576,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
-            // TODO: It must jump to the end of program and print status, if it is a string
 
+            List<ThrowInfo> throws = new List<ThrowInfo>();
+            throws.Add(new ThrowInfo(new CatchBlockDescription(Flow.ProgramEnd, new GenericQualifiedName(new QualifiedName(new Name(""))), new VariableIdentifier("")),new MemoryEntry()));
+            Flow.SetThrowBranching(throws);
             // Exit expression never returns, but it is still expression so it must return something
             return new MemoryEntry(OutSet.AnyValue);
         }

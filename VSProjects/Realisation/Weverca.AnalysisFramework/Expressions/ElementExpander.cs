@@ -232,7 +232,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <inheritdoc />
         public override void VisitItemUse(ItemUse x)
         {
-            throw new NotImplementedException();
+            RValueResult(x);
         }
 
         /// <inheritdoc />
