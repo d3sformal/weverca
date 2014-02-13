@@ -27,10 +27,11 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="entryMethodGraph">ControlFlowGraph to analyze</param>
         /// <param name="memoryModel">Memory model used by analyser</param>
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, int simplifyLimit=15)
             : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {
             GlobalsInitializer();
+            this.SimplifyLimit = simplifyLimit;
         }
 
         #region ForwardAnalysis override
@@ -124,7 +125,7 @@ namespace Weverca.Analysis
 
             nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
 
-            this.SimplifyLimit = 15;
+            
 
             this.WideningLimit = 10;
         }
