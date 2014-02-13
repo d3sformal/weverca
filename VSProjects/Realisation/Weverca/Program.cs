@@ -134,7 +134,7 @@ namespace Weverca
                     console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));
                     if (ppGraph.End.OutSet != null)
                     {
-                        console.CommentLine(string.Format("The number of variables is: {0}\n", ppGraph.End.OutSnapshot.NumVariables()));
+                        console.CommentLine(string.Format("The number of memory locations is: {0}\n", ppGraph.End.OutSnapshot.NumMemoryLocations()));
                         int[] statistics = ppGraph.End.OutSnapshot.GetStatistics().GetStatisticsValues();
                         console.CommentLine(string.Format("The number of memory entry assigns is: {0}\n", statistics[(int)Statistic.MemoryEntryAssigns]));
                         console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));

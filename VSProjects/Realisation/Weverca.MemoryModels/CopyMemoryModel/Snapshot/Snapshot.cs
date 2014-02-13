@@ -88,9 +88,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public static readonly string THIS_VARIABLE_IDENTIFIER = "this";
         public static readonly string RETURN_VARIABLE_IDENTIFIER = ".return";
 
-        override public int NumVariables()
+        override public int NumMemoryLocations()
         {
-            return Structure.Variables.GetNumberOfVariables();
+            return Structure.IndexData.Count();
         }
 
 

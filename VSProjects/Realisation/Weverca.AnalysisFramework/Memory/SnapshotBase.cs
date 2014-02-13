@@ -56,10 +56,11 @@ namespace Weverca.AnalysisFramework.Memory
         public static readonly VariableName ReturnValue = new VariableName(".return");
 
         /// <summary>
-        /// Returns the number of variables in the snapshot.
+        /// Returns the number of memory locations in the snapshot.
+        /// Memory locations are top-level variables, all indices of arrays and all properties of objects.
         /// </summary>
         /// <returns>the number of variables in the snapshot</returns>
-        public virtual int NumVariables()
+        public virtual int NumMemoryLocations()
         {
             return 0;
         }
