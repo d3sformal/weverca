@@ -65,6 +65,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="conditionPart">The definition of the part of the condition.</param>
         /// <param name="log">The log of evaluation of the conditions' parts.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
         public ConditionPart(LangElement conditionPart, EvaluationLog log, FlowOutputSet flowOutputSet)
         {
             this.conditionPart = conditionPart;
@@ -79,10 +80,12 @@ namespace Weverca.Analysis.FlowResolver
         #region Methods
 
         /// <summary>
-        /// Assumes the condition.
-        /// According to the possible results of the condition the state of the inner block will be set up.
+        /// Assumes the condition according to the possible results of the condition. The state of the inner block will be set up.
         /// </summary>
-        /// <param name="memoryContext">The flow output set.</param>
+        /// <param name="conditionForm">The condition form. See <see cref="ConditionForm"/> for more details.</param>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
         public void AssumeCondition(ConditionForm conditionForm, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             var variables = GetVariables();
@@ -169,7 +172,8 @@ namespace Weverca.Analysis.FlowResolver
         /// Makes the assumption in case of <c>true</c> as a condition result.
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
-        /// </exception>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
         void AssumeTrue(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             if (langElement is BinaryEx)
@@ -238,7 +242,8 @@ namespace Weverca.Analysis.FlowResolver
         /// Makes the assumption in case of <c>false</c> as a condition result.
         /// </summary>
         /// <param name="langElement">The language element to assume.</param>
-        /// </exception>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
         void AssumeFalse(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             if (langElement is BinaryEx)
@@ -308,6 +313,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
         void AssumeNotEquals(LangElement left, LangElement right, MemoryContext memoryContext)
         {
             //There is nothing to do.
@@ -324,6 +330,8 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
         void AssumeEquals(LangElement left, LangElement right, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))
@@ -377,6 +385,8 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
         /// <param name="equal">if set to <c>true</c> greater or equals is assumed.</param>
         void AssumeGreaterThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
@@ -468,6 +478,8 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
         /// <param name="equal">if set to <c>true</c> lesser or equals is assumed.</param>
+        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
+        /// <param name="flowOutputSet">The Output set of a program point.</param>
         void AssumeLesserThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
             if (right is DirectVarUse && !(left is DirectVarUse))

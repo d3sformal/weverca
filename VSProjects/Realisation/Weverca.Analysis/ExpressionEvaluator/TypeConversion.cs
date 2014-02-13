@@ -1159,6 +1159,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.CreateIntegerInterval(0, 1);
         }
 
+        /// <summary>
+        /// Casts the provided interval to <see cref="IntegerIntervalValue"/>, if possible.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="value">The interval value to process.</param>
+        /// <returns>Corresponding <see cref="IntegerIntervalValue"/> if cast is possible; <c>null</c> otherwise.</returns>
         public static IntegerIntervalValue ToIntegerInterval(FlowOutputSet outset, IntervalValue value)
         {
             ToIntegerIntervalConversionVisitor visitor = new ToIntegerIntervalConversionVisitor(outset);
@@ -1170,6 +1176,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region ToLongInterval
 
+        /// <summary>
+        /// Casts the provided interval to <see cref="LongintIntervalValue"/>, if possible.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="value">The interval value to process.</param>
+        /// <returns>Corresponding <see cref="LongintIntervalValue"/> if cast is possible; <c>null</c> otherwise.</returns>
         public static LongintIntervalValue ToLongInterval(FlowOutputSet outset, IntervalValue value)
         {
             ToLongIntervalConversionVisitor visitor = new ToLongIntervalConversionVisitor(outset);
@@ -1192,6 +1204,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.CreateFloatInterval(value.Start, value.End);
         }
 
+        /// <summary>
+        /// Extends integer interval into floating-point interval of the same range.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="value">An interval value</param>
+        /// <returns>Floating-point interval extended from integer interval, if the value can be casted; <c>null</c>otherwise</returns>
         public static FloatIntervalValue ToFloatInterval(FlowOutputSet outset, IntervalValue value)
         {
             ToFloatIntervalConversionVisitor visitor = new ToFloatIntervalConversionVisitor(outset);
