@@ -67,8 +67,15 @@ function action(){
 
 
 $result='no action';
+true || action();
+$result1=$result;
+
+$result='no action';
 false || action();
-".AssertVariable("result").HasValues("no action");
+$result2=$result;
+"
+            .AssertVariable("result1").HasValues("no action")
+            .AssertVariable("result2").HasValues("action done");
 
 
         readonly static TestCase SingleBranchedIndirectCall_CASE = @"
@@ -1399,10 +1406,10 @@ $resAlias = $alias;
 $alias = 3;
 $resA = $a;
 "
- // Note that this is an overapproximation. $resAlias can have only values undefined, 2.
- // if $alias is undefined at line 2, the alias is not created
- // if $alias is defined at line 2, it has a single value 1 and the alias is created
- // line 3 either does not affect $alias (it stays undefined) or set $alias to 2. It thus never has value 1 at line 4.
+            // Note that this is an overapproximation. $resAlias can have only values undefined, 2.
+            // if $alias is undefined at line 2, the alias is not created
+            // if $alias is defined at line 2, it has a single value 1 and the alias is created
+            // line 3 either does not affect $alias (it stays undefined) or set $alias to 2. It thus never has value 1 at line 4.
  .AssertVariable("resAlias").HasUndefinedAndValues(1, 2)
  .AssertVariable("resA").HasValues(2, 3)
  .MemoryModel(MemoryModels.MemoryModels.CopyMM);
@@ -1514,7 +1521,7 @@ $resA = $a;
         {
             AnalysisTestUtils.RunTestCase(SingleBranchedIndirectCall_CASE);
         }
-        
+
         [TestMethod]
         public void IncompleteEvaluation()
         {
