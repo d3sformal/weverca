@@ -58,6 +58,18 @@ if($unknown){
 $call_result=$call_name('TEst');
 ".AssertVariable("call_result").HasValues("TEST", "test");
 
+        readonly static TestCase IncompleteEvaluation_CASE = @"
+function action(){
+    global $result;
+
+    $result='action done';   
+}
+
+
+$result='no action';
+false || action();
+".AssertVariable("result").HasValues("no action");
+
 
         readonly static TestCase SingleBranchedIndirectCall_CASE = @"
 $call_name='strtoupper';
@@ -1501,6 +1513,12 @@ $resA = $a;
         public void SingleBranchedIndirectCall()
         {
             AnalysisTestUtils.RunTestCase(SingleBranchedIndirectCall_CASE);
+        }
+        
+        [TestMethod]
+        public void IncompleteEvaluation()
+        {
+            AnalysisTestUtils.RunTestCase(IncompleteEvaluation_CASE);
         }
 
         [TestMethod]

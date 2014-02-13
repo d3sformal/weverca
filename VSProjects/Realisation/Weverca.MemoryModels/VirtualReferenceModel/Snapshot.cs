@@ -103,36 +103,44 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// <inheritdoc />
         protected override bool commitTransaction(int simplifyLimit)
         {
-            return commit();
+            return commit(simplifyLimit);
         }
 
         /// <inheritdoc />
         protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             _data.WidenWith(Assistant);
-            return commit();
+            return commit(simplifyLimit);
         }
 
-        private bool commit()
+        private bool commit(int simplifyLimit)
         {
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    return commitMemory();
+                    return commitMemory(simplifyLimit);
                 case SnapshotMode.InfoLevel:
-                    return commitInfo();
+                    return commitInfo(simplifyLimit);
                 default:
                     throw notSupportedMode();
             }
         }
 
-        private bool commitInfo()
+        private bool commitInfo(int simplifyLimit)
         {
+
+            //TODO this rapidly slows down the performance
+            _infoData.Simplify(simplifyLimit);
+
             return _infoData.DifferInCount || _infoData.CheckChange();
         }
 
-        private bool commitMemory()
+        private bool commitMemory(int simplifyLimit)
         {
+            //TODO this rapidly slows down the performance
+            _data.Simplify(simplifyLimit);
+
+
             if (
                 _locals.DifferInCount ||
                 _meta.DifferInCount ||
@@ -565,8 +573,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 }
                 else
                 {
-                    //only objects can be iterated for fields
-                    Assistant.TriedIterateFields(value);
+                    //only arra can be iterated for indexes
+                    Assistant.TriedIterateIndexes(value);
                 }
             }
         }
@@ -752,13 +760,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 return new MemoryEntry(UndefinedValue);
             }
 
-            IEnumerable<VirtualReference> references = info.References;
+            List<VirtualReference> references = info.References;
             if (!resolveVirtualRefs)
             {
-                references = from reference in references where !(reference is CallbackReference) select reference;
+                //This is used for ToString support - we dont want to cause side effects
+                references = new List<VirtualReference>(from reference in references where !(reference is CallbackReference) select reference);
             }
 
-            return resolveReferences(info.References);
+            return resolveReferences(references);
         }
 
         private MemoryEntry readValue(VariableName sourceVar, VariableKind kind)

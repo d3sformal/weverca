@@ -66,6 +66,39 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
         }
 
         /// <summary>
+        /// Check for too long memory entries and simplify them
+        /// </summary>
+        /// <param name="simplifyLimit">Limit of simplification</param>
+        internal void Simplify(int simplifyLimit)
+        {
+            //lazy initialized change log
+            List<KeyValuePair<VirtualReference, MemoryEntry>> changeLog=null;
+
+            //check all memory entries for reaching simplifyLimit
+            foreach (var dataPair in _data)
+            {
+                if (dataPair.Value.Count > simplifyLimit)
+                {
+                    if (changeLog == null)
+                        changeLog = new List<KeyValuePair<VirtualReference, MemoryEntry>>();
+
+                    var simplified = _owner.MemoryAssistant.Simplify(dataPair.Value);
+                    changeLog.Add(new KeyValuePair<VirtualReference, MemoryEntry>(dataPair.Key, simplified));
+                }
+            }
+
+            if (changeLog == null)
+                //no changes occured
+                return;
+
+            //apply stored changes
+            foreach (var change in changeLog)
+            {
+                _data[change.Key] = change.Value;
+            }
+        }
+
+        /// <summary>
         /// Clear data stored in current buffer
         /// </summary>
         internal void ClearCurrent()
@@ -212,6 +245,5 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
 
             return output.ToString();
         }
-
     }
 }

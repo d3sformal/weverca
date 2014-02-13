@@ -99,5 +99,10 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             throw new NotImplementedException();
         }
+
+        public override void TriedIterateIndexes(Value value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

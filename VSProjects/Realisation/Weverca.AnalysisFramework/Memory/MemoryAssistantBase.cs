@@ -147,6 +147,12 @@ namespace Weverca.AnalysisFramework.Memory
         public abstract void TriedIterateFields(Value value);
 
         /// <summary>
+        /// Report that snapshot has been forced to iterate indexes of given value, which is not an array.
+        /// </summary>
+        /// <param name="value">Value where indexes has been tried to iterate</param>
+        public abstract void TriedIterateIndexes(Value value);
+
+        /// <summary>
         /// Initialize context snapshot for current assistant
         /// </summary>
         /// <param name="context">Context snapshot for current memory assistant</param>

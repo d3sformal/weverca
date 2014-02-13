@@ -142,6 +142,7 @@ namespace Weverca.AnalysisFramework
         {
             _createSnapshotDelegate = createSnapshotDelegate;
             WideningLimit = int.MaxValue;
+            SimplifyLimit = int.MaxValue;
             EntryInput = createEmptySet();
             EntryInput.StartTransaction();
             EntryCFG = entryMethodGraph;

@@ -297,6 +297,11 @@ namespace Weverca.Analysis
             }
             yield return Context.UndefinedValue;
         }
+
+        public override void TriedIterateIndexes(Value value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 
