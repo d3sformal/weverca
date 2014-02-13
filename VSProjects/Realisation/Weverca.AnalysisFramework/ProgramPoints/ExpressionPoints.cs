@@ -206,8 +206,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var value = Services.Evaluator.BinaryEx(LeftOperand.Value.ReadMemory(OutSnapshot),
-                Expression.PublicOperation, RightOperand.Value.ReadMemory(OutSnapshot));
+            bool shortCircuit;
+            var value = Services.Evaluator.ShortableBinaryEx(LeftOperand.Value.ReadMemory(OutSnapshot),
+                Expression.PublicOperation, RightOperand.Value.ReadMemory(OutSnapshot),out shortCircuit);
+
+            if (shortCircuit)
+            {
+                //Ommit flow in RightOperand branch
+                //TODO RightOperand may use exception throwing
+                OutSet.Extend(LeftOperand.OutSet);
+            }
 
             Value = OutSet.CreateSnapshotEntry(value);
         }

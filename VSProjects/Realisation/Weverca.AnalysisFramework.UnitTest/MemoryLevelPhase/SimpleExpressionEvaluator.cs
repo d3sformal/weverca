@@ -110,10 +110,27 @@ namespace Weverca.AnalysisFramework.UnitTest
                 case Operations.GreaterThan:
                     return gte(leftOperand, rightOperand);
                 case Operations.LessThan:
+                    //same as GreaterThan but with inversed operands
                     return gte(rightOperand, leftOperand);
+                case Operations.Or:
+                    return or(leftOperand, rightOperand);
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out bool shortCircuit)
+        {
+            shortCircuit = false;
+
+            switch (operation)
+            {
+                case Operations.Or:
+                    shortCircuit = leftOperand.Count == 1 && (leftOperand.PossibleValues.First() as BooleanValue).Value;
+                    break;
+            }
+
+            return BinaryEx(leftOperand, operation, rightOperand);
         }
 
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
@@ -190,6 +207,23 @@ namespace Weverca.AnalysisFramework.UnitTest
             var rightValue = right.PossibleValues.First() as IntegerValue;
 
             return new MemoryEntry(OutSet.CreateInt(leftValue.Value - rightValue.Value));
+        }
+
+        private MemoryEntry or(MemoryEntry left, MemoryEntry right)
+        {
+            if (left.Count != 1 || right.Count != 1)
+            {
+                throw new NotImplementedException();
+            }
+
+            var leftValue = left.PossibleValues.First() as BooleanValue;
+            var rightValue = right.PossibleValues.First() as BooleanValue;
+
+            if (rightValue == null) 
+                //incomplete evaluation is possible
+                rightValue = leftValue;
+
+            return new MemoryEntry(OutSet.CreateBool(leftValue.Value || rightValue.Value));
         }
 
         private MemoryEntry gte(MemoryEntry left, MemoryEntry right)
@@ -602,5 +636,6 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             throw new NotImplementedException();
         }
+
     }
 }

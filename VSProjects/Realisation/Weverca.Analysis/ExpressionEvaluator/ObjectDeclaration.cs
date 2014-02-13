@@ -890,5 +890,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion
 
 
+        ///<inheritdoc/>
+        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out bool shortCircuit)
+        {
+            //TODO implement
+            shortCircuit = false;
+
+            return BinaryEx(leftOperand, operation, rightOperand);
+        }
     }
 }
