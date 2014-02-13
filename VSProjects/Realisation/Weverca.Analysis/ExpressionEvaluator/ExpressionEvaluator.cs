@@ -1233,12 +1233,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (result!=null && result.Value==true)
                     {
                         shortCircuit = true;
+                        return new MemoryEntry(OutSet.CreateBool(true));
                     }
                     break;
                 case Operations.And:
                     if (result!=null && result.Value==false)
                     {
                         shortCircuit = true;
+                        return new MemoryEntry(OutSet.CreateBool(false));
                     }
                     break;
               }

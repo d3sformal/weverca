@@ -154,6 +154,12 @@ namespace Weverca.Analysis
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
+        public override void TriedIterateIndexes(Value value)
+        {
+            throw new NotImplementedException();
+        }
+
         private IEnumerable<int> ResolveStringIndex(StringValue value,MemberIdentifier Index)
         {
             var NumberIndices=new HashSet<int>();
@@ -298,10 +304,6 @@ namespace Weverca.Analysis
             yield return Context.UndefinedValue;
         }
 
-        public override void TriedIterateIndexes(Value value)
-        {
-            throw new NotImplementedException();
-        }
     }
 
 
