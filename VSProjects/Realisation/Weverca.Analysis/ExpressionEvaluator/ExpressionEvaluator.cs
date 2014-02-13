@@ -576,7 +576,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
-
             List<ThrowInfo> throws = new List<ThrowInfo>();
             throws.Add(new ThrowInfo(new CatchBlockDescription(Flow.ProgramEnd, new GenericQualifiedName(new QualifiedName(new Name(""))), new VariableIdentifier("")),new MemoryEntry()));
             Flow.SetThrowBranching(throws);
