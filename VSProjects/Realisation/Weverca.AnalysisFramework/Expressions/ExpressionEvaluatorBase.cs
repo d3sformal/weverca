@@ -189,7 +189,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="shortCircuit">Determine that short circuit on left operand should be used. It is needed for incomplete evaluation.</param>
         /// <returns>Result of binary expression</returns>
         public abstract MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation,
-            MemoryEntry rightOperand,out bool shortCircuit);
+            MemoryEntry rightOperand,out Value shortCircuit);
 
         /// <summary>
         /// Process unary operation on given operand

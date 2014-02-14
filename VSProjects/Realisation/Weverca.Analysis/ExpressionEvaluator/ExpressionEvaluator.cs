@@ -1213,30 +1213,31 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
 
         ///<inheritdoc/>
-        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out bool shortCircuit)
+        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out Value shortCircuit)
         {
-            shortCircuit = false;
             booleanConverter.SetContext(OutSet);
-            var result=booleanConverter.Evaluate(leftOperand) as BooleanValue;
+            shortCircuit=booleanConverter.Evaluate(leftOperand);
 
-
-            switch (operation)
+            if (shortCircuit is BooleanValue)
             {
-                case Operations.Or:
-                    if (result!=null && result.Value==true)
-                    {
-                        shortCircuit = true;
-                        return new MemoryEntry(OutSet.CreateBool(true));
-                    }
-                    break;
-                case Operations.And:
-                    if (result!=null && result.Value==false)
-                    {
-                        shortCircuit = true;
-                        return new MemoryEntry(OutSet.CreateBool(false));
-                    }
-                    break;
-              }
+                BooleanValue shortCirc = (BooleanValue)shortCircuit;
+                switch (operation)
+                {
+                    case Operations.Or:
+                        if (shortCircuit != null && shortCirc.Value == true)
+                        {
+                            return new MemoryEntry(OutSet.CreateBool(true));
+                        }
+                        break;
+                    case Operations.And:
+                        if (shortCircuit != null && shortCirc.Value == false)
+                        {
+                            shortCircuit = OutSet.CreateBool(true);
+                            return new MemoryEntry(OutSet.CreateBool(false));
+                        }
+                        break;
+                }
+            }
             return BinaryEx(leftOperand, operation, rightOperand);
         }
 

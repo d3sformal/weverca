@@ -119,14 +119,26 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out bool shortCircuit)
+        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out Value shortCircuit)
         {
-            shortCircuit = false;
+            shortCircuit = OutSet.CreateBool(false);
 
             switch (operation)
             {
                 case Operations.Or:
-                    shortCircuit = leftOperand.Count == 1 && (leftOperand.PossibleValues.First() as BooleanValue).Value;
+                    if (leftOperand.Count == 1 && (leftOperand.PossibleValues.First() as BooleanValue).Value)
+                    {
+                        shortCircuit = OutSet.CreateBool(true);
+                    }
+                    else if ((leftOperand.Count == 1 && !(leftOperand.PossibleValues.First() as BooleanValue).Value))
+                    {
+                        shortCircuit = OutSet.CreateBool(false);
+                    }
+                    else
+                    {
+                        shortCircuit = OutSet.AnyBooleanValue;
+                    }
+                    
                     break;
             }
 

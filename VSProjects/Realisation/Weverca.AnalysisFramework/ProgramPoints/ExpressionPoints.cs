@@ -206,18 +206,37 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            bool shortCircuit;
-            var value = Services.Evaluator.ShortableBinaryEx(LeftOperand.Value.ReadMemory(OutSnapshot),
-                Expression.PublicOperation, RightOperand.Value.ReadMemory(OutSnapshot),out shortCircuit);
+            Value shortCircuit;
+            //ProgramPointBase leftPoint = LeftOperand;
+            //ProgramPointBase rightPoint = RightOperand;
+            ValuePoint leftPoint = getOperand(LeftOperand);
+            ValuePoint rightPoint = getOperand(RightOperand);
 
-            if (shortCircuit)
+            var value = Services.Evaluator.ShortableBinaryEx(leftPoint.Value.ReadMemory(OutSnapshot),
+                Expression.PublicOperation, rightPoint.Value.ReadMemory(OutSnapshot),out shortCircuit);
+
+            if (shortCircuit is AnyBooleanValue)
             {
-                //Ommit flow in RightOperand branch
-                //TODO RightOperand may use exception throwing
-                OutSet.Extend(LeftOperand.OutSet);
+                OutSet.Extend(leftPoint.OutSet, rightPoint.OutSet);
+            }
+            else
+            {
+                if (((BooleanValue)shortCircuit).Value)
+                {
+                    OutSet.Extend(leftPoint.OutSet);
+                }
             }
 
             Value = OutSet.CreateSnapshotEntry(value);
+        }
+
+        private ValuePoint getOperand(ValuePoint operand)
+        {
+            if (operand is RCallPoint)
+            {
+                return operand.Extension.Sink;
+            }
+            return operand;
         }
 
         public void SetValueContent(MemoryEntry valueContent)

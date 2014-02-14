@@ -21,6 +21,13 @@ if($unknown){
 }
 ".AssertVariable("str").HasValues("f1a", "f1b");
 
+        readonly static TestCase BranchMerge2_CASE = @"
+$str='f1a';
+if($unknown){
+    $str='f1b';
+}
+".AssertVariable("str").HasValues("f1a", "f1b");
+
         readonly static TestCase BranchMergeWithUndefined_CASE = @"
 if($unknown){
     $str='f1a';
@@ -63,8 +70,8 @@ function action(){
     global $result;
 
     $result='action done';   
+    return false;
 }
-
 
 $result='no action';
 true || action();
@@ -76,6 +83,22 @@ $result2=$result;
 "
             .AssertVariable("result1").HasValues("no action")
             .AssertVariable("result2").HasValues("action done");
+
+        readonly static TestCase IncompleteEvaluationMay_CASE = @"
+function action(){
+    global $result;
+
+    $result='action done';   
+    return false;
+}
+
+$result='no action';
+$b = true;
+if ($unknown) $b = false;
+$b || action();
+"
+            .AssertVariable("result").HasValues("no action", "action done")
+            .Analysis(Analyses.WevercaAnalysisTest);
 
 
         readonly static TestCase SingleBranchedIndirectCall_CASE = @"
@@ -1475,6 +1498,12 @@ $resA = $a;
         }
 
         [TestMethod]
+        public void BranchMerge2()
+        {
+            AnalysisTestUtils.RunTestCase(BranchMerge2_CASE);
+        }
+
+        [TestMethod]
         public void BranchMergeWithUndefined()
         {
             AnalysisTestUtils.RunTestCase(BranchMergeWithUndefined_CASE);
@@ -1526,6 +1555,12 @@ $resA = $a;
         public void IncompleteEvaluation()
         {
             AnalysisTestUtils.RunTestCase(IncompleteEvaluation_CASE);
+        }
+
+        [TestMethod]
+        public void IncompleteEvaluationMay()
+        {
+            AnalysisTestUtils.RunTestCase(IncompleteEvaluationMay_CASE);
         }
 
         [TestMethod]
