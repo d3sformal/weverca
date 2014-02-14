@@ -84,7 +84,88 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue,
             VariableIdentifier field)
         {
+            HashSet<TypeValue> types = new HashSet<TypeValue>();
+            foreach (var obj in objectValue.ReadMemory(OutSnapshot).PossibleValues)
+            {
+                if (obj is ObjectValue)
+                {
+                    TypeValue type = OutSet.ObjectType(obj as ObjectValue);
+                    if (type != null)
+                    {
+                        types.Add(type);
+                    }
+                }
+            }
+
+            CheckVisibility(types, field,false);
             return objectValue.ReadField(OutSnapshot, field);
+        }
+
+        private void CheckVisibility(IEnumerable<TypeValue> types,  VariableIdentifier field,bool isStatic)
+        {
+            List<TypeValue> methodTypes = new List<TypeValue>();
+            if (OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).IsDefined(OutSnapshot))
+            {
+                foreach (var value in OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).ReadMemory(OutSnapshot).PossibleValues)
+                {
+                    if (value is TypeValue)
+                    {
+                        methodTypes.Add(value as TypeValue);
+                    }
+                }
+            }
+
+            foreach (var type in types)
+            {
+                foreach (var name in field.PossibleNames)
+                {
+                    var visibility = type.Declaration.GetFieldVisibility(name, isStatic);
+                    if (visibility.HasValue)
+                    {
+                        if (methodTypes.Count() == 0)
+                        {
+                            if (visibility == Visibility.PROTECTED || visibility == Visibility.PRIVATE)
+                            {
+                                SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                            }
+
+                        }
+                        else
+                        {
+                            foreach (var methodType in methodTypes)
+                            {
+                                if (visibility == Visibility.PRIVATE)
+                                {
+                                    if (!methodType.Declaration.QualifiedName.Equals(type.Declaration.QualifiedName))
+                                    {
+                                        SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                    }
+                                }
+                                else if (visibility == Visibility.NOT_ACCESSIBLE)
+                                {
+                                    SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                }
+                                else if (visibility == Visibility.PROTECTED)
+                                {
+                                    List<QualifiedName> typeHierarchy = new List<QualifiedName>(type.Declaration.BaseClasses);
+                                    typeHierarchy.Add(type.Declaration.QualifiedName);
+                                    List<QualifiedName> methodTypeHierarchy = new List<QualifiedName>(methodType.Declaration.BaseClasses);
+                                    methodTypeHierarchy.Add(methodType.Declaration.QualifiedName);
+                                    foreach (var className in typeHierarchy)
+                                    {
+                                        if (methodTypeHierarchy.Contains(className))
+                                        {
+                                            SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+            }
         }
 
         /// <inheritdoc />
@@ -106,7 +187,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             binaryOperationVisitor.SetContext(Flow);
             var result = binaryOperationVisitor.Evaluate(leftOperand, operation, rightOperand);
-           
+
             return result;
         }
 
@@ -577,7 +658,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
             List<ThrowInfo> throws = new List<ThrowInfo>();
-            throws.Add(new ThrowInfo(new CatchBlockDescription(Flow.ProgramEnd, new GenericQualifiedName(new QualifiedName(new Name(""))), new VariableIdentifier("")),new MemoryEntry()));
+            throws.Add(new ThrowInfo(new CatchBlockDescription(Flow.ProgramEnd, new GenericQualifiedName(new QualifiedName(new Name(""))), new VariableIdentifier("")), new MemoryEntry()));
             Flow.SetThrowBranching(throws);
             // Exit expression never returns, but it is still expression so it must return something
             return new MemoryEntry(OutSet.AnyValue);
@@ -1109,6 +1190,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             var names = new HashSet<string>();
             var fieldNames = new HashSet<string>();
+            var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             foreach (var typeName in classes)
             {
                 foreach (var fieldName in field.PossibleNames)
@@ -1119,7 +1201,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (!classStorage.IsDefined(OutSet.Snapshot))
                     {
-                        var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+                        
                         if (analyzer.ExistClass(typeName) && analyzer.GetClass(typeName).IsInterface == false)
                         {
                             InsertNativeObjectStaticVariablesIntoMM(typeName);
@@ -1161,6 +1243,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
+                HashSet<TypeValue> types = new HashSet<TypeValue>();
+                foreach (var className in names)
+                {
+                    var QualifiedName=new QualifiedName(new Name(className));
+                    if (analyzer.ExistClass(QualifiedName))
+                    {
+                        types.Add(OutSet.CreateType(analyzer.GetClass(QualifiedName)));
+                    }
+                    else
+                    {
+                        foreach (var type in OutSet.ResolveType(QualifiedName))
+                        {
+                            types.Add(type);
+                        }
+                    }
+                }
+
+                CheckVisibility(types, new VariableIdentifier(fieldNames.ToArray()),true);
                 var storage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
                 return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames.ToArray()));
             }
@@ -1216,21 +1316,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out Value shortCircuit)
         {
             booleanConverter.SetContext(OutSet);
-            shortCircuit=booleanConverter.Evaluate(leftOperand);
+            shortCircuit = booleanConverter.Evaluate(leftOperand);
 
             if (shortCircuit is BooleanValue)
             {
-                BooleanValue shortCirc = (BooleanValue)shortCircuit;
+                BooleanValue shortCirc = shortCircuit as BooleanValue;
                 switch (operation)
                 {
                     case Operations.Or:
-                        if (shortCircuit != null && shortCirc.Value == true)
+                        if (shortCirc.Value == true)
                         {
                             return new MemoryEntry(OutSet.CreateBool(true));
                         }
                         break;
                     case Operations.And:
-                        if (shortCircuit != null && shortCirc.Value == false)
+                        if (shortCirc.Value == false)
                         {
                             shortCircuit = OutSet.CreateBool(true);
                             return new MemoryEntry(OutSet.CreateBool(false));

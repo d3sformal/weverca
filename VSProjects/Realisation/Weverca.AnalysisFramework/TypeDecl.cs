@@ -30,7 +30,12 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Protected field/method
         /// </summary>
-        PROTECTED
+        PROTECTED,
+
+        /// <summary>
+        /// Not accessible (private in parent)
+        /// </summary>
+        NOT_ACCESSIBLE
     }
 
     /// <summary>
@@ -435,6 +440,8 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public readonly bool IsAbstract;
 
+        private Dictionary<VariableName, FieldInfo> resultingFields = new Dictionary<VariableName, FieldInfo>();
+
         /// <summary>
         /// Creates new instance of ClassDecl
         /// </summary>
@@ -467,7 +474,56 @@ namespace Weverca.AnalysisFramework
             IsFinal = isFinal;
             IsInterface = isInteface;
             IsAbstract = isAbstract;
+
+            
+            List<QualifiedName> classHierarchy = new List<QualifiedName>(baseClassName);
+            classHierarchy.Add(typeName);
+            foreach (var baseClass in classHierarchy)
+            {
+                foreach (var field in fields.Where(a=>a.Key.ClassName==baseClass))
+                {
+                    resultingFields[field.Key.Name] = field.Value;
+                }
+            }
+
         }
+
+        public Visibility? GetFieldVisibility(VariableName name, bool isStatic)
+        {
+            if (!resultingFields.ContainsKey(name))
+            {
+                return null;
+            }
+            else
+            {
+                if (resultingFields[name].IsStatic == isStatic)
+                {
+                    var visibility = resultingFields[name].Visibility;
+                    if (visibility == Visibility.PRIVATE)
+                    {
+                        if (resultingFields[name].ClassName.Equals(QualifiedName))
+                        {
+                            return visibility;
+                        }
+                        else
+                        {
+                            return Visibility.NOT_ACCESSIBLE;
+                        }
+                    }
+                    else 
+                    {
+                        return visibility;
+                    }
+
+
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
     }
 
     /// <summary>

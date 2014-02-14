@@ -37,7 +37,7 @@ namespace Weverca.Analysis
         /// </summary>
         public static readonly VariableName callDepthName = new VariableName(".callDepth");
 
-        private static readonly VariableName calledObjectTypeName = new VariableName(".calledObject");
+        public static readonly VariableName calledObjectTypeName = new VariableName(".calledObject");
 
         /// <summary>
         /// Readonly variable name for static variables

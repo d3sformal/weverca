@@ -590,5 +590,14 @@ namespace Weverca.Analysis
         /// </summary>
         INDEX_OUT_OF_RANGE,
 
+        /// <summary>
+        /// Warning, that occurs when calling private or protected method outside of called object
+        /// </summary>
+        CALLING_INACCESSIBLE_METHOD,
+
+        /// <summary>
+        /// Warning, that occurs when accessing private or protected field outside of given object
+        /// </summary>
+        ACCESSING_INACCESSIBLE_FIELD,
     }
 }
