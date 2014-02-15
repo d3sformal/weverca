@@ -167,7 +167,7 @@ namespace Weverca.Analysis
 
         private void staticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName,Flow, OutSet, Element);
+            var types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, Flow, Element);
             foreach (var type in types)
             {
                 var methods = resolveStaticMethod(type, name, arguments);
@@ -212,7 +212,7 @@ namespace Weverca.Analysis
             var functions = new Dictionary<object, FunctionValue>();
 
             var functionNames = getSubroutineNames(name);
-            IEnumerable<TypeValue> types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, Flow, OutSet, Element);
+            var types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, Flow, Element);
             foreach (var type in types)
             {
                 foreach (var functionName in functionNames)

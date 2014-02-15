@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using PHP.Core;
+using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;

@@ -99,7 +99,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Integer to convert.</param>
         /// <returns><c>true</c> if integer value is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, NumericValue<int> value)
+        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<int> value)
         {
             return outset.CreateBool(ToBoolean(value.Value));
         }
@@ -120,7 +120,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Long integer to convert.</param>
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, NumericValue<long> value)
+        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<long> value)
         {
             return outset.CreateBool(ToBoolean(value.Value));
         }
@@ -141,7 +141,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Floating-point number to convert.</param>
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, NumericValue<double> value)
+        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<double> value)
         {
             return outset.CreateBool(ToBoolean(value.Value));
         }
@@ -432,7 +432,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="value">Long integer to convert.</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToInteger(FlowOutputSet outset, NumericValue<long> value,
+        public static bool TryConvertToInteger(FlowOutputSet outset, ScalarValue<long> value,
             out IntegerValue convertedValue)
         {
             int casted;
@@ -470,7 +470,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="value">Floating-point number to convert.</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToInteger(FlowOutputSet outset, NumericValue<double> value,
+        public static bool TryConvertToInteger(FlowOutputSet outset, ScalarValue<double> value,
             out IntegerValue convertedValue)
         {
             int casted;
@@ -691,7 +691,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Integer value to convert.</param>
         /// <returns>A floating-point number that is equivalent to integer value.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, NumericValue<int> value)
+        public static FloatValue ToFloat(FlowOutputSet outset, ScalarValue<int> value)
         {
             return outset.CreateDouble(ToFloat(value.Value));
         }
@@ -712,7 +712,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Long integer value to convert.</param>
         /// <returns>A floating-point number that is equivalent to long integer value.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, NumericValue<long> value)
+        public static FloatValue ToFloat(FlowOutputSet outset, ScalarValue<long> value)
         {
             return outset.CreateDouble(ToFloat(value.Value));
         }
@@ -858,7 +858,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Value of integer to convert.</param>
         /// <returns>The string representation of integer value.</returns>
-        public static StringValue ToString(FlowOutputSet outset, NumericValue<int> value)
+        public static StringValue ToString(FlowOutputSet outset, ScalarValue<int> value)
         {
             return outset.CreateString(ToString(value.Value));
         }
@@ -879,7 +879,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Value of long integer to convert.</param>
         /// <returns>The string representation of long integer value.</returns>
-        public static StringValue ToString(FlowOutputSet outset, NumericValue<long> value)
+        public static StringValue ToString(FlowOutputSet outset, ScalarValue<long> value)
         {
             return outset.CreateString(System.Convert.ToString(value.Value, CultureInfo.InvariantCulture));
         }
@@ -890,7 +890,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Floating-point number to convert.</param>
         /// <returns>The string representation of floating-point number.</returns>
-        public static StringValue ToString(FlowOutputSet outset, NumericValue<double> value)
+        public static StringValue ToString(FlowOutputSet outset, ScalarValue<double> value)
         {
             return outset.CreateString(ToString(value.Value));
         }
@@ -1110,7 +1110,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert the interval of floating-point numbers to an equivalent integer interval.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.TryConvertToInteger(FlowOutputSet, double, out int)" />
+        /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)" />
         /// </remarks>
         /// <param name="outset">Output set of a program point.</param>
         /// <param name="value">Floating-point number to convert.</param>
@@ -1167,7 +1167,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Corresponding <see cref="IntegerIntervalValue"/> if cast is possible; <c>null</c> otherwise.</returns>
         public static IntegerIntervalValue ToIntegerInterval(FlowOutputSet outset, IntervalValue value)
         {
-            ToIntegerIntervalConversionVisitor visitor = new ToIntegerIntervalConversionVisitor(outset);
+            var visitor = new ToIntegerIntervalConversionVisitor(outset);
             value.Accept(visitor);
             return visitor.Result;
         }
@@ -1184,12 +1184,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Corresponding <see cref="LongintIntervalValue"/> if cast is possible; <c>null</c> otherwise.</returns>
         public static LongintIntervalValue ToLongInterval(FlowOutputSet outset, IntervalValue value)
         {
-            ToLongIntervalConversionVisitor visitor = new ToLongIntervalConversionVisitor(outset);
+            var visitor = new ToLongIntervalConversionVisitor(outset);
             value.Accept(visitor);
             return visitor.Result;
         }
 
-        #endregion
+        #endregion ToIntegerInterval
 
         #region ToFloatInterval
 
@@ -1212,7 +1212,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Floating-point interval extended from integer interval, if the value can be casted; <c>null</c>otherwise</returns>
         public static FloatIntervalValue ToFloatInterval(FlowOutputSet outset, IntervalValue value)
         {
-            ToFloatIntervalConversionVisitor visitor = new ToFloatIntervalConversionVisitor(outset);
+            var visitor = new ToFloatIntervalConversionVisitor(outset);
             value.Accept(visitor);
             return visitor.Result;
         }
@@ -1619,7 +1619,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Set all return values of <see cref="TypeConversion.TryConvertToNumber" /> to indicate failure.
+        /// Set all return values of <see cref="TypeConversion.TryConvertToNumber(
+        /// string, bool, out int, out double, out bool, out bool)" /> to indicate failure.
         /// </summary>
         /// <param name="integerValue">Converted integer value, always 0.</param>
         /// <param name="floatValue">Converted floating-point value, always 0.0.</param>
@@ -1694,105 +1695,105 @@ namespace Weverca.Analysis.ExpressionEvaluator
     }
 
     /// <summary>
-    /// Static class, which provides functionality for comparinf values types
+    /// Static class that provides functionality for comparing of value types
     /// </summary>
     public static class ValueTypeResolver
     {
         /// <summary>
-        /// Indicates is value Bool
+        /// Indicates if value is boolean.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value has boolean type</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is boolean.</returns>
         public static bool IsBool(Value value)
         {
             return value is ScalarValue<bool> || value is AnyBooleanValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Int
+        /// Indicates if Value is integer.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Int</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is integer.</returns>
         public static bool IsInt(Value value)
         {
             return value is NumericValue<int> || value is IntervalValue<int> || value is AnyIntegerValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Long
+        /// Indicates if value is long integer
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Long</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is long integer.</returns>
         public static bool IsLong(Value value)
         {
             return value is NumericValue<long> || value is IntervalValue<long> || value is AnyLongintValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Float
+        /// Indicates if value is floating-point number.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Float</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is floating-point number.</returns>
         public static bool IsFloat(Value value)
         {
             return value is NumericValue<double> || value is IntervalValue<double> || value is AnyFloatValue;
         }
 
         /// <summary>
-        /// Indicates if Value is String
+        /// Indicates if value is string.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is String</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is string.</returns>
         public static bool IsString(Value value)
         {
             return value is ScalarValue<string> || value is AnyStringValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Compond
+        /// Indicates if value is compound type.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Compound</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is compound type.</returns>
         public static bool IsCompound(Value value)
         {
             return value is CompoundValue || value is AnyCompoundValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Object
+        /// Indicates if value is object.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Object</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is object.</returns>
         public static bool IsObject(Value value)
         {
             return value is ObjectValue || value is AnyObjectValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Array
+        /// Indicates if value is array.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Array</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is array.</returns>
         public static bool IsArray(Value value)
         {
             return value is AssociativeArray || value is AnyArrayValue;
         }
 
         /// <summary>
-        /// Indicates if Value is Resource
+        /// Indicates if value is resource.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Resource</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is resource.</returns>
         public static bool IsResource(Value value)
         {
             return value is ResourceValue || value is AnyResourceValue;
         }
 
         /// <summary>
-        /// Indicates if Value can be dirty
+        /// Indicates if value can be dirty.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is dirty</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is dirty.</returns>
         public static bool CanBeDirty(Value value)
         {
             return !(ValueTypeResolver.IsBool(value)
@@ -1802,10 +1803,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Indicates if Value is Unknown
+        /// Indicates if value is unknown.
         /// </summary>
-        /// <param name="value">Value</param>
-        /// <returns>True if value is Unknown</returns>
+        /// <param name="value">Value to be checked.</param>
+        /// <returns>True if value is unknown.</returns>
         public static bool IsUnknown(Value value)
         {
             return value is UndefinedValue

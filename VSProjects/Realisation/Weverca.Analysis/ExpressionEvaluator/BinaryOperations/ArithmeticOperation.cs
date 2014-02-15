@@ -1,10 +1,26 @@
 using PHP.Core;
 using PHP.Core.AST;
+
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
+    /// <summary>
+    /// The class contains methods performing arithmetic operations.
+    /// </summary>
+    /// <remarks>
+    /// The behavior of arithmetic operations with integers is such that if result cannot fit into integer,
+    /// it is converted into floating-point number. It can happen when result overflows or underflows
+    /// during addition, subtraction or multiplication or when operands are not divisible during division.
+    /// The type of result is clear if we calculate with concrete numbers. Result of operations with integer
+    /// interval is also interval, but it can contain integers and floating-point numbers too, so
+    /// it degrades into entire floating-point interval if there is even just one non-integer. Moreover,
+    /// if divisor is (or can be) zero, than it is division by zero that ends with false value. Note that
+    /// arithmetic operations, specifically subtraction and division, are not commutative, though we must
+    /// provide additional methods with specified order of operands. Modulo operation is evaluated
+    /// in separated <see cref="ModuloOperation" /> class.
+    /// </remarks>
     public static class ArithmeticOperation
     {
         /// <summary>
@@ -39,13 +55,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Concrete aritmetic
 
         /// <summary>
-        /// Perform arithmetic operation for given integer operands.
+        /// Perform arithmetic operation of given integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static ScalarValue Arithmetic(FlowController flow, Operations operation,
             int leftOperand, int rightOperand)
         {
@@ -65,13 +81,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given integer and floating-point number operands.
+        /// Perform arithmetic operation of given integer and floating-point number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static ScalarValue Arithmetic(FlowController flow, Operations operation,
             int leftOperand, double rightOperand)
         {
@@ -79,13 +95,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point number and integer operands.
+        /// Perform arithmetic operation of given floating-point number and integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static ScalarValue Arithmetic(FlowController flow, Operations operation,
             double leftOperand, int rightOperand)
         {
@@ -93,13 +109,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point number operands.
+        /// Perform arithmetic operation of given floating-point number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static ScalarValue Arithmetic(FlowController flow, Operations operation,
             double leftOperand, double rightOperand)
         {
@@ -120,6 +136,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
+        /// <summary>
+        /// Add integer <paramref name="augend" /> and integer <paramref name="addend" />.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer augend of addition operation.</param>
+        /// <param name="addend">Integer addend of addition operation.</param>
+        /// <returns>Floating-point result whether sum overflows/underflows, otherwise integer.</returns>
         public static ScalarValue Add(FlowOutputSet outset, int augend, int addend)
         {
             // Result of addition can overflow or underflow
@@ -135,36 +158,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Add integer augend and floating-point number addend.
+        /// Add integer <paramref name="augend" /> and floating-point number <paramref name="addend" />.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="augend">Integer augend of addition operation</param>
-        /// <param name="addend">Floating-point number addend of addition operation</param>
-        /// <returns>Sum of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer augend of addition operation.</param>
+        /// <param name="addend">Floating-point number addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point number.</returns>
         public static FloatValue Add(FlowOutputSet outset, int augend, double addend)
         {
             return Add(outset, TypeConversion.ToFloat(augend), addend);
         }
 
         /// <summary>
-        /// Add floating-point number augend and integer addend.
+        /// Add floating-point number <paramref name="augend" /> and integer <paramref name="addend" />.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="augend">Floating-point number augend of addition operation</param>
-        /// <param name="addend">Integer addend of addition operation</param>
-        /// <returns>Sum of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point number augend of addition operation.</param>
+        /// <param name="addend">Integer addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point number.</returns>
         public static FloatValue Add(FlowOutputSet outset, double augend, int addend)
         {
             return Add(outset, augend, TypeConversion.ToFloat(addend));
         }
 
         /// <summary>
-        /// Add floating-point number augend and addend.
+        /// Add floating-point number <paramref name="augend" /> and <paramref name="addend" />.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="augend">Floating-point number augend of addition operation</param>
-        /// <param name="addend">Floating-point number addend of addition operation</param>
-        /// <returns>Sum of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point number augend of addition operation.</param>
+        /// <param name="addend">Floating-point number addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point number.</returns>
         public static FloatValue Add(FlowOutputSet outset, double augend, double addend)
         {
             return outset.CreateDouble(augend + addend);
@@ -174,6 +197,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Subtraction
 
+        /// <summary>
+        /// Subtract integer <paramref name="subtrahend" /> from integer <paramref name="minuend" />.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer subtrahend of subtraction operation.</param>
+        /// <returns>Floating-point result if difference overflows/underflows, otherwise integer.</returns>
         public static ScalarValue Subtract(FlowOutputSet outset, int minuend, int subtrahend)
         {
             // Result of subtraction can underflow or underflow
@@ -192,10 +222,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Subtract floating-point number subtrahend from integer minuend.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="minuend">Integer minuend of subtraction operation</param>
-        /// <param name="subtrahend">Floating-point number subtrahend of subtraction operation</param>
-        /// <returns>Difference of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point number subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point number.</returns>
         public static FloatValue Subtract(FlowOutputSet outset, int minuend, double subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloat(minuend), subtrahend);
@@ -204,22 +234,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Subtract integer subtrahend from floating-point number minuend.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="minuend">Floating-point number minuend of subtraction operation</param>
-        /// <param name="subtrahend">Integer subtrahend of subtraction operation</param>
-        /// <returns>Difference of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point number minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point number.</returns>
         public static FloatValue Subtract(FlowOutputSet outset, double minuend, int subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloat(subtrahend));
         }
 
         /// <summary>
-        /// Subtract floating-point number subtrahend from minuend.
+        /// Subtract floating-point number <paramref name="subtrahend" /> from <paramref name="minuend" />.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="minuend">Floating-point number minuend of subtraction operation</param>
-        /// <param name="subtrahend">Floating-point number subtrahend of subtraction operation</param>
-        /// <returns>Difference of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point number minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point number subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point number.</returns>
         public static FloatValue Subtract(FlowOutputSet outset, double minuend, double subtrahend)
         {
             return outset.CreateDouble(minuend - subtrahend);
@@ -229,6 +259,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
+        /// <summary>
+        /// Multiply integer <paramref name="multiplicand" /> and integer <paramref name="multiplier" />.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Integer multiplier of multiplication operation.</param>
+        /// <returns>Floating-point result whether product overflows/underflows, otherwise integer.</returns>
         public static ScalarValue Multiply(FlowOutputSet outset, int multiplicand, int multiplier)
         {
             // Result of multiplication can overflow or underflow
@@ -248,10 +285,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Multiply integer multiplicand and floating-point number multiplier.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="multiplicand">Integer multiplicand of multiplication operation</param>
-        /// <param name="multiplier">Floating-point number multiplier of multiplication operation</param>
-        /// <returns>Product of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Floating-point number multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point number.</returns>
         public static FloatValue Multiply(FlowOutputSet outset, int multiplicand, double multiplier)
         {
             return Multiply(outset, TypeConversion.ToFloat(multiplicand), multiplier);
@@ -260,22 +297,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Multiply floating-point number multiplicand and integer multiplier.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="multiplicand">Floating-point number multiplicand of multiplication operation</param>
-        /// <param name="multiplier">Integer multiplier of multiplication operation</param>
-        /// <returns>Product of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point number multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Integer multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point number.</returns>
         public static FloatValue Multiply(FlowOutputSet outset, double multiplicand, int multiplier)
         {
             return Multiply(outset, multiplicand, TypeConversion.ToFloat(multiplier));
         }
 
         /// <summary>
-        /// Multiply floating-point number <paramref name="multiplicand"/> and <paramref name="multiplier"/>.
+        /// Multiply floating-point number multiplicand and multiplier.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="multiplicand">Floating-point number multiplicand of multiplication operation</param>
-        /// <param name="multiplier">Floating-point number multiplier of multiplication operation</param>
-        /// <returns>Product of both operands as a floating point number</returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point number multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Floating-point number multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point number.</returns>
         public static FloatValue Multiply(FlowOutputSet outset, double multiplicand, double multiplier)
         {
             return outset.CreateDouble(multiplicand * multiplier);
@@ -285,6 +322,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
+        /// <summary>
+        /// Divide integer <paramref name="dividend" /> by integer <paramref name="divisor" />.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer dividend of division operation.</param>
+        /// <param name="divisor">Integer divisor of division operation.</param>
+        /// <returns>Floating-point result whether operands are not divisible, otherwise integer.</returns>
         public static ScalarValue Divide(FlowController flow, int dividend, int divisor)
         {
             if (divisor != 0)
@@ -308,36 +352,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Divide integer <paramref name="dividend"/> by floating-point number <paramref name="divisor"/>.
+        /// Divide integer <paramref name="dividend" /> by floating-point number <paramref name="divisor" />.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Integer dividend of division operation</param>
-        /// <param name="divisor">Floating-point number divisor of division operation</param>
-        /// <returns>Quotient of both operands as a floating point number</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer dividend of division operation.</param>
+        /// <param name="divisor">Floating-point number divisor of division operation.</param>
+        /// <returns>Quotient of both operands as a floating-point number.</returns>
         public static ScalarValue Divide(FlowController flow, int dividend, double divisor)
         {
             return Divide(flow, TypeConversion.ToFloat(dividend), divisor);
         }
 
         /// <summary>
-        /// Divide floating-point number <paramref name="dividend"/> by integer <paramref name="divisor"/>.
+        /// Divide floating-point number <paramref name="dividend" /> by integer <paramref name="divisor" />.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Floating-point number dividend of division operation</param>
-        /// <param name="divisor">Integer divisor of division operation</param>
-        /// <returns>Quotient of both operands as a floating point number</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point number dividend of division operation.</param>
+        /// <param name="divisor">Integer divisor of division operation.</param>
+        /// <returns>Quotient of both operands as a floating-point number.</returns>
         public static ScalarValue Divide(FlowController flow, double dividend, int divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloat(divisor));
         }
 
         /// <summary>
-        /// Divide floating-point number <paramref name="dividend"/> by <paramref name="divisor"/>.
+        /// Divide floating-point number <paramref name="dividend" /> by <paramref name="divisor" />.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="dividend">Floating-point number dividend of division operation</param>
-        /// <param name="divisor">Integer divisor of division operation</param>
-        /// <returns>Quotient of both operands as a floating point number</returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point number dividend of division operation.</param>
+        /// <param name="divisor">Floating-point number divisor of division operation.</param>
+        /// <returns>Quotient of both operands as a floating-point number.</returns>
         public static ScalarValue Divide(FlowController flow, double dividend, double divisor)
         {
             if (divisor != 0.0)
@@ -357,13 +401,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Left concrete and right abstract operand aritmetic
 
         /// <summary>
-        /// Perform arithmetic operation for given integer number and interval operands.
+        /// Perform arithmetic operation of given integer number and interval operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right integer interval operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             int leftOperand, IntervalValue<int> rightOperand)
         {
@@ -383,13 +427,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given integer and floating-point interval operands.
+        /// Perform arithmetic operation of given integer number and floating-point interval operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             int leftOperand, IntervalValue<double> rightOperand)
         {
@@ -397,13 +441,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point number and integer interval operands.
+        /// Perform arithmetic operation of given floating-point number and integer interval operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right integer interval operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             double leftOperand, IntervalValue<int> rightOperand)
         {
@@ -412,13 +456,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point number and interval operands.
+        /// Perform arithmetic operation of given floating-point number and interval operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             double leftOperand, IntervalValue<double> rightOperand)
         {
@@ -438,12 +482,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given concrete and abstract integer operands.
+        /// Perform arithmetic operation of given concrete and abstract integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractArithmetic(FlowController flow,
             Operations operation, int leftOperand)
         {
@@ -453,12 +497,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point number and abstract integer operands.
+        /// Perform arithmetic operation of given floating-point number and abstract integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractArithmetic(FlowController flow,
             Operations operation, double leftOperand)
         {
@@ -468,12 +512,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given integer and abstract boolean operands.
+        /// Perform arithmetic operation of given integer and abstract boolean operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractBooleanArithmetic(FlowController flow,
             Operations operation, int leftOperand)
         {
@@ -483,12 +527,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point number and abstract boolean operands.
+        /// Perform arithmetic operation of given floating-point number and abstract boolean operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractBooleanArithmetic(FlowController flow,
             Operations operation, double leftOperand)
         {
@@ -499,6 +543,20 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
+        /// <summary>
+        /// Add integer <paramref name="augend" /> and integer interval <paramref name="addend" />.
+        /// </summary>
+        /// <remarks>
+        /// Arithmetic of integers has a specific behavior in PHP language. If result of arithmetic
+        /// operation overflow or underflow, it is converted into floating-point number. It can cause
+        /// problems in operations like widening, where the result can be integer interval with extreme
+        /// endpoints, i.e. maximal or minimal integer values. Every increment or decrement than causes
+        /// overflow or underflow.
+        /// </remarks>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer augend of addition operation.</param>
+        /// <param name="addend">Integer interval addend of addition operation.</param>
+        /// <returns>Floating-point interval whether sum overflows, otherwise integer interval.</returns>
         public static Value Add(FlowOutputSet outset, int augend, IntervalValue<int> addend)
         {
             // Result of addition can overflow or underflow
@@ -515,18 +573,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Add integer augend and floating-point interval addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer augend of addition operation.</param>
+        /// <param name="addend">Floating-point interval addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset, int augend,
             IntervalValue<double> addend)
         {
             return Add(outset, TypeConversion.ToFloat(augend), addend);
         }
 
+        /// <summary>
+        /// Add floating-point number augend and integer interval addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point number augend of addition operation.</param>
+        /// <param name="addend">Integer interval addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset, double augend,
             IntervalValue<int> addend)
         {
             return Add(outset, augend, TypeConversion.ToFloatInterval(outset, addend));
         }
 
+        /// <summary>
+        /// Add floating-point number augend and floating-point interval addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point number augend of addition operation.</param>
+        /// <param name="addend">Floating-point interval addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset, double augend,
             IntervalValue<double> addend)
         {
@@ -537,6 +616,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Subtraction
 
+        /// <summary>
+        /// Subtract integer interval subtrahend from integer minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer interval subtrahend of subtraction operation.</param>
+        /// <returns>Floating-point interval if difference underflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Subtract(FlowOutputSet outset, int minuend, IntervalValue<int> subtrahend)
         {
             // Result of subtraction can underflow or underflow
@@ -553,18 +640,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Subtract floating-point interval subtrahend from integer minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset,
             int minuend, IntervalValue<double> subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloat(minuend), subtrahend);
         }
 
+        /// <summary>
+        /// Subtract integer interval subtrahend from floating-point number minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point number minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset, double minuend,
             IntervalValue<int> subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloatInterval(outset, subtrahend));
         }
 
+        /// <summary>
+        /// Subtract floating-point interval subtrahend from floating-point number minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point number minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset, double minuend,
             IntervalValue<double> subtrahend)
         {
@@ -575,6 +683,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
+        /// <summary>
+        /// Multiply integer multiplicand and integer interval multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Integer interval multiplier of multiplication operation.</param>
+        /// <returns>Floating-point interval whether product overflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Multiply(FlowOutputSet outset, int multiplicand, IntervalValue<int> multiplier)
         {
             // Result of multiplication can underflow or underflow
@@ -607,18 +723,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Multiply integer multiplicand and floating-point interval multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Floating-point interval multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset, int multiplicand,
             IntervalValue<double> multiplier)
         {
             return Multiply(outset, TypeConversion.ToFloat(multiplicand), multiplier);
         }
 
+        /// <summary>
+        /// Multiply floating-point number multiplicand and integer interval multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point number multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Integer interval multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset, double multiplicand,
             IntervalValue<int> multiplier)
         {
             return Multiply(outset, multiplicand, TypeConversion.ToFloatInterval(outset, multiplier));
         }
 
+        /// <summary>
+        /// Multiply floating-point number multiplicand and floating-point interval multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point number multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Floating-point interval multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset, double multiplicand,
             IntervalValue<double> multiplier)
         {
@@ -639,6 +776,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
+        /// <summary>
+        /// Divide integer <paramref name="dividend" /> by integer interval <paramref name="divisor" />.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer dividend of division operation.</param>
+        /// <param name="divisor">Integer interval divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, int dividend, IntervalValue<int> divisor)
         {
             // Not divisible numbers result to floating-point number.
@@ -648,24 +792,45 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToFloatInterval(flow.OutSet, divisor));
         }
 
+        /// <summary>
+        /// Divide integer dividend by floating-point interval divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer dividend of division operation.</param>
+        /// <param name="divisor">Floating-point interval divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, int dividend,
             IntervalValue<double> divisor)
         {
             return Divide(flow, TypeConversion.ToFloat(dividend), divisor);
         }
 
+        /// <summary>
+        /// Divide floating-point number dividend by integer interval divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point number dividend of division operation.</param>
+        /// <param name="divisor">Integer interval divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, double dividend,
             IntervalValue<int> divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloatInterval(flow.OutSet, divisor));
         }
 
+        /// <summary>
+        /// Divide floating-point number dividend by floating-point interval divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point number dividend of division operation.</param>
+        /// <param name="divisor">Floating-point interval divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, double dividend,
             IntervalValue<double> divisor)
         {
             if ((divisor.Start > 0.0) || (divisor.End < 0.0))
             {
-                if (dividend >= 0.0)
+                if ((dividend >= 0.0) == (divisor.Start > 0.0))
                 {
                     return flow.OutSet.CreateFloatInterval(dividend / divisor.End, dividend / divisor.Start);
                 }
@@ -687,13 +852,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #region Left abstract and right concrete operand aritmetic
 
         /// <summary>
-        /// Perform arithmetic operation for given integer interval and number operands.
+        /// Perform arithmetic operation of given integer interval and number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer interval operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<int> leftOperand, int rightOperand)
         {
@@ -713,13 +878,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given integer interval and floating-point number operands.
+        /// Perform arithmetic operation of given integer interval and floating-point number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left integer interval operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<int> leftOperand, double rightOperand)
         {
@@ -728,13 +893,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point interval and integer operands.
+        /// Perform arithmetic operation of given floating-point interval and integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<double> leftOperand, int rightOperand)
         {
@@ -742,13 +907,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for given floating-point interval and number operands.
+        /// Perform arithmetic operation of given floating-point interval and number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation</param>
-        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<double> leftOperand, double rightOperand)
         {
@@ -768,12 +933,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for abstract and given concrete integer operands.
+        /// Perform arithmetic operation of abstract and given concrete integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="rightOperand">Right integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractArithmetic(FlowController flow,
             Operations operation, int rightOperand)
         {
@@ -783,12 +948,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for abstract integer and given floating-point number operands.
+        /// Perform arithmetic operation of abstract integer and given floating-point number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractArithmetic(FlowController flow,
             Operations operation, double rightOperand)
         {
@@ -798,12 +963,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for abstract boolean and given integer operands.
+        /// Perform arithmetic operation of abstract boolean and given integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="rightOperand">Right integer operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right integer operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractBooleanArithmetic(FlowController flow,
             Operations operation, int rightOperand)
         {
@@ -813,12 +978,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Perform arithmetic operation for abstract boolean and given floating-point number operands.
+        /// Perform arithmetic operation of abstract boolean and given floating-point number operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractBooleanArithmetic(FlowController flow,
             Operations operation, double rightOperand)
         {
@@ -829,23 +994,52 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
+        /// <summary>
+        /// Add integer interval <paramref name="augend" /> and integer <paramref name="addend" />.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer interval augend of addition operation.</param>
+        /// <param name="addend">Integer addend of addition operation.</param>
+        /// <returns>Floating-point interval whether sum overflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Add(FlowOutputSet outset, IntervalValue<int> augend, int addend)
         {
             return Add(outset, addend, augend);
         }
 
+        /// <summary>
+        /// Add integer interval augend and floating-point number addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer interval augend of addition operation.</param>
+        /// <param name="addend">Floating-point number addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset,
             IntervalValue<int> augend, double addend)
         {
             return Add(outset, addend, augend);
         }
 
+        /// <summary>
+        /// Add floating-point interval augend and integer addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point interval augend of addition operation.</param>
+        /// <param name="addend">Integer addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset,
             IntervalValue<double> augend, int addend)
         {
             return Add(outset, addend, augend);
         }
 
+        /// <summary>
+        /// Add floating-point interval augend and floating-point number addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point interval augend of addition operation.</param>
+        /// <param name="addend">Floating-point number addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset,
             IntervalValue<double> augend, double addend)
         {
@@ -856,6 +1050,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Subtraction
 
+        /// <summary>
+        /// Subtract integer subtrahend from integer interval minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer subtrahend of subtraction operation.</param>
+        /// <returns>Floating-point interval if difference underflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Subtract(FlowOutputSet outset, IntervalValue<int> minuend, int subtrahend)
         {
             // Result of subtraction can underflow or underflow
@@ -872,18 +1074,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Subtract floating-point number subtrahend from integer interval minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point number subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset,
             IntervalValue<int> minuend, double subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloatInterval(outset, minuend), subtrahend);
         }
 
+        /// <summary>
+        /// Subtract integer subtrahend from floating-point interval minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset,
             IntervalValue<double> minuend, int subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloat(subtrahend));
         }
 
+        /// <summary>
+        /// Subtract floating-point number subtrahend from floating-point interval minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point number minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset,
             IntervalValue<double> minuend, double subtrahend)
         {
@@ -894,23 +1117,52 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
+        /// <summary>
+        /// Multiply integer interval multiplicand and integer multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer interval multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Integer multiplier of multiplication operation.</param>
+        /// <returns>Floating-point interval whether product overflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Multiply(FlowOutputSet outset, IntervalValue<int> multiplicand, int multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
 
+        /// <summary>
+        /// Multiply integer interval multiplicand and floating-point number multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer interval multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Floating-point number multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset,
             IntervalValue<int> multiplicand, double multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
 
+        /// <summary>
+        /// Multiply floating-point interval multiplicand and integer number multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point interval multiplicand of multiplication.</param>
+        /// <param name="multiplier">Integer number multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset,
             IntervalValue<double> multiplicand, int multiplier)
         {
             return Multiply(outset, multiplier, multiplicand);
         }
 
+        /// <summary>
+        /// Multiply floating-point interval multiplicand and floating-point number multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point interval multiplicand of multiplication.</param>
+        /// <param name="multiplier">Floating-point number multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset,
             IntervalValue<double> multiplicand, double multiplier)
         {
@@ -921,6 +1173,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
+        /// <summary>
+        /// Divide integer interval <paramref name="dividend" /> by integer <paramref name="divisor" />.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer interval dividend of division operation.</param>
+        /// <param name="divisor">Integer divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, IntervalValue<int> dividend, int divisor)
         {
             // Not divisible numbers result to floating-point number.
@@ -930,16 +1189,37 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToFloat(divisor));
         }
 
+        /// <summary>
+        /// Divide integer interval dividend by floating-point number divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer interval dividend of division operation.</param>
+        /// <param name="divisor">Floating-point number divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, IntervalValue<int> dividend, double divisor)
         {
             return Divide(flow, TypeConversion.ToFloatInterval(flow.OutSet, dividend), divisor);
         }
 
+        /// <summary>
+        /// Divide floating-point interval dividend by integer divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point interval dividend of division operation.</param>
+        /// <param name="divisor">Integer divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, IntervalValue<double> dividend, int divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloat(divisor));
         }
 
+        /// <summary>
+        /// Divide floating-point interval dividend by floating-point number divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point interval dividend of division operation.</param>
+        /// <param name="divisor">Floating-point number divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, IntervalValue<double> dividend, double divisor)
         {
             if (divisor != 0.0)
@@ -965,6 +1245,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Abstract aritmetic
 
+        /// <summary>
+        /// Perform arithmetic operation of given integer interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<int> leftOperand, IntervalValue<int> rightOperand)
         {
@@ -983,6 +1271,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given integer and floating-point interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<int> leftOperand, IntervalValue<double> rightOperand)
         {
@@ -990,6 +1286,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToFloatInterval(flow.OutSet, leftOperand), rightOperand);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given floating-point and integer interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<double> leftOperand, IntervalValue<int> rightOperand)
         {
@@ -997,6 +1301,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 TypeConversion.ToFloatInterval(flow.OutSet, rightOperand));
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given floating-point interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation.</param>
+        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value Arithmetic(FlowController flow, Operations operation,
             IntervalValue<double> leftOperand, IntervalValue<double> rightOperand)
         {
@@ -1015,6 +1327,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given integer interval and abstract integer operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractArithmetic(FlowController flow,
             Operations operation, IntervalValue<int> leftOperand)
         {
@@ -1023,6 +1342,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given floating-point interval and abstract integer operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point number operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractArithmetic(FlowController flow,
             Operations operation, IntervalValue<double> leftOperand)
         {
@@ -1031,6 +1357,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, leftOperand, entireIntegerInterval);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of abstract integer and given integer interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractArithmetic(FlowController flow,
             Operations operation, IntervalValue<int> rightOperand)
         {
@@ -1039,6 +1372,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of abstract integer and given floating-point interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractArithmetic(FlowController flow,
             Operations operation, IntervalValue<double> rightOperand)
         {
@@ -1047,6 +1387,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, entireIntegerInterval, rightOperand);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given integer interval and abstract boolean operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractBooleanArithmetic(FlowController flow,
             Operations operation, IntervalValue<int> leftOperand)
         {
@@ -1055,6 +1402,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, leftOperand, booleanInterval);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of given floating-point interval and abstract boolean operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="leftOperand">Left floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractBooleanArithmetic(FlowController flow,
             Operations operation, IntervalValue<double> leftOperand)
         {
@@ -1063,6 +1417,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, leftOperand, booleanInterval);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of left abstract integer and right abstract boolean operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value RightAbstractBooleanArithmetic(FlowController flow, Operations operation)
         {
             InitalizeInternals(flow.OutSet);
@@ -1070,6 +1430,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, entireIntegerInterval, booleanInterval);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of abstract boolean and given integer interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right integer interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractBooleanArithmetic(FlowController flow,
             Operations operation, IntervalValue<int> rightOperand)
         {
@@ -1078,6 +1445,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, booleanInterval, rightOperand);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of abstract boolean and given floating-point interval operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <param name="rightOperand">Right floating-point interval operand of arithmetic operation.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractBooleanArithmetic(FlowController flow,
             Operations operation, IntervalValue<double> rightOperand)
         {
@@ -1086,6 +1460,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return Arithmetic(flow, operation, booleanInterval, rightOperand);
         }
 
+        /// <summary>
+        /// Perform arithmetic operation of left abstract boolean and right abstract integer operands.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value LeftAbstractBooleanArithmetic(FlowController flow, Operations operation)
         {
             InitalizeInternals(flow.OutSet);
@@ -1096,9 +1476,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform arithmetic operation of two abstract boolean operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value AbstractBooleanArithmetic(FlowController flow, Operations operation)
         {
             InitalizeInternals(flow.OutSet);
@@ -1109,9 +1489,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform arithmetic operation of two abstract integer operands.
         /// </summary>
-        /// <param name="flow">Flow controller of program point providing data for evaluation</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c></returns>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <returns>If operation is arithmetic, it returns its result, otherwise <c>null</c>.</returns>
         public static Value AbstractIntegerArithmetic(FlowController flow, Operations operation)
         {
             InitalizeInternals(flow.OutSet);
@@ -1122,9 +1502,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform arithmetic operation of two abstract floating-point number operands.
         /// </summary>
-        /// <param name="outset">Output set of a program point</param>
-        /// <param name="operation">Operation to be performed, only the arithmetic one gives a result</param>
-        /// <returns>If operation is arithmetic, an abstract floating-point, otherwise <c>null</c></returns>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="operation">Operation to be performed, only the arithmetic one evaluates.</param>
+        /// <returns>If operation is arithmetic, an abstract floating-point, otherwise <c>null</c>.</returns>
         public static AnyFloatValue AbstractFloatArithmetic(FlowOutputSet outset, Operations operation)
         {
             return IsArithmetic(operation) ? outset.AnyFloatValue : null;
@@ -1132,6 +1512,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Addition
 
+        /// <summary>
+        /// Add integer interval <paramref name="augend" /> and <paramref name="addend" /> of the same type.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer interval augend of addition operation.</param>
+        /// <param name="addend">Integer interval addend of addition operation.</param>
+        /// <returns>Floating-point interval whether sum overflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Add(FlowOutputSet outset, IntervalValue<int> augend,
             IntervalValue<int> addend)
         {
@@ -1150,33 +1538,57 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Add integer interval augend and floating-point interval addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Integer interval augend of addition operation.</param>
+        /// <param name="addend">Floating-point interval addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset, IntervalValue<int> augend,
             IntervalValue<double> addend)
         {
             return Add(outset, TypeConversion.ToFloatInterval(outset, augend), addend);
         }
 
+        /// <summary>
+        /// Add floating-point interval augend and integer interval addend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point interval augend of addition operation.</param>
+        /// <param name="addend">Integer interval addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset, IntervalValue<double> augend,
             IntervalValue<int> addend)
         {
             return Add(outset, augend, TypeConversion.ToFloatInterval(outset, addend));
         }
 
+        /// <summary>
+        /// Add floating-point interval <paramref name="augend" /> and <paramref name="addend" />.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="augend">Floating-point interval augend of addition operation.</param>
+        /// <param name="addend">Floating-point interval addend of addition operation.</param>
+        /// <returns>Sum of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Add(FlowOutputSet outset, IntervalValue<double> augend,
             IntervalValue<double> addend)
         {
             return outset.CreateFloatInterval(augend.Start + addend.Start, augend.End + addend.End);
         }
 
-        public static IntervalValue<double> AbstractIntegerAdd(FlowOutputSet outset)
-        {
-            return outset.CreateFloatInterval(int.MinValue * 2.0, int.MaxValue * 2.0);
-        }
-
         #endregion Addition
 
         #region Subtraction
 
+        /// <summary>
+        /// Subtract integer interval subtrahend from minuend of the same type.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer subtrahend of subtraction operation.</param>
+        /// <returns>Floating-point interval if difference underflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Subtract(FlowOutputSet outset, IntervalValue<int> minuend,
             IntervalValue<int> subtrahend)
         {
@@ -1196,18 +1608,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
+        /// <summary>
+        /// Subtract floating-point interval subtrahend from integer interval minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Integer interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset, IntervalValue<int> minuend,
             IntervalValue<double> subtrahend)
         {
             return Subtract(outset, TypeConversion.ToFloatInterval(outset, minuend), subtrahend);
         }
 
+        /// <summary>
+        /// Subtract integer interval subtrahend from floating-point interval minuend.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Integer interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset, IntervalValue<double> minuend,
             IntervalValue<int> subtrahend)
         {
             return Subtract(outset, minuend, TypeConversion.ToFloatInterval(outset, subtrahend));
         }
 
+        /// <summary>
+        /// Subtract floating-point interval subtrahend from minuend of the same type.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="minuend">Floating-point interval minuend of subtraction operation.</param>
+        /// <param name="subtrahend">Floating-point interval subtrahend of subtraction operation.</param>
+        /// <returns>Difference of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Subtract(FlowOutputSet outset, IntervalValue<double> minuend,
             IntervalValue<double> subtrahend)
         {
@@ -1219,6 +1652,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Multiplication
 
+        /// <summary>
+        /// Multiply integer interval multiplicand and multiplier of the same type.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer interval multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Integer interval multiplier of multiplication operation.</param>
+        /// <returns>Floating-point interval whether product overflows, otherwise integer interval.</returns>
+        /// <seealso cref="Add(FlowOutputSet, int, IntervalValue{int})" />
         public static Value Multiply(FlowOutputSet outset, IntervalValue<int> multiplicand,
             IntervalValue<int> multiplier)
         {
@@ -1226,18 +1667,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return outset.AnyValue;
         }
 
+        /// <summary>
+        /// Multiply integer interval multiplicand and floating-point interval multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Integer interval multiplicand of multiplication operation.</param>
+        /// <param name="multiplier">Floating-point interval multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset, IntervalValue<int> multiplicand,
             IntervalValue<double> multiplier)
         {
             return Multiply(outset, TypeConversion.ToFloatInterval(outset, multiplicand), multiplier);
         }
 
+        /// <summary>
+        /// Multiply floating-point interval multiplicand and integer interval multiplier.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point interval multiplicand of multiplication.</param>
+        /// <param name="multiplier">Integer interval multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset, IntervalValue<double> multiplicand,
             IntervalValue<int> multiplier)
         {
             return Multiply(outset, multiplicand, TypeConversion.ToFloatInterval(outset, multiplier));
         }
 
+        /// <summary>
+        /// Multiply floating-point interval multiplicand and multiplier of the same type.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="multiplicand">Floating-point interval multiplicand of multiplication.</param>
+        /// <param name="multiplier">Floating-point interval multiplier of multiplication operation.</param>
+        /// <returns>Product of both operands as a floating-point interval.</returns>
         public static IntervalValue<double> Multiply(FlowOutputSet outset, IntervalValue<double> multiplicand,
             IntervalValue<double> multiplier)
         {
@@ -1249,30 +1711,102 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Division
 
+        /// <summary>
+        /// Divide integer interval dividend by divisor of the same type.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer interval dividend of division operation.</param>
+        /// <param name="divisor">Integer interval divisor of division operation.</param>
+        /// <returns>Quotient as a floating-point interval or false when division by zero.</returns>
         public static Value Divide(FlowController flow, IntervalValue<int> dividend,
             IntervalValue<int> divisor)
         {
-            // TODO: Calculate more precise result
-            return flow.OutSet.AnyValue;
+            // Not divisible numbers result to floating-point number.
+            // Unfortunately, except for trivial cases, the result after division
+            // is always an interval mixed of integers and floating-point numbers.
+            return Divide(flow, TypeConversion.ToFloatInterval(flow.OutSet, dividend),
+                TypeConversion.ToFloatInterval(flow.OutSet, divisor));
         }
 
+        /// <summary>
+        /// Divide integer interval dividend by floating-point interval divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Integer interval dividend of division operation.</param>
+        /// <param name="divisor">Floating-point interval divisor of division operation.</param>
+        /// <returns>Quotient of both operands as a floating-point interval.</returns>
         public static Value Divide(FlowController flow, IntervalValue<int> dividend,
             IntervalValue<double> divisor)
         {
             return Divide(flow, TypeConversion.ToFloatInterval(flow.OutSet, dividend), divisor);
         }
 
+        /// <summary>
+        /// Divide floating-point interval dividend by integer interval divisor.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point interval dividend of division operation.</param>
+        /// <param name="divisor">Integer interval divisor of division operation.</param>
+        /// <returns>Quotient of both operands as a floating-point interval.</returns>
         public static Value Divide(FlowController flow, IntervalValue<double> dividend,
             IntervalValue<int> divisor)
         {
             return Divide(flow, dividend, TypeConversion.ToFloatInterval(flow.OutSet, divisor));
         }
 
+        /// <summary>
+        /// Divide floating-point interval dividend by divisor of the same type.
+        /// </summary>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="dividend">Floating-point interval dividend of division operation.</param>
+        /// <param name="divisor">Floating-point interval divisor of division operation.</param>
+        /// <returns>Quotient of both operands as a floating-point interval.</returns>
         public static Value Divide(FlowController flow, IntervalValue<double> dividend,
             IntervalValue<double> divisor)
         {
-            // TODO: Calculate more precise result
-            return flow.OutSet.AnyValue;
+            if ((divisor.Start > 0.0) || (divisor.End < 0.0))
+            {
+                if (divisor.Start > 0.0)
+                {
+                    if (dividend.Start >= 0.0)
+                    {
+                        return flow.OutSet.CreateFloatInterval(dividend.Start / divisor.End,
+                            dividend.End / divisor.Start);
+                    }
+                    else if (dividend.End < 0.0)
+                    {
+                        return flow.OutSet.CreateFloatInterval(dividend.Start / divisor.Start,
+                            dividend.End / divisor.End);
+                    }
+                    else
+                    {
+                        return flow.OutSet.CreateFloatInterval(dividend.Start / divisor.Start,
+                            dividend.End / divisor.Start);
+                    }
+                }
+                else
+                {
+                    if (dividend.Start >= 0.0)
+                    {
+                        return flow.OutSet.CreateFloatInterval(dividend.End / divisor.End,
+                        dividend.Start / divisor.Start);
+                    }
+                    else if (dividend.End < 0.0)
+                    {
+                        return flow.OutSet.CreateFloatInterval(dividend.End / divisor.Start,
+                            dividend.Start / divisor.End);
+                    }
+                    else
+                    {
+                        return flow.OutSet.CreateFloatInterval(dividend.End / divisor.End,
+                            dividend.Start / divisor.End);
+                    }
+                }
+            }
+            else
+            {
+                return WarnPossibleDivideByZero(flow);
+            }
         }
 
         #endregion Division
@@ -1345,7 +1879,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="cause">Cause of the warning.</param>
         private static void SetWarning(FlowController flow, string message, AnalysisWarningCause cause)
         {
-            var warning = new AnalysisWarning(flow.CurrentScript.FullName,message, flow.CurrentPartial, cause);
+            var warning = new AnalysisWarning(flow.CurrentScript.FullName, message,
+                flow.CurrentPartial, cause);
             AnalysisWarningHandler.SetWarning(flow.OutSet, warning);
         }
 

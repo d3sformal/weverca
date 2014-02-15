@@ -12,37 +12,37 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.ExpressionEvaluator
 {
     /// <summary>
-    /// Expression evaluation is resolved here
+    /// Expression evaluation is resolved here.
     /// </summary>
     public partial class ExpressionEvaluator : ExpressionEvaluatorBase
     {
         /// <summary>
-        /// Convertor of values to boolean used by evaluator
+        /// Convertor of values to boolean used by evaluator.
         /// </summary>
         private BooleanConverter booleanConverter;
 
         /// <summary>
-        /// Convertor of values to strings used by evaluator
+        /// Convertor of values to strings used by evaluator.
         /// </summary>
         private StringConverter stringConverter;
 
         /// <summary>
-        /// The partial evaluator of one unary operation
+        /// The partial evaluator of one unary operation.
         /// </summary>
         private UnaryOperationEvaluator unaryOperationEvaluator;
 
         /// <summary>
-        /// The partial evaluator of one prefix or postfix increment or decrement operation
+        /// The partial evaluator of one prefix or postfix increment or decrement operation.
         /// </summary>
         private IncrementDecrementEvaluator incrementDecrementEvaluator;
 
         /// <summary>
-        /// The partial evaluator of values that can be used as index of array
+        /// The partial evaluator of values that can be used as index of array.
         /// </summary>
         private ArrayIndexEvaluator arrayIndexEvaluator;
 
         /// <summary>
-        /// The partial evaluator of one binary operation
+        /// The partial evaluator of one binary operation.
         /// </summary>
         private BinaryOperationEvaluator binaryOperationVisitor;
 
@@ -84,12 +84,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override ReadWriteSnapshotEntryBase ResolveField(ReadSnapshotEntryBase objectValue,
             VariableIdentifier field)
         {
-            HashSet<TypeValue> types = new HashSet<TypeValue>();
-            foreach (var obj in objectValue.ReadMemory(OutSnapshot).PossibleValues)
+            var types = new HashSet<TypeValue>();
+            var entry = objectValue.ReadMemory(OutSnapshot);
+            foreach (var obj in entry.PossibleValues)
             {
-                if (obj is ObjectValue)
+                var value = obj as ObjectValue;
+                if (value != null)
                 {
-                    TypeValue type = OutSet.ObjectType(obj as ObjectValue);
+                    var type = OutSet.ObjectType(value);
                     if (type != null)
                     {
                         types.Add(type);
@@ -97,20 +99,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
 
-            CheckVisibility(types, field,false);
+            CheckVisibility(types, field, false);
             return objectValue.ReadField(OutSnapshot, field);
         }
 
-        private void CheckVisibility(IEnumerable<TypeValue> types,  VariableIdentifier field,bool isStatic)
+        private void CheckVisibility(IEnumerable<TypeValue> types, VariableIdentifier field, bool isStatic)
         {
-            List<TypeValue> methodTypes = new List<TypeValue>();
-            if (OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).IsDefined(OutSnapshot))
+            var methodTypes = new List<TypeValue>();
+            var snapshotEntry = OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName);
+
+            if (snapshotEntry.IsDefined(OutSnapshot))
             {
-                foreach (var value in OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).ReadMemory(OutSnapshot).PossibleValues)
+                var entry = snapshotEntry.ReadMemory(OutSnapshot);
+                foreach (var value in entry.PossibleValues)
                 {
-                    if (value is TypeValue)
+                    var typeValue = value as TypeValue;
+                    if (typeValue != null)
                     {
-                        methodTypes.Add(value as TypeValue);
+                        methodTypes.Add(typeValue);
                     }
                 }
             }
@@ -122,13 +128,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var visibility = type.Declaration.GetFieldVisibility(name, isStatic);
                     if (visibility.HasValue)
                     {
-                        if (methodTypes.Count() == 0)
+                        if (methodTypes.Count == 0)
                         {
                             if (visibility != Visibility.PUBLIC)
                             {
-                                SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                SetWarning("Accessing inaccessible field",
+                                    AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                             }
-
                         }
                         else
                         {
@@ -136,22 +142,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             {
                                 if (visibility == Visibility.PRIVATE)
                                 {
-                                    if (!methodType.Declaration.QualifiedName.Equals(type.Declaration.QualifiedName))
+                                    if (!methodType.Declaration.QualifiedName.Equals(
+                                        type.Declaration.QualifiedName))
                                     {
-                                        SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                        SetWarning("Accessing inaccessible field",
+                                            AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                                     }
                                 }
                                 else if (visibility == Visibility.NOT_ACCESSIBLE)
                                 {
-                                    SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                    SetWarning("Accessing inaccessible field",
+                                        AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                                 }
                                 else if (visibility == Visibility.PROTECTED)
                                 {
-                                    List<QualifiedName> typeHierarchy = new List<QualifiedName>(type.Declaration.BaseClasses);
+                                    var typeHierarchy = new List<QualifiedName>(type.Declaration.BaseClasses);
                                     typeHierarchy.Add(type.Declaration.QualifiedName);
-                                    List<QualifiedName> methodTypeHierarchy = new List<QualifiedName>(methodType.Declaration.BaseClasses);
+                                    var methodTypeHierarchy
+                                        = new List<QualifiedName>(methodType.Declaration.BaseClasses);
                                     methodTypeHierarchy.Add(methodType.Declaration.QualifiedName);
-                                    bool isInHierarchy = false;
+                                    var isInHierarchy = false;
+
                                     foreach (var className in typeHierarchy)
                                     {
                                         if (methodTypeHierarchy.Contains(className))
@@ -160,13 +171,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                             break;
                                         }
                                     }
-                                    if (isInHierarchy == false)
+
+                                    if (!isInHierarchy)
                                     {
-                                        SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                        SetWarning("Accessing inaccessible field",
+                                            AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -203,7 +215,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 if (FlagsHandler.IsDirty(operand.PossibleValues, FlagType.HTMLDirty))
                 {
-                    AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName, Element, FlagType.HTMLDirty));
+                    var warning = new AnalysisSecurityWarning(Flow.CurrentScript.FullName,
+                        Element, FlagType.HTMLDirty);
+                    AnalysisWarningHandler.SetWarning(OutSet, warning);
                 }
             }
 
@@ -288,7 +302,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (!isAlwaysLegal)
                     {
-                        SetWarning("Possible illegal offset type in array initilization");
+                        SetWarning("Possible illegal offset type in array initialization");
                     }
                 }
                 else
@@ -506,6 +520,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             // TODO: Optimalize, implementation is provided only for faultless progress and testing
             var isDirty = false;
             stringConverter.SetContext(Flow);
+
             foreach (var entry in entries)
             {
                 isDirty |= FlagsHandler.IsDirty(entry.PossibleValues, FlagType.HTMLDirty);
@@ -515,7 +530,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (isDirty)
             {
-                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisSecurityWarning(Flow.CurrentScript.FullName, Element, FlagType.HTMLDirty));
+                var warning = new AnalysisSecurityWarning(Flow.CurrentScript.FullName,
+                    Element, FlagType.HTMLDirty);
+                AnalysisWarningHandler.SetWarning(OutSet, warning);
             }
         }
 
@@ -525,7 +542,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             Debug.Assert(entries.GetEnumerator().MoveNext(),
                 "isset expression must have at least one parameter");
 
-            var isAlwaysDefined = true;
+            var isAlwaysSet = true;
+            var isAlwaysUnset = true;
 
             foreach (var snapshotEntry in entries)
             {
@@ -535,56 +553,58 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
                         "Memory entry must always have at least one value");
 
-                    var isOnlyUndefined = true;
                     foreach (var value in entry.PossibleValues)
                     {
                         var undefinedValue = value as UndefinedValue;
                         if (undefinedValue != null)
                         {
-                            if (isAlwaysDefined)
+                            if (isAlwaysSet)
                             {
-                                isAlwaysDefined = false;
-                                if (!isOnlyUndefined)
+                                isAlwaysSet = false;
+                                if (!isAlwaysUnset)
                                 {
-                                    break;
+                                    return new[] { OutSet.AnyBooleanValue };
                                 }
                             }
                         }
                         else if (value is AnyValue)
                         {
+                            // Value can be null ot not null too.
                             return new[] { OutSet.AnyBooleanValue };
                         }
                         else
                         {
-                            if (isOnlyUndefined)
+                            if (isAlwaysUnset)
                             {
-                                isOnlyUndefined = false;
-                                if (!isAlwaysDefined)
+                                isAlwaysUnset = false;
+                                if (!isAlwaysSet)
                                 {
-                                    break;
+                                    return new[] { OutSet.AnyBooleanValue };
                                 }
                             }
                         }
                     }
-
-                    if (isOnlyUndefined)
-                    {
-                        return new[] { OutSet.CreateBool(false) };
-                    }
                 }
                 else
                 {
-                    return new[] { OutSet.CreateBool(false) };
+                    if (isAlwaysSet)
+                    {
+                        isAlwaysSet = false;
+                        if (!isAlwaysUnset)
+                        {
+                            return new[] { OutSet.AnyBooleanValue };
+                        }
+                    }
                 }
             }
 
-            if (isAlwaysDefined)
+            if (isAlwaysSet == isAlwaysUnset)
             {
-                return new[] { OutSet.CreateBool(true) };
+                return new[] { OutSet.AnyBooleanValue };
             }
             else
             {
-                return new[] { OutSet.AnyBooleanValue };
+                return new[] { OutSet.CreateBool(isAlwaysSet) };
             }
         }
 
@@ -598,16 +618,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
                     "Memory entry must always have at least one value");
 
-                unaryOperationEvaluator.SetContext(Flow);
+                booleanConverter.SetContext(OutSet);
 
                 var isAlwaysEmpty = true;
                 var isNeverEmpty = true;
 
                 foreach (var value in entry.PossibleValues)
                 {
-                    var convertedValue = unaryOperationEvaluator.Evaluate(Operations.BoolCast, value);
-
-                    var booleanValue = convertedValue as BooleanValue;
+                    var booleanValue = booleanConverter.EvaluateToBoolean(value);
                     if (booleanValue != null)
                     {
                         if (booleanValue.Value)
@@ -635,10 +653,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        var anyBooleanValue = convertedValue as AnyBooleanValue;
-                        Debug.Assert(anyBooleanValue != null,
-                            "Casting to boolean can result only to boolean value");
-
                         return new MemoryEntry(OutSet.AnyBooleanValue);
                     }
                 }
@@ -662,9 +676,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
-            List<ThrowInfo> throws = new List<ThrowInfo>();
-            throws.Add(new ThrowInfo(new CatchBlockDescription(Flow.ProgramEnd, new GenericQualifiedName(new QualifiedName(new Name(""))), new VariableIdentifier("")), new MemoryEntry()));
+            var catchedType = new GenericQualifiedName(new QualifiedName(new Name(string.Empty)));
+            var catchVariable = new VariableIdentifier(string.Empty);
+            var description = new CatchBlockDescription(Flow.ProgramEnd, catchedType, catchVariable);
+            var info = new ThrowInfo(description, new MemoryEntry());
+
+            var throws = new ThrowInfo[] { info };
             Flow.SetThrowBranching(throws);
+
             // Exit expression never returns, but it is still expression so it must return something
             return new MemoryEntry(OutSet.AnyValue);
         }
@@ -688,8 +707,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     if (isNotDefined)
                     {
-                        SetWarning("Use of undefined constant",
-                            AnalysisWarningCause.UNDEFINED_VALUE);
+                        SetWarning("Use of undefined constant", AnalysisWarningCause.UNDEFINED_VALUE);
                     }
                     else
                     {
@@ -756,42 +774,45 @@ namespace Weverca.Analysis.ExpressionEvaluator
         #endregion ExpressionEvaluatorBase overrides
 
         /// <summary>
-        /// Generates a warning with the given message
+        /// Generates a warning with the given message.
         /// </summary>
-        /// <param name="message">Text of warning</param>
+        /// <param name="message">Text of warning.</param>
         public void SetWarning(string message)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName,
+                message, Element));
         }
 
         /// <summary>
-        /// Generates a warning of the proper type and with the given message
+        /// Generates a warning of the proper type and with the given message.
         /// </summary>
-        /// <param name="message">Text of warning</param>
-        /// <param name="cause">More specific warning type</param>
+        /// <param name="message">Text of warning.</param>
+        /// <param name="cause">More specific warning type.</param>
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName,
+                message, Element, cause));
         }
 
         /// <summary>
-        /// Generates a warning of the proper type in the given element and with the given message
+        /// Generates a warning of the proper type in the given element and with the given message.
         /// </summary>
-        /// <param name="message">Text of warning</param>
-        /// <param name="element">Element of language where the warning is reported</param>
-        /// <param name="cause">More specific warning type</param>
+        /// <param name="message">Text of warning.</param>
+        /// <param name="element">Element of language where the warning is reported.</param>
+        /// <param name="cause">More specific warning type.</param>
         public void SetWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName,
+                message, element, cause));
         }
 
         /// <summary>
-        /// Find all arrays in list of universal values
+        /// Find all arrays in list of universal values.
         /// </summary>
-        /// <param name="entry">Memory entry of values to resolve to arrays</param>
-        /// <param name="isAlwaysArray">Indicates whether all values are array</param>
-        /// <param name="isAlwaysConcrete">Indicates whether all values are concrete array</param>
-        /// <returns>All resolved concrete arrays</returns>
+        /// <param name="entry">Memory entry of values to resolve to arrays.</param>
+        /// <param name="isAlwaysArray">Indicates whether all values are array.</param>
+        /// <param name="isAlwaysConcrete">Indicates whether all values are concrete array.</param>
+        /// <returns>All resolved concrete arrays.</returns>
         private static List<AssociativeArray> ResolveArraysForIndex(MemoryEntry entry,
             out bool isAlwaysArray, out bool isAlwaysConcrete)
         {
@@ -836,16 +857,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Resolve source or native type from name
+        /// Resolve source or native type from name.
         /// </summary>
-        /// <param name="typeName">Name of type to resolve</param>
-        /// <param name="flow">FlowController</param>
-        /// <param name="outSet"></param>
-        /// <param name="element"></param>
-        /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>
+        /// <param name="typeName">Name of type to resolve.</param>
+        /// <param name="flow">Flow controller of program point providing data for evaluation.</param>
+        /// <param name="element">AST nodes of Language element which is currently evaluated.</param>
+        /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value.</returns>
         public static IEnumerable<TypeValue> ResolveSourceOrNativeType(QualifiedName typeName,
-            FlowController flow, FlowOutputSet outSet, LangElement element)
+            FlowController flow, LangElement element)
         {
+            var outSet = flow.OutSet;
             var typeValues = outSet.ResolveType(typeName);
             if (!typeValues.GetEnumerator().MoveNext())
             {
@@ -870,7 +891,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 else
                 {
                     // TODO: This must be error
-                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName, "Class doesn't exist", element, AnalysisWarningCause.CLASS_DOESNT_EXIST));
+                    var warning = new AnalysisWarning(flow.CurrentScript.FullName,
+                        "Class does not exist", element, AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                    AnalysisWarningHandler.SetWarning(outSet, warning);
                     return null;
                 }
             }
@@ -879,10 +902,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Resolve names from values
+        /// Resolve names from values.
         /// </summary>
-        /// <param name="possibleNames">Memory entry of values to resolve to type names</param>
-        /// <returns><c>null</c> whether any value cannot be resolved to string, otherwise names</returns>
+        /// <param name="possibleNames">Memory entry of values to resolve to type names.</param>
+        /// <returns><c>null</c> whether any value cannot be resolved to string, otherwise names.</returns>
         private List<QualifiedName> ResolveTypeNames(MemoryEntry possibleNames)
         {
             Debug.Assert(possibleNames.Count > 0, "Every memory entry must have at least one value");
@@ -908,10 +931,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Creates new objects of specified type names, directly and indirectly too
+        /// Creates new objects of specified type names, directly and indirectly too.
         /// </summary>
-        /// <param name="typeNames">Possible names of classes or interfaces</param>
-        /// <returns>Memory entry with all new possible objects</returns>
+        /// <param name="typeNames">Possible names of classes or interfaces.</param>
+        /// <returns>Memory entry with all new possible objects.</returns>
         private MemoryEntry CreateObjectFromNames(IEnumerable<QualifiedName> typeNames)
         {
             var values = new List<ObjectValue>();
@@ -919,7 +942,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName, Flow, OutSet, Element);
+                var typeValues = ResolveSourceOrNativeType(typeName, Flow, Element);
                 if (typeValues != null)
                 {
                     foreach (var type in typeValues)
@@ -952,11 +975,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determine whether an expression is instance of directly or indirectly resolved class or interface
         /// </summary>
-        /// <param name="expression">Expression to be determined whether it is instance of a class</param>
-        /// <param name="typeNames">Possible names of classes or interfaces</param>
+        /// <param name="expression">Expression to be determined whether it is instance of a class.</param>
+        /// <param name="typeNames">Possible names of classes or interfaces.</param>
         /// <returns>
         /// <c>true</c> whether expression is instance of all the specified types,
-        /// <c>false</c> whether it is not instance of any of types and otherwise any boolean value
+        /// <c>false</c> whether it is not instance of any of types and otherwise any boolean value.
         /// </returns>
         private MemoryEntry InstanceOfTypeNames(MemoryEntry expression, IEnumerable<QualifiedName> typeNames)
         {
@@ -965,7 +988,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var typeName in typeNames)
             {
-                var typeValues = ResolveSourceOrNativeType(typeName, Flow, OutSet, Element);
+                var typeValues = ResolveSourceOrNativeType(typeName, Flow, Element);
                 if (typeValues == null)
                 {
                     // TODO: This must be error
@@ -1050,13 +1073,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var typeDeclaration = type as TypeValue;
             if (typeDeclaration != null)
             {
-                if (typeDeclaration.Declaration.IsAbstract == true)
+                if (typeDeclaration.Declaration.IsAbstract)
                 {
-                    SetWarning("Cannot instantiate abstract class " + typeDeclaration.Declaration.QualifiedName.Name.Value, AnalysisWarningCause.CANNOT_INSTANCIATE_ABSTRACT_CLASS);
+                    var message = "Cannot instantiate abstract class "
+                        + typeDeclaration.Declaration.QualifiedName.Name.Value;
+                    SetWarning(message, AnalysisWarningCause.CANNOT_INSTANCIATE_ABSTRACT_CLASS);
                 }
-                else if (typeDeclaration.Declaration.IsInterface == true)
+                else if (typeDeclaration.Declaration.IsInterface)
                 {
-                    SetWarning("Cannot instantiate interface " + typeDeclaration.Declaration.QualifiedName.Name.Value, AnalysisWarningCause.CANNOT_INSTANCIATE_INTERFACE);
+                    var message = "Cannot instantiate interface "
+                        + typeDeclaration.Declaration.QualifiedName.Name.Value;
+                    SetWarning(message, AnalysisWarningCause.CANNOT_INSTANCIATE_INTERFACE);
                 }
                 else
                 {
@@ -1080,7 +1107,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 switch (visitor.Result)
                 {
                     case StaticObjectVisitorResult.NO_RESULT:
-                        SetWarning("Cannot access constant on non object", AnalysisWarningCause.CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT);
+                        SetWarning("Cannot access constant on non object",
+                            AnalysisWarningCause.CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT);
                         result.Add(OutSet.UndefinedValue);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
@@ -1116,24 +1144,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                var constant = OutSet.GetControlVariable(new VariableName(".class(" + qualifiedName.Name.LowercaseValue + ")->constant(" + variableName.Value + ")"));
+                var name = ".class(" + qualifiedName.Name.LowercaseValue + ")->constant("
+                    + variableName.Value + ")";
+                var constant = OutSet.GetControlVariable(new VariableName(name));
                 if (constant.IsDefined(OutSet.Snapshot))
                 {
                     return constant.ReadMemory(OutSet.Snapshot);
                 }
                 else
                 {
-                    SetWarning("Constant " + qualifiedName.Name + "::" + variableName + " doesnt exist", AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
+                    var message = "Constant " + qualifiedName.Name + "::" + variableName + " does not exist";
+                    SetWarning(message, AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
         }
 
         /// <inheritdoc />
-        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, VariableIdentifier field)
+        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type,
+            VariableIdentifier field)
         {
             var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
-            var value = type.QualifiedName.Name.Value;
             var resolvedTypes = FunctionResolver.ResolveType(type.QualifiedName, Flow, OutSet, Element);
 
             if (resolvedTypes.Count() > 0)
@@ -1172,10 +1203,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 if (!analyzer.ExistClass(name.QualifiedName))
                 {
-                    var classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(name.QualifiedName.Name.LowercaseValue));
+                    var identifier = new MemberIdentifier(name.QualifiedName.Name.LowercaseValue);
+                    var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
+                    var classStorage = snapshotEntry.ReadIndex(OutSet.Snapshot, identifier);
+
                     if (!classStorage.IsDefined(OutSet.Snapshot))
                     {
-                        SetWarning("Class " + name.QualifiedName.Name.Value + " doesn't exist", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                        var message = "Class " + name.QualifiedName.Name.Value + " doesn't exist";
+                        SetWarning(message, AnalysisWarningCause.CLASS_DOESNT_EXIST);
                     }
                     else
                     {
@@ -1197,6 +1232,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var names = new HashSet<string>();
             var fieldNames = new HashSet<string>();
             var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+
             foreach (var typeName in classes)
             {
                 foreach (var fieldName in field.PossibleNames)
@@ -1207,19 +1243,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     if (!classStorage.IsDefined(OutSet.Snapshot))
                     {
-                        
-                        if (analyzer.ExistClass(typeName) && analyzer.GetClass(typeName).IsInterface == false)
+                        if (analyzer.ExistClass(typeName) && (!analyzer.GetClass(typeName).IsInterface))
                         {
                             InsertNativeObjectStaticVariablesIntoMM(typeName);
-                            classStorage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(typeName.Name.LowercaseValue));
-                            if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldName.Value)).IsDefined(OutSet.Snapshot))
+
+                            var controlVariable
+                                = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
+                            classStorage = controlVariable.ReadIndex(OutSet.Snapshot, identifier);
+
+                            var fieldIdentifier = new MemberIdentifier(fieldName.Value);
+                            var indexSnapshot = classStorage.ReadIndex(OutSet.Snapshot, fieldIdentifier);
+
+                            if (indexSnapshot.IsDefined(OutSet.Snapshot))
                             {
                                 names.Add(typeName.Name.LowercaseValue);
                                 fieldNames.Add(fieldName.Value);
                             }
                             else
                             {
-                                var message = "Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared";
+                                var message = "Static variable " + typeName.Name.Value + "::"
+                                    + field.DirectName.Value + " wasn't declared";
                                 SetWarning(message, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST);
                             }
                         }
@@ -1231,51 +1274,59 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        if (classStorage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldName.Value)).IsDefined(OutSet.Snapshot))
+                        var fieldIdentifier = new MemberIdentifier(fieldName.Value);
+                        var indexSnapshot = classStorage.ReadIndex(OutSet.Snapshot, fieldIdentifier);
+
+                        if (indexSnapshot.IsDefined(OutSet.Snapshot))
                         {
                             names.Add(typeName.Name.LowercaseValue);
                             fieldNames.Add(fieldName.Value);
                         }
                         else
                         {
-                            SetWarning("Static variable " + typeName.Name.Value + "::" + field.DirectName.Value + " wasn't declared", AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST);
+                            var message = "Static variable " + typeName.Name.Value + "::"
+                                + field.DirectName.Value + " wasn't declared";
+                            SetWarning(message, AnalysisWarningCause.STATIC_VARIABLE_DOESNT_EXIST);
                         }
                     }
                 }
             }
-            if (field.PossibleNames.Count() > 0 && fieldNames.Count == 0)
+
+            if (field.PossibleNames.Length > 0 && fieldNames.Count == 0)
             {
                 return getStaticVariableSink();
             }
             else
             {
-                HashSet<TypeValue> types = new HashSet<TypeValue>();
+                var types = new HashSet<TypeValue>();
                 foreach (var className in names)
                 {
-                    var QualifiedName=new QualifiedName(new Name(className));
-                    if (analyzer.ExistClass(QualifiedName))
+                    var qualifiedName = new QualifiedName(new Name(className));
+                    if (analyzer.ExistClass(qualifiedName))
                     {
-                        types.Add(OutSet.CreateType(analyzer.GetClass(QualifiedName)));
+                        types.Add(OutSet.CreateType(analyzer.GetClass(qualifiedName)));
                     }
                     else
                     {
-                        foreach (var type in OutSet.ResolveType(QualifiedName))
+                        foreach (var type in OutSet.ResolveType(qualifiedName))
                         {
                             types.Add(type);
                         }
                     }
                 }
 
-                CheckVisibility(types, new VariableIdentifier(fieldNames.ToArray()),true);
-                var storage = OutSet.ReadControlVariable(FunctionResolver.staticVariables).ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
-                return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames.ToArray()));
+                CheckVisibility(types, new VariableIdentifier(fieldNames), true);
+
+                var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
+                var storage = snapshotEntry.ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
+                return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames));
             }
         }
 
         /// <inheritdoc />
         public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
         {
-            List<GenericQualifiedName> result = new List<GenericQualifiedName>();
+            var result = new List<GenericQualifiedName>();
             foreach (var value in typeValue.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(Flow);
@@ -1283,7 +1334,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 switch (visitor.Result)
                 {
                     case StaticObjectVisitorResult.NO_RESULT:
-                        SetWarning("Cannot acces static variable on non object", AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_ON_NON_OBJECT);
+                        SetWarning("Cannot access static variable on non-object",
+                            AnalysisWarningCause.CANNOT_ACCES_STATIC_VARIABLE_ON_NON_OBJECT);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
                         result.Add(new GenericQualifiedName(visitor.className));
@@ -1292,34 +1344,40 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                 }
             }
+
             return result;
         }
 
         /// <inheritdoc />
-        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type, MemoryEntry field)
+        public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type,
+            MemoryEntry field)
         {
             return ResolveStaticField(type, new VariableIdentifier(this.VariableNames(field)));
         }
 
         /// <inheritdoc />
-        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field)
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(
+            IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field)
         {
-            return ResolveIndirectStaticField(possibleTypes, new VariableIdentifier(this.VariableNames(field)));
+            var identifier = new VariableIdentifier(this.VariableNames(field));
+            return ResolveIndirectStaticField(possibleTypes, identifier);
         }
 
         /// <summary>
-        /// Returns static variable sink, when static variable doesn't exist, this empty space in memory model is returned.
+        /// Returns static variable sink, when static variable does not exist,
+        /// this empty space in memory model is returned.
         /// </summary>
-        /// <returns>Empty space in memory model</returns>
+        /// <returns>Empty space in memory model.</returns>
         private ReadWriteSnapshotEntryBase getStaticVariableSink()
         {
-            OutSet.GetControlVariable(FunctionResolver.staticVariableSink).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
+            var snapshotEntry = OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+            snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
             return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
         }
 
-
-        ///<inheritdoc/>
-        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out Value shortCircuit)
+        /// <inheritdoc />
+        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation,
+            MemoryEntry rightOperand, out Value shortCircuit)
         {
             booleanConverter.SetContext(OutSet);
             shortCircuit = booleanConverter.Evaluate(leftOperand);
@@ -1344,8 +1402,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                 }
             }
+
             return BinaryEx(leftOperand, operation, rightOperand);
         }
-
     }
 }
