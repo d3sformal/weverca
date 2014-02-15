@@ -676,14 +676,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
-            var catchedType = new GenericQualifiedName(new QualifiedName(new Name(string.Empty)));
-            var catchVariable = new VariableIdentifier(string.Empty);
-            var description = new CatchBlockDescription(Flow.ProgramEnd, catchedType, catchVariable);
-            var info = new ThrowInfo(description, new MemoryEntry());
-
-            var throws = new ThrowInfo[] { info };
-            Flow.SetThrowBranching(throws,true);
-
+            fatalError(true);
             // Exit expression never returns, but it is still expression so it must return something
             return new MemoryEntry(OutSet.AnyValue);
         }
@@ -1094,12 +1087,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var message = "Cannot instantiate abstract class "
                         + typeDeclaration.Declaration.QualifiedName.Name.Value;
                     SetWarning(message, AnalysisWarningCause.CANNOT_INSTANCIATE_ABSTRACT_CLASS);
+                    fatalError(true);
                 }
                 else if (typeDeclaration.Declaration.IsInterface)
                 {
                     var message = "Cannot instantiate interface "
                         + typeDeclaration.Declaration.QualifiedName.Name.Value;
                     SetWarning(message, AnalysisWarningCause.CANNOT_INSTANCIATE_INTERFACE);
+                    fatalError(true);
                 }
                 else
                 {
@@ -1115,7 +1110,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public override MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName)
         {
             var result = new List<Value>();
-
+            int numberOfWarnings = 0;
             foreach (var value in thisObject.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(Flow);
@@ -1125,23 +1120,53 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     case StaticObjectVisitorResult.NO_RESULT:
                         SetWarning("Cannot access constant on non object",
                             AnalysisWarningCause.CANNOT_ACCESS_CONSTANT_ON_NON_OBJECT);
+                        numberOfWarnings++;
                         result.Add(OutSet.UndefinedValue);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
-                        result.AddRange(ClassConstant(visitor.className, variableName).PossibleValues);
+                        bool success = true;
+                        var res = classConstant(visitor.className, variableName, out success);
+                        if (success == false)
+                        {
+                            numberOfWarnings++;
+                        }
+                        result.AddRange(res.PossibleValues);
+                        
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
                         result.Add(OutSet.AnyValue);
                         break;
                 }
             }
-
+            if (numberOfWarnings > 0)
+            {
+                if (numberOfWarnings >= thisObject.Count)
+                {
+                    fatalError(true);
+                }
+                else
+                {
+                    fatalError(false);
+                }
+            }
             return new MemoryEntry(result);
         }
 
         /// <inheritdoc />
         public override MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName)
         {
+            bool success=true;
+            var result=classConstant(qualifiedName, variableName, out success);
+            if (success == false)
+            {
+                fatalError(true);
+            }
+            return result;
+        }
+
+        private MemoryEntry classConstant(QualifiedName qualifiedName, VariableName variableName, out bool success)
+        {
+            success = true;
             NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             if (analyzer.ExistClass(qualifiedName))
             {
@@ -1155,6 +1180,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     var message = "Constant " + qualifiedName.Name + "::" + variableName + " doesn't exist";
                     SetWarning(message, AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
+                    success = false;
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
@@ -1171,9 +1197,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     var message = "Constant " + qualifiedName.Name + "::" + variableName + " does not exist";
                     SetWarning(message, AnalysisWarningCause.CLASS_CONSTANT_DOESNT_EXIST);
+                    success = false;
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
+        
         }
 
         /// <inheritdoc />
