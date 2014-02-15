@@ -124,7 +124,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         if (methodTypes.Count() == 0)
                         {
-                            if (visibility == Visibility.PROTECTED || visibility == Visibility.PRIVATE)
+                            if (visibility != Visibility.PUBLIC)
                             {
                                 SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                             }
@@ -151,12 +151,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     typeHierarchy.Add(type.Declaration.QualifiedName);
                                     List<QualifiedName> methodTypeHierarchy = new List<QualifiedName>(methodType.Declaration.BaseClasses);
                                     methodTypeHierarchy.Add(methodType.Declaration.QualifiedName);
+                                    bool isInHierarchy = false;
                                     foreach (var className in typeHierarchy)
                                     {
                                         if (methodTypeHierarchy.Contains(className))
                                         {
-                                            SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                            isInHierarchy = true;
+                                            break;
                                         }
+                                    }
+                                    if (isInHierarchy == false)
+                                    {
+                                        SetWarning("Accesing inaccessible field", AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                                     }
                                 }
                             }

@@ -600,6 +600,12 @@ namespace Weverca.Analysis
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
+            if (functions.Count == 0)
+            {
+                setWarning("Cannot resolve function call. Function doesn't exist or analysis has not enough information to resolve function call", AnalysisWarningCause.CANNOT_RESOLVE_FUNCTION_CALL);
+            }
+
+
             Dictionary<object, FunctionValue> newFunctions = new Dictionary<object, FunctionValue>();
             foreach (var entry in functions)
             {

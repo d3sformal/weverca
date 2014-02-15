@@ -236,16 +236,16 @@ namespace Weverca.Analysis.UnitTest
                 static protected $x;
             }
 
-            class b
+            class b extends a
             {
                 
-                static function b()
+                static function c()
                 {
                     $p=self::$x;
                 }
 
             }
-            b::b();
+            b::c();
         ";
 
 
@@ -255,6 +255,134 @@ namespace Weverca.Analysis.UnitTest
             var outset = TestUtils.Analyze(AccesStaticPrivateFieldTest4);
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD)==false);
         }
- 
+
+        string MethodVisibilityTest = @"
+
+            class b
+            {
+                
+                private static function x()
+                {
+                   
+                }
+
+            }
+            b::x();
+        ";
+
+
+        [TestMethod]
+        public void MethodVisibility()
+        {
+            var outset = TestUtils.Analyze(MethodVisibilityTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD));
+        }
+
+
+        string MethodVisibilityTest2 = @"
+
+            class b
+            {
+                
+                public static function x()
+                {
+                   
+                }
+
+            }
+            b::x();
+        ";
+
+
+        [TestMethod]
+        public void MethodVisibility2()
+        {
+            var outset = TestUtils.Analyze(MethodVisibilityTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD)==false);
+        }
+
+        string MethodVisibilityTest3 = @"
+
+            class b
+            {
+                
+                function x()
+                {
+                   
+                }
+
+            }
+            $b=new b();
+            $b->x();
+        ";
+
+
+        [TestMethod]
+        public void MethodVisibility3()
+        {
+            var outset = TestUtils.Analyze(MethodVisibilityTest3);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD) == false);
+        }
+
+
+        string MethodVisibilityTest4 = @"
+            class a
+            {
+                private function y()
+                {
+
+                }
+            }
+            class b extends a
+            {
+                
+                function x()
+                {
+                   $this->y();
+                }
+
+            }
+            $b=new b();
+            $b->x();
+        ";
+
+
+        [TestMethod]
+        public void MethodVisibility4()
+        {
+            var outset = TestUtils.Analyze(MethodVisibilityTest4);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD));
+        }
+
+        string MethodVisibilityTest5 = @"
+
+           class a
+            {
+                protected function x()
+                {
+
+                }
+            }
+            class b extends a
+            {
+                
+                function x()
+                {
+                   $this->y();
+                }
+
+            }
+            $b=new b();
+            $b->x();
+        ";
+
+
+        [TestMethod]
+        public void MethodVisibility5()
+        {
+            var outset = TestUtils.Analyze(MethodVisibilityTest5);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD) == false);
+        }
+
     }
 }

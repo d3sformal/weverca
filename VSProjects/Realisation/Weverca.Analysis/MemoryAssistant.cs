@@ -146,6 +146,68 @@ namespace Weverca.Analysis
 
         private void CheckVisibility(TypeValue type, FunctionValue method)
         {
+            List<TypeValue> methodTypes = new List<TypeValue>();
+            if (Context.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).IsDefined(Context))
+            {
+                foreach (var value in Context.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).ReadMemory(Context).PossibleValues)
+                {
+                    if (value is TypeValue)
+                    {
+                        methodTypes.Add(value as TypeValue);
+                    }
+                }
+            }
+            Name name = method.Name;
+            var visibility = type.Declaration.GetMethodVisibility(name);
+            if (visibility.HasValue)
+            {
+                if (methodTypes.Count() == 0)
+                {
+                    if (visibility != Visibility.PUBLIC)
+                    {
+                        SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                    }
+
+                }
+                else
+                {
+                    foreach (var methodType in methodTypes)
+                    {
+                        if (visibility == Visibility.PRIVATE)
+                        {
+                            if (!methodType.Declaration.QualifiedName.Equals(type.Declaration.QualifiedName))
+                            {
+                                SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                            }
+                        }
+                        else if (visibility == Visibility.NOT_ACCESSIBLE)
+                        {
+                            SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                        }
+                        else if (visibility == Visibility.PROTECTED)
+                        {
+                            List<QualifiedName> typeHierarchy = new List<QualifiedName>(type.Declaration.BaseClasses);
+                            typeHierarchy.Add(type.Declaration.QualifiedName);
+                            List<QualifiedName> methodTypeHierarchy = new List<QualifiedName>(methodType.Declaration.BaseClasses);
+                            methodTypeHierarchy.Add(methodType.Declaration.QualifiedName);
+                            bool isInHierarchy = false;
+                            foreach (var className in typeHierarchy)
+                            {
+                                if (methodTypeHierarchy.Contains(className))
+                                {
+                                    isInHierarchy = true;
+                                    break;
+                                }
+                            }
+                            if (isInHierarchy == false)
+                            {
+                                SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                            }
+                        }
+                    }
+
+                }
+            }
 
         }
 

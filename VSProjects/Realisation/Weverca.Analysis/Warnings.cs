@@ -599,5 +599,10 @@ namespace Weverca.Analysis
         /// Warning, that occurs when accessing private or protected field outside of given object
         /// </summary>
         ACCESSING_INACCESSIBLE_FIELD,
+
+        /// <summary>
+        /// Warning, that occurs when function call coudn't be resolved
+        /// </summary>
+        CANNOT_RESOLVE_FUNCTION_CALL,
     }
 }
