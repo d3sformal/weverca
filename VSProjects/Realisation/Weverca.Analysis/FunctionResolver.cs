@@ -487,7 +487,8 @@ namespace Weverca.Analysis
                     var outSet = call.Graph.End.OutSet;
                     if (outSet == null)
                     {
-                        return new MemoryEntry(OutSet.UndefinedValue);
+                        values.Add(OutSet.UndefinedValue);
+                        continue;
                     }
                     applyHints(outSet);
                     var returnValue = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
