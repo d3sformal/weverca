@@ -64,7 +64,7 @@ namespace Weverca.Analysis
 
         #endregion
 
-        protected void initVariable(string name,Value value)
+        private void initVariable(string name,Value value)
         {
             var variable = new VariableName(name);
             EntryInput.FetchFromGlobal(variable);

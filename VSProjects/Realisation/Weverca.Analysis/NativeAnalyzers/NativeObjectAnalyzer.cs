@@ -95,8 +95,14 @@ namespace Weverca.Analysis
         private HashSet<string> methodTypes = new HashSet<string>();
         private HashSet<string> returnTypes = new HashSet<string>();
 
+        /// <summary>
+        /// List of function which clean dirty floag in return value
+        /// </summary>
         public static Dictionary<MethodIdentifier, FlagType> CleaningFunctions = new Dictionary<MethodIdentifier, FlagType>();
 
+        /// <summary>
+        /// List of function which reports security warning when it recieved dirty flag in input 
+        /// </summary>
         public static  Dictionary<MethodIdentifier, FlagType> ReportingFunctions = new Dictionary<MethodIdentifier, FlagType>();
 
         #region parsing xml

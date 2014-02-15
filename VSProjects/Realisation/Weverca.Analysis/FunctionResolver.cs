@@ -570,6 +570,22 @@ namespace Weverca.Analysis
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, element, cause));
         }
 
+        private void fatalError(bool removeFlowChildren)
+        {
+            fatalError(Flow, removeFlowChildren);
+        }
+
+        private void fatalError(FlowController flow, bool removeFlowChildren)
+        {
+            var catchedType = new GenericQualifiedName(new QualifiedName(new Name(string.Empty)));
+            var catchVariable = new VariableIdentifier(string.Empty);
+            var description = new CatchBlockDescription(flow.ProgramEnd, catchedType, catchVariable);
+            var info = new ThrowInfo(description, new MemoryEntry());
+
+            var throws = new ThrowInfo[] { info };
+            flow.SetThrowBranching(throws, removeFlowChildren);
+        }
+
         /// <summary>
         /// Get storage for argument at given index
         /// NOTE:

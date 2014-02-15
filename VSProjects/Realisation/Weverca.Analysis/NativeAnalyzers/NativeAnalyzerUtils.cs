@@ -153,6 +153,11 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <summary>
+        /// Read information about current file from memory mode
+        /// </summary>
+        /// <param name="outSet">Outset to read from</param>
+        /// <returns>full file name</returns>
         public static string GetCallerScript(FlowOutputSet outSet)
         {
             return (outSet.GetLocalControlVariable(new VariableName("$currentScript")).ReadMemory(outSet.Snapshot).PossibleValues.First() as StringValue).Value;

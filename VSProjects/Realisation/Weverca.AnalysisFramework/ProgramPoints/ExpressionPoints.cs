@@ -206,7 +206,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            Value shortCircuit;
             var leftPoint = LeftOperand;
             var rightPoint = RightOperand;
 

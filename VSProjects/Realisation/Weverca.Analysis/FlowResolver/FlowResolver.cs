@@ -202,7 +202,7 @@ namespace Weverca.Analysis.FlowResolver
             }
 
             Dictionary<CatchBlockDescription, List<Value>> result = new Dictionary<CatchBlockDescription, List<Value>>();
-
+            int numberOfWarnings = 0;
             foreach (Value value in throwedValue.PossibleValues)
             {
                 bool foundMatch = false;
@@ -277,6 +277,7 @@ namespace Weverca.Analysis.FlowResolver
                 else
                 {
                     AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName,"Only objects can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                    numberOfWarnings++;
                     foundMatch = false;
 
                 }
@@ -298,8 +299,29 @@ namespace Weverca.Analysis.FlowResolver
                 res.Add(new ThrowInfo(entry.Key, new MemoryEntry(entry.Value)));
             }
 
+            if (numberOfWarnings >= throwedValue.Count)
+            {
+                fatalError(flow, true);
+            }
+            else if (numberOfWarnings > 0)
+            {
+                fatalError(flow, false);
+            }
+
             return res;
         }
+
+        private void fatalError(FlowController flow,bool removeFlowChildren)
+        {
+            var catchedType = new GenericQualifiedName(new QualifiedName(new Name(string.Empty)));
+            var catchVariable = new VariableIdentifier(string.Empty);
+            var description = new CatchBlockDescription(flow.ProgramEnd, catchedType, catchVariable);
+            var info = new ThrowInfo(description, new MemoryEntry());
+
+            var throws = new ThrowInfo[] { info };
+            flow.SetThrowBranching(throws, removeFlowChildren);
+        }
+
 
         /// <inheritdoc />
         public override void Catch(CatchPoint catchPoint, FlowOutputSet outSet)

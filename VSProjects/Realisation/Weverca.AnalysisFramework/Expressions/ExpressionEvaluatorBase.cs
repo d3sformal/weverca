@@ -275,7 +275,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Get value representation of given class constant
         /// </summary>
-        /// <param name="genericQualifiedName">Class Name</param>
+        /// <param name="qualifiedName">Class Name</param>
         /// <param name="variableName">Constant name</param>
         /// <returns>Value of class constant</returns>
         public abstract MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName);

@@ -91,6 +91,7 @@ namespace Weverca.Output.GraphWalking
         /// Walk given program point graph of call
         /// </summary>
         /// <param name="callPpGraph">Program point of walked call</param>
+        /// <param name="visitedPoints">allready visited points</param>
         private void walkCall(ProgramPointGraph callPpGraph, HashSet<ProgramPointBase> visitedPoints)
         {
             pushCall(callPpGraph);

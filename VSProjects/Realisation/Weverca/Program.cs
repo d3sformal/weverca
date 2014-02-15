@@ -51,7 +51,7 @@ namespace Weverca
             {
                 case "-sa":
                     int filesIndex = 1;
-                    MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.CopyMM;
+                    MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
                     Weverca.AnalysisFramework.UnitTest.Analyses analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
                     if (args[filesIndex] == "-a")
                     {

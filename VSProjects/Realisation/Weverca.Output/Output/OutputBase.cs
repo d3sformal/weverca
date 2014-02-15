@@ -6,6 +6,9 @@ using Weverca.Analysis;
 
 namespace Weverca.Output.Output
 {
+    /// <summary>
+    /// Abstract class represeting output writer
+    /// </summary>
     public abstract class OutputBase
     {
         /// <summary>
@@ -145,11 +148,19 @@ namespace Weverca.Output.Output
             line();
         }
 
+        /// <summary>
+        /// Prints analysis warning to output
+        /// </summary>
+        /// <param name="list">list of warning</param>
         public void Warnings(List<AnalysisWarning> list)
         {
             warnings(list, "Analysis warnings:");
         }
 
+        /// <summary>
+        /// Prints security warnings to output
+        /// </summary>
+        /// <param name="list">list of security warnings</param>
         public void SecurityWarnings(List<AnalysisSecurityWarning> list)
         {
             warnings(list, "Security warnings:");

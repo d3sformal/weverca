@@ -34,10 +34,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
                 SetWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
+                fatalError(true);
             }
             else if (OutSet.ResolveType(declaration.Type.QualifiedName).Count() != 0)
             {
                 SetWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
+                fatalError(true);
             }
             else
             {
@@ -55,10 +57,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             if (baseClass.IsInterface == true)
                             {
                                 SetWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                                fatalError(true);
                             }
                             else if (baseClass.IsFinal)
                             {
                                 SetWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
+                                fatalError(true);
                             }
                             else
                             {
@@ -74,9 +78,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             if (types.Count() == 0)
                             {
                                 SetWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                                fatalError(true);
                             }
                             else
                             {
+                                int numberOfWarning=0;
                                 foreach (var value in types)
                                 {
                                     if (value is TypeValue)
@@ -84,29 +90,67 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                         if ((value as TypeValue).Declaration.IsInterface)
                                         {
                                             SetWarning("Class " + (value as TypeValue).Declaration.QualifiedName.Name + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                                            numberOfWarning++;
                                         }
                                         else if ((value as TypeValue).Declaration.IsFinal)
                                         {
                                             SetWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
+                                            numberOfWarning++;
                                         }
-                                        ClassDeclBuilder newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
-                                        ClassDecl finalNewType = checkClassAndCopyConstantsFromInterfaces(newType, declaration);
-                                        insetStaticVariablesIntoMM(finalNewType);
-                                        OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
+                                        else
+                                        {
+                                            ClassDeclBuilder newType = CopyInfoFromBaseClass((value as TypeValue).Declaration, type);
+                                            if (newType != null)
+                                            {
+                                                ClassDecl finalNewType = checkClassAndCopyConstantsFromInterfaces(newType, declaration);
+                                                if (finalNewType != null)
+                                                {
+                                                    insetStaticVariablesIntoMM(finalNewType);
+                                                    OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
+                                                }
+                                                else 
+                                                {
+                                                    numberOfWarning++;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                numberOfWarning++;
+                                            }
+                                        }
                                     }
                                     else
                                     {
                                         SetWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
                                     }
                                 }
+                                if (numberOfWarning > 0)
+                                {
+                                    if (numberOfWarning == types.Count())
+                                    {
+                                        fatalError(true);
+                                    }
+                                    else
+                                    {
+                                        fatalError(false);
+                                    }
+                                }
+
                             }
                         }
                     }
                     else
                     {
                         ClassDecl finalType = checkClassAndCopyConstantsFromInterfaces(type, declaration);
-                        insetStaticVariablesIntoMM(finalType);
-                        OutSet.DeclareGlobal(OutSet.CreateType(finalType));
+                        if (finalType == null)
+                        {
+                            fatalError(true);
+                        }
+                        else 
+                        { 
+                            insetStaticVariablesIntoMM(finalType);
+                            OutSet.DeclareGlobal(OutSet.CreateType(finalType));
+                        }
                     }
                 }
             }
@@ -115,6 +159,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         private ClassDecl checkClassAndCopyConstantsFromInterfaces(ClassDeclBuilder type, TypeDecl element)
         {
+            bool success = true;
             foreach (var entry in type.SourceCodeMethods)
             {
                 if (entry.Key.ClassName.Equals(type.QualifiedName))
@@ -125,6 +170,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         if (method.Body != null)
                         {
                             SetWarning("Abstract method cannot have body", element, AnalysisWarningCause.ABSTRACT_METHOD_CANNOT_HAVE_BODY);
+                            success = false;
                         }
                     }
                     else
@@ -132,6 +178,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         if (method.Body == null)
                         {
                             SetWarning("Non abstract method must have body", element, AnalysisWarningCause.NON_ABSTRACT_METHOD_MUST_HAVE_BODY);
+                            success = false;
                         }
                     }
                 }
@@ -170,6 +217,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (entry.Value == true)
                     {
                         SetWarning("Non abstract class cannot contain abstract method " + entry.Key, element, AnalysisWarningCause.NON_ABSTRACT_CLASS_CONTAINS_ABSTRACT_METHOD);
+                        success = false;
                     }
                 }
             }
@@ -183,6 +231,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (query.Count() > 0)
                     {
                         SetWarning("Cannot override interface constant " + constant.Key.Name, element, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT);
+                        success = false;
                     }
                     else
                     {
@@ -195,6 +244,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
                     {
                         SetWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
+                        success = false;
                     }
                     else
                     {
@@ -212,22 +262,30 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
                     {
                         SetWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
+                        success = false;
                     }
                     else
                     {
                         var classMethod = type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
 
-                        checkIfStaticMatch(method.Value.MethodDecl, classMethod.
+                        success&=checkIfStaticMatch(method.Value.MethodDecl, classMethod.
                             MethodDecl, element);
                         if (!AreMethodsCompatible(classMethod.MethodDecl, method.Value.MethodDecl))
                         {
                             SetWarning("Can't inherit abstract function " + classMethod.MethodDecl.Name + " beacuse arguments doesn't match", classMethod.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                            success = false;
                         }
                     }
                 }
             }
-
-            return type.Build();
+            if (success)
+            {
+                return type.Build();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDeclBuilder type)

@@ -115,6 +115,7 @@ namespace Weverca.Analysis
             AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, cause));
         }
 
+
         /// <inheritdoc />
         public override IEnumerable<FunctionValue> ResolveMethods(Value thisObject,TypeValue type, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
         {
