@@ -830,7 +830,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             if ((divisor.Start > 0.0) || (divisor.End < 0.0))
             {
-                if ((dividend >= 0.0) == (divisor.Start > 0.0))
+                if (dividend >= 0.0)
                 {
                     return flow.OutSet.CreateFloatInterval(dividend / divisor.End, dividend / divisor.Start);
                 }
