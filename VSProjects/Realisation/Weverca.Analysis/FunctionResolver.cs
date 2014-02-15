@@ -470,6 +470,10 @@ namespace Weverca.Analysis
             if (calls.Length == 1)
             {
                 var outSet = calls[0].Graph.End.OutSet;
+                if (outSet == null)
+                {
+                    return new MemoryEntry(OutSet.UndefinedValue);
+                }
                 applyHints(outSet);
                 return outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
             }
@@ -481,6 +485,10 @@ namespace Weverca.Analysis
                 foreach (var call in calls)
                 {
                     var outSet = call.Graph.End.OutSet;
+                    if (outSet == null)
+                    {
+                        return new MemoryEntry(OutSet.UndefinedValue);
+                    }
                     applyHints(outSet);
                     var returnValue = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
