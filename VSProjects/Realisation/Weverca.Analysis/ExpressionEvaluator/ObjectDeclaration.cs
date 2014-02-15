@@ -26,7 +26,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
             ClassDeclBuilder type = convertToClassDecl(declaration);
-
+            if (type == null)
+            {
+                fatalError(true);
+                return;
+            }
             foreach (var method in type.SourceCodeMethods)
             {
                 FunctionResolver.methodToClass[method.Value.DeclaringElement]= type.QualifiedName;
@@ -67,9 +71,23 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             else
                             {
                                 ClassDeclBuilder newType = CopyInfoFromBaseClass(baseClass, type);
-                                ClassDecl finalNewType = checkClassAndCopyConstantsFromInterfaces(newType, declaration);
-                                insetStaticVariablesIntoMM(finalNewType);
-                                OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
+                                if (newType != null)
+                                {
+                                    ClassDecl finalNewType = checkClassAndCopyConstantsFromInterfaces(newType, declaration);
+                                    if (finalNewType != null)
+                                    {
+                                        insetStaticVariablesIntoMM(finalNewType);
+                                        OutSet.DeclareGlobal(OutSet.CreateType(finalNewType));
+                                    }
+                                    else 
+                                    {
+                                        fatalError(true);
+                                    }
+                                }
+                                else
+                                {
+                                    fatalError(true);
+                                }
                             }
                         }
                         else
@@ -82,7 +100,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             }
                             else
                             {
-                                int numberOfWarning=0;
+                                int numberOfWarnings=0;
                                 foreach (var value in types)
                                 {
                                     if (value is TypeValue)
@@ -90,12 +108,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                         if ((value as TypeValue).Declaration.IsInterface)
                                         {
                                             SetWarning("Class " + (value as TypeValue).Declaration.QualifiedName.Name + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
-                                            numberOfWarning++;
+                                            numberOfWarnings++;
                                         }
                                         else if ((value as TypeValue).Declaration.IsFinal)
                                         {
                                             SetWarning("Cannot extend final class " + declaration.Type.QualifiedName, AnalysisWarningCause.FINAL_CLASS_CANNOT_BE_EXTENDED);
-                                            numberOfWarning++;
+                                            numberOfWarnings++;
                                         }
                                         else
                                         {
@@ -110,12 +128,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                                 }
                                                 else 
                                                 {
-                                                    numberOfWarning++;
+                                                    numberOfWarnings++;
                                                 }
                                             }
                                             else
                                             {
-                                                numberOfWarning++;
+                                                numberOfWarnings++;
                                             }
                                         }
                                     }
@@ -124,9 +142,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                         SetWarning("Class " + declaration.BaseClassName.Value.QualifiedName + " not found", AnalysisWarningCause.CLASS_DOESNT_EXIST);
                                     }
                                 }
-                                if (numberOfWarning > 0)
+                                if (numberOfWarnings > 0)
                                 {
-                                    if (numberOfWarning == types.Count())
+                                    if (numberOfWarnings == types.Count())
                                     {
                                         fatalError(true);
                                     }
@@ -222,7 +240,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
 
-            List<ClassDecl> interfaces = getImplementedInterfaces(element);
+            List<ClassDecl> interfaces = getImplementedInterfaces(element, ref success);
             foreach (var Interface in interfaces)
             {
                 foreach (var constant in Interface.Constants)
@@ -249,10 +267,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         var classMethod = type.SourceCodeMethods[new MethodIdentifier(type.QualifiedName, method.Key.Name)];
-                        checkIfStaticMatch(method.Value, classMethod.MethodDecl, element);
+                        success&=checkIfStaticMatch(method.Value, classMethod.MethodDecl, element);
                         if (!AreMethodsCompatible(classMethod.MethodDecl, method.Value))
                         {
                             SetWarning("Can't inherit abstract function " + classMethod.MethodDecl.Name + " beacuse arguments doesn't match", classMethod.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                            success = false;
                         }
                     }
                 }
@@ -290,6 +309,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         private void DeclareInterface(TypeDecl declaration, NativeObjectAnalyzer objectAnalyzer, ClassDeclBuilder type)
         {
+            bool success = true;
             ClassDeclBuilder result = new ClassDeclBuilder();
             result.QualifiedName = type.QualifiedName;
             result.IsInterface = true;
@@ -303,6 +323,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (type.Fields.Count != 0)
             {
                 SetWarning("Interface cannot contain fields", AnalysisWarningCause.INTERFACE_CANNOT_CONTAIN_FIELDS);
+                success = false;
             }
 
             foreach (var method in type.SourceCodeMethods.Values)
@@ -310,18 +331,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 if (method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Private) || method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Protected))
                 {
                     SetWarning("Interface method must be public", method.MethodDecl, AnalysisWarningCause.INTERFACE_METHOD_MUST_BE_PUBLIC);
+                    success = false;
                 }
                 if (method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Final))
                 {
                     SetWarning("Interface method cannot be final", method.MethodDecl, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_BE_FINAL);
+                    success = false;
                 }
                 if (method.MethodDecl.Body != null)
                 {
                     SetWarning("Interface method cannot have body", method.MethodDecl, AnalysisWarningCause.INTERFACE_METHOD_CANNOT_HAVE_IMPLEMENTATION);
+                    success = false;
                 }
             }
 
-            List<ClassDecl> interfaces = getImplementedInterfaces(declaration);
+            List<ClassDecl> interfaces = getImplementedInterfaces(declaration, ref success);
 
             if (interfaces.Count != 0)
             {
@@ -330,6 +354,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     if (value.IsInterface == false)
                     {
                         SetWarning("Interface " + value.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                        success = false;
                     }
                     else
                     {
@@ -344,8 +369,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     if (!AreMethodsCompatible(match, method.MethodDecl))
                                     {
                                         SetWarning("Can't inherit abstract function " + method.MethodDecl.Name + " beacuse arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                                        success = false;
                                     }
-                                    checkIfStaticMatch(method.MethodDecl, match, declaration);
+                                    success &= checkIfStaticMatch(method.MethodDecl, match, declaration);
                                 }
                                 else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
@@ -353,8 +379,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     if (!AreMethodsCompatible(match.MethodDecl, method.MethodDecl))
                                     {
                                         SetWarning("Can't inherit abstract function " + method.MethodDecl.Name + " beacuse arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                                        success = false;
                                     }
-                                    checkIfStaticMatch(method.MethodDecl, match.MethodDecl, declaration);
+                                    success &= checkIfStaticMatch(method.MethodDecl, match.MethodDecl, declaration);
                                 }
 
                             }
@@ -374,8 +401,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     if (!AreMethodsCompatible(match, method))
                                     {
                                         SetWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", declaration, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                                        success = false;
                                     }
-                                    checkIfStaticMatch(method, match, declaration);
+                                    success &= checkIfStaticMatch(method, match, declaration);
                                 }
                                 else if (result.SourceCodeMethods.Values.Where(a => a.Name == method.Name).Count() > 0)
                                 {
@@ -383,8 +411,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     if (!AreMethodsCompatible(match.MethodDecl, method))
                                     {
                                         SetWarning("Can't inherit abstract function " + method.Name + " beacuse arguments doesn't match", match.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                                        success = false;
                                     }
-                                    checkIfStaticMatch(method, match.MethodDecl, declaration);
+                                    success &= checkIfStaticMatch(method, match.MethodDecl, declaration);
                                 }
 
                             }
@@ -400,6 +429,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             if (query.Count() > 0)
                             {
                                 SetWarning("Cannot override interface constant " + constant.Name, declaration, AnalysisWarningCause.CANNOT_OVERRIDE_INTERFACE_CONSTANT);
+                                success = false;
                             }
                             else
                             {
@@ -409,13 +439,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
             }
-
-            var finalResult = result.Build();
-            insetStaticVariablesIntoMM(finalResult);
-            OutSet.DeclareGlobal(OutSet.CreateType(finalResult));
+            if (success == true)
+            {
+                var finalResult = result.Build();
+                insetStaticVariablesIntoMM(finalResult);
+                OutSet.DeclareGlobal(OutSet.CreateType(finalResult));
+            }
+            else 
+            {
+                fatalError(true);
+            }
         }
 
-        private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration)
+        private List<ClassDecl> getImplementedInterfaces(TypeDecl declaration, ref bool success)
         {
             NativeObjectAnalyzer objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);
             List<ClassDecl> interfaces = new List<ClassDecl>();
@@ -429,6 +465,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 else if (OutSet.ResolveType(Interface.QualifiedName).Count() == 0)
                 {
                     SetWarning("Interface " + Interface.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                    success = false;
                 }
                 else
                 {
@@ -441,6 +478,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         else
                         {
                             SetWarning("Interface " + Interface.QualifiedName + " not found", AnalysisWarningCause.INTERFACE_DOESNT_EXIST);
+                            success = false;
                         }
                     }
                 }
@@ -597,6 +635,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
             result.IsInterface = currentClass.IsInterface;
             result.IsAbstract = currentClass.IsAbstract;
 
+            bool success = true;
+
             foreach (var field in currentClass.Fields)
             {
                 var query = result.Fields.Keys.Where(a => a.Name == field.Key.Name);
@@ -614,11 +654,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         if (field.Value.IsStatic)
                         {
                             SetWarning("Cannot redeclare non static " + fieldName + " with static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_NON_STATIC_FIELD_WITH_STATIC);
+                            success = false;
                         }
                         else
                         {
                             SetWarning("Cannot redeclare static " + fieldName + " with non static " + fieldName, AnalysisWarningCause.CANNOT_REDECLARE_STATIC_FIELD_WITH_NON_STATIC);
-
+                            success = false;
                         }
                     }
                     else
@@ -671,6 +712,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             result.SourceCodeMethods[new MethodIdentifier(currentClass.QualifiedName, method.Name)] = method;
                             result.SourceCodeMethods.Remove(new MethodIdentifier(overridenMethod.ClassName, overridenMethod.Name));
                         }
+                        else
+                        {
+                            success = false;
+                        }
                     }
                 }
                 else
@@ -704,14 +749,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result.SourceCodeMethods.Remove(key);
                         result.SourceCodeMethods[new MethodIdentifier(currentClass.QualifiedName, method.Name)] = method;
                     }
+                    else
+                    {
+                        success = false;
+                    }
                 }
             }
-
-            return result;
+            if (success == true)
+            {
+                return result;
+            }
+            else 
+            {
+                return null;
+            }
         }
 
         private ClassDeclBuilder convertToClassDecl(TypeDecl declaration)
         {
+            bool success = true;
             ClassDeclBuilder result = new ClassDeclBuilder();
             result.BaseClasses = new List<QualifiedName>();
             if (declaration.BaseClassName.HasValue)
@@ -747,6 +803,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         if (result.Fields.ContainsKey(new FieldIdentifier(result.QualifiedName, field.Name)))
                         {
                             SetWarning("Cannot redeclare field " + field.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FIELD_DECLARATION);
+                            success = false;
                         }
                         else
                         {
@@ -762,6 +819,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         if (result.Constants.ContainsKey(new FieldIdentifier(result.QualifiedName, constant.Name)))
                         {
                             SetWarning("Cannot redeclare constant " + constant.Name, member, AnalysisWarningCause.CLASS_MULTIPLE_CONST_DECLARATION);
+                            success = false;
                         }
                         else
                         {
@@ -781,6 +839,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     else
                     {
                         SetWarning("Cannot redeclare method " + (member as MethodDecl).Name, member, AnalysisWarningCause.CLASS_MULTIPLE_FUNCTION_DECLARATION);
+                        success = false;
                     }
                 }
                 else
@@ -788,21 +847,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     //ignore traits are not supported by AST, only by parser
                 }
             }
-            var contructIdentifier=new MethodIdentifier(result.QualifiedName,new Name("__construct"));
-            if(!result.SourceCodeMethods.ContainsKey(contructIdentifier))
+            var contructIdentifier = new MethodIdentifier(result.QualifiedName, new Name("__construct"));
+            if (!result.SourceCodeMethods.ContainsKey(contructIdentifier))
             {
-                var id=new MethodIdentifier(result.QualifiedName, result.QualifiedName.Name);
+                var id = new MethodIdentifier(result.QualifiedName, result.QualifiedName.Name);
                 if (result.SourceCodeMethods.ContainsKey(id))
                 {
-                    var methodValue=result.SourceCodeMethods[id];
-                    var element=methodValue.DeclaringElement as MethodDecl;
-                    var newElement = new MethodDecl(element.Position,element.EntireDeclarationPosition,element.HeadingEndPosition,element.DeclarationBodyPosition,"__construct",
-                        element.Signature.AliasReturn,element.Signature.FormalParams,new List<FormalTypeParam>(),element.Body,element.Modifiers,element.BaseCtorParams,element.Attributes.Attributes);
-                    result.SourceCodeMethods.Add(contructIdentifier,OutSet.CreateFunction(newElement,methodValue.DeclaringScript));
+                    var methodValue = result.SourceCodeMethods[id];
+                    var element = methodValue.DeclaringElement as MethodDecl;
+                    var newElement = new MethodDecl(element.Position, element.EntireDeclarationPosition, element.HeadingEndPosition, element.DeclarationBodyPosition, "__construct",
+                        element.Signature.AliasReturn, element.Signature.FormalParams, new List<FormalTypeParam>(), element.Body, element.Modifiers, element.BaseCtorParams, element.Attributes.Attributes);
+                    result.SourceCodeMethods.Add(contructIdentifier, OutSet.CreateFunction(newElement, methodValue.DeclaringScript));
                 }
             }
-
-            return result;
+            if (success == true)
+            {
+                return result;
+            }
+            else 
+            {
+                return null;
+            }
         }
 
         private void insetStaticVariablesIntoMM(ClassDecl result)
