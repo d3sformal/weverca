@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using PHP.Core;
 using Weverca.AnalysisFramework.Memory;
 using PHP.Core.AST;
+using PHP.Core.Reflection;
 
 namespace Weverca.AnalysisFramework
 {
@@ -442,6 +443,8 @@ namespace Weverca.AnalysisFramework
 
         private Dictionary<VariableName, FieldInfo> resultingFields = new Dictionary<VariableName, FieldInfo>();
 
+        private Dictionary<Name, Visibility> resultingMethodVisibility = new Dictionary<Name, Visibility>();
+
         /// <summary>
         /// Creates new instance of ClassDecl
         /// </summary>
@@ -484,6 +487,52 @@ namespace Weverca.AnalysisFramework
                 {
                     resultingFields[field.Key.Name] = field.Value;
                 }
+
+
+                foreach (var method in methods.Where(a => a.Key.ClassName == baseClass))
+                {
+                    if (method.Value.Visibility == Visibility.PRIVATE)
+                    {
+                        if (method.Key.ClassName.Equals(QualifiedName))
+                        {
+                            resultingMethodVisibility[method.Key.Name] = Visibility.PRIVATE;
+                        }
+                        else 
+                        {
+                            resultingMethodVisibility[method.Key.Name] = Visibility.NOT_ACCESSIBLE;
+                        }
+                    }
+                    else
+                    {
+                        resultingMethodVisibility[method.Key.Name] = method.Value.Visibility;
+                    }
+                }
+
+
+                foreach (var method in sourceCodeMethods.Where(a => a.Key.ClassName == baseClass))
+                {
+                    if(method.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Private))
+                    {
+                        if (method.Key.ClassName.Equals(QualifiedName))
+                        {
+                            resultingMethodVisibility[method.Key.Name] = Visibility.PRIVATE;
+                        }
+                        else
+                        {
+                            resultingMethodVisibility[method.Key.Name] = Visibility.NOT_ACCESSIBLE;
+                        }
+                    }
+                    else if(method.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Protected))
+                    {
+                        resultingMethodVisibility[method.Key.Name] = Visibility.PROTECTED;
+                    }
+                    else
+                    {
+                        resultingMethodVisibility[method.Key.Name] = Visibility.PUBLIC;
+                    }
+                }
+
+
             }
 
         }
@@ -514,13 +563,23 @@ namespace Weverca.AnalysisFramework
                     {
                         return visibility;
                     }
-
-
                 }
                 else
                 {
                     return null;
                 }
+            }
+        }
+
+        public Visibility? GetMethodVisibility(Name name)
+        {
+            if (resultingMethodVisibility.ContainsKey(name))
+            {
+                return resultingMethodVisibility[name];
+            }
+            else 
+            {
+                return null;
             }
         }
 
