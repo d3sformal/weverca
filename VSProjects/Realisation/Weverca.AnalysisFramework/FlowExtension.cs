@@ -68,7 +68,7 @@ namespace Weverca.AnalysisFramework
 
             //connect ppGraph into current graph
             Owner.AddFlowChild(extension);
-            ppGraph.End.AddFlowChild(Sink);
+            extension.Graph.End.AddFlowChild(Sink);
 
             return extension;
         }
@@ -81,7 +81,17 @@ namespace Weverca.AnalysisFramework
                 return;
             }
 
-            throw new NotImplementedException("Check for disconnection");
+            ExtensionPoint extension;
+            if(!_extensions.TryGetValue(key,out extension))
+                //there is nothing with given key - don't need to remove branch
+                return;
+
+            _extensions.Remove(key);
+            Owner.RemoveFlowChild(extension);
+            extension.Graph.End.RemoveFlowChild(Sink);
+
+            if (_extensions.Count == 0)
+                disconnect();
         }
 
         private void connect()
@@ -99,6 +109,19 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        private void disconnect()
+        {
+            //copy children
+            var children = Sink.FlowChildren.ToArray();
 
+            foreach (var child in children)
+            {
+                //put children back 
+                Owner.AddFlowChild(child);
+
+                //disconnect from sink
+                Sink.RemoveFlowChild(child);
+            }
+        }
     }
 }

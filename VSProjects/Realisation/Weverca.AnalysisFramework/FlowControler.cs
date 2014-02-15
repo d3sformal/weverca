@@ -76,9 +76,9 @@ namespace Weverca.AnalysisFramework
         public MemoryEntry[] Arguments { get; set; }
 
         /// <summary>
-        /// Keys associated with connected extension branches
+        /// Keys associated with connected extension branches. Returns copy so it can be modified during iteration
         /// </summary>
-        public IEnumerable<object> ExtensionKeys { get { return ProgramPoint.Extension.Keys; } }
+        public object[] ExtensionKeys { get { return  ProgramPoint.Extension.Keys.ToArray(); } }
 
         /// <summary>
         /// Get/Set this object for call branches
