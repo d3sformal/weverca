@@ -1,5 +1,8 @@
 ﻿namespace Weverca.AnalysisFramework.Memory
 {
+    /// <summary>
+    /// Abstract class for ObjectValue and AssociativeArray
+    /// </summary>
     public abstract class CompoundValue : ConcreteValue
     {
         /// <inheritdoc />
@@ -8,16 +11,19 @@
             visitor.VisitCompoundValue(this);
         }
 
+        /// <inheritdoc />
         protected override int getHashCode()
         {
             return UID+this.GetType().GetHashCode();
         }
 
+        /// <inheritdoc />
         protected override bool equals(Value other)
         {
             return this == other;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format("{0} UID: {1}", base.ToString(), UID);

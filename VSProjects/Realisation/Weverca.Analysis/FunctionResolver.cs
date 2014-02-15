@@ -602,7 +602,7 @@ namespace Weverca.Analysis
         {
             if (functions.Count == 0)
             {
-                setWarning("Cannot resolve function call. Function doesn't exist or analysis has not enough information to resolve function call", AnalysisWarningCause.CANNOT_RESOLVE_FUNCTION_CALL);
+                setWarning("Cannot resolve function call. Function doesn't exist.", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
             }
 
 

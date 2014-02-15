@@ -27,6 +27,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="entryMethodGraph">ControlFlowGraph to analyze</param>
         /// <param name="memoryModel">Memory model used by analyser</param>
+        /// <param name="simplifyLimit">Limit for calling simplificaion in memory model. It is different for tests</param>
         public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, int simplifyLimit=15)
             : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {

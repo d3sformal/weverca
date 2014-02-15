@@ -839,6 +839,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Resolve source or native type from name
         /// </summary>
         /// <param name="typeName">Name of type to resolve</param>
+        /// <param name="flow">FlowController</param>
         /// <param name="outSet"></param>
         /// <param name="element"></param>
         /// <returns><c>null</c> whether type cannot be resolver, otherwise the type value</returns>

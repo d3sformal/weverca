@@ -62,11 +62,13 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Method.GetHashCode();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var o= obj as NativeAnalyzer;

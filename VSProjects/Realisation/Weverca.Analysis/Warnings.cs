@@ -601,8 +601,8 @@ namespace Weverca.Analysis
         ACCESSING_INACCESSIBLE_FIELD,
 
         /// <summary>
-        /// Warning, that occurs when function call coudn't be resolved
+        /// Warning, that occurs when function doesn't exist
         /// </summary>
-        CANNOT_RESOLVE_FUNCTION_CALL,
+        FUNCTION_DOESNT_EXISTS,
     }
 }

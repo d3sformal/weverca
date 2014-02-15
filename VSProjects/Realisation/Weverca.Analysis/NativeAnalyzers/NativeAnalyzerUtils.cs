@@ -54,7 +54,7 @@ namespace Weverca.Analysis
         /// Checks number of arguments in called function.
         /// </summary>
         /// <param name="flow">FlowControllers</param>
-        /// <param name="nativeFunction">NativeFunctions</param>
+        /// <param name="nativeFunctions">NativeFunctions</param>
         /// <returns>true if the arguments count matches, false otherwise</returns>
         static public bool checkArgumentsCount(FlowController flow, List<NativeFunction> nativeFunctions)
         {

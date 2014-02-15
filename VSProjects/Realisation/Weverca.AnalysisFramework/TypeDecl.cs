@@ -536,7 +536,12 @@ namespace Weverca.AnalysisFramework
             }
 
         }
-
+        /// <summary>
+        /// Return visibility for given field
+        /// </summary>
+        /// <param name="name">Field name</param>
+        /// <param name="isStatic">static indicator</param>
+        /// <returns>Return visibility, or null, if field doesn't exists</returns>
         public Visibility? GetFieldVisibility(VariableName name, bool isStatic)
         {
             if (!resultingFields.ContainsKey(name))
@@ -571,6 +576,11 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        /// <summary>
+        /// Returns method visibility or null, if method doesn't exists
+        /// </summary>
+        /// <param name="name">Method name</param>
+        /// <returns>Method visibility or null, if method doesn't exists</returns>
         public Visibility? GetMethodVisibility(Name name)
         {
             if (resultingMethodVisibility.ContainsKey(name))
