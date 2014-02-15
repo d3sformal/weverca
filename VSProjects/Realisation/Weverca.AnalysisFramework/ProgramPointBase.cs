@@ -147,10 +147,13 @@ namespace Weverca.AnalysisFramework
 
                 for (int i = 0; i < _flowParents.Count; ++i)
                 {
-                    var outset = _flowParents[i].OutSet;
-                    if (outset == null)
+                    var flowParent = _flowParents[i];
+                    var assumeParent = flowParent as AssumePoint;
+
+                    var outset = flowParent.OutSet;
+                    if (outset == null || (assumeParent!=null && !assumeParent.Assumed))
                     {
-                        //TODO optimize - reenqueue
+                        //given parent is not computed yet or is unreachable
                         continue;
                     }
                     inputs.Add(outset);

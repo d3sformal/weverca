@@ -179,17 +179,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>Result of binary expression</returns>
         public abstract MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
             MemoryEntry rightOperand);
-
-        /// <summary>
-        /// Process binary operation on given operands. Incomplete evaluation can be handled using short circuit.
-        /// </summary>
-        /// <param name="leftOperand">Left operand of operation</param>
-        /// <param name="operation">Binary operation</param>
-        /// <param name="rightOperand">Right operand of operation</param>
-        /// <param name="shortCircuit">Determine that short circuit on left operand should be used. It is needed for incomplete evaluation.</param>
-        /// <returns>Result of binary expression</returns>
-        public abstract MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation,
-            MemoryEntry rightOperand,out Value shortCircuit);
+         
 
         /// <summary>
         /// Process unary operation on given operand

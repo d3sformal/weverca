@@ -40,6 +40,9 @@ namespace Weverca.AnalysisFramework.UnitTest
                 case ConditionForm.All:
                     willAssume = needsAll(outSet.Snapshot, condition.Parts);
                     break;
+                case ConditionForm.None:
+                    willAssume = needsNone(outSet.Snapshot, condition.Parts);
+                    break;
                 case ConditionForm.SomeNot:
                     willAssume = needsSomeNot(outSet.Snapshot, condition.Parts);
                     break;
@@ -206,7 +209,24 @@ namespace Weverca.AnalysisFramework.UnitTest
                 }
             }
 
-            //can disprove some part
+            //cant disprove any part
+            return true;
+        }
+
+        private bool needsNone(SnapshotBase input, IEnumerable<Expressions.Postfix> conditionParts)
+        {
+            //we are searching for one part, that can be evaluated only as false
+
+            foreach (var evaluatedPart in conditionParts)
+            {
+                var value = _log.ReadSnapshotEntry(evaluatedPart.SourceElement).ReadMemory(input);
+                if (canEvalTrue(value))
+                {
+                    return false;
+                }
+            }
+
+            //cant disprove any part
             return true;
         }
 
@@ -223,6 +243,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 }
             }
 
+            //cant disprove any part
             return false;
         }
 
@@ -295,6 +316,40 @@ namespace Weverca.AnalysisFramework.UnitTest
                     //undefined value is evaluated as false
                     return true;
                 }
+            }
+
+            return false;
+        }
+
+        private bool canEvalTrue(MemoryEntry evaluatedPart)
+        {
+            if (evaluatedPart == null)
+            {
+                //Possible cause of this is that evaluatedPart doesn't contains expression
+                //Syntax error
+                throw new NotSupportedException("Can assume only expression - PHP syntax error");
+            }
+            foreach (var value in evaluatedPart.PossibleValues)
+            {
+                var boolean = value as BooleanValue;
+                if (boolean != null)
+                {
+                    if (!boolean.Value)
+                    {
+                        // false found
+                        continue;
+                    }
+                }
+
+                if (value is UndefinedValue)
+                {
+                    //undefined value is evaluated as false
+                    continue;
+                }
+
+
+                //other values can be true
+                return true;
             }
 
             return false;

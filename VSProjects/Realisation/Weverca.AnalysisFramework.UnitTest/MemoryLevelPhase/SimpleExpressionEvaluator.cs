@@ -119,32 +119,6 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation, MemoryEntry rightOperand, out Value shortCircuit)
-        {
-            shortCircuit = OutSet.CreateBool(false);
-
-            switch (operation)
-            {
-                case Operations.Or:
-                    if (leftOperand.Count == 1 && (leftOperand.PossibleValues.First() as BooleanValue).Value)
-                    {
-                        shortCircuit = OutSet.CreateBool(true);
-                    }
-                    else if ((leftOperand.Count == 1 && !(leftOperand.PossibleValues.First() as BooleanValue).Value))
-                    {
-                        shortCircuit = OutSet.CreateBool(false);
-                    }
-                    else
-                    {
-                        shortCircuit = OutSet.AnyBooleanValue;
-                    }
-                    
-                    break;
-            }
-
-            return BinaryEx(leftOperand, operation, rightOperand);
-        }
-
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
             var result = new HashSet<IntegerValue>();
@@ -231,7 +205,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             var leftValue = left.PossibleValues.First() as BooleanValue;
             var rightValue = right.PossibleValues.First() as BooleanValue;
 
-            if (rightValue == null) 
+            if (rightValue == null)
                 //incomplete evaluation is possible
                 rightValue = leftValue;
 
@@ -447,8 +421,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
-            // TODO: It must jump to the end of program and print status, if it is a string
-
+            var end = new ThrowInfo(new CatchBlockDescription(Flow.ProgramEnd, new GenericQualifiedName(), null), status);
+            Flow.SetThrowBranching(new[] { end }, true);
             // Exit expression never returns, but it is still expression so it must return something
             return new MemoryEntry(OutSet.AnyValue);
         }

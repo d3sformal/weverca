@@ -20,13 +20,22 @@ namespace Weverca.AnalysisFramework.Expressions
     /// </summary>
     internal class ElementExpander : TreeVisitor
     {
+        /// <summary>
+        /// expanded statement
+        /// </summary>
         private LangElement _statement;
 
         /// <summary>
-        /// Registered program points registered to their lang elements
+        /// Registered program points indexed by their lang elements
         /// </summary>
         private readonly Dictionary<LangElement, ProgramPointBase> _programPoints
             = new Dictionary<LangElement, ProgramPointBase>();
+
+        /// <summary>
+        /// Program points' substitutions
+        /// </summary>
+        private readonly Dictionary<ProgramPointBase, ProgramPointBase[]> _substitutions
+            = new Dictionary<ProgramPointBase, ProgramPointBase[]>();
 
         private readonly LValueFactory _lValueCreator;
 
@@ -62,14 +71,15 @@ namespace Weverca.AnalysisFramework.Expressions
             expander.Expand(statement);
             var postfix = Converter.GetPostfix(statement);
 
-            var expandedChain = createPointsChain(expander, postfix);
-            registerCreatedPoints(expander, onPointCreated);
+            var expandedChain = expander.createPointsChain(postfix);
+            var result = expandedChain.ToArray();
 
-            return expandedChain.ToArray();
+            registerCreatedPoints(result, onPointCreated);
+
+            return result;
         }
 
-        private static IEnumerable<ProgramPointBase> createPointsChain(ElementExpander expander,
-            IEnumerable<LangElement> orderedPartialas)
+        private IEnumerable<ProgramPointBase> createPointsChain(IEnumerable<LangElement> orderedPartialas)
         {
             ProgramPointBase lastPoint = null;
             foreach (var partial in orderedPartialas)
@@ -80,35 +90,79 @@ namespace Weverca.AnalysisFramework.Expressions
                     continue;
                 }
 
-                var currentPoint = expander.GetProgramPoint(partial);
+                var currentPoint = GetProgramPoint(partial);
 
                 if (lastPoint == null)
                 {
                     //there is no parent to add child
-                    lastPoint = currentPoint;
 
-                    yield return currentPoint; //because we dont want to miss first point
+                    //because we dont want to miss first point
+                    foreach (var substitution in substitute(currentPoint))
+                    {
+                        lastPoint = substitution;
+                        yield return currentPoint;
+                    }
+
                     continue;
                 }
 
                 //join statement chain with flow edges in postfix computation order
-                if (!currentPoint.FlowChildren.Any())
+                if (!currentPoint.FlowChildren.Any() || _substitutions.ContainsKey(currentPoint))
                 {
-                    //because of sharing points in some expressions - point is on flow path before this
-                    lastPoint.AddFlowChild(currentPoint);
+                    var substitutions = substitute(currentPoint);
 
-                    yield return currentPoint; //report point in right order
+                    //because of sharing points in some expressions - point is on flow path before current
+                    lastPoint.AddFlowChild(substitutions[0]);
+
+                    foreach (var substitution in substitutions)
+                    {
+                        currentPoint = substitution;
+                        yield return currentPoint; //report point in correct order
+                    }
                 }
 
                 lastPoint = currentPoint;
             }
         }
 
-        private static void registerCreatedPoints(ElementExpander expander, OnPointCreated onPointCreated)
+        /// <summary>
+        /// Get substituted chain of point. Given chain is already chained within itself
+        /// </summary>
+        /// <param name="point">Substituted point</param>
+        /// <returns>Substitutions for given point</returns>
+        private ProgramPointBase[] substitute(ProgramPointBase point)
         {
-            foreach (var pair in expander._programPoints)
+            ProgramPointBase[] result;
+
+            if (!_substitutions.TryGetValue(point, out result))
             {
-                onPointCreated(pair.Value);
+                result = new[] { point };
+            }
+            else
+            {
+                //remvoe substitutions to be sure that is used only once
+                _substitutions.Remove(point);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Substitute occurence of given point by given chain. No chaining operation is processed on given chain.
+        /// </summary>
+        /// <param name="substitutedPoint">Substituted point</param>
+        /// <param name="chain">Substituting chain</param>
+        internal void SubstituteByChain(ProgramPointBase substitutedPoint, ProgramPointBase[] chain)
+        {
+            _substitutions.Add(substitutedPoint, chain);
+        }
+
+        private static void registerCreatedPoints(ProgramPointBase[] programPoints, OnPointCreated onPointCreated)
+        {
+            var pointSet = new HashSet<ProgramPointBase>(programPoints);
+            foreach (var point in pointSet)
+            {
+                onPointCreated(point);
             }
         }
 
@@ -494,5 +548,6 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             Result(new NativeAnalyzerPoint(nativeAnalyzer));
         }
+
     }
 }

@@ -207,36 +207,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Value shortCircuit;
-            //ProgramPointBase leftPoint = LeftOperand;
-            //ProgramPointBase rightPoint = RightOperand;
-            ValuePoint leftPoint = getOperand(LeftOperand);
-            ValuePoint rightPoint = getOperand(RightOperand);
+            var leftPoint = LeftOperand;
+            var rightPoint = RightOperand;
 
-            var value = Services.Evaluator.ShortableBinaryEx(leftPoint.Value.ReadMemory(OutSnapshot),
-                Expression.PublicOperation, rightPoint.Value.ReadMemory(OutSnapshot),out shortCircuit);
 
-            if (shortCircuit is AnyBooleanValue)
-            {
-                OutSet.Extend(leftPoint.OutSet, rightPoint.OutSet);
-            }
-            else
-            {
-                if (((BooleanValue)shortCircuit).Value)
-                {
-                    OutSet.Extend(leftPoint.OutSet);
-                }
-            }
+            var leftValue = leftPoint.Value == null ? new MemoryEntry(OutSnapshot.UndefinedValue) : leftPoint.Value.ReadMemory(OutSnapshot);
+            var rightValue = rightPoint.Value == null ? new MemoryEntry(OutSnapshot.UndefinedValue) : rightPoint.Value.ReadMemory(OutSnapshot);
 
+            var value = Services.Evaluator.BinaryEx(leftValue,
+                Expression.PublicOperation, rightValue);
+   
             Value = OutSet.CreateSnapshotEntry(value);
-        }
-
-        private ValuePoint getOperand(ValuePoint operand)
-        {
-            if (operand is RCallPoint)
-            {
-                return operand.Extension.Sink;
-            }
-            return operand;
         }
 
         public void SetValueContent(MemoryEntry valueContent)
@@ -293,7 +274,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
     }
 
-    /// <summary>
+    /// <summary> 
     /// Array expression representation
     /// </summary>
     public class ArrayExPoint : ValuePoint

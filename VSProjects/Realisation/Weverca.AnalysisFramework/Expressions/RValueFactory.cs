@@ -57,16 +57,6 @@ namespace Weverca.AnalysisFramework.Expressions
         #region Creating program points
 
         /// <summary>
-        /// Visit element, which doesn't accept any values and it's value is constant during whole computation
-        /// </summary>
-        /// <param name="e">Visited element</param>
-        /// <param name="provider"></param>
-        private void visitConstantNularyElement(LangElement e, ConstantProvider provider)
-        {
-            Result(new ConstantPoint(e, provider));
-        }
-
-        /// <summary>
         /// Set given RValue as CreateValue result
         /// </summary>
         /// <param name="value">Result value</param>
@@ -74,6 +64,25 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             Debug.Assert(_resultPoint == null, "Value has to be null - someone doesn't read it's value");
             _resultPoint = value;
+        }
+
+        /// <summary>
+        /// Substitute occurence of given point by given chain. No chaining operation is processed on given chain.
+        /// </summary>
+        /// <param name="substitutedPoint">Substituted point</param>
+        /// <param name="chain">Substituting chain</param>
+        private void SubstituteByChain(ProgramPointBase substitutedPoint, ProgramPointBase[] chain)
+        {
+            _valueCreator.SubstituteByChain(substitutedPoint, chain);
+        }
+        /// <summary>
+        /// Visit element, which doesn't accept any values and it's value is constant during whole computation
+        /// </summary>
+        /// <param name="e">Visited element</param>
+        /// <param name="provider"></param>
+        private void visitConstantNularyElement(LangElement e, ConstantProvider provider)
+        {
+            Result(new ConstantPoint(e, provider));
         }
 
         /// <summary>
@@ -284,8 +293,44 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var lOperand = CreateRValue(x.LeftExpr);
             var rOperand = CreateRValue(x.RightExpr);
+            var expression = new BinaryExPoint(x, lOperand, rOperand);
 
-            Result(new BinaryExPoint(x, lOperand, rOperand));
+            switch (x.PublicOperation)
+            {
+                case Operations.And:
+                case Operations.Or:
+                    var shortableForm = x.PublicOperation == Operations.And ? ConditionForm.None : ConditionForm.All;
+                    var nonShortableForm = shortableForm == ConditionForm.All ? ConditionForm.None : ConditionForm.All;
+
+                    var shortableCondition = new AssumptionCondition(shortableForm, x.LeftExpr);
+                    //shortened evaluation path
+                    var shortendPath = new AssumePoint(shortableCondition, new[] { lOperand });
+
+                    var nonShortableCondition = new AssumptionCondition(nonShortableForm, x.LeftExpr);
+                    //normal evaluation
+                    var nonShortendPath = new AssumePoint(nonShortableCondition, new[] { lOperand });
+                    nonShortendPath.AddFlowChild(rOperand);
+
+                    //block borders
+                    var blockStart = new EmptyProgramPoint();
+                    blockStart.AddFlowChild(shortendPath);
+                    blockStart.AddFlowChild(nonShortendPath);
+
+                    //because of explicit flow we have to create substitution
+                    SubstituteByChain(rOperand, new ProgramPointBase[]{
+                        blockStart,
+                        shortendPath,
+                        nonShortendPath,
+                        rOperand
+                    });
+
+                    shortendPath.AddFlowChild(expression);
+                    //roperand is added when processing substitituion
+                    
+                    break;
+            }
+
+            Result(expression);
         }
 
         public override void VisitConcatEx(ConcatEx x)

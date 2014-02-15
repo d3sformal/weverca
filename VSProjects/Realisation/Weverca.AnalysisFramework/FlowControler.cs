@@ -122,11 +122,12 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <summary>
-        /// Set throw branches from current point into specified program points. These branches contains
+        /// Set throw branches from current point into specified program points. These branches contain
         /// catch point and handles given ThrowInfo values.
         /// </summary>
         /// <param name="branches">ThrowInfo values specifiing udpates/creations/deletions of throw branches</param>
-        public void SetThrowBranching(IEnumerable<ThrowInfo> branches)
+        /// <param name="removeFlowChildren">If true flow children will be removed, otherwise no other than catch point children are affected</param>
+        public void SetThrowBranching(IEnumerable<ThrowInfo> branches, bool removeFlowChildren = false)
         {
             //create indexed structure for branches
             var indexed = new Dictionary<CatchBlockDescription, ThrowInfo>();
@@ -141,7 +142,12 @@ namespace Weverca.AnalysisFramework
             {
                 var catchChild = child as CatchPoint;
                 if (catchChild == null)
+                {
+                    if (removeFlowChildren)
+                        ProgramPoint.RemoveFlowChild(child);
+
                     continue;
+                }
 
                 ThrowInfo info;
                 if (indexed.TryGetValue(catchChild.CatchDescription, out info))
@@ -174,6 +180,7 @@ namespace Weverca.AnalysisFramework
                 catchPoint.AddFlowChild(catchPoint.TargetPoint);
             }
         }
+
 
         internal void InitializeNewPoint(ProgramPointBase point)
         {

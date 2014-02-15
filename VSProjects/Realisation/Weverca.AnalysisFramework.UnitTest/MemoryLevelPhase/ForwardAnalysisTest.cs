@@ -84,6 +84,23 @@ $result2=$result;
             .AssertVariable("result1").HasValues("no action")
             .AssertVariable("result2").HasValues("action done");
 
+
+        readonly static TestCase IncompleteEvaluationDie_CASE = @"
+$result='before die';
+false || die();
+
+$result='after die';
+"
+    .AssertVariable("result").HasValues("before die");
+
+        readonly static TestCase IncompleteEvaluationDontDie_CASE = @"
+$result='before die';
+true || die();
+
+$result='after die';
+"
+            .AssertVariable("result").HasValues("after die");
+
         readonly static TestCase IncompleteEvaluationMay_CASE = @"
 function action(){
     global $result;
@@ -1557,6 +1574,18 @@ $resA = $a;
             AnalysisTestUtils.RunTestCase(IncompleteEvaluation_CASE);
         }
 
+        [TestMethod]
+        public void IncompleteEvaluationDontDie()
+        {
+            AnalysisTestUtils.RunTestCase(IncompleteEvaluationDontDie_CASE);
+        }
+        
+        [TestMethod]
+        public void IncompleteEvaluationDie()
+        {
+            AnalysisTestUtils.RunTestCase(IncompleteEvaluationDie_CASE);
+        }
+        
         [TestMethod]
         public void IncompleteEvaluationMay()
         {

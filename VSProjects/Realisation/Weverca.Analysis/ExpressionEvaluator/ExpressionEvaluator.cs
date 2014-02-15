@@ -1374,36 +1374,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
             return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
         }
-
-        /// <inheritdoc />
-        public override MemoryEntry ShortableBinaryEx(MemoryEntry leftOperand, Operations operation,
-            MemoryEntry rightOperand, out Value shortCircuit)
-        {
-            booleanConverter.SetContext(OutSet);
-            shortCircuit = booleanConverter.Evaluate(leftOperand);
-
-            if (shortCircuit is BooleanValue)
-            {
-                BooleanValue shortCirc = shortCircuit as BooleanValue;
-                switch (operation)
-                {
-                    case Operations.Or:
-                        if (shortCirc.Value == true)
-                        {
-                            return new MemoryEntry(OutSet.CreateBool(true));
-                        }
-                        break;
-                    case Operations.And:
-                        if (shortCirc.Value == false)
-                        {
-                            shortCircuit = OutSet.CreateBool(true);
-                            return new MemoryEntry(OutSet.CreateBool(false));
-                        }
-                        break;
-                }
-            }
-
-            return BinaryEx(leftOperand, operation, rightOperand);
-        }
+     
     }
 }

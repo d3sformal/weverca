@@ -38,13 +38,19 @@ namespace Weverca.AnalysisFramework
         {
             TargetPoint = targetPoint;
             CatchedType = catchedType;
+
+            if (CatchedType.QualifiedName.Name.Value == null)
+            {
+                CatchedType = new GenericQualifiedName(new QualifiedName(new Name("$noname")));
+            }
+
             CatchVariable = catchVariable;
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return TargetPoint.GetHashCode() + CatchVariable.GetHashCode() + CatchedType.GetHashCode();
+            return TargetPoint.GetHashCode() + CatchedType.GetHashCode();
         }
 
         /// <inheritdoc />
