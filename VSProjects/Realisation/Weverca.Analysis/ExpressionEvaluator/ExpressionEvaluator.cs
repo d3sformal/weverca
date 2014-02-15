@@ -682,7 +682,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var info = new ThrowInfo(description, new MemoryEntry());
 
             var throws = new ThrowInfo[] { info };
-            Flow.SetThrowBranching(throws);
+            Flow.SetThrowBranching(throws,true);
 
             // Exit expression never returns, but it is still expression so it must return something
             return new MemoryEntry(OutSet.AnyValue);
