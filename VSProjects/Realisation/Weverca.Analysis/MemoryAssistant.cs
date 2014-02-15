@@ -429,7 +429,7 @@ namespace Weverca.Analysis
             }
             if (containsOnlyNumvericValues)
             {
-                result.Add(Context.AnyBooleanValue);
+                result.Add(Context.AnyFloatValue);
                 return new MemoryEntry(result);
             }
             if (containsOnlyString)
