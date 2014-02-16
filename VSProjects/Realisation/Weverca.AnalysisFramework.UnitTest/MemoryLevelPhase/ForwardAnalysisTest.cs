@@ -1454,6 +1454,7 @@ $resA = $a;
  .AssertVariable("resA").HasValues(2, 3)
  .MemoryModel(MemoryModels.MemoryModels.CopyMM);
 
+
         [TestMethod]
         public void UndefinedAlias()
         {

@@ -11,14 +11,15 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class CreateCollector : IndexCollector
+    class CreateCollector
     {
         List<MemoryIndex> mustIndexes = new List<MemoryIndex>();
         List<MemoryIndex> mayIndexes = new List<MemoryIndex>();
+        List<CollectedValue> collectedValues = new List<CollectedValue>();
 
         List<MemoryIndex> mustIndexesProcess = new List<MemoryIndex>();
 
-        public override bool IsDefined { get; protected set; }
+        /*public override bool IsDefined { get; protected set; }
 
         public override IEnumerable<MemoryIndex> MustIndexes
         {
@@ -28,6 +29,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override IEnumerable<MemoryIndex> MayIndexes
         {
             get { return mayIndexes; }
+        }
+
+        public override IEnumerable<CollectedValue> CollectedValues
+        {
+            get { return collectedValues; }
         }
 
 
@@ -44,6 +50,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override void Next(PathSegment segment)
         {
             throw new NotImplementedException();
-        }
+        }*/
     }
 }

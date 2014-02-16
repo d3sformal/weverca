@@ -40,6 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CopyMemoryModel\IndexCollectors\CollectedLocation.cs" />
+    <Compile Include="CopyMemoryModel\IndexCollectors\Memoryentry.cs" />
+    <Compile Include="CopyMemoryModel\IndexCollectors\ProcessValueAsLoationVisitor.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\DeclarationContainer.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\ICloneable.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\IndexData.cs" />
@@ -58,6 +61,7 @@
     <Compile Include="CopyMemoryModel\Snapshot\SnapshotStructure.cs" />
     <Compile Include="CopyMemoryModel\Tools\HashSetTools.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\CollectComposedValuesVisitor.cs" />
+    <Compile Include="CopyMemoryModel\ValueVisitor\ReadValuesVisitors.cs" />
     <Compile Include="MemoryModels.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\AssignCollector.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\CreateCollector.cs" />

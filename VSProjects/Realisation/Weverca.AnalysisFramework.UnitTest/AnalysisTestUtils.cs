@@ -421,12 +421,20 @@ namespace Weverca.AnalysisFramework.UnitTest
                     Assert.Fail("Undefined value is not allowed for variable ${0} in {1}", variableName, entry);
             }
 
-            var actualValues = (from ScalarValue<T> value in entry.PossibleValues select value.Value).ToArray();
+            var actualValues = new List<T>();
+            foreach (Value value in entry.PossibleValues)
+            {
+                ScalarValue<T> scalar = value as ScalarValue<T>;
+                if (scalar != null)
+                {
+                    actualValues.Add(scalar.Value);
+                }
+            }
 
             if (message == null)
                 message = string.Format(" in variable ${0} containing {1}", variableName, entry);
 
-            CollectionAssert.AreEquivalent(expectedValues, actualValues, message);
+            CollectionAssert.AreEquivalent(expectedValues, actualValues.ToArray(), message);
         }
 
         internal static void AssertVariableWithUndefined<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)

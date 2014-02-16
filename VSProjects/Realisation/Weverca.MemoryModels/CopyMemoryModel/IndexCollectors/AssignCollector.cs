@@ -23,6 +23,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         HashSet<MemoryIndex> mustIndexesProcess = new HashSet<MemoryIndex>();
         HashSet<MemoryIndex> mayIndexesProcess = new HashSet<MemoryIndex>();
+
+        HashSet<CollectedLocation> mustLocation = new HashSet<CollectedLocation>();
+        HashSet<CollectedLocation> mayLocation = new HashSet<CollectedLocation>();
+
+        HashSet<CollectedLocation> mustLocationProcess = new HashSet<CollectedLocation>();
+        HashSet<CollectedLocation> mayLocationProcess = new HashSet<CollectedLocation>();
         private Snapshot snapshot;
 
         private CreatorVisitor creatorVisitor;
@@ -42,6 +48,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             get { return mayIndexes; }
         }
 
+        public override IEnumerable<CollectedLocation> MustLocation
+        {
+            get { return mustLocation; }
+        }
+
+        public override IEnumerable<CollectedLocation> MayLocaton
+        {
+            get { return mayLocation; }
+        }
 
         public override int MustIndexesCount
         {
@@ -84,6 +99,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             mayIndexes = mayIndexesProcess;
             mayIndexesProcess = indexSwap;
             mayIndexesProcess.Clear();
+
+            HashSet<CollectedLocation> locationSwap = mustLocation;
+            mustLocation = mustLocationProcess;
+            mustLocationProcess = locationSwap;
+            mustLocationProcess.Clear();
+
+            locationSwap = mayLocation;
+            mayLocation = mayLocationProcess;
+            mayLocationProcess = locationSwap;
+            mayLocationProcess.Clear();
         }
 
         private void addAliasesToIndexes()
@@ -161,46 +186,94 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void VisitField(FieldPathSegment segment)
         {
-            foreach (MemoryIndex parentIndex in mustIndexes)
+            FieldLocationVisitor visitor = new FieldLocationVisitor(segment, snapshot.Assistant, mustLocationProcess, mayLocationProcess);
+
+            visitor.IsMust = true;
+            foreach (MemoryIndex index in mustIndexes)
             {
-                processField(snapshot, segment, parentIndex, mustIndexesProcess, true);
+                processField(segment, index, visitor, true);
+            }
+            foreach (CollectedLocation location in mustLocation)
+            {
+                location.Accept(visitor);
             }
 
-            foreach (MemoryIndex parentIndex in MayIndexes)
+            visitor.IsMust = false;
+            foreach (MemoryIndex index in MayIndexes)
             {
-                processField(snapshot, segment, parentIndex, mayIndexesProcess, false);
+                processField(segment, index, visitor, false);
+            }
+            foreach (CollectedLocation location in mayLocation)
+            {
+                location.Accept(visitor);
             }
         }
 
         public void VisitIndex(IndexPathSegment segment)
         {
-            foreach (MemoryIndex parentIndex in mustIndexes)
+            IndexLocationVisitor visitor = new IndexLocationVisitor(segment, snapshot.Assistant, mustLocationProcess, mayLocationProcess);
+
+            visitor.IsMust = true;
+            foreach (MemoryIndex index in mustIndexes)
             {
-                processIndex(snapshot, segment, parentIndex, mustIndexesProcess, true);
+                processIndex(segment, index, visitor, true);
+            }
+            foreach (CollectedLocation location in mustLocation)
+            {
+                location.Accept(visitor);
             }
 
-            foreach (MemoryIndex parentIndex in mayIndexes)
+            visitor.IsMust = false;
+            foreach (MemoryIndex index in mayIndexes)
             {
-                processIndex(snapshot, segment, parentIndex, mayIndexesProcess, false);
+                processIndex(segment, index, visitor, false);
+            }
+            foreach (CollectedLocation location in mayLocation)
+            {
+                location.Accept(visitor);
             }
         }
 
 
-        private void processField(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
-            HashSet<MemoryIndex> mustTarget, bool isMust)
+        private void processField(PathSegment segment, MemoryIndex parentIndex, ProcessValueAsLocationVisitor visitor, bool isMust)
         {
-            if (!snapshot.Structure.HasObjects(parentIndex))
+            bool processOtherValues = false;
+            MemoryEntry entry;
+            if (snapshot.Data.TryGetMemoryEntry(parentIndex, out entry))
             {
-                ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
+                ObjectValueContainer objects = snapshot.Structure.GetObjects(parentIndex);
+                if (objects.Count > 0)
+                {
+                    processOtherValues = entry.Count > objects.Count;
+                }
+                else if (entry.Count > 0)
+                {
+                    processOtherValues = true;
+                }
+                else
+                {
+                    entry = snapshot.Data.EmptyEntry;
+                    processOtherValues = true;
+                }
             }
-            else if (!snapshot.ContainsOnlyReferences(parentIndex))
+            else
             {
-                ObjectValue objectValue = snapshot.CreateObject(parentIndex, false);
+                entry = snapshot.Data.EmptyEntry;
+                processOtherValues = true;
             }
-            
-            if (isMust)
+
+            if (processOtherValues)
             {
-                snapshot.ClearForObjects(parentIndex);
+                if (entry.Count > 1)
+                {
+                    isMust = false;
+                }
+
+                visitor.ProcessValues(parentIndex, entry.PossibleValues, isMust);
+                if (visitor.ContainsUndefined)
+                {
+                    ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
+                }
             }
 
             ObjectValueContainer objectValues = snapshot.Structure.GetObjects(parentIndex);
@@ -208,33 +281,66 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 ObjectDescriptor descriptor = snapshot.Structure.GetDescriptor(objectValues.First());
                 creatorVisitor.ObjectValue = objectValues.First();
-                processSegment(segment, descriptor);
+                processSegment(segment, descriptor, isMust);
             }
-
-            foreach (ObjectValue value in objectValues)
+            else
             {
-                ObjectDescriptor descriptor = snapshot.Structure.GetDescriptor(value);
-                creatorVisitor.ObjectValue = value;
-                processSegment(segment, descriptor, false);
+                foreach (ObjectValue value in objectValues)
+                {
+                    ObjectDescriptor descriptor = snapshot.Structure.GetDescriptor(value);
+                    creatorVisitor.ObjectValue = value;
+                    processSegment(segment, descriptor, false);
+                }
             }
         }
 
-        private void processIndex(Snapshot snapshot, PathSegment segment, MemoryIndex parentIndex,
-            HashSet<MemoryIndex> mustTarget, bool isMust)
+        private void processIndex(PathSegment segment, MemoryIndex parentIndex, ProcessValueAsLocationVisitor visitor, bool isMust)
         {
-            AssociativeArray arrayValue;
-            if (!snapshot.Structure.TryGetArray(parentIndex, out arrayValue))
+            AssociativeArray arrayValue = null;
+            bool processOtherValues = false;
+            MemoryEntry entry;
+            if (snapshot.Data.TryGetMemoryEntry(parentIndex, out entry))
             {
-                arrayValue = snapshot.CreateArray(parentIndex, isMust);
+                if (snapshot.Structure.TryGetArray(parentIndex, out arrayValue))
+                {
+                    processOtherValues = entry.Count > 1;
+                }
+                else if (entry.Count > 0)
+                {
+                    processOtherValues = true;
+                }
+                else
+                {
+                    entry = snapshot.Data.EmptyEntry;
+                    processOtherValues = true;
+                }
             }
-            else if (isMust)
+            else
             {
-                snapshot.ClearForArray(parentIndex);
+                entry = snapshot.Data.EmptyEntry;
+                processOtherValues = true;
             }
 
-            ArrayDescriptor descriptor = snapshot.Structure.GetDescriptor(arrayValue);
-            creatorVisitor.ArrayValue = arrayValue;
-            processSegment(segment, descriptor, isMust);
+            if (processOtherValues)
+            {
+                if (entry.Count > 1)
+                {
+                    isMust = false;
+                }
+
+                visitor.ProcessValues(parentIndex, entry.PossibleValues, isMust);
+                if (visitor.ContainsUndefined && arrayValue == null)
+                {
+                    arrayValue = snapshot.CreateArray(parentIndex, isMust);
+                }
+            }
+
+            if (arrayValue != null)
+            {
+                ArrayDescriptor descriptor = snapshot.Structure.GetDescriptor(arrayValue);
+                creatorVisitor.ArrayValue = arrayValue;
+                processSegment(segment, descriptor, isMust);
+            }
         }
 
         private void processSegment(PathSegment segment, ReadonlyIndexContainer container, bool isMust = true)
@@ -386,6 +492,65 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         internal void CreateNewSctucture(bool createNewStructure)
         {
             this.createNewStructure = createNewStructure;
+        }
+
+
+        class IndexLocationVisitor : ProcessValueAsLocationVisitor
+        {
+            IndexPathSegment indexSegment;
+            HashSet<CollectedLocation> mustLocationProcess;
+            HashSet<CollectedLocation> mayLocationProcess;
+
+            public IndexLocationVisitor(IndexPathSegment indexSegment, MemoryAssistantBase assistant, HashSet<CollectedLocation> mustLocationProcess, HashSet<CollectedLocation> mayLocationProcess)
+                : base(assistant)
+            {
+                this.indexSegment = indexSegment;
+                this.mustLocationProcess = mustLocationProcess;
+                this.mayLocationProcess = mayLocationProcess;
+            }
+
+            public override void ProcessValues(MemoryIndex parentIndex, IEnumerable<Value> values, bool isMust)
+            {
+                HashSet<CollectedLocation> targetSet = mayLocationProcess;
+                if (isMust && values.Count() == 1)
+                {
+                    targetSet = mustLocationProcess;
+                }
+
+                ReadIndexVisitor visitor = new ReadIndexVisitor(parentIndex, indexSegment, targetSet);
+                visitor.VisitValues(values);
+
+                ContainsUndefined = visitor.ContainsUndefined;
+            }
+        }
+
+        class FieldLocationVisitor : ProcessValueAsLocationVisitor
+        {
+            FieldPathSegment fieldSegment;
+            HashSet<CollectedLocation> mustLocationProcess;
+            HashSet<CollectedLocation> mayLocationProcess;
+
+            public FieldLocationVisitor(FieldPathSegment fieldSegment, MemoryAssistantBase assistant, HashSet<CollectedLocation> mustLocationProcess, HashSet<CollectedLocation> mayLocationProcess)
+                : base(assistant)
+            {
+                this.fieldSegment = fieldSegment;
+                this.mustLocationProcess = mustLocationProcess;
+                this.mayLocationProcess = mayLocationProcess;
+            }
+
+            public override void ProcessValues(MemoryIndex parentIndex, IEnumerable<Value> values, bool isMust)
+            {
+                HashSet<CollectedLocation> targetSet = mayLocationProcess;
+                if (isMust && values.Count() == 1)
+                {
+                    targetSet = mustLocationProcess;
+                }
+
+                ReadFieldVisitor visitor = new ReadFieldVisitor(parentIndex, fieldSegment, targetSet);
+                visitor.VisitValues(values);
+
+                ContainsUndefined = visitor.ContainsUndefined;
+            }
         }
     }
 }

@@ -147,6 +147,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </value>
         internal int CallLevel { get; private set; }
 
+        internal MemoryAssistantBase Assistant { get { return base.Assistant; } }
+
         private TemporaryIndex returnIndex;
 
         /// <summary>
@@ -924,7 +926,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <returns></returns>
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
         {
-            ObjectValue value = this.CreateObject(null);
+            ObjectValue value = Assistant.CreateImplicitObject();
 
             if (isMust)
             {

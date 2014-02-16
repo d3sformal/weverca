@@ -39,10 +39,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 foreach (MemoryIndex index in collector.MustIndexes)
                 {
                     MemoryEntry entry = snapshot.Structure.GetMemoryEntry(index);
-                    foreach (Value value in entry.PossibleValues)
-                    {
-                        values.Add(value);
-                    }
+                    HashSetTools.AddAll(values, entry.PossibleValues);
+                }
+
+                foreach (CollectedLocation location in collector.MustLocation)
+                {
+                    HashSetTools.AddAll(values, location.ReadValues(snapshot.Assistant));
                 }
 
                 return new MemoryEntry(values);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Weverca.AnalysisFramework.Memory
 {
@@ -24,6 +25,18 @@ namespace Weverca.AnalysisFramework.Memory
         public void VisitMemoryEntry(MemoryEntry entry)
         {
             foreach (var value in entry.PossibleValues)
+            {
+                value.Accept(this);
+            }
+        }
+
+        /// <summary>
+        /// For all values in the given value set calls their accept functions.
+        /// </summary>
+        /// <param name="values">Values to visit</param>
+        public void VisitValues(IEnumerable<Value> values)
+        {
+            foreach (var value in values)
             {
                 value.Accept(this);
             }
