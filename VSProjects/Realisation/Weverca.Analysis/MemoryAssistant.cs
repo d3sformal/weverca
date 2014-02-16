@@ -125,8 +125,10 @@ namespace Weverca.Analysis
                 //bool isstatic = (type.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || type.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
                 if (method.Name.Value == methodName.Name.Value)// && isstatic == false) 
                 {
-                    CheckVisibility(type, method);
-                    yield return method;
+                    if (CheckVisibility(type, method))
+                    {
+                        yield return method;
+                    }
                 }
             }
         }
@@ -139,13 +141,15 @@ namespace Weverca.Analysis
                 //bool isstatic = (value.Declaration.ModeledMethods.Where(a => a.Key.Name == methodName.Name && a.Value.IsStatic == true).Count() > 0 || value.Declaration.SourceCodeMethods.Where(a => a.Key.Name == methodName.Name && a.Value.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Static) == true).Count() > 0);
                 if (method.Name.Value == methodName.Name.Value)// && isstatic == true)
                 {
-                    CheckVisibility(value, method);
-                    yield return method;
+                    if (CheckVisibility(value, method))
+                    {
+                        yield return method;
+                    }
                 }
             }
         }
 
-        private void CheckVisibility(TypeValue type, FunctionValue method)
+        private bool CheckVisibility(TypeValue type, FunctionValue method)
         {
             List<TypeValue> methodTypes = new List<TypeValue>();
             if (Context.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName).IsDefined(Context))
@@ -167,11 +171,13 @@ namespace Weverca.Analysis
                     if (visibility != Visibility.PUBLIC)
                     {
                         SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                        return false;
                     }
 
                 }
                 else
                 {
+                    int numberOfWarings = 0;
                     foreach (var methodType in methodTypes)
                     {
                         if (visibility == Visibility.PRIVATE)
@@ -179,11 +185,13 @@ namespace Weverca.Analysis
                             if (!methodType.Declaration.QualifiedName.Equals(type.Declaration.QualifiedName))
                             {
                                 SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                                numberOfWarings++;
                             }
                         }
                         else if (visibility == Visibility.NOT_ACCESSIBLE)
                         {
                             SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                            numberOfWarings++;
                         }
                         else if (visibility == Visibility.PROTECTED)
                         {
@@ -203,13 +211,18 @@ namespace Weverca.Analysis
                             if (isInHierarchy == false)
                             {
                                 SetWarning("Calling inaccessible method", AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD);
+                                numberOfWarings++;
                             }
                         }
+                    }
+                    if (numberOfWarings == methodTypes.Count)
+                    {
+                        return false;
                     }
 
                 }
             }
-
+            return true;
         }
 
         /// <inheritdoc />

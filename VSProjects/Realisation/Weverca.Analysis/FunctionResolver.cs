@@ -977,13 +977,25 @@ namespace Weverca.Analysis
 
     #region function hints
 
-    internal class FunctionHints
+    /// <summary>
+    /// Represents user hints for analyzer.
+    /// User can define hint in php doc of function and method.
+    /// Exapmle @wev-hint returnvalue remove HTMLDirty
+    /// analyzer will remove html dirty flag from return value of this function
+    /// With this functionality, cas user create its own cleaning functions
+    /// </summary>
+    public class FunctionHints
     {
         private HashSet<FlagType> returnHints;
         private Dictionary<VariableIdentifier, HashSet<FlagType>> argumentHints;
         private LangElement declaration;
 
-        internal FunctionHints(PHPDocBlock doc, LangElement langElement)
+        /// <summary>
+        /// Creates new instance of FunctionHints
+        /// </summary>
+        /// <param name="doc">PHPDocument comment</param>
+        /// <param name="langElement">function or method declaration</param>
+        public FunctionHints(PHPDocBlock doc, LangElement langElement)
         {
             declaration = langElement;
             argumentHints = new Dictionary<VariableIdentifier, HashSet<FlagType>>();
@@ -1086,7 +1098,11 @@ namespace Weverca.Analysis
             argumentHints[name].Add(type);
         }
 
-        internal void applyHints(FlowOutputSet outSet)
+        /// <summary>
+        /// Apply current hints on analyzed branch
+        /// </summary>
+        /// <param name="outSet">FlowOutputSet</param>
+        public void applyHints(FlowOutputSet outSet)
         {
 
             foreach (var type in returnHints)
@@ -1107,17 +1123,33 @@ namespace Weverca.Analysis
     }
     #endregion
 
-    class NumberOfCalledFunctions<T>
+    /// <summary>
+    /// Imutable class stores iformation about number of calls of specified function or included file in one recursion
+    /// </summary>
+    /// <typeparam name="T">Function type</typeparam>
+    public class NumberOfCalledFunctions<T>
     {
+        /// <summary>
+        /// function or include information
+        /// </summary>
         public readonly T Function;
+        /// <summary>
+        /// number of calls or includes
+        /// </summary>
         public readonly int TimesCalled;
 
+        /// <summary>
+        /// Creates bew instacne of NumberOfCalledFunctions
+        /// </summary>
+        /// <param name="function">Function infomation</param>
+        /// <param name="timesCalled">number of calls or includes</param>
         public NumberOfCalledFunctions(T function, int timesCalled)
         {
             Function = function;
             TimesCalled = timesCalled;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             if (Function != null)
@@ -1130,6 +1162,7 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (obj is NumberOfCalledFunctions<T>)

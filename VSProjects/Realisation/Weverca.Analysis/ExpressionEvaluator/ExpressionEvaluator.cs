@@ -99,12 +99,31 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
 
-            CheckVisibility(types, field, false);
-            return objectValue.ReadField(OutSnapshot, field);
+            var fieldNames = CheckVisibility(types, field, false);
+            if (field.PossibleNames.Count() == 0)
+            {
+                return objectValue.ReadField(OutSnapshot, field);
+            }
+            else
+            {
+                if (fieldNames.Count() == 0)
+                {
+                    return getStaticVariableSink();
+                }
+                else
+                {
+                    if (fieldNames.Count() < field.PossibleNames.Count())
+                    {
+                        fatalError(false);
+                    }
+                    return objectValue.ReadField(OutSnapshot, new VariableIdentifier(fieldNames));
+                }
+            }
         }
 
-        private void CheckVisibility(IEnumerable<TypeValue> types, VariableIdentifier field, bool isStatic)
+        private IEnumerable<string> CheckVisibility(IEnumerable<TypeValue> types, VariableIdentifier field, bool isStatic)
         {
+            HashSet<string> result = new HashSet<string>();
             var methodTypes = new List<TypeValue>();
             var snapshotEntry = OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName);
 
@@ -118,6 +137,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         methodTypes.Add(typeValue);
                     }
+                }
+            }
+            if (types.Count() == 0)
+            {
+                foreach (var f in field.PossibleNames)
+                {
+                    result.Add(f.Value);
                 }
             }
 
@@ -135,6 +161,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                 SetWarning("Accessing inaccessible field",
                                     AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                             }
+                            else
+                            {
+                                result.Add(name.Value);
+                            }
                         }
                         else
                         {
@@ -147,6 +177,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     {
                                         SetWarning("Accessing inaccessible field",
                                             AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
+                                    }
+                                    else
+                                    {
+                                        result.Add(name.Value);
                                     }
                                 }
                                 else if (visibility == Visibility.NOT_ACCESSIBLE)
@@ -177,12 +211,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                         SetWarning("Accessing inaccessible field",
                                             AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD);
                                     }
+                                    else
+                                    {
+                                        result.Add(name.Value);
+                                    }
+
+                                }
+                                else
+                                {
+                                    result.Add(name.Value);
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        result.Add(name.Value);
+                    }
                 }
             }
+            return result;
         }
 
         /// <inheritdoc />
@@ -1359,11 +1407,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
 
-                CheckVisibility(types, new VariableIdentifier(fieldNames), true);
-
-                var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
-                var storage = snapshotEntry.ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
-                return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames));
+                if (field.PossibleNames.Length == 0)
+                {
+                    var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
+                    var storage = snapshotEntry.ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
+                    return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(fieldNames));
+                }
+                else
+                {
+                    IEnumerable<string> newNames = CheckVisibility(types, new VariableIdentifier(fieldNames), true);
+                    if (newNames.Count() == 0)
+                    {
+                        return getStaticVariableSink();
+                    }
+                    
+                    if (newNames.Count() < fieldNames.Count)
+                    {
+                        fatalError(false);
+                    }
+                    var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
+                    var storage = snapshotEntry.ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
+                    return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(newNames));
+                }
             }
         }
 
@@ -1414,6 +1479,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <returns>Empty space in memory model.</returns>
         private ReadWriteSnapshotEntryBase getStaticVariableSink()
         {
+            fatalError(true);
             var snapshotEntry = OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
             snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
             return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
