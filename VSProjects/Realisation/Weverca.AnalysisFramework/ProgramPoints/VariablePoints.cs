@@ -175,6 +175,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             Variable = variable;
             VariableName = variableName;
+            ThisObj = thisObj;
         }
 
         protected override void flowThrough()
