@@ -65,6 +65,12 @@ namespace Weverca.Output.Output
         protected abstract void variable(string name);
 
         /// <summary>
+        /// Error
+        /// </summary>
+        /// <param name="name">Error text</param>
+        protected abstract void error(string error);
+
+        /// <summary>
         /// Force new line into output
         /// </summary>
         protected abstract void line();
@@ -145,6 +151,17 @@ namespace Weverca.Output.Output
         public void CommentLine(string text)
         {
             comment(text);
+            line();
+        }
+
+        /// <summary>
+        /// Print given text as error line
+        /// </summary>
+        /// <param name="text">Error text</param>
+        public void Error(string text)
+        {
+            error(text);
+            line(); 
             line();
         }
 

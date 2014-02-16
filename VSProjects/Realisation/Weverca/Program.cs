@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define TEST
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -116,6 +118,9 @@ namespace Weverca
                     var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
                     watch.Stop();
 
+
+
+#if TEST
                     // Build output
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
@@ -150,6 +155,26 @@ namespace Weverca
                     {
                         console.CommentLine(string.Format("Snapshot statistics are not available, because end point was not reached"));
                     }
+#else
+                    var console = new ConsoleOutput();
+                    console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+
+                    if (ppGraph.End.OutSet != null)
+                    {
+                        console.ProgramPointInfo("End point", ppGraph.End);
+                    }
+                    else
+                    {
+                        console.Error("End point was not reached");
+                    }
+                    console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+
+                    console.Warnings(AnalysisWarningHandler.GetWarnings());
+
+                    console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+                     
+
+#endif
                     Console.ReadKey();
                     Console.WriteLine();
                 }

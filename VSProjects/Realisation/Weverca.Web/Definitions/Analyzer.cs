@@ -21,7 +21,7 @@ namespace Weverca.Web.Definitions
             string fileName = @"\UserInput\userInput.php";
 
             SyntaxParser parser = InitializeParser(phpCode, fileName);
-            var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast);
+            var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast, new FileInfo(fileName));
 
             var result = new ResultModel(phpCode);
 
@@ -56,7 +56,7 @@ namespace Weverca.Web.Definitions
         static ProgramPointGraph Analyze(ControlFlowGraph.ControlFlowGraph entryMethod, string fileName)
         {
             FileInfo fileInfo = new FileInfo(fileName);
-            var analysis = new ForwardAnalysis(entryMethod, MemoryModels.MemoryModels.VirtualReferenceMM, fileInfo);
+            var analysis = new ForwardAnalysis(entryMethod, MemoryModels.MemoryModels.VirtualReferenceMM);
             analysis.Analyse();
             return analysis.ProgramPointGraph;
         }
@@ -81,7 +81,7 @@ namespace Weverca.Web.Definitions
                     try
                     {
                         MetricResult<bool> metricResult = new MetricResult<bool>();
-                        metricResult.Occurences = metricInfo.GetOccurances(indicator);
+                        metricResult.Occurences = metricInfo.GetOccurrences(indicator);
                         metricResult.Result = metricResult.Occurences.Count() > 0;
                         result.IndicatorMetricsResult.Add(indicator, metricResult);
                     }
@@ -100,7 +100,7 @@ namespace Weverca.Web.Definitions
                     {
                         MetricResult<int> metricResult = new MetricResult<int>();
                         metricResult.Result = metricInfo.GetQuantity(quantity);
-                        metricResult.Occurences = metricInfo.GetOccurances(quantity);
+                        metricResult.Occurences = metricInfo.GetOccurrences(quantity);
                         result.QuantityMetricsResult.Add(quantity, metricResult);
                     }
                     catch (Exception ex)
@@ -118,7 +118,7 @@ namespace Weverca.Web.Definitions
                     {
                         MetricResult<double> metricResult = new MetricResult<double>();
                         metricResult.Result = metricInfo.GetRating(rating);
-                        metricResult.Occurences = metricInfo.GetOccurances(rating);
+                        metricResult.Occurences = metricInfo.GetOccurrences(rating);
                         result.RatingMetricsResult.Add(rating, metricResult);
                     }
                     catch (Exception ex)

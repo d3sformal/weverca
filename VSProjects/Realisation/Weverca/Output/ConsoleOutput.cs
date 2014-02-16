@@ -13,6 +13,7 @@ namespace Weverca.Output
         static readonly ConsoleColor Hint = ConsoleColor.DarkCyan;
         static readonly ConsoleColor Variable = ConsoleColor.Yellow;
         static readonly ConsoleColor Delimiter = ConsoleColor.Red;
+        static readonly ConsoleColor Error = ConsoleColor.Red;
         static readonly ConsoleColor Comment = ConsoleColor.Green;
         static readonly int indentationLength = 4;
 
@@ -68,6 +69,12 @@ namespace Weverca.Output
             Console.WriteLine();
             needPrefix = true;
         }
+
+        protected override void error(string error)
+        {
+            print(Error, error);
+        }
+
         #endregion
 
         #region Private utilities
@@ -86,5 +93,7 @@ namespace Weverca.Output
 
         #endregion
 
+
+       
     }
 }
