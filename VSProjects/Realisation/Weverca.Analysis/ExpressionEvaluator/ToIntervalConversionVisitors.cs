@@ -27,12 +27,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
-            valueFactory.CreateFloatInterval(value.Start, value.End);
+            Result = valueFactory.CreateFloatInterval(value.Start, value.End);
         }
 
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
-            valueFactory.CreateFloatInterval(value.Start, value.End);
+            Result = valueFactory.CreateFloatInterval(value.Start, value.End);
         }
 
         public override void VisitValue(Value value)
@@ -58,7 +58,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
-            valueFactory.CreateIntegerInterval((int)value.Start, (int)value.End);
+            Result = valueFactory.CreateIntegerInterval((int)value.Start, (int)value.End);
         }
 
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
@@ -68,7 +68,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
-            valueFactory.CreateIntegerInterval((int)value.Start, (int)value.End);
+            Result = valueFactory.CreateIntegerInterval((int)value.Start, (int)value.End);
         }
 
         public override void VisitValue(Value value)
@@ -94,12 +94,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
-            valueFactory.CreateLongintInterval((long)value.Start, (long)value.End);
+            Result = valueFactory.CreateLongintInterval((long)value.Start, (long)value.End);
         }
 
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
-            valueFactory.CreateLongintInterval(value.Start, value.End);
+            Result = valueFactory.CreateLongintInterval(value.Start, value.End);
         }
 
         public override void VisitIntervalLongintValue(LongintIntervalValue value)

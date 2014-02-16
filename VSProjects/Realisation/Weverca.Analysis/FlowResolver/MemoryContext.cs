@@ -193,6 +193,12 @@ namespace Weverca.Analysis.FlowResolver
             }
             else if (newValue is IntervalValue)
             {
+                FloatIntervalValue interval = TypeConversion.ToFloatInterval(valueFactory, (IntervalValue)newValue);
+                if (interval != null)
+                {
+                    values.RemoveAll(a => ToRemove(a, interval));
+                }
+                
                 //if there is already a concrete value, there is nothing to add, because the present conrete value is more precise.
                 if (values.Any(a => a is ConcreteValue))
                 {
@@ -219,6 +225,16 @@ namespace Weverca.Analysis.FlowResolver
                 values.RemoveAll(a => a is AnyValue);
                 values.Add(newValue);
             }
+        }
+
+        bool ToRemove(Value value, FloatIntervalValue interval)
+        {
+            FloatValue floatValue = TypeConversion.ToFloat(valueFactory, value);
+            if (floatValue != null)
+            {
+                return floatValue.Value < interval.Start || floatValue.Value > interval.End;
+            }
+            return false;
         }
 
         Value IntersectIntervals(IntervalValue interval, IEnumerable<IntervalValue> intervals)

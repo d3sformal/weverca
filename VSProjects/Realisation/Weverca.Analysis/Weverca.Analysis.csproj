@@ -90,6 +90,7 @@
     <Compile Include="ExpressionEvaluator\PartialExpressionEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\StaticObjectVisitor.cs" />
     <Compile Include="ExpressionEvaluator\StringConverter.cs" />
+    <Compile Include="ExpressionEvaluator\ToFloatConversionVisitor.cs" />
     <Compile Include="ExpressionEvaluator\ToIntervalConversionVisitors.cs" />
     <Compile Include="ExpressionEvaluator\TypeConversion.cs" />
     <Compile Include="ExpressionEvaluator\UnaryOperationEvaluator.cs" />

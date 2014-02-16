@@ -827,6 +827,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return 0.0;
         }
 
+        /// <summary>
+        /// Converts a value to an equivalent native floating-point number if possible.
+        /// </summary>
+        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="value">The value to convert.</param>
+        /// <returns>correspnding <see cref="FloatValue"/> or <c>null</c> if conversion is not possible.</returns>
+        public static FloatValue ToFloat(FlowOutputSet outset, Value value)
+        {
+            ToFloatConversionVisitor visitor = new ToFloatConversionVisitor(outset);
+            value.Accept(visitor);
+            return visitor.Result;
+        }
+
         #endregion ToFloat
 
         #region ToString
