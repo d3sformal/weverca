@@ -175,6 +175,16 @@ namespace Weverca.Output.Output
         }
 
         /// <summary>
+        /// Print metric to output
+        /// </summary>
+        /// <param name="metric">metric</param>
+        public void Metric(string metric)
+        {
+            variableInfoLine(metric);
+            line();
+        }
+
+        /// <summary>
         /// Prints security warnings to output
         /// </summary>
         /// <param name="list">list of security warnings</param>

@@ -8,6 +8,10 @@ using System.Threading.Tasks;
 using Weverca.Analysis;
 using Weverca.Output;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.CodeMetrics;
+using Weverca.Parsers;
+using System.IO;
+using PHP.Core;
 
 namespace Weverca
 {
@@ -37,14 +41,16 @@ namespace Weverca
             {
                 Console.WriteLine("Missing argument");
                 Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa [-a SimpleAnalysis|WevercaAnalysis][-mm CopyMM|VrMM FILENAME] [FILENAME]...");
-                Console.WriteLine(@"  Static analysis");
+                Console.WriteLine(@"-sa [-a SimpleAnalysis|WevercaAnalysis][-mm CopyMM|VrMM] FILENAME] [FILENAME]...");
+                Console.WriteLine(@"-metrics FILENAME [FILENAME]...");
+                
+                /*Console.WriteLine(@"  Static analysis");
                 Console.WriteLine(@"-cmide [-options_cmide]");
                 Console.WriteLine(@"  Code metrics for IDE integration");
                 Console.WriteLine(@"  -cmide -constructs list_of_constructs_separated_by_space");
                 Console.WriteLine(@"    Constructs search");
                 Console.WriteLine(@"  -cmide -quantity");
-                Console.WriteLine(@"    Quantity and rating code metrics computation");
+                Console.WriteLine(@"    Quantity and rating code metrics computation");*/
                 Console.ReadKey();
                 return;
             }
@@ -55,12 +61,12 @@ namespace Weverca
                     int filesIndex = 1;
                     MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
                     Weverca.AnalysisFramework.UnitTest.Analyses analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
-                    if (args[filesIndex] == "-a")
+                    if (args.Length > filesIndex && args[filesIndex] == "-a")
                     {
                         if (args[filesIndex+1] == "SimpleAnalysis") analysis = Weverca.AnalysisFramework.UnitTest.Analyses.SimpleAnalysis;
                         filesIndex += 2;
                     }
-                    if (args.Length >= filesIndex && args[filesIndex] == "-mm")
+                    if (args.Length > filesIndex && args[filesIndex] == "-mm")
                     {
                         if (args[filesIndex+1] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
                         filesIndex += 2;
@@ -70,10 +76,15 @@ namespace Weverca
                     Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
                     RunStaticAnalysis(analysisFiles, analysis, memoryModel);
                     break;
-                case "-cmide":
+                /*case "-cmide":
                     var metricsArgs = new string[args.Length - 3];
                     Array.Copy(args, 2, metricsArgs, 0, args.Length - 3);
                     MetricsForIDEIntegration.Run(args[1], args[args.Length - 1], metricsArgs);
+                    break;*/
+                case "-metrics":
+                    var metricFileNames=new string[args.Length-1];
+                    Array.Copy(args, 1, metricFileNames, 0, args.Length - 1);
+                    RunMetrics(metricFileNames);
                     break;
                 default:
                     Console.WriteLine("Unknown option: \"{0}\"", args[0]);
@@ -188,5 +199,101 @@ namespace Weverca
                 }
             }
         }
+
+        private static void RunMetrics(string[] files)
+        {
+            Dictionary<ConstructIndicator, string> contructMetrics = new Dictionary<ConstructIndicator, string>();
+            contructMetrics.Add(ConstructIndicator.Autoload, "__autoload redeclaration presence or spl_autoload_register call");
+            contructMetrics.Add(ConstructIndicator.MagicMethods, "Magic function presence");
+            contructMetrics.Add(ConstructIndicator.ClassOrInterface, "Class construct presence");
+            contructMetrics.Add(ConstructIndicator.DynamicInclude, "Include based on dynamic variable presence");
+            contructMetrics.Add(ConstructIndicator.References, "Alias presence");
+            
+            contructMetrics.Add(ConstructIndicator.Session, "Session usage");
+            contructMetrics.Add(ConstructIndicator.InsideFunctionDeclaration, "Declaration of class/function inside another function presence");
+            contructMetrics.Add(ConstructIndicator.SuperGlobalVariable, "Super global variable usage");
+            contructMetrics.Add(ConstructIndicator.Eval, "Eval function usage");
+            contructMetrics.Add(ConstructIndicator.DynamicCall, "Dynamic call presence");
+            
+            contructMetrics.Add(ConstructIndicator.DynamicDereference, "Dynamic dereference presence");
+            contructMetrics.Add(ConstructIndicator.DuckTyping, "Duck Typing presence");
+            contructMetrics.Add(ConstructIndicator.PassingByReferenceAtCallSide, "Passing variable by reference at call side");
+            contructMetrics.Add(ConstructIndicator.MySql, "My SQL functions presence");
+            contructMetrics.Add(ConstructIndicator.ClassAlias, "Class alias construction presence");
+
+            Dictionary<Rating, string> ratingMetrics = new Dictionary<Rating, string>();
+            ratingMetrics.Add(Rating.ClassCoupling,"Class coupling");
+            ratingMetrics.Add(Rating.PhpFunctionsCoupling, "PHP standard functions coupling");
+
+            Dictionary<Quantity, string> quantityMetrics = new Dictionary<Quantity, string>();
+            quantityMetrics.Add(Quantity.MaxInheritanceDepth,"Maximum inheritance depth");
+            quantityMetrics.Add(Quantity.NumberOfLines,"Number of lines");
+            quantityMetrics.Add(Quantity.NumberOfSources,"Number of sources");
+            quantityMetrics.Add(Quantity.MaxMethodOverridingDepth,"Maximum method overriding depth");
+
+
+            var console = new ConsoleOutput();
+            foreach (string file in files)
+            {
+                console.CommentLine(string.Format("File path: {0}\n", file));
+                try
+                {
+                    string code;
+                    using (StreamReader reader = new StreamReader(file))
+                    {
+                        code = reader.ReadToEnd();
+                    }
+
+                    PhpSourceFile source_file = new PhpSourceFile(new FullPath(Path.GetDirectoryName(file)), new FullPath(file));
+                    var metrics = MetricInfo.FromParsers(true, new SyntaxParser(source_file, code));
+                    Console.WriteLine();
+                    console.CommentLine("Indicator Metrics");
+                    Console.WriteLine();
+                    foreach (ConstructIndicator value in ConstructIndicator.GetValues(typeof(ConstructIndicator)))
+                    {
+                        string result = contructMetrics[value] + " : ";
+                        if (metrics.HasIndicator(value))
+                        {
+                            result += "YES";
+                        }
+                        else 
+                        {
+                            result += "NO";
+                        }
+                        console.Metric(result);
+                    }
+                    Console.WriteLine();
+                    console.CommentLine("Rating Metrics");
+                    Console.WriteLine();
+                    foreach (Rating value in Rating.GetValues(typeof(Rating)))
+                    {
+                        if (value != Rating.Cyclomacity)
+                        {
+                            string result = ratingMetrics[value] + " : ";
+                            result+=metrics.GetRating(value);
+                            console.Metric(result);
+                        }
+                    }
+                    Console.WriteLine();
+                    console.CommentLine("Quantity Metrics");
+                    Console.WriteLine();
+                    foreach (Quantity value in Quantity.GetValues(typeof(Quantity)))
+                    {
+                        string result = quantityMetrics[value]+ " : ";
+                        result += metrics.GetQuantity(value);
+                        console.Metric(result);
+                        
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    console.Error(e.Message);
+                }
+            }
+            Console.ReadKey();
+            Console.WriteLine();
+        }
+        
     }
 }
