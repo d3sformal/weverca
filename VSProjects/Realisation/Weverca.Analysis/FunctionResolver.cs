@@ -843,30 +843,6 @@ namespace Weverca.Analysis
 
         }
 
-        private List<ObjectValue> resolveObjectsForMember(MemoryEntry entry)
-        {
-            var isPossibleNonObject = false;
-            var objectValues = resolveObjectsForMember(entry, out isPossibleNonObject);
-
-            if (isPossibleNonObject)
-            {
-                if (objectValues.Count >= 1)
-                {
-                    // TODO: This must be fatal error
-                    setWarning("Possible call to a member function on a non-object",
-                        AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
-                }
-                else
-                {
-                    // TODO: This must be fatal error
-                    setWarning("Call to a member function on a non-object",
-                        AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
-                }
-            }
-
-            return objectValues;
-        }
-
         private static List<ObjectValue> resolveObjectsForMember(MemoryEntry entry,
             out bool isPossibleNonObject)
         {
@@ -906,6 +882,11 @@ namespace Weverca.Analysis
             }
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
+            if (signature.FormalParams.Count != callPoint.Arguments.Count())
+            {
+                AnalysisWarningHandler.SetWarning(callInput,new AnalysisWarning(Flow.CurrentScript.FullName,"Wrong number of arguments",callPoint.Partial,AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+            }
+
             for (int i = 0; i < Math.Min(signature.FormalParams.Count, arguments.Count()); ++i)
             {
                 enumerator.MoveNext();
