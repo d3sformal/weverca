@@ -45,6 +45,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
     }
 
+    /// <summary>
+    /// Call representation. 
+    /// Represents all calls that can be made - it has an extension for each possible call. 
+    /// Its return value is obtained by merging of return values of all calls that can be made.
+    /// </summary>
     public abstract class RCallPoint : ValuePoint
     {
         /// <summary>
@@ -65,6 +70,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly ValuePoint ThisObj;
 
+        /// <summary>
+        /// Return value is obtained from call sink - it has return values of all calls that can be made merged.
+        /// </summary>
         public override ReadSnapshotEntryBase Value
         {
             get
