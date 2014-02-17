@@ -45,7 +45,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         #endregion
-        
+
         #region Expression points
 
         public virtual void VisitArray(ArrayExPoint p)
@@ -75,12 +75,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         public virtual void VisitInclude(IncludingExPoint p)
         {
-            VisitValue(p);
+            VisitRCall(p);
+        }
+
+        internal void VisitEval(EvalExPoint p)
+        {
+            VisitRCall(p);
         }
 
         public virtual void VisitNew(NewExPoint p)
         {
-            VisitValue(p);
+            VisitRCall(p);
         }
 
         public virtual void VisitInstanceOf(InstanceOfExPoint p)
@@ -105,6 +110,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
 
         public virtual void VisitClassConstPoint(ClassConstPoint p)
+        {
+            VisitValue(p);
+        }
+
+        internal void VisitConditional(ConditionalExPoint p)
         {
             VisitValue(p);
         }
@@ -250,7 +260,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         #endregion
 
         #region LValue points
-        
+
         public virtual void VisitStaticField(StaticFieldPoint p)
         {
             VisitLValue(p);
@@ -277,6 +287,5 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         #endregion
-
     }
 }

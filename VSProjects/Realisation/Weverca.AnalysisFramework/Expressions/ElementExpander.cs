@@ -110,6 +110,9 @@ namespace Weverca.AnalysisFramework.Expressions
                 if (!currentPoint.FlowChildren.Any() || _substitutions.ContainsKey(currentPoint))
                 {
                     var substitutions = substitute(currentPoint);
+                    if (substitutions.Length == 0)
+                        //substituted point has been removed
+                        continue;
 
                     //because of sharing points in some expressions - point is on flow path before current
                     lastPoint.AddFlowChild(substitutions[0]);
@@ -359,11 +362,23 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <inheritdoc />
         public override void VisitElement(LangElement element)
         {
-            throw new NotImplementedException("Element is not supported as statement");
+            throw new NotSupportedException("Element " + _statement + " is not supported as statement");
         }
 
         /// <inheritdoc />
         public override void VisitBinaryEx(BinaryEx x)
+        {
+            RValueResult(x);
+        }
+
+        /// <inheritdoc />
+        public override void VisitConditionalEx(ConditionalEx x)
+        {
+            RValueResult(x);
+        }
+
+        /// <inheritdoc />
+        public override void VisitEvalEx(EvalEx x)
         {
             RValueResult(x);
         }

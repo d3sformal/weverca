@@ -45,7 +45,8 @@ namespace Weverca.AnalysisFramework.Expressions
 
             el.VisitMe(this);
             //assert that result has been set
-            Debug.Assert(_resultPoint != null, "Visiting of rvalue element must have a result");
+            if (_resultPoint == null)
+                throw new NotSupportedException("Element " + el + " is not supported RValue");
 
             //empty result because of incorrect use
             var result = _resultPoint;
@@ -137,7 +138,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitElement(LangElement element)
         {
-            throw new NotSupportedException("Given element is not supported RValue");
+            //Unsupported elements are catched in Factory methods    
         }
 
         #region Literal visiting
@@ -282,6 +283,47 @@ namespace Weverca.AnalysisFramework.Expressions
 
         #region Expression visiting
 
+        public override void VisitConditionalEx(ConditionalEx x)
+        {
+            var conditionExpr = CreateRValue(x.CondExpr);
+            var trueExpr = CreateRValue(x.TrueExpr);
+            var falseExpr = CreateRValue(x.FalseExpr);
+
+            //create true branch
+            var trueAssumeCond = new AssumptionCondition(ConditionForm.All, x.CondExpr);
+            var trueAssume = new AssumePoint(trueAssumeCond, new[] { conditionExpr });
+            trueAssume.AddFlowChild(trueExpr);
+
+            //create false branch
+            var falseAssumeCond = new AssumptionCondition(ConditionForm.None, x.CondExpr);
+            var falseAssume = new AssumePoint(falseAssumeCond, new[] { conditionExpr });
+            falseAssume.AddFlowChild(falseExpr);
+
+            //connect condition
+            conditionExpr.AddFlowChild(trueAssume);
+            conditionExpr.AddFlowChild(falseAssume);
+
+            //create result
+            var expression = new ConditionalExPoint(x, conditionExpr, trueAssume, falseAssume);
+
+            //false expr is added when processing substitution
+            trueExpr.AddFlowChild(expression);
+
+            SubstituteByChain(conditionExpr, new ProgramPointBase[]{
+                conditionExpr,
+                trueAssume,
+                trueExpr,
+                falseAssume,
+                falseExpr,
+            });
+
+            //expr points are added with conditionExp
+            SubstituteByChain(falseExpr, new ProgramPointBase[0]);
+            SubstituteByChain(trueExpr, new ProgramPointBase[0]);
+
+            Result(expression);
+        }
+
         public override void VisitUnaryEx(UnaryEx x)
         {
             var operand = CreateRValue(x.Expr);
@@ -326,7 +368,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
                     shortendPath.AddFlowChild(expression);
                     //roperand is added when processing substitituion
-                    
+
                     break;
             }
 
@@ -475,6 +517,13 @@ namespace Weverca.AnalysisFramework.Expressions
             var possibleFiles = CreateRValue(x.Target);
 
             Result(new IncludingExPoint(x, possibleFiles));
+        }
+
+        public override void VisitEvalEx(EvalEx x)
+        {
+            var code = CreateRValue(x.Code);
+
+            Result(new EvalExPoint(x, code));
         }
 
         public override void VisitLambdaFunctionExpr(LambdaFunctionExpr x)

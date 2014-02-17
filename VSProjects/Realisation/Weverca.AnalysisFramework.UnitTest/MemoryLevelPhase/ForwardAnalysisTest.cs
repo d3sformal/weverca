@@ -1455,6 +1455,99 @@ $resA = $a;
  .MemoryModel(MemoryModels.MemoryModels.CopyMM);
 
 
+        readonly static TestCase TernaryOperator_CASE = @"
+
+function op1(){
+    global $test;
+    $test='op1';
+
+    return $test;
+}
+
+function op2(){
+    global $test;
+    $test='op2';
+
+    return $test;
+}
+
+$result1=true ? op1():op2();
+$global1=$test;
+
+$result2=false ? op1():op2();
+$global2=$test;
+
+$result3=$unknown ? op1():op2();
+$global3=$test;
+
+"
+            .AssertVariable("result1").HasValues("op1")
+            .AssertVariable("global1").HasValues("op1")
+
+            .AssertVariable("result2").HasValues("op2")
+            .AssertVariable("global2").HasValues("op2")
+
+            .AssertVariable("result3").HasValues("op1", "op2")
+            .AssertVariable("global3").HasValues("op1", "op2")
+            ;
+
+
+        readonly static TestCase EvalAssign_CASE = @"
+$result='init';
+eval('$result=""in eval""');
+
+"
+            .AssertVariable("result").HasValues("in eval")
+            ;
+
+
+        readonly static TestCase EvalReturn_CASE = @"
+$result=eval('return ""from eval""');
+"
+    .AssertVariable("result").HasValues("from eval")
+    ;
+
+
+        readonly static TestCase BranchedEvalAssign_CASE = @"
+$result='init';
+
+if($unknown){
+    $code='$result=""in eval1""';
+}else{
+    $code='$result=""in eval2""';
+}
+
+eval($code);
+
+"
+          .AssertVariable("result").HasValues("in eval1","in eval2")
+          ;
+
+        [TestMethod]
+        public void BranchedEvalAssign()
+        {
+            AnalysisTestUtils.RunTestCase(BranchedEvalAssign_CASE);
+        }
+
+
+        [TestMethod]
+        public void EvalAssign()
+        {
+            AnalysisTestUtils.RunTestCase(EvalAssign_CASE);
+        }
+
+        [TestMethod]
+        public void EvalReturn()
+        {
+            AnalysisTestUtils.RunTestCase(EvalReturn_CASE);
+        }
+
+        [TestMethod]
+        public void TernaryOperator()
+        {
+            AnalysisTestUtils.RunTestCase(TernaryOperator_CASE);
+        }
+
         [TestMethod]
         public void UndefinedAlias()
         {
@@ -1580,13 +1673,13 @@ $resA = $a;
         {
             AnalysisTestUtils.RunTestCase(IncompleteEvaluationDontDie_CASE);
         }
-        
+
         [TestMethod]
         public void IncompleteEvaluationDie()
         {
             AnalysisTestUtils.RunTestCase(IncompleteEvaluationDie_CASE);
         }
-        
+
         [TestMethod]
         public void IncompleteEvaluationMay()
         {

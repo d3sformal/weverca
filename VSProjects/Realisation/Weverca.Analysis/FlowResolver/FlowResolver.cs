@@ -365,6 +365,11 @@ namespace Weverca.Analysis.FlowResolver
         #endregion
 
         #endregion
+
+        public override void Eval(FlowController flow, MemoryEntry code)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 

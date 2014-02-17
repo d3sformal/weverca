@@ -69,6 +69,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             switch (callType)
             {
+                case ExtensionType.ParallelEval:
                 case ExtensionType.ParallelInclude:
                     //merging from includes behaves like usual 
                     //program points extend
@@ -181,6 +182,34 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var cfg = AnalysisTestUtils.CreateCFG(_includes[file], null);
                 var ppGraph = ProgramPointGraph.FromSource(cfg);
                 flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
+            }
+        }
+
+        public override void Eval(FlowController flow, MemoryEntry code)
+        {
+            //extend current program point as Eval
+
+            var codes = new HashSet<string>();
+            foreach (StringValue possibleFile in code.PossibleValues)
+            {
+                codes.Add(possibleFile.Value);
+            }
+
+            foreach (var branchKey in flow.ExtensionKeys)
+            {
+                if (!codes.Remove(branchKey as string))
+                {
+                    //this eval is now not resolved as possible eval branch
+                    flow.RemoveExtension(branchKey);
+                }
+            }
+
+            foreach (var sourceCode in codes)
+            {
+                //Create graph for every evaluated code - NOTE: we can share pp graphs
+                var cfg = AnalysisTestUtils.CreateCFG(sourceCode, null);
+                var ppGraph = ProgramPointGraph.FromSource(cfg);
+                flow.AddExtension(sourceCode, ppGraph, ExtensionType.ParallelEval);
             }
         }
 
@@ -429,5 +458,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         #endregion
+
+
     }
 }

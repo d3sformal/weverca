@@ -215,7 +215,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
             var value = Services.Evaluator.BinaryEx(leftValue,
                 Expression.PublicOperation, rightValue);
-   
+
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
@@ -227,6 +227,93 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitBinary(this);
+        }
+    }
+
+    /// <summary>
+    /// Conditional (ternary) expression representation
+    /// </summary>
+    public class ConditionalExPoint : ValuePoint
+    {
+        /// <summary>
+        /// Conditional expression
+        /// </summary>
+        public readonly ConditionalEx Expression;
+
+        /// <summary>
+        /// Operand with value for true condition
+        /// </summary>
+        public readonly ValuePoint TrueOperand;
+
+        /// <summary>
+        /// Operand with value for false condition
+        /// </summary>
+        public readonly ValuePoint FalseOperand;
+
+        /// <summary>
+        /// Condition determining wheter true, false or merge should be used
+        /// </summary>
+        public readonly ValuePoint Condition;
+
+        /// <summary>
+        /// Assume point for true operand
+        /// </summary>
+        private readonly AssumePoint _trueAssume;
+
+        /// <summary>
+        /// Assume point for false operand
+        /// </summary>
+        private readonly AssumePoint _falseAssume;
+
+        /// <inheritdoc />
+        public override LangElement Partial { get { return Expression; } }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryExPoint" /> class.
+        /// </summary>
+        /// <param name="expression">Conditional expression</param>
+        /// <param name="condition">Condition determining whether true or false, or merge will be used</param>
+        /// <param name="trueAssume">Assume point with true binary operand (has to be connected with operand)</param>
+        /// <param name="falseAssume">Assume point with false binary operand (has to be connected with operand)</param>
+        internal ConditionalExPoint(ConditionalEx expression, ValuePoint condition, AssumePoint trueAssume, AssumePoint falseAssume)
+        {
+            Expression = expression;
+            Condition = condition;
+            _trueAssume = trueAssume;
+            _falseAssume = falseAssume;
+
+            TrueOperand = (ValuePoint)_trueAssume.FlowChildren.First();
+            FalseOperand = (ValuePoint)_falseAssume.FlowChildren.First();
+        }
+
+        /// <inheritdoc />
+        protected override void flowThrough()
+        {
+            if (_trueAssume.Assumed && _falseAssume.Assumed)
+            {
+                //merge result from both branches
+                var trueVal = TrueOperand.Value.ReadMemory(OutSnapshot);
+                var falseVal = FalseOperand.Value.ReadMemory(OutSnapshot);
+
+                var merged = MemoryEntry.Merge(trueVal, falseVal);
+                Value = OutSnapshot.CreateSnapshotEntry(merged);
+            }
+            else if (_trueAssume.Assumed)
+            {
+                //only true value is used
+                Value = TrueOperand.Value;
+            }
+            else
+            {
+                //only false value is used
+                Value = FalseOperand.Value;
+            }
+        }
+
+        /// <inheritdoc />
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitConditional(this);
         }
     }
 
@@ -270,6 +357,49 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitInclude(this);
+        }
+    }
+
+    /// <summary>
+    /// Include expression representation
+    /// </summary>
+    public class EvalExPoint : RCallPoint
+    {
+        /// <summary>
+        /// Inclusion expression
+        /// </summary>
+        public readonly EvalEx Eval;
+
+        /// <summary>
+        /// Source code specified for eval expression
+        /// </summary>
+        public readonly ValuePoint EvalCode;
+
+        /// <inheritdoc />
+        public override LangElement Partial { get { return Eval; } }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EvalExPoint" /> class.
+        /// </summary>
+        /// <param name="eval">Eval expression</param>
+        /// <param name="evalCode">Program point with source code for evaluation</param>
+        internal EvalExPoint(EvalEx eval, ValuePoint evalCode)
+            : base(null, null, new ValuePoint[] { evalCode })
+        {
+            Eval = eval;
+            EvalCode = evalCode;
+        }
+
+        /// <inheritdoc />
+        protected override void flowThrough()
+        {
+            PrepareArguments();
+            Flow.FlowResolver.Eval(Flow, EvalCode.Value.ReadMemory(OutSnapshot));
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitEval(this);
         }
     }
 

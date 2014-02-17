@@ -44,7 +44,8 @@ namespace Weverca.AnalysisFramework.Expressions
 
             el.VisitMe(this);
             //assert that result has been set
-            Debug.Assert(_resultPoint != null);
+            if (_resultPoint == null)
+                throw new NotSupportedException("Element " + el + " is not supported LValue");
 
             //empty result because of incorrect use
             var result = _resultPoint;

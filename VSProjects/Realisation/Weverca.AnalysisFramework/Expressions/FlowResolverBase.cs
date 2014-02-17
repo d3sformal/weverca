@@ -66,6 +66,13 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="flow">Flow controller where include extensions can be stored</param>
         /// <param name="includeFile">File argument of include statement</param>        
         public abstract void Include(FlowController flow, MemoryEntry includeFile);
+        
+        /// <summary>
+        /// Is called for resolving eval expression. Should be resolved in similar way as include
+        /// </summary>
+        /// <param name="flow">Flow controller where eval extensions can be stored</param>
+        /// <param name="code">Evaluated code</param>
+        public abstract void Eval(FlowController flow, MemoryEntry code);
 
         /// <summary>
         /// Handler called before programPoint analysis starts 
@@ -75,6 +82,7 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             //By default there is nothing to do           
         }
+
 
     }
 }

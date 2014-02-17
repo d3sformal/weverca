@@ -22,6 +22,12 @@ namespace Weverca.AnalysisFramework
         ///     This dispatch type doesn't increase call stack depth
         /// </summary>
         ParallelInclude,
+        /// <summary>
+        /// There can be processed multiple includes processed at one level
+        /// NOTE:
+        ///     This dispatch type doesn't increase call stack depth
+        /// </summary>
+        ParallelEval,
     }
 
     public class FlowExtension
@@ -49,7 +55,7 @@ namespace Weverca.AnalysisFramework
             }
             else
             {
-                Sink = new ExtensionSinkPoint(this);                
+                Sink = new ExtensionSinkPoint(this);
             }
         }
 
@@ -82,7 +88,7 @@ namespace Weverca.AnalysisFramework
             }
 
             ExtensionPoint extension;
-            if(!_extensions.TryGetValue(key,out extension))
+            if (!_extensions.TryGetValue(key, out extension))
                 //there is nothing with given key - don't need to remove branch
                 return;
 
