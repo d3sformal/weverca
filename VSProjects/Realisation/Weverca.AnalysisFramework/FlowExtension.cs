@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         ParallelInclude,
         /// <summary>
-        /// There can be processed multiple includes processed at one level
+        /// There can be evaluated multiple sources processed at one level
         /// NOTE:
         ///     This dispatch type doesn't increase call stack depth
         /// </summary>
