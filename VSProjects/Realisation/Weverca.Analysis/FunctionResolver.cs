@@ -340,11 +340,14 @@ namespace Weverca.Analysis
             //include            
             if (extensionGraph.FunctionName == null)
             {
-                string thisFile = Flow.CurrentScript.FullName;
-                var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
-                IEnumerable<Value> files = includedFiles.ReadMemory(OutSnapshot).PossibleValues;
-                List<Value> result = IncreaseCalledInfo(thisFile, files);
-                includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
+                if (caller is IncludingExPoint)
+                {
+                    string thisFile = Flow.CurrentScript.FullName;
+                    var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
+                    IEnumerable<Value> files = includedFiles.ReadMemory(OutSnapshot).PossibleValues;
+                    List<Value> result = IncreaseCalledInfo(thisFile, files);
+                    includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
+                }
             }
             else
             {
@@ -625,12 +628,6 @@ namespace Weverca.Analysis
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
-            if (functions.Count == 0)
-            {
-                setWarning("Cannot resolve function call. Function doesn't exist.", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
-            }
-
-
             Dictionary<object, FunctionValue> newFunctions = new Dictionary<object, FunctionValue>();
             foreach (var entry in functions)
             {
@@ -738,7 +735,14 @@ namespace Weverca.Analysis
         /// <returns></returns>
         private List<QualifiedName> getSubroutineNames(MemoryEntry functionName)
         {
-            var names = GetFunctionNames(functionName, Flow);
+            bool isAlwaysConcrete=true;
+            var names = GetFunctionNames(functionName, Flow, out isAlwaysConcrete);
+
+            if (isAlwaysConcrete == false)
+            {
+                setWarning("Couldn't resolve all possible calls", AnalysisWarningCause.COULDNT_RESOLVE_ALL_CALLS);
+            }
+
             var qualifiedNames = new List<QualifiedName>(names.Count);
             foreach (var name in names)
             {
@@ -753,12 +757,11 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="functionName">Input memory entry</param>
         /// <param name="flow">FlowController</param>
+        /// <param name="isAlwaysConcrete">out parameter that indicates if function name contains some unresolvable value like anyvalue</param>
         /// <returns>List of string with possible function names</returns>
-        public static List<string> GetFunctionNames(MemoryEntry functionName, FlowController flow)
+        public static List<string> GetFunctionNames(MemoryEntry functionName, FlowController flow, out bool isAlwaysConcrete)
         {
             var stringConverter = new StringConverter(flow);
-            bool isAlwaysConcrete;
-            // TODO: What happen if isAlwaysConcrete is true?
             var stringEntry = stringConverter.Evaluate(functionName, out isAlwaysConcrete);
             var names = new List<string>();
 
@@ -781,19 +784,23 @@ namespace Weverca.Analysis
             {
                 var function = OutSet.CreateFunction(name.Name,
                     new NativeAnalyzer(nativeFunctionAnalyzer.GetInstance(name), Flow.CurrentPartial));
-                // TODO: Check whether the number of arguments match.
+                
                 result[function.DeclaringElement] = function;
             }
             else
             {
                 var functions = OutSet.ResolveFunction(name);
-                // TODO: Test if functions.Count > 0
-
+                
                 foreach (var function in functions)
                 {
-                    // TODO: Check whether the number of arguments match.
+                    
                     result[function.DeclaringElement] = function;
                 }
+            }
+
+            if (result.Count == 0)
+            {
+                setWarning("Function " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
             }
 
             return result;
@@ -809,6 +816,11 @@ namespace Weverca.Analysis
             {
                 result[method.DeclaringElement] = method;
             }
+            
+            if (result.Count == 0)
+            {
+                setWarning("Method " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
+            }
 
             return result;
         }
@@ -820,6 +832,11 @@ namespace Weverca.Analysis
             foreach (var method in methods)
             {
                 result[method.DeclaringElement] = method;
+            }
+
+            if (result.Count == 0)
+            {
+                setWarning("Method " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
             }
 
             return result;

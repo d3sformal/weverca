@@ -604,5 +604,30 @@ namespace Weverca.Analysis
         /// Warning, that occurs when function doesn't exist
         /// </summary>
         FUNCTION_DOESNT_EXISTS,
+
+        /// <summary>
+        /// Warning, that occurs cannot resolve all evals as eval variable analysis get anyvalue or anystring
+        /// </summary>
+        COULDNT_RESOLVE_ALL_EVALS,
+
+        /// <summary>
+        /// Warning, that occurs when parse exception occurs in include or eval
+        /// </summary>
+        PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL,
+
+        /// <summary>
+        /// Warning, that occurs when control flow graph building exception occurs in include or eval
+        /// </summary>
+        CFG_EXCEPTION_IN_INCLUDE_OR_EVAL,
+
+        /// <summary>
+        /// Warning, that occurs when analysis couldn't resolve all possible function calls
+        /// </summary>
+        COULDNT_RESOLVE_ALL_CALLS,
+
+        /// <summary>
+        /// Warning, that occurs when analysis couldn't resolve all possible includes
+        /// </summary>
+        COULDNT_RESOLVE_ALL_INCLUDES,
     }
 }

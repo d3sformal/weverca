@@ -1,4 +1,4 @@
-﻿#define TEST
+﻿//#define TEST
 
 using System;
 using System.Collections.Generic;
@@ -112,15 +112,12 @@ namespace Weverca
                     // TODO: This is for time consumption analyzing only
                     // Analyze twice - because of omitting .NET initialization we get better analysis time
                     //Analyzer.Run(fileInfo, memoryModel);
-
+                   
+#if TEST
                     // Process analysis
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
                     watch.Stop();
-
-
-
-#if TEST
                     // Build output
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
@@ -159,20 +156,31 @@ namespace Weverca
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
 
-                    if (ppGraph.End.OutSet != null)
+                    try
                     {
-                        console.ProgramPointInfo("End point", ppGraph.End);
+
+                        var watch = System.Diagnostics.Stopwatch.StartNew();
+                        var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
+                        watch.Stop();
+
+                        if (ppGraph.End.OutSet != null)
+                        {
+                            console.ProgramPointInfo("End point", ppGraph.End);
+                        }
+                        else
+                        {
+                            console.Error("End point was not reached");
+                        }
+                        console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+
+                        console.Warnings(AnalysisWarningHandler.GetWarnings());
+
+                        console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
                     }
-                    else
+                    catch (Exception e)
                     {
-                        console.Error("End point was not reached");
+                        console.Error(e.Message);
                     }
-                    console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
-
-                    console.Warnings(AnalysisWarningHandler.GetWarnings());
-
-                    console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
-                     
 
 #endif
                     Console.ReadKey();

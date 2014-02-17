@@ -102,6 +102,7 @@ namespace Weverca.ControlFlowGraph
             return new ControlFlowGraph(parser.Ast, new FileInfo(fileName));
         }
 
+
         /// <summary>
         /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
         /// </summary>

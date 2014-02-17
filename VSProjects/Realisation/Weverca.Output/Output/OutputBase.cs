@@ -67,7 +67,7 @@ namespace Weverca.Output.Output
         /// <summary>
         /// Error
         /// </summary>
-        /// <param name="name">Error text</param>
+        /// <param name="error">Error text</param>
         protected abstract void error(string error);
 
         /// <summary>

@@ -135,6 +135,9 @@ namespace Weverca.Output.GraphWalking
                     case ExtensionType.ParallelInclude:
                         visitPoint(branch.Graph.Start, pointsToVisit, visitedPoints);
                         break;
+                    case ExtensionType.ParallelEval:
+                        visitPoint(branch.Graph.Start, pointsToVisit, visitedPoints);
+                        break;
                     default:
                         throw new NotImplementedException("Walking of this extension type is not implemented yet");
                 }

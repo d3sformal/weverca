@@ -11,6 +11,7 @@ using PHP.Core;
 using PHP.Core.AST;
 using System.Collections.ObjectModel;
 using PHP.Core.Reflection;
+using Weverca.Analysis.ExpressionEvaluator;
 
 namespace Weverca.Analysis.FlowResolver
 {
@@ -60,8 +61,20 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="includeFile">File argument of include statement</param>
         public override void Include(FlowController flow, MemoryEntry includeFile)
         {
+            if (FlagsHandler.IsDirty(includeFile.PossibleValues, FlagType.FilePathDirty))
+            { 
+                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentScript.FullName,flow.CurrentPartial,FlagType.FilePathDirty));
+            }
+
+            bool isAlwaysConcrete = true;
             //extend current program point as Include
-            List<string> files = FunctionResolver.GetFunctionNames(includeFile, flow);
+            List<string> files = FunctionResolver.GetFunctionNames(includeFile, flow, out isAlwaysConcrete);
+
+            if (isAlwaysConcrete == false)
+            {
+                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Couldn't resolve all possible includes",flow.CurrentPartial, AnalysisWarningCause.COULDNT_RESOLVE_ALL_INCLUDES));
+            }
+
 
             IncludingEx includeExpression = flow.CurrentPartial as IncludingEx;
 
@@ -74,7 +87,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
             }
 
-
+            int numberOfWarnings = 0;
             foreach (var file in files)
             {
                 var fileInfo = findFile(flow, file);
@@ -82,6 +95,7 @@ namespace Weverca.Analysis.FlowResolver
                 if (fileInfo == null)
                 {
                     AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
+                    numberOfWarnings++;
                     continue;
                 }
 
@@ -110,8 +124,21 @@ namespace Weverca.Analysis.FlowResolver
                             //set graph sharing for this function
                             if (!sharedProgramPoints.ContainsKey(fileName))
                             {
-                                //create single graph instance
-                                sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo));
+                                try
+                                {
+                                    //create single graph instance
+                                    sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo));
+                                }
+                                catch (ControlFlowGraph.ControlFlowException)
+                                {
+                                    numberOfWarnings++;
+                                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                                }
+                                catch (Parsers.ParserException)
+                                {
+                                    numberOfWarnings++;
+                                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                                }
                             }
 
                             //get shared instance of program point graph
@@ -125,11 +152,38 @@ namespace Weverca.Analysis.FlowResolver
 
                     }
                 }
-                //Create graph for every include - NOTE: we can share pp graphs
-                var cfg = ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo);
-                var ppGraph = ProgramPointGraph.FromSource(cfg);
-                flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
+
+                try
+                {
+                    //Create graph for every include - NOTE: we can share pp graphs
+                    var cfg = ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo);
+                    var ppGraph = ProgramPointGraph.FromSource(cfg);
+                    flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
+                }
+                catch (ControlFlowGraph.ControlFlowException)
+                {
+                    numberOfWarnings++;
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                }
+                catch (Parsers.ParserException)
+                {
+                    numberOfWarnings++;
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                }
             }
+
+            if (numberOfWarnings > 0 && (includeExpression.InclusionType == InclusionTypes.Require || includeExpression.InclusionType == InclusionTypes.RequireOnce))
+            {
+                if (numberOfWarnings == files.Count && isAlwaysConcrete == true)
+                {
+                    fatalError(flow, true);
+                }
+                else
+                {
+                    fatalError(flow, false);
+                }
+            }
+
         }
 
         /// <summary>
@@ -364,12 +418,79 @@ namespace Weverca.Analysis.FlowResolver
         }
         #endregion
 
-        #endregion
+        
 
+        /// <inheritdoc />
         public override void Eval(FlowController flow, MemoryEntry code)
         {
-            throw new NotImplementedException();
+            var flags=FlagsHandler.GetFlags(code.PossibleValues);
+            if (flags.isDirty(FlagType.FilePathDirty) || flags.isDirty(FlagType.SQLDirty) || flags.isDirty(FlagType.FilePathDirty))
+            {
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(flow.CurrentScript.FullName,"Eval shoudn't contain anything from user input", flow.CurrentPartial, FlagType.HTMLDirty));
+            }
+
+            StringConverter converter = new StringConverter();
+            converter.SetContext(flow);
+
+            bool isAllwasConcrete = true;
+            var codes = new HashSet<string>();
+            foreach (StringValue possibleFile in converter.Evaluate(code, out isAllwasConcrete))
+            {
+                codes.Add(string.Format("<? {0}; ?>",possibleFile.Value));
+            }
+
+            if (isAllwasConcrete == false)
+            { 
+                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Couldn't resolve all poosible evals",flow.CurrentPartial,AnalysisWarningCause.COULDNT_RESOLVE_ALL_EVALS));
+            }
+
+            foreach (var branchKey in flow.ExtensionKeys)
+            {
+                if(branchKey is string)
+                {
+                    if (!codes.Remove(branchKey as string))
+                    {
+                        //this eval is now not resolved as possible eval branch
+                        flow.RemoveExtension(branchKey);
+                    }
+                }
+            }
+            int numberOfWarnings = 0;
+            foreach (var sourceCode in codes)
+            {
+                try
+                {
+                    var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(sourceCode, flow.CurrentScript.FullName);
+                    var ppGraph = ProgramPointGraph.FromSource(cfg);
+                    flow.AddExtension(sourceCode, ppGraph, ExtensionType.ParallelEval);
+                }
+                catch (ControlFlowGraph.ControlFlowException)
+                {
+                    numberOfWarnings++;
+                    AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Control flow graph creation error",flow.CurrentPartial,AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                }
+                catch(Parsers.ParserException)
+                {
+                    numberOfWarnings++;
+                    AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Parser error",flow.CurrentPartial,AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                }
+            }
+            
+            if (numberOfWarnings > 0)
+            {
+                if (numberOfWarnings == codes.Count && isAllwasConcrete==true)
+                {
+                    fatalError(flow,true);
+                }
+                else
+                {
+                    fatalError(flow, false);
+                }
+            }
+
         }
+
+        #endregion
     }
 
 
