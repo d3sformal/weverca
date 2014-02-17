@@ -221,7 +221,7 @@ namespace Weverca
             
             contructMetrics.Add(ConstructIndicator.DynamicDereference, "Dynamic dereference presence");
             contructMetrics.Add(ConstructIndicator.DuckTyping, "Duck Typing presence");
-            contructMetrics.Add(ConstructIndicator.PassingByReferenceAtCallSide, "Passing variable by reference at call side");
+            contructMetrics.Add(ConstructIndicator.PassingByReferenceAtCallSide, "Passing variable by reference at call site");
             contructMetrics.Add(ConstructIndicator.MySql, "My SQL functions presence");
             contructMetrics.Add(ConstructIndicator.ClassAlias, "Class alias construction presence");
 
