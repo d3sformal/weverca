@@ -404,9 +404,11 @@ namespace Weverca.Analysis
                 OutSet.FetchFromGlobal(new VariableName("_ENV"));
 
                 FunctionValue thisFunction = OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
-                List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
-                OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
-
+                if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
+                {
+                    List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
+                    OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
+                }
                 OutSet.GetLocalControlVariable(new VariableName("$currentScript")).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
         }
@@ -686,12 +688,15 @@ namespace Weverca.Analysis
                 }
             }
             int max = 0;
-            foreach (var value in OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues)
+            if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot))
             {
-                InfoValue<NumberOfCalledFunctions<FunctionValue>> info = value as InfoValue<NumberOfCalledFunctions<FunctionValue>>;
-                if (info != null && info.Data.Function.Equals(function))
+                foreach (var value in OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues)
                 {
-                    max = Math.Max(max, info.Data.TimesCalled);
+                    InfoValue<NumberOfCalledFunctions<FunctionValue>> info = value as InfoValue<NumberOfCalledFunctions<FunctionValue>>;
+                    if (info != null && info.Data.Function.Equals(function))
+                    {
+                        max = Math.Max(max, info.Data.TimesCalled);
+                    }
                 }
             }
             if (max >= 2)
