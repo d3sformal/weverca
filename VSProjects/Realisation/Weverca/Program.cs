@@ -41,7 +41,7 @@ namespace Weverca
             {
                 Console.WriteLine("Missing argument");
                 Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa [-a SimpleAnalysis|WevercaAnalysis][-mm CopyMM|VrMM] FILENAME] [FILENAME]...");
+                Console.WriteLine(@"-sa [-a SimpleAnalysis|WevercaAnalysis][-mm CopyMM|VrMM] FILENAME [FILENAME]...");
                 Console.WriteLine(@"-metrics FILENAME [FILENAME]...");
                 
                 /*Console.WriteLine(@"  Static analysis");
@@ -61,17 +61,22 @@ namespace Weverca
                     int filesIndex = 1;
                     MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
                     Weverca.AnalysisFramework.UnitTest.Analyses analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
-                    if (args.Length > filesIndex && args[filesIndex] == "-a")
+                    if (args.Length > filesIndex+1 && args[filesIndex] == "-a")
                     {
                         if (args[filesIndex+1] == "SimpleAnalysis") analysis = Weverca.AnalysisFramework.UnitTest.Analyses.SimpleAnalysis;
                         filesIndex += 2;
                     }
-                    if (args.Length > filesIndex && args[filesIndex] == "-mm")
+                    if (args.Length > filesIndex+1 && args[filesIndex] == "-mm")
                     {
                         if (args[filesIndex+1] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
                         filesIndex += 2;
                     }
 
+                    if (args.Length <= filesIndex)
+                    {
+                        Console.WriteLine("file name missing");
+                        break;
+                    }
                     var analysisFiles = new string[args.Length - filesIndex];
                     Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
                     RunStaticAnalysis(analysisFiles, analysis, memoryModel);
@@ -106,14 +111,12 @@ namespace Weverca
                 if (filesInfo == null)
                 {
                     Console.WriteLine("Path \"{0}\" cannot be recognized", argument);
-                    Console.ReadKey();
-                    Console.WriteLine();
+                    Console.WriteLine(); 
                     continue;
                 }
                 else if (filesInfo.Length <= 0)
                 {
                     Console.WriteLine("Path pattern \"{0}\" does not match any file", argument);
-                    Console.ReadKey();
                     Console.WriteLine();
                     continue;
                 }
@@ -194,9 +197,10 @@ namespace Weverca
                     }
 
 #endif
-                    Console.ReadKey();
-                    Console.WriteLine();
+                   
                 }
+                Console.ReadKey();
+                Console.WriteLine();
             }
         }
 
