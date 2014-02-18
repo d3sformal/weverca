@@ -235,11 +235,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
 
-        private void processField(PathSegment segment, MemoryIndex parentIndex, ProcessValueAsLocationVisitor visitor, bool isMust)
+        private void processField(PathSegment segment, MemoryIndex parentIndex, FieldLocationVisitor visitor, bool isMust)
         {
             bool processOtherValues = false;
             MemoryEntry entry;
-            if (snapshot.Data.TryGetMemoryEntry(parentIndex, out entry))
+            if (snapshot.Structure.TryGetMemoryEntry(parentIndex, out entry))
             {
                 ObjectValueContainer objects = snapshot.Structure.GetObjects(parentIndex);
                 if (objects.Count > 0)
@@ -270,9 +270,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
 
                 visitor.ProcessValues(parentIndex, entry.PossibleValues, isMust);
-                if (visitor.ContainsUndefined)
+                ReadFieldVisitor valueVisitor = visitor.LastValueVisitor;
+                bool removeUndefined = isMust;
+
+                if (valueVisitor.ContainsDefinedValue || valueVisitor.ContainsAnyValue)
                 {
-                    ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust);
+                    isMust = false;
+                }
+
+                if (valueVisitor.ContainsUndefinedValue && snapshot.CurrentMode == SnapshotMode.MemoryLevel)
+                {
+                    ObjectValue objectValue = snapshot.CreateObject(parentIndex, isMust, removeUndefined);
                 }
             }
 
@@ -294,7 +302,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        private void processIndex(PathSegment segment, MemoryIndex parentIndex, ProcessValueAsLocationVisitor visitor, bool isMust)
+        private void processIndex(PathSegment segment, MemoryIndex parentIndex, IndexLocationVisitor visitor, bool isMust)
         {
             AssociativeArray arrayValue = null;
             bool processOtherValues = false;
@@ -319,19 +327,30 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 entry = snapshot.Data.EmptyEntry;
                 processOtherValues = true;
+                snapshot.Structure.TryGetArray(parentIndex, out arrayValue);
             }
 
             if (processOtherValues)
             {
-                if (entry.Count > 1)
+                visitor.ProcessValues(parentIndex, entry.PossibleValues, isMust);
+                ReadIndexVisitor valueVisitor = visitor.LastValueVisitor;
+                bool removeUndefined = isMust;
+
+                if (valueVisitor.ContainsDefinedValue || valueVisitor.ContainsAnyValue)
                 {
                     isMust = false;
                 }
 
-                visitor.ProcessValues(parentIndex, entry.PossibleValues, isMust);
-                if (visitor.ContainsUndefined && arrayValue == null)
+                if (valueVisitor.ContainsUndefinedValue)
                 {
-                    arrayValue = snapshot.CreateArray(parentIndex, isMust);
+                    if (arrayValue == null)
+                    {
+                        arrayValue = snapshot.CreateArray(parentIndex, isMust, removeUndefined);
+                    }
+                    else if (removeUndefined)
+                    {
+                        snapshot.Structure.Data.RemoveUndefined(parentIndex);
+                    }
                 }
             }
 
@@ -501,6 +520,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             HashSet<CollectedLocation> mustLocationProcess;
             HashSet<CollectedLocation> mayLocationProcess;
 
+            public ReadIndexVisitor LastValueVisitor { get; private set; }
+
             public IndexLocationVisitor(IndexPathSegment indexSegment, MemoryAssistantBase assistant, HashSet<CollectedLocation> mustLocationProcess, HashSet<CollectedLocation> mayLocationProcess)
                 : base(assistant)
             {
@@ -517,10 +538,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     targetSet = mustLocationProcess;
                 }
 
-                ReadIndexVisitor visitor = new ReadIndexVisitor(parentIndex, indexSegment, targetSet);
-                visitor.VisitValues(values);
-
-                ContainsUndefined = visitor.ContainsUndefined;
+                LastValueVisitor = new ReadIndexVisitor(parentIndex, indexSegment, targetSet);
+                LastValueVisitor.VisitValues(values);
             }
         }
 
@@ -529,6 +548,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             FieldPathSegment fieldSegment;
             HashSet<CollectedLocation> mustLocationProcess;
             HashSet<CollectedLocation> mayLocationProcess;
+
+            public ReadFieldVisitor LastValueVisitor { get; private set; }
 
             public FieldLocationVisitor(FieldPathSegment fieldSegment, MemoryAssistantBase assistant, HashSet<CollectedLocation> mustLocationProcess, HashSet<CollectedLocation> mayLocationProcess)
                 : base(assistant)
@@ -546,10 +567,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     targetSet = mustLocationProcess;
                 }
 
-                ReadFieldVisitor visitor = new ReadFieldVisitor(parentIndex, fieldSegment, targetSet);
-                visitor.VisitValues(values);
-
-                ContainsUndefined = visitor.ContainsUndefined;
+                LastValueVisitor = new ReadFieldVisitor(parentIndex, fieldSegment, targetSet);
+                LastValueVisitor.VisitValues(values);
             }
         }
     }

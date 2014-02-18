@@ -363,10 +363,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    return !Structure.DataEquals(oldStructure);
+                    return !Structure.DataEqualsAndSimplify(oldStructure, simplifyLimit, Assistant);
 
                 case SnapshotMode.InfoLevel:
-                    return !Infos.DataEquals(oldInfos);
+                    return !Infos.DataEqualsAndSimplify(oldInfos, simplifyLimit, Assistant);
 
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
@@ -376,7 +376,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override bool widenAndCommitTransaction(int simplifyLimit)
         {
             Logger.append(this, "Commit and widen");
-            bool result = !Structure.WidenNotEqual(oldStructure, Assistant);
+            bool result = !Structure.WidenNotEqual(oldStructure, simplifyLimit, Assistant);
             Logger.appendToSameLine(" " + result);
             Logger.append(this);
 
@@ -924,7 +924,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="isMust">if set to <c>true</c> object is must and values in parent indexes are removed.</param>
         /// <returns></returns>
-        internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust)
+        internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust, bool removeUndefined = false)
         {
             ObjectValue value = Assistant.CreateImplicitObject();
 
@@ -937,14 +937,19 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 MemoryEntry oldEntry;
 
-                List<Value> values;
+                HashSet<Value> values;
                 if (Structure.TryGetMemoryEntry(parentIndex, out oldEntry))
                 {
-                    values = new List<Value>(oldEntry.PossibleValues);
+                    values = new HashSet<Value>(oldEntry.PossibleValues);
+
+                    if (removeUndefined)
+                    {
+                        values.Remove(this.UndefinedValue);
+                    }
                 }
                 else
                 {
-                    values = new List<Value>();
+                    values = new HashSet<Value>();
                 }
 
                 values.Add(value);
@@ -1084,7 +1089,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="isMust">if set to <c>true</c> is must and values in parent indexes are removed.</param>
         /// <returns>Memory index of newly created array index.</returns>
-        internal AssociativeArray CreateArray(MemoryIndex parentIndex, bool isMust)
+        internal AssociativeArray CreateArray(MemoryIndex parentIndex, bool isMust, bool removeUndefined = false)
         {
             AssociativeArray value = CreateArray(parentIndex);
 
@@ -1099,15 +1104,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                List<Value> values;
+                HashSet<Value> values;
                 MemoryEntry oldEntry;
                 if (Structure.TryGetMemoryEntry(parentIndex, out oldEntry))
                 {
-                    values = new List<Value>(oldEntry.PossibleValues);
+                    values = new HashSet<Value>(oldEntry.PossibleValues);
                 }
                 else
                 {
-                    values = new List<Value>();
+                    values = new HashSet<Value>();
+                }
+
+                if (removeUndefined)
+                {
+                    values.Remove(this.UndefinedValue);
                 }
 
                 values.Add(value);

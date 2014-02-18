@@ -9,8 +9,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     abstract class ProcessValueAsLocationVisitor : ICollectedLocationVisitor
     {
-        public bool ContainsUndefined { get; protected set; }
-
         public bool IsMust { get; set; }
 
         MemoryAssistantBase assistant;
@@ -29,7 +27,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public void VisitObjectAnyValueLocation(ObjectAnyValueLocation location)
         {
             IEnumerable<Value> values = location.ReadValues(assistant);
-            ProcessValues(null, values, IsMust);
+            ProcessValues(location.ContainingIndex, values, IsMust);
         }
 
         public void VisitArrayValueLocation(ArrayValueLocation location)
@@ -40,7 +38,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public void VisitArrayAnyValueLocation(ArrayAnyValueLocation location)
         {
             IEnumerable<Value> values = location.ReadValues(assistant);
-            ProcessValues(null, values, IsMust);
+            ProcessValues(location.ContainingIndex, values, IsMust);
         }
 
         public void VisitArrayStringValueLocation(ArrayStringValueLocation location)
@@ -56,6 +54,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         public void VisitObjectUndefinedValueLocation(ObjectUndefinedValueLocation location)
+        {
+            IEnumerable<Value> values = location.ReadValues(assistant);
+            ProcessValues(null, values, IsMust);
+        }
+
+
+        public void VisitInfoValueLocation(InfoValueLocation location)
+        {
+            IEnumerable<Value> values = location.ReadValues(assistant);
+            ProcessValues(location.ContainingIndex, values, IsMust);
+        }
+
+
+        public void VisitAnyStringValueLocation(AnyStringValueLocation location)
         {
             IEnumerable<Value> values = location.ReadValues(assistant);
             ProcessValues(null, values, IsMust);

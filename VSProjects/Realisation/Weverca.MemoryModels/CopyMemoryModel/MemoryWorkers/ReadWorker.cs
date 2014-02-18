@@ -42,12 +42,89 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     HashSetTools.AddAll(values, entry.PossibleValues);
                 }
 
+                InfoLocationVisitor visitor = new InfoLocationVisitor(snapshot);
                 foreach (CollectedLocation location in collector.MustLocation)
                 {
-                    HashSetTools.AddAll(values, location.ReadValues(snapshot.Assistant));
+                    if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
+                    {
+                        HashSetTools.AddAll(values, location.ReadValues(snapshot.Assistant));
+                    }
+                    else
+                    {
+                        location.Accept(visitor);
+                        HashSetTools.AddAll(values, visitor.Value);
+                    }
                 }
 
                 return new MemoryEntry(values);
+            }
+
+        }
+
+        class InfoLocationVisitor : ICollectedLocationVisitor
+        {
+            public IEnumerable<Value> Value { get; private set; }
+
+            Snapshot snapshot;
+            public InfoLocationVisitor(Snapshot snapshot)
+            {
+                this.snapshot = snapshot;
+            }
+
+            public void VisitObjectValueLocation(ObjectValueLocation location)
+            {
+            }
+
+            public void VisitObjectAnyValueLocation(ObjectAnyValueLocation location)
+            {
+                read(location.ContainingIndex);
+            }
+
+            public void VisitArrayValueLocation(ArrayValueLocation location)
+            {
+                read(location.ContainingIndex);
+            }
+
+            public void VisitArrayAnyValueLocation(ArrayAnyValueLocation location)
+            {
+                read(location.ContainingIndex);
+            }
+
+            public void VisitArrayStringValueLocation(ArrayStringValueLocation location)
+            {
+                read(location.ContainingIndex);
+            }
+
+            public void VisitArrayUndefinedValueLocation(ArrayUndefinedValueLocation location)
+            {
+            }
+
+            public void VisitObjectUndefinedValueLocation(ObjectUndefinedValueLocation location)
+            {
+            }
+
+
+            public void VisitInfoValueLocation(InfoValueLocation location)
+            {
+            }
+
+
+            public void VisitAnyStringValueLocation(AnyStringValueLocation location)
+            {
+                read(location.ContainingIndex);
+            }
+
+            private void read(MemoryIndex index)
+            {
+                MemoryEntry entry;
+                if (snapshot.Structure.TryGetMemoryEntry(index, out entry))
+                {
+                    Value = entry.PossibleValues;
+                }
+                else
+                {
+                    Value = new Value[] { };
+                }
             }
 
         }

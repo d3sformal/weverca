@@ -205,6 +205,15 @@ $d = $y + $y;
  .AssertVariable("d").HasTaintStatus(false)
  .Analysis(Analyses.WevercaAnalysisTest);
 
+        readonly static TestCase SimpleTaintAnalysisWriteCharacter_CASE = @"
+$x = $_POST['id'][0];
+$str = ""test"";
+$str[0] = $x;
+".AssertVariable("_POST").HasTaintStatus(true)
+            .AssertVariable("x").HasTaintStatus(true)
+            .AssertVariable("str").HasTaintStatus(true)
+            .Analysis(Analyses.WevercaAnalysisTest);
+
         #endregion Taint analysis
 
         [TestMethod]
@@ -283,6 +292,12 @@ $d = $y + $y;
         public void SimpleTaintAnalysisExpressions()
         {
             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(SimpleTaintAnalysisExpressions_CASE);
+        }
+
+        [TestMethod]
+        public void SimpleTaintAnalysisWriteCharacter()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(SimpleTaintAnalysisWriteCharacter_CASE);
         }
     }
 }

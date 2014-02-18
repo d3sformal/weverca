@@ -159,70 +159,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return container;
         }
 
-        public bool WidenNotEqual(SnapshotStructure compare, MemoryAssistantBase assistant)
+        public bool WidenNotEqual(SnapshotStructure compare, int simplifyLimit, MemoryAssistantBase assistant)
         {
             lockedTest();
 
             bool funcCount = this.FunctionDecl.Count == compare.FunctionDecl.Count;
             bool classCount = this.ClassDecl.Count == compare.ClassDecl.Count;
 
-            if (!widenNotEqualData(compare, assistant))
+            if (!widenNotEqualData(compare, simplifyLimit, assistant))
             {
                 return false;
             }
 
-            if (classCount && funcCount)
-            {
-                if (!this.FunctionDecl.DataEquals(compare.FunctionDecl))
-                {
-                    return false;
-                }
-
-                if (!this.ClassDecl.DataEquals(compare.ClassDecl))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
+            return compareDeclarations(compare);
         }
 
-        public bool DataEquals(SnapshotStructure oldValue)
-        {
-            bool funcCount = this.FunctionDecl.Count == oldValue.FunctionDecl.Count;
-            bool classCount = this.ClassDecl.Count == oldValue.ClassDecl.Count;
-            bool indexCount = this.IndexData.Count == oldValue.IndexData.Count;
-
-            if (!compareData(oldValue))
-            {
-                return false;
-            }
-
-            if (classCount && funcCount)
-            {
-                if (!this.FunctionDecl.DataEquals(oldValue.FunctionDecl))
-                {
-                    return false;
-                }
-
-                if (!this.ClassDecl.DataEquals(oldValue.ClassDecl))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool widenNotEqualData(SnapshotStructure oldValue, MemoryAssistantBase assistant)
+        internal bool widenNotEqualData(SnapshotStructure oldValue, int simplifyLimit, MemoryAssistantBase assistant)
         {
             HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
             HashSetTools.AddAll(indexes, this.IndexData.Keys);
@@ -247,13 +199,60 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                 Data.DataWiden(oldValue.Data, index, assistant);
 
-                if (!Data.DataEquals(oldValue.Data, index))
+                if (!Data.DataEqualsAndSimplify(oldValue.Data, index, simplifyLimit, assistant))
                 {
                     areEqual = false;
                 }
             }
 
             return areEqual;
+        }
+
+        public bool DataEquals(SnapshotStructure oldValue)
+        {
+            if (!compareData(oldValue))
+            {
+                return false;
+            }
+
+            return compareDeclarations(oldValue);
+        }
+
+        private bool compareDeclarations(SnapshotStructure oldValue)
+        {
+            bool funcCount = this.FunctionDecl.Count == oldValue.FunctionDecl.Count;
+            bool classCount = this.ClassDecl.Count == oldValue.ClassDecl.Count;
+
+            if (classCount && funcCount)
+            {
+                if (!this.FunctionDecl.DataEquals(oldValue.FunctionDecl))
+                {
+                    return false;
+                }
+
+                if (!this.ClassDecl.DataEquals(oldValue.ClassDecl))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+
+
+        internal bool DataEqualsAndSimplify(SnapshotStructure oldValue, int simplifyLimit, MemoryAssistantBase assistant)
+        {
+            if (!compareDataAndSimplify(oldValue, simplifyLimit, assistant))
+            {
+                return false;
+            }
+
+            return compareDeclarations(oldValue);
         }
 
         private bool compareData(SnapshotStructure oldValue)
@@ -295,6 +294,49 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return true;
+        }
+
+        private bool compareDataAndSimplify(SnapshotStructure oldValue, int simplifyLimit, MemoryAssistantBase assistant)
+        {
+            HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
+            HashSetTools.AddAll(usedIndexes, this.IndexData.Keys);
+            HashSetTools.AddAll(usedIndexes, oldValue.IndexData.Keys);
+
+            IndexData emptyStructure = new CopyMemoryModel.IndexData(null, null, null);
+
+            bool areEqual = true;
+
+            foreach (MemoryIndex index in usedIndexes)
+            {
+                if (index is TemporaryIndex)
+                {
+                    continue;
+                }
+
+                IndexData newStructure = null;
+                if (!this.IndexData.TryGetValue(index, out newStructure))
+                {
+                    newStructure = emptyStructure;
+                }
+
+                IndexData oldStructure = null;
+                if (!oldValue.IndexData.TryGetValue(index, out oldStructure))
+                {
+                    oldStructure = emptyStructure;
+                }
+
+                if (!newStructure.DataEquals(oldStructure))
+                {
+                    areEqual = false;
+                }
+
+                if (!Data.DataEqualsAndSimplify(oldValue.Data, index, simplifyLimit, assistant))
+                {
+                    areEqual = false;
+                }
+            }
+
+            return areEqual;
         }
 
         #region Indexes

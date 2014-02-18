@@ -97,6 +97,25 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return true;
         }
 
+        internal bool DataEqualsAndSimplify(SnapshotData oldData, int simplifyLimit, MemoryAssistantBase assistant)
+        {
+            bool areEquals = true;
+
+            HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
+            HashSetTools.AddAll(indexes, this.IndexData.Keys);
+            HashSetTools.AddAll(indexes, oldData.IndexData.Keys);
+
+            foreach (MemoryIndex index in indexes)
+            {
+                if (!DataEqualsAndSimplify(oldData, index, simplifyLimit, assistant))
+                {
+                    areEquals = false;
+                }
+            }
+
+            return areEquals;
+        }
+
         internal bool DataEquals(SnapshotData oldData, MemoryIndex index)
         {
             MemoryEntry newEntry = null;
@@ -112,6 +131,37 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return oldEntry.Equals(newEntry);
+        }
+
+        internal bool DataEqualsAndSimplify(SnapshotData oldData, MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
+        {
+            MemoryEntry newEntry = null;
+            if (!this.IndexData.TryGetValue(index, out newEntry))
+            {
+                newEntry = EmptyEntry;
+            }
+
+            MemoryEntry oldEntry = null;
+            if (!oldData.IndexData.TryGetValue(index, out oldEntry))
+            {
+                oldEntry = EmptyEntry;
+            }
+
+            if (oldEntry.Equals(newEntry))
+            {
+                return true;
+            }
+            else if (newEntry.Count > simplifyLimit)
+            {
+                MemoryEntry simplifiedEntry = assistant.Simplify(newEntry);
+                SetMemoryEntry(index, simplifiedEntry);
+
+                return oldEntry.Equals(simplifiedEntry);
+            }
+            else
+            {
+                return false;
+            }
         }
 
         internal void DataWiden(SnapshotData oldData, MemoryIndex index, MemoryAssistantBase assistant)
@@ -149,6 +199,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
 
                 SetMemoryEntry(index, assistant.Widen(oldEntry, new MemoryEntry(widenedVisitor.Values)));
+            }
+        }
+
+        internal void RemoveUndefined(MemoryIndex index)
+        {
+            MemoryEntry oldEntry;
+            if (IndexData.TryGetValue(index, out oldEntry))
+            {
+                HashSet<Value> values = new HashSet<Value>(oldEntry.PossibleValues);
+                if (values.Contains(snapshot.UndefinedValue))
+                {
+                    values.Remove(snapshot.UndefinedValue);
+                    SetMemoryEntry(index, new MemoryEntry(values));
+                }
             }
         }
     }

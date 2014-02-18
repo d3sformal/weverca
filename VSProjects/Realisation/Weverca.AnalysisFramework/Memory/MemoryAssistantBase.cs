@@ -23,7 +23,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Context snapshot for current memory assistant
         /// </summary>
-        protected SnapshotBase Context { get; private set; }
+        public SnapshotBase Context { get; private set; }
 
         /// <summary>
         /// ProgramPoint that is registered for memory asistant. If not available is null.

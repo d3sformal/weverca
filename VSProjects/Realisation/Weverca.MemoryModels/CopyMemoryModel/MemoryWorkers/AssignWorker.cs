@@ -109,6 +109,26 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 location.WriteValues(snapshot.Assistant, entry);
             }
+
+
+            public void VisitInfoValueLocation(InfoValueLocation location)
+            {
+                MemoryEntry oldEntry = snapshot.Structure.GetMemoryEntry(location.ContainingIndex);
+                
+                HashSet<Value> newValues = new HashSet<Value>();
+                HashSetTools.AddAll(newValues, oldEntry.PossibleValues);
+
+                IEnumerable<Value> values = location.WriteValues(snapshot.Assistant, entry);
+                newValues.Add(location.Value);
+
+                snapshot.Structure.SetMemoryEntry(location.ContainingIndex, new MemoryEntry(newValues));
+            }
+
+
+            public void VisitAnyStringValueLocation(AnyStringValueLocation location)
+            {
+                location.WriteValues(snapshot.Assistant, entry);
+            }
         }
     }
 }

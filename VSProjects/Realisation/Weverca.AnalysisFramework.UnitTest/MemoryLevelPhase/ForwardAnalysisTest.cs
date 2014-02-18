@@ -364,7 +364,8 @@ if ($unknown) {
     $obj->field = 'value';
 }
 $FieldValue = $obj->field;
-".AssertVariable("FieldValue").HasValues("value");
+".AssertVariable("FieldValue").HasValues("value")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
         readonly static TestCase ObjectMultipleObjectsInVariableWrite_CASE = @"
 class Cl {
@@ -387,6 +388,7 @@ $FieldValue = $obj->field;
             .AssertVariable("FieldValue").HasValues("value", "newValue")
             // more precise implementation would perform strong update:
             //.AssertVariable("FieldValue").HasValues("newValue")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
             ;
 
         readonly static TestCase ObjectMultipleObjectsInVariableMultipleVariablesWeakWrite_CASE = @"
@@ -420,6 +422,7 @@ $FieldValueB2 = $b->field;
             .AssertVariable("FieldValueObj2").HasValues("value", "newValue", "newValue2")
             .AssertVariable("FieldValueA2").HasValues("newValue2")
             .AssertVariable("FieldValueB2").HasValues("value", "newValue")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
             ;
 
         readonly static TestCase ObjectMultipleObjectsInVariableDifferentClassRead_CASE = @"
@@ -438,7 +441,8 @@ if ($unknown) {
     $obj->field = 'value2';
 }
 $FieldValue = $obj->field;
-".AssertVariable("FieldValue").HasValues("value1", "value2");
+".AssertVariable("FieldValue").HasValues("value1", "value2")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
         readonly static TestCase ObjectMethodObjectSensitivity_CASE = @"
 class Cl {
@@ -456,7 +460,8 @@ else {
 // it should call Cl::f() two times - each time for single instance of the class Cl being as $this. Both calls strongly update the value of the field to 'newValue'
 $obj->f('newValue');
 $FieldValue = $obj->field;
-".AssertVariable("FieldValue").HasValues("newValue");
+".AssertVariable("FieldValue").HasValues("newValue")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
         readonly static TestCase ObjectMethodObjectSensitivityMultipleVariables_CASE = @"
 class Cl {
@@ -488,7 +493,8 @@ $FieldValueB2 = $b->field;
             .AssertVariable("FieldValueB").HasValues("newValue")
             .AssertVariable("FieldValueObj2").HasValues("newValue", "newValue2")
             .AssertVariable("FieldValueA2").HasValues("newValue2")
-            .AssertVariable("FieldValueB2").HasValues("newValue");
+            .AssertVariable("FieldValueB2").HasValues("newValue")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
         readonly static TestCase ObjectMethodObjectSensitivityDifferentClass_CASE = @"
 class ClA {
@@ -510,7 +516,8 @@ else {
 // it should call ClA::f() with $this being the instance of ClA() and ClB::f() with $this being the instance of ClB() => it should perform a strong update
 $obj->f('newValue');
 $FieldValue = $obj->field;
-".AssertVariable("FieldValue").HasValues("newValue");
+".AssertVariable("FieldValue").HasValues("newValue")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM);
 
         readonly static TestCase SimpleInclude_CASE = @"
 include 'file_a.php';
@@ -832,6 +839,7 @@ sharedFn(&$b);
         .AssertVariable("b").HasUndefinedAndValues("fromSharedFunc")
 
         .ShareFunctionGraph("sharedFn")
+        .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
          ;
 
         readonly static TestCase SharedFunctionAliasingGlobal2_CASE = @"
@@ -881,6 +889,7 @@ $b = $result[2];
             //has two possible references here
 .AssertVariable("b").HasUndefinedAndValues("fromSharedFunc")
 .ShareFunctionGraph("sharedFn")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
  ;
 
 
@@ -913,6 +922,7 @@ $b = $result[2];
             //originalB because of weak update as in SharedFunctionAliasing
 .AssertVariable("b").HasValues("originalB", "fromSharedFunc")
 .ShareFunctionGraph("sharedFn")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
  ;
 
         // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
@@ -942,6 +952,7 @@ $b = $result[2];
             //undefined because of weak update as in SharedFunctionAliasing
 .AssertVariable("b").HasValues("initB", "fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
  ;
 
         // TODO: fails for the same reason as SharedFunctionStrongUpdate_CASE
@@ -969,6 +980,7 @@ $b = $result[2];
             //undefined because of weak update as in SharedFunctionAliasing
 .AssertVariable("b").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
  ;
 
         readonly static TestCase SharedFunctionAliasingMayTwoArguments_CASE = @"
@@ -996,6 +1008,7 @@ $c=  $result[3];
 .AssertVariable("b").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("c").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
+ .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
  ;
 
         #endregion
@@ -1434,8 +1447,8 @@ $resAlias = $alias;
 // $alias is not an alias of $a, $a is not updated
 $alias = 3;
 $resA = $a;
-".AssertVariable("resAlias").HasUndefinedValue()
- .AssertVariable("resA").HasValues(2)
+".AssertVariable("resAlias").HasValues(2)
+ .AssertVariable("resA").HasValues(3)
  .MemoryModel(MemoryModels.MemoryModels.CopyMM);
 
         readonly static TestCase UndefinedAliasMay_CASE = @"
@@ -1450,8 +1463,8 @@ $resA = $a;
             // if $alias is undefined at line 2, the alias is not created
             // if $alias is defined at line 2, it has a single value 1 and the alias is created
             // line 3 either does not affect $alias (it stays undefined) or set $alias to 2. It thus never has value 1 at line 4.
- .AssertVariable("resAlias").HasUndefinedAndValues(1, 2)
- .AssertVariable("resA").HasValues(2, 3)
+ .AssertVariable("resAlias").HasValues(2)
+ .AssertVariable("resA").HasValues(3)
  .MemoryModel(MemoryModels.MemoryModels.CopyMM);
 
 

@@ -29,6 +29,39 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         void VisitArrayUndefinedValueLocation(ArrayUndefinedValueLocation location);
 
         void VisitObjectUndefinedValueLocation(ObjectUndefinedValueLocation location);
+
+        void VisitInfoValueLocation(InfoValueLocation location);
+
+        void VisitAnyStringValueLocation(AnyStringValueLocation location);
+    }
+
+    class InfoValueLocation : CollectedLocation
+    {
+        public readonly MemoryIndex ContainingIndex;
+        public readonly InfoValue Value;
+        private IEnumerable<Value> values;
+
+        public InfoValueLocation(MemoryIndex containingIndex, InfoValue value)
+        {
+            this.ContainingIndex = containingIndex;
+            this.values = new Value[] { value };
+            Value = value;
+        }
+
+        public override void Accept(ICollectedLocationVisitor visitor)
+        {
+            visitor.VisitInfoValueLocation(this);
+        }
+
+        public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
+        {
+            return values;
+        }
+
+        public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
+        {
+            return values;
+        }
     }
 
     class ObjectValueLocation : CollectedLocation
@@ -36,6 +69,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private MemoryIndex containingIndex;
         private VariableIdentifier index;
         private Value value;
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         public ObjectValueLocation(MemoryIndex containingIndex,VariableIdentifier index, Value value)
         {
@@ -65,6 +99,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private MemoryIndex containingIndex;
         private VariableIdentifier index;
         private UndefinedValue value;
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         public ObjectUndefinedValueLocation(MemoryIndex containingIndex, VariableIdentifier index, UndefinedValue value)
         {
@@ -94,6 +129,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private MemoryIndex containingIndex;
         private VariableIdentifier index;
         private AnyValue value;
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         public ObjectAnyValueLocation(MemoryIndex containingIndex, VariableIdentifier index, AnyValue value)
         {
@@ -123,6 +159,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private Value value;
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         public ArrayValueLocation(MemoryIndex containingIndex, MemberIdentifier index, Value value)
         {
@@ -152,6 +189,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private AnyValue value;
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         public ArrayAnyValueLocation(MemoryIndex containingIndex, MemberIdentifier index, AnyValue value)
         {
@@ -181,6 +219,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private UndefinedValue value;
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         public ArrayUndefinedValueLocation(MemoryIndex containingIndex, MemberIdentifier index, UndefinedValue value)
         {
@@ -233,6 +272,37 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteStringIndex(value, index, entry);
+        }
+    }
+
+    class AnyStringValueLocation : CollectedLocation
+    {
+        private MemoryIndex containingIndex;
+        private MemberIdentifier index;
+        private AnyStringValue value;
+
+        public MemoryIndex ContainingIndex { get { return containingIndex; } }
+        public AnyStringValue Value { get { return value; } }
+
+        public AnyStringValueLocation(MemoryIndex containingIndex, MemberIdentifier index, AnyStringValue value)
+        {
+            this.containingIndex = containingIndex;
+            this.index = index;
+            this.value = value;
+        }
+        public override void Accept(ICollectedLocationVisitor visitor)
+        {
+            visitor.VisitAnyStringValueLocation(this);
+        }
+
+        public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
+        {
+            return assistant.ReadAnyValueIndex(value, index).PossibleValues;
+        }
+
+        public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
+        {
+            return assistant.WriteValueIndex(value, index, entry);
         }
     }
 }

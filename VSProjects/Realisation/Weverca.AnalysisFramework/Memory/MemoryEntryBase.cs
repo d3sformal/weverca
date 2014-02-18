@@ -27,6 +27,11 @@ namespace Weverca.AnalysisFramework.Memory
         public readonly bool ContainsAssociativeArray;
 
         /// <summary>
+        /// Determine that memory entry contains at least one value that is UndefinedValue
+        /// </summary>
+        public readonly bool ContainsUndefinedValue;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MemoryEntry" /> class.
         /// Create memory entry from given values.
         /// NOTE:
@@ -73,7 +78,20 @@ namespace Weverca.AnalysisFramework.Memory
                 if (value is AssociativeArray)
                 {
                     ContainsAssociativeArray = true;
-                    return;
+
+                    if (ContainsUndefinedValue)
+                    {
+                        return;
+                    }
+                }
+                else if (value is UndefinedValue)
+                {
+                    ContainsUndefinedValue = true;
+
+                    if (ContainsAssociativeArray)
+                    {
+                        return;
+                    }
                 }
             }
         }

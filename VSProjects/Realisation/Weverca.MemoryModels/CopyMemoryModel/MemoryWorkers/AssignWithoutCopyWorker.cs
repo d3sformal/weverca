@@ -34,6 +34,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             {
                 assignMay(mayIndex, composedValues);
             }
+
+            if (snapshot.CurrentMode == SnapshotMode.InfoLevel)
+            {
+                InfoLocationVisitor mustVisitor = new InfoLocationVisitor(snapshot, value, true);
+                foreach (CollectedLocation mustLocation in collector.MustLocation)
+                {
+                    mustLocation.Accept(mustVisitor);
+                }
+
+                InfoLocationVisitor mayVisitor = new InfoLocationVisitor(snapshot, value, false);
+                foreach (CollectedLocation mustLocation in collector.MayLocaton)
+                {
+                    mustLocation.Accept(mayVisitor);
+                }
+            }
         }
 
         private void assignMust(MemoryIndex mustIndex, CollectComposedValuesVisitor composedValues)
@@ -71,6 +86,76 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             HashSetTools.AddAll(values, snapshot.Structure.GetMemoryEntry(mayIndex).PossibleValues);
             snapshot.Structure.SetMemoryEntry(mayIndex, new MemoryEntry(values));
+        }
+
+        class InfoLocationVisitor : ICollectedLocationVisitor
+        {
+            Snapshot snapshot;
+            MemoryEntry entry;
+            bool isMust;
+            public InfoLocationVisitor(Snapshot snapshot, MemoryEntry entry, bool isMust)
+            {
+                this.snapshot = snapshot;
+                this.entry = entry;
+                this.isMust = isMust;
+            }
+
+            public void VisitObjectValueLocation(ObjectValueLocation location)
+            {
+            }
+
+            public void VisitObjectAnyValueLocation(ObjectAnyValueLocation location)
+            {
+                assign(location.ContainingIndex);
+            }
+
+            public void VisitArrayValueLocation(ArrayValueLocation location)
+            {
+                assign(location.ContainingIndex);
+            }
+
+            public void VisitArrayAnyValueLocation(ArrayAnyValueLocation location)
+            {
+                assign(location.ContainingIndex);
+            }
+
+            public void VisitArrayStringValueLocation(ArrayStringValueLocation location)
+            {
+                assign(location.ContainingIndex);
+            }
+
+            public void VisitArrayUndefinedValueLocation(ArrayUndefinedValueLocation location)
+            {
+            }
+
+            public void VisitObjectUndefinedValueLocation(ObjectUndefinedValueLocation location)
+            {
+            }
+
+
+            public void VisitInfoValueLocation(InfoValueLocation location)
+            {
+            }
+
+
+            public void VisitAnyStringValueLocation(AnyStringValueLocation location)
+            {
+                assign(location.ContainingIndex);
+            }
+
+            private void assign(MemoryIndex index)
+            {
+                HashSet<Value> newValues = new HashSet<Value>();
+                if (!isMust)
+                {
+                    MemoryEntry oldEntry = snapshot.Structure.GetMemoryEntry(index);
+                    HashSetTools.AddAll(newValues, oldEntry.PossibleValues);
+                }
+
+                HashSetTools.AddAll(newValues, entry.PossibleValues);
+
+                snapshot.Structure.SetMemoryEntry(index, entry);
+            }
         }
     }
 }
