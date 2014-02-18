@@ -45,13 +45,13 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override int getHashCode()
         {
-            return GetType().GetHashCode();
+            return Declaration.GetHashCode();
         }
 
         /// <inheritdoc />
         protected override bool equals(Value obj)
         {
-            return GetType() == obj.GetType();
+            return this == obj ;
         }
 
         /// <inheritdoc />
