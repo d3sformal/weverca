@@ -50,9 +50,9 @@ namespace Weverca.AnalysisFramework
         private FlowResolverBase _flowResolver;
 
         /// <summary>
-        /// Queue of program points that should be processed
+        /// List of program points that should be processed
         /// </summary>
-        private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
+        private readonly WorkList _workList = new WorkList();
 
         #endregion
 
@@ -137,7 +137,6 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         /// <param name="entryMethodGraph">Control flow graph of method which is entry point of analysis</param>
         /// <param name="createSnapshotDelegate">Method that creates a snapshot used during analysis</param>
-        /// <param name="entryScript">The entry script of the analysis</param>
         public ForwardAnalysisBase(Weverca.ControlFlowGraph.ControlFlowGraph entryMethodGraph, CreateSnapshot createSnapshotDelegate)
         {
             _createSnapshotDelegate = createSnapshotDelegate;
@@ -177,13 +176,13 @@ namespace Weverca.AnalysisFramework
             var output = _services.CreateEmptySet();
             ProgramPointGraph.Start.Initialize(EntryInput, output);
 
-            enqueue(ProgramPointGraph.Start);
+            _services.Enqueue(ProgramPointGraph.Start);
 
 
             //fix point computation
-            while (_workQueue.Count > 0)
+            while (_workList.HasWork)
             {
-                var point = _workQueue.Dequeue();
+                var point = _workList.GetWork();
 
                 //during flow through are enqueued all needed flow children
                 point.FlowThrough();
@@ -192,15 +191,6 @@ namespace Weverca.AnalysisFramework
             //because of avoid incorrect use
             //_services.UnSetServices(ProgramPointGraph);
         }
-
-        private void enqueue(ProgramPointBase point)
-        {
-            if (!_workQueue.Contains(point))
-            {
-                _workQueue.Enqueue(point);
-            }
-        }
-
 
         #endregion
 
@@ -227,7 +217,7 @@ namespace Weverca.AnalysisFramework
             _functionResolver = createFunctionResolver();
 
             _services = new ForwardAnalysisServices(
-                _workQueue,
+                _workList,
                 _functionResolver, _expressionEvaluator, createEmptySet, _flowResolver
 
                 );

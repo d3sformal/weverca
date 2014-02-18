@@ -44,12 +44,24 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
+        /// <summary>
+        /// Extension of this program point
+        /// </summary>
         public readonly FlowExtension Extension;
 
+        /// <summary>
+        /// Partial that defines this program point. Can be null for some program points.
+        /// </summary>
         public abstract LangElement Partial { get; }
 
+        /// <summary>
+        /// Input snapshot of this program point
+        /// </summary>
         public SnapshotBase InSnapshot { get { return _inSet.Snapshot; } }
 
+        /// <summary>
+        /// Output snapshot of this program point
+        /// </summary>
         public SnapshotBase OutSnapshot { get { return _outSet.Snapshot; } }
 
         /// <summary>
@@ -61,6 +73,16 @@ namespace Weverca.AnalysisFramework
         /// Parents of this program point
         /// </summary>
         public IEnumerable<ProgramPointBase> FlowParents { get { return _flowParents; } }
+
+        /// <summary>
+        /// Count of parents of this program point
+        /// </summary>
+        public int FlowParentsCount { get { return _flowParents.Count; } }
+
+        /// <summary>
+        /// Count of children of this program point
+        /// </summary>
+        public int FlowChildrenCount { get { return _flowChildren.Count; } }
 
         /// <summary>
         /// Determine that program point has already been initialized (OutSet,InSet assigned)
@@ -151,7 +173,7 @@ namespace Weverca.AnalysisFramework
                     var assumeParent = flowParent as AssumePoint;
 
                     var outset = flowParent.OutSet;
-                    if (outset == null || (assumeParent!=null && !assumeParent.Assumed))
+                    if (outset == null || (assumeParent != null && !assumeParent.Assumed))
                     {
                         //given parent is not computed yet or is unreachable
                         continue;
@@ -313,5 +335,6 @@ namespace Weverca.AnalysisFramework
         #endregion
 
         internal abstract void Accept(ProgramPointVisitor visitor);
+
     }
 }

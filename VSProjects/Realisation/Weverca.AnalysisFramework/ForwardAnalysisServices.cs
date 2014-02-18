@@ -22,7 +22,10 @@ namespace Weverca.AnalysisFramework
     /// </summary>    
     public class ForwardAnalysisServices
     {
-        private readonly Queue<ProgramPointBase> _workListQueue;
+        /// <summary>
+        /// Worklist where program points that needs to be processed are kept
+        /// </summary>
+        private readonly WorkList _workList;
 
         /// <summary>
         /// Available flow resolver obtained from analysis
@@ -49,9 +52,9 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal ProgramPointBase ProgramEnd { get; private set; }
 
-        internal ForwardAnalysisServices(Queue<ProgramPointBase> workListQueue, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver)
+        internal ForwardAnalysisServices(WorkList workList, FunctionResolverBase functionResolver, ExpressionEvaluatorBase evaluator, EmptySetDelegate emptySet, FlowResolverBase flowResolver)
         {
-            _workListQueue = workListQueue;
+            _workList = workList;
             CreateEmptySet = emptySet;
             FlowResolver = flowResolver;
             FunctionResolver = functionResolver;
@@ -70,7 +73,7 @@ namespace Weverca.AnalysisFramework
 
         internal void Enqueue(ProgramPointBase programPoint)
         {
-            _workListQueue.Enqueue(programPoint);
+            _workList.AddWork(programPoint);
         }
 
         internal void SetProgramEnd(ProgramPointBase programEnd)
@@ -86,7 +89,7 @@ namespace Weverca.AnalysisFramework
         {
             foreach (var point in ppGraph.Points)
             {
-                SetServices(point);                
+                SetServices(point);
             }
         }
 
