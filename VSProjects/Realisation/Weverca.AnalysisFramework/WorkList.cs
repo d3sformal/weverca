@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define IMPORVEDFIXPOINT
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,7 +52,7 @@ namespace Weverca.AnalysisFramework
             if (!_containedPoints.Add(work))
                 //don't need to add same work twice
                 return;
-
+#if IMPORVEDFIXPOINT
             if (work.FlowParentsCount > 1)
             {
                 //close point has been found
@@ -62,6 +64,7 @@ namespace Weverca.AnalysisFramework
                 _openStack.Push(work);
             }
             else
+#endif
             {
                 //normal point
                 _workQueue.Enqueue(work);
