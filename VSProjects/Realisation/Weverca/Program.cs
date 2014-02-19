@@ -166,8 +166,8 @@ namespace Weverca
                     var console = new ConsoleOutput();
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
 
-                    try
-                    {
+                    /*try
+                    {*/
 
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
@@ -186,11 +186,11 @@ namespace Weverca
                         console.Warnings(AnalysisWarningHandler.GetWarnings());
 
                         console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
-                    }
+                  /*  }
                     catch (Exception e)
                     {
                         console.Error(e.Message);
-                    }
+                    }*/
 
 #endif
                    
