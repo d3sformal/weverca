@@ -920,6 +920,29 @@ namespace Weverca.Analysis
                     argumentVar.WriteMemory(callInput.Snapshot, arguments[i]);
                 }
             }
+            if(arguments.Count()<signature.FormalParams.Count)
+            for (int i = arguments.Count(); i < signature.FormalParams.Count; ++i)
+            {
+                var param = signature.FormalParams[i];
+
+                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+
+                if (param.PassedByRef)
+                {
+                    argumentVar.SetAliases(callInput.Snapshot, enumerator.Current.Value);
+                }
+                else
+                {
+                    if(param.InitValue!=null)
+                    {
+                        var initializer = new ObjectInitializer(new ExpressionEvaluator.ExpressionEvaluator(Flow));
+                        param.InitValue.VisitMe(initializer);
+                        argumentVar.WriteMemory(callInput.Snapshot, initializer.initializationValue);
+                    }
+                }
+            
+            }
+
         }
 
         private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
