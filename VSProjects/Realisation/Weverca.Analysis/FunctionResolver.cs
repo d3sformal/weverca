@@ -887,7 +887,17 @@ namespace Weverca.Analysis
             }
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
-            if (signature.FormalParams.Count != callPoint.Arguments.Count())
+            int argMin = signature.FormalParams.Count;
+            int argMax = signature.FormalParams.Count;
+            for (int i = signature.FormalParams.Count-1; i >= 0; i--)
+            {
+                if (signature.FormalParams[i].InitValue == null)
+                {
+                    break;
+                }
+                argMin--;
+            }
+            if (argMin > callPoint.Arguments.Count() || argMax < callPoint.Arguments.Count())
             {
                 AnalysisWarningHandler.SetWarning(callInput,new AnalysisWarning(Flow.CurrentScript.FullName,"Wrong number of arguments",callPoint.Partial,AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
             }

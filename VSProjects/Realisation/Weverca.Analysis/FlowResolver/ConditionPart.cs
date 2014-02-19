@@ -437,10 +437,9 @@ namespace Weverca.Analysis.FlowResolver
                 else
                 {
                     //get lower bound of right and intersect with left
-                    int? minInt=null;
-                    long? minLong = null;
-                    double? minDouble = null;
-                    if (log.ReadSnapshotEntry(right) != null) 
+                    int? minInt;
+                    long? minLong;
+                    double? minDouble;
                     ValueHelper.TryGetMinimumValue(log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues, out minInt, out minLong, out minDouble);
 
                     if (minInt.HasValue)
@@ -530,10 +529,9 @@ namespace Weverca.Analysis.FlowResolver
                 else
                 {
                     //get upper bound of right and intersect with left
-                    int? maxInt=null;
-                    long? maxLong = null;
-                    double? maxDouble = null;
-                    if (log.ReadSnapshotEntry(right) != null) 
+                    int? maxInt;
+                    long? maxLong;
+                    double? maxDouble;
                     ValueHelper.TryGetMaximumValue(log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues, out maxInt, out maxLong, out maxDouble);
 
                     if (maxInt.HasValue)
