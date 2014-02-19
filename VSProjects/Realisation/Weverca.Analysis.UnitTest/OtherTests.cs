@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PHP.Core;
@@ -383,6 +384,59 @@ namespace Weverca.Analysis.UnitTest
             var outset = TestUtils.Analyze(MethodVisibilityTest5);
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD) == false);
         }
+
+        string NumberOfArgumentTest = @"
+
+         function a($a,$b)
+         {
+         }
+         a(4);
+        ";
+
+
+        [TestMethod]
+        public void NumberOfArgument()
+        {
+            var outset = TestUtils.Analyze(NumberOfArgumentTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
+        string NumberOfArgumentTest2 = @"
+
+         function a($a,$b)
+         {
+         }
+         a(4,$a,$a,$a);
+        ";
+
+
+        [TestMethod]
+        public void NumberOfArgument2()
+        {
+            var outset = TestUtils.Analyze(NumberOfArgumentTest2);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+        }
+
+
+        string NumberOfArgumentTest3 = @"
+
+         function a($a,$b=4)
+         {
+            global $result;
+            $result=$b;
+         }
+         a(10);
+        ";
+
+
+        [TestMethod]
+        public void NumberOfArgument3()
+        {
+            var outset = TestUtils.Analyze(NumberOfArgumentTest3);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS)==false);
+            TestUtils.testValue(outset.ReadVariable(new VariableIdentifier("result")).ReadMemory(outset.Snapshot).PossibleValues.First(), 4);
+        }
+
 
     }
 }
