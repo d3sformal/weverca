@@ -15,6 +15,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class AssignPoint : ValuePoint
     {
+        /// <summary>
+        /// Assign element represented by current point
+        /// </summary>
         public readonly ValueAssignEx Assign;
 
         /// <inheritdoc />
@@ -56,10 +59,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class AssignConcatPoint : ValuePoint
     {
+        /// <summary>
+        /// Assign element represented by current point
+        /// </summary>
         public readonly ValueAssignEx Assign;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Assign; } }
 
+        /// <summary>
+        /// Assign operation specifier
+        /// </summary>
         public Operations Operation { get { return Assign.PublicOperation; } }
 
         /// <summary>
@@ -111,6 +121,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.Evaluator.Assign(AssignTarget.LValue, concatedValue);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitAssignConcat(this);
@@ -122,10 +133,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class AssignOperationPoint : ValuePoint
     {
+        /// <summary>
+        /// Assign element represented by current point
+        /// </summary>
         public readonly ValueAssignEx Assign;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Assign; } }
 
+        /// <summary>
+        /// Assign operation specifier
+        /// </summary>
         public Operations Operation { get { return Assign.PublicOperation; } }
 
         /// <summary>
@@ -207,8 +225,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class RefAssignPoint : ValuePoint
     {
+        /// <summary>
+        /// Assign element represented by current point
+        /// </summary>
         public readonly RefAssignEx Assign;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Assign; } }
 
         /// <summary>
@@ -236,6 +258,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value=ROperand.Value;
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitRefAssign(this);

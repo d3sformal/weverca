@@ -56,7 +56,6 @@
     <Compile Include="InfoLevelPhase\SimpleBackwardAnalysis.cs" />
     <Compile Include="InfoLevelPhase\SimpleTaintForwardAnalysis.cs" />
     <Compile Include="InfoLevelPhase\TaintAnalyzer.cs" />
-    <Compile Include="MemoryLevelPhase\Deprecated_ForwardAnalysisTest.cs" />
     <Compile Include="MemoryLevelPhase\ForwardAnalysisTest.cs" />
     <Compile Include="InfoLevelPhase\NextPhaseAnalysisTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -67,7 +66,6 @@
     <Compile Include="MemoryLevelPhase\SimpleFlowResolver.cs" />
     <Compile Include="MemoryLevelPhase\SimpleFunctionResolver.cs" />
     <Compile Include="MemoryLevelPhase\SimpleNativeType.cs" />
-    <Compile Include="MemoryLevelPhase\StringAnalysis.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">

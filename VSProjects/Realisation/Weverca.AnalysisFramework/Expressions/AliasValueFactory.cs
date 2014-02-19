@@ -51,9 +51,9 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// Set given RValue as CreateValue result
+        /// Set given LValue as CreateValue result
         /// </summary>
-        /// <param name="value">Result value</param>
+        /// <param name="lValue">Result value</param>
         private void Result(ValuePoint lValue)
         {
             _resultPoint = lValue;

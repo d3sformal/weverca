@@ -17,18 +17,30 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public abstract class ValuePoint : ProgramPointBase
     {
+        /// <summary>
+        /// Resulting value represented by current point
+        /// </summary>
         public virtual ReadSnapshotEntryBase Value { get; protected set; }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return Value.ToString();
         }
     }
 
+    /// <summary>
+    /// Base class for LValue program points
+    /// <remarks>LValue program points can be asked for assigns</remarks>
+    /// </summary>
     public abstract class LValuePoint : ValuePoint
     {
+        /// <summary>
+        /// Resulting LValue represented by current point
+        /// </summary>
         public virtual ReadWriteSnapshotEntryBase LValue { get; protected set; }
 
+        /// <inheritdoc />
         public override ReadSnapshotEntryBase Value
         {
             get
@@ -62,6 +74,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public IEnumerable<ValuePoint> Arguments { get { return _arguments; } }
 
+        /// <summary>
+        /// CallSignature obtained from function declaration if available, null otherwise
+        /// </summary>
         public readonly CallSignature? CallSignature;
 
         /// <summary>
