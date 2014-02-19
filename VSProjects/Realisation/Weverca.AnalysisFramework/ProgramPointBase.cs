@@ -151,7 +151,7 @@ namespace Weverca.AnalysisFramework
                 Initialize(Services.CreateEmptySet(), Services.CreateEmptySet());
             }
         }
-        
+
         /// <inheritdoc />
         protected virtual bool prepareFlow()
         {
@@ -348,5 +348,43 @@ namespace Weverca.AnalysisFramework
 
         internal abstract void Accept(ProgramPointVisitor visitor);
 
+        #region Debugging helpers
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return base.ToString() + " " + GetHashCode();
+        }
+
+        internal string ChildrenToString
+        {
+            get
+            {
+                return pointsToString(FlowChildren);
+            }
+        }
+
+        internal string ParentsToString
+        {
+            get
+            {
+                return pointsToString(FlowParents);
+            }
+        }
+
+        private string pointsToString(IEnumerable<ProgramPointBase> points)
+        {
+            var result = new StringBuilder();
+
+            foreach (var point in points)
+            {
+                result.Append(point.ToString());
+                result.Append(" | ");
+            }
+
+            return result.ToString();
+        }
+
+        #endregion
     }
 }

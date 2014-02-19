@@ -189,7 +189,7 @@ namespace Weverca.AnalysisFramework
             var ppgraph = new ProgramPointGraph(cfg, null);
             return ppgraph;
         }
-        
+
         #endregion
 
         #region Graph building
@@ -290,9 +290,8 @@ namespace Weverca.AnalysisFramework
             //collected expression parts - because of default assumption condition creation
             var expressionParts = new List<Expression>();
 
-            //last points block created for parentBlocks condtion expression
-            //is used for conneting default branch assumption
-            PointsBlock lastConditionExpressionBlock = null;
+            //collected expression blocks - because of connecting default assumption
+            var expressionBlocks = new List<PointsBlock>();
 
             //process all outgoing conditional edges
             foreach (var edge in parentBlock.ConditionalEdges)
@@ -312,7 +311,7 @@ namespace Weverca.AnalysisFramework
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    throw new NotSupportedException("Not supported CFG edge of type: " + edge.GetType());
                 }
 
 
@@ -322,6 +321,7 @@ namespace Weverca.AnalysisFramework
                 //collect info for default branch
                 expressionValues.Add(expressionValue);
                 expressionParts.Add(expression);
+                expressionBlocks.Add(conditionExpressionBlock);
 
                 var condition = new AssumptionCondition(ConditionForm.All, expression);
                 parentBlock.AddChild(conditionExpressionBlock);
@@ -329,8 +329,7 @@ namespace Weverca.AnalysisFramework
                 //connect edge.To through assume block
                 var assumeBlock = _context.CreateAssumeBlock(condition, edge.To, expressionValue);
                 conditionExpressionBlock.AddChild(assumeBlock);
-                lastConditionExpressionBlock = conditionExpressionBlock;
-
+                
                 //assume block needs processing of its children
                 pendingBlocks.Enqueue(assumeBlock);
             }
@@ -352,9 +351,12 @@ namespace Weverca.AnalysisFramework
                     var condition = new AssumptionCondition(ConditionForm.SomeNot, expressionParts.ToArray());
                     var defaultAssumeBlock = _context.CreateAssumeBlock(condition, parentBlock.Default, values);
 
-                    //default Assume has to be added as child of last expression block
-                    //note: there is always last condition block, because of non empty expression values
-                    lastConditionExpressionBlock.AddChild(defaultAssumeBlock);
+                    //default Assume has to be added as child of all expression blocks
+                    foreach (var conditionExpression in expressionBlocks)
+                    {
+                        conditionExpression.AddChild(defaultAssumeBlock);
+                    }
+
                     pendingBlocks.Enqueue(defaultAssumeBlock);
                 }
             }

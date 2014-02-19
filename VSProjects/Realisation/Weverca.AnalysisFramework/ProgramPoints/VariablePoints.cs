@@ -30,7 +30,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// Type which static field is used if known in parse time
         /// </summary>
         public GenericQualifiedName SelfType { get { return Field.TypeName; } }
-        
+
         /// <summary>
         /// Type which static field is used if needs to be computed
         /// </summary>
@@ -56,7 +56,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            if (Self==null)
+            if (Self == null)
             {
                 LValue = Services.Evaluator.ResolveStaticField(SelfType, FieldName);
             }
@@ -121,7 +121,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            if (Self==null)
+            if (Self == null)
             {
 
                 LValue = Services.Evaluator.ResolveStaticField(SelfType, FieldName.Value.ReadMemory(OutSnapshot));
@@ -188,7 +188,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         public override string ToString()
         {
-            return "$" + Variable.VarName;
+            return "$" + Variable.VarName + " " + GetHashCode();
         }
 
         /// <inheritdoc />

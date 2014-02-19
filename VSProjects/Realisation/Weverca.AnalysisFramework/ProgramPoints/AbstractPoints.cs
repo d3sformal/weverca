@@ -25,7 +25,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         public override string ToString()
         {
-            return Value.ToString();
+            if (Value == null)
+            {
+                return base.ToString();
+            }
+            else
+            {
+                return Value.ToString() + " " + GetHashCode();
+            }
         }
     }
 
@@ -53,7 +60,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         public override string ToString()
         {
-            return LValue.ToString();
+            if (LValue == null)
+            {
+                return base.ToString();
+            }
+            else
+            {
+                return LValue.ToString()+ " " + GetHashCode();
+            }
         }
     }
 

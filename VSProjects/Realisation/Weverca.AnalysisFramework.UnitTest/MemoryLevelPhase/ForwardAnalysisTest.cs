@@ -210,6 +210,17 @@ if(abs($unknown)==5){
 
 ".AssertVariable("Output").HasUndefinedOrValues(5, -5);
 
+        /// <summary>
+        /// Comes from BUG report on improved queue processing
+        /// </summary>
+        readonly static TestCase SwitchBranchProcessing_CASE = @"
+switch($unknown){
+    case 1: $result='a'; break;
+    case 2: $result='b'; break; 
+}
+
+".AssertVariable("result").HasUndefinedAndValues("a","b");
+
 
         readonly static TestCase IndirectVarAssign_CASE = @"
 $Indirect='x';
@@ -1734,6 +1745,12 @@ eval($code);
         public void CallEqualsAssumption()
         {
             AnalysisTestUtils.RunTestCase(CallEqualsAssumption_CASE);
+        }
+
+        [TestMethod]
+        public void SwitchBranchProcessing()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchBranchProcessing_CASE);
         }
 
         [TestMethod]

@@ -69,7 +69,8 @@ namespace Weverca.Analysis.FlowResolver
         public ConditionPart(LangElement conditionPart, EvaluationLog log, FlowOutputSet flowOutputSet)
         {
             this.conditionPart = conditionPart;
-            this.evaluatedPart = log.ReadSnapshotEntry(conditionPart).ReadMemory(flowOutputSet.Snapshot);
+            var snapshotEntry = log.ReadSnapshotEntry(conditionPart);
+            this.evaluatedPart = snapshotEntry.ReadMemory(flowOutputSet.Snapshot);
             this.log = log;
 
             ConditionResult = GetConditionResult(flowOutputSet);
