@@ -657,9 +657,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
-        public override MemoryEntry EmptyEx(VariableIdentifier variable)
+        public override MemoryEntry EmptyEx(ReadWriteSnapshotEntryBase snapshotEntry)
         {
-            var snapshotEntry = OutSet.GetVariable(variable);
             if (snapshotEntry.IsDefined(OutSnapshot))
             {
                 var entry = snapshotEntry.ReadMemory(OutSnapshot);

@@ -685,8 +685,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var variable = Variable.LValue.GetVariableIdentifier(OutSnapshot);
-            var value = Services.Evaluator.EmptyEx(variable);
+            var value = Services.Evaluator.EmptyEx(Variable.LValue);
 
             Value = OutSet.CreateSnapshotEntry(value);
         }

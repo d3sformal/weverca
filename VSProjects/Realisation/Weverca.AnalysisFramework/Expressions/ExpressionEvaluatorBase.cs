@@ -247,7 +247,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="variable">A variable to be checked</param>
         /// <returns><c>true</c> whether a variable is empty, otherwise <c>false</c></returns>
-        public abstract MemoryEntry EmptyEx(VariableIdentifier variable);
+        public abstract MemoryEntry EmptyEx(ReadWriteSnapshotEntryBase variable);
 
         /// <summary>
         /// Terminates execution of the PHP code. It gives order to analysis to jump at the end of program.

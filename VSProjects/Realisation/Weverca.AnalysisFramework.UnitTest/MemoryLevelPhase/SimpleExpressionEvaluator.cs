@@ -414,7 +414,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 yield return OutSet.CreateBool(false);
         }
 
-        public override MemoryEntry EmptyEx(VariableIdentifier variable)
+        public override MemoryEntry EmptyEx(ReadWriteSnapshotEntryBase variable)
         {
             throw new NotImplementedException();
         }
