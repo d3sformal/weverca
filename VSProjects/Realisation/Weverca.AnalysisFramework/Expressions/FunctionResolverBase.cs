@@ -72,6 +72,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Initialization of call of function with given called object
         /// </summary>
+        /// <param name="caller">Caller which caused initialization of call</param>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="calledObject">Object that is available for call</param>
         /// <returns>Object on which call is processed. Null if there is no object</returns>
@@ -80,9 +81,10 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Initialization of call of function with given declaration and arguments
         /// </summary>
+        /// <param name="caller">Caller which caused initialization of call</param>
         /// <param name="extensionGraph">Graph representing initialized call</param>
         /// <param name="arguments">Call arguments</param>
-        public abstract void InitializeCall(ProgramPointBase Caller, ProgramPointGraph extensionGraph,
+        public abstract void InitializeCall(ProgramPointBase caller, ProgramPointGraph extensionGraph,
             MemoryEntry[] arguments);
 
         /// <summary>

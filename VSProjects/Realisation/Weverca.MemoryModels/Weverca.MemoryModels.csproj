@@ -85,17 +85,6 @@
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyArrayVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
-    <Compile Include="MemoryModel\Structures\ArrayDescriptor.cs" />
-    <Compile Include="MemoryModel\ValueVisitors\AssignedAliasVisitor.cs" />
-    <Compile Include="MemoryModel\ValueVisitors\DestroyemoryEntryVisitor.cs" />
-    <Compile Include="MemoryModel\MemoryAlias.cs" />
-    <Compile Include="MemoryModel\MemoryIndex.cs" />
-    <Compile Include="MemoryModel\MemoryInfo.cs" />
-    <Compile Include="MemoryModel\Structures\ObjectDescriptor.cs" />
-    <Compile Include="MemoryModel\Snapshot.cs" />
-    <Compile Include="MemoryModel\ValueVisitors\AssignValueVisitor.cs" />
-    <Compile Include="MemoryModel\ValueVisitors\RemoveAliasVisitor.cs" />
-    <Compile Include="MemoryModel\Workers\MergeWorker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModel\Containers\DataContainer.cs" />
     <Compile Include="VirtualReferenceModel\Memory\CallbackReference.cs" />
@@ -106,7 +95,6 @@
     <Compile Include="VirtualReferenceModel\Memory\VariableKeyBase.cs" />
     <Compile Include="VirtualReferenceModel\Memory\VariableVirtualKeyBase.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotEntries\IndexStorageVisitor.cs" />
-    <Compile Include="VirtualReferenceModel\Memory\ReferenceAlias.cs" />
     <Compile Include="VirtualReferenceModel\Snapshot.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotAliasEntry.cs" />
     <Compile Include="VirtualReferenceModel\SnapshotEntries\SnapshotMemoryEntry.cs" />

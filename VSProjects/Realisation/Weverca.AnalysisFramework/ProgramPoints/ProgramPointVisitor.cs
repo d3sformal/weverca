@@ -29,16 +29,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Abstract points
 
+        /// <inheritdoc />
         public virtual void VisitValue(ValuePoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitLValue(ValuePoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitRCall(RCallPoint p)
         {
             VisitValue(p);
@@ -48,72 +51,85 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Expression points
 
+        /// <inheritdoc />
         public virtual void VisitArray(ArrayExPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitIncDec(IncDecExPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitConcat(ConcatExPoint p)
         {
             VisitValue(p);
         }
-
+        
+        /// <inheritdoc />
         public virtual void VisitUnary(UnaryExPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitBinary(BinaryExPoint p)
         {
             VisitValue(p);
         }
-
+        
+        /// <inheritdoc />
         public virtual void VisitInclude(IncludingExPoint p)
         {
             VisitRCall(p);
         }
 
+        /// <inheritdoc />
         internal void VisitEval(EvalExPoint p)
         {
             VisitRCall(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitNew(NewExPoint p)
         {
             VisitRCall(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitInstanceOf(InstanceOfExPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitIsSet(IssetPoint p)
         {
             VisitValue(p);
         }
-
+        
+        /// <inheritdoc />
         public virtual void VisitEmptyEx(EmptyExPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitExit(ExitExPoint p)
         {
             VisitValue(p);
         }
 
-
+        /// <inheritdoc />
         public virtual void VisitClassConstPoint(ClassConstPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         internal void VisitConditional(ConditionalExPoint p)
         {
             VisitValue(p);
@@ -122,21 +138,25 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Assign points
 
+        /// <inheritdoc />
         public virtual void VisitAssign(AssignPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitAssignConcat(AssignConcatPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitAssignOperation(AssignOperationPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitRefAssign(RefAssignPoint p)
         {
             VisitValue(p);
@@ -146,36 +166,43 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Special points
 
+        /// <inheritdoc />
         public virtual void VisitTryScopeStarts(TryScopeStartsPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitTryScopeEnds(TryScopeEndsPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitAssume(AssumePoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitExtension(ExtensionPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitExtensionSink(ExtensionSinkPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitNativeAnalyzer(NativeAnalyzerPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitCatch(CatchPoint p)
         {
             VisitPoint(p);
@@ -185,21 +212,25 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Declaration points
 
+        /// <inheritdoc />
         public virtual void VisitTypeDecl(TypeDeclPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitFunctionDecl(FunctionDeclPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitConstantDecl(ConstantDeclPoint p)
         {
             VisitValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitConstant(ConstantPoint p)
         {
             VisitValue(p);
@@ -209,26 +240,31 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Statement points
 
+        /// <inheritdoc />
         public virtual void VisitThrow(ThrowStmtPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitGlobal(GlobalStmtPoint p)
         {
-            VisitPoint(p);
+            VisitPoint(p);        
         }
 
+        /// <inheritdoc />
         public virtual void VisitEcho(EchoStmtPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitForeach(ForeachStmtPoint p)
         {
             VisitPoint(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitJump(JumpStmtPoint p)
         {
             VisitPoint(p);
@@ -238,21 +274,25 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region Call points
 
+        /// <inheritdoc />
         public virtual void VisitFunctionCall(FunctionCallPoint p)
         {
             VisitRCall(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitIndirectFunctionCall(IndirectFunctionCallPoint p)
         {
             VisitRCall(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitStaticMethodCall(StaticMethodCallPoint p)
         {
             VisitRCall(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitIndirectStaticMethodCall(IndirectStaticMethodCallPoint p)
         {
             VisitRCall(p);
@@ -261,26 +301,31 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         #region LValue points
 
+        /// <inheritdoc />
         public virtual void VisitStaticField(StaticFieldPoint p)
         {
             VisitLValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitIndirectStaticField(IndirectStaticFieldPoint p)
         {
             VisitLValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitVariable(VariablePoint p)
         {
             VisitLValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitIndirectVariable(IndirectVariablePoint p)
         {
             VisitLValue(p);
         }
 
+        /// <inheritdoc />
         public virtual void VisitItemUse(ItemUsePoint p)
         {
             VisitLValue(p);

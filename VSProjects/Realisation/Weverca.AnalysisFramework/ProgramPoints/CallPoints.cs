@@ -158,6 +158,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         /// <param name="staticMethodCall">Static method call expression</param>
         /// <param name="arguments">Program points with arguments of static method call</param>
+        /// <param name="objectName">Name of called object</param>
         internal StaticMethodCallPoint(DirectStMtdCall staticMethodCall, ValuePoint objectName, ValuePoint[] arguments)
             : base(objectName, staticMethodCall.CallSignature, arguments)
         {
@@ -213,7 +214,8 @@ new QualifiedName(StaticMethodCall.MethodName), Flow.Arguments);
         /// </summary>
         /// <param name="staticMethodCall">Indirect static method call expression</param>
         /// <param name="name">Indirect name of call</param>
-        /// <param name="arguments">Program points with arguments of static method call</param>
+        /// <param name="arguments">Program points with arguments of static method call</param>\
+        /// <param name="objectName">Name of called object</param>
         internal IndirectStaticMethodCallPoint(IndirectStMtdCall staticMethodCall, ValuePoint objectName, ValuePoint name,
             ValuePoint[] arguments)
             : base(objectName, staticMethodCall.CallSignature, arguments)

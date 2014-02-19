@@ -518,7 +518,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>Created index</returns>
         public ContainerIndex CreateIndex(string identifier)
         {
-            _statistics.Report(Statistic.CreatedIndexes);
+           //TODO remove ContainerIndexes
             return new ContainerIndex(identifier);
         }
 
@@ -623,7 +623,7 @@ namespace Weverca.AnalysisFramework.Memory
         public TypeValue CreateType(ClassDecl declaration)
         {
             var type = new TypeValue(declaration);
-            _statistics.Report(Statistic.CreatedNativeTypeValues);
+            _statistics.Report(Statistic.CreatedTypeValues);
 
             return type;
         }

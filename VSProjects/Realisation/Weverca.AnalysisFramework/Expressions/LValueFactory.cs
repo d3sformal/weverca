@@ -57,7 +57,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Set given LValue as CreateValue result
         /// </summary>
-        /// <param name="value">Result value</param>
+        /// <param name="lValue">Result value</param>
         private void Result(LValuePoint lValue)
         {
             Debug.Assert(_resultPoint == null, "Value has to be null - someone doesn't read it's value");

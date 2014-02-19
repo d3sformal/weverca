@@ -53,12 +53,14 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             _elements.Add(element);
         }
-
+        
+        /// <inheritdoc />
         public IEnumerator<LangElement> GetEnumerator()
         {
             return _elements.GetEnumerator();
         }
 
+        /// <inheritdoc />
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return _elements.GetEnumerator();

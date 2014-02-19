@@ -13,6 +13,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class TypeDeclPoint : ProgramPointBase
     {
+        /// <summary>
+        /// Declaration element represented by current point
+        /// </summary>
         public readonly TypeDecl Declaration;
         
         /// <inheritdoc />
@@ -29,6 +32,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.Evaluator.DeclareGlobal(Declaration);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitTypeDecl(this);
@@ -59,6 +63,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.FunctionResolver.DeclareGlobal(Declaration);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitFunctionDecl(this);
@@ -70,13 +75,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class ConstantDeclPoint : ValuePoint
     {
+        /// <summary>
+        /// Constant declaration represented by current point
+        /// </summary>
         public readonly ConstantDecl Declaration;
 
+        /// <summary>
+        /// Initializer that creates value from declaration
+        /// </summary>
         public readonly ValuePoint Initializer;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Declaration; } }
-
-
+        
         internal ConstantDeclPoint(ConstantDecl declaration, ValuePoint initializer)
         {
             Declaration = declaration;

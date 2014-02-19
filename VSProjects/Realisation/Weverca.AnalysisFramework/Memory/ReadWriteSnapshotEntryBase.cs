@@ -48,6 +48,11 @@ namespace Weverca.AnalysisFramework.Memory
             writeMemory(context, value, forceStrongWrite);
         }
 
+        /// <summary>
+        /// Write given value at memory represent by snasphot entry. No value copy operations can be proceeded
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <param name="value">Written value</param>
         public void WriteMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             //TODO statistics reporting
@@ -65,6 +70,5 @@ namespace Weverca.AnalysisFramework.Memory
             //TODO statistics reporting
             setAliases(context, aliasedEntry);
         }
-
     }
 }

@@ -29,12 +29,14 @@ namespace Weverca.AnalysisFramework.Memory
         {
             Identifier = identifier;
         }
-
+        
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return Identifier.GetHashCode();
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (base.Equals(obj))
@@ -51,6 +53,5 @@ namespace Weverca.AnalysisFramework.Memory
 
             return o.Identifier == Identifier;
         }
-
     }
 }

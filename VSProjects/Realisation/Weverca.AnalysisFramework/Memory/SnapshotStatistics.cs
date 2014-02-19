@@ -5,62 +5,212 @@ using System.Text;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+    /// <summary>
+    /// Statistics colleted by snapshots during FixPoint computation
+    /// </summary>
     public enum Statistic
     {
+        /// <summary>
+        /// Number of created integer values
+        /// </summary>
         CreatedIntValues,
+
+        /// <summary>
+        /// Number of created boolean values
+        /// </summary>
         CreatedBooleanValues,
+
+        /// <summary>
+        /// Number of created float values
+        /// </summary>
         CreatedFloatValues,
+
+        /// <summary>
+        /// Number of created object values
+        /// </summary>
         CreatedObjectValues,
+
+        /// <summary>
+        /// Number of created array values
+        /// </summary>
         CreatedArrayValues,
-        CreatedAliasValues,
+
+        /// <summary>
+        /// Number of alias assigns
+        /// </summary>
         AliasAssigns,
+
+        /// <summary>
+        /// Number of memory entry assigns
+        /// </summary>
         MemoryEntryAssigns,
+
+        /// <summary>
+        /// Number of snapshot extend calls
+        /// </summary>
         SnapshotExtendings,
+
+        /// <summary>
+        /// Number of snapshot mergings with call level
+        /// </summary>
         CallLevelMerges,
+
+        /// <summary>
+        /// Number of value readings
+        /// </summary>
         ValueReads,
+
+        /// <summary>
+        /// Number of snapshot as call extend calls
+        /// </summary>
         AsCallExtendings,
+
+        /// <summary>
+        /// Number of created string values
+        /// </summary>
         CreatedStringValues,
+
+        /// <summary>
+        /// Number of search operations within hash containers on non-structured values
+        /// </summary>
         SimpleHashSearches,
+
+        /// <summary>
+        /// Number of assign operations within hash containers on non-structured values
+        /// </summary>
         SimpleHashAssigns,
+
+        /// <summary>
+        /// Number of created function values
+        /// </summary>
         CreatedFunctionValues,
+
+        /// <summary>
+        /// Number of merged nemory entries
+        /// </summary>
         MemoryEntryMerges,
+
+        /// <summary>
+        /// Number of memory entries comparison
+        /// </summary>
         MemoryEntryComparisons,
+
+        /// <summary>
+        /// Number of created memory entries
+        /// </summary>
         MemoryEntryCreation,
-        IndexAssigns,
-        FieldAssigns,
+
+
+        /// <summary>
+        /// Number of reads by index
+        /// </summary>
         IndexReads,
+
+        /// <summary>
+        /// Number of reads by field
+        /// </summary>
         FieldReads,
-        IndexAliasAssigns,
-        FieldAliasAssigns,
+
+        /// <summary>
+        /// Number of fetched global variables
+        /// </summary>
         GlobalVariableFetches,
+
+        /// <summary>
+        /// Number of created long values
+        /// </summary>
         CreatedLongValues,
-        CreatedIndexes,
+
+        /// <summary>
+        /// Number of declared functions
+        /// </summary>
         DeclaredFunctions,
+
+        /// <summary>
+        /// Number of resolve function calls
+        /// </summary>
         FunctionResolvings,
+
+        /// <summary>
+        /// Number of declared types
+        /// </summary>
         DeclaredTypes,
+
+        /// <summary>
+        /// Number of resolve type calls
+        /// </summary>
         TypeResolvings,
+
+        /// <summary>
+        /// Number of resolve method calls
+        /// </summary>
         MethodResolvings,
+
+        /// <summary>
+        /// Number of created integer intervals
+        /// </summary>
         CreatedIntIntervalValues,
+
+        /// <summary>
+        /// Number of created long integer intervals
+        /// </summary>
         CreatedLongIntervalValues,
+
+        /// <summary>
+        /// Number of created float intervals
+        /// </summary>
         CreatedFloatIntervalValues,
+
+        /// <summary>
+        /// Number of info values set for variable
+        /// </summary>
         VariableInfoSettings,
+
+        /// <summary>
+        /// Number of info values set for value
+        /// </summary>
         ValueInfoSettings,
+
+        /// <summary>
+        /// Number of info values read from value
+        /// </summary>
         ValueInfoReads,
+
+        /// <summary>
+        /// Number of info values read from variable
+        /// </summary>
         VariableInfoReads,
+
+        /// <summary>
+        /// Number of iterate operations on objects
+        /// </summary>
         ObjectIterations,
+
+        /// <summary>
+        /// Number of iterate operations on array
+        /// </summary>
         ArrayIterations,
-        CreatedSourceTypeValues,
-        CreatedNativeTypeValues,
-        VariableExistSearches,
-        ObjectFieldExistsSearches,
-        ArrayIndexExistsSearches,
-        ValueReadAttempts,
-        FieldReadAttempts,
-        IndexReadAttempts,
+
+        /// <summary>
+        /// Number of snapshot changes of <see cref="SnapshotMode"/>
+        /// </summary>
         ModeSwitch,
+
+        /// <summary>
+        /// Number of created <see cref="TypeValue"/>
+        /// </summary>
+        CreatedTypeValues,
+
+        /// <summary>
+        /// Number of searches on object type
+        /// </summary>
         ObjectTypeSearches,
 
+        /// <summary>
+        /// Numericaly last member of current enumeration
+        /// </summary>
         Last = ObjectTypeSearches,
+
     }
 
     /// <summary>

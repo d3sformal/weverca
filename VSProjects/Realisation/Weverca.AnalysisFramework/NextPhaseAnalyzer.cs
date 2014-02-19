@@ -39,6 +39,9 @@ namespace Weverca.AnalysisFramework
 
         #region API exposed for analysis implementing
 
+        /// <summary>
+        /// Input set of current program point
+        /// </summary>
         protected FlowInputSet InputSet
         {
             get
@@ -46,6 +49,10 @@ namespace Weverca.AnalysisFramework
                 return _analysis.GetInSet(_currentPoint);
             }
         }
+
+        /// <summary>
+        /// Output set of current program point
+        /// </summary>
         protected FlowOutputSet OutputSet
         {
             get
@@ -54,11 +61,17 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        /// <summary>
+        /// Input snapshot that can be used as input context of current program point
+        /// </summary>
         protected SnapshotBase Input
         {
             get { return InputSet.Snapshot; }
         }
 
+        /// <summary>
+        /// Output snapshot that can be used as output context of current program point
+        /// </summary>
         protected SnapshotBase Output
         {
             get { return OutputSet.Snapshot; }

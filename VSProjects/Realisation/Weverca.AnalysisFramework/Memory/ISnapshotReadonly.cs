@@ -5,6 +5,9 @@ using PHP.Core;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+    /// <summary>
+    /// Readonly operations exposed by <see cref="SnapshotBase"/>
+    /// </summary>
     public interface ISnapshotReadonly
     {
         #region Value singletons
@@ -60,7 +63,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// fetched some variables from global context also),
         /// or in global context in snapshot belonging to global code
         /// </remarks>
-        /// <param name="name">Name of variable</param>
+        /// <param name="variable">Identifier of variable that is read</param>
         /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
         /// <returns>Readable snapshot entry for variable identifier</returns>
         ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false);
@@ -116,6 +119,14 @@ namespace Weverca.AnalysisFramework.Memory
         IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName);
 
         /// <summary>
+        /// Resolves all possible functions for given static methodName on type 
+        /// </summary>
+        /// <param name="type">Type which method is resolved</param>
+        /// <param name="methodName">Name of resolved method</param>
+        /// <returns>Resolved functions</returns>
+        IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue type, QualifiedName methodName);
+
+        /// <summary>
         /// Resolves all possible types for given typeName
         /// NOTE:
         ///     Multiple declarations for single typeName can happen for example because of branch merging
@@ -123,8 +134,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="typeName">Name of resolved type</param>
         /// <returns>Resolved types</returns>
         IEnumerable<TypeValue> ResolveType(QualifiedName typeName);
-
-        IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName);
 
     }
 }

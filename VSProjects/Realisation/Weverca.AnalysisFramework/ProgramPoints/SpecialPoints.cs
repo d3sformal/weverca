@@ -29,18 +29,21 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly IEnumerable<CatchBlockDescription> CatchStarts;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
 
-        public TryScopeStartsPoint(IEnumerable<CatchBlockDescription> scopeStarts)
+        internal TryScopeStartsPoint(IEnumerable<CatchBlockDescription> scopeStarts)
         {
             CatchStarts = scopeStarts;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Services.FlowResolver.TryScopeStart(OutSet, CatchStarts);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitTryScopeStarts(this);
@@ -52,6 +55,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class CatchPoint : ProgramPointBase
     {
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
 
         /// <summary>
@@ -85,6 +89,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             CatchDescription = catchDescription;
         }
 
+        /// <summary>
+        /// Updates throw information stored in current point
+        /// </summary>
+        /// <param name="info">Throw information that has to be compatilbe with current point</param>
         internal void ReThrow(ThrowInfo info)
         {
             if (!CatchDescription.Equals(info.Catch))
@@ -93,11 +101,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             _info = info;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Flow.FlowResolver.Catch(this, OutSet);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitCatch(this);
@@ -114,17 +124,21 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly IEnumerable<CatchBlockDescription> CatchStarts;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
 
-        public TryScopeEndsPoint(IEnumerable<CatchBlockDescription> catchStarts)
+        internal TryScopeEndsPoint(IEnumerable<CatchBlockDescription> catchStarts)
         {
             CatchStarts = catchStarts;
         }
+
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Services.FlowResolver.TryScopeEnd(OutSet, CatchStarts);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitTryScopeEnds(this);
@@ -152,6 +166,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly EvaluationLog Log;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
 
         /// <summary>
@@ -165,6 +180,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Log = new EvaluationLog(this, expressionParts);
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Assumed = Services.FlowResolver.ConfirmAssumption(OutSet, Condition, Log);
@@ -182,6 +198,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitAssume(this);
@@ -193,6 +210,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class ExtensionPoint : ProgramPointBase
     {
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
 
         /// <summary>
@@ -205,8 +223,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly ExtensionType Type;
 
+        /// <summary>
+        /// Caller which call creats current extension point
+        /// </summary>
         public readonly ProgramPointBase Caller;
 
+        /// <inheritdoc />
         public override ProgramPointGraph OwningPPGraph
         {
             get
@@ -215,6 +237,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
+        /// <inheritdoc />
         internal override ForwardAnalysisServices Services
         {
             get
@@ -232,11 +255,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             AddFlowChild(Graph.Start);
         }
 
+        /// <summary>
+        /// Disconnect current point from Graph
+        /// </summary>
         internal void Disconnect()
         {
             RemoveFlowChild(Graph.Start);
         }
 
+        /// <inheritdoc />
         protected override void extendInput()
         {
             _inSet.StartTransaction();
@@ -255,7 +282,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             _inSet.CommitTransaction();
         }
 
-
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             if (Flow.Arguments == null)
@@ -264,6 +291,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.FunctionResolver.InitializeCall(Caller, Graph, Flow.Arguments);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitExtension(this);
@@ -275,17 +303,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <remarks>Is used as reference to call result</remarks>
     /// </summary>
     public class ExtensionSinkPoint : ValuePoint
-    {
+    {        
         /// <summary>
         /// Extension which owns this sink
         /// <remarks>One sink is used per extension</remarks>
         /// </summary>
         public readonly FlowExtension OwningExtension;
 
-        private static readonly VariableName returnVarName = new VariableName(".resultSinkPoint");
-
+        /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
-
+        
+        /// <inheritdoc />
         internal override ForwardAnalysisServices Services
         {
             get
@@ -294,6 +322,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
+        /// <inheritdoc />
         public override ProgramPointGraph OwningPPGraph
         {
             get
@@ -306,7 +335,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             OwningExtension = owningExtension;
         }
-
+        
+        /// <inheritdoc />
         protected override void extendInput()
         {
             _inSet.StartTransaction();
@@ -315,17 +345,22 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             _inSet.CommitTransaction();
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             ResolveReturnValue();
         }
 
+        /// <summary>
+        /// Resolves return value of current sink. Resolved value is stored within Value.
+        /// </summary>
         public void ResolveReturnValue()
         {
             var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
             Value = OutSet.CreateSnapshotEntry(returnValue);
         }
-
+        
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitExtensionSink(this);
@@ -341,19 +376,22 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// Native analyzer contained in this point
         /// </summary>
         public readonly NativeAnalyzer Analyzer;
-
+        
+        /// <inheritdoc />
         public override LangElement Partial { get { return Analyzer; } }
 
         internal NativeAnalyzerPoint(NativeAnalyzer analyzer)
         {
             Analyzer = analyzer;
         }
-
+        
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             Analyzer.Method(Flow);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitNativeAnalyzer(this);

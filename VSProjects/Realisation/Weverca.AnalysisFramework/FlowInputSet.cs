@@ -22,6 +22,9 @@ namespace Weverca.AnalysisFramework
             Snapshot = snapshot;
         }
 
+        /// <summary>
+        /// String representation of current set
+        /// </summary>
         public string Representation
         {
             get
@@ -72,31 +75,37 @@ namespace Weverca.AnalysisFramework
  
         #endregion
 
+        /// <inheritdoc />
         public InfoValue[] ReadInfo(Value value)
         {
             return Snapshot.ReadInfo(value);
         }
 
+        /// <inheritdoc />
         public InfoValue[] ReadInfo(VariableName variable)
         {
             return Snapshot.ReadInfo(variable);
         }
 
+        /// <inheritdoc />
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
             return Snapshot.ResolveFunction(functionName);
         }
-    
+
+        /// <inheritdoc />
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             return Snapshot.ResolveType(typeName);
         }
 
+        /// <inheritdoc />
         public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
             return Snapshot.ResolveStaticMethod(value, methodName);
         }
 
+        /// <inheritdoc />
         public TypeValue ObjectType(ObjectValue objectValue)
         {
             return Snapshot.ObjectType(objectValue);
@@ -106,16 +115,19 @@ namespace Weverca.AnalysisFramework
 
         #region Snapshot entry API
 
+        /// <inheritdoc />
         public ReadSnapshotEntryBase ReadVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
             return Snapshot.ReadVariable(variable, forceGlobalContext);
         }
 
+        /// <inheritdoc />
         public ReadSnapshotEntryBase ReadControlVariable(VariableName variable)
         {
             return Snapshot.ReadControlVariable(variable);
         }
 
+        /// <inheritdoc />
         public ReadSnapshotEntryBase ReadLocalControlVariable(VariableName variable)
         {
             return Snapshot.ReadLocalControlVariable(variable);

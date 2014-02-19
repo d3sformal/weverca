@@ -11,6 +11,9 @@ using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework
 {
+    /// <summary>
+    /// Describes computation directoin of fixpoint
+    /// </summary>
     public enum AnalysisDirection
     {
         /// <summary>
@@ -63,6 +66,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public ProgramPointGraph AnalyzedProgramPointGraph { get; private set; }
 
+        /// <summary>
         /// Determine count of commits on single flow set that is needed to start widening
         /// </summary>
         public int WideningLimit { get; protected set; }

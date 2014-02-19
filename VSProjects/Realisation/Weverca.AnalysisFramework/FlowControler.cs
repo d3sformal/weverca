@@ -110,12 +110,21 @@ namespace Weverca.AnalysisFramework
             Log = log;
         }
 
-
+        /// <summary>
+        /// Remove extension branch with given branchKey from Point
+        /// </summary>
+        /// <param name="branchKey">Key of removed branch</param>
         public void RemoveExtension(object branchKey)
         {
             ProgramPoint.Extension.Remove(branchKey);
         }
 
+        /// <summary>
+        /// Add extension branch into Point
+        /// </summary>
+        /// <param name="branchKey">Key of added branch</param>
+        /// <param name="ppGraph">Extending program point used as branch</param>
+        /// <param name="type">Type of extension</param>
         public void AddExtension(object branchKey, ProgramPointGraph ppGraph, ExtensionType type)
         {
             ProgramPoint.Extension.Add(branchKey, ppGraph, type);

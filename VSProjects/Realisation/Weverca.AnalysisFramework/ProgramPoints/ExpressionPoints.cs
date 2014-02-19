@@ -397,6 +397,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Flow.FlowResolver.Eval(Flow, EvalCode.Value.ReadMemory(OutSnapshot));
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitEval(this);
@@ -459,6 +460,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(arrayValue);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitArray(this);
@@ -526,6 +528,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(initializedObject);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitNew(this);
@@ -588,6 +591,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitInstanceOf(this);
@@ -642,6 +646,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitIsSet(this);
@@ -686,6 +691,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitEmptyEx(this);
@@ -738,6 +744,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitExit(this);

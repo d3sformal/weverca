@@ -10,6 +10,9 @@ using PHP.Core.AST;
 
 namespace Weverca.AnalysisFramework.Memory
 {
+    /// <summary>
+    /// Read/Write operations exposed by <see cref="SnapshotBase"/>
+    /// </summary>
     public interface ISnapshotReadWrite : ISnapshotReadonly
     {
         #region Snapshot flow operations

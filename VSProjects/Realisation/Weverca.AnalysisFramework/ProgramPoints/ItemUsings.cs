@@ -17,6 +17,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class ItemUsePoint : LValuePoint
     {
+        /// <summary>
+        /// Item use element represented by current point
+        /// </summary>
         public readonly ItemUse ItemUse;
 
         /// <summary>
@@ -29,8 +32,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly ValuePoint Index;
 
+        /// <summary>
+        /// Identifier of index available for item using
+        /// </summary>
         public MemberIdentifier IndexIdentifier;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return ItemUse; } }
 
         internal ItemUsePoint(ItemUse itemUse, ValuePoint usedItem, ValuePoint index)
@@ -40,12 +47,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Index = index;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(OutSnapshot));
             LValue = Services.Evaluator.ResolveIndex(UsedItem.Value, IndexIdentifier);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitItemUse(this);

@@ -132,6 +132,7 @@ namespace Weverca.AnalysisFramework
         /// <remarks>Created points block is not contractable</remarks>
         /// </summary>
         /// <param name="createdPoint">Created program point</param>
+        /// <param name="outgoingBlocks">Blocks used as outcomming edges</param>
         /// <returns>Created points block</returns>
         internal PointsBlock CreateEmptyPoint(out EmptyProgramPoint createdPoint, params BasicBlock[] outgoingBlocks)
         {
@@ -140,6 +141,11 @@ namespace Weverca.AnalysisFramework
             return PointsBlock.ForPoint(createdPoint, outgoingBlocks);
         }
 
+        /// <summary>
+        /// Create try scope start point from given catch blocks
+        /// </summary>
+        /// <param name="catchBlocks">Catch blocks that are valid within try scope start</param>
+        /// <returns>Created try scope start point</returns>
         internal TryScopeStartsPoint CreateCatchScopeStart(IEnumerable<CatchBlockDescription> catchBlocks)
         {
             var scopeStart = new TryScopeStartsPoint(catchBlocks);
@@ -149,6 +155,11 @@ namespace Weverca.AnalysisFramework
             return scopeStart;
         }
 
+        /// <summary>
+        /// Create try scope end point from given catch blocks
+        /// </summary>
+        /// <param name="catchBlocks">Catch blocks which are ending scope</param>
+        /// <returns>Created try scope end point</returns>
         internal TryScopeEndsPoint CreateCatchScopeEnd(IEnumerable<CatchBlockDescription> catchBlocks)
         {
             var scopeEnd = new TryScopeEndsPoint(catchBlocks);

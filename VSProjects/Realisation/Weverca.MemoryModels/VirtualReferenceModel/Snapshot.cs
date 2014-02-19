@@ -1297,32 +1297,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         //========================OLD API IMPLEMENTATION=======================
         #region OLD API related methods (will be removed after backcompatibility won't be needed)
-
-
-        private AliasValue createAlias(VariableKeyBase key)
-        {
-            var info = getOrCreateInfo(key);
-            if (info.References.Count == 0)
-            {
-                assign(info, new MemoryEntry(UndefinedValue));
-            }
-            return new ReferenceAlias(info.References);
-        }
-
-        private AliasValue createAlias(VariableName sourceVar, VariableKind kind = VariableKind.Local)
-        {
-            var info = GetInfo(sourceVar, kind);
-            if (info == null)
-            {
-                //force reference creation
-                ReportMemoryEntryCreation();
-                assign(sourceVar, new MemoryEntry(UndefinedValue), kind);
-                info = GetInfo(sourceVar, kind);
-            }
-
-            return new ReferenceAlias(info.References);
-        }
-
+        
+      
         /// <inheritdoc />
         protected bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {

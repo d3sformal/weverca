@@ -16,7 +16,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class TestMemoryEntryPoint : ValuePoint
     {
+        /// <summary>
+        /// Element represented by current point
+        /// </summary>
         public readonly LangElement Element;
+
+        /// <inheritdoc />
         public override LangElement Partial { get { return Element; } }
 
 
@@ -26,11 +31,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = new TestSnasphotEntry(entry);
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             throw new NotSupportedException("This node is used only as workaround for testing");
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             throw new NotSupportedException("This node is used only as workaround for testing");
@@ -43,7 +50,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class TestVariablePoint : LValuePoint
     {
+        /// <summary>
+        /// Element represented by current program point
+        /// </summary>
         public readonly LangElement Element;
+
+        /// <inheritdoc />
         public override LangElement Partial { get { return Element; } }
 
         internal TestVariablePoint(LangElement element, VariableIdentifier entry)
@@ -52,12 +64,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
            /* Element = element;
             VariableEntry = entry;*/
         }
-
+        
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             throw new NotSupportedException("This node is used only as workaround for testing");
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             throw new NotSupportedException("This node is used only as workaround for testing");
@@ -77,66 +91,79 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             memory = entry;
         }
 
+        /// <inheritdoc />
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override bool isDefined(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
             return memory;
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, VariableIdentifier field)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
             throw new NotImplementedException();

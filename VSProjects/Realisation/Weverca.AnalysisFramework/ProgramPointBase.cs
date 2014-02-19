@@ -34,12 +34,19 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private bool _isInitialized;
 
-
+        /// <summary>
+        /// Input set of current program point
+        /// </summary>
         protected FlowOutputSet _inSet;
+
+        /// <summary>
+        /// Output set of current program point
+        /// </summary>
         private FlowOutputSet _outSet;
 
-
-
+        /// <summary>
+        /// Flow controller available for current program point
+        /// </summary>
         internal protected FlowController Flow;
 
         #endregion
@@ -144,7 +151,8 @@ namespace Weverca.AnalysisFramework
                 Initialize(Services.CreateEmptySet(), Services.CreateEmptySet());
             }
         }
-
+        
+        /// <inheritdoc />
         protected virtual bool prepareFlow()
         {
             checkInitialized();
@@ -155,12 +163,14 @@ namespace Weverca.AnalysisFramework
             return true;
         }
 
+        /// <inheritdoc />
         protected virtual void extendOutput()
         {
             _outSet.StartTransaction();
             _outSet.Extend(_inSet);
         }
 
+        /// <inheritdoc />
         protected virtual void extendInput()
         {
             if (_flowParents.Count > 0)
@@ -186,6 +196,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        /// <inheritdoc />
         protected virtual void commitFlow()
         {
             _outSet.CommitTransaction();
@@ -198,6 +209,7 @@ namespace Weverca.AnalysisFramework
             enqueueChildren();
         }
 
+        /// <inheritdoc />
         protected virtual void enqueueChildren()
         {
             foreach (var child in _flowChildren)

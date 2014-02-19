@@ -29,8 +29,14 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         SomeNot,
 
+        /// <summary>
+        /// Exactly one part has to be true
+        /// </summary>
         ExactlyOne,
 
+        /// <summary>
+        /// Exactly one part has to be false
+        /// </summary>
         NotExactlyOne
     }
 
@@ -58,7 +64,7 @@ namespace Weverca.AnalysisFramework
 
 
         /// <summary>
-        /// Creates assumption condition for given parts
+        /// Initializes a new instance of the <see cref="AssumptionCondition" /> class.
         /// </summary>
         /// <param name="form">Form of condition parts conjunction</param>
         /// <param name="parts">Condition parts</param>

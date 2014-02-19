@@ -317,13 +317,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             VisitValue(value);
         }
-
-        /// <inheritdoc />
-        public virtual void VisitAliasValue(AliasValue value)
-        {
-            VisitSpecialValue(value);
-        }
-
+        
         /// <inheritdoc />
         public virtual void VisitInfoValue(InfoValue value)
         {

@@ -30,19 +30,42 @@ namespace Weverca.AnalysisFramework
         ParallelEval,
     }
 
+    /// <summary>
+    /// Extension used for dynamic adding call/include/eval branches into <see cref="ProgramPointGraph"/>
+    /// </summary>
     public class FlowExtension
-    {
+    {     
+        /// <summary>
+        /// Storage of extension branches indexed by keys
+        /// </summary>
+        Dictionary<object, ExtensionPoint> _extensions = new Dictionary<object, ExtensionPoint>();
+
+        /// <summary>
+        /// Owner which is exposing current extension
+        /// </summary>
         public readonly ProgramPointBase Owner;
 
+        /// <summary>
+        /// Keys of extension branches
+        /// </summary>
         public IEnumerable<object> Keys { get { return _extensions.Keys; } }
 
+        /// <summary>
+        /// Extension branches available within current extension
+        /// </summary>
         public IEnumerable<ExtensionPoint> Branches { get { return _extensions.Values; } }
 
+        /// <summary>
+        /// Determine that extension is connected
+        /// </summary>
         public bool IsConnected { get { return _extensions.Count > 0; } }
 
+        /// <summary>
+        /// Sink of current extension - stores merged information from extension branches
+        /// </summary>
         internal readonly ExtensionSinkPoint Sink;
 
-        Dictionary<object, ExtensionPoint> _extensions = new Dictionary<object, ExtensionPoint>();
+
 
         internal FlowExtension(ProgramPointBase owner)
         {
@@ -59,6 +82,13 @@ namespace Weverca.AnalysisFramework
             }
         }
 
+        /// <summary>
+        /// Add extension branch indexed by given key
+        /// </summary>
+        /// <param name="key">Key of added extension</param>
+        /// <param name="ppGraph">Extending program point graph</param>
+        /// <param name="type">Type of extension</param>
+        /// <returns>Extension point which connect extending ppGraph with Owner</returns>
         internal ExtensionPoint Add(object key, ProgramPointGraph ppGraph, ExtensionType type)
         {
             if (!IsConnected)
@@ -79,6 +109,10 @@ namespace Weverca.AnalysisFramework
             return extension;
         }
 
+        /// <summary>
+        /// Remove extension branch indexed by given key
+        /// </summary>
+        /// <param name="key">Key which extension branch will be removed</param>
         internal void Remove(object key)
         {
             if (!IsConnected)
@@ -100,6 +134,9 @@ namespace Weverca.AnalysisFramework
                 disconnect();
         }
 
+        /// <summary>
+        /// Connect current extension to its owner
+        /// </summary>
         private void connect()
         {
             //copy children
@@ -114,7 +151,10 @@ namespace Weverca.AnalysisFramework
                 Sink.AddFlowChild(child);
             }
         }
-
+        
+        /// <summary>
+        /// Disconnects current extension from its owner
+        /// </summary>
         private void disconnect()
         {
             //copy children

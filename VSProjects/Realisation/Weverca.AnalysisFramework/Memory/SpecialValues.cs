@@ -32,17 +32,14 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
-    public abstract class AliasValue : SpecialValue
-    {
-        /// <inheritdoc />
-        public override void Accept(IValueVisitor visitor)
-        {
-            visitor.VisitAliasValue(this);
-        }
-    }
-
+    /// <summary>
+    /// Represents meta information that can be stored in <see cref="SnapshotBase"/>
+    /// </summary>
     public abstract class InfoValue : SpecialValue
     {
+        /// <summary>
+        /// Raw representation of stored meta info
+        /// </summary>
         public readonly object RawData;
 
         /// <summary>
@@ -87,6 +84,9 @@ namespace Weverca.AnalysisFramework.Memory
     /// <typeparam name="T">Type of meta information</typeparam>
     public class InfoValue<T> : InfoValue
     {
+        /// <summary>
+        /// Strongly Typed meta information data
+        /// </summary>
         public readonly T Data;
 
         /// <summary>
@@ -104,7 +104,8 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitGenericInfoValue(this);
         }
-
+        
+        /// <inheritdoc />
         public override string ToString()
         {
             return Data.ToString();

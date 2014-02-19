@@ -26,13 +26,18 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     public class ConstantPoint : ValuePoint
     {
         /// <summary>
+        /// Partial represented by current point
+        /// </summary>
+        private readonly LangElement _partial;
+
+        /// <summary>
         /// Provider of constant value
         /// <remarks>Is called on every program flow iteration, because of possible associating FlowInfo</remarks>
         /// </summary>
         private readonly ConstantProvider _constantProvider;
 
-        private readonly LangElement _partial;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return _partial; } }
 
         internal ConstantPoint(LangElement partial, ConstantProvider constantProvider)
@@ -44,23 +49,36 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            var value= _constantProvider(Services.Evaluator);
+            var value = _constantProvider(Services.Evaluator);
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitConstant(this);
         }
     }
 
+    /// <summary>
+    /// Represents use of Class constant
+    /// </summary>
     public class ClassConstPoint : ValuePoint
     {
-        public override LangElement Partial { get { return _partial; } }
+        /// <summary>
+        /// Partial represented by current point
+        /// </summary>
         private readonly ClassConstUse _partial;
+
+        /// <inheritdoc />
+        public override LangElement Partial { get { return _partial; } }
+
+        /// <summary>
+        /// This object of class constant use
+        /// </summary>
         public ValuePoint ThisObj;
 
-        public ClassConstPoint(ClassConstUse x, ValuePoint thisObj)
+        internal ClassConstPoint(ClassConstUse x, ValuePoint thisObj)
         {
             _partial = x;
             this.ThisObj = thisObj;
@@ -72,20 +90,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             MemoryEntry value;
             if (ThisObj == null)
             {
-                value=Services.Evaluator.ClassConstant(_partial.ClassName.QualifiedName, _partial.Name);
+                value = Services.Evaluator.ClassConstant(_partial.ClassName.QualifiedName, _partial.Name);
             }
             else
             {
-                value=Services.Evaluator.ClassConstant(ThisObj.Value.ReadMemory(OutSnapshot), _partial.Name);
+                value = Services.Evaluator.ClassConstant(ThisObj.Value.ReadMemory(OutSnapshot), _partial.Name);
             }
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitClassConstPoint(this);
         }
-
-        
     }
 }

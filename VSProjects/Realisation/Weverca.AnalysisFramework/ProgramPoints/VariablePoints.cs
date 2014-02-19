@@ -16,45 +16,60 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class StaticFieldPoint : LValuePoint
     {
+        /// <summary>
+        /// Element represented by current point
+        /// </summary>
         public readonly DirectStFldUse Field;
 
+        /// <summary>
+        /// Name of static field
+        /// </summary>
         public readonly VariableIdentifier FieldName;
 
-        public GenericQualifiedName TypeName { get { return Field.TypeName; } }
+        /// <summary>
+        /// Type which static field is used if known in parse time
+        /// </summary>
+        public GenericQualifiedName SelfType { get { return Field.TypeName; } }
+        
+        /// <summary>
+        /// Type which static field is used if needs to be computed
+        /// </summary>
+        public ValuePoint Self;
 
-        public ValuePoint Obj;
-
+        /// <inheritdoc />
         public override LangElement Partial { get { return Field; } }
 
-        public StaticFieldPoint(DirectStFldUse field)
+        internal StaticFieldPoint(DirectStFldUse field)
         {
             Field = field;
             FieldName = new VariableIdentifier(field.PropertyName);
-            Obj = null;
+            Self = null;
         }
 
-        public StaticFieldPoint(DirectStFldUse field, ValuePoint typeName)
+        internal StaticFieldPoint(DirectStFldUse field, ValuePoint typeName)
         {
             Field = field;
             FieldName = new VariableIdentifier(field.PropertyName);
-            Obj = typeName;
+            Self = typeName;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
-            if (Obj==null)
+            if (Self==null)
             {
-                LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName);
+                LValue = Services.Evaluator.ResolveStaticField(SelfType, FieldName);
             }
             else
             {
-                var typeValue = Obj.Value.ReadMemory(OutSnapshot);
+                var typeValue = Self.Value.ReadMemory(OutSnapshot);
                 var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
 
                 LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName);
             }
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitStaticField(this);
@@ -66,46 +81,61 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class IndirectStaticFieldPoint : LValuePoint
     {
+        /// <summary>
+        /// Static field use represented by current point
+        /// </summary>
         public readonly IndirectStFldUse Field;
 
+        /// <summary>
+        /// Computed name of static field
+        /// </summary>
         public readonly ValuePoint FieldName;
 
-        public GenericQualifiedName TypeName { get { return Field.TypeName; } }
+        /// <summary>
+        /// Type which static field is used if known in parse time
+        /// </summary>
+        public GenericQualifiedName SelfType { get { return Field.TypeName; } }
 
-        public ValuePoint Obj;
+        /// <summary>
+        /// Type which static field is used if needs to be computed
+        /// </summary>
+        public ValuePoint Self;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Field; } }
 
-        public IndirectStaticFieldPoint(IndirectStFldUse field, ValuePoint variable)
+        internal IndirectStaticFieldPoint(IndirectStFldUse field, ValuePoint variable)
         {
             Field = field;
             FieldName = variable;
-            Obj = null;
+            Self = null;
         }
 
-        public IndirectStaticFieldPoint(IndirectStFldUse field, ValuePoint variable, ValuePoint typeName)
+        internal IndirectStaticFieldPoint(IndirectStFldUse field, ValuePoint variable, ValuePoint typeName)
         {
             Field = field;
             FieldName = variable;
-            Obj = typeName;
+            Self = typeName;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
-            if (Obj==null)
+            if (Self==null)
             {
 
-                LValue = Services.Evaluator.ResolveStaticField(TypeName, FieldName.Value.ReadMemory(OutSnapshot));
+                LValue = Services.Evaluator.ResolveStaticField(SelfType, FieldName.Value.ReadMemory(OutSnapshot));
             }
             else
             {
-                var typeValue = Obj.Value.ReadMemory(OutSnapshot);
+                var typeValue = Self.Value.ReadMemory(OutSnapshot);
                 var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
 
                 LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName.Value.ReadMemory(OutSnapshot));
             }
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitIndirectStaticField(this);
@@ -117,12 +147,22 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class VariablePoint : LValuePoint
     {
+        /// <summary>
+        /// Direct variable use represented by current point
+        /// </summary>
         public readonly DirectVarUse Variable;
 
+        /// <summary>
+        /// This object which can specify object which variable is used
+        /// </summary>
         public readonly ValuePoint ThisObj;
 
+        /// <summary>
+        /// Identifier of represented variable
+        /// </summary>
         public readonly VariableIdentifier VariableName;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Variable; } }
 
         internal VariablePoint(DirectVarUse variable, ValuePoint thisObj)
@@ -132,6 +172,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             ThisObj = thisObj;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             if (ThisObj == null)
@@ -144,11 +185,13 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return "$" + Variable.VarName;
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitVariable(this);
@@ -160,6 +203,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class IndirectVariablePoint : LValuePoint
     {
+        /// <summary>
+        /// Indirect variable use represented by current variable
+        /// </summary>
         public readonly IndirectVarUse Variable;
 
         /// <summary>
@@ -167,8 +213,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly ValuePoint VariableName;
 
+        /// <summary>
+        /// This object which can specify object which variable is used
+        /// </summary>
         public readonly ValuePoint ThisObj;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Variable; } }
 
         internal IndirectVariablePoint(IndirectVarUse variable, ValuePoint variableName, ValuePoint thisObj)
@@ -178,6 +228,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             ThisObj = thisObj;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             var varNames = Services.Evaluator.VariableNames(VariableName.Value.ReadMemory(OutSnapshot));
@@ -198,6 +249,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             }
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitIndirectVariable(this);

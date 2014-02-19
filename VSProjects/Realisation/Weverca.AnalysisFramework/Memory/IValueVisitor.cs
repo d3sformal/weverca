@@ -293,13 +293,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         /// <param name="value"></param>
         void VisitSpecialValue(SpecialValue value);
-
-        /// <summary>
-        /// Visits <see cref="AliasValue"/>
-        /// </summary>
-        /// <param name="value"></param>
-        void VisitAliasValue(AliasValue value);
-
+                
         /// <summary>
         /// Visits <see cref="InfoValue"/>
         /// </summary>

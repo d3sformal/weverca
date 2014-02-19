@@ -130,7 +130,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Create program point graph from given declaration
         /// </summary>
-        /// <param name="declaration">Declaration which program point graph is created</param>
+        /// <param name="function">Declaration which program point graph is created</param>
         /// <returns>Created program point graph</returns>
         public static ProgramPointGraph From(FunctionValue function)
         {
@@ -157,6 +157,7 @@ namespace Weverca.AnalysisFramework
         /// Creates program point graph for given function declaration
         /// </summary>
         /// <param name="declaration">Function which program point graph will be created</param>
+        /// <param name="file">File info describing where declaration comes from</param>
         /// <returns>Created program point graph</returns>
         internal static ProgramPointGraph FromSource(FunctionDecl declaration, FileInfo file)
         {
@@ -169,6 +170,7 @@ namespace Weverca.AnalysisFramework
         /// Creates program point graph for given method declaration
         /// </summary>
         /// <param name="declaration">Method which program point graph will be created</param>
+        /// <param name="file">File info describing where declaration comes from</param>
         /// <returns>Created program point graph</returns>
         internal static ProgramPointGraph FromSource(MethodDecl declaration, FileInfo file)
         {
@@ -187,9 +189,7 @@ namespace Weverca.AnalysisFramework
             var ppgraph = new ProgramPointGraph(cfg, null);
             return ppgraph;
         }
-
-
-
+        
         #endregion
 
         #region Graph building
@@ -268,6 +268,8 @@ namespace Weverca.AnalysisFramework
         /// Connect outgoing condition less edge from parentBlock with given child
         /// </summary>
         /// <param name="parentBlock">Parent point block which child block will be connected</param>
+        /// <param name="child">Block connected as child of parent block</param>
+        /// <param name="pendingBlocks">Point blocks which children hasn't been processed yet</param>
         private void connectConditionLessEdge(PointsBlock parentBlock, BasicBlock child, Queue<PointsBlock> pendingBlocks)
         {
             var childBlock = getChildBlock(child, pendingBlocks);

@@ -15,12 +15,22 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class ThrowStmtPoint : ProgramPointBase
     {
+        /// <summary>
+        /// Throw element represented by current point
+        /// </summary>
         public readonly ThrowStmt Throw;
 
+        /// <summary>
+        /// Point representint value throwed by current statement
+        /// </summary>
         public readonly ValuePoint ThrowedValue;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Throw; } }
 
+        /// <summary>
+        /// Branches of throw computations currently available for current point
+        /// </summary>
         public IEnumerable<ThrowInfo> ThrowBranches { get; private set; }
 
         internal ThrowStmtPoint(ThrowStmt throwStmt, ValuePoint throwedValue)
@@ -29,6 +39,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Throw = throwStmt;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             if (ThrowBranches == null)
@@ -41,6 +52,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Flow.SetThrowBranching(ThrowBranches);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitThrow(this);
@@ -52,8 +64,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class GlobalStmtPoint : ProgramPointBase
     {
+        /// <summary>
+        /// Variables that are marked as global with statement represented by current point
+        /// </summary>
         private readonly LValuePoint[] _variables;
 
+        /// <summary>
+        /// Element represented by current point
+        /// </summary>
         public readonly GlobalStmt Global;
 
         /// <summary>
@@ -61,6 +79,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public IEnumerable<LValuePoint> Variables { get { return _variables; } }
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Global; } }
 
 
@@ -70,6 +89,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             _variables = variables;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             var variables = new VariableIdentifier[_variables.Length];
@@ -80,6 +100,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.Evaluator.GlobalStatement(variables);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitGlobal(this);
@@ -91,10 +112,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class EchoStmtPoint : ProgramPointBase
     {
+        /// <summary>
+        /// Parameters available for echo statement represented by current point
+        /// </summary>
         private readonly ValuePoint[] _parameters;
 
+        /// <summary>
+        /// Echo statement represented by current point
+        /// </summary>
         public readonly EchoStmt Echo;
-
+        
+        /// <inheritdoc />
         public override LangElement Partial { get { return Echo; } }
 
         /// <summary>
@@ -108,6 +136,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             _parameters = parameters;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             var values = new MemoryEntry[_parameters.Length];
@@ -119,6 +148,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Services.Evaluator.Echo(Echo, values);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitEcho(this);
@@ -130,6 +160,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class ForeachStmtPoint : ProgramPointBase
     {
+        /// <summary>
+        /// Foreach statement represented by current point
+        /// </summary>
         public readonly ForeachStmt Foreach;
 
         /// <summary>
@@ -147,6 +180,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly LValuePoint ValVar;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Foreach; } }
 
         internal ForeachStmtPoint(ForeachStmt foreachStmt, ValuePoint enumeree, LValuePoint keyVar, LValuePoint valVar)
@@ -157,6 +191,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Enumeree = enumeree;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             var keyVar = KeyVar == null ? null : KeyVar.LValue;
@@ -176,6 +211,9 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// </summary>
     public class JumpStmtPoint : ValuePoint
     {
+        /// <summary>
+        /// Jump statement represented by current point
+        /// </summary>
         public readonly JumpStmt Jump;
 
         /// <summary>
@@ -183,6 +221,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly ValuePoint Expression;
 
+        /// <inheritdoc />
         public override LangElement Partial { get { return Jump; } }
 
         internal JumpStmtPoint(ValuePoint expression, JumpStmt jmp)
@@ -191,6 +230,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Expression = expression;
         }
 
+        /// <inheritdoc />
         protected override void flowThrough()
         {
             MemoryEntry value;
@@ -214,12 +254,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             Value = OutSet.CreateSnapshotEntry(value);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitJump(this);
         }
     }
-
-
-
 }

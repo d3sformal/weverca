@@ -55,6 +55,10 @@ namespace Weverca.AnalysisFramework
             PossibleNames = variableNames.ToArray();
         }
 
+        /// <summary>
+        /// Creates variable entry from given possible names
+        /// </summary>
+        /// <param name="possibleNames">Possible names for variable selector</param>
         public VariableIdentifier(params string[] possibleNames)
             : this((IEnumerable<string>)possibleNames)
         {
