@@ -414,7 +414,7 @@ namespace Weverca.Analysis.FlowResolver
             }
 
             outSet.GetControlVariable(new VariableName(".catchBlocks")).WriteMemory(outSet.Snapshot, new MemoryEntry(outSet.CreateInfo(new TryBlockStack(stack))));
-
+            outSet.GetVariable(catchPoint.CatchDescription.CatchVariable).WriteMemory(outSet.Snapshot, catchPoint.ThrowedValue);
         }
         #endregion
 

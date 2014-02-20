@@ -220,6 +220,22 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string ExceptionCatchTest = @"
+        try
+        {
+        throw new Exception();
+        }
+        catch(Exception $e)
+        {
+        $result=$e;
+        }";
 
+        [TestMethod]
+        public void ExceptionCatch()
+        {
+            var result = TestUtils.ResultTest(ExceptionCatchTest);
+            TestUtils.testType(result, typeof(ObjectValue));
+
+        }
     }
 }
