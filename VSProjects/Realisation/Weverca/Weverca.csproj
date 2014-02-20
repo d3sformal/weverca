@@ -72,7 +72,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="Properties\app.manifest" />
-    <None Include="Weverca_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
