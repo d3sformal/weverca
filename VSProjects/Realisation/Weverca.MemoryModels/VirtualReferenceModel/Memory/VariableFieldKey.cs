@@ -11,6 +11,9 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
+    /// <summary>
+    /// Resolve fielding of non-objects
+    /// </summary>
     class VariableFieldKey : VariableVirtualKeyBase
     {
         private readonly VariableIdentifier _field;

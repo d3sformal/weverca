@@ -168,7 +168,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// fetched some variables from global context also),
         /// or in global context in snapshot belonging to global code
         /// </remarks>
-        /// <param name="name">Name of variable</param>
+        /// <param name="variable">Identifier of variable</param>
         /// <param name="forceGlobalContext">Determine that searching in global context has to be forced</param>
         /// <returns>Readable snapshot entry for variable identifier</returns>
         ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false);
@@ -227,6 +227,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Declare function into global scope
         /// </summary>
         /// <param name="declaration">Function declaration</param>
+        /// <param name="declaringScript">File info about script where function has been declared</param>
         void DeclareGlobal(FunctionDecl declaration, FileInfo declaringScript);
 
         /// <summary>

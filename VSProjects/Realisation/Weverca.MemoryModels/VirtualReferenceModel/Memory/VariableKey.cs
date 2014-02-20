@@ -47,12 +47,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         AllExtends = CallExtends | Local | LocalControl
     }
 
+    /// <summary>
+    /// Key of stored variable within snapshot
+    /// </summary>
     class VariableKey : VariableKeyBase
     {
+        /// <summary>
+        /// Kind of current key
+        /// </summary>
         internal readonly VariableKind Kind;
 
+        /// <summary>
+        /// Name of current key
+        /// </summary>
         internal readonly VariableName Name;
 
+        /// <summary>
+        /// Context stamp of current key
+        /// </summary>
         internal readonly int ContextStamp;
 
         internal VariableKey(VariableKind kind, VariableName name, int contextStamp)
@@ -67,21 +79,25 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             ContextStamp = contextStamp;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format("{0}-{1}|{2}", Name, ContextStamp, Kind);
         }
 
+        /// <inheritdoc />
         internal override VariableInfo GetOrCreateVariable(Snapshot snapshot)
         {
             return snapshot.GetOrCreateInfo(Name, Kind);
         }
 
+        /// <inheritdoc />
         internal override VariableInfo GetVariable(Snapshot snapshot)
         {
             return snapshot.GetInfo(Name, Kind);
         }
 
+        /// <inheritdoc />
         internal override VirtualReference CreateImplicitReference(Snapshot snapshot)
         {
             return new VirtualReference(Name, Kind, ContextStamp);

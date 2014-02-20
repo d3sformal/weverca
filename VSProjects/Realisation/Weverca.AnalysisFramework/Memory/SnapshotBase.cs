@@ -281,13 +281,14 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName);
 
         /// <summary>
-        /// Resolves all possible functions for given functionName
+        /// Resolves all possible methods for given methodName
         /// NOTE:
         ///     Multiple declarations for single functionName can happen for example because of branch merging
         /// </summary>
-        /// <param name="functionName">Name of resolved function</param>
-        /// <returns>Resolved functions</returns>
-        protected abstract IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName);
+        /// <param name="methodName">Name of resolved method</param>
+        /// <param name="selfType">Type where static method is resolved</param>
+        /// <returns>Resolved methods</returns>
+        protected abstract IEnumerable<FunctionValue> resolveStaticMethod(TypeValue selfType, QualifiedName methodName);
 
         /// <summary>
         /// Resolves all possible types for given typeName
@@ -405,6 +406,15 @@ namespace Weverca.AnalysisFramework.Memory
             }
         }
 
+        /// <summary>
+        /// Widen current transaction and process commit.
+        /// Commit started transaction - must return true if the content of the snapshot is different 
+        /// than the content commited by the previous transaction, false otherwise
+        /// NOTE:
+        ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
+        /// </summary>
+        /// <param name="simplifyLimit">Limit number of memory entry possible values count when does simplifying MemoryEntries start</param>s
+        /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
         public void WidenAndCommitTransaction(int simplifyLimit)
         {
             checkFrozenState();
@@ -433,6 +443,10 @@ namespace Weverca.AnalysisFramework.Memory
             return _statistics.Clone();
         }
 
+        /// <summary>
+        /// Set operational mode of current snapshot
+        /// </summary>
+        /// <param name="mode">Operational mode that will be set</param>
         public void SetMode(SnapshotMode mode)
         {
             checkFrozenState();
@@ -481,20 +495,39 @@ namespace Weverca.AnalysisFramework.Memory
         #endregion
 
         #region Implementation of ISnapshotReadWrite interface
-
-        #region TODO: Implement as singletons!!!
+        
+        /// <inheritdoc />
         public AnyValue AnyValue { get { return new AnyValue(); } }
-        public AnyStringValue AnyStringValue { get { return new AnyStringValue(); } }
-        public AnyBooleanValue AnyBooleanValue { get { return new AnyBooleanValue(); } }
-        public AnyIntegerValue AnyIntegerValue { get { return new AnyIntegerValue(); } }
-        public AnyFloatValue AnyFloatValue { get { return new AnyFloatValue(); } }
-        public AnyLongintValue AnyLongintValue { get { return new AnyLongintValue(); } }
-        public AnyObjectValue AnyObjectValue { get { return new AnyObjectValue(); } }
-        public AnyArrayValue AnyArrayValue { get { return new AnyArrayValue(); } }
-        public AnyResourceValue AnyResourceValue { get { return new AnyResourceValue(); } }
-        public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
-        #endregion
 
+        /// <inheritdoc />
+        public AnyStringValue AnyStringValue { get { return new AnyStringValue(); } }
+
+        /// <inheritdoc />
+        public AnyBooleanValue AnyBooleanValue { get { return new AnyBooleanValue(); } }
+
+        /// <inheritdoc />
+        public AnyIntegerValue AnyIntegerValue { get { return new AnyIntegerValue(); } }
+
+        /// <inheritdoc />
+        public AnyFloatValue AnyFloatValue { get { return new AnyFloatValue(); } }
+
+        /// <inheritdoc />
+        public AnyLongintValue AnyLongintValue { get { return new AnyLongintValue(); } }
+
+        /// <inheritdoc />
+        public AnyObjectValue AnyObjectValue { get { return new AnyObjectValue(); } }
+
+        /// <inheritdoc />
+        public AnyArrayValue AnyArrayValue { get { return new AnyArrayValue(); } }
+
+        /// <inheritdoc />
+        public AnyResourceValue AnyResourceValue { get { return new AnyResourceValue(); } }
+
+        /// <inheritdoc />
+        public UndefinedValue UndefinedValue { get { return new UndefinedValue(); } }
+
+
+        /// <inheritdoc />
         public InfoValue<T> CreateInfo<T>(T data)
         {
             return new InfoValue<T>(data);
@@ -727,6 +760,7 @@ namespace Weverca.AnalysisFramework.Memory
             return readInfo(variable);
         }
 
+        /// <inheritdoc />
         public void Extend(params ISnapshotReadonly[] inputs)
         {
             checkCanUpdate();
@@ -734,6 +768,7 @@ namespace Weverca.AnalysisFramework.Memory
             _statistics.Report(Statistic.SnapshotExtendings);
         }
 
+        /// <inheritdoc />
         public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             checkCanUpdate();
@@ -769,18 +804,22 @@ namespace Weverca.AnalysisFramework.Memory
             _statistics.Report(Statistic.DeclaredTypes);
             declareGlobal(type);
         }
-
+        
+        /// <inheritdoc />
         public IEnumerable<FunctionValue> ResolveFunction(QualifiedName functionName)
         {
             _statistics.Report(Statistic.FunctionResolvings);
             return resolveFunction(functionName);
         }
 
+
+        /// <inheritdoc />
         public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
             return resolveStaticMethod(value, methodName);
         }
 
+        /// <inheritdoc />
         public IEnumerable<TypeValue> ResolveType(QualifiedName typeName)
         {
             _statistics.Report(Statistic.TypeResolvings);

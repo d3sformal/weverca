@@ -35,6 +35,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         /// Create virtual reference according to originatedVariable
         /// </summary>
         /// <param name="originatedVariable">Variable determining reference target</param>
+        /// <param name="kind">Kind of virtual reference</param>
+        /// <param name="stamp">Context stamp of virtual reference</param>
         internal VirtualReference(VariableName originatedVariable, VariableKind kind, int stamp)
         {
             OriginatedVariable = originatedVariable;

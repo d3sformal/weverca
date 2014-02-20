@@ -22,15 +22,17 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         /// <summary>
         /// Getter called for every attempt to read current variable
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="s">Context snapshot of getter</param>
+        /// <param name="storedValues">Values that are already stored</param>
         /// <returns></returns>
         protected abstract MemoryEntry getter(Snapshot s, MemoryEntry storedValues);
 
         /// <summary>
         /// Setter called for every attempt to write into current variable
         /// </summary>
-        /// <param name="s"></param>
-        /// <param name="writtenValue"></param>
+        /// <param name="s">Context snapshot of getter</param>
+        /// <param name="storedValues">Values that are already stored</param>
+        /// <param name="writtenValue">Value that is written by setter</param>
         /// <returns>Memory entry for backwrite into parentVariable</returns>
         protected abstract MemoryEntry setter(Snapshot s, MemoryEntry storedValues, MemoryEntry writtenValue);
 

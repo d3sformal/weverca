@@ -8,6 +8,9 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
+    /// <summary>
+    /// Alias entry on reference indexed by <see cref="VariableKeyBase"/>
+    /// </summary>
     class ReferenceAliasEntry : AliasEntry
     {
         internal readonly VariableKeyBase Key;

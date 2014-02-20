@@ -7,21 +7,42 @@ using PHP.Core;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
+    /// <summary>
+    /// Information about variable stored within snapshot
+    /// </summary>
     class VariableInfo
     {
+        /// <summary>
+        /// List of current variable references
+        /// </summary>
         internal List<VirtualReference> References { get; private set; }
+
+        /// <summary>
+        /// Name of variable
+        /// </summary>
         internal readonly VariableName Name;
-        public VariableKind Kind;
 
-        public bool IsGlobal { get { return Kind == VariableKind.Global; } }
+        /// <summary>
+        /// Kind of current variable
+        /// </summary>
+        internal VariableKind Kind;
 
-        public VariableInfo(VariableName name, VariableKind kind)
+        /// <summary>
+        /// Determine that variable is global
+        /// </summary>
+        internal bool IsGlobal { get { return Kind == VariableKind.Global; } }
+
+        internal VariableInfo(VariableName name, VariableKind kind)
         {
             References = new List<VirtualReference>();
             Kind = kind;
             Name = name;
         }
 
+        /// <summary>
+        /// Clone variable info - to be possible use variable info in another snapshot
+        /// </summary>
+        /// <returns>Current variable clone</returns>
         internal VariableInfo Clone()
         {
             var result = new VariableInfo(Name,Kind);
@@ -30,6 +51,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return result;
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             int sum = 0;
@@ -40,6 +62,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return sum;
         }
 
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             var o = obj as VariableInfo;
@@ -58,6 +81,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return !hasDifferentReferences;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format("{0}|{1}", Name, Kind);

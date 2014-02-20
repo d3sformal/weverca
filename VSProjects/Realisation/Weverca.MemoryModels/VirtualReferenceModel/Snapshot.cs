@@ -51,6 +51,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         internal MemoryAssistantBase MemoryAssistant { get { return Assistant; } }
 
+        /// <summary>
+        /// Create snapshot of Virtual Reference memory model
+        /// </summary>
         public Snapshot()
         {
             _globals = new VariableContainer(VariableKind.Global, this);
@@ -65,6 +68,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Snapshot manipulation
 
+        /// <inheritdoc />
         protected override void startTransaction()
         {
 
@@ -173,6 +177,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         }
 
+        /// <inheritdoc />
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             switch (CurrentMode)
@@ -271,7 +276,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-
+        /// <inheritdoc />
         protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
         {
             switch (CurrentMode)
@@ -287,7 +292,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        protected void mergeWithCallLevelInfo(ISnapshotReadonly[] callOutput)
+        private void mergeWithCallLevelInfo(ISnapshotReadonly[] callOutput)
         {
             var isFirst = true;
             foreach (Snapshot callInput in callOutput)
@@ -297,7 +302,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        protected void mergeWithCallLevelMemory(ISnapshotReadonly[] callOutput)
+        private void mergeWithCallLevelMemory(ISnapshotReadonly[] callOutput)
         {
             var isFirst = true;
             foreach (Snapshot callInput in callOutput)
@@ -316,6 +321,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Snapshot entry API
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobal)
         {
             var kind = repairKind(VariableKind.Local, forceGlobal);
@@ -330,16 +336,19 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new SnapshotStorageEntry(variable, false, storages.ToArray());
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
             return new SnapshotStorageEntry(new VariableIdentifier(name), false, new[] { getOrCreateKey(name, VariableKind.GlobalControl) });
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
             return new SnapshotStorageEntry(new VariableIdentifier(name), false, new[] { getOrCreateKey(name, VariableKind.LocalControl) });
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
             return new SnapshotMemoryEntry(this, entry);
@@ -537,7 +546,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
 
-        protected IEnumerable<MemberIdentifier> iterateIndexes(AssociativeArray iteratedArray)
+        private IEnumerable<MemberIdentifier> iterateIndexes(AssociativeArray iteratedArray)
         {
             var arrayPrefix = string.Format("$arr{0}[", iteratedArray.UID);
             var indexes = new List<MemberIdentifier>();
@@ -954,8 +963,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #endregion
 
         #region Object operations
-
-
+        
+        /// <inheritdoc />
         protected override void initializeObject(ObjectValue createdObject, TypeValue type)
         {
             var info = getObjectInfoStorage(createdObject);
@@ -964,6 +973,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(info, new MemoryEntry(type));
         }
 
+        /// <inheritdoc />
         protected override TypeValue objectType(ObjectValue objectValue)
         {
             var info = getObjectInfoStorage(objectValue);
@@ -1020,6 +1030,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Array operations
 
+        /// <inheritdoc />
         protected override void initializeArray(AssociativeArray createdArray)
         {
             //TODO initialize array
@@ -1225,11 +1236,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Building string representation of snapshot
 
+
+        /// <inheritdoc />
         public override string ToString()
         {
             return Representation;
         }
 
+        /// <summary>
+        /// String representation of current snapshot
+        /// </summary>
         public string Representation
         {
             get
@@ -1237,6 +1253,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
                 return GetRepresentation();
             }
         }
+
+        /// <summary>
+        /// Create string representation of current snapshot
+        /// </summary>
+        /// <returns>Created representation</returns>
         public string GetRepresentation()
         {
             var result = new StringBuilder();
@@ -1295,12 +1316,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #endregion
 
 
-        //========================OLD API IMPLEMENTATION=======================
-        #region OLD API related methods (will be removed after backcompatibility won't be needed)
-        
-      
-        /// <inheritdoc />
-        protected bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
+
+        private bool tryReadValue(VariableName sourceVar, out MemoryEntry entry, bool forceGlobalContext)
         {
             var kind = repairKind(VariableKind.Local, forceGlobalContext);
             return tryReadValue(new VariableKey(kind, sourceVar, CurrentContextStamp), out entry);
@@ -1320,6 +1337,8 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             entry = resolveReferences(info.References);
             return true;
         }
+
+        #region Info values manipulation
 
         /// <inheritdoc />
         protected override void setInfo(Value value, params InfoValue[] info)
@@ -1355,15 +1374,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return getInfoValues(storage);
         }
 
-        /// <inheritdoc />
-        protected VariableName infoStorage(VariableName variable)
+        private VariableName infoStorage(VariableName variable)
         {
             var storage = string.Format(".info_{0}", variable.Value);
             return new VariableName(storage);
         }
 
-        /// <inheritdoc />
-        protected VariableName infoStorage(Value value)
+        private VariableName infoStorage(Value value)
         {
             var storage = string.Format(".value_info-{0}", value.UID);
             return new VariableName(storage);
@@ -1391,6 +1408,5 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         #endregion
-
     }
 }

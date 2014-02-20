@@ -12,14 +12,25 @@ using Weverca.MemoryModels.VirtualReferenceModel.Containers;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 {
-
+    /// <summary>
+    /// Getter delegate for <see cref="CallbackReference"/>
+    /// </summary>
+    /// <param name="snapshot">Snapshot where getter is called</param>
+    /// <returns>Got entry</returns>
     delegate MemoryEntry GetEntry(Snapshot snapshot);
 
+    /// <summary>
+    /// Setter delegate for <see cref="CallbackReference"/>
+    /// </summary>
+    /// <param name="snapshot">Snapshot where setter is called</param>
+    /// <param name="entry">Set entry</param>
     delegate void SetEntry(Snapshot snapshot, MemoryEntry entry);
 
+    /// <summary>
+    /// Represents reference which causes callback invokation when attempted to set or get value
+    /// </summary>
     class CallbackReference : VirtualReference
     {
-
         private readonly GetEntry _getter;
 
         private readonly SetEntry _setter;

@@ -8,8 +8,14 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
-    class SnapshotAliasEntry:AliasEntry
+    /// <summary>
+    /// Alias on <see cref="SnapshotMemoryEntry"/>
+    /// </summary>
+    class SnapshotAliasEntry : AliasEntry
     {
+        /// <summary>
+        /// Aliased entry
+        /// </summary>
         internal readonly SnapshotMemoryEntry SnapshotEntry;
 
         internal SnapshotAliasEntry(SnapshotMemoryEntry entry)

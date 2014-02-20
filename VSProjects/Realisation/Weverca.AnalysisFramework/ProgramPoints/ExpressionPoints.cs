@@ -216,14 +216,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var value = Services.Evaluator.BinaryEx(leftValue,
                 Expression.PublicOperation, rightValue);
 
-            Value = OutSet.CreateSnapshotEntry(value);
+            SetValueContent(value);
         }
 
+        /// <summary>
+        /// Set content of Value - result of binary operation
+        /// </summary>
+        /// <param name="valueContent">Content of value</param>
         public void SetValueContent(MemoryEntry valueContent)
         {
             Value = OutSet.CreateSnapshotEntry(valueContent);
         }
 
+        /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitBinary(this);

@@ -11,9 +11,11 @@ using Weverca.MemoryModels.VirtualReferenceModel.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
+    /// <summary>
+    /// Visitor used for resolving fields on <see cref="MemoryEntry"/>
+    /// </summary>
     class FieldStorageVisitor : AbstractValueVisitor
     {
-
         /// <summary>
         /// Determine that index with active reference is needed
         /// </summary>
@@ -67,23 +69,29 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             Storages = _fieldStorages.ToArray();
         }
 
+        #region Visitor overrides
+
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             //Temporary field is needed for resolving given value
             _needsTemporaryField = true;
         }
 
+        /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
             var obj = getImplicitObject();
             applyField(obj);
         }
 
+        /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
             applyField(value);
         }
 
+        /// <inheritdoc />
         public override void VisitAnyValue(AnyValue value)
         {
             //read fielded value through memory assistant
@@ -91,6 +99,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             applyFieldWithWriteBack(value, fielded);
         }
+        #endregion
+
+        #region Private helpers
 
         private void applyFieldWithWriteBack(Value value, MemoryEntry fielded)
         {
@@ -111,5 +122,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             return _implicitObject;
         }
+
+        #endregion
     }
 }

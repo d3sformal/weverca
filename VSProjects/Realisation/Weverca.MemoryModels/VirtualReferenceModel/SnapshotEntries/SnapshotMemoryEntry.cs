@@ -11,12 +11,29 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
+    /// <summary>
+    /// Memory entry wrapping <see cref="WrappedEntry"/>
+    /// </summary>
     internal class SnapshotMemoryEntry : ReadWriteSnapshotEntryBase
     {
+        /// <summary>
+        /// Wrapped memory entry
+        /// </summary>
         internal MemoryEntry WrappedEntry;
-        private MemoryEntry WrappedEntryInfoLevel = null;
+
+        /// <summary>
+        /// Wrapped memory entry used for info level
+        /// </summary>
+        internal MemoryEntry WrappedEntryInfoLevel = null;
+
+        /// <summary>
+        /// Undefined representation of Wrapped entry
+        /// </summary>
         private static MemoryEntry UndefinedEntry = null;
 
+        /// <summary>
+        /// Determine that strong writes should be processed
+        /// </summary>
         internal bool ForceStrong { get { return WrappedEntry.Count > 1; } }
 
         internal SnapshotMemoryEntry(SnapshotBase context, MemoryEntry wrappedEntry)
@@ -24,6 +41,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             writeMemory(context, wrappedEntry, true);
         }
 
+        #region ReadWriteSnapshotEntryBase overrides
+
+        /// <inheritdoc />
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             switch (context.CurrentMode)
@@ -39,31 +59,37 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             }
         }
 
+        /// <inheritdoc />
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override bool isDefined(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
             yield return new SnapshotAliasEntry(this);
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
         {
             return C(context).ResolveMethod(WrappedEntry, methodName);
         }
 
+        /// <inheritdoc />
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
             switch (context.CurrentMode)
@@ -78,6 +104,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             }
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context,
             MemberIdentifier index)
         {
@@ -105,6 +132,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             return new SnapshotStorageEntry(null, ForceStrong, allKeys.ToArray());
         }
 
+        /// <inheritdoc />
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context,
             VariableIdentifier field)
         {
@@ -132,20 +160,31 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             return new SnapshotStorageEntry(null, ForceStrong, allKeys.ToArray());
         }
 
+        /// <inheritdoc />
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
             return C(context).IterateFields(WrappedEntry);
         }
 
+        /// <inheritdoc />
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             return C(context).IterateIndexes(WrappedEntry);
         }
+
+        /// <inheritdoc />
+        protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
+        {
+            return C(context).ResolveObjectTypes(WrappedEntry);
+        }
+#endregion
+        #region Private helpers 
 
         private MemoryEntry getUndefinedMemoryEntry(SnapshotBase snapshot)
         {
@@ -173,9 +212,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             }
         }
 
-        protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
-        {
-            return C(context).ResolveObjectTypes(WrappedEntry);
-        }
+
+        #endregion
     }
 }

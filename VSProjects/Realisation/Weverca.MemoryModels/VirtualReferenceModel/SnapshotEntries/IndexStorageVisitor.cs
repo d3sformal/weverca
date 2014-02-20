@@ -10,6 +10,9 @@ using Weverca.MemoryModels.VirtualReferenceModel.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 {
+    /// <summary>
+    /// Visitor used for resolving indexes on <see cref="MemoryEntry"/>
+    /// </summary>
     class IndexStorageVisitor : AbstractValueVisitor
     {
         /// <summary>
@@ -75,12 +78,16 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             IndexedValue = new SnapshotStorageEntry(null, forceStrong, _indexStorages.ToArray());
         }
 
+        #region Visitor overrides
+
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             _hasOnlyArrays = false;
             _needsTemporaryIndex = true;
         }
 
+        /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
             _hasOnlyArrays = false;
@@ -90,11 +97,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             applyIndex(array);
         }
 
+        /// <inheritdoc />
         public override void VisitAssociativeArray(AssociativeArray value)
         {
             applyIndex(value);
         }
 
+        /// <inheritdoc />
         public override void VisitAnyValue(AnyValue value)
         {
             //read indexed value through memory assistant
@@ -102,6 +111,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             applyIndexWithWriteBack(value, indexed);
         }
+
+        #endregion
+
+        #region Private helpers
 
         private void applyIndex(AssociativeArray array)
         {
@@ -125,5 +138,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
 
             return implicitArray;
         }
+
+        #endregion
     }
 }

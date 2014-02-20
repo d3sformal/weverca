@@ -147,7 +147,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </value>
         internal int CallLevel { get; private set; }
 
-        internal MemoryAssistantBase Assistant { get { return base.Assistant; } }
+        internal new MemoryAssistantBase  Assistant { get { return base.Assistant; } }
 
         private TemporaryIndex returnIndex;
 

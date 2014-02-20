@@ -9,6 +9,9 @@ using Weverca.MemoryModels.VirtualReferenceModel.Memory;
 
 namespace Weverca.MemoryModels.VirtualReferenceModel.Containers
 {
+    /// <summary>
+    /// Container for data stored within owning snapshot
+    /// </summary>
     class DataContainer
     {
         private Dictionary<VirtualReference, MemoryEntry> _oldData = new Dictionary<VirtualReference, MemoryEntry>();

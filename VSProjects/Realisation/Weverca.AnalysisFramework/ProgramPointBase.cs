@@ -62,6 +62,12 @@ namespace Weverca.AnalysisFramework
         public abstract LangElement Partial { get; }
 
         /// <summary>
+        /// Method for accepting visitors
+        /// </summary>
+        /// <param name="visitor">Accepted visitor</param>
+        internal abstract void Accept(ProgramPointVisitor visitor);
+
+        /// <summary>
         /// Input snapshot of this program point
         /// </summary>
         public SnapshotBase InSnapshot { get { return _inSet.Snapshot; } }
@@ -326,6 +332,10 @@ namespace Weverca.AnalysisFramework
             this.Extension.Sink.OwningPPGraph = owningGraph;
         }
 
+        /// <summary>
+        /// Set operational mode of current snapshot
+        /// </summary>
+        /// <param name="mode">Operational mode that will be set</param>
         internal void SetMode(SnapshotMode mode)
         {
             if (_inSet != null)
@@ -346,7 +356,7 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
-        internal abstract void Accept(ProgramPointVisitor visitor);
+
 
         #region Debugging helpers
 

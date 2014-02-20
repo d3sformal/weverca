@@ -197,8 +197,14 @@ namespace Weverca.AnalysisFramework.Memory
         }
     }
 
+    /// <summary>
+    /// Represents lambda function created as value
+    /// </summary>
     public class LambdaFunctionValue : FunctionValue
     {
+        /// <summary>
+        /// Declaration of represented lambda function
+        /// </summary>
         public readonly LambdaFunctionExpr Declaration;
 
         internal LambdaFunctionValue(LambdaFunctionExpr declaration, FileInfo declaringScript)

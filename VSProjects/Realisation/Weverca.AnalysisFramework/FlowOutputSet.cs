@@ -236,10 +236,8 @@ namespace Weverca.AnalysisFramework
             Snapshot.DeclareGlobal(declaration);
         }
 
-        /// <summary>
-        /// Expects FlowInput set objects
-        /// </summary>
-        /// <param name="inputs"></param>
+
+        /// <inheritdoc />
         public void Extend(params ISnapshotReadonly[] inputs)
         {
             var snapshots = getSnapshots(inputs);
@@ -247,6 +245,8 @@ namespace Weverca.AnalysisFramework
             Snapshot.Extend(snapshots);
         }
 
+
+        /// <inheritdoc />
         public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             var snapshots = getSnapshots(callOutputs);
@@ -258,7 +258,10 @@ namespace Weverca.AnalysisFramework
 
         #region Private helpers
 
-
+        /// <summary>
+        /// Determine that Flow set should be widen based on commit count
+        /// </summary>
+        /// <returns>True if set should be widen, false otherwise</returns>
         private bool shouldWiden()
         {
             return _widenLimit < _commitCount;

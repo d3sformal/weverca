@@ -273,15 +273,15 @@ namespace Weverca.AnalysisFramework.Memory
         #region Type values
 
         /// <summary>
-        /// Visits <see cref="TypeValueBase"/>
+        /// Visits <see cref="TypeValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Visited value</param>
         void VisitTypeValue(TypeValue value);
 
         /// <summary>
-        /// Visits <see cref="TypeValue"/>
+        /// Visits native <see cref="TypeValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Visited value</param>
         void VisitNativeTypeValue(TypeValue value);
 
         #endregion Type values
@@ -291,20 +291,20 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Visits <see cref="SpecialValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Visited value</param>
         void VisitSpecialValue(SpecialValue value);
                 
         /// <summary>
         /// Visits <see cref="InfoValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">Visited value</param>
         void VisitInfoValue(InfoValue value);
 
         /// <summary>
         /// Visits <see cref="InfoValue{T}"/>
         /// </summary>
         /// <typeparam name="T">Type of meta information</typeparam>
-        /// <param name="value"></param>
+        /// <param name="value">Visited value</param>
         void VisitGenericInfoValue<T>(InfoValue<T> value);
 
         #endregion Special values
