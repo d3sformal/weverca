@@ -117,70 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Autoload" xml:space="preserve">
-    <value>__autoload redeclaration presence or spl_autoload_register call: {0}</value>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="php_classes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\php_classes.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
-  <data name="ClassAlias" xml:space="preserve">
-    <value>Class alias construction presence: {0}</value>
+  <data name="php_constants" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\php_constants.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
-  <data name="ClassCoupling" xml:space="preserve">
-    <value>Class coupling: {0}</value>
-  </data>
-  <data name="ClassOrInterface" xml:space="preserve">
-    <value>Class construct presence: {0}</value>
-  </data>
-  <data name="Cyclomacity" xml:space="preserve">
-    <value>Cyclomatic complexity: {0}</value>
-  </data>
-  <data name="DuckTyping" xml:space="preserve">
-    <value>Duck Typing presence: {0}</value>
-  </data>
-  <data name="DynamicCall" xml:space="preserve">
-    <value>Dynamic call presence: {0}</value>
-  </data>
-  <data name="DynamicDereference" xml:space="preserve">
-    <value>Dynamic dereference presence: {0}</value>
-  </data>
-  <data name="DynamicInclude" xml:space="preserve">
-    <value>Include based on dynamic variable presence: {0}</value>
-  </data>
-  <data name="Eval" xml:space="preserve">
-    <value>Eval function usage: {0}</value>
-  </data>
-  <data name="InsideFunctionDeclaration" xml:space="preserve">
-    <value>Declaration of class/function inside another function presence: {0}</value>
-  </data>
-  <data name="MagicMethods" xml:space="preserve">
-    <value>Magic function presence: {0}</value>
-  </data>
-  <data name="MaxInheritanceDepth" xml:space="preserve">
-    <value>Maximum inheritance depth: {0}</value>
-  </data>
-  <data name="MaxMethodOverridingDepth" xml:space="preserve">
-    <value>Maximum method overriding depth: {0}</value>
-  </data>
-  <data name="MySql" xml:space="preserve">
-    <value>My SQL functions presence: {0}</value>
-  </data>
-  <data name="NumberOfLines" xml:space="preserve">
-    <value>Number of lines: {0}</value>
-  </data>
-  <data name="NumberOfSources" xml:space="preserve">
-    <value>Number of sources: {0}</value>
-  </data>
-  <data name="PassingByReferenceAtCallSide" xml:space="preserve">
-    <value>Passing variable by reference at call side: {0}</value>
-  </data>
-  <data name="PhpFunctionsCoupling" xml:space="preserve">
-    <value>PHP standard functions coupling: {0}</value>
-  </data>
-  <data name="References" xml:space="preserve">
-    <value>Alias presence: {0}</value>
-  </data>
-  <data name="Session" xml:space="preserve">
-    <value>Session usage: {0}</value>
-  </data>
-  <data name="SuperGlobalVariable" xml:space="preserve">
-    <value>Super global variable usage: {0}</value>
+  <data name="php_functions" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\php_functions.xml;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
 </root>

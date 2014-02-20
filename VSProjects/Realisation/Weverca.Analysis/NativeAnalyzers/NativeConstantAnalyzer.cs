@@ -10,6 +10,7 @@ using PHP.Core;
 using System.Xml;
 using System.IO;
 using Weverca.AnalysisFramework;
+using Weverca.Analysis.Properties;
 namespace Weverca.Analysis
 {
 
@@ -66,112 +67,118 @@ namespace Weverca.Analysis
         /// <param name="outset">FlowOutputSet</param>
         private NativeConstantAnalyzer(FlowOutputSet outset)
         {
-            XmlReader reader = XmlReader.Create(new StreamReader("php_constants.xml"));
-            
-            string value = "";
-            string name = "";
-            string type = "";
-            HashSet<string> types = new HashSet<string>();
-            while (reader.Read())
-            {
-                switch (reader.NodeType)
-                {
-                    case XmlNodeType.Element:
-                        if (reader.Name == "constant") {
-                            name = reader.GetAttribute("name");
-                            value = reader.GetAttribute("value");
-                            
-                        }
-                        else if (reader.Name == "type") {
-                            type = reader.GetAttribute("name");
-                            types.Add(type);
-                        }
 
-                        break;
-                    case XmlNodeType.Text:
-                        break;
-                    case XmlNodeType.XmlDeclaration:
-                    case XmlNodeType.ProcessingInstruction:
-                        break;
-                    case XmlNodeType.Comment:
-                        break;
-                    case XmlNodeType.EndElement:
-                        if (reader.Name == "constant")
-                        {
-                            QualifiedName qname=new QualifiedName(new Name(name));
-                            Value constantValue=null;
-                            switch(type){
-                                case "boolean":
-                                    if (isValueUnknown(value))
-                                    {
-                                        constantValue = outset.AnyBooleanValue;
-                                    }
-                                    else
-                                    {
-                                        if (value == "1")
+            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(Resources.php_constants)))
+            using (XmlReader reader = XmlReader.Create(stream))
+            {
+                string value = "";
+                string name = "";
+                string type = "";
+                HashSet<string> types = new HashSet<string>();
+                while (reader.Read())
+                {
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            if (reader.Name == "constant")
+                            {
+                                name = reader.GetAttribute("name");
+                                value = reader.GetAttribute("value");
+
+                            }
+                            else if (reader.Name == "type")
+                            {
+                                type = reader.GetAttribute("name");
+                                types.Add(type);
+                            }
+
+                            break;
+                        case XmlNodeType.Text:
+                            break;
+                        case XmlNodeType.XmlDeclaration:
+                        case XmlNodeType.ProcessingInstruction:
+                            break;
+                        case XmlNodeType.Comment:
+                            break;
+                        case XmlNodeType.EndElement:
+                            if (reader.Name == "constant")
+                            {
+                                QualifiedName qname = new QualifiedName(new Name(name));
+                                Value constantValue = null;
+                                switch (type)
+                                {
+                                    case "boolean":
+                                        if (isValueUnknown(value))
                                         {
-                                            constantValue = outset.CreateBool(true);
+                                            constantValue = outset.AnyBooleanValue;
                                         }
                                         else
                                         {
-                                            constantValue = outset.CreateBool(false);
+                                            if (value == "1")
+                                            {
+                                                constantValue = outset.CreateBool(true);
+                                            }
+                                            else
+                                            {
+                                                constantValue = outset.CreateBool(false);
+                                            }
                                         }
-                                    }
-                                    break;
-                                case "integer":
-                                    if (isValueUnknown(value))
-                                    {
-                                        constantValue = outset.AnyIntegerValue;
-                                    }
-                                    else
-                                    {
-                                        constantValue = outset.CreateInt(int.Parse(value));
-                                    }
-                                    break;
-                                case "string":
-                                    if (isValueUnknown(value))
-                                    {
-                                        constantValue = outset.AnyStringValue;
-                                    }
-                                    else
-                                    {
-                                        constantValue = outset.CreateString(value);
-                                    }
-                                    break;
-                                case "NULL":
-                                    constantValue = outset.UndefinedValue;
-                                    break;
-                                case "resource":
-                                    constantValue = outset.AnyResourceValue;
-                                    break;
-                                case "double":
-                                    if (isValueUnknown(value))
-                                    {
-                                        constantValue = outset.AnyFloatValue;
-                                    }
-                                    else
-                                    {
-                                        switch (value)
+                                        break;
+                                    case "integer":
+                                        if (isValueUnknown(value))
                                         {
-                                            case "NAN":
-                                                constantValue = outset.CreateDouble(double.NaN);
-                                                break;
-                                            case "INF":
-                                                constantValue = outset.CreateDouble(double.PositiveInfinity);
-                                                break;
-                                            default:
-                                                constantValue = outset.CreateDouble(double.Parse(value));
-                                                break;
+                                            constantValue = outset.AnyIntegerValue;
                                         }
-                                    }
-                                    break;
-                                default:
-                                    constantValue = outset.AnyValue;
-                                    break;
+                                        else
+                                        {
+                                            constantValue = outset.CreateInt(int.Parse(value));
+                                        }
+                                        break;
+                                    case "string":
+                                        if (isValueUnknown(value))
+                                        {
+                                            constantValue = outset.AnyStringValue;
+                                        }
+                                        else
+                                        {
+                                            constantValue = outset.CreateString(value);
+                                        }
+                                        break;
+                                    case "NULL":
+                                        constantValue = outset.UndefinedValue;
+                                        break;
+                                    case "resource":
+                                        constantValue = outset.AnyResourceValue;
+                                        break;
+                                    case "double":
+                                        if (isValueUnknown(value))
+                                        {
+                                            constantValue = outset.AnyFloatValue;
+                                        }
+                                        else
+                                        {
+                                            switch (value)
+                                            {
+                                                case "NAN":
+                                                    constantValue = outset.CreateDouble(double.NaN);
+                                                    break;
+                                                case "INF":
+                                                    constantValue = outset.CreateDouble(double.PositiveInfinity);
+                                                    break;
+                                                default:
+                                                    constantValue = outset.CreateDouble(double.Parse(value));
+                                                    break;
+                                            }
+                                        }
+                                        break;
+                                    default:
+                                        constantValue = outset.AnyValue;
+                                        break;
+                                }
+                                constants.Add(qname, new NativeConstant(qname, constantValue));
                             }
-                            constants.Add(qname,new NativeConstant(qname,constantValue));
-                        }
-                        break;
+                            break;
+                    }
                 }
             }
             /*

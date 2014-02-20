@@ -179,70 +179,72 @@ namespace Weverca.Analysis
             string returnType = "";
             string functionAlias = "";
             List<NativeFunctionArgument> arguments = new List<NativeFunctionArgument>();
-            XmlReader reader = XmlReader.Create(new StreamReader(Settings.Default.PhpFunctionsFile));
 
-            while (reader.Read())
+            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(Resources.php_functions)))
+            using (XmlReader reader = XmlReader.Create(stream))
             {
-                switch (reader.NodeType)
+                while (reader.Read())
                 {
-                    case XmlNodeType.Element:
-                        if (reader.Name == "function")
-                        {
-                            arguments = new List<NativeFunctionArgument>();
-                            function = reader.GetAttribute("name");
-                            returnType = reader.GetAttribute("returnType");
-                            functionAlias = reader.GetAttribute("alias");
-                            QualifiedName functionName = new QualifiedName(new Name(function));
-                            if (functionAlias != null)
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            if (reader.Name == "function")
                             {
-                                typeModeledFunctions[functionName] = typeModeledFunctions[new QualifiedName(new Name(functionAlias))];
+                                arguments = new List<NativeFunctionArgument>();
+                                function = reader.GetAttribute("name");
+                                returnType = reader.GetAttribute("returnType");
+                                functionAlias = reader.GetAttribute("alias");
+                                QualifiedName functionName = new QualifiedName(new Name(function));
+                                if (functionAlias != null)
+                                {
+                                    typeModeledFunctions[functionName] = typeModeledFunctions[new QualifiedName(new Name(functionAlias))];
+                                }
+                                returnTypes.Add(reader.GetAttribute("returnType"));
                             }
-                            returnTypes.Add(reader.GetAttribute("returnType"));
-                        }
-                        else if (reader.Name == "arg")
-                        {
-                            types.Add(reader.GetAttribute("type"));
-                            bool optional = false;
-                            bool byReference = false;
-                            bool dots = false;
-                            if (reader.GetAttribute("optional") == "true")
+                            else if (reader.Name == "arg")
                             {
-                                optional = true;
+                                types.Add(reader.GetAttribute("type"));
+                                bool optional = false;
+                                bool byReference = false;
+                                bool dots = false;
+                                if (reader.GetAttribute("optional") == "true")
+                                {
+                                    optional = true;
+                                }
+                                if (reader.GetAttribute("byReference") == "true")
+                                {
+                                    byReference = true;
+                                }
+                                if (reader.GetAttribute("dots") == "true")
+                                {
+                                    dots = true;
+                                }
+                                NativeFunctionArgument argument = new NativeFunctionArgument(reader.GetAttribute("type"), optional, byReference, dots);
+                                arguments.Add(argument);
                             }
-                            if (reader.GetAttribute("byReference") == "true")
+                            break;
+                        case XmlNodeType.Text:
+                            break;
+                        case XmlNodeType.XmlDeclaration:
+                        case XmlNodeType.ProcessingInstruction:
+                            break;
+                        case XmlNodeType.Comment:
+                            break;
+                        case XmlNodeType.EndElement:
+                            if (reader.Name == "function")
                             {
-                                byReference = true;
-                            }
-                            if (reader.GetAttribute("dots") == "true")
-                            {
-                                dots = true;
-                            }
-                            NativeFunctionArgument argument = new NativeFunctionArgument(reader.GetAttribute("type"), optional, byReference, dots);
-                            arguments.Add(argument);
-                        }
-                        break;
-                    case XmlNodeType.Text:
-                        break;
-                    case XmlNodeType.XmlDeclaration:
-                    case XmlNodeType.ProcessingInstruction:
-                        break;
-                    case XmlNodeType.Comment:
-                        break;
-                    case XmlNodeType.EndElement:
-                        if (reader.Name == "function")
-                        {
-                            QualifiedName functionName = new QualifiedName(new Name(function));
-                            if (!typeModeledFunctions.ContainsKey(functionName))
-                            {
-                                typeModeledFunctions[functionName] = new List<NativeFunction>();
-                            }
-                            typeModeledFunctions[functionName].Add(new NativeFunction(functionName, returnType, arguments));
+                                QualifiedName functionName = new QualifiedName(new Name(function));
+                                if (!typeModeledFunctions.ContainsKey(functionName))
+                                {
+                                    typeModeledFunctions[functionName] = new List<NativeFunction>();
+                                }
+                                typeModeledFunctions[functionName].Add(new NativeFunction(functionName, returnType, arguments));
 
-                        }
-                        break;
+                            }
+                            break;
+                    }
                 }
             }
-
 
             /*
             var it = instance.types.GetEnumerator();

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using PHP.Core;
 using PHP.Core.AST;
@@ -113,178 +114,213 @@ namespace Weverca.Analysis
         /// <param name="outSet">FlowOutputSet</param>
         private NativeObjectAnalyzer(FlowOutputSet outSet)
         {
-            var reader = XmlReader.Create(new StreamReader(Settings.Default.PhpClassesFile));
-            nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
-            NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, ClassDeclBuilder>();
-
-            Visibility methodVisibility = Visibility.PUBLIC;
-            ClassDeclBuilder currentClass = null;
-            NativeMethod currentMethod = null;
-            while (reader.Read())
+            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(Resources.php_classes)))
+            using (XmlReader reader = XmlReader.Create(stream))
             {
-                switch (reader.NodeType)
+                nativeObjects = new Dictionary<QualifiedName, ClassDecl>();
+                NativeObjectsAnalyzerHelper.mutableNativeObjects = new Dictionary<QualifiedName, ClassDeclBuilder>();
+
+                Visibility methodVisibility = Visibility.PUBLIC;
+                ClassDeclBuilder currentClass = null;
+                NativeMethod currentMethod = null;
+                while (reader.Read())
                 {
-                    case XmlNodeType.Element:
-                        switch (reader.Name)
-                        {
-                            case "class":
-                            case "interface":
-                                currentClass = new ClassDeclBuilder();
-                                var classFinal = reader.GetAttribute("isFinal");
-                                if (classFinal == "true")
-                                {
-                                    currentClass.IsFinal = true;
-                                }
-                                else
-                                {
-                                    currentClass.IsFinal = false;
-                                }
-                                currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
-
-                                if (reader.GetAttribute("baseClass") != null)
-                                {
-                                    currentClass.BaseClasses = new List<QualifiedName>();
-                                    currentClass.BaseClasses.Add(new QualifiedName(new Name(reader.GetAttribute("baseClass"))));
-                                }
-                                else
-                                {
-                                    currentClass.BaseClasses = null;
-                                }
-
-                                NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.QualifiedName] = currentClass;
-                                if (reader.Name == "class")
-                                {
-                                    currentClass.IsInterface = false;
-                                }
-                                else
-                                {
-                                    currentClass.IsInterface = true;
-                                }
-                                
-                                break;
-                            case "field":
-                                string fieldName = reader.GetAttribute("name");
-                                string fieldVisibility = reader.GetAttribute("visibility");
-                                string fieldIsStatic = reader.GetAttribute("isStatic");
-                                string fieldIsConst = reader.GetAttribute("isConst");
-                                string fieldType = reader.GetAttribute("type");
-                                fieldTypes.Add(fieldType);
-                                Visibility visibility;
-                                switch (fieldVisibility)
-                                {
-                                    case "public":
-                                        visibility = Visibility.PUBLIC;
-                                        break;
-                                    case "protectd":
-                                        visibility = Visibility.PROTECTED;
-                                        break;
-                                    case "private":
-                                        visibility = Visibility.PRIVATE;
-                                        break;
-                                    default:
-                                        visibility = Visibility.PUBLIC;
-                                        break;
-                                }
-
-                                if (fieldIsConst == "false")
-                                {
-
-                                    Value initValue = outSet.UndefinedValue;
-                                    string stringValue = reader.GetAttribute("value");
-                                    int intValue;
-                                    bool boolValue;
-                                    long longValue;
-                                    double doubleValue;
-
-                                    if (stringValue == null)
+                    switch (reader.NodeType)
+                    {
+                        case XmlNodeType.Element:
+                            switch (reader.Name)
+                            {
+                                case "class":
+                                case "interface":
+                                    currentClass = new ClassDeclBuilder();
+                                    var classFinal = reader.GetAttribute("isFinal");
+                                    if (classFinal == "true")
                                     {
-                                        initValue = outSet.UndefinedValue;
-                                    }
-                                    else if (bool.TryParse(stringValue, out boolValue))
-                                    {
-                                        initValue = outSet.CreateBool(boolValue);
-                                    }
-                                    else if (int.TryParse(stringValue, out intValue))
-                                    {
-                                        initValue = outSet.CreateInt(intValue);
-                                    }
-                                    else if (long.TryParse(stringValue, out longValue))
-                                    {
-                                        initValue = outSet.CreateLong(longValue);
-                                    }
-                                    else if (double.TryParse(stringValue, out doubleValue))
-                                    {
-                                        initValue = outSet.CreateDouble(doubleValue);
+                                        currentClass.IsFinal = true;
                                     }
                                     else
                                     {
-                                        initValue = outSet.CreateString(stringValue);
+                                        currentClass.IsFinal = false;
+                                    }
+                                    currentClass.QualifiedName = new QualifiedName(new Name(reader.GetAttribute("name")));
+
+                                    if (reader.GetAttribute("baseClass") != null)
+                                    {
+                                        currentClass.BaseClasses = new List<QualifiedName>();
+                                        currentClass.BaseClasses.Add(new QualifiedName(new Name(reader.GetAttribute("baseClass"))));
+                                    }
+                                    else
+                                    {
+                                        currentClass.BaseClasses = null;
                                     }
 
-                                    currentClass.Fields[new FieldIdentifier(currentClass.QualifiedName, new VariableName(fieldName))] = new FieldInfo(new VariableName(fieldName), currentClass.QualifiedName, fieldType, visibility, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
-                                }
-                                else
-                                {
-                                    string value = reader.GetAttribute("value");
-                                    //resolve constant
-                                    VariableName constantName = new VariableName(fieldName);
-
-                                    var constIdentifier = new FieldIdentifier(currentClass.QualifiedName, constantName);
-                                    switch (fieldType)
+                                    NativeObjectsAnalyzerHelper.mutableNativeObjects[currentClass.QualifiedName] = currentClass;
+                                    if (reader.Name == "class")
                                     {
-                                        case "int":
-                                        case "integer":
-                                            try
-                                            {
-                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
-                                            }
-                                            catch (Exception)
-                                            {
-                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
-                                            }
+                                        currentClass.IsInterface = false;
+                                    }
+                                    else
+                                    {
+                                        currentClass.IsInterface = true;
+                                    }
+
+                                    break;
+                                case "field":
+                                    string fieldName = reader.GetAttribute("name");
+                                    string fieldVisibility = reader.GetAttribute("visibility");
+                                    string fieldIsStatic = reader.GetAttribute("isStatic");
+                                    string fieldIsConst = reader.GetAttribute("isConst");
+                                    string fieldType = reader.GetAttribute("type");
+                                    fieldTypes.Add(fieldType);
+                                    Visibility visibility;
+                                    switch (fieldVisibility)
+                                    {
+                                        case "public":
+                                            visibility = Visibility.PUBLIC;
                                             break;
-                                        case "string":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateString(value)));
+                                        case "protectd":
+                                            visibility = Visibility.PROTECTED;
                                             break;
-                                        case "boolean":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
-                                            break;
-                                        case "float":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
-                                            break;
-                                        case "NULL":
-                                            currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.UndefinedValue));
+                                        case "private":
+                                            visibility = Visibility.PRIVATE;
                                             break;
                                         default:
+                                            visibility = Visibility.PUBLIC;
                                             break;
                                     }
-                                }
-                                break;
-                            case "method":
-                                currentMethod = new NativeMethod(new QualifiedName(new Name(reader.GetAttribute("name"))), reader.GetAttribute("returnType"), new List<NativeFunctionArgument>());
-                                currentMethod.IsFinal = bool.Parse(reader.GetAttribute("final"));
-                                currentMethod.IsStatic = bool.Parse(reader.GetAttribute("static"));
-                                returnTypes.Add(reader.GetAttribute("returnType"));
-                                if(currentMethod.Name==new QualifiedName(new Name("getLastErrors")))
-                                {
-                                
-                                }
-                                methodVisibility = Visibility.PUBLIC;
-                                if (reader.GetAttribute("visibility") == "private")
-                                {
-                                    methodVisibility = Visibility.PRIVATE;
-                                }
-                                else if (reader.GetAttribute("visibility") == "protected")
-                                {
-                                    methodVisibility = Visibility.PROTECTED;
-                                }
-                                else
-                                {
-                                    methodVisibility = Visibility.PUBLIC;
-                                }
 
-                                if (reader.IsEmptyElement)
-                                {
+                                    if (fieldIsConst == "false")
+                                    {
+
+                                        Value initValue = outSet.UndefinedValue;
+                                        string stringValue = reader.GetAttribute("value");
+                                        int intValue;
+                                        bool boolValue;
+                                        long longValue;
+                                        double doubleValue;
+
+                                        if (stringValue == null)
+                                        {
+                                            initValue = outSet.UndefinedValue;
+                                        }
+                                        else if (bool.TryParse(stringValue, out boolValue))
+                                        {
+                                            initValue = outSet.CreateBool(boolValue);
+                                        }
+                                        else if (int.TryParse(stringValue, out intValue))
+                                        {
+                                            initValue = outSet.CreateInt(intValue);
+                                        }
+                                        else if (long.TryParse(stringValue, out longValue))
+                                        {
+                                            initValue = outSet.CreateLong(longValue);
+                                        }
+                                        else if (double.TryParse(stringValue, out doubleValue))
+                                        {
+                                            initValue = outSet.CreateDouble(doubleValue);
+                                        }
+                                        else
+                                        {
+                                            initValue = outSet.CreateString(stringValue);
+                                        }
+
+                                        currentClass.Fields[new FieldIdentifier(currentClass.QualifiedName, new VariableName(fieldName))] = new FieldInfo(new VariableName(fieldName), currentClass.QualifiedName, fieldType, visibility, new MemoryEntry(initValue), bool.Parse(fieldIsStatic));
+                                    }
+                                    else
+                                    {
+                                        string value = reader.GetAttribute("value");
+                                        //resolve constant
+                                        VariableName constantName = new VariableName(fieldName);
+
+                                        var constIdentifier = new FieldIdentifier(currentClass.QualifiedName, constantName);
+                                        switch (fieldType)
+                                        {
+                                            case "int":
+                                            case "integer":
+                                                try
+                                                {
+                                                    currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateInt(int.Parse(value))));
+                                                }
+                                                catch (Exception)
+                                                {
+                                                    currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                                }
+                                                break;
+                                            case "string":
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateString(value)));
+                                                break;
+                                            case "boolean":
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateBool(bool.Parse(value))));
+                                                break;
+                                            case "float":
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.CreateDouble(double.Parse(value))));
+                                                break;
+                                            case "NULL":
+                                                currentClass.Constants[constIdentifier] = new ConstantInfo(constantName, currentClass.QualifiedName, visibility, new MemoryEntry(outSet.UndefinedValue));
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                    break;
+                                case "method":
+                                    currentMethod = new NativeMethod(new QualifiedName(new Name(reader.GetAttribute("name"))), reader.GetAttribute("returnType"), new List<NativeFunctionArgument>());
+                                    currentMethod.IsFinal = bool.Parse(reader.GetAttribute("final"));
+                                    currentMethod.IsStatic = bool.Parse(reader.GetAttribute("static"));
+                                    returnTypes.Add(reader.GetAttribute("returnType"));
+                                    if (currentMethod.Name == new QualifiedName(new Name("getLastErrors")))
+                                    {
+
+                                    }
+                                    methodVisibility = Visibility.PUBLIC;
+                                    if (reader.GetAttribute("visibility") == "private")
+                                    {
+                                        methodVisibility = Visibility.PRIVATE;
+                                    }
+                                    else if (reader.GetAttribute("visibility") == "protected")
+                                    {
+                                        methodVisibility = Visibility.PROTECTED;
+                                    }
+                                    else
+                                    {
+                                        methodVisibility = Visibility.PUBLIC;
+                                    }
+
+                                    if (reader.IsEmptyElement)
+                                    {
+                                        NativeAnalyzerMethod analyzer;
+                                        if (currentMethod.Name.Name.Equals(new Name("__construct")))
+                                        {
+                                            analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Construct;
+                                        }
+                                        else
+                                        {
+                                            analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Analyze;
+                                        }
+                                        MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.QualifiedName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
+                                        currentClass.ModeledMethods[new MethodIdentifier(currentClass.QualifiedName, methodInfo.Name)] = methodInfo;
+                                    }
+
+                                    break;
+                                case "arg":
+                                    currentMethod.Arguments.Add(new NativeFunctionArgument(reader.GetAttribute("type"), bool.Parse(reader.GetAttribute("optional")), bool.Parse(reader.GetAttribute("byReference")), bool.Parse(reader.GetAttribute("dots"))));
+                                    methodTypes.Add(reader.GetAttribute("type"));
+                                    break;
+                            }
+
+                            break;
+                        case XmlNodeType.Text:
+                            break;
+                        case XmlNodeType.XmlDeclaration:
+                        case XmlNodeType.ProcessingInstruction:
+                            break;
+                        case XmlNodeType.Comment:
+                            break;
+                        case XmlNodeType.EndElement:
+                            switch (reader.Name)
+                            {
+                                case "method":
+
                                     NativeAnalyzerMethod analyzer;
                                     if (currentMethod.Name.Name.Equals(new Name("__construct")))
                                     {
@@ -296,45 +332,13 @@ namespace Weverca.Analysis
                                     }
                                     MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.QualifiedName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
                                     currentClass.ModeledMethods[new MethodIdentifier(currentClass.QualifiedName, methodInfo.Name)] = methodInfo;
-                                }
-
-                                break;
-                            case "arg":
-                                currentMethod.Arguments.Add(new NativeFunctionArgument(reader.GetAttribute("type"), bool.Parse(reader.GetAttribute("optional")), bool.Parse(reader.GetAttribute("byReference")), bool.Parse(reader.GetAttribute("dots"))));
-                                methodTypes.Add(reader.GetAttribute("type"));
-                                break;
-                        }
-
-                        break;
-                    case XmlNodeType.Text:
-                        break;
-                    case XmlNodeType.XmlDeclaration:
-                    case XmlNodeType.ProcessingInstruction:
-                        break;
-                    case XmlNodeType.Comment:
-                        break;
-                    case XmlNodeType.EndElement:
-                        switch (reader.Name)
-                        {
-                            case "method":
-                                
-                                NativeAnalyzerMethod analyzer;
-                                if (currentMethod.Name.Name.Equals(new Name("__construct")))
-                                {
-                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Construct;
-                                }
-                                else
-                                {
-                                    analyzer = new NativeObjectsAnalyzerHelper(currentMethod, currentClass.QualifiedName).Analyze;
-                                }
-                                MethodInfo methodInfo = new MethodInfo(currentMethod.Name.Name, currentClass.QualifiedName, methodVisibility, analyzer, currentMethod.ConvertArguments(), currentMethod.IsFinal, currentMethod.IsStatic, currentMethod.IsAbstract);
-                                currentClass.ModeledMethods[new MethodIdentifier(currentClass.QualifiedName, methodInfo.Name)] = methodInfo;
 
 
-                                break;
-                        }
+                                    break;
+                            }
 
-                        break;
+                            break;
+                    }
                 }
             }
             /*
