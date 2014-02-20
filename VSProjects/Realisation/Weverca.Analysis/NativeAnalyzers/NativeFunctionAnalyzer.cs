@@ -23,7 +23,7 @@ namespace Weverca.Analysis
         /// Type of argument
         /// </summary>
         public string Type { get; private set; }
-        
+
         /// <summary>
         /// Indicates if argument is passed by reference
         /// </summary>
@@ -39,7 +39,7 @@ namespace Weverca.Analysis
         /// Example printf("",...);
         /// </summary>
         public bool Dots { get; private set; }
-        
+
         /// <summary>
         /// Creates the instance of NativeFunctionArgument
         /// </summary>
@@ -47,7 +47,7 @@ namespace Weverca.Analysis
         /// <param name="optional">optional flag</param>
         /// <param name="byReference">reference flag</param>
         /// <param name="dots">dots flag</param>
-        public NativeFunctionArgument( string type, bool optional, bool byReference, bool dots)
+        public NativeFunctionArgument(string type, bool optional, bool byReference, bool dots)
         {
             this.Type = type;
             this.ByReference = byReference;
@@ -112,7 +112,7 @@ namespace Weverca.Analysis
         { }
     }
 
-   
+
     /// <summary>
     /// Singleton class which stores information about native functinos and their arguments.
     /// Provides delegates for modeling native functions during analysis 
@@ -124,12 +124,12 @@ namespace Weverca.Analysis
         /// All PHP native functions are modeled by type.
         /// </summary>
         private Dictionary<QualifiedName, List<NativeFunction>> typeModeledFunctions = new Dictionary<QualifiedName, List<NativeFunction>>();
-        
+
         /// <summary>
         /// Concrete implementations of functions.
         /// </summary>
         private Dictionary<QualifiedName, NativeAnalyzerMethod> concreteFunctions = new Dictionary<QualifiedName, NativeAnalyzerMethod>();
-        
+
         /// <summary>
         /// Special implementations of functions.
         /// If a special implementation of function exists, it should be called and any other implementation
@@ -140,17 +140,17 @@ namespace Weverca.Analysis
         /// <summary>
         /// Structure storing information about function which clean dirty flag from values
         /// </summary>
-        public Dictionary<QualifiedName, FlagType> cleaningFunctions;
+        public Dictionary<QualifiedName, List<FlagType>> SanitizingFunctions;
 
         /// <summary>
         /// Structure storing information about function which report security warning, when, argument contains drity flag
         /// </summary>
-        public Dictionary<QualifiedName, FlagType> reportingFunctions;
+        public Dictionary<QualifiedName, List<FlagType>> ReportingFunctions;
 
         private HashSet<string> types = new HashSet<string>();
-        
+
         private HashSet<string> returnTypes = new HashSet<string>();
-        
+
         /// <summary>
         /// Singleton instance
         /// </summary>
@@ -326,7 +326,7 @@ namespace Weverca.Analysis
 
             QualifiedName is_resourceName = new QualifiedName(new Name("is_resource"));
             SpecialFunctionsImplementations is_resourceAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_resourceName]);
-            specialFunctions.Add(is_resourceName, new NativeAnalyzerMethod(is_resourceAnalyzer._is_resource)); 
+            specialFunctions.Add(is_resourceName, new NativeAnalyzerMethod(is_resourceAnalyzer._is_resource));
 
             QualifiedName is_scalarName = new QualifiedName(new Name("is_scalar"));
             SpecialFunctionsImplementations is_scalarAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_scalarName]);
@@ -337,7 +337,7 @@ namespace Weverca.Analysis
             specialFunctions.Add(is_stringName, new NativeAnalyzerMethod(is_stringAnalyzer._is_string));
 
             NativeFunctionsConcreteImplementations.AddConcreteFunctions(typeModeledFunctions, concreteFunctions);
-        
+
         }
 
         private QualifiedName getQualifiedName(string s)
@@ -345,122 +345,136 @@ namespace Weverca.Analysis
             return new QualifiedName(new Name(s));
         }
 
+        private List<FlagType> getList(params FlagType[] types)
+        {
+            var result = new List<FlagType>();
+            foreach (var type in types)
+            {
+                result.Add(type);
+            }
+            return result;
+
+        }
+
         private void initCleaningFunctions()
         {
-            cleaningFunctions = new Dictionary<QualifiedName, FlagType>();
-            cleaningFunctions.Add(getQualifiedName("htmlentities"),FlagType.HTMLDirty);
-            cleaningFunctions.Add(getQualifiedName("htmlspecialchars"), FlagType.HTMLDirty);
+            SanitizingFunctions = new Dictionary<QualifiedName, List<FlagType>>();
 
-            cleaningFunctions.Add(getQualifiedName("mysql_escape_string"), FlagType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("mysql_real_escape_string"), FlagType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("sqlite_escape_string"), FlagType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("mysqli_real_escape_string"), FlagType.SQLDirty);
-            cleaningFunctions.Add(getQualifiedName("mysqli_escape_string"), FlagType.SQLDirty);
+            SanitizingFunctions.Add(getQualifiedName("htmlentities"), getList(FlagType.HTMLDirty));
+            SanitizingFunctions.Add(getQualifiedName("htmlspecialchars"), getList(FlagType.HTMLDirty));
 
+            SanitizingFunctions.Add(getQualifiedName("mysql_escape_string"), getList(FlagType.SQLDirty));
+            SanitizingFunctions.Add(getQualifiedName("mysql_real_escape_string"), getList(FlagType.SQLDirty));
+            SanitizingFunctions.Add(getQualifiedName("sqlite_escape_string"), getList(FlagType.SQLDirty));
+            SanitizingFunctions.Add(getQualifiedName("mysqli_real_escape_string"), getList(FlagType.SQLDirty));
+            SanitizingFunctions.Add(getQualifiedName("mysqli_escape_string"), getList(FlagType.SQLDirty));
+
+            SanitizingFunctions.Add(getQualifiedName("md5"), getList(FlagType.FilePathDirty,FlagType.HTMLDirty,FlagType.SQLDirty));
+            SanitizingFunctions.Add(getQualifiedName("sha1"), getList(FlagType.FilePathDirty, FlagType.HTMLDirty, FlagType.SQLDirty));
         }
 
         private void initReportingFunctions()
         {
-            reportingFunctions = new Dictionary<QualifiedName, FlagType>();
-            reportingFunctions.Add(getQualifiedName("print_r"), FlagType.HTMLDirty);
-            reportingFunctions.Add(getQualifiedName("printf"), FlagType.HTMLDirty);
-            reportingFunctions.Add(getQualifiedName("print"), FlagType.HTMLDirty);
-            
-            reportingFunctions.Add(getQualifiedName("fopen"), FlagType.FilePathDirty);
+            ReportingFunctions = new Dictionary<QualifiedName, List<FlagType>>();
+            ReportingFunctions.Add(getQualifiedName("print_r"), getList(FlagType.HTMLDirty));
+            ReportingFunctions.Add(getQualifiedName("printf"), getList(FlagType.HTMLDirty));
+            ReportingFunctions.Add(getQualifiedName("print"), getList(FlagType.HTMLDirty));
+
+            ReportingFunctions.Add(getQualifiedName("fopen"), getList(FlagType.FilePathDirty));
             //includy
 
-            reportingFunctions.Add(getQualifiedName("dbplus_sql"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_blob_size"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_change_user"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_clob_size"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_connect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_create_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_database_password"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_database"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_db_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_db_status"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_drop_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_hostname"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_list_fields"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_list_tables"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_password"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_pconnect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_select_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_set_password"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_start_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_stop_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("fbsql_username"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_connect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_create_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_db_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_drop_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_list_fields"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_list_tables"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_pconnect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_select_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_bind"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_connect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_guid_string"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_init"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_pconnect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mssql_select_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_connect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_create_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_db_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_drop_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_fetch_object"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_list_fields"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_list_tables"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_pconnect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_select_db"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_set_charset"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysql_unbuffered_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_master_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_slave_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_memcache_set"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_match_wild"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_query_is_select"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_ms_set_user_pick_server"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_is_select"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_storage_handler"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_user_handlers"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_execute"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_stmt_execute"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("session_pgsql_add_error"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("session_pgsql_set_field"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sql_regcase"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_array_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_create_aggregate"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_create_function"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_exec"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_factory"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_fetch_column_types"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_fetch_object"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_open"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_popen"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_single_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_udf_decode_binary"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_udf_encode_binary"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlite_unbuffered_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_configure"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_connect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_fetch_object"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_get_config"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_prepare"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("sqlsrv_query"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_connect"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_stmt_bind_param"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_stmt_send_long_data"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_createdb"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql_regcase"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("msql"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_bind_param"), FlagType.SQLDirty);
-            reportingFunctions.Add(getQualifiedName("mysqli_send_long_data"), FlagType.SQLDirty);
+            ReportingFunctions.Add(getQualifiedName("dbplus_sql"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_blob_size"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_change_user"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_clob_size"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_connect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_create_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_database_password"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_database"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_db_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_db_status"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_drop_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_hostname"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_list_fields"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_list_tables"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_password"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_pconnect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_select_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_set_password"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_start_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_stop_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("fbsql_username"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_connect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_create_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_db_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_drop_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_list_fields"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_list_tables"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_pconnect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_select_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_bind"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_connect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_guid_string"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_init"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_pconnect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mssql_select_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_connect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_create_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_db_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_drop_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_fetch_object"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_list_fields"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_list_tables"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_pconnect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_select_db"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_set_charset"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysql_unbuffered_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_master_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_slave_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_memcache_set"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_ms_match_wild"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_ms_query_is_select"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_ms_set_user_pick_server"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_is_select"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_storage_handler"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqlnd_qc_set_user_handlers"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_execute"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_stmt_execute"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("session_pgsql_add_error"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("session_pgsql_set_field"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sql_regcase"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_array_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_create_aggregate"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_create_function"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_exec"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_factory"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_fetch_column_types"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_fetch_object"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_open"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_popen"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_single_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_udf_decode_binary"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_udf_encode_binary"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlite_unbuffered_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlsrv_configure"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlsrv_connect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlsrv_fetch_object"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlsrv_get_config"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlsrv_prepare"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("sqlsrv_query"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_connect"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_stmt_bind_param"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_stmt_send_long_data"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_createdb"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql_regcase"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("msql"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_bind_param"), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(getQualifiedName("mysqli_send_long_data"), getList(FlagType.SQLDirty));
 
         }
 
@@ -504,7 +518,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="name">Function name</param>
         /// <returns>delegate which models this function</returns>
-        public NativeAnalyzerMethod GetInstance(QualifiedName name) 
+        public NativeAnalyzerMethod GetInstance(QualifiedName name)
         {
             if (!existNativeFunction(name))
             {
@@ -603,16 +617,25 @@ namespace Weverca.Analysis
             MemoryEntry functionResult = new MemoryEntry(ComputeResult(flow, arguments).ToArray());
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(argumentValues, functionResult.PossibleValues));
             NativeFunctionAnalyzer analyzer = NativeFunctionAnalyzer.CreateInstance();
-            if (analyzer.cleaningFunctions.ContainsKey(nativeFunctions[0].Name))
+            if (analyzer.SanitizingFunctions.ContainsKey(nativeFunctions[0].Name))
             {
-                functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, analyzer.cleaningFunctions[nativeFunctions[0].Name]));
-            }
-            if (analyzer.reportingFunctions.ContainsKey(nativeFunctions[0].Name))
-            {
-                FlagType type=analyzer.reportingFunctions[nativeFunctions[0].Name];
-                if (FlagsHandler.GetFlags(argumentValues).isDirty(type))
+                List<Value> values = new List<Value>(functionResult.PossibleValues);
+                foreach (var flag in analyzer.SanitizingFunctions[nativeFunctions[0].Name])
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, type));  
+                    values = new List<Value>(FlagsHandler.Clean(values, flag));
+                }
+
+                functionResult = new MemoryEntry(values);
+            }
+            if (analyzer.ReportingFunctions.ContainsKey(nativeFunctions[0].Name))
+            {
+                foreach (FlagType type in analyzer.ReportingFunctions[nativeFunctions[0].Name])
+                {
+                    if (FlagsHandler.GetFlags(argumentValues).isDirty(type))
+                    {
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, type));
+                        break;
+                    }
                 }
             }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
@@ -678,7 +701,7 @@ namespace Weverca.Analysis
         /// <param name="nativeFunctions">List of native functions</param>
         /// <param name="concreteFunction">Delegate of function implementation</param>
         public ConcreteFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions, ConcreteFunctionDelegate concreteFunction)
-            : base(nativeFunctions) 
+            : base(nativeFunctions)
         {
             this.concreteFunction = concreteFunction;
         }
@@ -732,7 +755,7 @@ namespace Weverca.Analysis
         /// Create new instance of TypeModeledFunctionAnalyzerHelper 
         /// </summary>
         /// <param name="nativeFunctions"></param>
-        public TypeModeledFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions) : base(nativeFunctions) {}
+        public TypeModeledFunctionAnalyzerHelper(List<NativeFunction> nativeFunctions) : base(nativeFunctions) { }
 
         /// <inheritdoc />
         protected override List<Value> ComputeResult(FlowController flow, List<MemoryEntry> arguments)
@@ -740,7 +763,7 @@ namespace Weverca.Analysis
             return ComputeResultType(flow, arguments);
         }
 
-        
+
     }
 
     /// <summary>
@@ -1035,7 +1058,7 @@ namespace Weverca.Analysis
                 return ValueTypeResolver.IsString(value);
             }));
         }
-    
+
         /// <summary>
         /// Implementation method for all is_something functions
         /// </summary>

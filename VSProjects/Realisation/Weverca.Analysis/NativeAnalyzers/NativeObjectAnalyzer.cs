@@ -100,12 +100,12 @@ namespace Weverca.Analysis
         /// <summary>
         /// List of function which clean dirty floag in return value
         /// </summary>
-        public static Dictionary<MethodIdentifier, FlagType> CleaningFunctions = new Dictionary<MethodIdentifier, FlagType>();
+        public static Dictionary<MethodIdentifier, List<FlagType>> CleaningFunctions = new Dictionary<MethodIdentifier, List<FlagType>>();
 
         /// <summary>
         /// List of function which reports security warning when it recieved dirty flag in input 
         /// </summary>
-        public static  Dictionary<MethodIdentifier, FlagType> ReportingFunctions = new Dictionary<MethodIdentifier, FlagType>();
+        public static Dictionary<MethodIdentifier, List<FlagType>> ReportingFunctions = new Dictionary<MethodIdentifier, List<FlagType>>();
 
         #region parsing xml
 
@@ -405,37 +405,47 @@ namespace Weverca.Analysis
             return new QualifiedName(new Name(s));
         }
 
+        private List<FlagType> getList(params FlagType[] types)
+        {
+            var result = new List<FlagType>();
+            foreach (var type in types)
+            {
+                result.Add(type);
+            }
+            return result;
+
+        }
 
         private void initCleaningFunctions()
         {
-            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("escape_string")), FlagType.SQLDirty);
+            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("escape_string")), getList(FlagType.SQLDirty));
 
-            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("escapeString")), FlagType.SQLDirty);
+            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("escapeString")), getList(FlagType.SQLDirty));
 
-            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("escapeString")), FlagType.SQLDirty);
+            CleaningFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("escapeString")), getList(FlagType.SQLDirty));
 
         }
 
         private void initReportingFunctions()
         {
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("query")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("real_query")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("send_query")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("change_user")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("select_db")), FlagType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("query")), getList(FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("real_query")), getList(FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("send_query")), getList(FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("change_user")), getList(FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("select_db")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli_stmt"), new Name("execute")), FlagType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli_stmt"), new Name("execute")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("query")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("sendQuery")), FlagType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("query")),getList( FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("sendQuery")),getList( FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhPreparedStatement"), new Name("execute")), FlagType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhPreparedStatement"), new Name("execute")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("exec")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("query")), FlagType.SQLDirty);
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("querySingle")), FlagType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("exec")), getList(FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("query")), getList(FlagType.SQLDirty));
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("querySingle")),getList( FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3Stmt"), new Name("execute")), FlagType.SQLDirty);
+           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3Stmt"), new Name("execute")), getList(FlagType.SQLDirty));
           
         }
         #endregion
@@ -583,9 +593,13 @@ namespace Weverca.Analysis
 
             if (NativeObjectAnalyzer.ReportingFunctions.ContainsKey(methodIdentifier))
             {
-                if (FlagsHandler.IsDirty(inputValues, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]))
+                foreach (var flag in NativeObjectAnalyzer.ReportingFunctions[methodIdentifier])
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, NativeObjectAnalyzer.ReportingFunctions[methodIdentifier]));
+                    if (FlagsHandler.IsDirty(inputValues, flag))
+                    {
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flag));
+                        break;
+                    }
                 }
             }
 
@@ -597,7 +611,10 @@ namespace Weverca.Analysis
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(inputValues, functionResult.PossibleValues));
             if (NativeObjectAnalyzer.CleaningFunctions.ContainsKey(methodIdentifier))
             {
-                functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, NativeObjectAnalyzer.CleaningFunctions[methodIdentifier]));
+                foreach(var flag in NativeObjectAnalyzer.CleaningFunctions[methodIdentifier])
+                {
+                    functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, flag));
+                }
             }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
             

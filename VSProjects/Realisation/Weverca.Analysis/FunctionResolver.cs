@@ -679,7 +679,11 @@ namespace Weverca.Analysis
             }
         }
 
-
+        /// <summary>
+        /// Add new branch into flow. Calls given function
+        /// Handles sharing program points based of control variable .calledFunctions
+        /// </summary>
+        /// <param name="function">called function</param>
         protected virtual void addCallBranch(FunctionValue function)
         {
             // Create graph for every function - NOTE: We can share pp graphs
