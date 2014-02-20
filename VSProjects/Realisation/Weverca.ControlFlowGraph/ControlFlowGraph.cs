@@ -368,6 +368,13 @@ namespace Weverca.ControlFlowGraph
                         }
 
                     }
+                    else if (statement is ForeachStmt)
+                    {
+                        var forEach = statement as ForeachStmt;
+                        Position foreachHeadPosition = new Position(forEach.Position.FirstLine, forEach.Position.FirstColumn, forEach.Position.FirstOffset,
+                            forEach.Body.Position.FirstLine, forEach.Body.Position.FirstColumn, forEach.Body.Position.FirstOffset-1);
+                        label += globalCode.SourceUnit.GetSourceCode(foreachHeadPosition) + Environment.NewLine;
+                    }
                     else
                     {
                         label += globalCode.SourceUnit.GetSourceCode(statement.Position) + Environment.NewLine;
@@ -375,7 +382,8 @@ namespace Weverca.ControlFlowGraph
                 }
                 if (node.EndIngTryBlocks.Count > 0)
                 {
-                    label += "ending Try block";
+                    label += "//ending Try block";
+
                 }
                 label = label.Replace("\"", "\\\"");
                 result += "node" + i + "[label=\"" + label + "\"]" + Environment.NewLine;
@@ -464,9 +472,13 @@ namespace Weverca.ControlFlowGraph
                         label = label.Replace("\"", "\\\"");
                         result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                     }
+                    else if(e is ForEachSpecialEdge)
+                    {
+                        result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"foreach special edge\"]" + Environment.NewLine;
+                    }
                     else
                     {
-                        result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"foreach direct edge\"]" + Environment.NewLine;
+                        result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"direct edge\"]" + Environment.NewLine;
                     }
                 }
                 if (node.DefaultBranch != null)
@@ -480,7 +492,17 @@ namespace Weverca.ControlFlowGraph
                     int index = oldCounter + nodes.IndexOf(node.DefaultBranch.To);
                     result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" " + elseString + "  \"]" + Environment.NewLine;
                 }
-
+                if (node.EndIngTryBlocks.Count > 0)
+                { 
+                    foreach(var tryblock in node.EndIngTryBlocks)
+                    {
+                        foreach(var catchblock in tryblock.catchBlocks)
+                        {
+                            int index = oldCounter + nodes.IndexOf(catchblock);
+                            result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\" catched " + catchblock.ClassName.QualifiedName.Name.Value+ "  \"]" + Environment.NewLine;
+                        }
+                    }
+                }
                 i++;
 
             }
