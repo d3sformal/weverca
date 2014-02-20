@@ -42,7 +42,6 @@ namespace Weverca.Analysis.FlowResolver
         #region Members
 
         LangElement conditionPart;
-        MemoryEntry evaluatedPart;
 
         EvaluationLog log;
 
@@ -69,11 +68,18 @@ namespace Weverca.Analysis.FlowResolver
         public ConditionPart(LangElement conditionPart, EvaluationLog log, FlowOutputSet flowOutputSet)
         {
             this.conditionPart = conditionPart;
-            var snapshotEntry = log.ReadSnapshotEntry(conditionPart);
-            this.evaluatedPart = snapshotEntry.ReadMemory(flowOutputSet.Snapshot);
             this.log = log;
 
-            ConditionResult = GetConditionResult(flowOutputSet);
+            var snapshotEntry = log.ReadSnapshotEntry(conditionPart);
+            if (snapshotEntry != null)
+            {
+                MemoryEntry evaluatedPart = snapshotEntry.ReadMemory(flowOutputSet.Snapshot);
+                ConditionResult = GetConditionResult(flowOutputSet, evaluatedPart);
+            }
+            else
+            {
+                ConditionResult = PossibleValues.Unknown;
+            }
         }
 
         #endregion
@@ -150,7 +156,7 @@ namespace Weverca.Analysis.FlowResolver
         /// Gets the condition result.
         /// </summary>
         /// <returns>see <see cref="PossibleValues"/> for details of possible result.</returns>
-        PossibleValues GetConditionResult(FlowOutputSet flowOutputSet)
+        PossibleValues GetConditionResult(FlowOutputSet flowOutputSet, MemoryEntry evaluatedPart)
         {
             var converter = new BooleanConverter(flowOutputSet);
             var value = converter.EvaluateToBoolean(evaluatedPart);
@@ -376,7 +382,11 @@ namespace Weverca.Analysis.FlowResolver
                 //}}
                 else
                 {
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues);
+                    var snapshotEntry = log.ReadSnapshotEntry(right);
+                    if (snapshotEntry != null)
+                    {
+                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, snapshotEntry.ReadMemory(flowOutputSet).PossibleValues);
+                    }
                 }
             }
         }
@@ -436,38 +446,43 @@ namespace Weverca.Analysis.FlowResolver
                 //}
                 else
                 {
-                    //get lower bound of right and intersect with left
-                    int? minInt;
-                    long? minLong;
-                    double? minDouble;
-                    ValueHelper.TryGetMinimumValue(log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues, out minInt, out minLong, out minDouble);
-
-                    if (minInt.HasValue)
+                    var snapshotEntry = log.ReadSnapshotEntry(right);
+                    if (snapshotEntry != null)
                     {
-                        if (!equal)
-                        {
-                            minInt++;
-                        }
+                        //get lower bound of right and intersect with left
+                        int? minInt;
+                        long? minLong;
+                        double? minDouble;
 
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(minInt.Value, int.MaxValue));
-                    }
-                    else if (minLong.HasValue)
-                    {
-                        if (!equal)
-                        {
-                            minLong++;
-                        }
+                        ValueHelper.TryGetMinimumValue(snapshotEntry.ReadMemory(flowOutputSet).PossibleValues, out minInt, out minLong, out minDouble);
 
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(minLong.Value, long.MaxValue));
-                    }
-                    else if (minDouble.HasValue)
-                    {
-                        if (!equal)
+                        if (minInt.HasValue)
                         {
-                            minDouble += double.Epsilon;
-                        }
+                            if (!equal)
+                            {
+                                minInt++;
+                            }
 
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(minDouble.Value, double.MaxValue));
+                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(minInt.Value, int.MaxValue));
+                        }
+                        else if (minLong.HasValue)
+                        {
+                            if (!equal)
+                            {
+                                minLong++;
+                            }
+
+                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(minLong.Value, long.MaxValue));
+                        }
+                        else if (minDouble.HasValue)
+                        {
+                            if (!equal)
+                            {
+                                minDouble += double.Epsilon;
+                            }
+
+                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(minDouble.Value, double.MaxValue));
+                        }
                     }
                 }
             }
@@ -528,38 +543,42 @@ namespace Weverca.Analysis.FlowResolver
                 //}
                 else
                 {
-                    //get upper bound of right and intersect with left
-                    int? maxInt;
-                    long? maxLong;
-                    double? maxDouble;
-                    ValueHelper.TryGetMaximumValue(log.ReadSnapshotEntry(right).ReadMemory(flowOutputSet).PossibleValues, out maxInt, out maxLong, out maxDouble);
-
-                    if (maxInt.HasValue)
+                    var snapshotEntry = log.ReadSnapshotEntry(right);
+                    if (snapshotEntry != null)
                     {
-                        if (!equal)
-                        {
-                            maxInt--;
-                        }
+                        //get upper bound of right and intersect with left
+                        int? maxInt;
+                        long? maxLong;
+                        double? maxDouble;
+                        ValueHelper.TryGetMaximumValue(snapshotEntry.ReadMemory(flowOutputSet).PossibleValues, out maxInt, out maxLong, out maxDouble);
 
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(int.MinValue, maxInt.Value));
-                    }
-                    else if (maxLong.HasValue)
-                    {
-                        if (!equal)
+                        if (maxInt.HasValue)
                         {
-                            maxLong--;
-                        }
+                            if (!equal)
+                            {
+                                maxInt--;
+                            }
 
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, maxLong.Value));
-                    }
-                    else if (maxDouble.HasValue)
-                    {
-                        if (!equal)
+                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(int.MinValue, maxInt.Value));
+                        }
+                        else if (maxLong.HasValue)
                         {
-                            maxDouble -= double.Epsilon;
-                        }
+                            if (!equal)
+                            {
+                                maxLong--;
+                            }
 
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
+                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, maxLong.Value));
+                        }
+                        else if (maxDouble.HasValue)
+                        {
+                            if (!equal)
+                            {
+                                maxDouble -= double.Epsilon;
+                            }
+
+                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
+                        }
                     }
                 }
             }
@@ -567,28 +586,36 @@ namespace Weverca.Analysis.FlowResolver
 
         void AssumeTrueDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            MemoryEntry memoryEntry = log.ReadSnapshotEntry(directVarUse).ReadMemory(flowOutputSet);
-            if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
+            var snapshotEntry = log.ReadSnapshotEntry(directVarUse);
+            if (snapshotEntry != null)
             {
-                memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(true));
+                MemoryEntry memoryEntry = snapshotEntry.ReadMemory(flowOutputSet);
+                if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
+                {
+                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(true));
+                }
             }
         }
 
         void AssumeFalseDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            MemoryEntry memoryEntry = log.ReadSnapshotEntry(directVarUse).ReadMemory(flowOutputSet);
-            if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
+            var snapshotEntry = log.ReadSnapshotEntry(directVarUse);
+            if (snapshotEntry != null)
             {
-                memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(false));
-            }
-            else if (memoryEntry.PossibleValues.Any(a => a is AnyIntegerValue))
-            {
-                memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateInt(0));
-            }
-            else if (memoryEntry.PossibleValues.Any(a => a is IntegerIntervalValue))
-            {
-                //there should be 0 in the interval
-                memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateInt(0));
+                MemoryEntry memoryEntry = snapshotEntry.ReadMemory(flowOutputSet);
+                if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
+                {
+                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(false));
+                }
+                else if (memoryEntry.PossibleValues.Any(a => a is AnyIntegerValue))
+                {
+                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateInt(0));
+                }
+                else if (memoryEntry.PossibleValues.Any(a => a is IntegerIntervalValue))
+                {
+                    //there should be 0 in the interval
+                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateInt(0));
+                }
             }
         }
 
