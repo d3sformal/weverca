@@ -4,8 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+
 using PHP.Core;
-using PHP.Core.AST;
+
 using Weverca.Analysis.Properties;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;

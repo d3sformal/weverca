@@ -1,22 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.IO;
 
-
-using Weverca.AnalysisFramework;
 using PHP.Core;
-using Weverca.AnalysisFramework.Memory;
-using Weverca.Parsers;
 
-using PHP.Core.Parsers;
-using PHP.Core.AST;
 using Weverca.Analysis.ExpressionEvaluator;
-using System.Text.RegularExpressions;
 using Weverca.Analysis.Properties;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis
 {
