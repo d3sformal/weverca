@@ -243,6 +243,7 @@ namespace Weverca.AnalysisFramework
         private void setNewController()
         {
             Flow = new FlowController(Services, this);
+
         }
 
         #endregion

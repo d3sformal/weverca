@@ -59,14 +59,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             binaryOperationVisitor = new BinaryOperationEvaluator(booleanConverter, stringConverter);
         }
 
-        public ExpressionEvaluator(FlowController flow)
-            : this()
-        {
-            Flow = flow;
-        
-        }
-
-
         #region ExpressionEvaluatorBase overrides
 
         /// <inheritdoc />

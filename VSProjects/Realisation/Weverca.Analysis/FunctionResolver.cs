@@ -66,6 +66,24 @@ namespace Weverca.Analysis
 
         #region FunctionResolverBase overrides
 
+        /// <inheritdoc />
+        public override void DeclareGlobal(FunctionDecl declaration)
+        {
+            if (nativeFunctionAnalyzer.existNativeFunction(new QualifiedName(declaration.Name)))
+            {
+                setWarning("Fuction allready exists", AnalysisWarningCause.FUNCTION_ALLREADY_EXISTS);
+            }
+            else if (OutSet.ResolveFunction(new QualifiedName(declaration.Name)).Count() > 0)
+            {
+                setWarning("Fuction allready exists", AnalysisWarningCause.FUNCTION_ALLREADY_EXISTS);
+            }
+            else
+            {
+                OutSet.DeclareGlobal(declaration, Flow.CurrentScript);
+            }
+        }
+
+
         #region function calls
 
         /// <inheritdoc />
@@ -935,7 +953,7 @@ namespace Weverca.Analysis
                 {
                     if(param.InitValue!=null)
                     {
-                        var initializer = new ObjectInitializer(new ExpressionEvaluator.ExpressionEvaluator(Flow));
+                        var initializer = new ObjectInitializer(Flow.ExpressionEvaluator);
                         param.InitValue.VisitMe(initializer);
                         argumentVar.WriteMemory(callInput.Snapshot, initializer.initializationValue);
                     }

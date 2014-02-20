@@ -24,6 +24,17 @@ namespace Weverca.AnalysisFramework
         internal readonly ForwardAnalysisServices Services;
 
         /// <summary>
+        /// Expression evaluator instance
+        /// </summary>
+        public ExpressionEvaluatorBase ExpressionEvaluator
+        {
+            get
+            {
+                return Services.Evaluator;
+            }
+        }
+
+        /// <summary>
         /// Flow resolver from analysis services
         /// </summary>
         internal FlowResolverBase FlowResolver { get { return Services.FlowResolver; } }

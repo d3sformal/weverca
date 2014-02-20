@@ -606,6 +606,11 @@ namespace Weverca.Analysis
         FUNCTION_DOESNT_EXISTS,
 
         /// <summary>
+        /// Warning, that occurs when function allready exists
+        /// </summary>
+        FUNCTION_ALLREADY_EXISTS,
+
+        /// <summary>
         /// Warning, that occurs cannot resolve all evals as eval variable analysis get anyvalue or anystring
         /// </summary>
         COULDNT_RESOLVE_ALL_EVALS,
