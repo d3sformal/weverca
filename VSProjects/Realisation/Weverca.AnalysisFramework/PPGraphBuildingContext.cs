@@ -35,7 +35,12 @@ namespace Weverca.AnalysisFramework
         /// All point blocks that has been created directly from BasicBlocks
         /// <remarks>It is used for finding already created blocks</remarks>
         /// </summary>
-        private readonly Dictionary<BasicBlock, PointsBlock> _createdBlocks = new Dictionary<BasicBlock, PointsBlock>();
+        private readonly Dictionary<BasicBlock, PointsBlock> _createdBasicBlocks = new Dictionary<BasicBlock, PointsBlock>();
+
+        /// <summary>
+        /// All point blocks that has been created
+        /// </summary>
+        private readonly List<PointsBlock> _createdBlocks = new List<PointsBlock>();
 
         /// <summary>
         /// Expression blocks remembered for possibility of sharing
@@ -54,6 +59,14 @@ namespace Weverca.AnalysisFramework
         internal PPGraphBuildingContext(ProgramPointGraph owningPPG)
         {
             _owningPPG = owningPPG;
+        }
+
+        internal void ConnectBlocks()
+        {
+            foreach (var block in _createdBlocks)
+            {
+                block.Connect();
+            }
         }
 
         #region Points block creation API
@@ -80,7 +93,8 @@ namespace Weverca.AnalysisFramework
                 createdBlock = PointsBlock.ForBlock(new[] { empty }, block, true);
             }
 
-            _createdBlocks.Add(block, createdBlock);
+            _createdBlocks.Add(createdBlock);
+            _createdBasicBlocks.Add(block, createdBlock);
             return createdBlock;
         }
 
@@ -92,18 +106,20 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created points block</returns>
         internal PointsBlock CreateFromExpression(Expression expression)
         {
-            PointsBlock result;
-            if (_creadtedExpressionBlocks.TryGetValue(expression, out result))
+            PointsBlock createdBlock;
+            if (_creadtedExpressionBlocks.TryGetValue(expression, out createdBlock))
             {
-                return result;
+                return createdBlock;
             }
 
             var points = ElementExpander.ExpandStatement(expression, reportCreation);
             if (points.Any())
             {
-                result = PointsBlock.ForExpression(points);
-                _creadtedExpressionBlocks.Add(expression, result);
-                return result;
+                createdBlock = PointsBlock.ForExpression(points);                
+                _creadtedExpressionBlocks.Add(expression, createdBlock);
+
+                _createdBlocks.Add(createdBlock);
+                return createdBlock;
             }
             else
             {
@@ -124,7 +140,10 @@ namespace Weverca.AnalysisFramework
             var point = new AssumePoint(condition, expressionValues);
             reportCreation(point);
 
-            return PointsBlock.ForPoint(point, new[] { outgoingBlock });
+            var createdBlock= PointsBlock.ForPoint(point, new[] { outgoingBlock });
+            _createdBlocks.Add(createdBlock);
+
+            return createdBlock;
         }
 
         /// <summary>
@@ -138,7 +157,11 @@ namespace Weverca.AnalysisFramework
         {
             createdPoint = new EmptyProgramPoint();
             reportCreation(createdPoint);
-            return PointsBlock.ForPoint(createdPoint, outgoingBlocks);
+
+            var createdBlock= PointsBlock.ForPoint(createdPoint, outgoingBlocks);
+            _createdBlocks.Add(createdBlock);
+
+            return createdBlock;
         }
 
         /// <summary>
@@ -181,7 +204,7 @@ namespace Weverca.AnalysisFramework
         /// <returns>Existing points block</returns>
         internal PointsBlock GetBlock(BasicBlock block)
         {
-            return _createdBlocks[block];
+            return _createdBasicBlocks[block];
         }
 
         /// <summary>
@@ -191,7 +214,7 @@ namespace Weverca.AnalysisFramework
         /// <returns>True if points block has been already created, false otherwise</returns>
         internal bool IsCreated(BasicBlock child)
         {
-            return _createdBlocks.ContainsKey(child);
+            return _createdBasicBlocks.ContainsKey(child);
         }
 
         #endregion
@@ -235,5 +258,7 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
+
+  
     }
 }

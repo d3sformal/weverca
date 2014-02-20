@@ -66,6 +66,11 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public string FunctionName { get; private set; }
 
+        /// <summary>
+        /// Evaluation log, that contains values of all points created within context of this program point graph
+        /// </summary>
+        public readonly EvaluationLog EvaluationLog = new EvaluationLog(new ProgramPointBase[0]);
+
         #endregion
 
         /// <summary>
@@ -88,8 +93,7 @@ namespace Weverca.AnalysisFramework
         }
 
         #region Program point graph creating
-
-
+        
         /// <summary>
         /// Create program point graph from source begining by entryPoint
         /// </summary>
@@ -125,6 +129,9 @@ namespace Weverca.AnalysisFramework
             {
                 point.SetOwningGraph(this);
             }
+
+            //Associate everything in subgraph
+            EvaluationLog.AssociatePointHierarchy(Start);
         }
 
         /// <summary>
@@ -215,6 +222,8 @@ namespace Weverca.AnalysisFramework
                 //connect conditional edges (also with default branch)
                 connectConditionEdges(parentBlock, pendingBlocks);
             }
+
+            _context.ConnectBlocks();
         }
 
         /// <summary>
@@ -329,7 +338,7 @@ namespace Weverca.AnalysisFramework
                 //connect edge.To through assume block
                 var assumeBlock = _context.CreateAssumeBlock(condition, edge.To, expressionValue);
                 conditionExpressionBlock.AddChild(assumeBlock);
-                
+
                 //assume block needs processing of its children
                 pendingBlocks.Enqueue(assumeBlock);
             }
@@ -442,6 +451,5 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
-
     }
 }

@@ -164,7 +164,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Evaluation log provide access to partial expression results
         /// </summary>
-        public readonly EvaluationLog Log;
+        public EvaluationLog Log { get { return OwningPPGraph.EvaluationLog; } }
 
         /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
@@ -177,7 +177,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal AssumePoint(AssumptionCondition condition, IEnumerable<ValuePoint> expressionParts)
         {
             Condition = condition;
-            Log = new EvaluationLog(this, expressionParts);
         }
 
         /// <inheritdoc />
@@ -303,7 +302,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     /// <remarks>Is used as reference to call result</remarks>
     /// </summary>
     public class ExtensionSinkPoint : ValuePoint
-    {        
+    {
         /// <summary>
         /// Extension which owns this sink
         /// <remarks>One sink is used per extension</remarks>
@@ -312,7 +311,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         /// <inheritdoc />
         public override LangElement Partial { get { return null; } }
-        
+
         /// <inheritdoc />
         internal override ForwardAnalysisServices Services
         {
@@ -335,7 +334,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             OwningExtension = owningExtension;
         }
-        
+
         /// <inheritdoc />
         protected override void extendInput()
         {
@@ -359,7 +358,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             var returnValue = Services.FunctionResolver.ResolveReturnValue(OwningExtension.Branches);
             Value = OutSet.CreateSnapshotEntry(returnValue);
         }
-        
+
         /// <inheritdoc />
         internal override void Accept(ProgramPointVisitor visitor)
         {
@@ -376,7 +375,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// Native analyzer contained in this point
         /// </summary>
         public readonly NativeAnalyzer Analyzer;
-        
+
         /// <inheritdoc />
         public override LangElement Partial { get { return Analyzer; } }
 
@@ -384,7 +383,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             Analyzer = analyzer;
         }
-        
+
         /// <inheritdoc />
         protected override void flowThrough()
         {

@@ -197,11 +197,26 @@ if($$Var==$Value){
  .AssertVariable("OutputB").HasUndefinedAndValues("Value1", "Value2")
  .SetNonDeterministic("VarA", "VarB");
 
+        /// <summary>
+        /// Testing of shortened behaviour as result of BUG report, when Evaluation log doesn't have operand values
+        /// </summary>
+        readonly static TestCase MultiOR_CASE = @"
+$a = 'abc';
+
+if (!$a or $b or $c)
+{
+    die();
+}
+
+".AssertVariable("a").HasUndefinedOrValues("abc").Analysis(Analyses.WevercaAnalysisTest);
+
+
         readonly static TestCase CallEqualsAssumption_CASE = @"
 if($unknown==strtolower(""TestValue"")){
     $Output=$unknown;
 }
 ".AssertVariable("Output").HasUndefinedOrValues("testvalue");
+
 
         readonly static TestCase ReverseCallEqualsAssumption_CASE = @"
 if(abs($unknown)==5){
@@ -219,7 +234,7 @@ switch($unknown){
     case 2: $result='b'; break; 
 }
 
-".AssertVariable("result").HasUndefinedAndValues("a","b");
+".AssertVariable("result").HasUndefinedAndValues("a", "b");
 
 
         readonly static TestCase IndirectVarAssign_CASE = @"
@@ -1544,7 +1559,7 @@ if($unknown){
 eval($code);
 
 "
-          .AssertVariable("result").HasValues("in eval1","in eval2")
+          .AssertVariable("result").HasValues("in eval1", "in eval2")
           ;
 
         [TestMethod]
@@ -1745,6 +1760,12 @@ eval($code);
         public void CallEqualsAssumption()
         {
             AnalysisTestUtils.RunTestCase(CallEqualsAssumption_CASE);
+        }
+
+        [TestMethod]
+        public void MultiOr()
+        {
+            AnalysisTestUtils.RunTestCase(MultiOR_CASE);
         }
 
         [TestMethod]

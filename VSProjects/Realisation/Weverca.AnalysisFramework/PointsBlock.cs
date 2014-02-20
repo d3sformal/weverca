@@ -28,6 +28,21 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private bool _needsContraction;
 
+        /// <summary>
+        /// Determine that points block has already been connected
+        /// </summary>
+        private bool _isConnected;
+
+        /// <summary>
+        /// Children blocks of current block
+        /// </summary>
+        private readonly List<PointsBlock> _childrenBlocks = new List<PointsBlock>();
+
+        /// <summary>
+        /// Parent blocks of current block
+        /// </summary>
+        private readonly List<PointsBlock> _parentBlocks = new List<PointsBlock>();
+
         #endregion
 
         #region Internal members
@@ -124,19 +139,28 @@ namespace Weverca.AnalysisFramework
 
         /// <summary>
         /// Add child points block for current points block
-        /// <remarks>Program points contained in point blocks are connected with flow edge</remarks>
+        /// <remarks>Program points contained in point blocks are connected with flow edge after connect is called</remarks>
         /// </summary>
         /// <param name="childBlock">Added child points block</param>
         internal void AddChild(PointsBlock childBlock)
         {
-            LastPoint.AddFlowChild(childBlock._containedPoints[0]);
+            childBlock._parentBlocks.Add(this);
+            _childrenBlocks.Add(childBlock);
         }
 
+        /// <summary>
+        /// Disallow making contractions for current block
+        /// </summary>
         internal void DisallowContraction()
         {
             _needsContraction = false;
         }
 
+        /// <summary>
+        /// Prepend program point as first of contained points.
+        /// Is connected with flow edge to FirstPoint
+        /// </summary>
+        /// <param name="programPoint">Prepended point</param>
         internal void PreprendFlowWith(ProgramPointBase programPoint)
         {
             var first = FirstPoint;
@@ -145,11 +169,34 @@ namespace Weverca.AnalysisFramework
             _containedPoints.Insert(0, programPoint);
         }
 
+        /// <summary>
+        /// Append program point as last of contained points
+        /// Is connected with flow edge to LastPoint
+        /// </summary>
+        /// <param name="programPoint">Appended point</param>
         internal void AppendFlow(ProgramPointBase programPoint)
         {
             LastPoint.AddFlowChild(programPoint);
 
             _containedPoints.Add(programPoint);
+        }
+
+        /// <summary>
+        /// Connect with flow edges to children points
+        /// </summary>
+        internal void Connect()
+        {
+            if (_isConnected)
+            {
+                throw new NotSupportedException("Cannot connect block twice");
+            }
+
+            _isConnected = true;
+
+            foreach (var child in _childrenBlocks)
+            {
+                LastPoint.AddFlowChild(child.FirstPoint);
+            }
         }
     }
 }

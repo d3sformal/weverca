@@ -19,7 +19,7 @@ namespace Weverca.AnalysisFramework
     public class EvaluationLog
     {
         //=========This is obsolete===========
-        
+
 
         #region Internal methods for associating partials
         /// <summary>
@@ -36,7 +36,7 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
-        
+
 
         [Obsolete("Use constructor with specified expression parts. It doesn't need explicit value association")]
         internal EvaluationLog()
@@ -48,35 +48,37 @@ namespace Weverca.AnalysisFramework
         //====================================
 
         #region Partial associations members
-        
+
         readonly Dictionary<LangElement, LValuePoint> _lValues = new Dictionary<LangElement, LValuePoint>();
 
         readonly Dictionary<LangElement, ValuePoint> _rValues = new Dictionary<LangElement, ValuePoint>();
 
         readonly Dictionary<LangElement, ProgramPointBase> _points = new Dictionary<LangElement, ProgramPointBase>();
 
-        readonly  ProgramPointBase _owner;
+        readonly ProgramPointBase _owner;
         #endregion
 
         /// <summary>
         /// Expects expression parts that are already not connected into PPG !!!
         /// </summary>
-        /// <param name="owner">owner program point</param>
         /// <param name="expressionParts">Parts of condition expression</param>
-        internal EvaluationLog(ProgramPointBase owner, IEnumerable<ProgramPointBase> expressionParts)
+        internal EvaluationLog(IEnumerable<ProgramPointBase> expressionParts)
         {
-            _owner = owner; 
             foreach (var part in expressionParts)
             {
-                associatePointHierarchy(part);
+                AssociatePointHierarchy(part);
             }
         }
 
-        private void associatePointHierarchy(ProgramPointBase part)
+        /// <summary>
+        /// Associate points in given sub graph into log.
+        /// </summary>
+        /// <param name="subgraph">Associated subgraph</param>
+        internal void AssociatePointHierarchy(ProgramPointBase subgraph)
         {
             var associated = new HashSet<ProgramPointBase>();
             var toAssociate = new Queue<ProgramPointBase>();
-            toAssociate.Enqueue(part);
+            toAssociate.Enqueue(subgraph);
 
             while (toAssociate.Count > 0)
             {
@@ -86,15 +88,15 @@ namespace Weverca.AnalysisFramework
                     associatePoint(point);
                 }
 
-                foreach (var parent in point.FlowParents)
+                foreach (var relatedPoint in point.FlowParents.Concat(point.FlowChildren))
                 {
-                    if (associated.Contains(parent))
+                    if (associated.Contains(relatedPoint))
                     {
                         continue;
                     }
-                    associated.Add(parent);
+                    associated.Add(relatedPoint);
 
-                    toAssociate.Enqueue(parent);
+                    toAssociate.Enqueue(relatedPoint);
                 }
             }
         }
