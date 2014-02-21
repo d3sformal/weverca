@@ -118,7 +118,6 @@ namespace Weverca.Analysis.FlowResolver
         /// <returns>
         ///   <c>false</c> is returned if the assumption can be proved to be wrong; otherwise <c>true</c> is returned.
         /// </returns>
-        /// <exception cref="System.NotSupportedException"></exception>
         public bool MakeAssumption(MemoryContext outputMemoryContext)
         {
             bool willAssume;
