@@ -94,7 +94,7 @@ namespace Weverca.Analysis
         {
             if (name.Name.Value == ".decrease")
             {
-                decrease();
+                decrease(OutSet);
                 return;
             }
 
@@ -471,17 +471,17 @@ namespace Weverca.Analysis
             return result;
         }
 
-        private void decrease()
+        private void decrease(FlowOutputSet outSet)
         {
             string thisFile = Flow.CurrentScript.FullName;
-            var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
-            IEnumerable<Value> files = includedFiles.ReadMemory(OutSnapshot).PossibleValues;
-            List<Value> result = DecreaseCalledInfo(thisFile, files);
-            includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
+            var includedFiles = outSet.GetControlVariable(new VariableName(".includedFiles"));
+            IEnumerable<Value> files = includedFiles.ReadMemory(outSet.Snapshot).PossibleValues;
+            List<Value> result = DecreaseCalledInfo(outSet, thisFile, files);
+            includedFiles.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
 
-        private List<Value> DecreaseCalledInfo<T>(T thisFile, IEnumerable<Value> files)
+        private List<Value> DecreaseCalledInfo<T>(FlowOutputSet outSet, T thisFile, IEnumerable<Value> files)
         {
             List<Value> result = new List<Value>();
             foreach (var value in files)
@@ -491,7 +491,7 @@ namespace Weverca.Analysis
                 {
                     if (info.Data.Function.Equals(thisFile))
                     {
-                        result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled - 1)));
+                        result.Add(outSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled - 1)));
                     }
                     else
                     {
@@ -542,6 +542,8 @@ namespace Weverca.Analysis
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
                 applyHints(outSet);
+                if(calls[0].Caller is IncludingExPoint)
+                decrease(outSet);
                 return outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
             }
             else
@@ -558,6 +560,8 @@ namespace Weverca.Analysis
                         continue;
                     }
                     applyHints(outSet);
+                    if(call.Caller is IncludingExPoint)
+                    decrease(outSet);
                     var returnValue = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
                 }
