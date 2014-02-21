@@ -86,9 +86,18 @@ namespace Weverca.Analysis
 
         #region function calls
 
+       
+       
+
         /// <inheritdoc />
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
+            if (name.Name.Value == ".decrease")
+            {
+                decrease();
+                return;
+            }
+
             var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
 
@@ -458,6 +467,41 @@ namespace Weverca.Analysis
             if (containsInclude == false)
             {
                 result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, 1)));
+            }
+            return result;
+        }
+
+        private void decrease()
+        {
+            string thisFile = Flow.CurrentScript.FullName;
+            var includedFiles = OutSet.GetControlVariable(new VariableName(".includedFiles"));
+            IEnumerable<Value> files = includedFiles.ReadMemory(OutSnapshot).PossibleValues;
+            List<Value> result = DecreaseCalledInfo(thisFile, files);
+            includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
+        }
+
+
+        private List<Value> DecreaseCalledInfo<T>(T thisFile, IEnumerable<Value> files)
+        {
+            List<Value> result = new List<Value>();
+            foreach (var value in files)
+            {
+                InfoValue<NumberOfCalledFunctions<T>> info = value as InfoValue<NumberOfCalledFunctions<T>>;
+                if (info != null)
+                {
+                    if (info.Data.Function.Equals(thisFile))
+                    {
+                        result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled - 1)));
+                    }
+                    else
+                    {
+                        result.Add(value);
+                    }
+                }
+                else
+                {
+                    result.Add(value);
+                }
             }
             return result;
         }

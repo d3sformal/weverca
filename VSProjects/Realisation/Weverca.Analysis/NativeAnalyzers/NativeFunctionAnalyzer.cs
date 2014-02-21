@@ -501,11 +501,6 @@ namespace Weverca.Analysis
         /// <returns>True if function exist, false otherwise</returns>
         public bool existNativeFunction(QualifiedName name)
         {
-            if (name.Name.Value == ".decrease")
-            {
-                return true;
-            }
-
             return typeModeledFunctions.ContainsKey(name);
         }
 
@@ -518,47 +513,7 @@ namespace Weverca.Analysis
             return typeModeledFunctions.Keys.ToArray();
         }
 
-        private void decrease(FlowController flow)
-        {
-
-            string thisFile = NativeAnalyzerUtils.GetCallerScript(flow.OutSet);
-            var includedFiles = flow.OutSet.GetControlVariable(new VariableName(".includedFiles"));
-            IEnumerable<Value> files = includedFiles.ReadMemory(flow.OutSet.Snapshot).PossibleValues;
-            List<Value> result = DecreaseCalledInfo(flow.OutSet, thisFile, files);
-            includedFiles.WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(result));
-        }
-
-        private List<Value> DecreaseCalledInfo<T>(FlowOutputSet OutSet,T thisFile, IEnumerable<Value> files)
-        {
-            List<Value> result = new List<Value>();
-            bool containsInclude = false;
-            foreach (var value in files)
-            {
-                InfoValue<NumberOfCalledFunctions<T>> info = value as InfoValue<NumberOfCalledFunctions<T>>;
-                if (info != null)
-                {
-                    if (info.Data.Function.Equals(thisFile))
-                    {
-                        containsInclude = true;
-                        result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled - 1)));
-                    }
-                    else
-                    {
-                        result.Add(value);
-                    }
-                }
-                else
-                {
-                    result.Add(value);
-                }
-            }
-            if (containsInclude == false)
-            {
-                result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, 1)));
-            }
-            return result;
-        }
-
+        
         /// <summary>
         /// Return signleton instance of NativeAnalyzerMethod
         /// </summary>
@@ -566,11 +521,7 @@ namespace Weverca.Analysis
         /// <returns>delegate which models this function</returns>
         public NativeAnalyzerMethod GetInstance(QualifiedName name)
         {
-            if (name.Name.Value == ".decrease")
-            {
-                return new NativeAnalyzerMethod(decrease);
-            }
-
+          
             if (!existNativeFunction(name))
             {
                 return null;
