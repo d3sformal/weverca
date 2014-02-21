@@ -64,7 +64,7 @@ namespace Weverca
                    
                     if (args.Length > filesIndex+1 && args[filesIndex] == "-mm")
                     {
-                        if (args[filesIndex+1] == "CopyMM") memoryModel = MemoryModels.MemoryModels.CopyMM;
+                        if (args[filesIndex+1].ToLower() == "copymm") memoryModel = MemoryModels.MemoryModels.CopyMM;
                         filesIndex += 2;
                     }
 
@@ -101,6 +101,9 @@ namespace Weverca
         /// <param name="memoryModel">The memory model used for analysis</param>
         private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
         {
+            var console = new ConsoleOutput();
+            console.CommentLine("Using " + memoryModel.ToString());
+            console.CommentLine("");
             foreach (var argument in filenames)
             {
                 var filesInfo = Analyzer.GetFileNames(argument);
@@ -129,7 +132,7 @@ namespace Weverca
                     var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
                     watch.Stop();
                     // Build output
-                    var console = new ConsoleOutput();
+
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
                     
                     var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
@@ -151,19 +154,16 @@ namespace Weverca
                         console.CommentLine(string.Format("The number of memory entry assigns is: {0}\n", statistics[(int)Statistic.MemoryEntryAssigns]));
                         console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));
                         console.CommentLine(string.Format("The number of memory entry merges is: {0}\n", statistics[(int)Statistic.MemoryEntryMerges]));
-                        console.CommentLine(string.Format("The number of index assings is: {0}\n", statistics[(int)Statistic.IndexAssigns]));
-                        console.CommentLine(string.Format("The number of index alias assings is: {0}\n", statistics[(int)Statistic.IndexAliasAssigns]));
                         console.CommentLine(string.Format("The number of index reads is: {0}\n", statistics[(int)Statistic.IndexReads]));
-                        console.CommentLine(string.Format("The number of index reads attmpts is: {0}\n", statistics[(int)Statistic.IndexReadAttempts]));
                         console.CommentLine(string.Format("The number of value reads is: {0}\n", statistics[(int)Statistic.ValueReads]));
-                        console.CommentLine(string.Format("The number of value read attempts is: {0}\n", statistics[(int)Statistic.ValueReadAttempts]));
+
                     }
                     else 
                     {
                         console.CommentLine(string.Format("Snapshot statistics are not available, because end point was not reached"));
                     }
 #else
-                    var console = new ConsoleOutput();
+
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
 
                     /*try

@@ -35,12 +35,23 @@ namespace Weverca.MemoryModels
             {
                 return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
             }
+
+            public override string ToString()
+            {
+                return "Virtual reference memory model";
+            }
+
         }
         private class CopyMMCl : MemoryModels
         {
             public override SnapshotBase CreateSnapshot()
             {
                 return new Weverca.MemoryModels.CopyMemoryModel.Snapshot();
+            }
+            
+            public override string ToString()
+            {
+                return "Copy memory model";
             }
         }
     }
