@@ -1045,7 +1045,6 @@ namespace Weverca.Analysis
     public class FunctionHints
     {
         private HashSet<FlagType> returnHints;
-        private Dictionary<VariableIdentifier, HashSet<FlagType>> argumentHints;
         private LangElement declaration;
 
         /// <summary>
@@ -1056,7 +1055,6 @@ namespace Weverca.Analysis
         public FunctionHints(PHPDocBlock doc, LangElement langElement)
         {
             declaration = langElement;
-            argumentHints = new Dictionary<VariableIdentifier, HashSet<FlagType>>();
             returnHints = new HashSet<FlagType>();
 
             string comment;
@@ -1088,9 +1086,7 @@ namespace Weverca.Analysis
 
             endOfRegexp += "all)";
             var returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+returnvalue[ \t]+remove[ \t]+" + endOfRegexp;
-            var argumentPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+outargument[ \t]+([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)[ \t]+remove[ \t]+" + endOfRegexp;
             var retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
-            var argRegEx = new Regex(argumentPatern, RegexOptions.IgnoreCase);
 
             foreach (var line in comment.Split('\n'))
             {
@@ -1111,33 +1107,6 @@ namespace Weverca.Analysis
                         }
                     }
                 }
-
-                var argMatch = argRegEx.Match(line);
-                if (argMatch.Success)
-                {
-                    var argName = argMatch.Groups[1].Value;
-                    var res = argMatch.Groups[2].Value.ToString();
-                    foreach (var parameter in parameters)
-                    {
-                        if (parameter.Name.Equals(argName))
-                        {
-                            foreach (FlagType val in values)
-                            {
-                                if (val.ToString().ToLower() == res.ToString().ToLower())
-                                {
-                                    addArgumentHint(new VariableIdentifier(argName), val);
-                                }
-
-                                if (res == "all")
-                                {
-                                    addArgumentHint(new VariableIdentifier(argName), val);
-                                }
-                            }
-
-                            break;
-                        }
-                    }
-                }
             }
         }
 
@@ -1146,16 +1115,7 @@ namespace Weverca.Analysis
             returnHints.Add(type);
         }
 
-        private void addArgumentHint(VariableIdentifier name, FlagType type)
-        {
-            if (!argumentHints.ContainsKey(name))
-            {
-                argumentHints[name] = new HashSet<FlagType>();
-            }
-
-            argumentHints[name].Add(type);
-        }
-
+    
         /// <summary>
         /// Apply current hints on analyzed branch
         /// </summary>
@@ -1167,15 +1127,6 @@ namespace Weverca.Analysis
             {
                 var result = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
                 outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(outSet.Snapshot, new MemoryEntry(FlagsHandler.Clean(result.PossibleValues, type)));
-            }
-
-            foreach (var variable in argumentHints.Keys)
-            {
-                foreach (var flag in argumentHints[variable])
-                {
-                    var result = outSet.ReadVariable(variable).ReadMemory(outSet.Snapshot);
-                    outSet.GetVariable(variable).WriteMemory(outSet.Snapshot, new MemoryEntry(FlagsHandler.Clean(result.PossibleValues, flag)));
-                }
             }
         }
     }
