@@ -94,7 +94,7 @@ namespace Weverca.Analysis
         {
             if (name.Name.Value == ".decrease")
             {
-                decrease(OutSet);
+                decrease(OutSet, Flow.CurrentScript.FullName);
                 return;
             }
 
@@ -471,9 +471,8 @@ namespace Weverca.Analysis
             return result;
         }
 
-        private void decrease(FlowOutputSet outSet)
+        private void decrease(FlowOutputSet outSet, string thisFile)
         {
-            string thisFile = Flow.CurrentScript.FullName;
             var includedFiles = outSet.GetControlVariable(new VariableName(".includedFiles"));
             IEnumerable<Value> files = includedFiles.ReadMemory(outSet.Snapshot).PossibleValues;
             List<Value> result = DecreaseCalledInfo(outSet, thisFile, files);
@@ -542,14 +541,16 @@ namespace Weverca.Analysis
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
                 applyHints(outSet);
-                if(calls[0].Caller is IncludingExPoint)
-                decrease(outSet);
+                if (calls[0].Caller is IncludingExPoint)
+                {
+                    decrease(OutSet, calls[0].OwningPPGraph.OwningScript.FullName);
+                }
                 return outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
             }
             else
             {
                 Debug.Assert(calls.Length > 0, "There must be at least one call");
-
+                HashSet<string> fileNames = new HashSet<string>();
                 var values = new HashSet<Value>();
                 foreach (var call in calls)
                 {
@@ -560,12 +561,17 @@ namespace Weverca.Analysis
                         continue;
                     }
                     applyHints(outSet);
-                    if(call.Caller is IncludingExPoint)
-                    decrease(outSet);
+                    if (call.Caller is IncludingExPoint)
+                    {
+                        fileNames.Add(call.OwningPPGraph.OwningScript.FullName);
+                    }
                     var returnValue = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
                 }
-
+                foreach (string file in fileNames)
+                {
+                    decrease(OutSet, file);
+                }
                 return new MemoryEntry(values);
             }
         }
@@ -1245,6 +1251,11 @@ namespace Weverca.Analysis
             }
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return Function.ToString() + ":" + TimesCalled;
+        }
     }
 
 }
