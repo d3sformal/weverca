@@ -438,5 +438,45 @@ namespace Weverca.Analysis.UnitTest
         }
 
 
+        string FuntionHintTest = @"
+         /**
+         * @wev-hint sanitize all
+         **/
+         function f($s)
+         {
+            return $s;
+         }
+         echo f($_POST[""a""]);
+        ";
+
+
+        [TestMethod]
+        public void FuntionHint()
+        {
+            var outset = TestUtils.Analyze(FuntionHintTest);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(outset, FlagType.HTMLDirty) == false);
+        }
+
+        string FuntionHintTest2 = @"
+         
+         /**
+         * @wev-hint sanitize SQLDirty
+         **/
+         function f($s)
+         {
+            return $s;
+         }
+         echo f($_POST[""a""]);
+        ";
+
+
+        [TestMethod]
+        public void FuntionHint2()
+        {
+            var outset = TestUtils.Analyze(FuntionHintTest2);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(outset, FlagType.HTMLDirty));
+
+        }
+
     }
 }

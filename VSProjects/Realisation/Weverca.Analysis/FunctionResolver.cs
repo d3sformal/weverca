@@ -1139,7 +1139,7 @@ namespace Weverca.Analysis
             }
 
             endOfRegexp += "all)";
-            var returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+returnvalue[ \t]+remove[ \t]+" + endOfRegexp;
+            var returnPatern = "^[ \t]*\\*?[ \t]*@wev-hint[ \t]+sanitize[ \t]+" + endOfRegexp;
             var retRegEx = new Regex(returnPatern, RegexOptions.IgnoreCase);
 
             foreach (var line in comment.Split('\n'))
