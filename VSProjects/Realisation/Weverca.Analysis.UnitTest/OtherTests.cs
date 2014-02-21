@@ -47,7 +47,7 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD));
         }
 
-       
+
 
         string AccessProtectedFieldTest2 = @"
             class a
@@ -160,7 +160,7 @@ namespace Weverca.Analysis.UnitTest
         }
 
 
-       
+
 
         string AccesStaticPrivateFieldTest = @"
             class a
@@ -254,7 +254,7 @@ namespace Weverca.Analysis.UnitTest
         public void AccesStaticPrivateField4()
         {
             var outset = TestUtils.Analyze(AccesStaticPrivateFieldTest4);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD)==false);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.ACCESSING_INACCESSIBLE_FIELD) == false);
         }
 
         string MethodVisibilityTest = @"
@@ -299,7 +299,7 @@ namespace Weverca.Analysis.UnitTest
         public void MethodVisibility2()
         {
             var outset = TestUtils.Analyze(MethodVisibilityTest2);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD)==false);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CALLING_INACCESSIBLE_METHOD) == false);
         }
 
         string MethodVisibilityTest3 = @"
@@ -433,7 +433,7 @@ namespace Weverca.Analysis.UnitTest
         public void NumberOfArgument3()
         {
             var outset = TestUtils.Analyze(NumberOfArgumentTest3);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS)==false);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS) == false);
             TestUtils.testValue(outset.ReadVariable(new VariableIdentifier("result")).ReadMemory(outset.Snapshot).PossibleValues.First(), 4);
         }
 
@@ -475,6 +475,27 @@ namespace Weverca.Analysis.UnitTest
         {
             var outset = TestUtils.Analyze(FuntionHintTest2);
             Debug.Assert(TestUtils.ContainsSecurityWarning(outset, FlagType.HTMLDirty));
+
+        }
+
+        string FuntionHintTest3 = @"
+         
+         /**
+         * @wev-hint sanitize htmldirty
+         **/
+         function f($s)
+         {
+            return $s;
+         }
+         echo f($_POST[""a""]);
+        ";
+
+
+        [TestMethod]
+        public void FuntionHint3()
+        {
+            var outset = TestUtils.Analyze(FuntionHintTest3);
+            Debug.Assert(TestUtils.ContainsSecurityWarning(outset, FlagType.HTMLDirty) == false);
 
         }
 
