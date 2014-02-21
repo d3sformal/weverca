@@ -55,7 +55,7 @@ namespace Weverca.Analysis
 
             //else there can be case sensitive constant
 
-            var caseSensitiveConstant=constantArrays.ReadIndex(context,new MemberIdentifier(name.Name.Value));
+            var caseSensitiveConstant = constantArrays.ReadIndex(context, new MemberIdentifier("#" + name.Name.Value));
             if(caseSensitiveConstant.IsDefined(context)){
                 entry=caseSensitiveConstant.ReadMemory(context);
                 isNotDefined=false;
@@ -88,7 +88,7 @@ namespace Weverca.Analysis
             }
             else
             {
-                constant = constantArrays.ReadIndex(outset.Snapshot, new MemberIdentifier(name.Name.Value));
+                constant = constantArrays.ReadIndex(outset.Snapshot, new MemberIdentifier("#"+name.Name.Value));
             }
             if (!constant.IsDefined(outset.Snapshot))
             {
