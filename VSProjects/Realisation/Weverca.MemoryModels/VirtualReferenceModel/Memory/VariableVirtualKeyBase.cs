@@ -59,11 +59,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return variable;
         }
 
+        ///<inheritdoc />
         internal override VariableInfo GetVariable(Snapshot snapshot)
         {
             return snapshot.GetInfo(getStorage(), VariableKind.Meta);
         }
 
+        ///<inheritdoc />
         internal override VirtualReference CreateImplicitReference(Snapshot snapshot)
         {
             //there shouldnt be needed for creating implicit reference
@@ -103,6 +105,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return new VariableName(storageName);
         }
 
+        ///<inheritdoc />
         public override string ToString()
         {
             return getStorageName();

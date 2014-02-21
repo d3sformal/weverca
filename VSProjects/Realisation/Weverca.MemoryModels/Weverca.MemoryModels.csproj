@@ -90,6 +90,7 @@
     <Compile Include="VirtualReferenceModel\Memory\CallbackReference.cs" />
     <Compile Include="VirtualReferenceModel\Memory\IndexReadExecutor.cs" />
     <Compile Include="VirtualReferenceModel\Memory\IndexWriteExecutor.cs" />
+    <Compile Include="VirtualReferenceModel\Memory\TemporaryVariableKey.cs" />
     <Compile Include="VirtualReferenceModel\Memory\VariableFieldKey.cs" />
     <Compile Include="VirtualReferenceModel\Memory\VariableIndexKey.cs" />
     <Compile Include="VirtualReferenceModel\Memory\VariableKeyBase.cs" />

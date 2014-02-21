@@ -24,12 +24,14 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             _field = field;
         }
 
+        /// <inheritdoc />
         protected override string getStorageName()
         {
             //TODO what about multiple names ?
-            return string.Format("{0}_field-{1}", ParentVariable, _field.DirectName);
+            return string.Format("{0}_field-{1}", ParentVariable, fieldRepresentation(_field));
         }
 
+        /// <inheritdoc />
         protected override MemoryEntry getter(Snapshot s, MemoryEntry storedValues)
         {
             var subResults = new HashSet<Value>();
@@ -52,6 +54,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return new MemoryEntry(subResults);
         }
 
+        /// <inheritdoc />
         protected override MemoryEntry setter(Snapshot s, MemoryEntry storedValues, MemoryEntry writtenValue)
         {
             var subResults = new HashSet<Value>();
@@ -72,6 +75,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             }
 
             return new MemoryEntry(subResults);
+        }
+
+
+        /// <summary>
+        /// Create field representation for given field
+        /// </summary>
+        /// <param name="field">Field which representation is created</param>
+        /// <returns>Created field representation</returns>
+        private string fieldRepresentation(VariableIdentifier field)
+        {
+            var name = new StringBuilder();
+            foreach (var possibleName in field.PossibleNames)
+            {
+                name.Append(possibleName);
+                name.Append(',');
+            }
+
+            return name.ToString();
         }
     }
 }

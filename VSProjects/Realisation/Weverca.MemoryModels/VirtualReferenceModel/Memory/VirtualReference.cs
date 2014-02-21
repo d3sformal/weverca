@@ -49,12 +49,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
         {
         }
 
+        /// <inheritdoc />
         public override int GetHashCode()
         {
             return OriginatedVariable.GetHashCode() + (int)Kind + ContextStamp;
         }
 
-
+        /// <inheritdoc />
         public override bool Equals(object obj)
         {
             if (obj == this)
@@ -71,11 +72,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return o.OriginatedVariable == this.OriginatedVariable && o.Kind == this.Kind && o.ContextStamp == ContextStamp;
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             return string.Format("Ref: {0}-{1}|{2}", OriginatedVariable, ContextStamp, Kind);
         }
-
+        
         internal virtual MemoryEntry GetEntry(Snapshot snapshot, DataContainer data)
         {
             return data.GetEntry(this);

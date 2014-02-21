@@ -97,18 +97,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             //read fielded value through memory assistant
             var fielded = _context.MemoryAssistant.ReadAnyField(value, _field);
 
-            applyFieldWithWriteBack(value, fielded);
+            _fieldStorages.Add(new TemporaryVariableKey(fielded));
         }
         #endregion
 
         #region Private helpers
-
-        private void applyFieldWithWriteBack(Value value, MemoryEntry fielded)
-        {
-            var storages = _context.FieldStorages(value, _field).ToArray();
-            _context.Write(storages, fielded, false, false);
-            _fieldStorages.AddRange(storages);
-        }
 
         private void applyField(ObjectValue objectValue)
         {

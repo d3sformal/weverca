@@ -44,7 +44,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         /// Created implicit array (if needed)
         /// </summary>
         private AssociativeArray implicitArray;
-        
+
         /// <summary>
         /// Result of indexing
         /// </summary>
@@ -109,7 +109,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
             //read indexed value through memory assistant
             var indexed = _context.MemoryAssistant.ReadAnyValueIndex(value, _index);
 
-            applyIndexWithWriteBack(value, indexed);
+            _indexStorages.Add(new TemporaryVariableKey(indexed));
         }
 
         #endregion
@@ -119,16 +119,6 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         private void applyIndex(AssociativeArray array)
         {
             _indexStorages.AddRange(_context.IndexStorages(array, _index));
-        }
-
-        private void applyIndexWithWriteBack(Value value, MemoryEntry indexedValue)
-        {
-            //write back indexed value so it can be read back later
-            var storages = _context.IndexStorages(value, _index).ToArray();
-            _context.Write(storages, indexedValue, false, false);
-
-            //keep index storages because of overall reading
-            _indexStorages.AddRange(storages);
         }
 
         private AssociativeArray getImplicitArray()

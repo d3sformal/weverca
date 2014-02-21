@@ -58,9 +58,9 @@ namespace Weverca
             switch (args[0])
             {
                 case "-sa":
-                    int filesIndex = 1;
-                    MemoryModels.MemoryModels memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
-                    Weverca.AnalysisFramework.UnitTest.Analyses analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
+                    var filesIndex = 1;
+                    var memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
+                    var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
                    
                     if (args.Length > filesIndex+1 && args[filesIndex] == "-mm")
                     {

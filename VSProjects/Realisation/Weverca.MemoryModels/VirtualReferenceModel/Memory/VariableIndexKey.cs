@@ -25,12 +25,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             _index = index;
         }
 
+        ///<inheritdoc />
         protected override string getStorageName()
         {
-            //TODO what about multiple names ?
-            return string.Format("{0}_index-{1}", ParentVariable, _index.DirectName);
+            return string.Format("{0}_index-{1}", ParentVariable, indexRepresentation(_index));
         }
-        
+
+        ///<inheritdoc />
         protected override MemoryEntry getter(Snapshot s, MemoryEntry storedValues)
         {
             var indexReader = new IndexReadExecutor(s.MemoryAssistant, _index);
@@ -39,6 +40,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
             return new MemoryEntry(indexReader.Result);
         }
 
+        ///<inheritdoc />
         protected override MemoryEntry setter(Snapshot s, MemoryEntry storedValues, MemoryEntry writtenValue)
         {
             var indexWriter = new IndexWriteExecutor(s.MemoryAssistant, _index, writtenValue);
@@ -46,6 +48,24 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.Memory
 
             var backWrite = new MemoryEntry(indexWriter.Result);
             return backWrite;
+        }
+
+
+        /// <summary>
+        /// Create index representation for given index
+        /// </summary>
+        /// <param name="index">Index which representation is created</param>
+        /// <returns>Created index representation</returns>
+        private string indexRepresentation(MemberIdentifier index)
+        {
+            var name = new StringBuilder();
+            foreach (var possibleName in index.PossibleNames)
+            {
+                name.Append(possibleName);
+                name.Append(',');
+            }
+
+            return name.ToString();
         }
     }
 }
