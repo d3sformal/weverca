@@ -59,7 +59,6 @@ namespace Weverca.ControlFlowGraph
         /// <returns></returns>
         public static ControlFlowGraph FromFile(FileInfo file)
         {
-            // TODO: check if the file exists?
             var fileName = file.FullName;
             SyntaxParser parser = GenerateParser(fileName);
             parser.Parse();
@@ -68,6 +67,27 @@ namespace Weverca.ControlFlowGraph
                 throw new ArgumentException("The specified file cannot be parsed.");
             }
 
+            return new ControlFlowGraph(parser.Ast, file);
+        }
+
+
+        /// <summary>
+        /// Creates a confrolflow graph from script with given file name.
+        /// It also adds native call .decrease to decrease call stack between includes
+        /// </summary>
+        /// <param name="file">File</param>
+        /// <returns></returns>
+        public static ControlFlowGraph FromFileAddAnalyzer(FileInfo file)
+        {
+            var fileName = file.FullName;
+            SyntaxParser parser = GenerateParser(fileName);
+            parser.Parse();
+            if (parser.Ast == null)
+            {
+                throw new ArgumentException("The specified file cannot be parsed.");
+            }
+            var functionCall = new DirectFcnCall(Position.Invalid, new QualifiedName(new Name(".decrease")), null, Position.Invalid, new List<ActualParam>(), new List<TypeRef>());
+            parser.Ast.Statements.Add(new ExpressionStmt(Position.Invalid,functionCall));
             return new ControlFlowGraph(parser.Ast, file);
         }
 
