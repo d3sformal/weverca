@@ -34,15 +34,15 @@ namespace Weverca
         /// <summary>
         /// Startup method for Weverca
         /// </summary>
-        /// <param name="args">TODO: Specification of arguments</param>
+        /// <param name="args">arguments: -sa [-mm CopyMM|VrMM] FILENAME [FILENAME] or -metrics FILENAME [FILENAME] ...</param>
         private static void Main(string[] args)
         {
             if (args.Length < 2)
             {
                 Console.WriteLine("Missing argument");
                 Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa [-mm CopyMM|VrMM] FILENAME [FILENAME]...");
-                Console.WriteLine(@"-metrics FILENAME [FILENAME]...");
+                Console.WriteLine(@"-sa [-mm CopyMM|VrMM] FILENAME [FILENAME] ...");
+                Console.WriteLine(@"-metrics FILENAME [FILENAME] ...");
                 
                 /*Console.WriteLine(@"  Static analysis");
                 Console.WriteLine(@"-cmide [-options_cmide]");
@@ -122,7 +122,7 @@ namespace Weverca
 
                 foreach (var fileInfo in filesInfo)
                 {
-                    // TODO: This is for time consumption analyzing only
+                    // This is for time consumption analyzing only
                     // Analyze twice - because of omitting .NET initialization we get better analysis time
                     //Analyzer.Run(fileInfo, memoryModel);
                    

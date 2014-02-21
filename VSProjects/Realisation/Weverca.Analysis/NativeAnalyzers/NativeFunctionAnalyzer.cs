@@ -840,27 +840,14 @@ namespace Weverca.Analysis
                         }
                     }
                 }
-                foreach (var arg0 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
-                {
-                    var stringConverter = new StringConverter(flow);
-                    // TODO: arg0Retyped can be null if cannot be converted to StringValue
-                    var arg0Retyped = stringConverter.EvaluateToString(arg0);
-                    string constantName = "";
 
-                    // TODO: It cannot never be null
-                    /*
-                    if (arg0Retyped is UndefinedValue)
-                    {
-                        canBeFalse = true;
-                        continue;
-                    }
-                    else
-                     */
-                    {
-                        constantName = arg0Retyped.Value;
-                    }
+                var stringConverter = new StringConverter(flow);
+                bool isAllwayConcrete=false;
+                IEnumerable<StringValue> arg0Strings = stringConverter.Evaluate(flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot), out isAllwayConcrete);
 
-                    QualifiedName qConstantName = new QualifiedName(new Name(constantName));
+                foreach (StringValue arg0 in arg0Strings)
+                {                  
+                    QualifiedName qConstantName = new QualifiedName(new Name(arg0.Value));
                     List<Value> result = new List<Value>();
                     foreach (var arg1 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(1)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                     {
