@@ -895,14 +895,14 @@ namespace Weverca.Analysis
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))
             {
                 var stringConverter = new StringConverter(flow);
+                bool isAllwaysConcrete=false;
+                IEnumerable<StringValue> arg0strings=stringConverter.Evaluate(flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot),out isAllwaysConcrete);
 
-                foreach (var arg0 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(0)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
+                foreach (StringValue arg0 in arg0strings)
                 {
-                    // TODO: arg0Retyped can be null if cannot be converted to StringValue
-                    var arg0Retyped = stringConverter.EvaluateToString(arg0);
                     List<Value> values = new List<Value>();
                     NativeConstantAnalyzer constantAnalyzer = NativeConstantAnalyzer.Create(flow.OutSet);
-                    QualifiedName name = new QualifiedName(new Name(arg0Retyped.Value));
+                    QualifiedName name = new QualifiedName(new Name(arg0.Value));
 
                     if (constantAnalyzer.ExistContant(name))
                     {
