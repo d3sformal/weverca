@@ -91,7 +91,10 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else
                 {
-                    throw new NotImplementedException();
+                    foreach (var newValue in variable.Value)
+                    {
+                        IntersectValues(variableValues[variable.Key], newValue);
+                    }
                 }
             }
         }
