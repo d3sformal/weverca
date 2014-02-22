@@ -124,9 +124,9 @@ namespace Weverca.Analysis
             var staticVariableSinkVariable = EntryInput.GetControlVariable(staticVariableSink);
             staticVariableSinkVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.UndefinedValue));
 
-            nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
+            EntryInput.GetControlVariable(FunctionResolver.evalDepth).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInt(0)));
 
-            
+            nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
 
             this.WideningLimit = 10;
         }

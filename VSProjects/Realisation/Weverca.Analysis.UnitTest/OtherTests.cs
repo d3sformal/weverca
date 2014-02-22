@@ -499,5 +499,17 @@ namespace Weverca.Analysis.UnitTest
 
         }
 
+        string InfiniteEvalTest = @"
+         $a='eval(""$a"")';
+         eval($a);
+           ";
+
+        [TestMethod]
+        public void InfiniteEval()
+        {
+            var outset = TestUtils.Analyze(InfiniteEvalTest);
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.TOO_DEEP_EVAL_RECURSION));
+
+        }
     }
 }

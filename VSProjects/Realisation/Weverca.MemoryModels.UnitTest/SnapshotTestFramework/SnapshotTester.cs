@@ -12,8 +12,6 @@ using PHP.Core;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.Analysis.ExpressionEvaluator;
-using Weverca.AnalysisFramework;
-using Weverca.AnalysisFramework.Memory;
 using Weverca.Analysis;
 using Weverca.MemoryModels.UnitTest.SnapshotTestFramework;
 
@@ -245,7 +243,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         /// <inheritdoc />
         public override ObjectValue CreateImplicitObject()
         {
-            return Context.CreateObject(null);
             ClassDeclBuilder builder=new ClassDeclBuilder();
             builder.QualifiedName=new QualifiedName(new Name("stdClass"));
             return Context.CreateObject(Context.CreateType(builder.Build()));
@@ -367,7 +364,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
 
             //reading of index returns undefined value
             yield return Context.UndefinedValue;
-            yield return Context.UndefinedValue;
         }
 
         /// <inheritdoc />
@@ -380,7 +376,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
 
             //we dont want to change indexed value itself
             yield return indexed;
-            yield return indexed;
         }
 
         /// <inheritdoc />
@@ -388,7 +383,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         {
             var simplifier = new Simplifier(Context);
             return new MemoryEntry(simplifier.Simplify(entry));
-            return entry;
         }
 
         /// <inheritdoc />
@@ -399,7 +393,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
                 SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
             }
             yield return fielded;
-            yield return fielded;
         }
 
         /// <inheritdoc />
@@ -409,7 +402,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
             {
                 SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
             }
-            yield return Context.UndefinedValue;
             yield return Context.UndefinedValue;
         }
 

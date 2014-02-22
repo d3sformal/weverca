@@ -429,6 +429,22 @@ namespace Weverca.Analysis.FlowResolver
                 AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(flow.CurrentScript.FullName,"Eval shoudn't contain anything from user input", flow.CurrentPartial, FlagType.HTMLDirty));
             }
 
+            int evalDepth=0;
+            foreach (var value in flow.OutSet.GetControlVariable(FunctionResolver.evalDepth).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
+            {
+                IntegerValue currentDepth=value as IntegerValue;
+                if (currentDepth != null && currentDepth.Value>evalDepth)
+                {
+                    evalDepth = currentDepth.Value;
+                }
+            }
+            if (evalDepth > 3)
+            {
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, @"Eval cannot be called in ""eval recursion"" more than 3 times", flow.CurrentPartial, AnalysisWarningCause.TOO_DEEP_EVAL_RECURSION));
+                return;
+            }
+
+
             StringConverter converter = new StringConverter();
             converter.SetContext(flow);
 

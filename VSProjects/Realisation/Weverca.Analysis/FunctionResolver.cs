@@ -31,6 +31,10 @@ namespace Weverca.Analysis
 
         private readonly HashSet<FunctionValue> sharedFunctions = new HashSet<FunctionValue>();
 
+        /// <summary>
+        ///  Readonly variable name for storing depth of eval recursion
+        /// </summary>
+        public static readonly VariableName evalDepth = new VariableName(".evalDepth");
 
         /// <summary>
         /// Readonly variable name for storing depth of recursion
@@ -369,6 +373,11 @@ namespace Weverca.Analysis
                     List<Value> result = IncreaseCalledInfo(thisFile, files);
                     includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
                 }
+                else
+                { 
+                    //eval
+                    increaseEvalDepth(OutSet);
+                }
             }
             else
             {
@@ -433,6 +442,7 @@ namespace Weverca.Analysis
                 OutSet.GetLocalControlVariable(new VariableName("$currentScript")).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
         }
+
 
         private List<Value> IncreaseCalledInfo<T>(T thisFile, IEnumerable<Value> files)
         {
@@ -499,6 +509,45 @@ namespace Weverca.Analysis
             return result;
         }
 
+
+        private void increaseEvalDepth(FlowOutputSet outSet)
+        {
+            HashSet<Value> result=new HashSet<Value>();
+            foreach (var value in outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot).PossibleValues)
+            { 
+                IntegerValue depth=value as IntegerValue;
+                if (depth != null)
+                { 
+                    result.Add(outSet.CreateInt(depth.Value+1));
+                }
+                else
+                {
+                    result.Add(value);
+                }
+            }
+            outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot,new MemoryEntry(result));
+        }
+
+
+        private void decreaseEvalDepth(FlowOutputSet outSet)
+        {
+            HashSet<Value> result=new HashSet<Value>();
+            foreach (var value in outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot).PossibleValues)
+            { 
+                IntegerValue depth=value as IntegerValue;
+                if (depth != null)
+                { 
+                    result.Add(outSet.CreateInt(depth.Value-1));
+                }
+                else
+                {
+                    result.Add(value);
+                }
+            }
+            outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot,new MemoryEntry(result));
+        }
+
+
         /// <inheritdoc />
         public override MemoryEntry InitializeObject(ReadSnapshotEntryBase newObject, MemoryEntry[] arguments)
         {
@@ -539,6 +588,10 @@ namespace Weverca.Analysis
                 {
                     decrease(OutSet, calls[0].OwningPPGraph.OwningScript.FullName);
                 }
+                if (calls[0].Caller is EvalExPoint)
+                {
+                    decreaseEvalDepth(OutSet);
+                }
                 return outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
             }
             else
@@ -546,6 +599,7 @@ namespace Weverca.Analysis
                 Debug.Assert(calls.Length > 0, "There must be at least one call");
                 HashSet<string> fileNames = new HashSet<string>();
                 var values = new HashSet<Value>();
+                bool decreaseEvalDepth = false;
                 foreach (var call in calls)
                 {
                     var outSet = call.Graph.End.OutSet;
@@ -559,12 +613,20 @@ namespace Weverca.Analysis
                     {
                         fileNames.Add(call.OwningPPGraph.OwningScript.FullName);
                     }
+                    if (calls[0].Caller is EvalExPoint)
+                    {
+                        decreaseEvalDepth = true;
+                    }
                     var returnValue = outSet.GetLocalControlVariable(SnapshotBase.ReturnValue).ReadMemory(outSet.Snapshot);
                     values.UnionWith(returnValue.PossibleValues);
                 }
                 foreach (string file in fileNames)
                 {
                     decrease(OutSet, file);
+                }
+                if (decreaseEvalDepth)
+                {
+                    this.decreaseEvalDepth(OutSet);
                 }
                 return new MemoryEntry(values);
             }
