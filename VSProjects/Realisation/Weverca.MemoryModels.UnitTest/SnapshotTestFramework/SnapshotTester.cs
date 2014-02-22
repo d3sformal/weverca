@@ -73,17 +73,25 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
 
         public override IEnumerable<FunctionValue> ResolveMethods(TypeValue value, PHP.Core.QualifiedName methodName, IEnumerable<FunctionValue> objectMethods)
         {
-            throw new NotImplementedException();
+            foreach (var method in objectMethods)
+            {
+                if (method.Name.Value == methodName.Name.Value)
+                {
+                    yield return method;
+                }
+            }
         }
 
         public override ObjectValue CreateImplicitObject()
         {
-            throw new NotImplementedException();
+            ClassDeclBuilder builder=new ClassDeclBuilder();
+            builder.QualifiedName=new QualifiedName(new Name("stdClass"));
+            return Context.CreateObject(Context.CreateType(builder.Build()));
         }
 
         public override void TriedIterateFields(Value value)
         {
-            throw new NotImplementedException();
+            return;
         }
 
         public override IEnumerable<Value> ReadStringIndex(StringValue value, MemberIdentifier index)
@@ -107,32 +115,32 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
 
         public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
         {
-            throw new NotImplementedException();
+            yield return Context.UndefinedValue;
         }
 
         public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
         {
-            throw new NotImplementedException();
+            yield return indexed;
         }
 
         public override MemoryEntry Simplify(MemoryEntry entry)
         {
-            throw new NotImplementedException();
+            return entry;
         }
 
         public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
         {
-            throw new NotImplementedException();
+            yield return fielded;
         }
 
         public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
         {
-            throw new NotImplementedException();
+            yield return Context.UndefinedValue;
         }
 
         public override void TriedIterateIndexes(Value value)
         {
-            throw new NotImplementedException();
+            return;
         }
     }
 
@@ -179,7 +187,6 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
             logger.WriteLine("Empty snapshot");
             logger.WriteLine(Snapshot.ToString());
             logger.WriteLine("------------------------------------------------");
-
 
             foreach (TestOperation<T> operation in operations)
             {

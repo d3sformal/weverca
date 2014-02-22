@@ -52,7 +52,10 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
 
         public void WriteLine(string line, params object[] args)
         {
-            writer.WriteLine(line, args);
+            if(args.Length!=0)
+                writer.WriteLine(line, args);
+            else
+                writer.WriteLine(line);
         }
     }
 }
