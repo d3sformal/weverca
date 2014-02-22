@@ -23,8 +23,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         /// <inheritdoc />
         public override LangElement Partial { get { return Element; } }
-
-
+        
         internal TestMemoryEntryPoint(LangElement element, MemoryEntry entry)
         {
             Element = element;
@@ -43,40 +42,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             throw new NotSupportedException("This node is used only as workaround for testing");
         }
     }
-
-    /// <summary>
-    /// VariableEntryWrapper
-    /// <remarks>This program point is used for testing purposes only</remarks>
-    /// </summary>
-    public class TestVariablePoint : LValuePoint
-    {
-        /// <summary>
-        /// Element represented by current program point
-        /// </summary>
-        public readonly LangElement Element;
-
-        /// <inheritdoc />
-        public override LangElement Partial { get { return Element; } }
-
-        internal TestVariablePoint(LangElement element, VariableIdentifier entry)
-        {
-            throw new NotImplementedException();
-           /* Element = element;
-            VariableEntry = entry;*/
-        }
-        
-        /// <inheritdoc />
-        protected override void flowThrough()
-        {
-            throw new NotSupportedException("This node is used only as workaround for testing");
-        }
-
-        /// <inheritdoc />
-        internal override void Accept(ProgramPointVisitor visitor)
-        {
-            throw new NotSupportedException("This node is used only as workaround for testing");
-        }
-    }
+     
 
     /// <summary>
     /// This is only workaround class for back compatibilty with flow resolver tests 
@@ -84,7 +50,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
     internal class TestSnasphotEntry : ReadWriteSnapshotEntryBase
     {
         private MemoryEntry memory;
-
 
         internal TestSnasphotEntry(MemoryEntry entry)
         {

@@ -44,7 +44,7 @@
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new ResourceValue();
         }
     }
 

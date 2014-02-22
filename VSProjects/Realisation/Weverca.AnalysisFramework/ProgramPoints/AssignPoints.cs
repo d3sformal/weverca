@@ -186,9 +186,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             switch (assignOperation)
             {
-                case Operations.AssignPrepend:
-                case Operations.AssignAppend:
-                    throw new NotSupportedException("This is not supported assign operation");
                 case Operations.AssignAdd:
                     return Operations.Add;
                 case Operations.AssignAnd:
@@ -209,8 +206,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     return Operations.Sub;
                 case Operations.AssignXor:
                     return Operations.Xor;
+
+                case Operations.AssignPrepend:
+                case Operations.AssignAppend:
                 default:
-                    throw new NotImplementedException("This assign action is not implemented");
+                    throw new NotSupportedException("Assign operation "+assignOperation+ " is not supported within AssignOperationPoint");
             }
         }
 

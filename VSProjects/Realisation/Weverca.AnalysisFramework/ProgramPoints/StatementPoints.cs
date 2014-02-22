@@ -248,7 +248,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                     }
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw new NotSupportedException(Jump.Type+" is not supported jump type");
             }
 
             Value = OutSet.CreateSnapshotEntry(value);

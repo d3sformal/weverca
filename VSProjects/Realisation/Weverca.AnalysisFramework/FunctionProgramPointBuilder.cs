@@ -21,7 +21,7 @@ namespace Weverca.AnalysisFramework
 
         public override void VisitFunctionValue(FunctionValue value)
         {
-            throw new NotImplementedException("Building progrma point from given function value is not implemented yet");
+            throw new NotSupportedException("Building progrma point from given function value is not supported yet");
         }
 
         public override void VisitSourceFunctionValue(SourceFunctionValue value)

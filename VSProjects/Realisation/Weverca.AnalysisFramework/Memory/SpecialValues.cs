@@ -5,7 +5,7 @@ namespace Weverca.AnalysisFramework.Memory
     /// <summary>
     /// Represent special kind of value. For example these values can express some non-determinism.
     /// </summary>
-    public class SpecialValue : Value
+    public abstract class SpecialValue : Value
     {
         /// <inheritdoc />
         protected override int getHashCode()
@@ -23,12 +23,6 @@ namespace Weverca.AnalysisFramework.Memory
         public override void Accept(IValueVisitor visitor)
         {
             visitor.VisitSpecialValue(this);
-        }
-
-        /// <inheritdoc />
-        protected override Value cloneValue()
-        {
-            throw new NotImplementedException();
         }
     }
 
@@ -104,7 +98,7 @@ namespace Weverca.AnalysisFramework.Memory
         {
             visitor.VisitGenericInfoValue(this);
         }
-        
+
         /// <inheritdoc />
         public override string ToString()
         {
@@ -114,7 +108,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new NotImplementedException();
+            return new InfoValue<T>(Data);
         }
     }
 }

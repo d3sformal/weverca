@@ -10,7 +10,7 @@ namespace Weverca.AnalysisFramework.Memory
     /// </summary>
     public abstract class IntervalValue : Value
     { }
-    
+
     /// <summary>
     /// Value representing interval of values
     /// </summary>
@@ -101,7 +101,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new IntegerIntervalValue(Start, End);
         }
     }
 
@@ -134,7 +134,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new LongintIntervalValue(Start, End);
         }
     }
 
@@ -167,7 +167,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new FloatIntervalValue(Start, End);
         }
     }
 }

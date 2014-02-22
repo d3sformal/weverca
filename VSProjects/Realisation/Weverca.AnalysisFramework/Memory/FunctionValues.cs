@@ -103,7 +103,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new NativeAnalyzerValue(Name, Analyzer);
         }
     }
 
@@ -148,7 +148,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new SourceFunctionValue(Declaration, DeclaringScript);
         }
     }
 
@@ -193,7 +193,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new SourceMethodValue(MethodDecl, DeclaringScript);
         }
     }
 
@@ -238,7 +238,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <inheritdoc />
         protected override Value cloneValue()
         {
-            throw new System.NotImplementedException();
+            return new LambdaFunctionValue(Declaration, DeclaringScript);
         }
     }
 }
