@@ -92,12 +92,6 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
-            if (name.Name.Value == ".decrease")
-            {
-                decrease(OutSet, Flow.CurrentScript.FullName);
-                return;
-            }
-
             var functions = resolveFunction(name, arguments);
             setCallBranching(functions);
 

@@ -127,7 +127,7 @@ namespace Weverca.Analysis.FlowResolver
                                 try
                                 {
                                     //create single graph instance
-                                    sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFileAddAnalyzer(fileInfo));
+                                    sharedProgramPoints[fileName] = ProgramPointGraph.FromSource(ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo));
                                 }
                                 catch (ControlFlowGraph.ControlFlowException)
                                 {
@@ -156,7 +156,7 @@ namespace Weverca.Analysis.FlowResolver
                 try
                 {
                     //Create graph for every include - NOTE: we can share pp graphs
-                    var cfg = ControlFlowGraph.ControlFlowGraph.FromFileAddAnalyzer(fileInfo);
+                    var cfg = ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo);
                     var ppGraph = ProgramPointGraph.FromSource(cfg);
                     flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
                 }
