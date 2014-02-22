@@ -62,19 +62,20 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         /// <inheritdoc />
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
-            throw new NotImplementedException();
+            writeMemory(context, value, true);
         }
 
         /// <inheritdoc />
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            throw new NotImplementedException();
+            var value = aliasedEntry.ReadMemory(context);
+            writeMemory(context, value, true);
         }
 
         /// <inheritdoc />
         protected override bool isDefined(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         /// <inheritdoc />
@@ -125,7 +126,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                 else
                 {
                     // TODO: If it is not array, what to do?
-                    throw new NotImplementedException();
+                    throw new NotSupportedException("Reading indices on non-arrays is not supported in SnapshotMemoryEntry yet");
                 }
             }
 
@@ -153,7 +154,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
                 else
                 {
                     // TODO: If it is not object, what to do?
-                    throw new NotImplementedException();
+                    throw new NotSupportedException("Reading fields on non-arrays is not supported in SnapshotMemoryEntry yet");
                 }
             }
 
@@ -163,7 +164,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries
         /// <inheritdoc />
         protected override VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         /// <inheritdoc />
