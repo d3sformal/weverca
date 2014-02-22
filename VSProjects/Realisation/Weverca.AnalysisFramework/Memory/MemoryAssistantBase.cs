@@ -156,7 +156,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Initialize context snapshot for current assistant
         /// </summary>
         /// <param name="context">Context snapshot for current memory assistant</param>
-        internal void InitContext(SnapshotBase context)
+        public void InitContext(SnapshotBase context)
         {
             if (Context != null)
                 throw new NotSupportedException("Cannot initialize Context twice");

@@ -758,6 +758,7 @@ if($unknown){
 "
          .AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
          .AssertVariable("resultB").HasValues("InitB", "ValueA", "ValueB")
+         .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
          .ShareFunctionGraph("sharedFn")
          ;
         #endregion

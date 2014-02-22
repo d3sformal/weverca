@@ -49,9 +49,17 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         {
             writer.Close();
         }
-
+        
         public void WriteLine(string line, params object[] args)
         {
+            if (args.Length == 0)
+            {
+                writer.WriteLine(line);
+            }
+            else
+            {
+                writer.WriteLine(line, args);
+            }
             if(args.Length!=0)
                 writer.WriteLine(line, args);
             else

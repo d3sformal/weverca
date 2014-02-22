@@ -72,6 +72,10 @@
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
+      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Name>Weverca.Analysis</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
       <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
       <Name>Weverca.MemoryModels</Name>
