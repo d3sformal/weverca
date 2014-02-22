@@ -24,7 +24,7 @@ namespace Weverca.Web.Definitions
             var cfg = ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast, new FileInfo(fileName));
 
             var result = new ResultModel(phpCode);
-
+            AnalysisWarningHandler.ResetWarnings();
             if (analysisModel.RunVerification)
             {
                 result.Output = RunVerification(cfg, fileName);

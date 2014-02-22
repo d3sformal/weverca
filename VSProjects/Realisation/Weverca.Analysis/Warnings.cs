@@ -59,6 +59,15 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
+        /// Deletes all registered warnings.
+        /// </summary>
+        public static void ResetWarnings()
+        {
+            SecurityWarnings.Clear();
+            Warnings.Clear();
+        }
+
+        /// <summary>
         /// Insert warning into <see cref="FlowOutputSet"/>
         /// </summary>
         /// <typeparam name="T"></typeparam>
