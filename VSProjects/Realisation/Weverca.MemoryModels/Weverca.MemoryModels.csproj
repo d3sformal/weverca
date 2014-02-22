@@ -58,6 +58,7 @@
     <Compile Include="CopyMemoryModel\Snapshot\ICopyModelSnapshotEntry.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\IReferenceHolder.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\SnapshotData.cs" />
+    <Compile Include="CopyMemoryModel\Snapshot\SnapshotLogger.cs" />
     <Compile Include="CopyMemoryModel\Snapshot\SnapshotStructure.cs" />
     <Compile Include="CopyMemoryModel\Tools\HashSetTools.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\CollectComposedValuesVisitor.cs" />

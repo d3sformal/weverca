@@ -65,22 +65,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             public void VisitObjectValueLocation(ObjectValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
 
             public void VisitObjectAnyValueLocation(ObjectAnyValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
 
             public void VisitArrayValueLocation(ArrayValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
 
             public void VisitArrayAnyValueLocation(ArrayAnyValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
 
             public void VisitArrayStringValueLocation(ArrayStringValueLocation location)
@@ -94,7 +94,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     newValues.Remove(location.Value);
                 }
 
-                IEnumerable<Value> values = location.WriteValues(snapshot.Assistant, entry);
+                IEnumerable<Value> values = location.WriteValues(snapshot.MemoryAssistant, entry);
                 HashSetTools.AddAll(newValues, values);
 
                 snapshot.Structure.SetMemoryEntry(location.ContainingIndex, new MemoryEntry(newValues));
@@ -102,12 +102,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             public void VisitArrayUndefinedValueLocation(ArrayUndefinedValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
 
             public void VisitObjectUndefinedValueLocation(ObjectUndefinedValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
 
 
@@ -118,7 +118,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 HashSet<Value> newValues = new HashSet<Value>();
                 HashSetTools.AddAll(newValues, oldEntry.PossibleValues);
 
-                IEnumerable<Value> values = location.WriteValues(snapshot.Assistant, entry);
+                IEnumerable<Value> values = location.WriteValues(snapshot.MemoryAssistant, entry);
                 newValues.Add(location.Value);
 
                 snapshot.Structure.SetMemoryEntry(location.ContainingIndex, new MemoryEntry(newValues));
@@ -127,7 +127,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             public void VisitAnyStringValueLocation(AnyStringValueLocation location)
             {
-                location.WriteValues(snapshot.Assistant, entry);
+                location.WriteValues(snapshot.MemoryAssistant, entry);
             }
         }
     }

@@ -186,7 +186,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void VisitField(FieldPathSegment segment)
         {
-            FieldLocationVisitor visitor = new FieldLocationVisitor(segment, snapshot.Assistant, mustLocationProcess, mayLocationProcess);
+            FieldLocationVisitor visitor = new FieldLocationVisitor(segment, snapshot.MemoryAssistant, mustLocationProcess, mayLocationProcess);
 
             visitor.IsMust = true;
             foreach (MemoryIndex index in mustIndexes)
@@ -211,7 +211,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         public void VisitIndex(IndexPathSegment segment)
         {
-            IndexLocationVisitor visitor = new IndexLocationVisitor(segment, snapshot.Assistant, mustLocationProcess, mayLocationProcess);
+            IndexLocationVisitor visitor = new IndexLocationVisitor(segment, snapshot.MemoryAssistant, mustLocationProcess, mayLocationProcess);
 
             visitor.IsMust = true;
             foreach (MemoryIndex index in mustIndexes)

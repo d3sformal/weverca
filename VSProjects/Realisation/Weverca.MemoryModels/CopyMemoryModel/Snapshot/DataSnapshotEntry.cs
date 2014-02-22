@@ -9,13 +9,40 @@ using Weverca.AnalysisFramework;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class DataSnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
+    /// <summary>
+    /// Implements snapshot entry functionality in order to manipulate with stored memory entries in copy memory model.
+    /// 
+    /// Memory entry is stored just in the Snaphot Entry instance where can be accesed with Snaphot Entry public interface.
+    /// Any change on data persists memory entry as temporary memory in current context.
+    /// </summary>
+    public class DataSnapshotEntry : ReadWriteSnapshotEntryBase, ICopyModelSnapshotEntry
     {
+        /// <summary>
+        /// The data entry
+        /// </summary>
         MemoryEntry dataEntry;
+
+        /// <summary>
+        /// The information entry
+        /// </summary>
         MemoryEntry infoEntry;
+
+        /// <summary>
+        /// The temporary location
+        /// </summary>
         SnapshotEntry temporaryLocation = null;
+
+        /// <summary>
+        /// The temporary index
+        /// </summary>
         TemporaryIndex temporaryIndex = null;
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataSnapshotEntry"/> class.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="entry">The entry.</param>
+        /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         public DataSnapshotEntry(Snapshot snapshot, MemoryEntry entry)
         {
             switch (snapshot.CurrentMode)
@@ -35,6 +62,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             if (temporaryIndex != null)
@@ -47,6 +80,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Gets the snapshot entry of temporary index associated with this memory entry.
+        /// </summary>
+        /// <param name="context">The context.</param>
         private SnapshotEntry getTemporary(SnapshotBase context)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
@@ -63,6 +100,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return temporaryLocation;
         }
 
+        /// <summary>
+        /// Determines whether there is associated temporary index with memory entry in the specified context.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
         private bool isTemporarySet(SnapshotBase context)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
@@ -74,16 +116,36 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Navigation
 
+        /// <summary>
+        /// Read memory represented by given index identifier resolved on current
+        /// snapshot entry (resulting snapshot entry can encapsulate merging, alias resolving and
+        /// other stuff based on nondeterminism of identifier and current snapshot entry)
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <param name="index">Identifier of an index</param>
+        /// <returns>
+        /// Snapshot entry representing index resolving on current entry
+        /// </returns>
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
-            Logger.append(context, "read index - " + this.ToString());
+            // SnapshotLogger.append(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadIndex(context, index);
         }
 
+        /// <summary>
+        /// Read memory represented by given field identifier resolved on current
+        /// snapshot entry (resulting snapshot entry can encapsulate merging, alias resolving and
+        /// other stuff based on nondeterminism of identifier and current snapshot entry)
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <param name="field">Identifier of an field</param>
+        /// <returns>
+        /// Snapshot entry representing field resolving on current entry
+        /// </returns>
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
         {
-            Logger.append(context, "read index - " + this.ToString());
+            // SnapshotLogger.append(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadField(context, field);
         }
@@ -92,9 +154,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Update
 
+        /// <summary>
+        /// Write given value at memory represented by snapshot entry
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <param name="value">Written value</param>
+        /// <param name="forceStrongWrite">Determine that current write should be processed as strong</param>
+        /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            Logger.append(context, "write memory - " + this.ToString());
+            // SnapshotLogger.append(context, "write memory - " + this.ToString());
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
 
             switch (snapshot.CurrentMode)
@@ -119,9 +188,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Set aliases to current snapshot entry. Aliases can be set even to those entries
+        /// that doesn't belongs to any variable, field,..
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <param name="aliasedEntry">Snapshot entry which will be aliased from current entry</param>
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            Logger.append(context, "set aliases - " + this.ToString());
+            // SnapshotLogger.append(context, "set aliases - " + this.ToString());
 
             getTemporary(context).SetAliases(context, aliasedEntry);
         }
@@ -130,9 +205,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Read
 
+        /// <summary>
+        /// Determine that memory represented by current snapshot entry Is already defined.
+        /// If not, reading memory returns UndefinedValue. But UndefinedValue can be returned
+        /// even for defined memory entries - this can be used to distinct
+        /// between null/undefined semantic of PHP.
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <returns></returns>
         protected override bool isDefined(SnapshotBase context)
         {
-            Logger.append(context, "is defined - " + this.ToString());
+            // SnapshotLogger.append(context, "is defined - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -144,9 +227,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Returns aliases that can be used for making alias join
+        /// to current snapshot entry
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <returns>
+        /// Aliases of current snapshot entry
+        /// </returns>
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            Logger.append(context, "aliases - " + this.ToString());
+            // SnapshotLogger.append(context, "aliases - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -158,9 +249,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Read memory represented by current snapshot entry
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <returns>
+        /// Memory represented by current snapshot entry
+        /// </returns>
+        /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            Logger.append(context, "read memory - " + this.ToString());
+            // SnapshotLogger.append(context, "read memory - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -183,9 +282,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Resolve method on current snapshot entry with given methodName
+        /// </summary>
+        /// <param name="context">Context where methods are resolved</param>
+        /// <param name="methodName">Name of resolved method</param>
+        /// <returns>
+        /// Resolved methods
+        /// </returns>
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
-            Logger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
+            // SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
 
             if (isTemporarySet(context))
             {
@@ -198,6 +305,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Returns variables corresponding to current snapshot entry
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <returns>
+        /// Variable identifier of current snapshot entry or null if entry doesn't belong to variable
+        /// </returns>
+        /// <exception cref="System.Exception">No variable identifier can be get for memory entry snapshot.</exception>
         protected override AnalysisFramework.VariableIdentifier getVariableIdentifier(SnapshotBase context)
         {
             throw new Exception("No variable identifier can be get for memory entry snapshot.");
@@ -207,38 +322,88 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
+        /// <summary>
+        /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns></returns>
         public AliasData CreateAliasToEntry(Snapshot snapshot)
         {
             return getTemporary(snapshot).CreateAliasToEntry(snapshot);
         }
 
+        /// <summary>
+        /// Write given value at memory represented by snapshot entry and doesn't process any
+        /// array copy. Is needed for correct increment/decrement semantic.
+        /// </summary>
+        /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <param name="value">Written value</param>
+        /// <exception cref="System.NotImplementedException"></exception>
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
-            if (temporaryLocation == null)
+            if (isTemporarySet(context))
             {
-                dataEntry = value;
+                getTemporary(context).WriteMemoryWithoutCopy(context, value);
             }
             else
             {
-                throw new NotImplementedException();
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+                switch (snapshot.CurrentMode)
+                {
+                    case SnapshotMode.MemoryLevel:
+                        dataEntry = value;
+                        break;
+
+                    case SnapshotMode.InfoLevel:
+                        infoEntry = value;
+                        break;
+
+                    default:
+                        throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
+                }
             }
         }
 
+        /// <summary>
+        /// Iterate fields defined on object
+        /// </summary>
+        /// <param name="context">Context where fields are searched</param>
+        /// <returns>
+        /// Enumeration of available fields
+        /// </returns>
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
             return SnapshotEntryHelper.IterateFields(context, this);
         }
 
+        /// <summary>
+        /// Iterate indexes defined on array
+        /// </summary>
+        /// <param name="context">Context where indexes are searched</param>
+        /// <returns>
+        /// Enumeration of available fields
+        /// </returns>
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             return SnapshotEntryHelper.IterateIndexes(context, this);
         }
 
+        /// <summary>
+        /// Resolve type of objects in snapshot entry
+        /// </summary>
+        /// <param name="context">Context where types are resolved</param>
+        /// <returns>
+        /// Resolved types
+        /// </returns>
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
             return SnapshotEntryHelper.ResolveType(context, this);
         }
 
+        /// <summary>
+        /// Calls snapshot entry interface method readMemory to provide standard read from snapshot entry.
+        /// </summary>
+        /// <param name="snapshot">The memory context.</param>
         public MemoryEntry ReadMemory(Snapshot snapshot)
         {
             return this.readMemory(snapshot);

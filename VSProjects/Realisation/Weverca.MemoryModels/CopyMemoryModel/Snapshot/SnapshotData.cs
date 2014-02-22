@@ -8,22 +8,53 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class SnapshotData
+    /// <summary>
+    /// Contains data for all definned memory location in memory snapshot.
+    /// 
+    /// Implemented as associative array which maps memory indexes to memory entries with data.
+    /// </summary>
+    public class SnapshotData
     {
+        /// <summary>
+        /// The empty entry with undefined value
+        /// </summary>
         public readonly MemoryEntry EmptyEntry;
 
+        /// <summary>
+        /// Incremental counter for data unique identifier.
+        /// </summary>
         static int DATA_ID = 0;
+
+        /// <summary>
+        /// The unique identifier for the each data instance
+        /// </summary>
         int dataId = DATA_ID++;
 
+        /// <summary>
+        /// Associative container with memory entries for all memory locations.
+        /// </summary>
         internal Dictionary<MemoryIndex, MemoryEntry> IndexData;
+
+        /// <summary>
+        /// Snapshot the data belongs to
+        /// </summary>
         Snapshot snapshot;
 
+        /// <summary>
+        /// Prevents a default instance of the <see cref="SnapshotData"/> class from being created.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
         private SnapshotData(Snapshot snapshot)
         {
             this.snapshot = snapshot;
             EmptyEntry = new MemoryEntry(snapshot.UndefinedValue);
         }
 
+        /// <summary>
+        /// Creates the new data instance empty collection with no data.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns></returns>
         public static SnapshotData CreateEmpty(Snapshot snapshot)
         {
             SnapshotData data = new SnapshotData(snapshot);
@@ -33,6 +64,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return data;
         }
 
+        /// <summary>
+        /// Creates new data instance and copies data from this collection to the new one.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns></returns>
         public SnapshotData Copy(Snapshot snapshot)
         {
             SnapshotData data = new SnapshotData(snapshot);
@@ -42,10 +78,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return data;
         }
 
-
-
         #region MemoryEntries
 
+        /// <summary>
+        /// Gets the memory entry.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns></returns>
         internal MemoryEntry GetMemoryEntry(MemoryIndex index)
         {
             MemoryEntry memoryEntry;
@@ -59,23 +98,39 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Tries to get memory entry.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="entry">The entry.</param>
+        /// <returns></returns>
         internal bool TryGetMemoryEntry(MemoryIndex index, out MemoryEntry entry)
         {
             return IndexData.TryGetValue(index, out entry);
         }
 
+        /// <summary>
+        /// Sets the memory entry.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="memoryEntry">The memory entry.</param>
         internal void SetMemoryEntry(MemoryIndex index, MemoryEntry memoryEntry)
         {
             IndexData[index] = memoryEntry;
         }
 
+        /// <summary>
+        /// Removes the memory entry.
+        /// </summary>
+        /// <param name="index">The index.</param>
         internal void RemoveMemoryEntry(MemoryIndex index)
         {
             IndexData.Remove(index);
         }
+
         #endregion
 
-        internal bool DataEquals(SnapshotData oldData)
+        public bool DataEquals(SnapshotData oldData)
         {
             if (this.IndexData.Count != oldData.IndexData.Count)
             {
@@ -97,7 +152,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return true;
         }
 
-        internal bool DataEqualsAndSimplify(SnapshotData oldData, int simplifyLimit, MemoryAssistantBase assistant)
+        public bool DataEqualsAndSimplify(SnapshotData oldData, int simplifyLimit, MemoryAssistantBase assistant)
         {
             bool areEquals = true;
 
@@ -116,7 +171,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return areEquals;
         }
 
-        internal bool DataEquals(SnapshotData oldData, MemoryIndex index)
+        public bool DataEquals(SnapshotData oldData, MemoryIndex index)
         {
             MemoryEntry newEntry = null;
             if (!this.IndexData.TryGetValue(index, out newEntry))
@@ -133,7 +188,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return oldEntry.Equals(newEntry);
         }
 
-        internal bool DataEqualsAndSimplify(SnapshotData oldData, MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
+        public bool DataEqualsAndSimplify(SnapshotData oldData, MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
         {
             MemoryEntry newEntry = null;
             if (!this.IndexData.TryGetValue(index, out newEntry))
@@ -164,7 +219,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        internal void DataWiden(SnapshotData oldData, MemoryIndex index, MemoryAssistantBase assistant)
+        public void DataWiden(SnapshotData oldData, MemoryIndex index, MemoryAssistantBase assistant)
         {
             MemoryEntry newEntry = null;
             if (!this.IndexData.TryGetValue(index, out newEntry))
@@ -202,7 +257,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
-        internal void RemoveUndefined(MemoryIndex index)
+        /// <summary>
+        /// Removes the undefined value from the entry of given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public void RemoveUndefined(MemoryIndex index)
         {
             MemoryEntry oldEntry;
             if (IndexData.TryGetValue(index, out oldEntry))

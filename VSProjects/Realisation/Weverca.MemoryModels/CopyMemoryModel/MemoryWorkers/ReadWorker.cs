@@ -47,7 +47,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
                     {
-                        HashSetTools.AddAll(values, location.ReadValues(snapshot.Assistant));
+                        HashSetTools.AddAll(values, location.ReadValues(snapshot.MemoryAssistant));
                     }
                     else
                     {

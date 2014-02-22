@@ -252,7 +252,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ReadCollector collector;
 
             public IndexLocationVisitor(IndexPathSegment indexSegment, ReadCollector collector)
-                : base(collector.snapshot.Assistant)
+                : base(collector.snapshot.MemoryAssistant)
             {
                 this.indexSegment = indexSegment;
                 this.collector = collector;
@@ -271,7 +271,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ReadCollector collector;
 
             public FieldLocationVisitor(FieldPathSegment fieldSegment, ReadCollector collector)
-                : base(collector.snapshot.Assistant)
+                : base(collector.snapshot.MemoryAssistant)
             {
                 this.fieldSegment = fieldSegment;
                 this.collector = collector;
