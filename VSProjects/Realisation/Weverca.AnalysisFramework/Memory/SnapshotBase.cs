@@ -476,7 +476,12 @@ namespace Weverca.AnalysisFramework.Memory
             IsFrozen = true;
         }
 
-        internal void InitAssistant(MemoryAssistantBase assistant)
+        /// <summary>
+        /// Initializes the assistant.
+        /// </summary>
+        /// <param name="assistant">The assistant.</param>
+        /// <exception cref="System.NotSupportedException">Cannot set memory assistant twice</exception>
+        public void InitAssistant(MemoryAssistantBase assistant)
         {
             if (Assistant != null)
                 throw new NotSupportedException("Cannot set memory assistant twice");
