@@ -100,7 +100,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             var fieldNames = CheckVisibility(types, field, false);
-            if (field.PossibleNames.Count() == 0)
+            if (field.PossibleNames.Length == 0)
             {
                 return objectValue.ReadField(OutSnapshot, field);
             }
@@ -112,7 +112,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    if (fieldNames.Count() < field.PossibleNames.Count())
+                    if (fieldNames.Count() < field.PossibleNames.Length)
                     {
                         fatalError(false);
                     }
@@ -121,9 +121,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        private IEnumerable<string> CheckVisibility(IEnumerable<TypeValue> types, VariableIdentifier field, bool isStatic)
+        private IEnumerable<string> CheckVisibility(IEnumerable<TypeValue> types,
+            VariableIdentifier field, bool isStatic)
         {
-            HashSet<string> result = new HashSet<string>();
+            var result = new HashSet<string>();
             var methodTypes = new List<TypeValue>();
             var snapshotEntry = OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName);
 
@@ -230,6 +231,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
             }
+
             return result;
         }
 
@@ -665,7 +667,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
                     "Memory entry must always have at least one value");
 
-                booleanConverter.SetContext(OutSet);
+                booleanConverter.SetContext(OutSnapshot);
 
                 var isAlwaysEmpty = true;
                 var isNeverEmpty = true;
@@ -848,7 +850,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         private void fatalError(bool removeFlowChildren)
         {
-            fatalError(Flow,removeFlowChildren);
+            fatalError(Flow, removeFlowChildren);
         }
 
         private void fatalError(FlowController flow, bool removeFlowChildren)
@@ -1178,7 +1180,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                             numberOfWarnings++;
                         }
                         result.AddRange(res.PossibleValues);
-                        
+
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
                         result.Add(OutSet.AnyValue);
@@ -1202,16 +1204,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName)
         {
-            bool success=true;
-            var result=classConstant(qualifiedName, variableName, out success);
+            var success = true;
+            var result = classConstant(qualifiedName, variableName, out success);
             if (success == false)
             {
                 fatalError(true);
             }
+
             return result;
         }
 
-        private MemoryEntry classConstant(QualifiedName qualifiedName, VariableName variableName, out bool success)
+        private MemoryEntry classConstant(QualifiedName qualifiedName, VariableName variableName,
+            out bool success)
         {
             success = true;
             NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
@@ -1248,7 +1252,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
-        
         }
 
         /// <inheritdoc />
@@ -1414,12 +1417,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    IEnumerable<string> newNames = CheckVisibility(types, new VariableIdentifier(fieldNames), true);
+                    var newNames = CheckVisibility(types, new VariableIdentifier(fieldNames), true);
                     if (newNames.Count() == 0)
                     {
                         return getStaticVariableSink();
                     }
-                    
+
                     if (newNames.Count() < fieldNames.Count)
                     {
                         fatalError(false);
@@ -1483,6 +1486,5 @@ namespace Weverca.Analysis.ExpressionEvaluator
             snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.UndefinedValue));
             return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
         }
-     
     }
 }

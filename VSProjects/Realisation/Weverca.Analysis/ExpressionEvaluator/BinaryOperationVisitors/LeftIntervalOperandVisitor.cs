@@ -208,7 +208,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
 
             result = LogicalOperation.Logical(OutSet, operation, leftOperand,
-                TypeConversion.ToNativeBoolean(OutSet, value));
+                TypeConversion.ToNativeBoolean(Snapshot, value));
             if (result != null)
             {
                 return;
@@ -351,7 +351,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         // Ommitted error report that array is unsupported operand in arithmetic operation
@@ -447,7 +447,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyFloatValue(AnyFloatValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -479,7 +479,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         // A string can be converted into floating point number too.

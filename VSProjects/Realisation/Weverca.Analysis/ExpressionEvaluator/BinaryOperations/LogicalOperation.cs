@@ -23,22 +23,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Perform logical operation for given boolean operands.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <param name="leftOperand">Left boolean operand of logical operation.</param>
         /// <param name="rightOperand">Right integer operand of logical operation.</param>
         /// <returns>If operation is logical, it returns boolean result, otherwise <c>null</c>.</returns>
-        public static BooleanValue Logical(FlowOutputSet outset, Operations operation,
+        public static BooleanValue Logical(ISnapshotReadWrite snapshot, Operations operation,
             bool leftOperand, bool rightOperand)
         {
             switch (operation)
             {
                 case Operations.And:
-                    return outset.CreateBool(leftOperand && rightOperand);
+                    return snapshot.CreateBool(leftOperand && rightOperand);
                 case Operations.Or:
-                    return outset.CreateBool(leftOperand || rightOperand);
+                    return snapshot.CreateBool(leftOperand || rightOperand);
                 case Operations.Xor:
-                    return outset.CreateBool(leftOperand != rightOperand);
+                    return snapshot.CreateBool(leftOperand != rightOperand);
                 default:
                     return null;
             }
@@ -48,23 +48,23 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical operation for given boolean and interval operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <param name="leftOperand">Left boolean operand of logical operation.</param>
         /// <param name="rightOperand">Right interval operand of logical operation.</param>
         /// <returns>If operation is logical, it returns boolean result, otherwise <c>null</c>.</returns>
-        public static Value Logical<T>(FlowOutputSet outset, Operations operation,
+        public static Value Logical<T>(ISnapshotReadWrite snapshot, Operations operation,
             bool leftOperand, IntervalValue<T> rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             switch (operation)
             {
                 case Operations.And:
-                    return And(outset, leftOperand, rightOperand);
+                    return And(snapshot, leftOperand, rightOperand);
                 case Operations.Or:
-                    return Or(outset, leftOperand, rightOperand);
+                    return Or(snapshot, leftOperand, rightOperand);
                 case Operations.Xor:
-                    return Xor(outset, leftOperand, rightOperand);
+                    return Xor(snapshot, leftOperand, rightOperand);
                 default:
                     return null;
             }
@@ -74,16 +74,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical operation for given interval and boolean operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <param name="leftOperand">Left interval operand of logical operation.</param>
         /// <param name="rightOperand">Right boolean operand of logical operation.</param>
         /// <returns>If operation is logical, it returns boolean result, otherwise <c>null</c>.</returns>
-        public static Value Logical<T>(FlowOutputSet outset, Operations operation,
+        public static Value Logical<T>(ISnapshotReadWrite snapshot, Operations operation,
             IntervalValue<T> leftOperand, bool rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            return Logical(outset, operation, rightOperand, leftOperand);
+            return Logical(snapshot, operation, rightOperand, leftOperand);
         }
 
         /// <summary>
@@ -91,12 +91,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <typeparam name="TLeft">Type of values in left interval operand.</typeparam>
         /// <typeparam name="TRight">Type of values in right interval operand.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <param name="leftOperand">Left interval operand of logical operation.</param>
         /// <param name="rightOperand">Right interval operand of logical operation.</param>
         /// <returns>If operation is logical, it returns boolean result, otherwise <c>null</c>.</returns>
-        public static Value Logical<TLeft, TRight>(FlowOutputSet outset, Operations operation,
+        public static Value Logical<TLeft, TRight>(ISnapshotReadWrite snapshot, Operations operation,
             IntervalValue<TLeft> leftOperand, IntervalValue<TRight> rightOperand)
             where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
             where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
@@ -104,11 +104,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             switch (operation)
             {
                 case Operations.And:
-                    return And(outset, leftOperand, rightOperand);
+                    return And(snapshot, leftOperand, rightOperand);
                 case Operations.Or:
-                    return Or(outset, leftOperand, rightOperand);
+                    return Or(snapshot, leftOperand, rightOperand);
                 case Operations.Xor:
-                    return Xor(outset, leftOperand, rightOperand);
+                    return Xor(snapshot, leftOperand, rightOperand);
                 default:
                     return null;
             }
@@ -121,21 +121,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// It does not matter whether the concrete operand is on left or right side,
         /// result is the same, because logical operation is commutative.
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <param name="concreteOperand">One concrete boolean operand of logical operation.</param>
         /// <returns>If operation is logical, it returns boolean result, otherwise <c>null</c>.</returns>
-        public static Value AbstractLogical(FlowOutputSet outset, Operations operation,
+        public static Value AbstractLogical(ISnapshotReadWrite snapshot, Operations operation,
             bool concreteOperand)
         {
             switch (operation)
             {
                 case Operations.And:
-                    return AbstractAnd(outset, concreteOperand);
+                    return AbstractAnd(snapshot, concreteOperand);
                 case Operations.Or:
-                    return AbstractOr(outset, concreteOperand);
+                    return AbstractOr(snapshot, concreteOperand);
                 case Operations.Xor:
-                    return AbstractXor(outset);
+                    return AbstractXor(snapshot);
                 default:
                     return null;
             }
@@ -149,22 +149,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// result is the same, because logical operation is commutative.
         /// </remarks>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <param name="intervalOperand">One specified interval operand of logical operation.</param>
         /// <returns>If operation is logical, it returns boolean result, otherwise <c>null</c>.</returns>
-        public static Value AbstractLogical<T>(FlowOutputSet outset, Operations operation,
+        public static Value AbstractLogical<T>(ISnapshotReadWrite snapshot, Operations operation,
             IntervalValue<T> intervalOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             switch (operation)
             {
                 case Operations.And:
-                    return AbstractAnd(outset, intervalOperand);
+                    return AbstractAnd(snapshot, intervalOperand);
                 case Operations.Or:
-                    return AbstractOr(outset, intervalOperand);
+                    return AbstractOr(snapshot, intervalOperand);
                 case Operations.Xor:
-                    return AbstractXor(outset);
+                    return AbstractXor(snapshot);
                 default:
                     return null;
             }
@@ -173,12 +173,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Return an abstract boolean result of logical operation when operands are unknown.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="operation">Operation to be performed, only the logical one gives a result.</param>
         /// <returns>If operation is logical, it returns abstract boolean, otherwise <c>null</c>.</returns>
-        public static AnyBooleanValue AbstractLogical(FlowOutputSet outset, Operations operation)
+        public static AnyBooleanValue AbstractLogical(ISnapshotReadWrite snapshot, Operations operation)
         {
-            return IsLogical(operation) ? outset.AnyBooleanValue : null;
+            return IsLogical(operation) ? snapshot.AnyBooleanValue : null;
         }
 
         /// <summary>
@@ -205,11 +205,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical AND for given boolean and interval operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left boolean operand of AND logical operation.</param>
         /// <param name="rightOperand">Right interval operand of AND logical operation.</param>
         /// <returns><c>true</c> whether both operands are <c>true</c>, otherwise <c>false</c>.</returns>
-        public static Value And<T>(FlowOutputSet outset, bool leftOperand,
+        public static Value And<T>(ISnapshotReadWrite snapshot, bool leftOperand,
             IntervalValue<T> rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
@@ -217,11 +217,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
             {
-                return outset.CreateBool(leftOperand && convertedValue);
+                return snapshot.CreateBool(leftOperand && convertedValue);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -229,15 +229,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical AND for given interval and boolean operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left interval operand of AND logical operation.</param>
         /// <param name="rightOperand">Right boolean operand of AND logical operation.</param>
         /// <returns><c>true</c> whether both operands are <c>true</c>, otherwise <c>false</c>.</returns>
-        public static Value And<T>(FlowOutputSet outset, IntervalValue<T> leftOperand,
+        public static Value And<T>(ISnapshotReadWrite snapshot, IntervalValue<T> leftOperand,
             bool rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            return And(outset, rightOperand, leftOperand);
+            return And(snapshot, rightOperand, leftOperand);
         }
 
         /// <summary>
@@ -245,11 +245,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <typeparam name="TLeft">Type of values in left interval operand.</typeparam>
         /// <typeparam name="TRight">Type of values in right interval operand.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left interval operand of AND logical operation.</param>
         /// <param name="rightOperand">Right interval operand of AND logical operation.</param>
         /// <returns><c>true</c> whether both operands are <c>true</c>, otherwise <c>false</c>.</returns>
-        public static Value And<TLeft, TRight>(FlowOutputSet outset, IntervalValue<TLeft> leftOperand,
+        public static Value And<TLeft, TRight>(ISnapshotReadWrite snapshot, IntervalValue<TLeft> leftOperand,
             IntervalValue<TRight> rightOperand)
             where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
             where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
@@ -258,11 +258,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (TypeConversion.TryConvertToBoolean<TLeft>(leftOperand, out convertedValue))
             {
-                return And(outset, convertedValue, rightOperand);
+                return And(snapshot, convertedValue, rightOperand);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -273,18 +273,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// It does not matter whether the concrete operand is on left or right side,
         /// result is the same, because logical operation is commutative.
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="concreteOperand">One concrete boolean operand of AND logical operation.</param>
         /// <returns><c>false</c> whether the operand is <c>false</c>, otherwise abstract boolean.</returns>
-        public static Value AbstractAnd(FlowOutputSet outset, bool concreteOperand)
+        public static Value AbstractAnd(ISnapshotReadWrite snapshot, bool concreteOperand)
         {
             if (concreteOperand)
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
             else
             {
-                return outset.CreateBool(false);
+                return snapshot.CreateBool(false);
             }
         }
 
@@ -296,21 +296,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// result is the same, because logical operation is commutative.
         /// </remarks>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="intervalOperand">One specified interval operand of AND logical operation.</param>
         /// <returns><c>false</c> whether the operand is <c>false</c>, otherwise abstract boolean.</returns>
-        public static Value AbstractAnd<T>(FlowOutputSet outset, IntervalValue<T> intervalOperand)
+        public static Value AbstractAnd<T>(ISnapshotReadWrite snapshot, IntervalValue<T> intervalOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             bool convertedValue;
 
             if (TypeConversion.TryConvertToBoolean<T>(intervalOperand, out convertedValue))
             {
-                return AbstractAnd(outset, convertedValue);
+                return AbstractAnd(snapshot, convertedValue);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -322,11 +322,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical OR for given boolean and interval operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left boolean operand of OR logical operation.</param>
         /// <param name="rightOperand">Right interval operand of OR logical operation.</param>
         /// <returns><c>true</c> whether either operand is <c>true</c>, otherwise <c>false</c>.</returns>
-        public static Value Or<T>(FlowOutputSet outset, bool leftOperand,
+        public static Value Or<T>(ISnapshotReadWrite snapshot, bool leftOperand,
             IntervalValue<T> rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
@@ -334,11 +334,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
             {
-                return outset.CreateBool(leftOperand || convertedValue);
+                return snapshot.CreateBool(leftOperand || convertedValue);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -346,15 +346,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical OR for given interval and boolean operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left interval operand of OR logical operation.</param>
         /// <param name="rightOperand">Right boolean operand of OR logical operation.</param>
         /// <returns><c>true</c> whether either operand is <c>true</c>, otherwise <c>false</c>.</returns>
-        public static Value Or<T>(FlowOutputSet outset, IntervalValue<T> leftOperand,
+        public static Value Or<T>(ISnapshotReadWrite snapshot, IntervalValue<T> leftOperand,
             bool rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            return Or(outset, rightOperand, leftOperand);
+            return Or(snapshot, rightOperand, leftOperand);
         }
 
         /// <summary>
@@ -362,11 +362,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <typeparam name="TLeft">Type of values in left interval operand.</typeparam>
         /// <typeparam name="TRight">Type of values in right interval operand.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left interval operand of OR logical operation.</param>
         /// <param name="rightOperand">Right interval operand of OR logical operation.</param>
         /// <returns><c>true</c> whether either operand is <c>true</c>, otherwise <c>false</c>.</returns>
-        public static Value Or<TLeft, TRight>(FlowOutputSet outset, IntervalValue<TLeft> leftOperand,
+        public static Value Or<TLeft, TRight>(ISnapshotReadWrite snapshot, IntervalValue<TLeft> leftOperand,
             IntervalValue<TRight> rightOperand)
             where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
             where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
@@ -375,11 +375,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (TypeConversion.TryConvertToBoolean<TLeft>(leftOperand, out convertedValue))
             {
-                return Or(outset, convertedValue, rightOperand);
+                return Or(snapshot, convertedValue, rightOperand);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -390,18 +390,18 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// It does not matter whether the concrete operand is on left or right side,
         /// result is the same, because logical operation is commutative.
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="concreteOperand">One concrete boolean operand of OR logical operation.</param>
         /// <returns><c>true</c> whether the operand is <c>true</c>, otherwise abstract boolean.</returns>
-        public static Value AbstractOr(FlowOutputSet outset, bool concreteOperand)
+        public static Value AbstractOr(ISnapshotReadWrite snapshot, bool concreteOperand)
         {
             if (concreteOperand)
             {
-                return outset.CreateBool(true);
+                return snapshot.CreateBool(true);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -413,21 +413,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// result is the same, because logical operation is commutative.
         /// </remarks>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="intervalOperand">One specified interval operand of OR logical operation.</param>
         /// <returns><c>true</c> whether the operand is <c>true</c>, otherwise abstract boolean.</returns>
-        public static Value AbstractOr<T>(FlowOutputSet outset, IntervalValue<T> intervalOperand)
+        public static Value AbstractOr<T>(ISnapshotReadWrite snapshot, IntervalValue<T> intervalOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             bool convertedValue;
 
             if (TypeConversion.TryConvertToBoolean<T>(intervalOperand, out convertedValue))
             {
-                return AbstractOr(outset, convertedValue);
+                return AbstractOr(snapshot, convertedValue);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -439,11 +439,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical XOR for given boolean and interval operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left boolean operand of XOR logical operation.</param>
         /// <param name="rightOperand">Right interval operand of XOR logical operation.</param>
         /// <returns><c>true</c> whether operands are not equal, otherwise <c>false</c>.</returns>
-        public static Value Xor<T>(FlowOutputSet outset, bool leftOperand,
+        public static Value Xor<T>(ISnapshotReadWrite snapshot, bool leftOperand,
             IntervalValue<T> rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
@@ -451,11 +451,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (TypeConversion.TryConvertToBoolean<T>(rightOperand, out convertedValue))
             {
-                return outset.CreateBool(leftOperand != convertedValue);
+                return snapshot.CreateBool(leftOperand != convertedValue);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -463,15 +463,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Perform logical XOR for given interval and boolean operands.
         /// </summary>
         /// <typeparam name="T">Type of values in interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left interval operand of XOR logical operation.</param>
         /// <param name="rightOperand">Right boolean operand of XOR logical operation.</param>
         /// <returns><c>true</c> whether operands are not equal, otherwise <c>false</c>.</returns>
-        public static Value Xor<T>(FlowOutputSet outset, IntervalValue<T> leftOperand,
+        public static Value Xor<T>(ISnapshotReadWrite snapshot, IntervalValue<T> leftOperand,
             bool rightOperand)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            return Xor(outset, rightOperand, leftOperand);
+            return Xor(snapshot, rightOperand, leftOperand);
         }
 
         /// <summary>
@@ -479,11 +479,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <typeparam name="TLeft">Type of values in left interval operand.</typeparam>
         /// <typeparam name="TRight">Type of values in right interval operand.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="leftOperand">Left interval operand of XOR logical operation.</param>
         /// <param name="rightOperand">Right interval operand of XOR logical operation.</param>
         /// <returns><c>true</c> whether operands are not equal, otherwise <c>false</c>.</returns>
-        public static Value Xor<TLeft, TRight>(FlowOutputSet outset, IntervalValue<TLeft> leftOperand,
+        public static Value Xor<TLeft, TRight>(ISnapshotReadWrite snapshot, IntervalValue<TLeft> leftOperand,
             IntervalValue<TRight> rightOperand)
             where TLeft : IComparable, IComparable<TLeft>, IEquatable<TLeft>
             where TRight : IComparable, IComparable<TRight>, IEquatable<TRight>
@@ -492,22 +492,22 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (TypeConversion.TryConvertToBoolean<TLeft>(leftOperand, out convertedValue))
             {
-                return Xor(outset, convertedValue, rightOperand);
+                return Xor(snapshot, convertedValue, rightOperand);
             }
             else
             {
-                return outset.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
         /// <summary>
         /// Return an abstract boolean result of XOR logical operation even if at least one operand is known.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <returns>An abstract boolean.</returns>
-        public static AnyBooleanValue AbstractXor(FlowOutputSet outset)
+        public static AnyBooleanValue AbstractXor(ISnapshotReadWrite snapshot)
         {
-            return outset.AnyBooleanValue;
+            return snapshot.AnyBooleanValue;
         }
 
         #endregion Xor

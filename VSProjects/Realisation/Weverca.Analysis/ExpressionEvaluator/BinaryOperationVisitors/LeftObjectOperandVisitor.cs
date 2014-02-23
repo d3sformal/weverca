@@ -324,7 +324,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     result = LogicalOperation.Logical(OutSet, operation,
                         TypeConversion.ToBoolean(leftOperand),
-                        TypeConversion.ToNativeBoolean(OutSet, value));
+                        TypeConversion.ToNativeBoolean(Snapshot, value));
                     if (result != null)
                     {
                         break;
@@ -527,7 +527,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         // Ommitted warning message that object cannot be converted to integer
@@ -665,7 +665,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyFloatValue(AnyFloatValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -696,7 +696,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         // A string can be converted into floating point number too.

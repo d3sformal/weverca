@@ -244,7 +244,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.AbstractModulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     break;
                 default:
                     result = Comparison.AbstractCompare(OutSet, operation);
@@ -254,7 +254,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, value));
+                        TypeConversion.ToNativeBoolean(Snapshot, value));
                     if (result != null)
                     {
                         break;

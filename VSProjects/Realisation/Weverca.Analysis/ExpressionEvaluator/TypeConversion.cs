@@ -72,13 +72,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Converts the numeric value to an equivalent boolean value.
         /// </summary>
         /// <typeparam name="T">Type of number representation.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Numeric value to convert.</param>
         /// <returns><c>true</c> if number is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean<T>(FlowOutputSet outset, NumericValue<T> value)
+        public static BooleanValue ToBoolean<T>(ISnapshotReadWrite snapshot, NumericValue<T> value)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
-            return outset.CreateBool(ToBoolean(value));
+            return snapshot.CreateBool(ToBoolean(value));
         }
 
         /// <summary>
@@ -96,12 +96,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of integer to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Integer to convert.</param>
         /// <returns><c>true</c> if integer value is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<int> value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, ScalarValue<int> value)
         {
-            return outset.CreateBool(ToBoolean(value.Value));
+            return snapshot.CreateBool(ToBoolean(value.Value));
         }
 
         /// <summary>
@@ -117,12 +117,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of long integer to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Long integer to convert.</param>
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<long> value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, ScalarValue<long> value)
         {
-            return outset.CreateBool(ToBoolean(value.Value));
+            return snapshot.CreateBool(ToBoolean(value.Value));
         }
 
         /// <summary>
@@ -138,12 +138,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of floating-point number to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Floating-point number to convert.</param>
         /// <returns><c>true</c> if value is not zero, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<double> value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, ScalarValue<double> value)
         {
-            return outset.CreateBool(ToBoolean(value.Value));
+            return snapshot.CreateBool(ToBoolean(value.Value));
         }
 
         /// <summary>
@@ -159,12 +159,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the string value to proper boolean value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">String to convert.</param>
         /// <returns><c>true</c> if string is not empty or "0", otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, ScalarValue<string> value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, ScalarValue<string> value)
         {
-            return outset.CreateBool(ToBoolean(value.Value));
+            return snapshot.CreateBool(ToBoolean(value.Value));
         }
 
         /// <summary>
@@ -182,12 +182,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from the object reference value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Object of any type to convert.</param>
         /// <returns>Always <c>true</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, ObjectValue value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, ObjectValue value)
         {
-            return outset.CreateBool(ToBoolean(value));
+            return snapshot.CreateBool(ToBoolean(value));
         }
 
         /// <summary>
@@ -204,25 +204,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from content of the array value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns><c>true</c> if array has at least one element, otherwise <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, AssociativeArray value)
+        public static BooleanValue ToBoolean(SnapshotBase snapshot, AssociativeArray value)
         {
-            return outset.CreateBool(ToNativeBoolean(outset, value));
+            return snapshot.CreateBool(ToNativeBoolean(snapshot, value));
         }
 
         /// <summary>
         /// Determines native boolean value from content of the array value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns><c>true</c> if array has at least one element, otherwise <c>false</c>.</returns>
-        public static bool ToNativeBoolean(FlowOutputSet outset, AssociativeArray value)
+        public static bool ToNativeBoolean(SnapshotBase snapshot, AssociativeArray value)
         {
-            var entry = outset.CreateSnapshotEntry(new MemoryEntry(value));
+            var entry = snapshot.CreateSnapshotEntry(new MemoryEntry(value));
 
-            var indices = entry.IterateIndexes(outset.Snapshot);
+            var indices = entry.IterateIndexes(snapshot);
             var enumerator = indices.GetEnumerator();
             return enumerator.MoveNext();
         }
@@ -230,12 +230,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from the reference to external resource.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">External resource to convert.</param>
         /// <returns>Always <c>true</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, ResourceValue value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, ResourceValue value)
         {
-            return outset.CreateBool(ToBoolean(value));
+            return snapshot.CreateBool(ToBoolean(value));
         }
 
         /// <summary>
@@ -251,12 +251,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from any object reference value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Any object of any type to convert.</param>
         /// <returns>Always <c>true</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, AnyObjectValue value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, AnyObjectValue value)
         {
-            return outset.CreateBool(ToBoolean(value));
+            return snapshot.CreateBool(ToBoolean(value));
         }
 
         /// <summary>
@@ -273,12 +273,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines boolean value from any reference to external resource.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Any external resource to convert.</param>
         /// <returns>Always <c>true</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, AnyResourceValue value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, AnyResourceValue value)
         {
-            return outset.CreateBool(ToBoolean(value));
+            return snapshot.CreateBool(ToBoolean(value));
         }
 
         /// <summary>
@@ -295,26 +295,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Converts possible interval of numbers to an equivalent concrete or abstract boolean value.
         /// </summary>
         /// <typeparam name="T">Type of values represented by interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Value representing interval of numbers to convert.</param>
         /// <returns>Concrete boolean value if it is possible, otherwise abstract boolean value.</returns>
-        public static Value ToBoolean<T>(FlowOutputSet outset, IntervalValue<T> value)
+        public static Value ToBoolean<T>(ISnapshotReadWrite snapshot, IntervalValue<T> value)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             if ((value.Start.CompareTo(value.Zero) <= 0) && (value.End.CompareTo(value.Zero) >= 0))
             {
                 if (value.Start.Equals(value.Zero) && value.End.Equals(value.Zero))
                 {
-                    return outset.CreateBool(false);
+                    return snapshot.CreateBool(false);
                 }
                 else
                 {
-                    return outset.AnyBooleanValue;
+                    return snapshot.AnyBooleanValue;
                 }
             }
             else
             {
-                return outset.CreateBool(true);
+                return snapshot.CreateBool(true);
             }
         }
 
@@ -322,21 +322,21 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Tries to convert possible interval of numbers to an equivalent boolean value.
         /// </summary>
         /// <typeparam name="T">Type of values represented by interval.</typeparam>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Value representing interval of numbers to convert.</param>
         /// <param name="convertedValue">
         /// <c>true</c> if interval does not contain zero,
         /// <c>false</c> if interval consists only from zero value or <c>null</c> otherwise.
         /// </param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToBoolean<T>(FlowOutputSet outset, IntervalValue<T> value,
+        public static bool TryConvertToBoolean<T>(ISnapshotReadWrite snapshot, IntervalValue<T> value,
             out BooleanValue convertedValue)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             bool casted;
             if (TryConvertToBoolean(value, out casted))
             {
-                convertedValue = outset.CreateBool(casted);
+                convertedValue = snapshot.CreateBool(casted);
                 return true;
             }
             else
@@ -382,12 +382,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to an equivalent boolean value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Undefined value.</param>
         /// <returns>Always <c>false</c>.</returns>
-        public static BooleanValue ToBoolean(FlowOutputSet outset, UndefinedValue value)
+        public static BooleanValue ToBoolean(ISnapshotReadWrite snapshot, UndefinedValue value)
         {
-            return outset.CreateBool(ToBoolean(value));
+            return snapshot.CreateBool(ToBoolean(value));
         }
 
         /// <summary>
@@ -407,12 +407,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the boolean value to an equivalent value of integer.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Boolean value to convert.</param>
         /// <returns>The number 1 if value is <c>true</c>, otherwise 0.</returns>
-        public static IntegerValue ToInteger(FlowOutputSet outset, ScalarValue<bool> value)
+        public static IntegerValue ToInteger(ISnapshotReadWrite snapshot, ScalarValue<bool> value)
         {
-            return outset.CreateInt(ToInteger(value.Value));
+            return snapshot.CreateInt(ToInteger(value.Value));
         }
 
         /// <summary>
@@ -428,16 +428,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Tries to convert the value of long integer to an equivalent integer value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Long integer to convert.</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToInteger(FlowOutputSet outset, ScalarValue<long> value,
+        public static bool TryConvertToInteger(ISnapshotReadWrite snapshot, ScalarValue<long> value,
             out IntegerValue convertedValue)
         {
             int casted;
             var isConverted = TryConvertToInteger(value.Value, out casted);
-            convertedValue = outset.CreateInt(casted);
+            convertedValue = snapshot.CreateInt(casted);
             return isConverted;
         }
 
@@ -466,16 +466,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Floating-point number to convert.</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToInteger(FlowOutputSet outset, ScalarValue<double> value,
+        public static bool TryConvertToInteger(ISnapshotReadWrite snapshot, ScalarValue<double> value,
             out IntegerValue convertedValue)
         {
             int casted;
             var isConverted = TryConvertToInteger(value.Value, out casted);
-            convertedValue = outset.CreateInt(casted);
+            convertedValue = snapshot.CreateInt(casted);
             return isConverted;
         }
 
@@ -508,13 +508,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the string value to corresponding integer value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">String to convert.</param>
         /// <returns>Integer representation of string if it can be converted, otherwise 0.</returns>
-        public static IntegerValue ToInteger(FlowOutputSet outset, ScalarValue<string> value)
+        public static IntegerValue ToInteger(ISnapshotReadWrite snapshot, ScalarValue<string> value)
         {
             IntegerValue convertedValue;
-            TryConvertToInteger(outset, value, out convertedValue);
+            TryConvertToInteger(snapshot, value, out convertedValue);
             return convertedValue;
         }
 
@@ -536,16 +536,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryIdentifyInteger(string, out int)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">String to convert.</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryIdentifyInteger(FlowOutputSet outset, ScalarValue<string> value,
+        public static bool TryIdentifyInteger(ISnapshotReadWrite snapshot, ScalarValue<string> value,
             out IntegerValue convertedValue)
         {
             int integerValue;
             var isSuccessful = TryIdentifyInteger(value.Value, out integerValue);
-            convertedValue = outset.CreateInt(integerValue);
+            convertedValue = snapshot.CreateInt(integerValue);
             return isSuccessful;
         }
 
@@ -575,16 +575,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">String to convert.</param>
         /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToInteger(FlowOutputSet outset, ScalarValue<string> value,
+        public static bool TryConvertToInteger(ISnapshotReadWrite snapshot, ScalarValue<string> value,
             out IntegerValue convertedValue)
         {
             int integerValue;
             var isSuccessful = TryConvertToInteger(value.Value, out integerValue);
-            convertedValue = outset.CreateInt(integerValue);
+            convertedValue = snapshot.CreateInt(integerValue);
             return isSuccessful;
         }
 
@@ -613,14 +613,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Determines value of integer from content of the array value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="ToNativeInteger(FlowOutputSet, AssociativeArray)" />
+        /// <seealso cref="ToNativeInteger(SnapshotBase, AssociativeArray)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns>1 if array has at least one element, otherwise 0.</returns>
-        public static IntegerValue ToInteger(FlowOutputSet outset, AssociativeArray value)
+        public static IntegerValue ToInteger(SnapshotBase snapshot, AssociativeArray value)
         {
-            return outset.CreateInt(ToNativeInteger(outset, value));
+            return snapshot.CreateInt(ToNativeInteger(snapshot, value));
         }
 
         /// <summary>
@@ -631,23 +631,23 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// is undefined for other than scalar types. However, it typically acts as predefined
         /// function <c>intval</c> which has conversion of to array defined clearly.
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns>1 if array has at least one element, otherwise 0.</returns>
-        public static int ToNativeInteger(FlowOutputSet outset, AssociativeArray value)
+        public static int ToNativeInteger(SnapshotBase snapshot, AssociativeArray value)
         {
-            return ToInteger(ToNativeBoolean(outset, value));
+            return ToInteger(ToNativeBoolean(snapshot, value));
         }
 
         /// <summary>
         /// Converts an undefined value to an equivalent integer value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Undefined value.</param>
         /// <returns>Always 0 value.</returns>
-        public static IntegerValue ToInteger(FlowOutputSet outset, UndefinedValue value)
+        public static IntegerValue ToInteger(ISnapshotReadWrite snapshot, UndefinedValue value)
         {
-            return outset.CreateInt(ToInteger(value));
+            return snapshot.CreateInt(ToInteger(value));
         }
 
         /// <summary>
@@ -667,12 +667,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the boolean value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Boolean value to convert.</param>
         /// <returns>The number 1.0 if value is <c>true</c>, otherwise 0.0.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, ScalarValue<bool> value)
+        public static FloatValue ToFloat(ISnapshotReadWrite snapshot, ScalarValue<bool> value)
         {
-            return outset.CreateDouble(ToFloat(value.Value));
+            return snapshot.CreateDouble(ToFloat(value.Value));
         }
 
         /// <summary>
@@ -688,12 +688,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of integer value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Integer value to convert.</param>
         /// <returns>A floating-point number that is equivalent to integer value.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, ScalarValue<int> value)
+        public static FloatValue ToFloat(ISnapshotReadWrite snapshot, ScalarValue<int> value)
         {
-            return outset.CreateDouble(ToFloat(value.Value));
+            return snapshot.CreateDouble(ToFloat(value.Value));
         }
 
         /// <summary>
@@ -709,12 +709,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the value of long integer value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Long integer value to convert.</param>
         /// <returns>A floating-point number that is equivalent to long integer value.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, ScalarValue<long> value)
+        public static FloatValue ToFloat(ISnapshotReadWrite snapshot, ScalarValue<long> value)
         {
-            return outset.CreateDouble(ToFloat(value.Value));
+            return snapshot.CreateDouble(ToFloat(value.Value));
         }
 
         /// <summary>
@@ -730,13 +730,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the string value to corresponding floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">String to convert.</param>
         /// <returns>Number representation of string if it can be converted, otherwise 0.0.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, ScalarValue<string> value)
+        public static FloatValue ToFloat(ISnapshotReadWrite snapshot, ScalarValue<string> value)
         {
             FloatValue convertedValue;
-            TryConvertToFloat(outset, value, out convertedValue);
+            TryConvertToFloat(snapshot, value, out convertedValue);
             return convertedValue;
         }
 
@@ -746,16 +746,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(string, out int)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">String to convert.</param>
         /// <param name="convertedValue">Converted value if conversion is successful, otherwise 0.0.</param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToFloat(FlowOutputSet outset, ScalarValue<string> value,
+        public static bool TryConvertToFloat(ISnapshotReadWrite snapshot, ScalarValue<string> value,
             out FloatValue convertedValue)
         {
             double floatValue;
             var isSuccessful = TryConvertToFloat(value.Value, out floatValue);
-            convertedValue = outset.CreateDouble(floatValue);
+            convertedValue = snapshot.CreateDouble(floatValue);
             return isSuccessful;
         }
 
@@ -782,39 +782,39 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// Determines floating-point number from content of the array value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.ToInteger(FlowOutputSet, AssociativeArray)" />
+        /// <seealso cref="TypeConversion.ToInteger(SnapshotBase, AssociativeArray)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns>1.0 if array has at least one element, otherwise 0.0.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, AssociativeArray value)
+        public static FloatValue ToFloat(SnapshotBase snapshot, AssociativeArray value)
         {
-            return outset.CreateDouble(ToNativeFloat(outset, value));
+            return snapshot.CreateDouble(ToNativeFloat(snapshot, value));
         }
 
         /// <summary>
         /// Determines native floating-point number from content of the array value.
         /// </summary>
         /// <remarks>
-        /// <seealso cref="TypeConversion.ToInteger(FlowOutputSet, AssociativeArray)" />
+        /// <seealso cref="TypeConversion.ToInteger(SnapshotBase, AssociativeArray)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns>1.0 if array has at least one element, otherwise 0.0.</returns>
-        public static double ToNativeFloat(FlowOutputSet outset, AssociativeArray value)
+        public static double ToNativeFloat(SnapshotBase snapshot, AssociativeArray value)
         {
-            return ToFloat(ToNativeBoolean(outset, value));
+            return ToFloat(ToNativeBoolean(snapshot, value));
         }
 
         /// <summary>
         /// Converts an undefined value to an equivalent floating-point number.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Undefined value.</param>
         /// <returns>Always 0.0 value.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, UndefinedValue value)
+        public static FloatValue ToFloat(ISnapshotReadWrite snapshot, UndefinedValue value)
         {
-            return outset.CreateDouble(ToFloat(value));
+            return snapshot.CreateDouble(ToFloat(value));
         }
 
         /// <summary>
@@ -827,19 +827,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return 0.0;
         }
 
-        /// <summary>
-        /// Converts a value to an equivalent native floating-point number if possible.
-        /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
-        /// <param name="value">The value to convert.</param>
-        /// <returns>correspnding <see cref="FloatValue"/> or <c>null</c> if conversion is not possible.</returns>
-        public static FloatValue ToFloat(FlowOutputSet outset, Value value)
-        {
-            ToFloatConversionVisitor visitor = new ToFloatConversionVisitor(outset);
-            value.Accept(visitor);
-            return visitor.Result;
-        }
-
         #endregion ToFloat
 
         #region ToString
@@ -847,12 +834,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the boolean value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Boolean value to convert.</param>
         /// <returns>String "1" if value is <c>true</c>, otherwise empty string.</returns>
-        public static StringValue ToString(FlowOutputSet outset, ScalarValue<bool> value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, ScalarValue<bool> value)
         {
-            return outset.CreateString(ToString(value.Value));
+            return snapshot.CreateString(ToString(value.Value));
         }
 
         /// <summary>
@@ -868,12 +855,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the integer value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Value of integer to convert.</param>
         /// <returns>The string representation of integer value.</returns>
-        public static StringValue ToString(FlowOutputSet outset, ScalarValue<int> value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, ScalarValue<int> value)
         {
-            return outset.CreateString(ToString(value.Value));
+            return snapshot.CreateString(ToString(value.Value));
         }
 
         /// <summary>
@@ -889,23 +876,23 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the long integer value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Value of long integer to convert.</param>
         /// <returns>The string representation of long integer value.</returns>
-        public static StringValue ToString(FlowOutputSet outset, ScalarValue<long> value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, ScalarValue<long> value)
         {
-            return outset.CreateString(System.Convert.ToString(value.Value, CultureInfo.InvariantCulture));
+            return snapshot.CreateString(System.Convert.ToString(value.Value, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
         /// Converts the floating-point number to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Floating-point number to convert.</param>
         /// <returns>The string representation of floating-point number.</returns>
-        public static StringValue ToString(FlowOutputSet outset, ScalarValue<double> value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, ScalarValue<double> value)
         {
-            return outset.CreateString(ToString(value.Value));
+            return snapshot.CreateString(ToString(value.Value));
         }
 
         /// <summary>
@@ -921,48 +908,48 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Determines string value from content of the array value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns>Always "Array" string.</returns>
-        public static StringValue ToString(FlowOutputSet outset, AssociativeArray value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, AssociativeArray value)
         {
-            return outset.CreateString("Array");
+            return snapshot.CreateString("Array");
         }
 
         /// <summary>
         /// Determines string value from the reference to external resource.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">External resource to convert.</param>
         /// <returns>
         /// Value "Resource id #X", where X is a unique number assigned to the resource by PHP at runtime.
         /// </returns>
-        public static StringValue ToString(FlowOutputSet outset, ResourceValue value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, ResourceValue value)
         {
-            return outset.CreateString(string.Concat("Resource id #",
+            return snapshot.CreateString(string.Concat("Resource id #",
                 value.UID.ToString(CultureInfo.InvariantCulture)));
         }
 
         /// <summary>
         /// Determines string value from content of any array value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Any array to convert.</param>
         /// <returns>Always "Array" string.</returns>
-        public static StringValue ToString(FlowOutputSet outset, AnyArrayValue value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, AnyArrayValue value)
         {
-            return outset.CreateString("Array");
+            return snapshot.CreateString("Array");
         }
 
         /// <summary>
         /// Converts an undefined value to an equivalent string representation.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Undefined value.</param>
         /// <returns>Empty string.</returns>
-        public static StringValue ToString(FlowOutputSet outset, UndefinedValue value)
+        public static StringValue ToString(ISnapshotReadWrite snapshot, UndefinedValue value)
         {
-            return outset.CreateString(string.Empty);
+            return snapshot.CreateString(string.Empty);
         }
 
         #endregion ToString
@@ -972,27 +959,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the array to corresponding new object.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Array to convert.</param>
         /// <returns>Object with fields named by indices of array and initialized by their values.</returns>
-        public static ObjectValue ToObject(FlowOutputSet outset, AssociativeArray value)
+        public static ObjectValue ToObject(SnapshotBase snapshot, AssociativeArray value)
         {
-            var objectValue = CreateStandardObject(outset);
-            var objectEntry = GetSnapshotEntry(outset, objectValue);
-            var arrayEntry = GetSnapshotEntry(outset, value);
+            var objectValue = CreateStandardObject(snapshot);
+            var objectEntry = GetSnapshotEntry(snapshot, objectValue);
+            var arrayEntry = GetSnapshotEntry(snapshot, value);
 
-            var outSnapshot = outset.Snapshot;
-
-            var indices = objectEntry.IterateFields(outSnapshot);
+            var indices = objectEntry.IterateFields(snapshot);
 
             foreach (var index in indices)
             {
-                var fieldEntry = objectEntry.ReadField(outSnapshot, index);
+                var fieldEntry = objectEntry.ReadField(snapshot, index);
                 var identifier = new MemberIdentifier(index.DirectName.Value);
-                var indexEntry = arrayEntry.ReadIndex(outSnapshot, identifier);
+                var indexEntry = arrayEntry.ReadIndex(snapshot, identifier);
 
-                var readValue = indexEntry.ReadMemory(outSnapshot);
-                fieldEntry.WriteMemory(outSnapshot, readValue);
+                var readValue = indexEntry.ReadMemory(snapshot);
+                fieldEntry.WriteMemory(snapshot, readValue);
             }
 
             return objectValue;
@@ -1001,27 +986,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Creates an object containing one field with the undefined value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Undefined value.</param>
         /// <returns>Object with field named "scalar" which contains undefined value.</returns>
-        public static ObjectValue ToObject(FlowOutputSet outset, UndefinedValue value)
+        public static ObjectValue ToObject(ISnapshotReadWrite snapshot, UndefinedValue value)
         {
-            return CreateStandardObject(outset);
+            return CreateStandardObject(snapshot);
         }
 
         /// <summary>
         /// Creates an object containing one field with a value but an object, array or undefined value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">A value to convert.</param>
         /// <returns>Object with field named "scalar" which contains the value.</returns>
-        public static ObjectValue ToObject(FlowOutputSet outset, Value value)
+        public static ObjectValue ToObject(SnapshotBase snapshot, Value value)
         {
-            var objectValue = CreateStandardObject(outset);
-            var objectEntry = GetSnapshotEntry(outset, objectValue);
+            var objectValue = CreateStandardObject(snapshot);
+            var objectEntry = GetSnapshotEntry(snapshot, objectValue);
 
-            var outSnapshot = outset.Snapshot;
-            var fieldEntry = GetFieldEntry(outSnapshot, objectEntry, "scalar");
+            var outSnapshot = snapshot;
+            var fieldEntry = GetFieldEntry(snapshot, objectEntry, "scalar");
 
             var valueEntry = new MemoryEntry(value);
             fieldEntry.WriteMemory(outSnapshot, valueEntry);
@@ -1036,30 +1021,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts the object to corresponding array structure.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Object of any type to convert.</param>
         /// <returns>Array with keys named by fields of object and initialized by their values.</returns>
-        public static AssociativeArray ToArray(FlowOutputSet outset, ObjectValue value)
+        public static AssociativeArray ToArray(SnapshotBase snapshot, ObjectValue value)
         {
             // TODO: This conversion is quite difficult. It does not convert integer properties, needs to
             // know visibility of every property and needs access to private properties of base classes.
 
-            var arrayValue = outset.CreateArray();
-            var arrayEntry = GetSnapshotEntry(outset, arrayValue);
-            var objectEntry = GetSnapshotEntry(outset, value);
+            var arrayValue = snapshot.CreateArray();
+            var arrayEntry = GetSnapshotEntry(snapshot, arrayValue);
+            var objectEntry = GetSnapshotEntry(snapshot, value);
 
-            var outSnapshot = outset.Snapshot;
-
-            var fields = objectEntry.IterateFields(outSnapshot);
+            var fields = objectEntry.IterateFields(snapshot);
 
             foreach (var field in fields)
             {
-                var fieldEntry = objectEntry.ReadField(outSnapshot, field);
+                var fieldEntry = objectEntry.ReadField(snapshot, field);
                 var identifier = new MemberIdentifier(field.DirectName.Value);
-                var indexEntry = arrayEntry.ReadIndex(outSnapshot, identifier);
+                var indexEntry = arrayEntry.ReadIndex(snapshot, identifier);
 
-                var readValue = fieldEntry.ReadMemory(outSnapshot);
-                indexEntry.WriteMemory(outSnapshot, readValue);
+                var readValue = fieldEntry.ReadMemory(snapshot);
+                indexEntry.WriteMemory(snapshot, readValue);
             }
 
             return arrayValue;
@@ -1068,30 +1051,29 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Converts an undefined value to corresponding array structure.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Undefined value.</param>
         /// <returns>Empty with no elements.</returns>
-        public static AssociativeArray ToArray(FlowOutputSet outset, UndefinedValue value)
+        public static AssociativeArray ToArray(ISnapshotReadWrite snapshot, UndefinedValue value)
         {
-            return outset.CreateArray();
+            return snapshot.CreateArray();
         }
 
         /// <summary>
         /// Converts a value but an object, array or undefined value to corresponding array structure.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">A value to convert.</param>
         /// <returns>Array with a single element with the value on position of 0 index.</returns>
-        public static AssociativeArray ToArray(FlowOutputSet outset, Value value)
+        public static AssociativeArray ToArray(SnapshotBase snapshot, Value value)
         {
-            var arrayValue = outset.CreateArray();
-            var arrayEntry = GetSnapshotEntry(outset, arrayValue);
+            var arrayValue = snapshot.CreateArray();
+            var arrayEntry = GetSnapshotEntry(snapshot, arrayValue);
 
-            var outSnapshot = outset.Snapshot;
-            var indexEntry = GetIndexEntry(outSnapshot, arrayEntry, "0");
+            var indexEntry = GetIndexEntry(snapshot, arrayEntry, "0");
 
             var valueEntry = new MemoryEntry(value);
-            indexEntry.WriteMemory(outSnapshot, valueEntry);
+            indexEntry.WriteMemory(snapshot, valueEntry);
 
             return arrayValue;
         }
@@ -1103,19 +1085,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Tries to convert the interval of long integer to an equivalent integer interval.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Long integer to convert.</param>
         /// <param name="convertedValue">
         /// Integer interval in the same range as input if conversion is successful, otherwise (0;0).
         /// </param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToIntegerInterval(FlowOutputSet outset, IntervalValue<long> value,
+        public static bool TryConvertToIntegerInterval(ISnapshotReadWrite snapshot, IntervalValue<long> value,
             out IntervalValue<int> convertedValue)
         {
             int castedStart, castedEnd = 0;
             var isConverted = TryConvertToInteger(value.Start, out castedStart)
                 && TryConvertToInteger(value.End, out castedEnd);
-            convertedValue = outset.CreateIntegerInterval(castedStart, castedEnd);
+            convertedValue = snapshot.CreateIntegerInterval(castedStart, castedEnd);
             return isConverted;
         }
 
@@ -1125,62 +1107,64 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// <seealso cref="TypeConversion.TryConvertToInteger(double, out int)" />
         /// </remarks>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Floating-point number to convert.</param>
         /// <param name="convertedValue">
         /// Integer interval in the same range as input if conversion is successful, otherwise (0;0).
         /// </param>
         /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
-        public static bool TryConvertToIntegerInterval(FlowOutputSet outset, IntervalValue<double> value,
-            out IntervalValue<int> convertedValue)
+        public static bool TryConvertToIntegerInterval(ISnapshotReadWrite snapshot,
+            IntervalValue<double> value, out IntervalValue<int> convertedValue)
         {
             int castedStart, castedEnd = 0;
             var isConverted = TryConvertToInteger(value.Start, out castedStart)
                 && TryConvertToInteger(value.End, out castedEnd);
-            convertedValue = outset.CreateIntegerInterval(castedStart, castedEnd);
+            convertedValue = snapshot.CreateIntegerInterval(castedStart, castedEnd);
             return isConverted;
         }
 
         /// <summary>
         /// Create integer interval representing all boolean values converted into integers.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <returns>Integer interval with two values, integer <c>true</c> and <c>false</c>.</returns>
-        public static IntervalValue<int> AnyBooleanToIntegerInterval(FlowOutputSet outset)
+        public static IntervalValue<int> AnyBooleanToIntegerInterval(ISnapshotReadWrite snapshot)
         {
-            return outset.CreateIntegerInterval(ToInteger(false), ToInteger(true));
+            return snapshot.CreateIntegerInterval(ToInteger(false), ToInteger(true));
         }
 
         /// <summary>
         /// Create entire integer interval.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <returns>The entire integer interval from minimal to maximal integer value.</returns>
-        public static IntervalValue<int> AnyIntegerToIntegerInterval(FlowOutputSet outset)
+        public static IntervalValue<int> AnyIntegerToIntegerInterval(ISnapshotReadWrite snapshot)
         {
-            return outset.CreateIntegerInterval(int.MinValue, int.MaxValue);
+            return snapshot.CreateIntegerInterval(int.MinValue, int.MaxValue);
         }
 
         /// <summary>
         /// Create integer interval of all possible values of an array converted to integer.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <returns>Integer interval with 0 and 1 values.</returns>
-        public static IntervalValue<int> AnyArrayToIntegerInterval(FlowOutputSet outset)
+        public static IntervalValue<int> AnyArrayToIntegerInterval(ISnapshotReadWrite snapshot)
         {
             // Interval has only two values meaning that array can be empty or not
-            return outset.CreateIntegerInterval(0, 1);
+            return snapshot.CreateIntegerInterval(0, 1);
         }
 
         /// <summary>
         /// Casts the provided interval to <see cref="IntegerIntervalValue"/>, if possible.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">The interval value to process.</param>
-        /// <returns>Corresponding <see cref="IntegerIntervalValue"/> if cast is possible; <c>null</c> otherwise.</returns>
-        public static IntegerIntervalValue ToIntegerInterval(FlowOutputSet outset, IntervalValue value)
+        /// <returns>
+        /// Corresponding <see cref="IntegerIntervalValue"/> if cast is possible, <c>null</c> otherwise.
+        /// </returns>
+        public static IntegerIntervalValue ToIntegerInterval(ISnapshotReadWrite snapshot, IntervalValue value)
         {
-            var visitor = new ToIntegerIntervalConversionVisitor(outset);
+            var visitor = new ToIntegerIntervalConversionVisitor(snapshot);
             value.Accept(visitor);
             return visitor.Result;
         }
@@ -1192,40 +1176,46 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Casts the provided interval to <see cref="LongintIntervalValue"/>, if possible.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">The interval value to process.</param>
-        /// <returns>Corresponding <see cref="LongintIntervalValue"/> if cast is possible; <c>null</c> otherwise.</returns>
-        public static LongintIntervalValue ToLongInterval(FlowOutputSet outset, IntervalValue value)
+        /// <returns>
+        /// Corresponding <see cref="LongintIntervalValue"/> if cast is possible, <c>null</c> otherwise.
+        /// </returns>
+        public static LongintIntervalValue ToLongInterval(ISnapshotReadWrite snapshot, IntervalValue value)
         {
-            var visitor = new ToLongIntervalConversionVisitor(outset);
+            var visitor = new ToLongIntervalConversionVisitor(snapshot);
             value.Accept(visitor);
             return visitor.Result;
         }
 
-        #endregion ToIntegerInterval
+        #endregion ToLongInterval
 
         #region ToFloatInterval
 
         /// <summary>
         /// Extends integer interval into floating-point interval of the same range.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Integer interval to extend.</param>
         /// <returns>Floating-point interval extended from integer interval.</returns>
-        public static IntervalValue<double> ToFloatInterval(FlowOutputSet outset, IntervalValue<int> value)
+        public static IntervalValue<double> ToFloatInterval(ISnapshotReadWrite snapshot,
+            IntervalValue<int> value)
         {
-            return outset.CreateFloatInterval(value.Start, value.End);
+            return snapshot.CreateFloatInterval(value.Start, value.End);
         }
 
         /// <summary>
         /// Extends integer interval into floating-point interval of the same range.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
-        /// <param name="value">An interval value</param>
-        /// <returns>Floating-point interval extended from integer interval, if the value can be casted; <c>null</c>otherwise</returns>
-        public static FloatIntervalValue ToFloatInterval(FlowOutputSet outset, IntervalValue value)
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
+        /// <param name="value">An interval value.</param>
+        /// <returns>
+        /// Floating-point interval extended from integer interval,
+        /// if the value can be casted, <c>null</c> otherwise.
+        /// </returns>
+        public static FloatIntervalValue ToFloatInterval(ISnapshotReadWrite snapshot, IntervalValue value)
         {
-            var visitor = new ToFloatIntervalConversionVisitor(outset);
+            var visitor = new ToFloatIntervalConversionVisitor(snapshot);
             value.Accept(visitor);
             return visitor.Result;
         }
@@ -1654,26 +1644,26 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Creates a new object of build-in type <c>stdClass</c>
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <returns>Object of <c>stdClass</c> type with no fields nor methods.</returns>
-        private static ObjectValue CreateStandardObject(FlowOutputSet outset)
+        private static ObjectValue CreateStandardObject(ISnapshotReadWrite snapshot)
         {
-            var standardClassType = outset.ResolveType(standardClass);
+            var standardClassType = snapshot.ResolveType(standardClass);
             var enumerator = standardClassType.GetEnumerator();
             enumerator.MoveNext();
-            return outset.CreateObject(enumerator.Current as TypeValue);
+            return snapshot.CreateObject(enumerator.Current as TypeValue);
         }
 
         /// <summary>
         /// Creates snapshot entry containing a given value.
         /// </summary>
-        /// <param name="outset">Output set of a program point.</param>
+        /// <param name="snapshot">Read-write memory snapshot used for fix-point analysis.</param>
         /// <param name="value">Value wrapped into snapshot entry.</param>
         /// <returns>New value snapshot entry.</returns>
-        private static ReadSnapshotEntryBase GetSnapshotEntry(FlowOutputSet outset, Value value)
+        private static ReadSnapshotEntryBase GetSnapshotEntry(ISnapshotReadWrite snapshot, Value value)
         {
             var entry = new MemoryEntry(value);
-            return outset.CreateSnapshotEntry(entry);
+            return snapshot.CreateSnapshotEntry(entry);
         }
 
         /// <summary>
@@ -1708,7 +1698,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
     }
 
     /// <summary>
-    /// Static class that provides functionality for comparing of value types
+    /// Static class that provides functionality for comparing of value types.
     /// </summary>
     public static class ValueTypeResolver
     {
@@ -1733,7 +1723,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Indicates if value is long integer
+        /// Indicates if value is long integer.
         /// </summary>
         /// <param name="value">Value to be checked.</param>
         /// <returns>True if value is long integer.</returns>

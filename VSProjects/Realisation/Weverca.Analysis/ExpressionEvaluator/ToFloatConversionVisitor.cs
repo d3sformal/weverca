@@ -3,35 +3,39 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
-    class ToFloatConversionVisitor : AbstractValueVisitor
+    internal class ToFloatConversionVisitor : AbstractValueVisitor
     {
-        FlowOutputSet valueFactory;
+        ISnapshotReadWrite snapshot;
 
         public FloatValue Result { get; set; }
 
-        internal ToFloatConversionVisitor(FlowOutputSet valueFactory)
+        internal ToFloatConversionVisitor(ISnapshotReadWrite snapshotReadWrite)
         {
-            this.valueFactory = valueFactory;
+            snapshot = snapshotReadWrite;
         }
-        
+
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             Result = null;
         }
 
+        /// <inheritdoc />
         public override void VisitFloatValue(FloatValue value)
         {
             Result = value;
         }
 
+        /// <inheritdoc />
         public override void VisitIntegerValue(IntegerValue value)
         {
-            Result = valueFactory.CreateDouble(value.Value);
+            Result = snapshot.CreateDouble(value.Value);
         }
 
+        /// <inheritdoc />
         public override void VisitLongintValue(LongintValue value)
         {
-            Result = valueFactory.CreateDouble(value.Value);
+            Result = snapshot.CreateDouble(value.Value);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitScalarValue(ScalarValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -222,7 +222,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return;
             }
 
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 SetWarning("Object cannot be converted to integer by arithmetic operation",
@@ -240,7 +240,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.AbstractModulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     break;
                 default:
                     result = Comparison.RightAlwaysGreater(OutSet, operation);
@@ -250,7 +250,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, value));
+                        TypeConversion.ToNativeBoolean(Snapshot, value));
                     if (result != null)
                     {
                         break;
@@ -309,7 +309,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         break;
@@ -363,7 +363,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return;
             }
 
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -471,7 +471,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return;
             }
 
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 SetWarning("Object cannot be converted to integer by arithmetic operation",
@@ -513,7 +513,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return;
             }
 
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;

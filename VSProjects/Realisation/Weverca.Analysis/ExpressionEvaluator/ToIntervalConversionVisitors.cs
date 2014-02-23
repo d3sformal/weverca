@@ -9,32 +9,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// Converts an <see cref="IntervalValue"/> to <see cref="FloatIntervalValue"/>.
     /// Be careful about the conversions from given type to <see cref="float"/>!
     /// </summary>
-    class ToFloatIntervalConversionVisitor : AbstractValueVisitor
+    internal class ToFloatIntervalConversionVisitor : AbstractValueVisitor
     {
-        FlowOutputSet valueFactory;
-        
+        private ISnapshotReadWrite snapshot;
+
         public FloatIntervalValue Result { get; set; }
 
-        internal ToFloatIntervalConversionVisitor(FlowOutputSet valueFactory)
+        internal ToFloatIntervalConversionVisitor(ISnapshotReadWrite snapshotReadWrite)
         {
-            this.valueFactory = valueFactory;
+            snapshot = snapshotReadWrite;
         }
-        
+
+        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
             Result = value;
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
-            Result = valueFactory.CreateFloatInterval(value.Start, value.End);
+            Result = snapshot.CreateFloatInterval(value.Start, value.End);
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
-            Result = valueFactory.CreateFloatInterval(value.Start, value.End);
+            Result = snapshot.CreateFloatInterval(value.Start, value.End);
         }
 
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             throw new NotSupportedException("Not supported value type used.");
@@ -45,32 +49,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// Converts an <see cref="IntervalValue"/> to <see cref="IntegerIntervalValue"/>.
     /// Be careful about the conversions from given type to <see cref="int"/>!
     /// </summary>
-    class ToIntegerIntervalConversionVisitor : AbstractValueVisitor
+    internal class ToIntegerIntervalConversionVisitor : AbstractValueVisitor
     {
-        FlowOutputSet valueFactory;
-        
+        private ISnapshotReadWrite snapshot;
+
         public IntegerIntervalValue Result { get; set; }
 
-        internal ToIntegerIntervalConversionVisitor(FlowOutputSet valueFactory)
+        internal ToIntegerIntervalConversionVisitor(ISnapshotReadWrite snapshotReadWrite)
         {
-            this.valueFactory = valueFactory;
+            snapshot = snapshotReadWrite;
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
-            Result = valueFactory.CreateIntegerInterval((int)value.Start, (int)value.End);
+            Result = snapshot.CreateIntegerInterval((int)value.Start, (int)value.End);
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
             Result = value;
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
-            Result = valueFactory.CreateIntegerInterval((int)value.Start, (int)value.End);
+            Result = snapshot.CreateIntegerInterval((int)value.Start, (int)value.End);
         }
 
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             throw new NotSupportedException("Not supported value type used.");
@@ -81,32 +89,36 @@ namespace Weverca.Analysis.ExpressionEvaluator
     /// Converts an <see cref="IntervalValue"/> to <see cref="LongintIntervalValue"/>.
     /// Be careful about the conversions from given type to <see cref="long"/>!
     /// </summary>
-    class ToLongIntervalConversionVisitor : AbstractValueVisitor
+    internal class ToLongIntervalConversionVisitor : AbstractValueVisitor
     {
-        FlowOutputSet valueFactory;
+        private ISnapshotReadWrite snapshot;
 
         public LongintIntervalValue Result { get; set; }
 
-        internal ToLongIntervalConversionVisitor(FlowOutputSet valueFactory)
+        internal ToLongIntervalConversionVisitor(ISnapshotReadWrite snapshotReadWrite)
         {
-            this.valueFactory = valueFactory;
+            snapshot = snapshotReadWrite;
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalFloatValue(FloatIntervalValue value)
         {
-            Result = valueFactory.CreateLongintInterval((long)value.Start, (long)value.End);
+            Result = snapshot.CreateLongintInterval((long)value.Start, (long)value.End);
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalIntegerValue(IntegerIntervalValue value)
         {
-            Result = valueFactory.CreateLongintInterval(value.Start, value.End);
+            Result = snapshot.CreateLongintInterval(value.Start, value.End);
         }
 
+        /// <inheritdoc />
         public override void VisitIntervalLongintValue(LongintIntervalValue value)
         {
             Result = value;
         }
 
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             throw new NotSupportedException("Not supported value type used.");

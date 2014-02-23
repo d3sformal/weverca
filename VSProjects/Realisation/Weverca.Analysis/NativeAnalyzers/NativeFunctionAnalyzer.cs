@@ -819,7 +819,7 @@ namespace Weverca.Analysis
                 {
                     foreach (var arg2 in flow.OutSet.ReadVariable(NativeAnalyzerUtils.Argument(2)).ReadMemory(flow.OutSet.Snapshot).PossibleValues)
                     {
-                        var booleanConverter = new BooleanConverter(flow.OutSet);
+                        var booleanConverter = new BooleanConverter(flow.OutSet.Snapshot);
                         var result = booleanConverter.EvaluateToBoolean(arg2);
 
                         if (result != null)

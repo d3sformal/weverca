@@ -263,19 +263,19 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand.Value,
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     break;
                 default:
                     result = LogicalOperation.Logical(OutSet, operation,
                         TypeConversion.ToBoolean(leftOperand.Value),
-                        TypeConversion.ToNativeBoolean(OutSet, value));
+                        TypeConversion.ToNativeBoolean(Snapshot, value));
                     if (result != null)
                     {
                         break;
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation, leftOperand.Value,
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     if (result != null)
                     {
                         break;

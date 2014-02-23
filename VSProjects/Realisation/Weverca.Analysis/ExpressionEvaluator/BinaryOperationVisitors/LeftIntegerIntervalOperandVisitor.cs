@@ -192,7 +192,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, leftOperand,
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     break;
                 default:
                     base.VisitAssociativeArray(value);

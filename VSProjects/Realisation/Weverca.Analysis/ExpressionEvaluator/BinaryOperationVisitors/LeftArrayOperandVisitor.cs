@@ -78,7 +78,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = ModuloOperation.ModuloByBooleanValue(flow, value.Value);
                     break;
                 default:
-                    var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
+                    var leftBoolean = TypeConversion.ToNativeBoolean(Snapshot, leftOperand);
                     result = Comparison.Compare(OutSet, operation, leftBoolean, value.Value);
                     if (result != null)
                     {
@@ -92,7 +92,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand),
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand),
                         TypeConversion.ToInteger(value.Value));
                     if (result != null)
                     {
@@ -125,10 +125,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value.Value);
                     break;
                 default:
-                    var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
+                    var leftBoolean = TypeConversion.ToNativeBoolean(Snapshot, leftOperand);
                     var rightBoolean = TypeConversion.ToBoolean(value.Value);
                     result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
                     if (result != null)
@@ -137,7 +137,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value.Value);
                     if (result == null)
                     {
                         base.VisitIntegerValue(value);
@@ -154,10 +154,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value.Value);
                     break;
                 default:
-                    var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
+                    var leftBoolean = TypeConversion.ToNativeBoolean(Snapshot, leftOperand);
                     var rightBoolean = TypeConversion.ToBoolean(value.Value);
                     result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
                     if (result != null)
@@ -166,7 +166,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value.Value);
                     if (result == null)
                     {
                         base.VisitFloatValue(value);
@@ -185,7 +185,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value.Value);
                     break;
                 default:
                     result = Comparison.LeftAlwaysGreater(OutSet, operation);
@@ -194,7 +194,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    var leftBoolean = TypeConversion.ToNativeBoolean(OutSet, leftOperand);
+                    var leftBoolean = TypeConversion.ToNativeBoolean(Snapshot, leftOperand);
                     var rightBoolean = TypeConversion.ToBoolean(value.Value);
                     result = LogicalOperation.Logical(OutSet, operation, leftBoolean, rightBoolean);
                     if (result != null)
@@ -203,7 +203,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value.Value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value.Value);
                     if (result == null)
                     {
                         base.VisitStringValue(value);
@@ -241,7 +241,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand),
                         TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
@@ -273,8 +273,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand),
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand),
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     break;
                 default:
                     if (Comparison.IsOperationComparison(operation))
@@ -287,16 +287,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
-                        TypeConversion.ToNativeBoolean(OutSet, value));
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand),
+                        TypeConversion.ToNativeBoolean(Snapshot, value));
                     if (result != null)
                     {
                         break;
                     }
 
                     result = BitwiseOperation.Bitwise(OutSet, operation,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand),
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand),
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     if (result != null)
                     {
                         break;
@@ -325,13 +325,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.Equal:
                 case Operations.LessThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(Snapshot, leftOperand));
                     break;
                 case Operations.NotEqual:
                 case Operations.GreaterThan:
                 case Operations.Or:
                 case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, leftOperand);
+                    result = TypeConversion.ToBoolean(Snapshot, leftOperand);
                     break;
                 case Operations.BitAnd:
                     result = OutSet.CreateInt(0);
@@ -340,7 +340,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.BitXor:
                 case Operations.ShiftLeft:
                 case Operations.ShiftRight:
-                    result = TypeConversion.ToInteger(OutSet, leftOperand);
+                    result = TypeConversion.ToInteger(Snapshot, leftOperand);
                     break;
                 case Operations.Div:
                     result = ArithmeticOperation.DivisionByNull(flow);
@@ -394,11 +394,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value);
                     break;
                 default:
                     result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand), value);
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand), value);
                     if (result != null)
                     {
                         break;
@@ -416,11 +416,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow,
-                        TypeConversion.ToNativeInteger(OutSet, leftOperand), value);
+                        TypeConversion.ToNativeInteger(Snapshot, leftOperand), value);
                     break;
                 default:
                     result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand), value);
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand), value);
                     if (result != null)
                     {
                         break;
@@ -456,7 +456,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand));
                     if (result != null)
                     {
                         break;
@@ -489,7 +489,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand));
                     if (result != null)
                     {
                         break;
@@ -516,7 +516,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 default:
                     result = Comparison.RightAbstractBooleanCompare(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand));
                     if (result != null)
                     {
                         break;
@@ -599,7 +599,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand),
                         TypeConversion.ToBoolean(value));
                     if (result != null)
                     {
@@ -639,7 +639,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.AbstractLogical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand));
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand));
                     if (result != null)
                     {
                         break;
@@ -680,7 +680,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
 
                     result = LogicalOperation.Logical(OutSet, operation,
-                        TypeConversion.ToNativeBoolean(OutSet, leftOperand),
+                        TypeConversion.ToNativeBoolean(Snapshot, leftOperand),
                         TypeConversion.ToBoolean(value));
                     if (result != null)
                     {

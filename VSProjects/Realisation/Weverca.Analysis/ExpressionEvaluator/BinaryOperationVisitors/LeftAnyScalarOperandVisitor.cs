@@ -206,7 +206,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                     }
 
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         // Ommitted warning message that object cannot be converted to integer

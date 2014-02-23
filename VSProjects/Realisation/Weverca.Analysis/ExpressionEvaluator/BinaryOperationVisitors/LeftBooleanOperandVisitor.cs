@@ -301,10 +301,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Mod:
                     result = ModuloOperation.Modulo(flow, TypeConversion.ToInteger(leftOperand.Value),
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     break;
                 default:
-                    var rightBoolean = TypeConversion.ToNativeBoolean(OutSet, value);
+                    var rightBoolean = TypeConversion.ToNativeBoolean(Snapshot, value);
                     result = Comparison.Compare(OutSet, operation, leftOperand.Value, rightBoolean);
                     if (result != null)
                     {
@@ -319,7 +319,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                     result = BitwiseOperation.Bitwise(OutSet, operation,
                         TypeConversion.ToInteger(leftOperand.Value),
-                        TypeConversion.ToNativeInteger(OutSet, value));
+                        TypeConversion.ToNativeInteger(Snapshot, value));
                     if (result != null)
                     {
                         break;
@@ -564,7 +564,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyFloatValue(AnyFloatValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -587,7 +587,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         // A string can be converted into floating point number too.

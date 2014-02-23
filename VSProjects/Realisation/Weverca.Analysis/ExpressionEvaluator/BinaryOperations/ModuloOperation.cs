@@ -800,11 +800,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Helper methods
 
-        private static void InitalizeInternals(FlowOutputSet outset)
+        private static void InitalizeInternals(ISnapshotReadWrite snapshot)
         {
             if (booleanInterval == null)
             {
-                booleanInterval = TypeConversion.AnyBooleanToIntegerInterval(outset);
+                booleanInterval = TypeConversion.AnyBooleanToIntegerInterval(snapshot);
             }
         }
 
@@ -858,27 +858,28 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        private static Value Modulo(FlowOutputSet outset, IntervalValue<int> leftOperand, int rightOperand)
+        private static Value Modulo(ISnapshotReadWrite snapshot, IntervalValue<int> leftOperand,
+            int rightOperand)
         {
             IntervalValue<int> result;
 
             if (leftOperand.Start >= 0)
             {
-                result = PositiveDividendModulo(outset, leftOperand.Start,
+                result = PositiveDividendModulo(snapshot, leftOperand.Start,
                     leftOperand.End, rightOperand);
             }
             else
             {
                 if (leftOperand.End <= 0)
                 {
-                    result = NegativeDividendModulo(outset, leftOperand.Start,
+                    result = NegativeDividendModulo(snapshot, leftOperand.Start,
                         leftOperand.End, rightOperand);
                 }
                 else
                 {
-                    var negative = NegativeDividendModulo(outset, leftOperand.Start, 0, rightOperand);
-                    var positive = PositiveDividendModulo(outset, 0, leftOperand.End, rightOperand);
-                    result = outset.CreateIntegerInterval(negative.Start, positive.End);
+                    var negative = NegativeDividendModulo(snapshot, leftOperand.Start, 0, rightOperand);
+                    var positive = PositiveDividendModulo(snapshot, 0, leftOperand.End, rightOperand);
+                    result = snapshot.CreateIntegerInterval(negative.Start, positive.End);
                 }
             }
 
@@ -888,11 +889,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outset.CreateInt(result.Start);
+                return snapshot.CreateInt(result.Start);
             }
         }
 
-        private static IntervalValue<int> PositiveDividendModulo(FlowOutputSet outset,
+        private static IntervalValue<int> PositiveDividendModulo(ISnapshotReadWrite snapshot,
             int leftOperandStart, int leftOperandEnd, int rightOperand)
         {
             if (rightOperand < 0)
@@ -903,13 +904,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    return outset.CreateIntegerInterval(leftOperandStart, leftOperandEnd);
+                    return snapshot.CreateIntegerInterval(leftOperandStart, leftOperandEnd);
                 }
             }
 
             if ((leftOperandEnd - leftOperandStart) >= rightOperand - 1)
             {
-                return outset.CreateIntegerInterval(0, rightOperand - 1);
+                return snapshot.CreateIntegerInterval(0, rightOperand - 1);
             }
             else
             {
@@ -918,16 +919,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                 if (resultStart <= resultEnd)
                 {
-                    return outset.CreateIntegerInterval(resultStart, resultEnd);
+                    return snapshot.CreateIntegerInterval(resultStart, resultEnd);
                 }
                 else
                 {
-                    return outset.CreateIntegerInterval(0, rightOperand - 1);
+                    return snapshot.CreateIntegerInterval(0, rightOperand - 1);
                 }
             }
         }
 
-        private static IntervalValue<int> NegativeDividendModulo(FlowOutputSet outset,
+        private static IntervalValue<int> NegativeDividendModulo(ISnapshotReadWrite snapshot,
             int leftOperandStart, int leftOperandEnd, int rightOperand)
         {
             if (rightOperand < 0)
@@ -940,17 +941,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     if (leftOperandStart > int.MinValue)
                     {
-                        return outset.CreateIntegerInterval(leftOperandStart, leftOperandEnd);
+                        return snapshot.CreateIntegerInterval(leftOperandStart, leftOperandEnd);
                     }
                     else
                     {
                         if (leftOperandEnd > int.MinValue)
                         {
-                            return outset.CreateIntegerInterval(int.MinValue + 1, 0);
+                            return snapshot.CreateIntegerInterval(int.MinValue + 1, 0);
                         }
                         else
                         {
-                            return outset.CreateIntegerInterval(0, 0);
+                            return snapshot.CreateIntegerInterval(0, 0);
                         }
                     }
                 }
@@ -958,7 +959,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if ((leftOperandEnd - leftOperandStart) >= rightOperand - 1)
             {
-                return outset.CreateIntegerInterval(1 - rightOperand, 0);
+                return snapshot.CreateIntegerInterval(1 - rightOperand, 0);
             }
             else
             {
@@ -967,27 +968,27 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                 if (resultStart <= resultEnd)
                 {
-                    return outset.CreateIntegerInterval(resultStart, resultEnd);
+                    return snapshot.CreateIntegerInterval(resultStart, resultEnd);
                 }
                 else
                 {
-                    return outset.CreateIntegerInterval(1 - rightOperand, 0);
+                    return snapshot.CreateIntegerInterval(1 - rightOperand, 0);
                 }
             }
         }
 
-        private static IntervalValue<int> WorstModuloResult(FlowOutputSet outset, int divisor)
+        private static IntervalValue<int> WorstModuloResult(ISnapshotReadWrite snapshot, int divisor)
         {
             Debug.Assert(divisor != 0, "Zero divisor causes modulo by zero");
 
             if (divisor > 0)
             {
-                return outset.CreateIntegerInterval(1 - divisor, divisor - 1);
+                return snapshot.CreateIntegerInterval(1 - divisor, divisor - 1);
             }
             else
             {
                 int bound = divisor + 1;
-                return outset.CreateIntegerInterval(bound, -bound);
+                return snapshot.CreateIntegerInterval(bound, -bound);
             }
         }
 

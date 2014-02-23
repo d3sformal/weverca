@@ -38,7 +38,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitScalarValue(ScalarValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -108,7 +108,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 SetWarning("Object cannot be converted to integer by arithmetic operation",
@@ -149,7 +149,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -205,7 +205,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyScalarValue(AnyScalarValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 return;
@@ -257,7 +257,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyObjectValue(AnyObjectValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 SetWarning("Object cannot be converted to integer by arithmetic operation",
@@ -273,7 +273,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
         {
-            result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+            result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
             if (result != null)
             {
                 // Arithmetic with resources is nonsence

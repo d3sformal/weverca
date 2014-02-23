@@ -158,7 +158,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <returns>see <see cref="PossibleValues"/> for details of possible result.</returns>
         PossibleValues GetConditionResult(FlowOutputSet flowOutputSet, MemoryEntry evaluatedPart)
         {
-            var converter = new BooleanConverter(flowOutputSet);
+            var converter = new BooleanConverter(flowOutputSet.Snapshot);
             var value = converter.EvaluateToBoolean(evaluatedPart);
 
             if (value == null)

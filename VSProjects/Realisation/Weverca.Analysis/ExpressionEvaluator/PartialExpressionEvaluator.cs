@@ -34,6 +34,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
+        /// Gets read-write memory snapshot of context used for fix-point analysis.
+        /// </summary>
+        public SnapshotBase Snapshot
+        {
+            get { return OutSet.Snapshot; }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PartialExpressionEvaluator" /> class.
         /// </summary>
         /// <remarks>
@@ -171,7 +179,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="message">Message of the warning.</param>
         protected void SetWarning(string message)
         {
-            var warning = new AnalysisWarning(flow.CurrentScript.FullName,message, flow.CurrentPartial);
+            var warning = new AnalysisWarning(flow.CurrentScript.FullName, message, flow.CurrentPartial);
             AnalysisWarningHandler.SetWarning(OutSet, warning);
         }
 
@@ -182,7 +190,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <param name="cause">Cause of the warning.</param>
         protected void SetWarning(string message, AnalysisWarningCause cause)
         {
-            var warning = new AnalysisWarning(flow.CurrentScript.FullName,message, flow.CurrentPartial, cause);
+            var warning = new AnalysisWarning(flow.CurrentScript.FullName, message,
+                flow.CurrentPartial, cause);
             AnalysisWarningHandler.SetWarning(OutSet, warning);
         }
 

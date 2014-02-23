@@ -379,13 +379,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 case Operations.Equal:
                 case Operations.GreaterThanOrEqual:
-                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(OutSet, value));
+                    result = OutSet.CreateBool(!TypeConversion.ToNativeBoolean(Snapshot, value));
                     break;
                 case Operations.NotEqual:
                 case Operations.LessThan:
                 case Operations.Or:
                 case Operations.Xor:
-                    result = TypeConversion.ToBoolean(OutSet, value);
+                    result = TypeConversion.ToBoolean(Snapshot, value);
                     break;
                 case Operations.BitAnd:
                 case Operations.ShiftLeft:
@@ -394,10 +394,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.BitOr:
                 case Operations.BitXor:
-                    result = TypeConversion.ToInteger(OutSet, value);
+                    result = TypeConversion.ToInteger(Snapshot, value);
                     break;
                 case Operations.Mod:
-                    if (TypeConversion.ToNativeBoolean(OutSet, value))
+                    if (TypeConversion.ToNativeBoolean(Snapshot, value))
                     {
                         // 0 (null) divided or modulo by anything is always 0
                         result = OutSet.CreateInt(0);
@@ -768,7 +768,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyIntegerValue;
                     break;
                 default:
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         break;
@@ -802,7 +802,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyIntegerValue;
                     break;
                 default:
-                    result = ArithmeticOperation.AbstractFloatArithmetic(OutSet, operation);
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
                     if (result != null)
                     {
                         break;

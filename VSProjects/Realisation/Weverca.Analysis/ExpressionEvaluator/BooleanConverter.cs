@@ -22,9 +22,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private BooleanValue result;
 
         /// <summary>
-        /// Output set of a program point.
+        /// Read-write memory snapshot of context used for fix-point analysis.
         /// </summary>
-        private FlowOutputSet outSet;
+        private SnapshotBase snapshot;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BooleanConverter" /> class.
@@ -36,10 +36,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Initializes a new instance of the <see cref="BooleanConverter" /> class.
         /// </summary>
-        /// <param name="flowOutputSet">Output set of a program point.</param>
-        public BooleanConverter(FlowOutputSet flowOutputSet)
+        /// <param name="snapshotBase">Read-write memory snapshot used for fix-point analysis.</param>
+        public BooleanConverter(SnapshotBase snapshotBase)
         {
-            outSet = flowOutputSet;
+            snapshot = snapshotBase;
         }
 
         /// <summary>
@@ -48,10 +48,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <remarks>
         /// The flow controller changes for every expression, so it must be always called again.
         /// </remarks>
-        /// <param name="flowOutputSet">Output set of a program point available for evaluation.</param>
-        public void SetContext(FlowOutputSet flowOutputSet)
+        /// <param name="snapshotBase">Read-write memory snapshot used for fix-point analysis.</param>
+        public void SetContext(SnapshotBase snapshotBase)
         {
-            outSet = flowOutputSet;
+            snapshot = snapshotBase;
         }
 
         #region Boolean conversion
@@ -75,7 +75,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outSet.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -110,7 +110,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outSet.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -132,7 +132,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outSet.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -192,14 +192,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    return outSet.CreateBool(false);
+                    return snapshot.CreateBool(false);
                 }
             }
             else
             {
                 if (isNotFalse)
                 {
-                    return outSet.CreateBool(true);
+                    return snapshot.CreateBool(true);
                 }
                 else
                 {
@@ -224,7 +224,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outSet.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -277,7 +277,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        return outSet.AnyBooleanValue;
+                        return snapshot.AnyBooleanValue;
                     }
                 }
                 else
@@ -321,7 +321,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        return outSet.AnyBooleanValue;
+                        return snapshot.AnyBooleanValue;
                     }
                 }
             }
@@ -344,7 +344,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     if (rightBoolean.Value)
                     {
-                        return outSet.CreateBool(false);
+                        return snapshot.CreateBool(false);
                     }
                     else
                     {
@@ -358,7 +358,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outSet.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -407,7 +407,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        return outSet.AnyBooleanValue;
+                        return snapshot.AnyBooleanValue;
                     }
                 }
                 else
@@ -451,7 +451,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                     else
                     {
-                        return outSet.AnyBooleanValue;
+                        return snapshot.AnyBooleanValue;
                     }
                 }
             }
@@ -474,7 +474,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     if (rightBoolean.Value)
                     {
-                        return outSet.CreateBool(false);
+                        return snapshot.CreateBool(false);
                     }
                     else
                     {
@@ -488,7 +488,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return outSet.AnyBooleanValue;
+                return snapshot.AnyBooleanValue;
             }
         }
 
@@ -518,7 +518,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericNumericValue<T>(NumericValue<T> value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         #endregion Numeric values
@@ -526,7 +526,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitStringValue(StringValue value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         #endregion Scalar values
@@ -536,13 +536,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         /// <inheritdoc />
         public override void VisitAssociativeArray(AssociativeArray value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         #endregion Compound values
@@ -550,13 +550,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitResourceValue(ResourceValue value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         /// <inheritdoc />
         public override void VisitUndefinedValue(UndefinedValue value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         #endregion Concrete values
@@ -566,7 +566,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitGenericIntervalValue<T>(IntervalValue<T> value)
         {
-            TypeConversion.TryConvertToBoolean(outSet, value, out result);
+            TypeConversion.TryConvertToBoolean(snapshot, value, out result);
         }
 
         #endregion Interval values
@@ -594,7 +594,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyObjectValue(AnyObjectValue value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         /// <inheritdoc />
@@ -608,7 +608,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
         {
-            result = TypeConversion.ToBoolean(outSet, value);
+            result = TypeConversion.ToBoolean(snapshot, value);
         }
 
         #endregion Abstract values

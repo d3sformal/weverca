@@ -116,7 +116,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else if (unaryOperation == Operations.BoolCast)
             {
-                booleanConverter.SetContext(OutSet);
+                booleanConverter.SetContext(Snapshot);
                 return booleanConverter.Evaluate(operand);
             }
 
@@ -148,7 +148,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else if (unaryOperation == Operations.BoolCast)
             {
-                booleanConverter.SetContext(OutSet);
+                booleanConverter.SetContext(Snapshot);
                 return new MemoryEntry(booleanConverter.Evaluate(entry));
             }
 
@@ -246,7 +246,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = TypeConversion.ToFloat(OutSet, value);
+                    result = TypeConversion.ToFloat(Snapshot, value);
                     break;
                 default:
                     base.VisitBooleanValue(value);
@@ -345,7 +345,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = TypeConversion.ToFloat(OutSet, value);
+                    result = TypeConversion.ToFloat(Snapshot, value);
                     break;
                 default:
                     base.VisitLongintValue(value);
@@ -452,7 +452,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = TypeConversion.ToFloat(OutSet, value);
+                    result = TypeConversion.ToFloat(Snapshot, value);
                     break;
                 default:
                     base.VisitStringValue(value);
@@ -522,7 +522,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = value;
                     break;
                 case Operations.ArrayCast:
-                    result = TypeConversion.ToArray(OutSet, value);
+                    result = TypeConversion.ToArray(Snapshot, value);
                     break;
                 default:
                     base.VisitObjectValue(value);
@@ -546,15 +546,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyValue;
                     break;
                 case Operations.LogicNegation:
-                    var booleanValue = TypeConversion.ToBoolean(OutSet, value);
+                    var booleanValue = TypeConversion.ToBoolean(Snapshot, value);
                     result = OutSet.CreateBool(!booleanValue.Value);
                     break;
                 case Operations.Int32Cast:
-                    result = TypeConversion.ToInteger(OutSet, value);
+                    result = TypeConversion.ToInteger(Snapshot, value);
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = TypeConversion.ToFloat(OutSet, value);
+                    result = TypeConversion.ToFloat(Snapshot, value);
                     break;
                 case Operations.Print:
                     // The operator convert value to string and print it. The string value is not used
@@ -568,7 +568,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyValue;
                     break;
                 case Operations.ObjectCast:
-                    result = TypeConversion.ToObject(OutSet, value);
+                    result = TypeConversion.ToObject(Snapshot, value);
                     break;
                 case Operations.ArrayCast:
                     result = value;
@@ -642,7 +642,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     break;
                 case Operations.FloatCast:
                 case Operations.DoubleCast:
-                    result = TypeConversion.ToFloat(OutSet, value);
+                    result = TypeConversion.ToFloat(Snapshot, value);
                     break;
                 default:
                     if (PerformUsualOperation(value))
@@ -1213,10 +1213,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(false);
                     return true;
                 case Operations.ObjectCast:
-                    result = TypeConversion.ToObject(OutSet, value);
+                    result = TypeConversion.ToObject(Snapshot, value);
                     return true;
                 case Operations.ArrayCast:
-                    result = TypeConversion.ToArray(OutSet, value);
+                    result = TypeConversion.ToArray(Snapshot, value);
                     return true;
                 default:
                     return false;
