@@ -35,10 +35,10 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
 
-        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> typeNames, VariableIdentifier field)
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(MemoryEntry typeNames, VariableIdentifier field)
         {
             var variables = new List<string>();
-            foreach (var typeName in typeNames)
+            foreach (var typeName in TypeNames(typeNames))
             {
                 var varName = string.Format("{0}::{1}", typeName, field.DirectName);
                 variables.Add(varName);
@@ -86,7 +86,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return value;
         }
 
-        public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
+        public IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
         {
             return from StringValue possible in typeValue.PossibleValues select new GenericQualifiedName(new QualifiedName(new Name(possible.Value)));
         }
@@ -618,7 +618,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             throw new NotImplementedException();
         }
 
-        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field)
+        public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(MemoryEntry possibleTypes, MemoryEntry field)
         {
             throw new NotImplementedException();
         }

@@ -63,9 +63,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             else
             {
                 var typeValue = Self.Value.ReadMemory(OutSnapshot);
-                var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
-
-                LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName);
+                LValue = Services.Evaluator.ResolveIndirectStaticField(typeValue, FieldName);
             }
         }
 
@@ -129,9 +127,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             else
             {
                 var typeValue = Self.Value.ReadMemory(OutSnapshot);
-                var ResolvedTypeNames = Services.Evaluator.TypeNames(typeValue);
-
-                LValue = Services.Evaluator.ResolveIndirectStaticField(ResolvedTypeNames, FieldName.Value.ReadMemory(OutSnapshot));
+                LValue = Services.Evaluator.ResolveIndirectStaticField(typeValue, FieldName.Value.ReadMemory(OutSnapshot));
             }
         }
 

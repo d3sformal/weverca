@@ -73,13 +73,6 @@ namespace Weverca.AnalysisFramework.Expressions
 
 
         /// <summary>
-        /// Resolves possible names of type identified by value
-        /// </summary>
-        /// <param name="typeValue">Value representing possible names of type</param>
-        /// <returns>Possible type names</returns>
-        public abstract IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue);
-
-        /// <summary>
         /// Creates member identifier of possible names from the given values
         /// </summary>
         /// <param name="memberRepresentation">List of values used as member</param>
@@ -125,7 +118,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="possibleTypes">Indirect types which static field is resolved</param>
         /// <param name="field">Specifier of resolved field</param>
         /// <returns>Snapshot entry for static field</returns>
-        public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, VariableIdentifier field);
+        public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(MemoryEntry possibleTypes, VariableIdentifier field);
 
 
         /// <summary>
@@ -142,7 +135,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="possibleTypes">Indirect types which static field is resolved</param>
         /// <param name="field">Possible fields</param>
         /// <returns>Snapshot entry for static field</returns>
-        public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field);
+        public abstract ReadWriteSnapshotEntryBase ResolveIndirectStaticField(MemoryEntry possibleTypes, MemoryEntry field);
 
         /// <summary>
         /// Resolves value at indexedValue[index]

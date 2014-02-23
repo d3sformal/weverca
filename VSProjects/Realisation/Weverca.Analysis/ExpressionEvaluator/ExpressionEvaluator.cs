@@ -1279,7 +1279,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                 var names = new List<QualifiedName>();
                 names.Add(resolvedTypes.First());
-                return resolveStaticVariable(names, field);
+                return resolveStaticVariable(names, field,true);
             }
             else
             {
@@ -1289,11 +1289,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         /// <inheritdoc />
         public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(
-            IEnumerable<GenericQualifiedName> possibleTypes, VariableIdentifier field)
+            MemoryEntry possibleTypes, VariableIdentifier field)
         {
             var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             var classes = new List<QualifiedName>();
-            foreach (var name in possibleTypes)
+            bool isAllwasConcrete = true;
+            foreach (var name in typeNames(possibleTypes,out isAllwasConcrete))
             {
                 if (!analyzer.ExistClass(name.QualifiedName))
                 {
@@ -1317,11 +1318,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
             }
 
-            return resolveStaticVariable(classes, field);
+            return resolveStaticVariable(classes, field, isAllwasConcrete);
         }
 
         private ReadWriteSnapshotEntryBase resolveStaticVariable(List<QualifiedName> classes,
-            VariableIdentifier field)
+            VariableIdentifier field, bool isAllwasConcreteClass)
         {
             var names = new HashSet<string>();
             var fieldNames = new HashSet<string>();
@@ -1388,7 +1389,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (field.PossibleNames.Length > 0 && fieldNames.Count == 0)
             {
-                return getStaticVariableSink();
+                if (isAllwasConcreteClass == true)
+                {
+                    return getStaticVariableSink();
+                }
+                else
+                {
+                    var snapshotEntry = OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+                    snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.AnyValue));
+                    return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+                }
             }
             else
             {
@@ -1434,9 +1444,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        /// <inheritdoc />
-        public override IEnumerable<GenericQualifiedName> TypeNames(MemoryEntry typeValue)
+
+        private IEnumerable<GenericQualifiedName> typeNames(MemoryEntry typeValue,out bool isAllwasConcrete)
         {
+            isAllwasConcrete = true;
             var result = new List<GenericQualifiedName>();
             foreach (var value in typeValue.PossibleValues)
             {
@@ -1452,6 +1463,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         result.Add(new GenericQualifiedName(visitor.className));
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        isAllwasConcrete = false;
                         break;
                 }
             }
@@ -1468,7 +1480,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         /// <inheritdoc />
         public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(
-            IEnumerable<GenericQualifiedName> possibleTypes, MemoryEntry field)
+            MemoryEntry possibleTypes, MemoryEntry field)
         {
             var identifier = new VariableIdentifier(this.VariableNames(field));
             return ResolveIndirectStaticField(possibleTypes, identifier);
