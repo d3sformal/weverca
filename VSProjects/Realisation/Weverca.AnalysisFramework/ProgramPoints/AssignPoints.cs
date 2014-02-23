@@ -44,7 +44,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Value = ROperand.Value;
-
             Services.Evaluator.Assign(LOperand.LValue, Value.ReadMemory(OutSnapshot));
         }
 

@@ -80,6 +80,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <inheritdoc />
+        public override void VisitAnyValue(AnyValue value)
+        {
+            Result = StaticObjectVisitorResult.MULTIPLE_RESULTS;
+        }
+
+        /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
             className = OutSet.ObjectType(value).Declaration.QualifiedName;

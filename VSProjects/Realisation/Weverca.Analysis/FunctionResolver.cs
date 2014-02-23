@@ -97,9 +97,6 @@ namespace Weverca.Analysis
 
         #region function calls
 
-       
-       
-
         /// <inheritdoc />
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
@@ -168,7 +165,7 @@ namespace Weverca.Analysis
         public override void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
             var calledObjectValue = calledObject.ReadMemory(InSnapshot);
-
+            HashSet<QualifiedName> calledClasses = new HashSet<QualifiedName>();
             foreach (var value in calledObjectValue.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(Flow);
@@ -179,39 +176,46 @@ namespace Weverca.Analysis
                         setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
-                        staticMethodCall(visitor.className, name, arguments);
+                        calledClasses.Add(visitor.className);
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
                         break;
                 }
             }
+            staticMethodCall(calledClasses, name, arguments);
         }
 
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
             var resolvedTypes = ResolveType(typeName, Flow,OutSet, Element);
-            foreach (var resolvedType in resolvedTypes)
-            {
-                staticMethodCall(resolvedType, name, arguments);
-            }
+            staticMethodCall(resolvedTypes, name, arguments);
         }
 
-        private void staticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
+        private void staticMethodCall(IEnumerable<QualifiedName> typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            var types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, Flow, Element);
+            List<TypeValue> types = new List<TypeValue>();
+            foreach (var type in typeName)
+            {
+                types.AddRange(ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(type, Flow, Element));
+            }
+            Dictionary<object, FunctionValue> calledMethods = new Dictionary<object, FunctionValue>();
             foreach (var type in types)
             {
                 var methods = resolveStaticMethod(type, name, arguments);
-                setCallBranching(methods);
+                foreach (var entry in methods)
+                {
+                    calledMethods[entry.Key] = entry.Value;
+                }
             }
+            setCallBranching(calledMethods);
         }
 
         /// <inheritdoc />
         public override void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             var calledObjectValue = calledObject.ReadMemory(InSnapshot);
-
+            HashSet<QualifiedName> typeNames = new HashSet<QualifiedName>();
             foreach (var value in calledObjectValue.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(Flow);
@@ -222,29 +226,36 @@ namespace Weverca.Analysis
                         setWarning("Cannot call method on non object ", AnalysisWarningCause.METHOD_CALL_ON_NON_OBJECT_VARIABLE);
                         break;
                     case StaticObjectVisitorResult.ONE_RESULT:
-                        indirectStaticMethodCall(visitor.className, name, arguments);
+                        typeNames.Add(visitor.className);
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+
                         break;
                 }
             }
+            indirectStaticMethodCall(typeNames, name, arguments);
         }
 
         /// <inheritdoc />
         public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
         {
+            HashSet<QualifiedName> typeNames = new HashSet<QualifiedName>();
             foreach (var resolvedType in ResolveType(typeName, Flow, OutSet, Element))
             {
-                indirectStaticMethodCall(resolvedType, name, arguments);
+                typeNames.Add(resolvedType);
             }
+            indirectStaticMethodCall(typeNames, name, arguments);
         }
 
-        private void indirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
+        private void indirectStaticMethodCall(IEnumerable<QualifiedName> typeName, MemoryEntry name, MemoryEntry[] arguments)
         {
             var functions = new Dictionary<object, FunctionValue>();
-
             var functionNames = getSubroutineNames(name);
-            var types = ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(typeName, Flow, Element);
+            List<TypeValue> types = new List<TypeValue>();
+            foreach (var type in typeName)
+            {
+                types.AddRange(ExpressionEvaluator.ExpressionEvaluator.ResolveSourceOrNativeType(type, Flow, Element));
+            }
             foreach (var type in types)
             {
                 foreach (var functionName in functionNames)
@@ -747,6 +758,11 @@ namespace Weverca.Analysis
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
+            if (functions.Count == 0)
+            {
+                fatalError(true);
+            }
+            
             Dictionary<object, FunctionValue> newFunctions = new Dictionary<object, FunctionValue>();
             foreach (var entry in functions)
             {
