@@ -472,10 +472,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <returns>
         /// Resolved functions
         /// </returns>
-        /// <exception cref="System.NotImplementedException">Deprecated - should not be used in analysis</exception>
         protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
-            throw new NotImplementedException("Deprecated - should not be used in analysis");
+            var objectMethods = Weverca.MemoryModels.VirtualReferenceModel.TypeMethodResolver.ResolveMethods(value, this);
+            return Assistant.ResolveMethods(value, methodName, objectMethods);
         }
 
         /// <summary>
