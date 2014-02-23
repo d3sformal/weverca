@@ -344,7 +344,7 @@ namespace Weverca.Parsers
     }
 
     /// <summary>
-    /// Exxcption representing parser error. When this exception occures analysis cannot comtinue.
+    /// Exception representing parser error. When this exception occures analysis cannot comtinue.
     /// </summary>
     public class ParserException : Exception
     {

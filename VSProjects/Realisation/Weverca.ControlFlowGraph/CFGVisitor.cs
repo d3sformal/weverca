@@ -8,6 +8,8 @@ using PHP.Core;
 using PHP.Core.AST;
 using PHP.Core.Parsers;
 using PHP.Core.Reflection;
+using Weverca.Parsers;
+using System.IO;
 
 /* Požadavky na phalanger:
  * 
@@ -570,12 +572,34 @@ namespace Weverca.ControlFlowGraph
             {
                 DirectEdge.MakeNewAndConnect(aboveLoop, underLoop);
             }
-            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
-
+            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, CopyElement(x.CondExpr));
+            
             currentBasicBlock = underLoop;
         }
 
         #endregion
+
+        private Expression CopyElement(Expression e)
+        {
+            StringBuilder s = new StringBuilder("<? ");
+            for (int i = 2; i < e.Position.FirstLine; i++)
+            {
+                s.AppendLine();
+            }
+            for (int i = 1; i < e.Position.FirstOffset; i++)
+            {
+                s.Append(" ");
+            }
+            s.Append(this.graph.globalCode.SourceUnit.GetSourceCode(e.Position));
+            s.Append(" ?>");
+
+            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(graph.File.FullName)),
+                new FullPath(graph.File.FullName));
+            SyntaxParser parser = new SyntaxParser(sourceFile, s.ToString());
+            parser.Parse();
+            return (parser.Ast.Statements[0] as ExpressionStmt).Expression;
+            
+        }
 
         #region switch
 

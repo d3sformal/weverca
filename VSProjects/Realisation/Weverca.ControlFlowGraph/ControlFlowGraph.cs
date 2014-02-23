@@ -10,6 +10,7 @@ using PHP.Core.AST;
 using PHP.Core.Parsers;
 
 using Weverca.Parsers;
+using System.Runtime.Serialization.Formatters.Binary;
 
 
 namespace Weverca.ControlFlowGraph
@@ -512,4 +513,5 @@ namespace Weverca.ControlFlowGraph
         }
         #endregion generatingTextRepresentation
     }
+
 }

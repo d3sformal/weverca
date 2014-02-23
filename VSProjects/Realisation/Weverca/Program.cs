@@ -15,6 +15,7 @@ using PHP.Core;
 
 namespace Weverca
 {
+
     /// <summary>
     /// The program class including <see cref="Main"/> entry point and parsing of command-line arguments
     /// </summary>
@@ -37,6 +38,7 @@ namespace Weverca
         /// <param name="args">arguments: -sa [-mm CopyMM|VrMM] FILENAME [FILENAME] or -metrics FILENAME [FILENAME] ...</param>
         private static void Main(string[] args)
         {
+            
             if (args.Length < 2)
             {
                 Console.WriteLine("Missing argument");
