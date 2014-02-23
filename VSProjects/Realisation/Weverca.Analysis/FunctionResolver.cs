@@ -109,7 +109,8 @@ namespace Weverca.Analysis
         public override void IndirectCall(MemoryEntry name, MemoryEntry[] arguments)
         {
             var functions = new Dictionary<object, FunctionValue>();
-            var functionNames = getSubroutineNames(name);
+            bool isAllwaysConcrete=true;
+            var functionNames = getSubroutineNames(name, out isAllwaysConcrete);
 
             foreach (var functionName in functionNames)
             {
@@ -119,7 +120,11 @@ namespace Weverca.Analysis
                     functions[resolvedFunction.Key] = resolvedFunction.Value;
                 }
             }
-
+            if (isAllwaysConcrete == false)
+            {
+                var method = OutSet.CreateFunction(new Name("anyFunctionCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
+                functions.Add(method, method);
+            }
             setCallBranching(functions);
         }
 
@@ -133,6 +138,11 @@ namespace Weverca.Analysis
             MemoryEntry[] arguments)
         {
             var methods = resolveMethod(calledObject, name, arguments);
+            if (calledObject.ReadMemory(OutSnapshot).PossibleValues.Where(a => (a is AnyValue || a is AnyObjectValue)).Count() > 0)
+            {
+                var method = OutSet.CreateFunction(new Name("anyObjectMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
+                methods.Add(method, method);
+            }
             setCallBranching(methods);
         }
 
@@ -142,8 +152,12 @@ namespace Weverca.Analysis
             MemoryEntry[] arguments)
         {
             var methods = new Dictionary<object, FunctionValue>();
-            var methodNames = getSubroutineNames(name);
-
+            bool isAllwaysConcrete=true;
+            var methodNames = getSubroutineNames(name,out isAllwaysConcrete);
+            if (calledObject.ReadMemory(OutSnapshot).PossibleValues.Where(a => (a is AnyValue || a is AnyObjectValue)).Count() > 0)
+            {
+                isAllwaysConcrete = false;
+            }
             foreach (var methodName in methodNames)
             {
                 var resolvedMethods = resolveMethod(calledObject, methodName, arguments);
@@ -152,7 +166,11 @@ namespace Weverca.Analysis
                     methods[resolvedMethod.Key] = resolvedMethod.Value;
                 }
             }
-
+            if (isAllwaysConcrete == false)
+            {
+                var method = OutSet.CreateFunction(new Name("anyObjectMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
+                methods.Add(method, method);
+            }
             setCallBranching(methods);
         }
 
@@ -212,7 +230,7 @@ namespace Weverca.Analysis
             }
             if (isUnkownObject)
             {
-                var method = OutSet.CreateFunction(new Name("anyObjectMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
+                var method = OutSet.CreateFunction(new Name("anyObjectStaticMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
                 calledMethods.Add(method, method);
             }
             setCallBranching(calledMethods);
@@ -258,7 +276,8 @@ namespace Weverca.Analysis
         private void indirectStaticMethodCall(IEnumerable<QualifiedName> typeName, MemoryEntry name, MemoryEntry[] arguments, bool isUnkownObject)
         {
             var functions = new Dictionary<object, FunctionValue>();
-            var functionNames = getSubroutineNames(name);
+            bool isAllwaysConcrete = true;
+            var functionNames = getSubroutineNames(name, out isAllwaysConcrete);
             List<TypeValue> types = new List<TypeValue>();
             foreach (var type in typeName)
             {
@@ -275,7 +294,7 @@ namespace Weverca.Analysis
                     }
                 }
             }
-            if (isUnkownObject)
+            if (isUnkownObject || isAllwaysConcrete==false)
             {
                 var method = OutSet.CreateFunction(new Name("anyObjectMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
                 functions.Add(method, method);
@@ -884,7 +903,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="functionName"></param>
         /// <returns></returns>
-        private List<QualifiedName> getSubroutineNames(MemoryEntry functionName)
+        private List<QualifiedName> getSubroutineNames(MemoryEntry functionName, out bool IsAlwaysConcrete)
         {
             bool isAlwaysConcrete = true;
             var names = GetFunctionNames(functionName, Flow, out isAlwaysConcrete);
@@ -893,7 +912,7 @@ namespace Weverca.Analysis
             {
                 setWarning("Couldn't resolve all possible calls", AnalysisWarningCause.COULDNT_RESOLVE_ALL_CALLS);
             }
-
+            IsAlwaysConcrete = isAlwaysConcrete;
             var qualifiedNames = new List<QualifiedName>(names.Count);
             foreach (var name in names)
             {
