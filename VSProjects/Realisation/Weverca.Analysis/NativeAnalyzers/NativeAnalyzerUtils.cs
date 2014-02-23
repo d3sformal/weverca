@@ -160,7 +160,7 @@ namespace Weverca.Analysis
         /// <returns>full file name</returns>
         public static string GetCallerScript(FlowOutputSet outSet)
         {
-            return (outSet.GetLocalControlVariable(new VariableName("$currentScript")).ReadMemory(outSet.Snapshot).PossibleValues.First() as StringValue).Value;
+            return (outSet.GetLocalControlVariable(FunctionResolver.currentScript).ReadMemory(outSet.Snapshot).PossibleValues.First() as StringValue).Value;
         }
 
         /// <summary>

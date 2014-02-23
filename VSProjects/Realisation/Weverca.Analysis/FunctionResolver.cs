@@ -21,7 +21,7 @@ namespace Weverca.Analysis
     /// </summary>
     public class FunctionResolver : FunctionResolverBase
     {
-        private static readonly VariableName currentFunctionName = new VariableName("$current_function");
+        private static readonly VariableName currentFunctionName = new VariableName(".currentFunction");
         private NativeFunctionAnalyzer nativeFunctionAnalyzer;
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
@@ -41,6 +41,11 @@ namespace Weverca.Analysis
         /// </summary>
         public static readonly VariableName callDepthName = new VariableName(".callDepth");
 
+        /// <summary>
+        /// Readonly variable name for storing current script name
+        /// </summary>
+        public static readonly VariableName currentScript = new VariableName(".currentScript");
+        
         /// <summary>
         /// Readonly variable name for storing type of called object
         /// </summary>
@@ -439,7 +444,7 @@ namespace Weverca.Analysis
                     List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
                     OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
                 }
-                OutSet.GetLocalControlVariable(new VariableName("$currentScript")).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
+                OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
         }
 
