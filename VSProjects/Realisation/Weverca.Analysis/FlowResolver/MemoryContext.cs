@@ -232,11 +232,15 @@ namespace Weverca.Analysis.FlowResolver
 
         bool ToRemove(Value value, FloatIntervalValue interval)
         {
-            FloatValue floatValue = TypeConversion.ToFloat(valueFactory, value);
+            var visitor = new ToFloatConversionVisitor(valueFactory);
+            value.Accept(visitor);
+            var floatValue = visitor.Result;
+
             if (floatValue != null)
             {
                 return floatValue.Value < interval.Start || floatValue.Value > interval.End;
             }
+
             return false;
         }
 
