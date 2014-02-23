@@ -812,7 +812,7 @@ namespace Weverca.Analysis
                     }
                 }
             }
-            if (max >= 2)
+            if (max >= 3)
             {
                 useSharedFunctions = true;
             }

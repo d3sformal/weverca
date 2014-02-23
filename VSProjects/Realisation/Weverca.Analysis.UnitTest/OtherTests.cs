@@ -530,5 +530,51 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(outset==null);
         }
 
+
+        string FibonaciTest = @"
+        function f($i)
+        {
+            if($i<2)
+                return 1;
+            else
+            {
+                return f($i-1)+f($i-2);
+            }
+        }
+        $result=f($_POST[""a""]);
+           ";
+
+        [TestMethod]
+        public void Fibonaci()
+        {
+            var outset = TestUtils.Analyze(FibonaciTest);
+            Debug.Assert(outset.ReadVariable(new VariableIdentifier("result")).ReadMemory(outset.Snapshot).PossibleValues.Where(a=>(a is AnyFloatValue)).Count()>0);
+        }
+
+        string FibonaciTest2 = @"
+       function f($i)
+        {
+            if($i<2)
+                return 1;
+            else if($i==2)
+			{
+				return 2;
+			}
+			else
+            {
+                return f($i-1)+f($i-2);
+            }
+        }
+        $result=f(4);
+           ";
+
+        [TestMethod]
+        public void Fibonaci2()
+        {
+            var result = TestUtils.ResultTest(FibonaciTest2);
+            TestUtils.testType(result, typeof(IntegerValue));
+            TestUtils.testValue(result, 5);
+        }
+
     }
 }
