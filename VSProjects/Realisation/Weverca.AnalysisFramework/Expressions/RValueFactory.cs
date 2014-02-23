@@ -178,11 +178,6 @@ namespace Weverca.AnalysisFramework.Expressions
                 );
         }
 
-        public override void VisitBinaryStringLiteral(BinaryStringLiteral x)
-        {
-            throw new NotImplementedException("TODO: what is binary string literal ?");
-        }
-
         public override void VisitNullLiteral(NullLiteral x)
         {
             visitConstantNularyElement(x,
@@ -578,7 +573,7 @@ namespace Weverca.AnalysisFramework.Expressions
                 }
                 else
                 {
-                    throw new NotImplementedException("Unknown array construct");
+                    throw new NotSupportedException("Unknown array construct: " + x.Array);
                 }
             }
 
@@ -608,7 +603,7 @@ namespace Weverca.AnalysisFramework.Expressions
                     var refItem = item as RefItem;
                     if (refItem != null)
                     {
-                        throw new NotImplementedException();
+                        throw new NotSupportedException("Array RefItem is not supported now");
                     }
                     else
                     {

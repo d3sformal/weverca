@@ -367,7 +367,7 @@ namespace Weverca.AnalysisFramework
             return base.ToString() + " " + GetHashCode();
         }
 
-        internal string ChildrenToString
+        internal string ToStringChildren
         {
             get
             {
@@ -375,7 +375,7 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        internal string ParentsToString
+        internal string ToStringParents
         {
             get
             {

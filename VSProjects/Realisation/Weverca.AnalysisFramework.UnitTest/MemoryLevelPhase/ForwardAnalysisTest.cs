@@ -1579,6 +1579,21 @@ $result=$arr[0]::f();
 
 ".AssertVariable("result").HasValues("X::f()");
 
+        readonly static TestCase WhileCycleComputation_CASE = @"
+$i = 1;
+while ($i <= 2) {
+ $b = $i;
+ $i++;
+}
+
+".AssertVariable("b").HasValues(1,2);
+
+        [TestMethod]
+        public void WhileCycleComputation()
+        {
+            AnalysisTestUtils.RunTestCase(WhileCycleComputation_CASE);
+        }
+
         [TestMethod]
         public void StaticCallOnObjectInArray()
         {

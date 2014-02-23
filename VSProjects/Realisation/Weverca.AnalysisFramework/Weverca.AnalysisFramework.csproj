@@ -35,14 +35,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CatchBlockDescription.cs" />
-    <Compile Include="Expressions\AliasValueFactory.cs" />
     <Compile Include="Expressions\Converter.cs" />
     <Compile Include="Expressions\ElementExpander.cs" />
     <Compile Include="Expressions\ExpressionEvaluatorBase.cs" />
     <Compile Include="Expressions\FlowResolverBase.cs" />
     <Compile Include="Expressions\FunctionResolverBase.cs" />
     <Compile Include="Expressions\LiteralValueFactory.cs" />
-    <Compile Include="Expressions\LValueFactory.cs" />
     <Compile Include="Expressions\PostfixExpression.cs" />
     <Compile Include="Expressions\RValueFactory.cs" />
     <Compile Include="ForwardAnalysisServices.cs" />

@@ -37,12 +37,14 @@ namespace Weverca.AnalysisFramework.Expressions
         private readonly Dictionary<ProgramPointBase, ProgramPointBase[]> _substitutions
             = new Dictionary<ProgramPointBase, ProgramPointBase[]>();
 
-        private readonly LValueFactory _lValueCreator;
-
+        /// <summary>
+        /// Factory used for creating RValues
+        /// </summary>
         private readonly RValueFactory _rValueCreator;
 
-        private readonly AliasValueFactory _aliasValueCreator;
-
+        /// <summary>
+        /// Types which program points are not implicitly created
+        /// </summary>
         private static readonly Type[] FlowOmittedElements = new Type[]
         {
             typeof(ActualParam), typeof(FormalParam), typeof(DirectTypeRef), typeof(IndirectTypeRef)
@@ -53,17 +55,25 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         private ElementExpander()
         {
-            _lValueCreator = new LValueFactory(this);
             _rValueCreator = new RValueFactory(this);
-            _aliasValueCreator = new AliasValueFactory(this);
         }
 
+        /// <summary>
+        /// Expand given statement into program point chain
+        /// </summary>
+        /// <param name="statement">Expanded statement</param>
         private void Expand(LangElement statement)
         {
             _statement = statement;
             statement.VisitMe(this);
         }
 
+        /// <summary>
+        /// Expand given statement into program point chain
+        /// </summary>
+        /// <param name="statement">Expanded statement</param>
+        /// <param name="onPointCreated">Handler called for every created program point</param>
+        /// <returns>Created program poitn chain</returns>
         public static ProgramPointBase[] ExpandStatement(LangElement statement,
             OnPointCreated onPointCreated)
         {
@@ -79,10 +89,15 @@ namespace Weverca.AnalysisFramework.Expressions
             return result;
         }
 
-        private IEnumerable<ProgramPointBase> createPointsChain(IEnumerable<LangElement> orderedPartialas)
+        /// <summary>
+        /// Create program point chain from partials orderd according to program flow
+        /// </summary>
+        /// <param name="orderedPartials">Partials that are base for created program points</param>
+        /// <returns>Created program point chain</returns>
+        private IEnumerable<ProgramPointBase> createPointsChain(IEnumerable<LangElement> orderedPartials)
         {
             ProgramPointBase lastPoint = null;
-            foreach (var partial in orderedPartialas)
+            foreach (var partial in orderedPartials)
             {
                 //skip all flow omitted lang elements
                 if (FlowOmittedElements.Contains(partial.GetType()))
@@ -160,6 +175,11 @@ namespace Weverca.AnalysisFramework.Expressions
             _substitutions.Add(substitutedPoint, chain);
         }
 
+        /// <summary>
+        /// Register created program points with given handler
+        /// </summary>
+        /// <param name="programPoints">Created program points</param>
+        /// <param name="onPointCreated">Registering handler</param>
         private static void registerCreatedPoints(ProgramPointBase[] programPoints, OnPointCreated onPointCreated)
         {
             var pointSet = new HashSet<ProgramPointBase>(programPoints);
@@ -168,18 +188,12 @@ namespace Weverca.AnalysisFramework.Expressions
                 onPointCreated(point);
             }
         }
-
-        private static int getNearestFlowPartial(Postfix postfix, int startIndex)
-        {
-            while (startIndex < postfix.Length
-                && FlowOmittedElements.Contains(postfix.GetElement(startIndex).GetType()))
-            {
-                ++startIndex;
-            }
-
-            return startIndex;
-        }
-
+        
+        /// <summary>
+        /// Get program point created for given partial
+        /// </summary>
+        /// <param name="partial">Partial of searched program point</param>
+        /// <returns>Created program point</returns>
         private ProgramPointBase GetProgramPoint(LangElement partial)
         {
             return _programPoints[partial];
@@ -187,6 +201,11 @@ namespace Weverca.AnalysisFramework.Expressions
 
         #region Program point creation
 
+        /// <summary>
+        /// Creates RValue from given element
+        /// </summary>
+        /// <param name="el">Base element from created RValue</param>
+        /// <returns>Created RValue</returns>
         internal ValuePoint CreateRValue(LangElement el)
         {
             if (el == null)
@@ -206,39 +225,49 @@ namespace Weverca.AnalysisFramework.Expressions
             return result;
         }
 
+        /// <summary>
+        /// Creates LValue from given element
+        /// </summary>
+        /// <param name="el">Base element from created LValue</param>
+        /// <returns>Created LValue</returns>
         internal LValuePoint CreateLValue(LangElement el)
         {
-            var result = _lValueCreator.CreateValue(el);
-            _programPoints.Add(el, result);
+            var result = CreateRValue(el) as LValuePoint;
+
+            if (result == null)
+                throw new NotSupportedException("Element " + el + " is not supported LValue");
 
             return result;
         }
 
+        /// <summary>
+        /// Creates AliasValue from given element
+        /// </summary>
+        /// <param name="el">Base element from created AliasValue</param>
+        /// <returns>Created AliasValue</returns>
         internal ValuePoint CreateAliasValue(LangElement el)
         {
-            var result = _aliasValueCreator.CreateValue(el);
+            var result = CreateRValue(el) as ValuePoint;
 
-            if (_programPoints.ContainsKey(el))
-            {
-                //aliased value can be created as RValue (it will be added twice)
-                if (_programPoints[el] != result)
-                {
-                    throw new NotSupportedException("Cannot add two different program point to single element");
-                }
-            }
-            else
-            {
-                _programPoints.Add(el, result);
-            }
+            if (result == null)
+                throw new NotSupportedException("Element " + el + " is not supported AliasValue");
 
             return result;
         }
 
+        /// <summary>
+        /// Register created program point
+        /// </summary>
+        /// <param name="point">Registered program point</param>
         internal void Register(ProgramPointBase point)
         {
             _programPoints.Add(point.Partial, point);
         }
 
+        /// <summary>
+        /// Set result of statement expansion
+        /// </summary>
+        /// <param name="point">Statement expansion</param>
         private void Result(ProgramPointBase point)
         {
             Register(point);
@@ -247,7 +276,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Set result from created rvalue (doesn't add result twice into result)
         /// </summary>
-        /// <param name="el"></param>
+        /// <param name="el">Result</param>
         private void RValueResult(LangElement el)
         {
             //result is added via creation call
