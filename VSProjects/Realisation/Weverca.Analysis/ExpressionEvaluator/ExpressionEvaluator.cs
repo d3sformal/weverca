@@ -1430,7 +1430,16 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var newNames = CheckVisibility(types, new VariableIdentifier(fieldNames), true);
                     if (newNames.Count() == 0)
                     {
-                        return getStaticVariableSink();
+                        if (isAllwasConcreteClass == true)
+                        {
+                            return getStaticVariableSink();
+                        }
+                        else
+                        {
+                            var snapshotEntry = OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+                            snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.AnyValue));
+                            return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+                        }
                     }
 
                     if (newNames.Count() < fieldNames.Count)
