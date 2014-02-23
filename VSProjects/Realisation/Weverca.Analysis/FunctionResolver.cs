@@ -47,7 +47,7 @@ namespace Weverca.Analysis
         /// Readonly variable name for storing current script name
         /// </summary>
         public static readonly VariableName currentScript = new VariableName(".currentScript");
-        
+
         /// <summary>
         /// Readonly variable name for storing type of called object
         /// </summary>
@@ -166,6 +166,7 @@ namespace Weverca.Analysis
         {
             var calledObjectValue = calledObject.ReadMemory(InSnapshot);
             HashSet<QualifiedName> calledClasses = new HashSet<QualifiedName>();
+            bool unknownObject = false;
             foreach (var value in calledObjectValue.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(Flow);
@@ -179,20 +180,21 @@ namespace Weverca.Analysis
                         calledClasses.Add(visitor.className);
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
+                        unknownObject = true;
                         break;
                 }
             }
-            staticMethodCall(calledClasses, name, arguments);
+            staticMethodCall(calledClasses, name, arguments, unknownObject);
         }
 
         /// <inheritdoc />
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
-            var resolvedTypes = ResolveType(typeName, Flow,OutSet, Element);
-            staticMethodCall(resolvedTypes, name, arguments);
+            var resolvedTypes = ResolveType(typeName, Flow, OutSet, Element);
+            staticMethodCall(resolvedTypes, name, arguments, false);
         }
 
-        private void staticMethodCall(IEnumerable<QualifiedName> typeName, QualifiedName name, MemoryEntry[] arguments)
+        private void staticMethodCall(IEnumerable<QualifiedName> typeName, QualifiedName name, MemoryEntry[] arguments, bool isUnkownObject)
         {
             List<TypeValue> types = new List<TypeValue>();
             foreach (var type in typeName)
@@ -208,6 +210,11 @@ namespace Weverca.Analysis
                     calledMethods[entry.Key] = entry.Value;
                 }
             }
+            if (isUnkownObject)
+            {
+                var method = OutSet.CreateFunction(new Name("anyObjectMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
+                calledMethods.Add(method, method);
+            }
             setCallBranching(calledMethods);
         }
 
@@ -216,6 +223,7 @@ namespace Weverca.Analysis
         {
             var calledObjectValue = calledObject.ReadMemory(InSnapshot);
             HashSet<QualifiedName> typeNames = new HashSet<QualifiedName>();
+            bool unknownObject = false;
             foreach (var value in calledObjectValue.PossibleValues)
             {
                 var visitor = new StaticObjectVisitor(Flow);
@@ -229,11 +237,11 @@ namespace Weverca.Analysis
                         typeNames.Add(visitor.className);
                         break;
                     case StaticObjectVisitorResult.MULTIPLE_RESULTS:
-
+                        unknownObject = true;
                         break;
                 }
             }
-            indirectStaticMethodCall(typeNames, name, arguments);
+            indirectStaticMethodCall(typeNames, name, arguments, unknownObject);
         }
 
         /// <inheritdoc />
@@ -244,10 +252,10 @@ namespace Weverca.Analysis
             {
                 typeNames.Add(resolvedType);
             }
-            indirectStaticMethodCall(typeNames, name, arguments);
+            indirectStaticMethodCall(typeNames, name, arguments, false);
         }
 
-        private void indirectStaticMethodCall(IEnumerable<QualifiedName> typeName, MemoryEntry name, MemoryEntry[] arguments)
+        private void indirectStaticMethodCall(IEnumerable<QualifiedName> typeName, MemoryEntry name, MemoryEntry[] arguments, bool isUnkownObject)
         {
             var functions = new Dictionary<object, FunctionValue>();
             var functionNames = getSubroutineNames(name);
@@ -267,8 +275,17 @@ namespace Weverca.Analysis
                     }
                 }
             }
-
+            if (isUnkownObject)
+            {
+                var method = OutSet.CreateFunction(new Name("anyObjectMethodCall"), new NativeAnalyzer(new NativeAnalyzerMethod(anyObjectMethodCall), Element));
+                functions.Add(method, method);
+            }
             setCallBranching(functions);
+        }
+
+        private void anyObjectMethodCall(FlowController flow)
+        {
+            flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.AnyValue));
         }
 
         /// <summary>
@@ -279,7 +296,7 @@ namespace Weverca.Analysis
         /// <param name="OutSet">FlowOutputSet</param>
         /// <param name="element">element, where the call apears</param>
         /// <returns>resolved QualifiedNames</returns>
-        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName,FlowController flow, FlowOutputSet OutSet, LangElement element)
+        public static IEnumerable<QualifiedName> ResolveType(QualifiedName typeName, FlowController flow, FlowOutputSet OutSet, LangElement element)
         {
             List<QualifiedName> result = new List<QualifiedName>();
             if (typeName.Name.Value == "self" || typeName.Name.Value == "parent")
@@ -307,7 +324,7 @@ namespace Weverca.Analysis
                             }
                             else
                             {
-                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"Cannot acces parrent:: current class has no parrent", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
+                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces parrent:: current class has no parrent", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
                             }
                         }
                     }
@@ -392,7 +409,7 @@ namespace Weverca.Analysis
                     includedFiles.WriteMemory(OutSnapshot, new MemoryEntry(result));
                 }
                 else
-                { 
+                {
                     //eval
                     increaseEvalDepth(OutSet);
                 }
@@ -457,7 +474,7 @@ namespace Weverca.Analysis
                     List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(calledFunctionsName).ReadMemory(caller.OutSnapshot).PossibleValues);
                     OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
                 }
-                else 
+                else
                 {
                     OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateInfo(new NumberOfCalledFunctions<FunctionValue>(thisFunction, 1))));
                 }
@@ -535,16 +552,16 @@ namespace Weverca.Analysis
         private void increaseEvalDepth(FlowOutputSet outSet)
         {
             List<Value> result = new List<Value>();
-            result.AddRange(Flow.ExpressionEvaluator.BinaryEx(outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot), Operations.Add, new MemoryEntry(outSet.CreateInt(1))).PossibleValues);            
-            outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot,new MemoryEntry(result));
+            result.AddRange(Flow.ExpressionEvaluator.BinaryEx(outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot), Operations.Add, new MemoryEntry(outSet.CreateInt(1))).PossibleValues);
+            outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
 
         private void decreaseEvalDepth(FlowOutputSet outSet)
         {
-            List<Value> result=new List<Value>();
+            List<Value> result = new List<Value>();
             result.AddRange(Flow.ExpressionEvaluator.BinaryEx(outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot), Operations.Sub, new MemoryEntry(outSet.CreateInt(1))).PossibleValues);
-            outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot,new MemoryEntry(result));
+            outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
 
@@ -762,7 +779,7 @@ namespace Weverca.Analysis
             {
                 fatalError(true);
             }
-            
+
             Dictionary<object, FunctionValue> newFunctions = new Dictionary<object, FunctionValue>();
             foreach (var entry in functions)
             {
@@ -869,7 +886,7 @@ namespace Weverca.Analysis
         /// <returns></returns>
         private List<QualifiedName> getSubroutineNames(MemoryEntry functionName)
         {
-            bool isAlwaysConcrete=true;
+            bool isAlwaysConcrete = true;
             var names = GetFunctionNames(functionName, Flow, out isAlwaysConcrete);
 
             if (isAlwaysConcrete == false)
@@ -918,16 +935,16 @@ namespace Weverca.Analysis
             {
                 var function = OutSet.CreateFunction(name.Name,
                     new NativeAnalyzer(nativeFunctionAnalyzer.GetInstance(name), Flow.CurrentPartial));
-                
+
                 result[function.DeclaringElement] = function;
             }
             else
             {
                 var functions = OutSet.ResolveFunction(name);
-                
+
                 foreach (var function in functions)
                 {
-                    
+
                     result[function.DeclaringElement] = function;
                 }
             }
@@ -950,7 +967,7 @@ namespace Weverca.Analysis
             {
                 result[method.DeclaringElement] = method;
             }
-            
+
             if (result.Count == 0)
             {
                 setWarning("Method " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
@@ -1018,7 +1035,7 @@ namespace Weverca.Analysis
             var enumerator = callPoint.Arguments.GetEnumerator();
             int argMin = signature.FormalParams.Count;
             int argMax = signature.FormalParams.Count;
-            for (int i = signature.FormalParams.Count-1; i >= 0; i--)
+            for (int i = signature.FormalParams.Count - 1; i >= 0; i--)
             {
                 if (signature.FormalParams[i].InitValue == null)
                 {
@@ -1028,7 +1045,7 @@ namespace Weverca.Analysis
             }
             if (argMin > callPoint.Arguments.Count() || argMax < callPoint.Arguments.Count())
             {
-                AnalysisWarningHandler.SetWarning(callInput,new AnalysisWarning(Flow.CurrentScript.FullName,"Wrong number of arguments",callPoint.Partial,AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+                AnalysisWarningHandler.SetWarning(callInput, new AnalysisWarning(Flow.CurrentScript.FullName, "Wrong number of arguments", callPoint.Partial, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
             }
 
             for (int i = 0; i < Math.Min(signature.FormalParams.Count, arguments.Count()); ++i)
@@ -1049,28 +1066,28 @@ namespace Weverca.Analysis
                     argumentVar.WriteMemory(callInput.Snapshot, arguments[i]);
                 }
             }
-            if(arguments.Count()<signature.FormalParams.Count)
-            for (int i = arguments.Count(); i < signature.FormalParams.Count; ++i)
-            {
-                var param = signature.FormalParams[i];
-
-                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
-
-                if (param.PassedByRef)
+            if (arguments.Count() < signature.FormalParams.Count)
+                for (int i = arguments.Count(); i < signature.FormalParams.Count; ++i)
                 {
-                    argumentVar.SetAliases(callInput.Snapshot, enumerator.Current.Value);
-                }
-                else
-                {
-                    if(param.InitValue!=null)
+                    var param = signature.FormalParams[i];
+
+                    var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+
+                    if (param.PassedByRef)
                     {
-                        var initializer = new ObjectInitializer(Flow.ExpressionEvaluator);
-                        param.InitValue.VisitMe(initializer);
-                        argumentVar.WriteMemory(callInput.Snapshot, initializer.initializationValue);
+                        argumentVar.SetAliases(callInput.Snapshot, enumerator.Current.Value);
                     }
+                    else
+                    {
+                        if (param.InitValue != null)
+                        {
+                            var initializer = new ObjectInitializer(Flow.ExpressionEvaluator);
+                            param.InitValue.VisitMe(initializer);
+                            argumentVar.WriteMemory(callInput.Snapshot, initializer.initializationValue);
+                        }
+                    }
+
                 }
-            
-            }
 
         }
 
@@ -1110,7 +1127,7 @@ namespace Weverca.Analysis
             List<Value> newStackSize = new List<Value>();
             if (calledOutSet.GetLocalControlVariable(callDepthName).IsDefined(calledOutSet.Snapshot))
             {
-                var result=Flow.ExpressionEvaluator.BinaryEx(calledOutSet.GetLocalControlVariable(callDepthName).ReadMemory(calledOutSet.Snapshot),Operations.Add,new MemoryEntry(OutSet.CreateInt(1)));
+                var result = Flow.ExpressionEvaluator.BinaryEx(calledOutSet.GetLocalControlVariable(callDepthName).ReadMemory(calledOutSet.Snapshot), Operations.Add, new MemoryEntry(OutSet.CreateInt(1)));
                 newStackSize.AddRange(result.PossibleValues);
             }
             else
@@ -1209,7 +1226,7 @@ namespace Weverca.Analysis
             returnHints.Add(type);
         }
 
-    
+
         /// <summary>
         /// Apply current hints on analyzed branch
         /// </summary>
