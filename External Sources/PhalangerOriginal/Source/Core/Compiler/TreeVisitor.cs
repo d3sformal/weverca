@@ -876,15 +876,6 @@ namespace PHP.Core.AST
         }
 
         /// <summary>
-        /// Visit indirect type reference - may appear on array static field usage
-        /// </summary>
-        /// <param name="x"></param>
-        virtual public void VisitIndirectTypeRef(IndirectTypeRef x)
-        {
-            VisitElement(x.ClassNameVar);
-        }
-
-        /// <summary>
         /// Visit named actual parameter expression.
         /// </summary>
         /// <param name="x"></param>
@@ -901,7 +892,11 @@ namespace PHP.Core.AST
         {
             // nothing
         }
-          
+        virtual public void VisitIndirectTypeRef(IndirectTypeRef x)
+        {
+            // nothing
+        }
+        
 
         #endregion
     }

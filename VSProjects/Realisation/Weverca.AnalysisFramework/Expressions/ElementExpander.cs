@@ -45,7 +45,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         private static readonly Type[] FlowOmittedElements = new Type[]
         {
-            typeof(ActualParam), typeof(FormalParam), typeof(DirectTypeRef)
+            typeof(ActualParam), typeof(FormalParam), typeof(DirectTypeRef), typeof(IndirectTypeRef)
         };
 
         /// <summary>

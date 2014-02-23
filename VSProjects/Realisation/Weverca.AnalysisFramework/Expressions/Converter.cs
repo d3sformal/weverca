@@ -123,16 +123,16 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectStFldUse(DirectStFldUse x)
         {
-            //Force traversing
+            //Force traversing            
             VisitElement(x.IsMemberOf);
-            VisitElement(x.TypeRef as IndirectTypeRef);            
+            VisitElement(x.TypeRef);       
         }
 
         public override void VisitIndirectStFldUse(IndirectStFldUse x)
         {
             VisitElement(x.IsMemberOf);
             VisitElement(x.FieldNameExpr); 
-            VisitElement(x.TypeRef as IndirectTypeRef);
+            VisitElement(x.TypeRef);
             
         }
 
@@ -169,6 +169,12 @@ namespace Weverca.AnalysisFramework.Expressions
             VisitElement(x.Enumeree);
 
         }
+
+        public override void VisitIndirectTypeRef(IndirectTypeRef x)
+        {
+            VisitElement(x.ClassNameVar);
+        }
+
         public override void VisitFunctionDecl(FunctionDecl x)
         {
             // No recursive traversing

@@ -35,7 +35,7 @@ namespace Weverca.Analysis.UnitTest
             parser.Parse();
             var cfg = Weverca.ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast, file);
 
-            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM,50);
+            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.VirtualReferenceMM, 50);
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Weverca.Analysis.UnitTest
         /// <param name="type">Type to match</param>
         public static void testType<T>(Value value, T type)
         {
-            Assert.AreEqual(value.GetType(), type);
+            Assert.AreEqual(type, value.GetType());
         }
 
         /// <summary>
