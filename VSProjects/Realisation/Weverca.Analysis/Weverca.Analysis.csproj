@@ -83,6 +83,7 @@
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftScalarOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BinaryOperationVisitors\LeftStringOperandVisitor.cs" />
     <Compile Include="ExpressionEvaluator\BooleanConverter.cs" />
+    <Compile Include="ExpressionEvaluator\MaxValueVisitor.cs" />
     <Compile Include="ExpressionEvaluator\ObjectDeclaration.cs" />
     <Compile Include="ExpressionEvaluator\ExpressionEvaluator.cs" />
     <Compile Include="ExpressionEvaluator\IncrementDecrementEvaluator.cs" />

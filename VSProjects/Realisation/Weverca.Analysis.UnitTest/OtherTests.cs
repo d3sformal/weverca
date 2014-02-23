@@ -511,5 +511,24 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.TOO_DEEP_EVAL_RECURSION));
 
         }
+
+        string InfiniteRecursionTest = @"
+        function f()
+        {
+            if($_POST[""a""]==4)
+            f();
+            else
+            f();
+        }
+        f();
+           ";
+
+        [TestMethod]
+        public void InfiniteRecursion()
+        {
+            var outset = TestUtils.Analyze(InfiniteRecursionTest);
+            Debug.Assert(outset==null);
+        }
+
     }
 }

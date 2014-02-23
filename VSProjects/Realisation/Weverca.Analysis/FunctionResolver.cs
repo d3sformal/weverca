@@ -31,6 +31,8 @@ namespace Weverca.Analysis
 
         private readonly HashSet<FunctionValue> sharedFunctions = new HashSet<FunctionValue>();
 
+        private static readonly VariableName calledFunctionsName = new VariableName(".calledFunctions");
+
         /// <summary>
         ///  Readonly variable name for storing depth of eval recursion
         /// </summary>
@@ -439,10 +441,14 @@ namespace Weverca.Analysis
                 OutSet.FetchFromGlobal(new VariableName("_ENV"));
 
                 FunctionValue thisFunction = OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
-                if (caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(caller.OutSet.Snapshot))
+                if (caller.OutSet.GetLocalControlVariable(calledFunctionsName).IsDefined(caller.OutSet.Snapshot))
                 {
-                    List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(caller.OutSnapshot).PossibleValues);
-                    OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
+                    List<Value> newCalledFunctions = IncreaseCalledInfo(thisFunction, caller.OutSet.GetLocalControlVariable(calledFunctionsName).ReadMemory(caller.OutSnapshot).PossibleValues);
+                    OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(newCalledFunctions));
+                }
+                else 
+                {
+                    OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateInfo(new NumberOfCalledFunctions<FunctionValue>(thisFunction, 1))));
                 }
                 OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
@@ -517,38 +523,16 @@ namespace Weverca.Analysis
 
         private void increaseEvalDepth(FlowOutputSet outSet)
         {
-            HashSet<Value> result=new HashSet<Value>();
-            foreach (var value in outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot).PossibleValues)
-            { 
-                IntegerValue depth=value as IntegerValue;
-                if (depth != null)
-                { 
-                    result.Add(outSet.CreateInt(depth.Value+1));
-                }
-                else
-                {
-                    result.Add(value);
-                }
-            }
+            List<Value> result = new List<Value>();
+            result.AddRange(Flow.ExpressionEvaluator.BinaryEx(outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot), Operations.Add, new MemoryEntry(outSet.CreateInt(1))).PossibleValues);            
             outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot,new MemoryEntry(result));
         }
 
 
         private void decreaseEvalDepth(FlowOutputSet outSet)
         {
-            HashSet<Value> result=new HashSet<Value>();
-            foreach (var value in outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot).PossibleValues)
-            { 
-                IntegerValue depth=value as IntegerValue;
-                if (depth != null)
-                { 
-                    result.Add(outSet.CreateInt(depth.Value-1));
-                }
-                else
-                {
-                    result.Add(value);
-                }
-            }
+            List<Value> result=new List<Value>();
+            result.AddRange(Flow.ExpressionEvaluator.BinaryEx(outSet.GetControlVariable(evalDepth).ReadMemory(outSet.Snapshot), Operations.Sub, new MemoryEntry(outSet.CreateInt(1))).PossibleValues);
             outSet.GetControlVariable(evalDepth).WriteMemory(outSet.Snapshot,new MemoryEntry(result));
         }
 
@@ -809,21 +793,13 @@ namespace Weverca.Analysis
             if (OutSet.GetLocalControlVariable(callDepthName).IsDefined(OutSet.Snapshot))
             {
                 MemoryEntry callDepthEntry = OutSet.GetLocalControlVariable(callDepthName).ReadMemory(OutSet.Snapshot);
-                foreach (Value callDepth in callDepthEntry.PossibleValues)
+                var maxValue = new MaxValueVisitor(OutSet);
+                if (maxValue.Evaluate(callDepthEntry) > 10)
                 {
-                    if (callDepth is IntegerValue)
-                    {
-                        if ((callDepth as IntegerValue).Value > 10)
-                        {
-                            useSharedFunctions = true;
-                        }
-                    }
-                    else
-                    {
-                        useSharedFunctions = true;
-                    }
+                    useSharedFunctions = true;
                 }
             }
+
             int max = 0;
             if (OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).IsDefined(OutSet.Snapshot))
             {
@@ -1115,24 +1091,11 @@ namespace Weverca.Analysis
 
         private void IncreaseStackSize(FlowOutputSet calledOutSet)
         {
-
-
             List<Value> newStackSize = new List<Value>();
             if (calledOutSet.GetLocalControlVariable(callDepthName).IsDefined(calledOutSet.Snapshot))
             {
-                MemoryEntry stackSize = calledOutSet.GetLocalControlVariable(callDepthName).ReadMemory(calledOutSet.Snapshot);
-                foreach (var value in stackSize.PossibleValues)
-                {
-                    if (value is AnyFloatValue)
-                    {
-                        newStackSize.Add(value);
-                    }
-                    else
-                    {
-                        newStackSize.Add(OutSet.CreateInt((value as IntegerValue).Value + 1));
-                    }
-
-                }
+                var result=Flow.ExpressionEvaluator.BinaryEx(calledOutSet.GetLocalControlVariable(callDepthName).ReadMemory(calledOutSet.Snapshot),Operations.Add,new MemoryEntry(OutSet.CreateInt(1)));
+                newStackSize.AddRange(result.PossibleValues);
             }
             else
             {
