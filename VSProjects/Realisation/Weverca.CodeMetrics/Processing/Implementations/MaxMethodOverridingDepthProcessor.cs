@@ -11,6 +11,7 @@ namespace Weverca.CodeMetrics.Processing.Implementations
 {
     /// <summary>
     /// Determines the maximum depth of method overriding.
+    /// The maximum depth is in this case the maximum distance of the method declaration and the farthest override in the tree of inheritance.
     /// </summary>
     [Metric(Quantity.MaxMethodOverridingDepth)]
     internal class MaxMethodOverridingDepthProcessor : QuantityProcessor
