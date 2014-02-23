@@ -582,19 +582,29 @@ namespace Weverca.ControlFlowGraph
         private Expression CopyElement(Expression e)
         {
             StringBuilder s = new StringBuilder("<? ");
-            for (int i = 3 + e.Position.FirstLine + e.Position.FirstColumn; i < e.Position.FirstOffset; i++)
+            if (e.Position.FirstLine == 1)
             {
-                s.Append(" ");
+                for (int i = 3; i < e.Position.FirstOffset; i++)
+                {
+                    s.Append(" ");
+                }
             }
-            
-            for (int i = 1; i < e.Position.FirstLine; i++)
+            else
             {
-                s.AppendLine();
-            }
+                for (int i = 3 + e.Position.FirstLine-1 + e.Position.FirstColumn-1; i < e.Position.FirstOffset; i++)
+                {
+                    s.Append(" ");
+                }
             
-            for (int i = 1; i < e.Position.FirstColumn; i++)
-            {
-                s.Append(" ");
+                for (int i = 1; i < e.Position.FirstLine; i++)
+                {
+                    s.Append("\n");
+                }
+            
+                for (int i = 1; i < e.Position.FirstColumn; i++)
+                {
+                    s.Append(" ");
+                }
             }
             s.Append(this.graph.globalCode.SourceUnit.GetSourceCode(e.Position));
             s.Append(" ?>");
