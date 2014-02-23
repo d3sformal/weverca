@@ -1436,8 +1436,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         }
                         else
                         {
-                            var snapshotEntry = OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
-                            snapshotEntry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.AnyValue));
+                            var entry = OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
+                            entry.WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.AnyValue));
                             return OutSet.GetControlVariable(FunctionResolver.staticVariableSink);
                         }
                     }
