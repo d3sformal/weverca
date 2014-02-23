@@ -1563,6 +1563,28 @@ eval($code);
           .AssertVariable("result").HasValues("in eval1", "in eval2")
           ;
 
+
+        readonly static TestCase StaticCallOnObjectInArray_CASE = @"
+class X{    
+    static function f(){
+        return 'X::f()';
+    }
+}
+
+$x=new X();
+
+$arr=array();
+$arr[0]=$x;
+$result=$arr[0]::f();
+
+".AssertVariable("result").HasValues("X::f()");
+
+        [TestMethod]
+        public void StaticCallOnObjectInArray()
+        {
+            AnalysisTestUtils.RunTestCase(StaticCallOnObjectInArray_CASE);
+        }
+
         [TestMethod]
         public void BranchedEvalAssign()
         {

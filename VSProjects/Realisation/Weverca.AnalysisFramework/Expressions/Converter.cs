@@ -93,6 +93,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectStMtdCall(DirectStMtdCall x)
         {
+            VisitElement(x.IsMemberOf);
             VisitElement(x.PublicTypeRef);
             // Force traversing
             foreach (var param in x.CallSignature.Parameters)
@@ -103,6 +104,7 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitIndirectStMtdCall(IndirectStMtdCall x)
         {
+            VisitElement(x.IsMemberOf);
             VisitElement(x.PublicTypeRef);
             VisitElement(x.MethodNameVar);
             // Force traversing
@@ -122,11 +124,13 @@ namespace Weverca.AnalysisFramework.Expressions
         public override void VisitDirectStFldUse(DirectStFldUse x)
         {
             //Force traversing
+            VisitElement(x.IsMemberOf);
             VisitElement(x.TypeRef as IndirectTypeRef);            
         }
 
         public override void VisitIndirectStFldUse(IndirectStFldUse x)
         {
+            VisitElement(x.IsMemberOf);
             VisitElement(x.FieldNameExpr); 
             VisitElement(x.TypeRef as IndirectTypeRef);
             
@@ -151,7 +155,7 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         public override void VisitClassConstUse(ClassConstUse x)
-        {
+        {            
             VisitElement(x.TypeRef);
         }
 
