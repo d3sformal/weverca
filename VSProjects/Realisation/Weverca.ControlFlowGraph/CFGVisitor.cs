@@ -551,7 +551,7 @@ namespace Weverca.ControlFlowGraph
             BasicBlock startLoop = new BasicBlock();
             if (x.LoopType == WhileStmt.Type.While)
             {
-                ConditionalEdge.MakeNewAndConnect(aboveLoop, startLoop, x.CondExpr);
+                ConditionalEdge.MakeNewAndConnect(aboveLoop, startLoop, CopyElement(x.CondExpr));
             }
             else
             {
@@ -572,7 +572,7 @@ namespace Weverca.ControlFlowGraph
             {
                 DirectEdge.MakeNewAndConnect(aboveLoop, underLoop);
             }
-            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, CopyElement(x.CondExpr));
+            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
             
             currentBasicBlock = underLoop;
         }
