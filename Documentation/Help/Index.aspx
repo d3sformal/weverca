@@ -4,7 +4,7 @@
 <html>
 
 <head runat="server">
-<title>A Sandcastle Documented Class Library - Table of Content</title>
+<title>Weverca documentation - Table of Content</title>
 <link rel="stylesheet" href="TOC.css" />
 <link rel="shortcut icon" href="favicon.ico"/>
 <script type="text/javascript" src="TOC.js"></script>
@@ -61,7 +61,7 @@ Keyword Index
 
 <div id="TOCSizer" class="TOCSizer" onmousedown="OnMouseDown(event)" onselectstart="javascript: return false;"></div>
 
-<iframe id="TopicContent" name="TopicContent" class="TopicContent" src="html/3aa3fbe6-e910-b4a9-aebe-0da80c375e5e.htm">
+<iframe id="TopicContent" name="TopicContent" class="TopicContent" src="html/5ba4bd40-551e-ea9a-d4e3-6dd0a3b02cfa.htm">
 This page uses an IFRAME but your browser does not support it.
 </iframe>
 
