@@ -32,7 +32,7 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="outSet">Output set where condition will be assumed</param>
         /// <param name="condition">Assumed condition</param>
-        /// <param name="log"></param>
+        /// <param name="log">The evaluation log of the code constructs.</param>
         /// <returns>
         ///   <c>false</c> if condition cannot be ever satisfied, true otherwise.
         /// </returns>

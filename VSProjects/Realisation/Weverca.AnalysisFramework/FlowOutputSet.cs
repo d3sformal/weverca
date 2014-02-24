@@ -231,9 +231,9 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <inheritdoc />
-        public void DeclareGlobal(TypeValue declaration)
+        public void DeclareGlobal(TypeValue type)
         {
-            Snapshot.DeclareGlobal(declaration);
+            Snapshot.DeclareGlobal(type);
         }
 
 

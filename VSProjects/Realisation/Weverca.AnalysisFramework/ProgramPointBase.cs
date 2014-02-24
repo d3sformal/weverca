@@ -161,7 +161,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Prepares the flow.
         /// </summary>
-        /// <returns></returns>
+        /// <returns><c>true</c> if flow is prepared</returns>
         protected virtual bool prepareFlow()
         {
             checkInitialized();

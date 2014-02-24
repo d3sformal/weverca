@@ -17,8 +17,8 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Convert given element into Postfix representation
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
+        /// <param name="element">Element to convert</param>
+        /// <returns>Postfix form of given element</returns>
         public static Postfix GetPostfix(LangElement element)
         {
             return _visitor.GetExpression(element);

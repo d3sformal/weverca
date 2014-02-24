@@ -17,7 +17,13 @@
             return GetType().GetHashCode();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Determines whether the specified <see cref="Value" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="Value" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="Value" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         protected override bool equals(Value obj)
         {
             return GetType() == obj.GetType();

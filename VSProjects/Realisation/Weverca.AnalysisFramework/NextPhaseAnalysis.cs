@@ -82,6 +82,9 @@ namespace Weverca.AnalysisFramework
         /// Initializes a new instance of the <see cref="ForwardAnalysisBase" /> class.
         /// Create forward analysis object for given entry method graph.
         /// </summary>
+        /// <param name="analyzedPPG">The analyzed PPG.</param>
+        /// <param name="direction">The direction of analysis.</param>
+        /// <param name="analyzer">The analyzer.</param>
         public NextPhaseAnalysis(ProgramPointGraph analyzedPPG, AnalysisDirection direction, NextPhaseAnalyzer analyzer)
         {
             _analyzer = analyzer;

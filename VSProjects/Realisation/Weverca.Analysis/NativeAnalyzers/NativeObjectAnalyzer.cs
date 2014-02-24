@@ -55,9 +55,9 @@ namespace Weverca.Analysis.NativeAnalyzers
         }
 
         /// <summary>
-        /// COnverts method arguments into imutable list of MethodArgument
+        /// Converts method arguments into imutable list of MethodArgument
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The list of converted arguments.</returns>
         public List<MethodArgument> ConvertArguments()
         {
             List<MethodArgument> res = new List<MethodArgument>();

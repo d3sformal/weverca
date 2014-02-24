@@ -219,6 +219,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// Gets the value of return storage located in given output set.
         /// </summary>
         /// <param name="outSet">the output set in which the return storage is located</param>
+        /// <returns>The memoryEntry of returned value</returns>
         protected static MemoryEntry GetReturn(FlowOutputSet outSet)
         {
             if (outSet == null)

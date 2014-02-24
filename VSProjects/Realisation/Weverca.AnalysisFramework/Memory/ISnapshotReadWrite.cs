@@ -152,8 +152,9 @@ namespace Weverca.AnalysisFramework.Memory
 
         /// <summary>
         /// Create object of given type
-        /// </summary>   
+        /// </summary>
         /// <param name="type">Desired type of created object</param>
+        /// <returns>Instace of object of given type</returns>
         ObjectValue CreateObject(TypeValue type);
 
         #endregion

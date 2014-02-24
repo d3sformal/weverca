@@ -100,9 +100,9 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <inheritdoc />
-        public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName)
+        public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue type, QualifiedName methodName)
         {
-            return Snapshot.ResolveStaticMethod(value, methodName);
+            return Snapshot.ResolveStaticMethod(type, methodName);
         }
 
         /// <inheritdoc />

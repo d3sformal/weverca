@@ -137,7 +137,7 @@ namespace Weverca.AnalysisFramework
     {
 
         /// <summary>
-        /// 
+        /// The name of the field.
         /// </summary>
         public readonly VariableName Name;
 
@@ -377,7 +377,7 @@ namespace Weverca.AnalysisFramework
         /// Clones this constant info and changes the class name
         /// </summary>
         /// <param name="className">new class name</param>
-        /// <returns></returns>
+        /// <returns>The cloned info</returns>
         public ConstantInfo CloneWithNewQualifiedName(QualifiedName className)
         {
             if (Initializer == null)

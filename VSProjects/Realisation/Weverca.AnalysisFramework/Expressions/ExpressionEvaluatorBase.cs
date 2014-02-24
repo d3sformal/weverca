@@ -238,7 +238,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <summary>
         /// Determine whether a variable is considered to be empty (i.e. null, false, 0, 0.0, "" etc.)
         /// </summary>
-        /// <param name="variable">A variable to be checked</param>
+        /// <param name="snapshotEntry">A variable to be checked</param>
         /// <returns><c>true</c> whether a variable is empty, otherwise <c>false</c></returns>
         public abstract MemoryEntry EmptyEx(ReadWriteSnapshotEntryBase snapshotEntry);
 
