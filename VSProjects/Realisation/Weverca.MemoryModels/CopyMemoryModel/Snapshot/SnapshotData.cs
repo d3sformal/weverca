@@ -47,7 +47,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private SnapshotData(Snapshot snapshot)
         {
             this.snapshot = snapshot;
-            EmptyEntry = new MemoryEntry(snapshot.UndefinedValue);
+            EmptyEntry = new MemoryEntry();
         }
 
         /// <summary>
@@ -208,6 +208,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else if (newEntry.Count > simplifyLimit)
             {
+                MemoryIndex testIndex = ControlIndex.Create(".return", 6);
+                if (testIndex.Equals(index))
+                {
+
+                }
+
                 MemoryEntry simplifiedEntry = assistant.Simplify(newEntry);
                 SetMemoryEntry(index, simplifiedEntry);
 
@@ -233,6 +239,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 oldEntry = EmptyEntry;
             }
 
+            MemoryIndex testIndex = ControlIndex.Create(".return", 6);
+            if (testIndex.Equals(index))
+            {
+
+            }
+
             if (!oldEntry.Equals(newEntry))
             {
                 MemoryEntry widenedEntry = assistant.Widen(oldEntry, newEntry);
@@ -241,7 +253,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 newVisitor.VisitMemoryEntry(newEntry);
 
                 CollectComposedValuesVisitor widenedVisitor = new CollectComposedValuesVisitor();
-                newVisitor.VisitMemoryEntry(widenedEntry);
+                widenedVisitor.VisitMemoryEntry(widenedEntry);
 
                 if (newVisitor.Arrays.Count != widenedVisitor.Arrays.Count)
                 {

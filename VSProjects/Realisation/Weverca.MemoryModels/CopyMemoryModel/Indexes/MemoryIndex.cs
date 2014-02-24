@@ -37,7 +37,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <value>
         /// The memory path.
         /// </value>
-        public ReadOnlyCollection<IndexSegment> MemoryPath {get; private set; }
+        public ReadOnlyCollection<IndexSegment> MemoryPath { get; private set; }
 
 
         /// <summary>
@@ -103,10 +103,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="path">The path.</param>
         /// <param name="callLevel">The call level.</param>
-        protected MemoryIndex(List<IndexSegment> path, int callLevel)
+        protected MemoryIndex(IEnumerable<IndexSegment> path, int callLevel)
         {
             CallLevel = callLevel;
-            MemoryPath = new ReadOnlyCollection<IndexSegment>(path);
+            MemoryPath = new ReadOnlyCollection<IndexSegment>(path.ToArray());
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             for (int x = this.Length - 1; x >= 0; x--)
             {
-                if (! this.MemoryPath[x].Equals(otherIndex.MemoryPath[x]))
+                if (!this.MemoryPath[x].Equals(otherIndex.MemoryPath[x]))
                 {
                     return false;
                 }
@@ -237,6 +237,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="name">The name.</param>
         public abstract MemoryIndex CreateIndex(string name);
 
+
+        /// <summary>
+        /// Creates new index with the same path and specified call level.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
+        public abstract MemoryIndex CreateWithCallLevel(int callLevel);
+
         /// <summary>
         /// Determines whether this index is part of acces path of the other index.
         /// </summary>
@@ -296,7 +304,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="pathName">Name of the path.</param>
-        protected NamedIndex(NamedIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        protected NamedIndex(NamedIndex parentIndex, IndexSegment pathName)
+            : base(parentIndex, pathName)
         {
             MemoryRoot = parentIndex.MemoryRoot;
         }
@@ -308,6 +317,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="path">The path.</param>
         protected NamedIndex(NamedIndex parentIndex, List<IndexSegment> path)
             : base(path, parentIndex.CallLevel)
+        {
+            MemoryRoot = parentIndex.MemoryRoot;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NamedIndex"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="callLevel">The call level.</param>
+        protected NamedIndex(NamedIndex parentIndex, int callLevel)
+            : base(parentIndex.MemoryPath, callLevel)
         {
             MemoryRoot = parentIndex.MemoryRoot;
         }
@@ -360,6 +380,49 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 return false;
             }
         }
+
+        /// <summary>
+        /// Converts this memory index that at the end of acces path is any segment.
+        /// When the path is empty, root informations are converted into any.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override MemoryIndex ToAny()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Creates the unknown root index with no index path.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override MemoryIndex CreateUnknownIndex()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Creates the root index with given name and no index path.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override MemoryIndex CreateIndex(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Creates new index with the same path and specified call level.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override MemoryIndex CreateWithCallLevel(int callLevel)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
@@ -408,6 +471,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="path">The path.</param>
         public ObjectIndex(ObjectIndex parentIndex, List<IndexSegment> path)
             : base(parentIndex, path)
+        {
+            Object = parentIndex.Object;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ObjectIndex"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="callLevel">The call level.</param>
+        public ObjectIndex(ObjectIndex parentIndex, int callLevel)
+            : base(parentIndex, callLevel)
         {
             Object = parentIndex.Object;
         }
@@ -528,6 +602,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return new ObjectIndex(this, new IndexSegment(name));
         }
+
+        /// <summary>
+        /// Creates new index with the same path and specified call level.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
+        public override MemoryIndex CreateWithCallLevel(int callLevel)
+        {
+            return new ObjectIndex(this, callLevel);
+        }
     }
 
     /// <summary>
@@ -555,7 +639,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="pathName">Name of the path.</param>
-        public VariableIndex(VariableIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        public VariableIndex(VariableIndex parentIndex, IndexSegment pathName)
+            : base(parentIndex, pathName)
         {
         }
 
@@ -566,6 +651,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="path">The path.</param>
         public VariableIndex(VariableIndex parentIndex, List<IndexSegment> path)
             : base(parentIndex, path)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VariableIndex"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="callLevel">The call level.</param>
+        public VariableIndex(VariableIndex parentIndex, int callLevel)
+            : base(parentIndex, callLevel)
         {
         }
 
@@ -636,6 +731,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return new VariableIndex(this, new IndexSegment(name));
         }
+
+        /// <summary>
+        /// Creates new index with the same path and specified call level.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
+        public override MemoryIndex CreateWithCallLevel(int callLevel)
+        {
+            return new VariableIndex(this, callLevel);
+        }
     }
 
     /// <summary>
@@ -679,7 +784,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="pathName">Name of the path.</param>
-        public TemporaryIndex(TemporaryIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        public TemporaryIndex(TemporaryIndex parentIndex, IndexSegment pathName)
+            : base(parentIndex, pathName)
         {
             rootId = parentIndex.rootId;
         }
@@ -691,6 +797,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="path">The path.</param>
         public TemporaryIndex(TemporaryIndex parentIndex, List<IndexSegment> path)
             : base(path, parentIndex.CallLevel)
+        {
+            rootId = parentIndex.rootId;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TemporaryIndex"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="callLevel">The call level.</param>
+        public TemporaryIndex(TemporaryIndex parentIndex, int callLevel)
+            : base(parentIndex.MemoryPath, callLevel)
         {
             rootId = parentIndex.rootId;
         }
@@ -791,6 +908,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         {
             return new TemporaryIndex(this, new IndexSegment(name));
         }
+
+        /// <summary>
+        /// Creates new index with the same path and specified call level.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
+        public override MemoryIndex CreateWithCallLevel(int callLevel)
+        {
+            return new TemporaryIndex(this, callLevel);
+        }
     }
 
     /// <summary>
@@ -813,7 +940,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="pathName">Name of the path.</param>
-        public ControlIndex(ControlIndex parentIndex, IndexSegment pathName) : base(parentIndex, pathName)
+        public ControlIndex(ControlIndex parentIndex, IndexSegment pathName)
+            : base(parentIndex, pathName)
         {
         }
 
@@ -824,6 +952,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="path">The path.</param>
         public ControlIndex(ControlIndex parentIndex, List<IndexSegment> path)
             : base(parentIndex, path)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ControlIndex"/> class.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <param name="callLevel">The call level.</param>
+        public ControlIndex(ControlIndex parentIndex, int callLevel)
+            : base(parentIndex, callLevel)
         {
         }
 
@@ -893,6 +1031,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public override MemoryIndex CreateIndex(string name)
         {
             return new ControlIndex(this, new IndexSegment(name));
+        }
+
+        /// <summary>
+        /// Creates new index with the same path and specified call level.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
+        public override MemoryIndex CreateWithCallLevel(int callLevel)
+        {
+            return new ControlIndex(this, callLevel);
         }
     }
 

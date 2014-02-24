@@ -128,7 +128,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </returns>
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
-            // SnapshotLogger.append(context, "read index - " + this.ToString());
+            SnapshotLogger.append(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadIndex(context, index);
         }
@@ -145,7 +145,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </returns>
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
         {
-            // SnapshotLogger.append(context, "read index - " + this.ToString());
+            SnapshotLogger.append(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadField(context, field);
         }
@@ -163,7 +163,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            // SnapshotLogger.append(context, "write memory - " + this.ToString());
+            SnapshotLogger.append(context, "write memory - " + this.ToString());
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
 
             switch (snapshot.CurrentMode)
@@ -196,7 +196,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="aliasedEntry">Snapshot entry which will be aliased from current entry</param>
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            // SnapshotLogger.append(context, "set aliases - " + this.ToString());
+            SnapshotLogger.append(context, "set aliases - " + this.ToString());
 
             getTemporary(context).SetAliases(context, aliasedEntry);
         }
@@ -215,7 +215,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <returns></returns>
         protected override bool isDefined(SnapshotBase context)
         {
-            // SnapshotLogger.append(context, "is defined - " + this.ToString());
+            SnapshotLogger.append(context, "is defined - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -237,7 +237,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </returns>
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            // SnapshotLogger.append(context, "aliases - " + this.ToString());
+            SnapshotLogger.append(context, "aliases - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -259,7 +259,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            // SnapshotLogger.append(context, "read memory - " + this.ToString());
+            SnapshotLogger.append(context, "read memory - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -292,7 +292,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </returns>
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
-            // SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
+            SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
 
             if (isTemporarySet(context))
             {

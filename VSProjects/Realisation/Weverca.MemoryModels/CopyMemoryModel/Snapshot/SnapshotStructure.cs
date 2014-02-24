@@ -42,7 +42,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Incremental counter for structure unique identifier.
         /// </summary>
         static int DATA_ID = 0;
-        
+
         /// <summary>
         /// The unique identifier for the data structure of the memory model.
         /// </summary>
@@ -442,18 +442,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     continue;
                 }
-
-                IndexData newStructure = null;
-                if (!this.IndexData.TryGetValue(index, out newStructure))
-                {
-                    newStructure = emptyStructure;
-                }
-
-                IndexData oldStructure = null;
-                if (!oldValue.IndexData.TryGetValue(index, out oldStructure))
-                {
-                    oldStructure = emptyStructure;
-                }
+                IndexData newStructure = getDataOrUndefined(index, this, emptyStructure);
+                IndexData oldStructure = getDataOrUndefined(index, oldValue, emptyStructure);
 
                 if (!newStructure.DataEquals(oldStructure))
                 {
@@ -492,18 +482,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     continue;
                 }
-
-                IndexData newStructure = null;
-                if (!this.IndexData.TryGetValue(index, out newStructure))
-                {
-                    newStructure = emptyStructure;
-                }
-
-                IndexData oldStructure = null;
-                if (!oldValue.IndexData.TryGetValue(index, out oldStructure))
-                {
-                    oldStructure = emptyStructure;
-                }
+                IndexData newStructure = getDataOrUndefined(index, this, emptyStructure);
+                IndexData oldStructure = getDataOrUndefined(index, oldValue, emptyStructure);
 
                 if (!newStructure.DataEquals(oldStructure))
                 {
@@ -537,17 +517,8 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             bool areEqual = true;
             foreach (MemoryIndex index in indexes)
             {
-                IndexData newData = null;
-                if (!this.IndexData.TryGetValue(index, out newData))
-                {
-                    newData = emptyData;
-                }
-
-                IndexData oldData = null;
-                if (!oldValue.IndexData.TryGetValue(index, out oldData))
-                {
-                    oldData = emptyData;
-                }
+                IndexData newData = getDataOrUndefined(index, this, emptyData);
+                IndexData oldData = getDataOrUndefined(index, oldValue, emptyData);
 
                 Data.DataWiden(oldValue.Data, index, assistant);
 
@@ -558,6 +529,45 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
 
             return areEqual;
+        }
+
+        /// <summary>
+        /// Gets the index which is not above the local level of this structure.
+        /// This method alows to widen data in local levels of shared functions.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="comparedStructure">The compared structure.</param>
+        /// <param name="thisStructure">The this structure.</param>
+        /// <returns></returns>
+        private MemoryIndex getIndexOrLocal(MemoryIndex index, SnapshotStructure comparedStructure, SnapshotStructure thisStructure)
+        {
+            /*if (index.CallLevel == comparedStructure.Snapshot.CallLevel && thisStructure.Snapshot.CallLevel < index.CallLevel)
+            {
+                return index.SetCallLevel(thisStructure.Snapshot.CallLevel);
+            }
+            else
+            {
+                return index;
+            }*/
+            return index;
+        }
+
+        /// <summary>
+        /// Gets the data if is set in structure or returns given empty data.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="snapshotStructure">The snapshot structure.</param>
+        /// <param name="emptyData">The empty data.</param>
+        /// <returns></returns>
+        private CopyMemoryModel.IndexData getDataOrUndefined(MemoryIndex index, SnapshotStructure snapshotStructure, IndexData emptyData)
+        {
+            IndexData data = null;
+            if (!snapshotStructure.IndexData.TryGetValue(index, out data))
+            {
+                data = emptyData;
+            }
+
+            return data;
         }
 
         #endregion
@@ -1137,7 +1147,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 Data.SetMemoryEntry(index, memoryEntry);
             }
 
-            
+
         }
         #endregion
 
@@ -1185,7 +1195,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 IndexContainer.GetRepresentation(item.Value, data, infos, result);
                 result.AppendLine();
             }
-            
+
             return result.ToString();
         }
 

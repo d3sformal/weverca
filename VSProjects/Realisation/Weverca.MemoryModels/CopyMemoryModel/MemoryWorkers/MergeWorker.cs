@@ -79,7 +79,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
                     collectVariables[targetLevel].CollectIndexes(snapshot, Structure.Variables[targetLevel].UnknownIndex, snapshot.Structure.Variables[sourceLevel]);
                     collectControl[targetLevel].CollectIndexes(snapshot, Structure.ContolVariables[targetLevel].UnknownIndex, snapshot.Structure.ContolVariables[sourceLevel]);
-                    collectTemporary(snapshot, targetLevel);
+                    collectTemporary(snapshot, sourceLevel, targetLevel);
                 }
 
                 mergeDeclarations(Structure.FunctionDecl, snapshot.Structure.FunctionDecl);
@@ -243,13 +243,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #region Temporary
 
-        private void collectTemporary(Snapshot snapshot, int index)
+        private void collectTemporary(Snapshot snapshot, int sourceLevel, int targetLevel)
         {
-            foreach (TemporaryIndex temp in snapshot.Structure.Temporary[index])
+            foreach (TemporaryIndex temp in snapshot.Structure.Temporary[sourceLevel])
             {
-                if (!Structure.Temporary[index].Contains(temp))
+                if (!Structure.Temporary[targetLevel].Contains(temp))
                 {
-                    Structure.Temporary[index].Add(temp);
+                    Structure.Temporary[targetLevel].Add(temp);
                 }
             }
         }

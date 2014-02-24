@@ -83,7 +83,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             switch (Global)
             {
                 case GlobalContext.LocalOnly:
-                    process(variableSegment, snapshot.Structure.Variables[CallLevel]);
+                    int level = CallLevel;
+                    if (CallLevel > snapshot.CallLevel)
+                    {
+                        level = snapshot.CallLevel;
+                    }
+
+                    process(variableSegment, snapshot.Structure.Variables[level]);
                     break;
                 case GlobalContext.GlobalOnly:
                     process(variableSegment, snapshot.Structure.Variables.Global);

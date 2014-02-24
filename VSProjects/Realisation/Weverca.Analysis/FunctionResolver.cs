@@ -1330,7 +1330,14 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override string ToString()
         {
-            return Function.ToString() + ":" + TimesCalled;
+            if (Function != null)
+            {
+                return Function.ToString() + ":" + TimesCalled;
+            }
+            else
+            {
+                return "null:" + TimesCalled;
+            }
         }
     }
 
