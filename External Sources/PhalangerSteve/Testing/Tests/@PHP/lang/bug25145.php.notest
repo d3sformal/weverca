@@ -1,8 +1,0 @@
-[expect php]
-[file]
-<?php
-
-__var_dump($_REQUEST);
-echo "Done\n";
-
-?>

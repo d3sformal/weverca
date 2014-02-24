@@ -1,6 +1,0 @@
-[expect php]
-[file]
-<?
-var_dump(acos(1.01));
-var_dump(log(0));
-?>

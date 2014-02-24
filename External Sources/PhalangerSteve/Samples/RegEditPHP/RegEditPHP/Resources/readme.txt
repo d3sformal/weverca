@@ -1,1 +1,0 @@
-This directory contains resources (images) referenced by resx files.

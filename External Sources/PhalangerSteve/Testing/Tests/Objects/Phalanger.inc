@@ -1,5 +1,0 @@
-<?
-
-require('../Phalanger.inc');
-
-?>
