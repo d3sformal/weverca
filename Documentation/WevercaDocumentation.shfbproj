@@ -33,18 +33,46 @@
 <DocumentationSource sourceFile="..\VSProjects\Realisation\Weverca\Weverca.csproj" />
 <DocumentationSource sourceFile="..\VSProjects\Realisation\Weverca.MemoryModels\Weverca.MemoryModels.csproj" />
 <DocumentationSource sourceFile="..\VSProjects\Realisation\Weverca.Output\Weverca.Output.csproj" />
-<DocumentationSource sourceFile="..\VSProjects\Realisation\Weverca.Parser\Weverca.Parser.csproj" />
-<DocumentationSource sourceFile="..\VSProjects\Realisation\Weverca.TaintedAnalysis\Weverca.TaintedAnalysis.csproj" /></DocumentationSources>
+<DocumentationSource sourceFile="..\VSProjects\Realisation\Weverca.Parser\Weverca.Parser.csproj" /></DocumentationSources>
     <MaximumGroupParts>2</MaximumGroupParts>
-    <NamespaceGrouping>False</NamespaceGrouping>
-    <SyntaxFilters>Standard</SyntaxFilters>
+    <NamespaceGrouping>True</NamespaceGrouping>
+    <SyntaxFilters>C#, Visual Basic, Managed C++</SyntaxFilters>
     <SdkLinkTarget>Blank</SdkLinkTarget>
     <RootNamespaceContainer>False</RootNamespaceContainer>
     <PresentationStyle>VS2010</PresentationStyle>
     <Preliminary>False</Preliminary>
     <NamingMethod>Guid</NamingMethod>
-    <HelpTitle>A Sandcastle Documented Class Library</HelpTitle>
+    <HelpTitle>Weverca documentation</HelpTitle>
     <ContentPlacement>AboveNamespaces</ContentPlacement>
+    <ComponentConfigurations />
+    <PlugInConfigurations />
+    <NamespaceSummaries>
+      <NamespaceSummaryItem name="Weverca (Group)" isGroup="True" isDocumented="True">This is the root of the namespace tree of all Weverca tool components.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca" isDocumented="True">Weverca namespace contains the only executable assembly of Weverca project, which calls the analysis to given codes.
+This namespace itself does not contain any features.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Analysis (Group)" isGroup="True" isDocumented="True">Weverca.Analysis gathers all of the analyses which are run over provided PHP code and also all of the tools which are used by the analyses.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Analysis" isDocumented="True">This is the most general namespace of analyses. It contains common tools for the analyses.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Analysis.ExpressionEvaluator" isDocumented="True">ExpressionEvaluater namespace contains implementation of a tool which resolves expression of the code.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Analysis.FlowResolver" isDocumented="True">This namespace contains Flow Resolver, which evaluates the conditions and sets the environment of the branches of the commands.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Analysis.NativeAnalyzers" isDocumented="True">Implementation of analyses over native constructs of PHP are implemented in this namespace.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.AnalysisFramework.Expressions" isDocumented="True">This namespace contains base classes for Expression Resolver.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.CodeMetrics" isDocumented="True">All of the code metrics are implemented in this namespace</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Common" isDocumented="True">This namespace contains a common definitions for all the projects.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.ControlFlowGraph" isDocumented="True">In this namespace there is an implementation of building control flow graph and also all of it's features.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.MemoryModels (Group)" isGroup="True" isDocumented="True">Memory models of Weverca project are implemented in this group of namespaces.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.MemoryModels" isDocumented="True">This is a wrapper namespace for memory model implementation.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.MemoryModels.CopyMemoryModel" isDocumented="True">Memory model based on copying is implemented in this namespace.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.MemoryModels.VirtualReferenceModel" isDocumented="True">Memory model implemented in this namespace uses virtual references instead of copying.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Output (Group)" isGroup="True" isDocumented="True">This group of namespaces contains classes necessary for printing output of Weverca executable tool and the web.
+Classes implemented in this namespace should be used for implementing any other output of the analyses.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Output.GraphWalking" isDocumented="True">There are some tools for printing call stack and an abstract base for printing program point graph.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Output.Output" isDocumented="True">This namespace contains an abstract base for printing output of weverca analyses.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.AnalysisFramework (Group)" isGroup="True" isDocumented="True">This group of namespaces managing the analyses and a model needed for them.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.AnalysisFramework" isDocumented="True">Thsi is a common namespace for analysis framework, which contains base classes of analyses and common utilities.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.AnalysisFramework.Memory" isDocumented="True">In this namespace, all types of memory entries are declared.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.AnalysisFramework.ProgramPoints" isDocumented="True">This namespace contains implementation of points of program point graph.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.MemoryModels.VirtualReferenceModel.Memory" isDocumented="True">This namespace contains classes representing information about variables in the virtual reference memory model.</NamespaceSummaryItem>
+<NamespaceSummaryItem name="Weverca.Parsers" isDocumented="True">This namespace contains syntax parser of PHP, which transforms given PHP sorce to AST.</NamespaceSummaryItem></NamespaceSummaries>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in order for Visual Studio to perform
 			 the build.  The others are optional common platform types that may appear. -->
