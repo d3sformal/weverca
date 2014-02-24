@@ -336,13 +336,29 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return new SnapshotStorageEntry(variable, false, storages.ToArray());
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="name">Variable determining control entry</param>
+        /// <returns>
+        /// Created control entry
+        /// </returns>
         protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
         {
             return new SnapshotStorageEntry(new VariableIdentifier(name), false, new[] { getOrCreateKey(name, VariableKind.GlobalControl) });
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Get snapshot entry for variable, used for extra info controlling in local context. Control entries may share names with other variables,
+        /// indexes or fields. Control entries are not affected by unknown fields, also they cannot be aliased to non-control
+        /// entries.
+        /// </summary>
+        /// <param name="name">Variable determining control entry</param>
+        /// <returns>
+        /// Created control entry
+        /// </returns>
         protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
         {
             return new SnapshotStorageEntry(new VariableIdentifier(name), false, new[] { getOrCreateKey(name, VariableKind.LocalControl) });
@@ -601,7 +617,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
 
         #region Global scope operations
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Fetch variables from global context into current context
+        /// </summary>
+        /// <param name="variables">Variables that will be fetched</param>
+        /// <example>global x,y;</example>
         protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
         {
             foreach (var variable in variables)
@@ -637,7 +657,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(function));
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Resolves all possible functions for given functionName
+        /// NOTE:
+        /// Multiple declarations for single functionName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="functionName">Name of resolved function</param>
+        /// <returns>
+        /// Resolved functions
+        /// </returns>
         protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
         {
             var storage = getFunctionStorage(functionName.Name.Value);
@@ -661,7 +689,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Resolves all possible types for given typeName
+        /// NOTE:
+        /// Multiple declarations for single typeName can happen for example because of branch merging
+        /// </summary>
+        /// <param name="typeName">Name of resolved type</param>
+        /// <returns>
+        /// Resolved types
+        /// </returns>
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
             var storage = getTypeStorage(typeName.Name.Value);
@@ -685,7 +721,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Resolves the static method.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="methodName">Name of the method.</param>
+        /// <returns></returns>
         protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
             List<FunctionValue> result = new List<FunctionValue>();
@@ -1349,7 +1390,11 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             assign(storage, new MemoryEntry(info), VariableKind.Global);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Set given info for variable
+        /// </summary>
+        /// <param name="variable">Variable which info is stored</param>
+        /// <param name="info">Info stored for variable</param>
         protected override void setInfo(VariableName variable, params InfoValue[] info)
         {
             var storage = infoStorage(variable);
@@ -1366,7 +1411,13 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             return getInfoValues(storage);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Read info stored for given variable
+        /// </summary>
+        /// <param name="variable">Variable which info is read</param>
+        /// <returns>
+        /// Stored info
+        /// </returns>
         protected override InfoValue[] readInfo(VariableName variable)
         {
             var storage = infoStorage(variable);
