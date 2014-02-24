@@ -11,7 +11,7 @@ using Weverca.Analysis.Properties;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 
-namespace Weverca.Analysis
+namespace Weverca.Analysis.NativeAnalyzers
 {
 
     /// <summary>

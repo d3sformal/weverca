@@ -1,10 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.Analysis.NativeAnalyzers;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;

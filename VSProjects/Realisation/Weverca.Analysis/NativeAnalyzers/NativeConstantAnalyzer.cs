@@ -9,7 +9,7 @@ using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.Analysis.Properties;
 
-namespace Weverca.Analysis
+namespace Weverca.Analysis.NativeAnalyzers
 {
 
     /// <summary>

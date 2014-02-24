@@ -1,16 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
-using System.IO;
 using PHP.Core;
 using PHP.Core.AST;
+using PHP.Core.Reflection;
 
+using Weverca.Analysis.NativeAnalyzers;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
-using PHP.Core.Reflection;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {

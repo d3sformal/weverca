@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
+﻿
 using PHP.Core;
-using PHP.Core.AST;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.Analysis.FlowResolver;
+using Weverca.Analysis.NativeAnalyzers;
 
 namespace Weverca.Analysis
 {

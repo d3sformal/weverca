@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using PHP.Core;
-using PHP.Core.Parsers;
 using PHP.Core.AST;
 using PHP.Core.Reflection;
+
+using Weverca.Analysis.ExpressionEvaluator;
+using Weverca.Analysis.NativeAnalyzers;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.ProgramPoints;
-using System.IO;
-using Weverca.Parsers;
-using Weverca.Analysis.ExpressionEvaluator;
 
 namespace Weverca.Analysis
 {

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
+using PHP.Core;
 
 using Weverca.AnalysisFramework;
-using PHP.Core;
 using Weverca.AnalysisFramework.Memory;
-
 using Weverca.Analysis.ExpressionEvaluator;
 
-namespace Weverca.Analysis
+namespace Weverca.Analysis.NativeAnalyzers
 {
     /// <summary>
     /// Contains concrete implementations of native functions.
