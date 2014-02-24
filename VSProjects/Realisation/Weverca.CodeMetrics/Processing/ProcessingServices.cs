@@ -84,7 +84,7 @@ namespace Weverca.CodeMetrics.Processing
             = new Dictionary<TCategory, MetricProcessor<TCategory, TProperty>>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="{TCategory,TProperty}" /> class.
+        /// Initializes a new instance of the <see cref="ProcessingService{TCategory,TProperty}" /> class.
         /// </summary>
         public ProcessingService()
         {
