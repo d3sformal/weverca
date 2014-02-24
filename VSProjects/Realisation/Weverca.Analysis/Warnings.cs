@@ -235,7 +235,7 @@ namespace Weverca.Analysis
         /// Compares this instance with another one.
         /// </summary>
         /// <param name="other">The other.</param>
-        /// <returns><c>-1</c> if ofset of other is greated then thisone's; <0> if the offsest are the same; <c>1</c> otherwise</returns>
+        /// <returns><c>-1</c> if ofset of other is greated then thisone's; <c>0</c> if the offsest are the same; <c>1</c> otherwise</returns>
         protected int compareTo(AnalysisWarning other)
         {
             if (this.FullFileName == other.FullFileName)

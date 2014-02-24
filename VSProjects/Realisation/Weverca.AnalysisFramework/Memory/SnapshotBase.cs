@@ -159,13 +159,15 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract void startTransaction();
 
         /// <summary>
-        /// Commit started transaction - must return true if the content of the snapshot is different 
+        /// Commit started transaction - must return true if the content of the snapshot is different
         /// than the content commited by the previous transaction, false otherwise
         /// NOTE:
-        ///     Change is meant in semantic (two objects with different references but same content doesn't mean change)
+        /// Change is meant in semantic (two objects with different references but same content doesn't mean change)
         /// </summary>
         /// <param name="simplifyLimit">Limit number of memory entry possible values count when does simplifying MemoryEntries start</param>
-        /// <returns><c>true</c> if there is semantic change in transaction, <c>false</c> otherwise</returns>
+        /// <returns>
+        ///   <c>true</c> if there is semantic change in transaction, <c>false</c> otherwise
+        /// </returns>
         protected abstract bool commitTransaction(int simplifyLimit);
 
         /// <summary>
@@ -210,9 +212,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Extend snapshot as call from given callerContext
         /// </summary>
-        /// <param name="callerContext"></param>
-        /// <param name="thisObject"></param>
-        /// <param name="arguments"></param>
+        /// <param name="callerContext">The caller context.</param>
+        /// <param name="thisObject">The this object.</param>
+        /// <param name="arguments">The arguments.</param>
         protected abstract void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Merge given call output with current context.
@@ -382,11 +384,13 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <summary>
-        /// Commit started transaction - sets HasChanged to true if the content of the snapshot is different 
+        /// Commit started transaction - sets HasChanged to true if the content of the snapshot is different
         /// than the content commited by the previous transaction, sets it to false otherwise
         /// NOTE:
-        ///     Difference is meant in semantic (two objects with different references but same content doesn't mean difference)
+        /// Difference is meant in semantic (two objects with different references but same content doesn't mean difference)
         /// </summary>
+        /// <param name="simplifyLimit">Limit number of memory entry possible values count when does simplifying MemoryEntries start</param>
+        /// <exception cref="System.NotSupportedException">Cannot commit transaction because no transaction has been started yet</exception>
         public void CommitTransaction(int simplifyLimit = int.MaxValue)
         {
             checkFrozenState();
@@ -819,9 +823,9 @@ namespace Weverca.AnalysisFramework.Memory
 
 
         /// <inheritdoc />
-        public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue value, QualifiedName methodName)
+        public IEnumerable<FunctionValue> ResolveStaticMethod(TypeValue type, QualifiedName methodName)
         {
-            return resolveStaticMethod(value, methodName);
+            return resolveStaticMethod(type, methodName);
         }
 
         /// <inheritdoc />

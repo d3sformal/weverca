@@ -327,7 +327,7 @@ namespace Weverca.Parsers
     public class ErrorSinkThrowingException : ErrorSink
     {
         /// <summary>
-        /// 
+        /// Add an error.
         /// </summary>
         /// <param name="id">Id of error</param>
         /// <param name="message">Error message</param>

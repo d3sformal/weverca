@@ -14,9 +14,9 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override bool equals(Value obj)
+        protected override bool equals(Value other)
         {
-            return GetType() == obj.GetType();
+            return GetType() == other.GetType();
         }
 
         /// <inheritdoc />
@@ -58,9 +58,9 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override bool equals(Value obj)
+        protected override bool equals(Value other)
         {
-            var infoValue = obj as InfoValue;
+            var infoValue = other as InfoValue;
             if (infoValue == null)
             {
                 return false;

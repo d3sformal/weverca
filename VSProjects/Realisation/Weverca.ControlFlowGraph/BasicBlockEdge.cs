@@ -123,8 +123,8 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// Creates new instance of ForEachSpecialEdge.
         /// </summary>
-        /// <param name="From"></param>
-        /// <param name="To"></param>
+        /// <param name="From">Source basic block.</param>
+        /// <param name="To">Target basic block.</param>
         public ForEachSpecialEdge(BasicBlock From, BasicBlock To)
         {
             this.From = From;

@@ -66,8 +66,8 @@ namespace Weverca.AnalysisFramework.Memory
         /// Set info of given Type to returned value
         /// </summary>
         /// <typeparam name="DataKey">Type used as key for stored info</typeparam>
-        /// <param name="infoData"></param>
-        /// <returns></returns>
+        /// <param name="infoData">The information data.</param>
+        /// <returns>set up value</returns>
         public Value SetInfo<DataKey>(DataKey infoData)
             where DataKey : InfoDataBase
         {

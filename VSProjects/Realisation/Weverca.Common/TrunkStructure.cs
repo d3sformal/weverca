@@ -5,7 +5,9 @@ using System.Text;
 
 namespace Weverca.Common
 {
+    /// <summary>
     /// Static class with properties that must be changed in case of changes in svn directory structure
+    /// </summary>
     public static class TrunkStructure
     {
         /// <summary>

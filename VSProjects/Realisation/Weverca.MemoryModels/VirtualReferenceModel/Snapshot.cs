@@ -277,15 +277,15 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         /// <inheritdoc />
-        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutput)
+        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
         {
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    mergeWithCallLevelMemory(callOutput);
+                    mergeWithCallLevelMemory(callOutputs);
                     break;
                 case SnapshotMode.InfoLevel:
-                    mergeWithCallLevelInfo(callOutput);
+                    mergeWithCallLevelInfo(callOutputs);
                     break;
                 default:
                     throw notSupportedMode();
@@ -322,9 +322,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         #region Snapshot entry API
 
         /// <inheritdoc />
-        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobal)
+        protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
         {
-            var kind = repairKind(VariableKind.Local, forceGlobal);
+            var kind = repairKind(VariableKind.Local, forceGlobalContext);
 
             var storages = new List<VariableKeyBase>();
             foreach (var name in variable.PossibleNames)
@@ -726,7 +726,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="methodName">Name of the method.</param>
-        /// <returns></returns>
+        /// <returns>Resolved methods</returns>
         protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
         {
             List<FunctionValue> result = new List<FunctionValue>();

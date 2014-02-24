@@ -137,7 +137,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// Create implicit object. Is used as an object for operations that can cause
         /// object creation (indexing variable,...)
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Created object</returns>
         public abstract ObjectValue CreateImplicitObject();
 
         /// <summary>

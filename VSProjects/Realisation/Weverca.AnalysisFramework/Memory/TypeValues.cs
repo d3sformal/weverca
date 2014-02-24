@@ -49,9 +49,9 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override bool equals(Value obj)
+        protected override bool equals(Value other)
         {
-            return this == obj ;
+            return this == other;
         }
 
         /// <inheritdoc />

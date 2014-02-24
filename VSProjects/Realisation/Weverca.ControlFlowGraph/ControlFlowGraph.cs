@@ -57,7 +57,7 @@ namespace Weverca.ControlFlowGraph
         /// Creates a confrolflow graph from script with given file name.
         /// </summary>
         /// <param name="file">File</param>
-        /// <returns></returns>
+        /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromFile(FileInfo file)
         {
             var fileName = file.FullName;
@@ -109,6 +109,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="function">function to construct controlflow graph</param>
         /// <param name="file">Information about source file</param>
+        /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromFunction(FunctionDecl function, FileInfo file)
         {
             return new ControlFlowGraph(function, file);
@@ -119,6 +120,7 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         /// <param name="method">method to construct controlflow graph</param>
         /// <param name="file">Information about source file</param>
+        /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromMethod(MethodDecl method, FileInfo file)
         {
             return new ControlFlowGraph(method, file);
