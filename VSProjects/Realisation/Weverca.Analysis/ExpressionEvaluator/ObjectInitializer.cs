@@ -113,61 +113,94 @@ namespace Weverca.Analysis.ExpressionEvaluator
         
         #region Literals
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the int literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitIntLiteral(IntLiteral x)
         {
             initializationValue = expressionResolver.IntLiteral(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the long int literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitLongIntLiteral(LongIntLiteral x)
         {
             initializationValue = expressionResolver.LongIntLiteral(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the double literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitDoubleLiteral(DoubleLiteral x)
         {
             initializationValue = expressionResolver.DoubleLiteral(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the string literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitStringLiteral(StringLiteral x)
         {
             initializationValue = expressionResolver.StringLiteral(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the binary string literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
+        /// <exception cref="System.NotSupportedException"></exception>
         public override void VisitBinaryStringLiteral(BinaryStringLiteral x)
         {
             throw new NotSupportedException();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the bool literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitBoolLiteral(BoolLiteral x)
         {
             initializationValue = expressionResolver.BoolLiteral(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the null literal.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitNullLiteral(NullLiteral x)
         {
             initializationValue = expressionResolver.NullLiteral(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the global constant use.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitGlobalConstUse(GlobalConstUse x)
         {
             initializationValue = expressionResolver.Constant(x);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visits the class constant use.
+        /// </summary>
+        /// <param name="x">The x.</param>
         public override void VisitClassConstUse(ClassConstUse x)
         {
             initializationValue = expressionResolver.ClassConstant(new MemoryEntry(OutSet.CreateString(x.ClassName.QualifiedName.Name.Value)),new VariableName(x.Name.Value));
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Visit new array items initializers.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        /// <exception cref="System.NotSupportedException">There is no other array item type</exception>
         public override void VisitArrayEx(ArrayEx x)
         {
             List<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs=new List<KeyValuePair<MemoryEntry,MemoryEntry>>();

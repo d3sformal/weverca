@@ -77,7 +77,10 @@ namespace Weverca.Analysis
 
         #region FunctionResolverBase overrides
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Declare function into global context
+        /// </summary>
+        /// <param name="declaration">Declared function</param>
         public override void DeclareGlobal(FunctionDecl declaration)
         {
             if (nativeFunctionAnalyzer.existNativeFunction(new QualifiedName(declaration.Name)))
@@ -97,7 +100,11 @@ namespace Weverca.Analysis
 
         #region function calls
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds program point extension for call of given name and arguments via flow controller
+        /// </summary>
+        /// <param name="name">Name of called function</param>
+        /// <param name="arguments">Arguments of call</param>
         public override void Call(QualifiedName name, MemoryEntry[] arguments)
         {
             var functions = resolveFunction(name, arguments);
@@ -133,7 +140,12 @@ namespace Weverca.Analysis
         #region method calls
 
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds program point extension for method call of given name and arguments via flow controller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Name of called method</param>
+        /// <param name="arguments">Arguments of call</param>
         public override void MethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name,
             MemoryEntry[] arguments)
         {
@@ -179,7 +191,13 @@ namespace Weverca.Analysis
 
         #region static calls
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds program point extension for static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
         public override void StaticMethodCall(ReadSnapshotEntryBase calledObject, QualifiedName name, MemoryEntry[] arguments)
         {
             var calledObjectValue = calledObject.ReadMemory(InSnapshot);
@@ -205,7 +223,13 @@ namespace Weverca.Analysis
             staticMethodCall(calledClasses, name, arguments, unknownObject);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds program point extension for static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="typeName">Name of type where the static method is defined</param>
+        /// <param name="name">Name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
         public override void StaticMethodCall(QualifiedName typeName, QualifiedName name, MemoryEntry[] arguments)
         {
             var resolvedTypes = ResolveType(typeName, Flow, OutSet, Element);
@@ -236,7 +260,13 @@ namespace Weverca.Analysis
             setCallBranching(calledMethods);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds program point extension for static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="calledObject">Object which method is called</param>
+        /// <param name="name">Values indirectly representing name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
         public override void IndirectStaticMethodCall(ReadSnapshotEntryBase calledObject, MemoryEntry name, MemoryEntry[] arguments)
         {
             var calledObjectValue = calledObject.ReadMemory(InSnapshot);
@@ -262,7 +292,13 @@ namespace Weverca.Analysis
             indirectStaticMethodCall(typeNames, name, arguments, unknownObject);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds program point extension for indirect static method call of given name and arguments
+        /// via flow controller
+        /// </summary>
+        /// <param name="typeName">Name of type where the static method is defined</param>
+        /// <param name="name">Values indirectly representing name of called static method</param>
+        /// <param name="arguments">Arguments of call</param>
         public override void IndirectStaticMethodCall(QualifiedName typeName, MemoryEntry name, MemoryEntry[] arguments)
         {
             HashSet<QualifiedName> typeNames = new HashSet<QualifiedName>();

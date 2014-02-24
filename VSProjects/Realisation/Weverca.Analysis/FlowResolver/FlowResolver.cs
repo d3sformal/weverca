@@ -233,7 +233,16 @@ namespace Weverca.Analysis.FlowResolver
             catchBlocks.WriteMemory(outSet.Snapshot, new MemoryEntry(result));
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Process throw statement according to current flow
+        /// </summary>
+        /// <param name="flow">Flow controller which provides API usefull for throw resolvings</param>
+        /// <param name="outSet">Flow output set</param>
+        /// <param name="throwStmt">Processed throw statement</param>
+        /// <param name="throwedValue">Value that was supplied into throw statement</param>
+        /// <returns>
+        /// All possible ThrowInfo branches
+        /// </returns>
         public override IEnumerable<ThrowInfo> Throw(FlowController flow, FlowOutputSet outSet, ThrowStmt throwStmt, MemoryEntry throwedValue)
         {
             var catchBlocks = outSet.GetControlVariable(new VariableName(".catchBlocks"));

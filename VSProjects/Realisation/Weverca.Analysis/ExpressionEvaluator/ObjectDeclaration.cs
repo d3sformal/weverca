@@ -19,7 +19,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
     {
         #region Object Model
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Declare type into global context
+        /// </summary>
+        /// <param name="declaration">Declared type</param>
         public override void DeclareGlobal(TypeDecl declaration)
         {
             var objectAnalyzer = NativeObjectAnalyzer.GetInstance(Flow.OutSet);

@@ -248,7 +248,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
             target.WriteMemory(OutSnapshot, entry);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Process binary operation on given operands
+        /// </summary>
+        /// <param name="leftOperand">Left operand of operation</param>
+        /// <param name="operation">Binary operation</param>
+        /// <param name="rightOperand">Right operand of operation</param>
+        /// <returns>
+        /// Result of binary expression
+        /// </returns>
         public override MemoryEntry BinaryEx(MemoryEntry leftOperand, Operations operation,
             MemoryEntry rightOperand)
         {
@@ -258,7 +266,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return result;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Process unary operation on given operand
+        /// </summary>
+        /// <param name="operation">Unary operation</param>
+        /// <param name="operand">Operand of operation</param>
+        /// <returns>
+        /// Result of unary expression
+        /// </returns>
         public override MemoryEntry UnaryEx(Operations operation, MemoryEntry operand)
         {
             if (operation == Operations.Print)
@@ -275,14 +290,30 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return unaryOperationEvaluator.Evaluate(operation, operand);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Process increment or decrement operation, in both prefix and postfix form
+        /// </summary>
+        /// <param name="operation">Increment or decrement operation</param>
+        /// <param name="incrementedValue">Value that has to be incremented/decremented</param>
+        /// <returns>
+        /// Result of incremented or decremented
+        /// </returns>
+        /// <remarks>
+        /// This method doesn't provide assigning into incremented LValue
+        /// </remarks>
         public override MemoryEntry IncDecEx(IncDecEx operation, MemoryEntry incrementedValue)
         {
             incrementDecrementEvaluator.SetContext(Flow);
             return incrementDecrementEvaluator.Evaluate(operation.Inc, incrementedValue);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Process n-ary operation on given operands
+        /// </summary>
+        /// <param name="keyValuePairs">Collection of key/value pairs that initialize the new array</param>
+        /// <returns>
+        /// Result of n-ary expression
+        /// </returns>
         public override MemoryEntry ArrayEx(
             IEnumerable<KeyValuePair<MemoryEntry, MemoryEntry>> keyValuePairs)
         {
@@ -564,7 +595,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return leftOperand;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Process echo statement with given values
+        /// </summary>
+        /// <param name="echo">Echo statement</param>
+        /// <param name="entries">Values to be converted to string and printed out</param>
         public override void Echo(EchoStmt echo, MemoryEntry[] entries)
         {
             // TODO: Optimalize, implementation is provided only for faultless progress and testing
@@ -722,7 +757,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Terminates execution of the PHP code. It gives order to analysis to jump at the end of program.
+        /// </summary>
+        /// <param name="exit"><c>exit</c> expression</param>
+        /// <param name="status">Exit status printed if it is string or returned if it is integer</param>
+        /// <returns>
+        /// Anything, return value is ignored
+        /// </returns>
         public override MemoryEntry Exit(ExitEx exit, MemoryEntry status)
         {
             fatalError(true);
@@ -730,7 +772,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(OutSet.AnyValue);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Get value representation of given constant
+        /// </summary>
+        /// <param name="x">Constant representation</param>
+        /// <returns>
+        /// Represented value
+        /// </returns>
         public override MemoryEntry Constant(GlobalConstUse x)
         {
             var constantAnalyzer = NativeConstantAnalyzer.Create(OutSet);
@@ -762,14 +810,24 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Is called on <c>const x = 5</c> declarations
+        /// </summary>
+        /// <param name="x">Constant declaration</param>
+        /// <param name="constantValue">Value assigned into constant</param>
         public override void ConstantDeclaration(ConstantDecl x, MemoryEntry constantValue)
         {
             var name = new QualifiedName(new Name(x.Name.Value));
             UserDefinedConstantHandler.insertConstant(OutSet, name, constantValue, false);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Create object value of given type
+        /// </summary>
+        /// <param name="typeName">Object type specifier</param>
+        /// <returns>
+        /// Memory entry with all new possible objects
+        /// </returns>
         public override MemoryEntry CreateObject(QualifiedName typeName)
         {
             var typeNames = new QualifiedName[] { typeName };
@@ -791,7 +849,15 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Determine whether an expression is instance of a class or interface
+        /// </summary>
+        /// <param name="expression">Expression to be determined whether it is instance of a class</param>
+        /// <param name="typeName">Name of the type that the expression is checked to</param>
+        /// <returns>
+        ///   <c>true</c> whether all values are objects inherited from the type, <c>false</c> whether
+        /// values are not objects or not instances of the type and otherwise any boolean value.
+        /// </returns>
         public override MemoryEntry InstanceOfEx(MemoryEntry expression, QualifiedName typeName)
         {
             var typeNames = new QualifiedName[] { typeName };
@@ -1155,7 +1221,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return newObject;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Get value representation of given class constant
+        /// </summary>
+        /// <param name="thisObject">Object</param>
+        /// <param name="variableName">Constant name</param>
+        /// <returns>
+        /// Value of class constant
+        /// </returns>
         public override MemoryEntry ClassConstant(MemoryEntry thisObject, VariableName variableName)
         {
             var result = new List<Value>();
@@ -1201,7 +1274,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return new MemoryEntry(result);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Get value representation of given class constant
+        /// </summary>
+        /// <param name="qualifiedName">Class Name</param>
+        /// <param name="variableName">Constant name</param>
+        /// <returns>
+        /// Value of class constant
+        /// </returns>
         public override MemoryEntry ClassConstant(QualifiedName qualifiedName, VariableName variableName)
         {
             var success = true;
@@ -1254,7 +1334,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Resolve value, determined by given static field specifier on given type
+        /// </summary>
+        /// <param name="type">Type which static field is resolved</param>
+        /// <param name="field">Specifier of resolved field</param>
+        /// <returns>
+        /// Snapshot entry for static field
+        /// </returns>
         public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type,
             VariableIdentifier field)
         {
@@ -1480,7 +1567,14 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return result;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Resolve value, determined by given static field specifier on given type
+        /// </summary>
+        /// <param name="type">Type which static field is resolved</param>
+        /// <param name="field">Possible fields</param>
+        /// <returns>
+        /// Snapshot entry for static field
+        /// </returns>
         public override ReadWriteSnapshotEntryBase ResolveStaticField(GenericQualifiedName type,
             MemoryEntry field)
         {

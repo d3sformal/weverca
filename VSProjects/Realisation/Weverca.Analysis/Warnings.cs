@@ -231,7 +231,11 @@ namespace Weverca.Analysis
                 + Cause.GetHashCode();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Compares to.
+        /// </summary>
+        /// <param name="other">The other.</param>
+        /// <returns></returns>
         protected int compareTo(AnalysisWarning other)
         {
             if (this.FullFileName == other.FullFileName)
