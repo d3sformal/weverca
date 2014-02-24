@@ -68,22 +68,22 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Insert warning into <see cref="FlowOutputSet"/>
+        /// Insert warning into <see cref="FlowOutputSet" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="flowOutSet"></param>
-        /// <param name="warning"></param>
+        /// <typeparam name="T">The type of the warning</typeparam>
+        /// <param name="flowOutSet">The flow out set.</param>
+        /// <param name="warning">The warning.</param>
         public static void SetWarning<T>(FlowOutputSet flowOutSet, T warning) where T : AnalysisWarning
         {
             SetWarning<T>(flowOutSet.Snapshot, warning);
         }
 
         /// <summary>
-        /// Insert warning into <see cref="FlowOutputSet"/>
+        /// Insert warning into <see cref="FlowOutputSet" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="flowOutSet"></param>
-        /// <param name="warning"></param>
+        /// <typeparam name="T">The type of the warning</typeparam>
+        /// <param name="flowOutSet">The flow out set.</param>
+        /// <param name="warning">The warning.</param>
         public static void SetWarning<T>(SnapshotBase flowOutSet, T warning) where T : AnalysisWarning
         {
             if (warning.LangElement == null)
@@ -106,11 +106,11 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Read warnings from <see cref="FlowOutputSet"/>
+        /// Read warnings from <see cref="FlowOutputSet" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="flowOutSet"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of read warnings</typeparam>
+        /// <param name="flowOutSet">The flow out set.</param>
+        /// <returns>List of warnings read</returns>
         public static IEnumerable<Value> ReadWarnings<T>(FlowOutputSet flowOutSet)
             where T : AnalysisWarning
         {
@@ -118,11 +118,11 @@ namespace Weverca.Analysis
         }
 
         /// <summary>
-        /// Read warnings from <see cref="FlowOutputSet"/>
+        /// Read warnings from <see cref="FlowOutputSet" />
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="flowOutSet"></param>
-        /// <returns></returns>
+        /// <typeparam name="T">The type of read warnings</typeparam>
+        /// <param name="flowOutSet">The flow out set.</param>
+        /// <returns> List of warnings read </returns>
         public static IEnumerable<Value> ReadWarnings<T>(SnapshotBase flowOutSet)
             where T : AnalysisWarning
         {

@@ -615,10 +615,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         #region Function values
 
+        /// <summary>
+        /// </summary>
+        /// <param name="value"></param>
         /// <inheritdoc />
-        /// <exception cref="System.ArgumentException">
-        /// Thrown always since function value is not valid in an expression
-        /// </exception>
+        /// <exception cref="System.ArgumentException">Expression cannot contain any function value</exception>
         public override void VisitFunctionValue(FunctionValue value)
         {
             throw new ArgumentException("Expression cannot contain any function value");

@@ -198,7 +198,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <summary>
         /// Visit new array items initializers.
         /// </summary>
-        /// <param name="x"></param>
+        /// <param name="x">The visited value.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         /// <exception cref="System.NotSupportedException">There is no other array item type</exception>
         public override void VisitArrayEx(ArrayEx x)

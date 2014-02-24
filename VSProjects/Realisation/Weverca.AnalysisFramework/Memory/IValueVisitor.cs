@@ -241,31 +241,31 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Visits <see cref="FunctionValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The visited value</param>
         void VisitFunctionValue(FunctionValue value);
 
         /// <summary>
         /// Visits <see cref="SourceFunctionValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The visited value</param>
         void VisitSourceFunctionValue(SourceFunctionValue value);
 
         /// <summary>
         /// Visits <see cref="SourceMethodValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The visited value</param>
         void VisitSourceMethodValue(SourceMethodValue value);
 
         /// <summary>
         /// Visits <see cref="NativeAnalyzerValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The visited value</param>
         void VisitNativeAnalyzerValue(NativeAnalyzerValue value);
 
         /// <summary>
         /// Visits <see cref="LambdaFunctionValue"/>
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The visited value</param>
         void VisitLambdaFunctionValue(LambdaFunctionValue value);
 
         #endregion Function values

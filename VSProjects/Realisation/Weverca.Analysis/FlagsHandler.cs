@@ -238,7 +238,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Create new dictionary, with all clean flags 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Clean flags</returns>
         public static Dictionary<FlagType, bool> CreateCleanFlags()
         {
             var flags = new Dictionary<FlagType, bool>();
@@ -253,7 +253,7 @@ namespace Weverca.Analysis
         /// <summary>
         /// Create new dictionary, with all dirty flags 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Dirt flags</returns>
         public static Dictionary<FlagType, bool> CreateDirtyFlags()
         {
             var flags = new Dictionary<FlagType, bool>();
