@@ -16,6 +16,16 @@ namespace Weverca.AnalysisFramework.Memory
         /// Creates new AnyValue
         /// </summary>
         AnyValue AnyValue { get; }
+
+        /// <summary>
+        /// Gets an instance of class representing any float value.
+        /// </summary>
+        AnyFloatValue AnyFloatValue { get; }
+
+        /// <summary>
+        /// Gets an instance of class representing any resource value.
+        /// </summary>
+        AnyResourceValue AnyResourceValue { get; }
         
         /// <summary>
         /// Creates new UndefinedValue

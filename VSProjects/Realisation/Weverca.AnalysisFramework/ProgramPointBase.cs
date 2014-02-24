@@ -14,7 +14,7 @@ namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Program point computed during fix point algorithm.
-    /// </summary>    
+    /// </summary>
     public abstract class ProgramPointBase
     {
         #region Private members
@@ -158,7 +158,10 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Prepares the flow.
+        /// </summary>
+        /// <returns></returns>
         protected virtual bool prepareFlow()
         {
             checkInitialized();
@@ -169,14 +172,18 @@ namespace Weverca.AnalysisFramework
             return true;
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Extends the output.
+        /// </summary>
         protected virtual void extendOutput()
         {
             _outSet.StartTransaction();
             _outSet.Extend(_inSet);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Extends the input.
+        /// </summary>
         protected virtual void extendInput()
         {
             if (_flowParents.Count > 0)
@@ -202,7 +209,9 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Commits the flow.
+        /// </summary>
         protected virtual void commitFlow()
         {
             _outSet.CommitTransaction();
@@ -215,7 +224,9 @@ namespace Weverca.AnalysisFramework
             enqueueChildren();
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Enqueues the children.
+        /// </summary>
         protected virtual void enqueueChildren()
         {
             foreach (var child in _flowChildren)
