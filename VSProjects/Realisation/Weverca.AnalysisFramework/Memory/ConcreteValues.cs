@@ -30,9 +30,9 @@
         }
 
         /// <inheritdoc />
-        protected override bool equals(Value obj)
+        protected override bool equals(Value other)
         {
-            return GetType() == obj.GetType();
+            return GetType() == other.GetType();
         }
 
         /// <inheritdoc />

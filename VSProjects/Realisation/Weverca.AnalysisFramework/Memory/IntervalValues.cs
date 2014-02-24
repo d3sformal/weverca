@@ -48,9 +48,9 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        protected override bool equals(Value obj)
+        protected override bool equals(Value other)
         {
-            var o = obj as IntervalValue<T>;
+            var o = other as IntervalValue<T>;
             if (o == null)
             {
                 return false;

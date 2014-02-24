@@ -103,10 +103,11 @@ namespace Weverca.AnalysisFramework.Memory
         /// <summary>
         /// Determine that memory represented by current snapshot entry Is already defined.
         /// If not, reading memory returns UndefinedValue. But UndefinedValue can be returned
-        /// even for defined memory entries - this can be used to distinct 
+        /// even for defined memory entries - this can be used to distinct
         /// between null/undefined semantic of PHP.
         /// </summary>
         /// <param name="context">Context snapshot where operation is proceeded</param>
+        /// <returns><c>true</c> if memory is already defined.</returns>
         public bool IsDefined(SnapshotBase context)
         {
             return isDefined(context);
