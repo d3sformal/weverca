@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    interface IGenericCloneable<T>
+    /// <summary>
+    /// Generic version of cloneable interface.
+    /// </summary>
+    /// <typeparam name="T">Typpe of class which shoul be cloned</typeparam>
+    public interface IGenericCloneable<T>
     {
+        /// <summary>
+        /// Creates deep copy of this instance.
+        /// </summary>
+        /// <returns></returns>
         T Clone();
     }
 }

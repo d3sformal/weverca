@@ -8,11 +8,14 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    /// <summary>
-    /// Stores information about object value - variables where the reference is stored, possible types of object, fields
+    /// <summary>    
+    /// Stores type and list of fields of PHP object. Every objects is determined by special value object
+    /// with no content. This object is just pointer which is used to receive this descriptor instance when is need.
+    /// This approach allows to use pointer object across whole memory model without need of modyfying structure
+    /// when some new idnex is added - snapshot just simply modify descriptor instance and let the pointer to be
+    /// still the same.
     /// 
-    /// Imutable class 
-    ///     For modification use builder object 
+    /// Imutable class. For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
     internal class ObjectDescriptor : ReadonlyIndexContainer
@@ -26,22 +29,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public IReadOnlyDictionary<string, MemoryIndex> Indexes { get; private set; }
 
         /// <summary>
-        /// Gets the must references.
-        /// </summary>
-        /// <value>
-        /// The must references.
-        /// </value>
-        //public ReadOnlyCollection<MemoryIndex> MustReferences { get; private set; }
-
-        /// <summary>
-        /// Gets the may references.
-        /// </summary>
-        /// <value>
-        /// The may references.
-        /// </value>
-        //public ReadOnlyCollection<MemoryIndex> MayReferences { get; private set; }
-
-        /// <summary>
         /// Gets the types.
         /// </summary>
         /// <value>
@@ -52,14 +39,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// List of variables where the object is stored in
         /// </summary>
+        /// <value>
+        /// The parent variable.
+        /// </value>
         public MemoryIndex ParentVariable { get; private set; }
 
         /// <summary>
-        /// 
+        /// Speacial index when the target location is unknown (ANY index)
         /// </summary>
+        /// <value>
+        /// The index of the unknown.
+        /// </value>
         public MemoryIndex UnknownIndex { get; private set; }
 
-        public ObjectValue ObjectValue;
+        /// <summary>
+        /// Pointing object value this descriptor is used for.
+        /// </summary>
+        public ObjectValue ObjectValue { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class from the builder object.
@@ -68,8 +64,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public ObjectDescriptor(ObjectDescriptorBuilder objectDescriptorBuilder)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(objectDescriptorBuilder.Indexes);
-            //MustReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MustReferences.ToList());
-            //MayReferences = new ReadOnlyCollection<MemoryIndex>(objectDescriptorBuilder.MayReferences.ToList());
             Type = objectDescriptorBuilder.Type;
 
             UnknownIndex = objectDescriptorBuilder.UnknownIndex;
@@ -78,15 +72,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="ObjectDescriptor" /> class.
         /// </summary>
+        /// <param name="objectValue">The object value.</param>
         /// <param name="type">The type of object.</param>
+        /// <param name="unknownIndex">Index of the unknown.</param>
         public ObjectDescriptor(ObjectValue objectValue, TypeValue type, MemoryIndex unknownIndex)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
-
-            //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             Type = type;
 
             UnknownIndex = unknownIndex;
@@ -95,15 +88,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ObjectDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="ObjectDescriptor" /> class.
         /// </summary>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="parentVariable">The parent variable.</param>
         /// <param name="type">The type of object.</param>
+        /// <param name="unknownIndex">Index of the unknown.</param>
         public ObjectDescriptor(ObjectValue objectValue, MemoryIndex parentVariable, TypeValue type, MemoryIndex unknownIndex)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
-
-            //MustReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
-            //MayReferences = new ReadOnlyCollection<MemoryIndex>(new List<MemoryIndex>());
             Type = type;
 
             UnknownIndex = unknownIndex;
@@ -136,22 +129,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public Dictionary<string, MemoryIndex> Indexes { get; private set; }
 
         /// <summary>
-        /// Gets the must references.
-        /// </summary>
-        /// <value>
-        /// The must references.
-        /// </value>
-        //public HashSet<MemoryIndex> MustReferences { get; private set; }
-
-        /// <summary>
-        /// Gets the may references.
-        /// </summary>
-        /// <value>
-        /// The may references.
-        /// </value>
-        //public HashSet<MemoryIndex> MayReferences { get; private set; }
-
-        /// <summary>
         /// Gets the types.
         /// </summary>
         /// <value>
@@ -165,10 +142,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         public MemoryIndex ParentVariable { get; private set; }
 
         /// <summary>
-        /// 
+        /// Gets the speacial field which is used when the target location is unknown (ANY index)
         /// </summary>
+        /// <value>
+        /// The index of the unknown.
+        /// </value>
         public MemoryIndex UnknownIndex { get; private set; }
 
+        /// <summary>
+        /// Pointing object value this descriptor is used for.
+        /// </summary>
         public ObjectValue ObjectValue;
 
         /// <summary>
@@ -188,8 +171,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 Indexes = new Dictionary<string, MemoryIndex>();
             }
 
-            //MustReferences = new HashSet<MemoryIndex>(objectDescriptor.MustReferences);
-            //MayReferences = new HashSet<MemoryIndex>(objectDescriptor.MayReferences);
             Type = objectDescriptor.Type;
 
             ParentVariable = objectDescriptor.ParentVariable;
@@ -210,50 +191,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         /// <summary>
-        /// Adds the must reference.
-        /// </summary>
-        /// <param name="reference">The reference.</param>
-        /// <returns></returns>
-        /*public ObjectDescriptorBuilder addMustReference(MemoryIndex reference)
-        {
-            MustReferences.Add(reference);
-            return this;
-        }*/
-
-        /// <summary>
-        /// Adds the may reference.
-        /// </summary>
-        /// <param name="reference">The reference.</param>
-        /// <returns></returns>
-        /*public ObjectDescriptorBuilder addMayReference(MemoryIndex reference)
-        {
-            MayReferences.Add(reference);
-            return this;
-        }*/
-
-        /// <summary>
-        /// Removes the must reference.
-        /// </summary>
-        /// <param name="reference">The reference.</param>
-        /// <returns></returns>
-        /*public ObjectDescriptorBuilder removeMustReference(MemoryIndex reference)
-        {
-            MustReferences.Remove(reference);
-            return this;
-        }*/
-
-        /// <summary>
-        /// Removes the may reference.
-        /// </summary>
-        /// <param name="reference">The reference.</param>
-        /// <returns></returns>
-        /*public ObjectDescriptorBuilder removeMayReference(MemoryIndex reference)
-        {
-            MayReferences.Remove(reference);
-            return this;
-        }*/
-
-        /// <summary>
         /// Builds new descriptor object from this instance.
         /// </summary>
         /// <returns></returns>
@@ -262,13 +199,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return new ObjectDescriptor(this);
         }
 
-        internal ObjectDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
+        /// <summary>
+        /// Sets the parent variable.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <returns></returns>
+        public ObjectDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
         {
             ParentVariable = parentIndex;
             return this;
         }
 
-        internal ObjectDescriptorBuilder SetUnknownField(MemoryIndex unknownIndex)
+        /// <summary>
+        /// Sets the unknown field.
+        /// </summary>
+        /// <param name="unknownIndex">Index of the unknown.</param>
+        /// <returns></returns>
+        public ObjectDescriptorBuilder SetUnknownField(MemoryIndex unknownIndex)
         {
             UnknownIndex = unknownIndex;
             return this;

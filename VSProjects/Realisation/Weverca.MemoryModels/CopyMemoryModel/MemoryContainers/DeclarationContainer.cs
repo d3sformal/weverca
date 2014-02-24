@@ -7,17 +7,40 @@ using PHP.Core;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class DeclarationContainer<T>
+    /// <summary>
+    /// Container for class and function declarations. Provides mapping between qualified 
+    /// names and declarations data.
+    /// 
+    /// This is not imutable class.
+    /// </summary>
+    /// <typeparam name="T">Type of delared object.</typeparam>
+    public class DeclarationContainer<T>
     {
+        /// <summary>
+        /// The collection of declarrations.
+        /// </summary>
         private Dictionary<QualifiedName, HashSet<T>> declarations;
 
+        /// <summary>
+        /// Gets the count of declarations in the collection.
+        /// </summary>
+        /// <value>
+        /// The count.
+        /// </value>
         public int Count { get { return declarations.Count; } }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeclarationContainer{T}"/> class.
+        /// </summary>
         public DeclarationContainer()
         {
             declarations = new Dictionary<QualifiedName, HashSet<T>>();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DeclarationContainer{T}"/> class and copy data from the givenb one.
+        /// </summary>
+        /// <param name="container">The container.</param>
         public DeclarationContainer(DeclarationContainer<T> container)
         {
             declarations = new Dictionary<QualifiedName, HashSet<T>>();
@@ -27,11 +50,22 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Determines whether the collection contains specified qualified name.
+        /// </summary>
+        /// <param name="key">The key qualified name.</param>
+        /// <returns></returns>
         public bool ContainsKey(QualifiedName key)
         {
             return declarations.ContainsKey(key);
         }
 
+        /// <summary>
+        /// Tries to get the declaration by given qualified name.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         public bool TryGetValue(QualifiedName key, out IEnumerable<T> value)
         {
             HashSet<T> val;
@@ -41,11 +75,21 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return ret;
         }
 
+        /// <summary>
+        /// Gets the declaration by given qualified name.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public IEnumerable<T> GetValue(QualifiedName key)
         {
             return declarations[key];
         }
 
+        /// <summary>
+        /// Adds new declaration into the structure. If there
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The value.</param>
         public void Add(QualifiedName key, T value)
         {
             HashSet<T> set;
@@ -61,11 +105,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Gets all qualified names which are defined in the container.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerable<QualifiedName> GetNames()
         {
             return declarations.Keys;
         }
 
+        /// <summary>
+        /// Determines whether this container contains the same definitions as the given one.
+        /// </summary>
+        /// <param name="other">The other.</param>
+        /// <returns></returns>
         internal bool DataEquals(DeclarationContainer<T> other)
         {
             HashSet<QualifiedName> names = new HashSet<QualifiedName>();

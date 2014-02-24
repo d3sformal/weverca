@@ -7,19 +7,60 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class IndexData
+    /// <summary>
+    /// Contains structural data about memory indexes. Every memory index used in snapshot is mapped
+    /// to one instance of IndexData class. This class allows to set structural data like aliases,
+    /// array associated with index and associated object which is used to traverse the memory tree.
+    /// This class is extension of memory index so when there is structural change the instane of
+    /// iIndexData is changed and memory index can stay the same which prevents cascade of changes
+    /// across whole snapshot.
+    /// 
+    /// Imutable class. For modification use builder object 
+    ///     data.Builder().modify().Build()
+    /// </summary>
+    public class IndexData
     {
+        /// <summary>
+        /// Gets the object with informations about alias structure for associated memory index.
+        /// </summary>
+        /// <value>
+        /// The aliases.
+        /// </value>
         public MemoryAlias Aliases { get; private set; }
+
+        /// <summary>
+        /// Gets the array which is assocoated with memory index.
+        /// </summary>
+        /// <value>
+        /// The array.
+        /// </value>
         public AssociativeArray Array { get; private set; }
+
+        /// <summary>
+        /// Gets the list of all objects which are assocoated with memory index.
+        /// </summary>
+        /// <value>
+        /// The objects.
+        /// </value>
         public ObjectValueContainer Objects { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexData"/> class.
+        /// </summary>
+        /// <param name="aliases">The aliases.</param>
+        /// <param name="array">The array.</param>
+        /// <param name="objects">The objects.</param>
         public IndexData(MemoryAlias aliases, AssociativeArray array, ObjectValueContainer objects)
         {
             Aliases = aliases;
             Array = array;
             Objects = objects;
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexData"/> class.
+        /// </summary>
+        /// <param name="data">The data.</param>
         public IndexData(IndexDataBuilder data)
         {
             Aliases = data.Aliases;
@@ -27,11 +68,20 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Objects = data.Objects;
         }
 
+        /// <summary>
+        /// Gets builder instance which can be used to modify this instance.
+        /// </summary>
+        /// <returns></returns>
         public IndexDataBuilder Builder()
         {
             return new IndexDataBuilder(this);
         }
 
+        /// <summary>
+        /// Compares this data structure with the given object.
+        /// </summary>
+        /// <param name="other">The other.</param>
+        /// <returns></returns>
         internal bool DataEquals(IndexData other)
         {
             if (this == other)
@@ -66,12 +116,40 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return true;
         }
     }
-    class IndexDataBuilder
+
+    /// <summary>
+    /// Builder class to modify IndexData instances.
+    /// </summary>
+    public class IndexDataBuilder
     {
+        /// <summary>
+        /// Gets the object with informations about alias structure for associated memory index.
+        /// </summary>
+        /// <value>
+        /// The aliases.
+        /// </value>
         public MemoryAlias Aliases { get; set; }
+
+        /// <summary>
+        /// Gets the array which is assocoated with memory index.
+        /// </summary>
+        /// <value>
+        /// The array.
+        /// </value>
         public AssociativeArray Array { get; set; }
+
+        /// <summary>
+        /// Gets the list of all objects which are assocoated with memory index.
+        /// </summary>
+        /// <value>
+        /// The objects.
+        /// </value>
         public ObjectValueContainer Objects { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IndexDataBuilder"/> class.
+        /// </summary>
+        /// <param name="data">The data.</param>
         public IndexDataBuilder(IndexData data)
         {
             Aliases = data.Aliases;
@@ -79,6 +157,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Objects = data.Objects;
         }
 
+        /// <summary>
+        /// Builds this instance.
+        /// </summary>
+        /// <returns></returns>
         public IndexData Build()
         {
             return new IndexData(this);

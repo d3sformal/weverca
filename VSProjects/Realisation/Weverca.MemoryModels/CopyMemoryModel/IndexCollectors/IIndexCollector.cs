@@ -7,6 +7,9 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /// <summary>
+    /// 
+    /// </summary>
     interface IIndexCollector
     {
         IEnumerable<MemoryIndex> MustIndexes { get; }
@@ -21,37 +24,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         bool IsDefined { get; }
 
         void Next(PathSegment segment);
-    }
-
-    class CollectedValue
-    {
-        public readonly HashSet<Value> Values = new HashSet<Value>();
-        public readonly MemoryIndex ContainingIndex;
-        public readonly Value OriginValue;
-
-        public bool IsContainedInIndex { get { return ContainingIndex != null; } }
-        public bool HasOriginValue { get { return OriginValue != null; } }
-
-        public CollectedValue(MemoryIndex containingIndex)
-        {
-            ContainingIndex = containingIndex;
-        }
-
-        public CollectedValue(MemoryIndex containingIndex, Value originValue)
-        {
-            ContainingIndex = containingIndex;
-            OriginValue = originValue;
-        }
-
-        public void AddValues(MemoryEntry entry)
-        {
-            HashSetTools.AddAll(Values, entry.PossibleValues);
-        }
-
-        public void AddValues(IEnumerable<Value> values)
-        {
-            HashSetTools.AddAll(Values, values);
-        }
     }
 
     abstract class IndexCollector : IIndexCollector

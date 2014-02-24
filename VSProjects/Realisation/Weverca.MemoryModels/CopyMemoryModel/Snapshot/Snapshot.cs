@@ -21,12 +21,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// Basic unit of the memory model is MemoryIndex which allows undirect links between aliases
     /// and collection indexes. Every index is just pointer into the memory location where the data is stored.
     /// So when the data is changed is not necessary to change every connected memory locations. See
-    /// <see cref="MemoryIndex" /> and <see cref="MemoryContainer" /> for more information. Data model itself is
-    /// implemented in <see cref="SnapshotStructure" /> class.
+    /// MemoryIndex and MemoryContainer for more information. Data model itself is implemented
+    /// in <see cref="SnapshotStructure" /> class.
     /// 
     /// Algorithms for reading or modifying snapshots are splitted into two groups. Memory collectors represents
     /// algorithms to gathering indexes and memory workers provides implementation of read/write
-    /// algorithm. For more informations see <see cref="IndexCollectors" /> and <see cref="MemoryWorkers" />.
+    /// algorithm. For more informations see ÏndexCollectors and MemoryWorkers.
     /// </summary>
     public class Snapshot : SnapshotBase, IReferenceHolder
     {

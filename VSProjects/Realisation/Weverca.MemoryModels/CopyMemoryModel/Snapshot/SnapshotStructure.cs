@@ -360,7 +360,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="oldValue">The old value.</param>
         /// <param name="simplifyLimit">The simplify limit.</param>
-        /// <returns><c>true</c> if the data are same; otherwise, <c>false</c>.</returns>
+        /// <param name="assistant">The assistant.</param>
+        /// <returns>
+        ///   <c>true</c> if the data are same; otherwise, <c>false</c>.
+        /// </returns>
         public bool DataEqualsAndSimplify(SnapshotStructure oldValue, int simplifyLimit, MemoryAssistantBase assistant)
         {
             if (!compareDataAndSimplify(oldValue, simplifyLimit, assistant))

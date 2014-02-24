@@ -9,36 +9,55 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
     /// <summary>
-    /// Stores information about array value - indexes of the array
+    /// Stores list of indexes of associative array. Every associative array is determined by special value object
+    /// with no content. This object is just pointer which is used to receive this descriptor instance when is need.
+    /// This approach allows to use pointer object across whole memory model without need of modyfying structure
+    /// when some new idnex is added - snapshot just simply modify descriptor instance and let the pointer to be
+    /// still the same.
     /// 
-    /// Imutable class 
-    ///     For modification use builder object 
-    ///         descriptor.Builder().modify().Build() //Creates new modified object
+    /// Imutable class. For modification use builder object 
+    ///     descriptor.Builder().modify().Build()
     /// </summary>
     internal class ArrayDescriptor : ReadonlyIndexContainer
     {
         /// <summary>
         /// List of indexes for the array
         /// </summary>
+        /// <value>
+        /// The indexes.
+        /// </value>
         public IReadOnlyDictionary<string, MemoryIndex> Indexes { get; private set; }
 
         /// <summary>
         /// Variable where the array is stored in
         /// </summary>
+        /// <value>
+        /// The parent variable.
+        /// </value>
         public MemoryIndex ParentVariable { get; private set; }
 
         /// <summary>
-        /// 
+        /// Speacial index when the target location is unknown (ANY index)
         /// </summary>
+        /// <value>
+        /// The index of the unknown.
+        /// </value>
         public MemoryIndex UnknownIndex { get; private set; }
 
+        /// <summary>
+        /// Pointing array value this descriptor is used for.
+        /// </summary>
+        /// <value>
+        /// The array value.
+        /// </value>
         public AssociativeArray ArrayValue { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
         /// </summary>
-        /// <param name="arrayValue">Asociative array</param>
+        /// <param name="arrayValue">The array value.</param>
         /// <param name="parentVariable">The parent variable.</param>
+        /// <exception cref="System.Exception">Null array in descriptor</exception>
         public ArrayDescriptor(AssociativeArray arrayValue, MemoryIndex parentVariable)
         {
             Indexes = new ReadOnlyDictionary<string, MemoryIndex>(new Dictionary<string, MemoryIndex>());
@@ -53,7 +72,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class from builder object.
+        /// Initializes a new instance of the <see cref="ArrayDescriptor"/> class.
         /// </summary>
         /// <param name="arrayDescriptorBuilder">The array descriptor builder.</param>
         public ArrayDescriptor(ArrayDescriptorBuilder arrayDescriptorBuilder)
@@ -63,8 +82,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             UnknownIndex = arrayDescriptorBuilder.UnknownIndex;
             ArrayValue = arrayDescriptorBuilder.ArrayValue;
         }
-
-
 
         /// <summary>
         /// Creates new builder to modify this descriptor 
@@ -82,20 +99,35 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     internal class ArrayDescriptorBuilder : IWriteableIndexContainer
     {
         /// <summary>
-        /// List of variables where the array is stored in
+        /// Gets or sets the variable where the array is stored in
         /// </summary>
+        /// <value>
+        /// The parent variable.
+        /// </value>
         public MemoryIndex ParentVariable { get; set; }
 
         /// <summary>
-        /// List of indexes for the array
+        /// Gets the collection of indexes of array.
         /// </summary>
+        /// <value>
+        /// The indexes.
+        /// </value>
         public Dictionary<string, MemoryIndex> Indexes { get; private set; }
-       
+
         /// <summary>
-        /// 
+        /// Speacial index when the target location is unknown (ANY index)
         /// </summary>
+        /// <value>
+        /// The index of the unknown.
+        /// </value>
         public MemoryIndex UnknownIndex { get; private set; }
 
+        /// <summary>
+        /// Pointing array value this descriptor is used for.
+        /// </summary>
+        /// <value>
+        /// The array value.
+        /// </value>
         public AssociativeArray ArrayValue { get; private set; }
 
         /// <summary>
@@ -120,6 +152,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             ArrayValue = arrayDescriptor.ArrayValue;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArrayDescriptorBuilder"/> class.
+        /// </summary>
         public ArrayDescriptorBuilder()
         {
             Indexes = new Dictionary<string, MemoryIndex>();
@@ -153,12 +188,23 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return new ArrayDescriptor(this);
         }
 
+        /// <summary>
+        /// Sets the parent variable.
+        /// </summary>
+        /// <param name="parentIndex">Index of the parent.</param>
+        /// <returns></returns>
         internal ArrayDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
         {
             ParentVariable = parentIndex;
             return this;
         }
 
+        /// <summary>
+        /// Sets the array value.
+        /// </summary>
+        /// <param name="arrayValue">The array value.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Null array in descriptor</exception>
         internal ArrayDescriptorBuilder SetArrayValue(AssociativeArray arrayValue)
         {
             if (arrayValue == null)
@@ -170,6 +216,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return this;
         }
 
+        /// <summary>
+        /// Sets the unknown field.
+        /// </summary>
+        /// <param name="memoryIndex">Index of the memory.</param>
+        /// <returns></returns>
         internal ArrayDescriptorBuilder SetUnknownField(MemoryIndex memoryIndex)
         {
             UnknownIndex = memoryIndex;

@@ -49,6 +49,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// The path segments.
         /// </value>
         public ReadOnlyCollection<PathSegment> PathSegments { get; private set; }
+
+        /// <summary>
+        /// Gets the length of path.
+        /// </summary>
+        /// <value>
+        /// The length.
+        /// </value>
         public int Length { get { return PathSegments.Count; } }
 
         /// <summary>

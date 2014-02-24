@@ -130,6 +130,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         #endregion
 
+        /// <summary>
+        /// Compares data of this data collection object with the given one.
+        /// </summary>
+        /// <param name="oldData">The old data.</param>
+        /// <returns></returns>
         public bool DataEquals(SnapshotData oldData)
         {
             if (this.IndexData.Count != oldData.IndexData.Count)
@@ -152,6 +157,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return true;
         }
 
+        /// <summary>
+        /// Simplifies memory entries which is bigget than simplify limit and compares data of this data collection object with the given one.
+        /// </summary>
+        /// <param name="oldData">The old data.</param>
+        /// <param name="simplifyLimit">The simplify limit.</param>
+        /// <param name="assistant">The assistant.</param>
+        /// <returns></returns>
         public bool DataEqualsAndSimplify(SnapshotData oldData, int simplifyLimit, MemoryAssistantBase assistant)
         {
             bool areEquals = true;
@@ -171,6 +183,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return areEquals;
         }
 
+        /// <summary>
+        /// Compares data of single memory index within this and given data container.
+        /// </summary>
+        /// <param name="oldData">The old data.</param>
+        /// <param name="index">The index.</param>
+        /// <returns></returns>
         public bool DataEquals(SnapshotData oldData, MemoryIndex index)
         {
             MemoryEntry newEntry = null;
@@ -188,6 +206,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return oldEntry.Equals(newEntry);
         }
 
+
+        /// <summary>
+        /// Simplify data of single memory index if exceeds given simplify limit and compares it with the data inside given data container.
+        /// </summary>
+        /// <param name="oldData">The old data.</param>
+        /// <param name="index">The index.</param>
+        /// <param name="simplifyLimit">The simplify limit.</param>
+        /// <param name="assistant">The assistant.</param>
+        /// <returns></returns>
         public bool DataEqualsAndSimplify(SnapshotData oldData, MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
         {
             MemoryEntry newEntry = null;
@@ -225,6 +252,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Widens the data of given memory index in this data container.
+        /// </summary>
+        /// <param name="oldData">The old data.</param>
+        /// <param name="index">The index.</param>
+        /// <param name="assistant">The assistant.</param>
         public void DataWiden(SnapshotData oldData, MemoryIndex index, MemoryAssistantBase assistant)
         {
             MemoryEntry newEntry = null;

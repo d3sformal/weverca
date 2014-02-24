@@ -14,7 +14,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     ///     For modification use builder object 
     ///         descriptor.Builder().modify().Build() //Creates new modified object
     /// </summary>
-    class MemoryAlias
+    public class MemoryAlias
     {
         /// <summary>
         /// Gets the may aliasses.
@@ -122,7 +122,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// <summary>
     /// Mutable variant of MemoryAlias - use for creating new structure
     /// </summary>
-    class MemoryAliasBuilder
+    public class MemoryAliasBuilder
     {
         /// <summary>
         /// Gets the may aliasses.
@@ -150,6 +150,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             MustAliasses = new HashSet<MemoryIndex>(MemoryAlias.MustAliasses);
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MemoryAliasBuilder"/> class.
+        /// </summary>
         public MemoryAliasBuilder()
         {
             MayAliasses = new HashSet<MemoryIndex>();
