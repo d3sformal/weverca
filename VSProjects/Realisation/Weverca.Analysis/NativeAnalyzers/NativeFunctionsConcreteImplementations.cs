@@ -42,8 +42,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         private static Dictionary<string, ConcreteFunctionDelegate> functions = new Dictionary<string, ConcreteFunctionDelegate>() 
         {
             { "strtolower", _strtolower },
-            { "strtoupper", _strtoupper },
-            { "concat", _concat }
+            { "strtoupper", _strtoupper }
         };
 
         #region Implementations of concrete native functions
