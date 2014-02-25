@@ -40,8 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CopyMemoryModel\IndexCollectors\CollectedLocation.cs" />
     <Compile Include="CopyMemoryModel\IndexCollectors\ProcessValueAsLoationVisitor.cs" />
+    <Compile Include="CopyMemoryModel\IndexCollectors\ValueLocation.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\DeclarationContainer.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\ICloneable.cs" />
     <Compile Include="CopyMemoryModel\MemoryContainers\IndexData.cs" />

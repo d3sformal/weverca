@@ -8,24 +8,60 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 {
     public class MergeOperation
     {
+        /// <summary>
+        /// The collection of source indexes for this merge operation.
+        /// </summary>
         public readonly List<Tuple<MemoryIndex, Snapshot>> Indexes = new List<Tuple<MemoryIndex, Snapshot>>();
 
+        /// <summary>
+        /// Gets a value indicating whether operation is undefined or not.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if is undefined; otherwise, <c>false</c>.
+        /// </value>
         public bool IsUndefined { get; private set; }
+
+        /// <summary>
+        /// Gets the target index of this operation
+        /// </summary>
+        /// <value>
+        /// The index of the target.
+        /// </value>
         public MemoryIndex TargetIndex { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether index is at root level.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if index is at root level; otherwise, <c>false</c>.
+        /// </value>
         public bool IsRoot { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeOperation"/> class.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
         public MergeOperation(MemoryIndex targetIndex)
         {
             IsUndefined = false;
             TargetIndex = targetIndex;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeOperation"/> class.
+        /// </summary>
         public MergeOperation()
         {
             IsUndefined = false;
         }
 
-        internal void Add(MemoryIndex memoryIndex, Snapshot snapshot)
+        /// <summary>
+        /// Adds the specified memory index into sources for this operation.
+        /// </summary>
+        /// <param name="memoryIndex">Index of the memory.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <exception cref="System.NullReferenceException"></exception>
+        public void Add(MemoryIndex memoryIndex, Snapshot snapshot)
         {
             if (memoryIndex == null)
             {
@@ -35,55 +71,32 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Indexes.Add(new Tuple<MemoryIndex, Snapshot>(memoryIndex, snapshot));
         }
 
-        internal void SetUndefined()
+        /// <summary>
+        /// Sets the undefined to true.
+        /// </summary>
+        public void SetUndefined()
         {
             IsUndefined = true;
         }
 
-        internal void SetTargetIndex(MemoryIndex targetIndex)
+        /// <summary>
+        /// Sets the target indeg of this operation.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        public void SetTargetIndex(MemoryIndex targetIndex)
         {
             TargetIndex = targetIndex;
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return TargetIndex.ToString();
         }
     }
-
-    /*class MergeWithinSnapshotOperation
-    {
-        public readonly HashSet<MemoryIndex> Indexes = new HashSet<MemoryIndex>();
-
-        public bool IsUndefined { get; private set; }
-        public MemoryIndex TargetIndex { get; private set; }
-
-        public MergeWithinSnapshotOperation(MemoryIndex targetIndex)
-        {
-            IsUndefined = false;
-            TargetIndex = targetIndex;
-        }
-
-        public MergeWithinSnapshotOperation()
-        {
-            IsUndefined = false;
-        }
-
-        internal void Add(MemoryIndex memoryIndex)
-        {
-            Indexes.Add(memoryIndex);
-        }
-
-        internal void SetUndefined()
-        {
-            IsUndefined = true;
-        }
-
-        internal void SetTargetIndex(MemoryIndex targetIndex)
-        {
-            TargetIndex = targetIndex;
-        }
-
-        public bool IsRoot { get; set; }
-    }*/
 }

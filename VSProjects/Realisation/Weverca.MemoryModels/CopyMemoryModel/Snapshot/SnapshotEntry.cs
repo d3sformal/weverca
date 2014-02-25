@@ -201,7 +201,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         private void writeMemoryInfo(Snapshot snapshot, MemoryEntry value, bool forceStrongWrite)
         {
             AssignCollector collector = new AssignCollector(snapshot);
-            collector.CreateNewSctucture(false);
             collector.ProcessPath(path);
 
             if (forceStrongWrite)

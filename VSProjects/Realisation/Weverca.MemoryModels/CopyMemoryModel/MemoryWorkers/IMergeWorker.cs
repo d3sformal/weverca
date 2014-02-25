@@ -6,8 +6,15 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    interface IMergeWorker
+    /// <summary>
+    /// Defines common methods for merge algorithms.
+    /// </summary>
+    public interface IMergeWorker
     {
+        /// <summary>
+        /// Adds operation into stack of merge worker.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
         void addOperation(MergeOperation operation);
     }
 }

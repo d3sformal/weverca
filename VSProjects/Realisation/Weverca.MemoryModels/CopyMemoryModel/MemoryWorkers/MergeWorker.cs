@@ -11,7 +11,7 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    public class MergeWorker : IReferenceHolder, IMergeWorker
+    class MergeWorker : IReferenceHolder, IMergeWorker
     {
         private Dictionary<MemoryIndex, MemoryAliasBuilder> memoryAliases = new Dictionary<MemoryIndex, MemoryAliasBuilder>();
 

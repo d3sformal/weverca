@@ -17,9 +17,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
         private MemberIdentifier index;
         private MemoryIndex containingIndex;
-        private ICollection<CollectedLocation> locations;
+        private ICollection<ValueLocation> locations;
 
-        public ReadIndexVisitor(MemoryIndex containingIndex, IndexPathSegment indexSegment, ICollection<CollectedLocation> locations)
+        public ReadIndexVisitor(MemoryIndex containingIndex, IndexPathSegment indexSegment, ICollection<ValueLocation> locations)
         {
             this.containingIndex = containingIndex;
             this.locations = locations;
@@ -83,14 +83,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     {
         private VariableIdentifier index;
         private MemoryIndex containingIndex;
-        private ICollection<CollectedLocation> locations;
+        private ICollection<ValueLocation> locations;
 
         public bool ContainsUndefinedValue { get; set; }
         public bool ContainsDefinedValue { get; set; }
         public bool ContainsObjectValue { get; set; }
         public bool ContainsAnyValue { get; set; }
 
-        public ReadFieldVisitor(MemoryIndex containingIndex, FieldPathSegment fieldSegment, ICollection<CollectedLocation> locations)
+        public ReadFieldVisitor(MemoryIndex containingIndex, FieldPathSegment fieldSegment, ICollection<ValueLocation> locations)
         {
             this.containingIndex = containingIndex;
             this.locations = locations;
