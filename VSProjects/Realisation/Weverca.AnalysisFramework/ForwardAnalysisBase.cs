@@ -237,8 +237,7 @@ namespace Weverca.AnalysisFramework
 
             return new FlowOutputSet(snapshot, WideningLimit, SimplifyLimit);
         }
-
-
+        
         /// <summary>
         /// Throws exception when analyze has been already proceeded
         /// </summary>

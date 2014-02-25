@@ -1586,7 +1586,45 @@ while ($i <= 2) {
  $i++;
 }
 
-".AssertVariable("b").HasValues(1,2);
+".AssertVariable("b").HasValues(1, 2);
+
+
+        readonly static TestCase ConditionalExpressionResult_CASE = @"
+
+$result = true ? 'a' : 'b';
+
+".AssertVariable("result").HasValues("a");
+
+        readonly static TestCase NestedConditionalExpressionResult_CASE = @"
+
+$result = true ? false : true ? 'a' : 'b';
+
+".AssertVariable("result").HasValues("b");
+
+
+        readonly static TestCase ArrayConditionalExpressionResult_CASE = @"
+$a[0]='a';
+$result = true ? $a[0] : 'b';
+
+".AssertVariable("result").HasValues("a");
+
+        [TestMethod]
+        public void ArrayConditionalExpressionResult()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayConditionalExpressionResult_CASE);
+        }
+
+        [TestMethod]
+        public void NestedConditionalExpressionResult()
+        {
+            AnalysisTestUtils.RunTestCase(NestedConditionalExpressionResult_CASE);
+        }
+
+        [TestMethod]
+        public void ConditionalExpressionResult()
+        {
+            AnalysisTestUtils.RunTestCase(ConditionalExpressionResult_CASE);
+        }
 
         [TestMethod]
         public void WhileCycleComputation()

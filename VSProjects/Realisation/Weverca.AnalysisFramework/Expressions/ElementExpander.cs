@@ -96,7 +96,9 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <returns>Created program point chain</returns>
         private IEnumerable<ProgramPointBase> createPointsChain(IEnumerable<LangElement> orderedPartials)
         {
+            var result = new List<ProgramPointBase>();
             ProgramPointBase lastPoint = null;
+
             foreach (var partial in orderedPartials)
             {
                 //skip all flow omitted lang elements
@@ -115,7 +117,7 @@ namespace Weverca.AnalysisFramework.Expressions
                     foreach (var substitution in substitute(currentPoint))
                     {
                         lastPoint = substitution;
-                        yield return currentPoint;
+                        result.Add(substitution);
                     }
 
                     continue;
@@ -135,12 +137,14 @@ namespace Weverca.AnalysisFramework.Expressions
                     foreach (var substitution in substitutions)
                     {
                         currentPoint = substitution;
-                        yield return currentPoint; //report point in correct order
+                        result.Add(currentPoint); //report point in correct order
                     }
                 }
 
                 lastPoint = currentPoint;
             }
+
+            return result;
         }
 
         /// <summary>
