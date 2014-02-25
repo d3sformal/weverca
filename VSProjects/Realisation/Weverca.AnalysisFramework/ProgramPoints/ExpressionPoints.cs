@@ -106,6 +106,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal ConcatExPoint(ConcatEx concat, IEnumerable<ValuePoint> parts)
         {
             Parts = parts;
+            Concat = concat;
         }
 
         /// <inheritdoc />
