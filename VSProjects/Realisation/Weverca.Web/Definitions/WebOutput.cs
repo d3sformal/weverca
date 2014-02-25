@@ -16,7 +16,7 @@ namespace Weverca.Web.Definitions
         static readonly Color Hint = Color.DarkCyan;
         static readonly Color Variable = Color.Yellow;
         static readonly Color Delimiter = Color.Red;
-        static readonly Color Error = Color.Red;
+        static readonly Color ErrorColor = Color.Red;
         static readonly Color Comment = Color.Green;
         static readonly int indentationLength = 4;
 
@@ -84,7 +84,7 @@ namespace Weverca.Web.Definitions
 
         protected override void error(string error)
         {
-            print(Error, error);
+            print(ErrorColor, error);
         }
 
         #endregion
