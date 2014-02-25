@@ -59,11 +59,6 @@
     <Compile Include="ExceptionTester.cs" />
     <Compile Include="FlagTester.cs" />
     <Compile Include="ExpressionResolverTester.cs" />
-    <Compile Include="FlowResolverTests\EqualsValueVisitor.cs" />
-    <Compile Include="FlowResolverTests\FlowResolverTests.cs" />
-    <Compile Include="FlowResolverTests\TestCase.cs" />
-    <Compile Include="FlowResolverTests\TestCaseResult.cs" />
-    <Compile Include="FlowResolverTests\ValueFactory.cs" />
     <Compile Include="IncludeTests.cs" />
     <Compile Include="NativeFuntionTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

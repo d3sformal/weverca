@@ -937,7 +937,8 @@ namespace Weverca.Analysis
         /// <summary>
         /// Resolving names according to given memory entry
         /// </summary>
-        /// <param name="functionName"></param>
+        /// <param name="functionName">Name of the function.</param>
+        /// <param name="IsAlwaysConcrete">if set to <c>true</c> result is concrete name.</param>
         /// <returns></returns>
         private List<QualifiedName> getSubroutineNames(MemoryEntry functionName, out bool IsAlwaysConcrete)
         {
