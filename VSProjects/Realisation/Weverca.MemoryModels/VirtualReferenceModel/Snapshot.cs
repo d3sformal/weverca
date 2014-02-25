@@ -15,7 +15,24 @@ using Weverca.MemoryModels.VirtualReferenceModel.SnapshotEntries;
 namespace Weverca.MemoryModels.VirtualReferenceModel
 {
     /// <summary>
-    /// Simple (non efficient) implementation as proof of concept - will be heavily optimized, refactored
+    /// Implementation of the memory snapshot based on virtual reference semantics.
+    /// 
+    /// This implementation stores description of variables in VariableContainers. The description contains
+    /// references for every declared variable in context of current snapshot. References are used as keys into
+    /// data containers, where <see cref="MemoryEntry"/> objects are stored.
+    /// 
+    /// Array indexes and object fields are stored as simple variables in meta variable containers. This results in 
+    /// same implementation for reading and writing variables, array fields and indexes (we will call them storages).
+    /// 
+    /// Reading of storages is done by getting <see cref="MemoryEntry"/> for every storage's reference. They are merged
+    /// for reading result.
+    /// 
+    /// Writing into storages differs according count of references.
+    /// 0 - new reference is allocated with strong update
+    /// 1 - strong update
+    /// 2 - weak update of all references
+    /// 
+    /// Nowadays there is not support for unknown storages.
     /// </summary>
     public class Snapshot : SnapshotBase
     {
@@ -49,6 +66,9 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// </summary>
         internal bool IsGlobalScope { get { return CurrentContextStamp == 0; } }
 
+        /// <summary>
+        /// Enhance visibility of <see cref="MemoryAssistant"/>
+        /// </summary>
         internal MemoryAssistantBase MemoryAssistant { get { return Assistant; } }
 
         /// <summary>
