@@ -1,0 +1,7 @@
+﻿@using Weverca.Web.Properties
+
+@{
+    ViewBag.Title = Resources.About;
+}
+
+@string.Format(Resources.AboutContent, Settings.Default.AnalysisTimeout).ToHtmlString()

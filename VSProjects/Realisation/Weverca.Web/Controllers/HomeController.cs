@@ -52,6 +52,11 @@ namespace Weverca.Web.Controllers
             }
         }
 
+        public ActionResult About()
+        {
+            return View();
+        }
+
         bool TryExecute<T>(Func<T> func, int timeout, out T result)
         {
             var t = default(T);

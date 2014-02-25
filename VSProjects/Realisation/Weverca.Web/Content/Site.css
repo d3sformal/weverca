@@ -70,6 +70,43 @@ h1, h2, h3
     float: left;
 }
 
+#menu
+{
+    float: right;
+    margin: 5px;
+    width: 102px;
+}
+
+#menu a
+{
+    background-color: #4EAD92;
+    color: #003B2A;
+    text-decoration: none;
+    text-align: center;
+}
+
+#menu a:hover
+{
+    background-color: #003B2A;
+    color: #4EAD92;
+}
+
+#menu ul
+{
+    padding: 0px;
+    margin: 0px;
+    list-style: none;
+    width: 100%;
+}
+
+#menu a
+{
+    width: 100px;
+    float: left;
+    display: block;
+    margin: 1px;
+}
+
 /*---------CONTENT---------*/
 #content,
 #topic
