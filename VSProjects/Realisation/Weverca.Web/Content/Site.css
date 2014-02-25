@@ -6,6 +6,11 @@ body {
     background-color: #210C10;
 }
 
+legend, body
+{
+    color: #ffffff;
+}
+
 a
 {
     white-space: nowrap;

@@ -51,7 +51,7 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-        CodeMirror.fromTextArea(PhpCode, { mode: "php", lineNumbers: true });
+        CodeMirror.fromTextArea(document.getElementById("PhpCode"), { mode: "php", lineNumbers: true });
     });
 
     $("#Input").change(function () {
