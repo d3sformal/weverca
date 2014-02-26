@@ -27,7 +27,7 @@ Pro stránky Pestrá škola a školka Bobinice napsal Pavel Baštecký (c) zář
   $_inf['visitor'] = GetVisitor();
   $_page = GetPageData();
   
-  require_once "_php/$_page[script].php";
+  include_once "_php/$_page[script].php";
   
   //Zpracování formulářů
   if (!empty($_POST) and $_inf['post'])
