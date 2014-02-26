@@ -15,7 +15,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates deep copy of this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New instance which contains copy of this instance.</returns>
         T Clone();
     }
 }

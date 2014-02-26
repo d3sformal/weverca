@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the new data instance empty collection with no data.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        /// <returns></returns>
+        /// <returns>New data instance empty collection with no data.</returns>
         public static SnapshotData CreateEmpty(Snapshot snapshot)
         {
             SnapshotData data = new SnapshotData(snapshot);
@@ -68,7 +68,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new data instance and copies data from this collection to the new one.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        /// <returns></returns>
+        /// <returns>New data instance and copies data from this collection to the new one.</returns>
         public SnapshotData Copy(Snapshot snapshot)
         {
             SnapshotData data = new SnapshotData(snapshot);
@@ -84,7 +84,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the memory entry.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>Memory entry for the given index.</returns>
         internal MemoryEntry GetMemoryEntry(MemoryIndex index)
         {
             MemoryEntry memoryEntry;
@@ -103,7 +103,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>True whether collection contains memory entry for the given memory index.</returns>
         internal bool TryGetMemoryEntry(MemoryIndex index, out MemoryEntry entry)
         {
             return IndexData.TryGetValue(index, out entry);
@@ -134,7 +134,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Compares data of this data collection object with the given one.
         /// </summary>
         /// <param name="oldData">The old data.</param>
-        /// <returns></returns>
+        /// <returns>True whether compared data are the same.</returns>
         public bool DataEquals(SnapshotData oldData)
         {
             if (this.IndexData.Count != oldData.IndexData.Count)
@@ -163,7 +163,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="oldData">The old data.</param>
         /// <param name="simplifyLimit">The simplify limit.</param>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>True whether compared data are the same.</returns>
         public bool DataEqualsAndSimplify(SnapshotData oldData, int simplifyLimit, MemoryAssistantBase assistant)
         {
             bool areEquals = true;
@@ -188,7 +188,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="oldData">The old data.</param>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>True whether compared data are the same.</returns>
         public bool DataEquals(SnapshotData oldData, MemoryIndex index)
         {
             MemoryEntry newEntry = null;
@@ -214,7 +214,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="index">The index.</param>
         /// <param name="simplifyLimit">The simplify limit.</param>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>True whether compared data are the same.</returns>
         public bool DataEqualsAndSimplify(SnapshotData oldData, MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
         {
             MemoryEntry newEntry = null;

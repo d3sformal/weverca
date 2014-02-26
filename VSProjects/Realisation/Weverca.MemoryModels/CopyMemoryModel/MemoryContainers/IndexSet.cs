@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether set contains specified index.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>True whether set contains specified index.</returns>
         public bool Contains(T index)
         {
             return indexes.Contains(index);
@@ -63,7 +63,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Clones this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New instance which contains copy of this instance.</returns>
         public IndexSet<T> Clone()
         {
             return new IndexSet<T>(this);

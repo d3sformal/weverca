@@ -71,7 +71,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets builder instance which can be used to modify this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New builder instance which can be used to modify this instance.</returns>
         public IndexDataBuilder Builder()
         {
             return new IndexDataBuilder(this);
@@ -81,7 +81,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Compares this data structure with the given object.
         /// </summary>
         /// <param name="other">The other.</param>
-        /// <returns></returns>
+        /// <returns>True whether this instance contains the same values as the given one.</returns>
         internal bool DataEquals(IndexData other)
         {
             if (this == other)
@@ -160,7 +160,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Builds this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New imutable container with data from this builder.</returns>
         public IndexData Build()
         {
             return new IndexData(this);

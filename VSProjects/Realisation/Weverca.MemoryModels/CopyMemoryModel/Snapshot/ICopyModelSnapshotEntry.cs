@@ -59,7 +59,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="snapshotEntry">The snapshot entry.</param>
-        /// <returns></returns>
+        /// <returns>The list of indexes in the given snapshot entry.</returns>
         public static IEnumerable<MemberIdentifier> IterateIndexes(SnapshotBase context, ICopyModelSnapshotEntry snapshotEntry)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
@@ -76,7 +76,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="snapshotEntry">The snapshot entry.</param>
-        /// <returns></returns>
+        /// <returns>The list of types in the given snapshot entry.</returns>
         public static IEnumerable<TypeValue> ResolveType(SnapshotBase context, ICopyModelSnapshotEntry snapshotEntry)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);

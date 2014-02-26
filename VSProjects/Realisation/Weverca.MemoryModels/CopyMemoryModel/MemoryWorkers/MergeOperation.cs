@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /// <summary>
+    /// Represents data structure for information merge operation. Every instance contains set of source
+    /// indexes and snapshot which contains these indexes and target index. Merge algorithm stores instances
+    /// of this class in operation stack and merges data from source indexes into target indexes.
+    /// </summary>
     public class MergeOperation
     {
         /// <summary>

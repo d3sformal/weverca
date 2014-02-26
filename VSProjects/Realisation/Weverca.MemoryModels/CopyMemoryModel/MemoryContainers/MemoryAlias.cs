@@ -55,7 +55,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates new builder to modify this object 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New builder to modify this object.</returns>
         public MemoryAliasBuilder Builder()
         {
             return new MemoryAliasBuilder(this);
@@ -162,7 +162,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Builds new info object from this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New imutable instance with data from this builder.</returns>
         public MemoryAlias Build()
         {
             return new MemoryAlias(this);
@@ -172,7 +172,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Removes the must alias.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>This builder instance.</returns>
         public MemoryAliasBuilder RemoveMustAlias(MemoryIndex index)
         {
             MustAliasses.Remove(index);
@@ -183,7 +183,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Removes the may alias.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>This builder instance.</returns>
         public MemoryAliasBuilder RemoveMayAlias(MemoryIndex index)
         {
             MayAliasses.Remove(index);
@@ -194,7 +194,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Adds the must alias.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>This builder instance.</returns>
         public MemoryAliasBuilder AddMustAlias(MemoryIndex index)
         {
             MustAliasses.Add(index);
@@ -205,18 +205,26 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Adds the may alias.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>This builder instance.</returns>
         public MemoryAliasBuilder AddMayAlias(MemoryIndex index)
         {
             MayAliasses.Add(index);
             return this;
         }
 
+        /// <summary>
+        /// Adds the may alias.
+        /// </summary>
+        /// <param name="aliases">The aliases.</param>
         internal void AddMayAlias(IEnumerable<MemoryIndex> aliases)
         {
             HashSetTools.AddAll(MayAliasses, aliases);
         }
 
+        /// <summary>
+        /// Adds the must alias.
+        /// </summary>
+        /// <param name="aliases">The aliases.</param>
         internal void AddMustAlias(IEnumerable<MemoryIndex> aliases)
         {
             HashSetTools.AddAll(MustAliasses, aliases);

@@ -7,10 +7,19 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /// <summary>
+    /// Search memory entry for associative array and releases it from given snapshot.
+    /// </summary>
     class DestroyArrayVisitor : AbstractValueVisitor
     {        
         private MemoryIndex parentIndex;
         private Snapshot snapshot;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DestroyArrayVisitor"/> class.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="parentIndex">Index of the parent.</param>
         public DestroyArrayVisitor(Snapshot snapshot, MemoryIndex parentIndex)
         {
             this.snapshot = snapshot;

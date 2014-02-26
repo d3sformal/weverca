@@ -104,7 +104,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether there is associated temporary index with memory entry in the specified context.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <returns></returns>
+        /// <returns>True whether there is associated temporary index with memory entry in the specified context.</returns>
         private bool isTemporarySet(SnapshotBase context)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
@@ -212,7 +212,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// between null/undefined semantic of PHP.
         /// </summary>
         /// <param name="context">Context snapshot where operation is proceeded</param>
-        /// <returns></returns>
+        /// <returns>True whether that memory represented by current snapshot entry Is already defined.</returns>
         protected override bool isDefined(SnapshotBase context)
         {
             SnapshotLogger.append(context, "is defined - " + this.ToString());
@@ -326,7 +326,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        /// <returns></returns>
+        /// <returns>Alias data fro the newly created aliases.</returns>
         public AliasData CreateAliasToEntry(Snapshot snapshot)
         {
             return getTemporary(snapshot).CreateAliasToEntry(snapshot);

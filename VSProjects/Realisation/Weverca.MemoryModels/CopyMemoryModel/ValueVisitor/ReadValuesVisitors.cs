@@ -8,17 +8,53 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /// <summary>
+    /// Process given memory entry and creates list of ValueLocation to acces indexes on non array values.
+    /// </summary>
     class ReadIndexVisitor : AbstractValueVisitor
     {
-        public bool ContainsUndefinedValue { get; set; }
-        public bool ContainsDefinedValue { get; set; }
-        public bool ContainsArrayValue { get; set; }
-        public bool ContainsAnyValue { get; set; }
-
         private MemberIdentifier index;
         private MemoryIndex containingIndex;
         private ICollection<ValueLocation> locations;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains undefined value.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if memory entry contains undefined value; otherwise, <c>false</c>.
+        /// </value>
+        public bool ContainsUndefinedValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains defined value.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if memory entry contains defined value; otherwise, <c>false</c>.
+        /// </value>
+        public bool ContainsDefinedValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains array value.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if memory entry contains array value; otherwise, <c>false</c>.
+        /// </value>
+        public bool ContainsArrayValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains any value.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if memory entry contains any value; otherwise, <c>false</c>.
+        /// </value>
+        public bool ContainsAnyValue { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReadIndexVisitor"/> class.
+        /// </summary>
+        /// <param name="containingIndex">Index of the containing.</param>
+        /// <param name="indexSegment">The index segment.</param>
+        /// <param name="locations">The locations.</param>
         public ReadIndexVisitor(MemoryIndex containingIndex, IndexPathSegment indexSegment, ICollection<ValueLocation> locations)
         {
             this.containingIndex = containingIndex;
@@ -79,17 +115,53 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
     }
 
+    /// <summary>
+    /// Process given memory entry and creates list of ValueLocation to acces fields on non object values.
+    /// </summary>
     class ReadFieldVisitor : AbstractValueVisitor
     {
         private VariableIdentifier index;
         private MemoryIndex containingIndex;
         private ICollection<ValueLocation> locations;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains undefined value.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if memory entry contains undefined value; otherwise, <c>false</c>.
+        /// </value>
         public bool ContainsUndefinedValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains defined value.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if memory entry contains defined value; otherwise, <c>false</c>.
+        /// </value>
         public bool ContainsDefinedValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains object value.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if memory entry contains object value; otherwise, <c>false</c>.
+        /// </value>
         public bool ContainsObjectValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether memory entry contains any value.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if memory entry contains any value; otherwise, <c>false</c>.
+        /// </value>
         public bool ContainsAnyValue { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ReadFieldVisitor"/> class.
+        /// </summary>
+        /// <param name="containingIndex">Index of the containing.</param>
+        /// <param name="fieldSegment">The field segment.</param>
+        /// <param name="locations">The locations.</param>
         public ReadFieldVisitor(MemoryIndex containingIndex, FieldPathSegment fieldSegment, ICollection<ValueLocation> locations)
         {
             this.containingIndex = containingIndex;

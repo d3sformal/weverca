@@ -108,7 +108,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates new builder to modify this descriptor 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New builder to modify this descriptor.</returns>
         public ObjectDescriptorBuilder Builder()
         {
             return new ObjectDescriptorBuilder(this);
@@ -183,7 +183,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="containerIndex">Index of the container.</param>
         /// <param name="fields">The fields.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         public ObjectDescriptorBuilder add(string containerIndex, MemoryIndex fields)
         {
             Indexes[containerIndex] = fields;
@@ -193,7 +193,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Builds new descriptor object from this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New descriptor object from this instance.</returns>
         public ObjectDescriptor Build()
         {
             return new ObjectDescriptor(this);
@@ -203,7 +203,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Sets the parent variable.
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         public ObjectDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
         {
             ParentVariable = parentIndex;
@@ -214,7 +214,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Sets the unknown field.
         /// </summary>
         /// <param name="unknownIndex">Index of the unknown.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         public ObjectDescriptorBuilder SetUnknownField(MemoryIndex unknownIndex)
         {
             UnknownIndex = unknownIndex;

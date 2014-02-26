@@ -74,7 +74,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="name">The name of control variable.</param>
         /// <param name="global">Determines whether variable is global or local.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New snapshot entry for the given variable name.</returns>
         internal static ReadWriteSnapshotEntryBase CreateControlEntry(VariableName name, GlobalContext global, int callLevel)
         {
             MemoryPath path = MemoryPath.MakePathControl(new string[] { name.ToString() }, global, callLevel);
@@ -296,7 +296,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// between null/undefined semantic of PHP.
         /// </summary>
         /// <param name="context">Context snapshot where operation is proceeded</param>
-        /// <returns></returns>
+        /// <returns>True whether memory represented by current snapshot entry Is already defined.</returns>
         protected override bool isDefined(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
@@ -430,7 +430,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Cnverts context base variable into the copy memory model snapshot.
         /// </summary>
         /// <param name="context">The context variable.</param>
-        /// <returns></returns>
+        /// <returns>Given context parameter converted into copy memory model snapshot.</returns>
         /// <exception cref="System.ArgumentException">Context parametter is not of type Weverca.MemoryModels.CopyMemoryModel.Snapshot</exception>
         public static Snapshot ToSnapshot(ISnapshotReadonly context)
         {
@@ -450,7 +450,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts base snapshot entry variable into copy memory model snapshot entry.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>Given entry parameter converted into copy memory model entry.</returns>
         /// <exception cref="System.ArgumentException">Entry parametter is not of type Weverca.MemoryModels.CopyMemoryModel.ICopyModelSnapshotEntry</exception>
         internal static ICopyModelSnapshotEntry ToEntry(ReadSnapshotEntryBase entry)
         {

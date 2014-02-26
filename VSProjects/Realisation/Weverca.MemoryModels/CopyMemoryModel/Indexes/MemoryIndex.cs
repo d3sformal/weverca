@@ -209,7 +209,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts this memory index that at the end of acces path is any segment.
         /// When the path is empty, root informations are converted into any.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Newly created memory index with the same buth but the last is ANY.</returns>
         public abstract MemoryIndex ToAny();
 
         /// <summary>
@@ -229,12 +229,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the unknown root index with no index path.
         /// </summary>
+        /// <returns>Newly created unknown root index with no index path.</returns>
         public abstract MemoryIndex CreateUnknownIndex();
 
         /// <summary>
         /// Creates the root index with given name and no index path.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <returns>>Newly created root index with given name and no index path</returns>
         public abstract MemoryIndex CreateIndex(string name);
 
 
@@ -242,14 +244,16 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new index with the same path and specified call level.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same path and specified call level.
+        /// </returns>
         public abstract MemoryIndex CreateWithCallLevel(int callLevel);
 
         /// <summary>
         /// Determines whether this index is part of acces path of the other index.
         /// </summary>
         /// <param name="otherIndex">Index of the other.</param>
-        /// <returns></returns>
+        /// <returns>True whether this index is prefix of the given one.</returns>
         internal virtual bool IsPrefixOf(MemoryIndex otherIndex)
         {
             if (otherIndex == null || otherIndex.Length < this.Length)
@@ -367,7 +371,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether this index is part of acces path of the other index.
         /// </summary>
         /// <param name="otherIndex">Index of the other.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// True whether this index is prefix of the given one.
+        /// </returns>
         internal override bool IsPrefixOf(MemoryIndex otherIndex)
         {
             NamedIndex namedIndex = otherIndex as NamedIndex;
@@ -385,7 +391,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts this memory index that at the end of acces path is any segment.
         /// When the path is empty, root informations are converted into any.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same buth but the last is ANY.
+        /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public override MemoryIndex ToAny()
         {
@@ -395,7 +403,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the unknown root index with no index path.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created unknown root index with no index path.
+        /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public override MemoryIndex CreateUnknownIndex()
         {
@@ -406,7 +416,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the root index with given name and no index path.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// &gt;Newly created root index with given name and no index path
+        /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public override MemoryIndex CreateIndex(string name)
         {
@@ -417,7 +429,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new index with the same path and specified call level.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same path and specified call level.
+        /// </returns>
         /// <exception cref="System.NotImplementedException"></exception>
         public override MemoryIndex CreateWithCallLevel(int callLevel)
         {
@@ -521,7 +535,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether this index is part of acces path of the other index.
         /// </summary>
         /// <param name="otherIndex">Index of the other.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// True whether this index is prefix of the given one.
+        /// </returns>
         internal override bool IsPrefixOf(MemoryIndex otherIndex)
         {
             ObjectIndex objIndex = otherIndex as ObjectIndex;
@@ -539,7 +555,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts this memory index that at the end of acces path is any segment.
         /// When the path is empty, root informations are converted into any.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same buth but the last is ANY.
+        /// </returns>
         public override MemoryIndex ToAny()
         {
             if (MemoryPath.Count == 0)
@@ -567,7 +585,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the unknown root index with no index path.
         /// </summary>
         /// <param name="obj">The object.</param>
-        /// <returns></returns>
+        /// <returns>New unknown root index with no index path.</returns>
         public static MemoryIndex CreateUnknown(ObjectValue obj)
         {
             return new ObjectIndex(obj, new IndexSegment());
@@ -578,7 +596,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="obj">The object.</param>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>New root index with given name and no index path.</returns>
         public static MemoryIndex Create(ObjectValue obj, string name)
         {
             return new ObjectIndex(obj, new IndexSegment(name));
@@ -587,7 +605,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the unknown root index with no index path.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created unknown root index with no index path.
+        /// </returns>
         public override MemoryIndex CreateUnknownIndex()
         {
             return new ObjectIndex(this, new IndexSegment());
@@ -597,7 +617,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the root index with given name and no index path.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// &gt;Newly created root index with given name and no index path
+        /// </returns>
         public override MemoryIndex CreateIndex(string name)
         {
             return new ObjectIndex(this, new IndexSegment(name));
@@ -607,7 +629,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new index with the same path and specified call level.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same path and specified call level.
+        /// </returns>
         public override MemoryIndex CreateWithCallLevel(int callLevel)
         {
             return new ObjectIndex(this, callLevel);
@@ -679,7 +703,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts this memory index that at the end of acces path is any segment.
         /// When the path is empty, root informations are converted into any.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same buth but the last is ANY.
+        /// </returns>
         public override MemoryIndex ToAny()
         {
             if (MemoryPath.Count == 0)
@@ -696,7 +722,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the unknown root index with no index path.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New unknown root index with no index path.</returns>
         public static MemoryIndex CreateUnknown(int callLevel)
         {
             return new VariableIndex(new IndexSegment(), callLevel);
@@ -707,7 +733,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New root index with given name and no index path.</returns>
         public static MemoryIndex Create(string name, int callLevel)
         {
             return new VariableIndex(new IndexSegment(name), callLevel);
@@ -716,7 +742,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the unknown root index with no index path.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created unknown root index with no index path.
+        /// </returns>
         public override MemoryIndex CreateUnknownIndex()
         {
             return new VariableIndex(this, new IndexSegment());
@@ -726,7 +754,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the root index with given name and no index path.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// &gt;Newly created root index with given name and no index path
+        /// </returns>
         public override MemoryIndex CreateIndex(string name)
         {
             return new VariableIndex(this, new IndexSegment(name));
@@ -736,7 +766,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new index with the same path and specified call level.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same path and specified call level.
+        /// </returns>
         public override MemoryIndex CreateWithCallLevel(int callLevel)
         {
             return new VariableIndex(this, callLevel);
@@ -847,7 +879,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether this index is part of acces path of the other index.
         /// </summary>
         /// <param name="otherIndex">Index of the other.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// True whether this index is prefix of the given one.
+        /// </returns>
         internal override bool IsPrefixOf(MemoryIndex otherIndex)
         {
             TemporaryIndex tempIndex = otherIndex as TemporaryIndex;
@@ -876,7 +910,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts this memory index that at the end of acces path is any segment.
         /// When the path is empty, root informations are converted into any.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same buth but the last is ANY.
+        /// </returns>
         /// <exception cref="System.Exception">Undefined ANY variable in temporary collection</exception>
         public override MemoryIndex ToAny()
         {
@@ -893,7 +929,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the unknown root index with no index path.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created unknown root index with no index path.
+        /// </returns>
         public override MemoryIndex CreateUnknownIndex()
         {
             return new TemporaryIndex(this, new IndexSegment());
@@ -903,7 +941,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the root index with given name and no index path.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// &gt;Newly created root index with given name and no index path
+        /// </returns>
         public override MemoryIndex CreateIndex(string name)
         {
             return new TemporaryIndex(this, new IndexSegment(name));
@@ -913,7 +953,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new index with the same path and specified call level.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same path and specified call level.
+        /// </returns>
         public override MemoryIndex CreateWithCallLevel(int callLevel)
         {
             return new TemporaryIndex(this, callLevel);
@@ -980,7 +1022,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Converts this memory index that at the end of acces path is any segment.
         /// When the path is empty, root informations are converted into any.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same buth but the last is ANY.
+        /// </returns>
         public override MemoryIndex ToAny()
         {
             if (MemoryPath.Count == 0)
@@ -997,7 +1041,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the unknown root index with no index path.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New unknown root index with no index path.</returns>
         public static MemoryIndex CreateUnknown(int callLevel)
         {
             return new ControlIndex(new IndexSegment(), callLevel);
@@ -1008,7 +1052,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New root index with given name and no index path.</returns>
         public static MemoryIndex Create(string name, int callLevel)
         {
             return new ControlIndex(new IndexSegment(name), callLevel);
@@ -1017,7 +1061,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the unknown root index with no index path.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created unknown root index with no index path.
+        /// </returns>
         public override MemoryIndex CreateUnknownIndex()
         {
             return new ControlIndex(this, new IndexSegment());
@@ -1027,7 +1073,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the root index with given name and no index path.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// &gt;Newly created root index with given name and no index path
+        /// </returns>
         public override MemoryIndex CreateIndex(string name)
         {
             return new ControlIndex(this, new IndexSegment(name));
@@ -1037,7 +1085,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new index with the same path and specified call level.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Newly created memory index with the same path and specified call level.
+        /// </returns>
         public override MemoryIndex CreateWithCallLevel(int callLevel)
         {
             return new ControlIndex(this, callLevel);

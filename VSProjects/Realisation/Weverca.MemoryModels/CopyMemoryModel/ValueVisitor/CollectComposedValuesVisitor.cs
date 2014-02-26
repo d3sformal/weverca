@@ -8,29 +8,66 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
-    class CollectComposedValuesVisitor : AbstractValueVisitor
+    /// <summary>
+    /// Value visitor to get all composed values (arrays and objects) from the given memory entry.
+    /// </summary>
+    public class CollectComposedValuesVisitor : AbstractValueVisitor
     {
+        /// <summary>
+        /// List of associative arrays which was found in entry.
+        /// </summary>
         public readonly HashSet<AssociativeArray> Arrays = new HashSet<AssociativeArray>();
+
+        /// <summary>
+        /// List of scalar values which was found in entry.
+        /// </summary>
         public readonly HashSet<ObjectValue> Objects = new HashSet<ObjectValue>();
+
+        /// <summary>
+        /// List of scalar values which was found in entry.
+        /// </summary>
         public readonly HashSet<Value> Values = new HashSet<Value>();
 
+        /// <summary>
+        /// Gets or sets the snapshot.
+        /// </summary>
+        /// <value>
+        /// The snapshot.
+        /// </value>
         public Snapshot Snapshot { get; set; }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="value"></param>
+        /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             Values.Add(value);
         }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="value"></param>
+        /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
             Objects.Add(value);
         }
 
+        /// <summary>
+        /// </summary>
+        /// <param name="value"></param>
+        /// <inheritdoc />
         public override void VisitAssociativeArray(AssociativeArray value)
         {
             Arrays.Add(value);
         }
 
+        /// <summary>
+        /// Returns identifiers of all fields of objects which was found in memory entry.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>Identifiers of all fields of objects which was found in memory entry</returns>
         public IEnumerable<VariableIdentifier> CollectFields(Snapshot snapshot)
         {
             HashSet<VariableIdentifier> fields = new HashSet<VariableIdentifier>();
@@ -46,6 +83,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return fields;
         }
 
+        /// <summary>
+        /// Returns identifiers of all indexes of arrays which was found in memory entry.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>Identifiers of all indexes of arrays which was found in memory entry</returns>
         public IEnumerable<MemberIdentifier> CollectIndexes(Snapshot snapshot)
         {
             HashSet<MemberIdentifier> indexes = new HashSet<MemberIdentifier>();
@@ -61,6 +103,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return indexes;
         }
 
+        /// <summary>
+        /// Resolves the types for collected objects.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>Types for collected objects.</returns>
         public IEnumerable<TypeValue> ResolveObjectsTypes(Snapshot snapshot)
         {
             HashSet<TypeValue> types = new HashSet<TypeValue>();

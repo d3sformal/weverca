@@ -423,7 +423,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Iterates the object.
         /// </summary>
         /// <param name="iteratedObject">The iterated object.</param>
-        /// <returns></returns>
+        /// <returns>List of all fields of the given object.</returns>
         /// <exception cref="System.Exception">Unknown object</exception>
         protected IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
         {
@@ -487,7 +487,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="entry">The entry.</param>
         /// <param name="methodName">Name of the method.</param>
-        /// <returns></returns>
+        /// <returns>List of methods with the given name for objects within the given memory entry.</returns>
         internal IEnumerable<FunctionValue> resolveMethod(MemoryEntry entry, QualifiedName methodName)
         {
             HashSet<FunctionValue> functions = new HashSet<FunctionValue>();
@@ -504,7 +504,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="methodName">Name of the method.</param>
-        /// <returns></returns>
+        /// <returns>List of methods with the given name for given object.</returns>
         internal IEnumerable<FunctionValue> resolveMethod(Value value, QualifiedName methodName)
         {
             IEnumerable<FunctionValue> objectMethods;
@@ -551,7 +551,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Iterates the array.
         /// </summary>
         /// <param name="iteratedArray">The iterated array.</param>
-        /// <returns></returns>
+        /// <returns>List of indexes of the array.</returns>
         /// <exception cref="System.Exception">Unknown associative array</exception>
         protected IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
         {
@@ -1131,7 +1131,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="isMust">if set to <c>true</c> object is must and values in parent indexes are removed.</param>
         /// <param name="removeUndefined">if set to <c>true</c> undefined value is removed from target memory entry.</param>
-        /// <returns></returns>
+        /// <returns>New instance of the default object in given parent index.</returns>
         internal ObjectValue CreateObject(MemoryIndex parentIndex, bool isMust, bool removeUndefined = false)
         {
             ObjectValue value = MemoryAssistant.CreateImplicitObject();
@@ -1441,7 +1441,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether the specified index contains undefined value.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>True whether the specified index contains undefined value.</returns>
         internal bool IsUndefined(MemoryIndex index)
         {
             MemoryEntry entry = Structure.GetMemoryEntry(index);

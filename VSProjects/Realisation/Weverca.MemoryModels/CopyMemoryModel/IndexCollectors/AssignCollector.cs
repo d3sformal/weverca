@@ -558,7 +558,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Adds the index into may collection.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>True whether index in not in the collection of must indexes.</returns>
         private bool addToMay(MemoryIndex index)
         {
             if (!mustIndexesProcess.Contains(index))

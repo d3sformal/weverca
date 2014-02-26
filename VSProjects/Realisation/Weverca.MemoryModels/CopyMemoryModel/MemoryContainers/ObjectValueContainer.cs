@@ -61,7 +61,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether container contains specified value.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>True whether container contains specified value.</returns>
         public bool Contains(ObjectValue value)
         {
             return values.Contains(value);
@@ -70,7 +70,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets the builder object to modify this container.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New builder object to modify this container</returns>
         public ObjectValueContainerBuilder Builder()
         {
             return new ObjectValueContainerBuilder(this);
@@ -102,7 +102,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Compares this data structure with the given object.
         /// </summary>
         /// <param name="other">The other.</param>
-        /// <returns></returns>
+        /// <returns>True whether this data structure with the given object.</returns>
         internal bool DataEquals(ObjectValueContainer other)
         {
             if (other == null)
@@ -131,7 +131,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="objA">The object aggregate.</param>
         /// <param name="objB">The object attribute.</param>
-        /// <returns></returns>
+        /// <returns>True whether container contains specified value.</returns>
         internal static bool AreEqual(ObjectValueContainer objA, ObjectValueContainer objB)
         {
             if (objA == objB)
@@ -192,7 +192,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether collection contains the specified object.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>True whether collection contains the specified object.</returns>
         public bool Contains(ObjectValue value)
         {
             return Values.Contains(value);
@@ -231,7 +231,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Builds this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New imutable instance with data from this builder instance.</returns>
         public ObjectValueContainer Build()
         {
             return new ObjectValueContainer(this);

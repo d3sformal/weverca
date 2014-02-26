@@ -32,10 +32,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         /// <summary>
-        /// Reads the value from locations specified by given collector.
+        /// Reads the values from locations specified by given collector.
         /// </summary>
         /// <param name="collector">The collector.</param>
-        /// <returns></returns>
+        /// <returns>Memory entry with values from locations specified by given collector.</returns>
         public MemoryEntry ReadValue(IIndexCollector collector)
         {
             if (collector.MustIndexesCount == 1 && collector.IsDefined)

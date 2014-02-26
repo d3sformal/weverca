@@ -136,7 +136,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Clones this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New instance which contains copy of this instance.</returns>
         public IndexContainer Clone()
         {
             return new IndexContainer(this);
@@ -147,7 +147,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="data">The data.</param>
         /// <param name="infos">The infos.</param>
-        /// <returns></returns>
+        /// <returns>String representation of the collection.</returns>
         internal string GetRepresentation(SnapshotData data, SnapshotData infos)
         {
             StringBuilder result = new StringBuilder();

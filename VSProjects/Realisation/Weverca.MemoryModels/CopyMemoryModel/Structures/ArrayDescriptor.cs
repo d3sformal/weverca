@@ -86,7 +86,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates new builder to modify this descriptor 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New builder to modify this descriptor </returns>
         public ArrayDescriptorBuilder Builder()
         {
             return new ArrayDescriptorBuilder(this);
@@ -167,7 +167,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="containerIndex">Index of the container.</param>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         public ArrayDescriptorBuilder add(string containerIndex, MemoryIndex index)
         {
             Indexes[containerIndex] = index;
@@ -177,7 +177,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Builds new descriptor object from this instance.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>New descriptor object from this instance.</returns>
         public ArrayDescriptor Build()
         {
             if (ArrayValue == null)
@@ -192,7 +192,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Sets the parent variable.
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         internal ArrayDescriptorBuilder SetParentVariable(MemoryIndex parentIndex)
         {
             ParentVariable = parentIndex;
@@ -203,7 +203,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Sets the array value.
         /// </summary>
         /// <param name="arrayValue">The array value.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         /// <exception cref="System.Exception">Null array in descriptor</exception>
         internal ArrayDescriptorBuilder SetArrayValue(AssociativeArray arrayValue)
         {
@@ -220,7 +220,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Sets the unknown field.
         /// </summary>
         /// <param name="memoryIndex">Index of the memory.</param>
-        /// <returns></returns>
+        /// <returns>This builder object.</returns>
         internal ArrayDescriptorBuilder SetUnknownField(MemoryIndex memoryIndex)
         {
             UnknownIndex = memoryIndex;

@@ -25,7 +25,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>Result of reading received from assistant.</returns>
         public abstract IEnumerable<Value> ReadValues(MemoryAssistantBase assistant);
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>Result of writing received from assistant.</returns>
         public abstract IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry);
     }
 
@@ -143,7 +143,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return values;
@@ -154,7 +156,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return values;
@@ -210,7 +214,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadValueField(value, index);
@@ -221,7 +227,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueField(value, index, entry);
@@ -274,7 +282,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadValueField(value, index);
@@ -285,7 +295,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueField(value, index, entry);
@@ -337,7 +349,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadValueField(value, index);
@@ -348,7 +362,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueField(value, index, entry);
@@ -404,7 +420,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadValueIndex(value, index);
@@ -415,7 +433,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueIndex(value, index, entry);
@@ -467,7 +487,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadAnyValueIndex(value, index).PossibleValues;
@@ -478,7 +500,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueIndex(value, index, entry);
@@ -531,7 +555,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadValueIndex(value, index);
@@ -542,7 +568,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueIndex(value, index, entry);
@@ -602,7 +630,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadStringIndex(value, index);
@@ -613,7 +643,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteStringIndex(value, index, entry);
@@ -673,7 +705,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Read values from location using specified memory assistant.
         /// </summary>
         /// <param name="assistant">The assistant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of reading received from assistant.
+        /// </returns>
         public override IEnumerable<Value> ReadValues(MemoryAssistantBase assistant)
         {
             return assistant.ReadAnyValueIndex(value, index).PossibleValues;
@@ -684,7 +718,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="assistant">The assistant.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// Result of writing received from assistant.
+        /// </returns>
         public override IEnumerable<Value> WriteValues(MemoryAssistantBase assistant, MemoryEntry entry)
         {
             return assistant.WriteValueIndex(value, index, entry);

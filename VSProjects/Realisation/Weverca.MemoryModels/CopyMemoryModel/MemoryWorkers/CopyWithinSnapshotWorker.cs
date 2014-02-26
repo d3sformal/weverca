@@ -113,7 +113,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="targetIndex">Index of the target.</param>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>Array value which should be inserted into target location.</returns>
         internal AssociativeArray ProcessArrayValue(MemoryIndex targetIndex, AssociativeArray value)
         {
             AssociativeArray arrayValue = snapshot.CreateArray(targetIndex, isMust);
@@ -142,7 +142,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="targetIndex">Index of the target.</param>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>Reference value which shloud be inserted into target location.</returns>
         internal ObjectValue ProcessObjectValue(MemoryIndex targetIndex, ObjectValue value)
         {
             objectValues.Add(value);
@@ -173,7 +173,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets the number of values in the set.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The number of values in the set.</returns>
         public int GetValuesCount()
         {
             return values.Count;
@@ -208,7 +208,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets the copied entry.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Memory entry which contains copied values.</returns>
         internal MemoryEntry GetCopiedEntry()
         {
             return new MemoryEntry(values);

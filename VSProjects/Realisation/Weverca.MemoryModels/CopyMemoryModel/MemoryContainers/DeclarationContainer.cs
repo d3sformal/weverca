@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether the collection contains specified qualified name.
         /// </summary>
         /// <param name="key">The key qualified name.</param>
-        /// <returns></returns>
+        /// <returns>True whether the container contains declaration with the given name.</returns>
         public bool ContainsKey(QualifiedName key)
         {
             return declarations.ContainsKey(key);
@@ -65,7 +65,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <returns></returns>
+        /// <returns>True whether the container contains declaration with the given name.</returns>
         public bool TryGetValue(QualifiedName key, out IEnumerable<T> value)
         {
             HashSet<T> val;
@@ -79,7 +79,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the declaration by given qualified name.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns></returns>
+        /// <returns>Declaration with the given name.</returns>
         public IEnumerable<T> GetValue(QualifiedName key)
         {
             return declarations[key];
@@ -108,7 +108,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets all qualified names which are defined in the container.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of names of all declarations in this container.</returns>
         public IEnumerable<QualifiedName> GetNames()
         {
             return declarations.Keys;
@@ -118,7 +118,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether this container contains the same definitions as the given one.
         /// </summary>
         /// <param name="other">The other.</param>
-        /// <returns></returns>
+        /// <returns>True whether this container contains the same definitions as the given one.</returns>
         internal bool DataEquals(DeclarationContainer<T> other)
         {
             HashSet<QualifiedName> names = new HashSet<QualifiedName>();

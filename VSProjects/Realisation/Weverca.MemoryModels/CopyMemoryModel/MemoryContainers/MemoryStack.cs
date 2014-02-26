@@ -108,7 +108,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// The stack container.
         /// </value>
         /// <param name="index">The index of stack level.</param>
-        /// <returns></returns>
+        /// <returns>Stack object on the specified level.</returns>
         public T this[int index]
         {
             get { return stack[index]; }
@@ -201,7 +201,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="data">The data.</param>
         /// <param name="infos">The infos.</param>
-        /// <returns></returns>
+        /// <returns>String representation of local variables.</returns>
         internal string GetLocalRepresentation(SnapshotData data, SnapshotData infos)
         {
             StringBuilder result = new StringBuilder();
@@ -217,7 +217,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="data">The data.</param>
         /// <param name="infos">The infos.</param>
-        /// <returns></returns>
+        /// <returns>String representation of global variables.</returns>
         internal string GetGlobalRepresentation(SnapshotData data, SnapshotData infos)
         {
             return Global.GetRepresentation(data, infos);
@@ -226,7 +226,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets the number of variables.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Number of variables</returns>
         internal int GetNumberOfVariables()
         {
             int variables = 0;

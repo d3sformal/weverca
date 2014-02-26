@@ -49,6 +49,7 @@
     <Compile Include="CopyMemoryModel\MemoryContainers\MemoryStack.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\AssignAliasWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\AssignWithoutCopyWorker.cs" />
+    <Compile Include="CopyMemoryModel\MemoryWorkers\ContainerOperations.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\IMergeWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\MergeInfoWorker.cs" />
     <Compile Include="CopyMemoryModel\MemoryWorkers\MergeOperation.cs" />

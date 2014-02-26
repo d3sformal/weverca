@@ -89,7 +89,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="global">The global.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New path which points to single any variable</returns>
         public static MemoryPath MakePathAnyVariable(GlobalContext global, int callLevel)
         {
             return new MemoryPath(new VariablePathSegment(), global, callLevel);
@@ -101,7 +101,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="names">The names.</param>
         /// <param name="global">The global.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New path which starts in variables with given names</returns>
         public static MemoryPath MakePathVariable(IEnumerable<string> names, GlobalContext global, int callLevel)
         {
             return new MemoryPath(new VariablePathSegment(names), global, callLevel);
@@ -112,7 +112,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="global">The global.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>new path to any control variable</returns>
         public static MemoryPath MakePathAnyControl(GlobalContext global, int callLevel)
         {
             return new MemoryPath(new ControlPathSegment(), global, callLevel);
@@ -124,7 +124,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="names">The names.</param>
         /// <param name="global">The global.</param>
         /// <param name="callLevel">The call level.</param>
-        /// <returns></returns>
+        /// <returns>New path to control variables with given names</returns>
         public static MemoryPath MakePathControl(IEnumerable<string> names, GlobalContext global, int callLevel)
         {
             return new MemoryPath(new ControlPathSegment(names), global, callLevel);
@@ -134,7 +134,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Makes the path which extends given path by any field.
         /// </summary>
         /// <param name="parentPath">The parent path.</param>
-        /// <returns></returns>
+        /// <returns>New path which extends given path by any field</returns>
         public static MemoryPath MakePathAnyField(MemoryPath parentPath)
         {
             return new MemoryPath(parentPath, new FieldPathSegment());
@@ -145,7 +145,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="parentPath">The parent path.</param>
         /// <param name="names">The names.</param>
-        /// <returns></returns>
+        /// <returns>New path which extends given path by fields with given names</returns>
         public static MemoryPath MakePathField(MemoryPath parentPath, IEnumerable<string> names)
         {
             return new MemoryPath(parentPath, new FieldPathSegment(names));
@@ -155,7 +155,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Makes the path which extends given path by any index.
         /// </summary>
         /// <param name="parentPath">The parent path.</param>
-        /// <returns></returns>
+        /// <returns>New path which extends given path by any index</returns>
         public static MemoryPath MakePathAnyIndex(MemoryPath parentPath)
         {
             return new MemoryPath(parentPath, new IndexPathSegment());
@@ -166,7 +166,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="parentPath">The parent path.</param>
         /// <param name="names">The names.</param>
-        /// <returns></returns>
+        /// <returns>New path which extends given path by indicies with given names</returns>
         public static MemoryPath MakePathIndex(MemoryPath parentPath, IEnumerable<string> names)
         {
             return new MemoryPath(parentPath, new IndexPathSegment(names));
@@ -176,7 +176,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Makes the path to temporary memory location.
         /// </summary>
         /// <param name="temporaryIndex">Index of the temporary.</param>
-        /// <returns></returns>
+        /// <returns>New path to temporary memory location</returns>
         public static MemoryPath MakePathTemporary(TemporaryIndex temporaryIndex)
         {
             return new MemoryPath(new TemporaryPathSegment(temporaryIndex), GlobalContext.LocalOnly, temporaryIndex.CallLevel);
@@ -369,7 +369,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         ///  1 name  - 'name'
         ///  x names - '{name1 | name2 | ...}'
         /// </summary>
-        /// <returns></returns>
+        /// <returns>String representation of the segment.</returns>
         private string namesToString()
         {
             if (Names.Count == 0)

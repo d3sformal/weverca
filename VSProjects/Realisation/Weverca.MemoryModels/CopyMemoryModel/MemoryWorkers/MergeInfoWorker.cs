@@ -11,22 +11,44 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.CopyMemoryModel
 {
+    /// <summary>
+    /// Implementation of merge algorithm for second phase of analysis. This merge algorithm does not change the structure
+    /// of memory model. Algorithm uses existing structure to traverse its memory tree and tries to find appropriate
+    /// memoru location in merged snapshot. Output data for each memory location contains all possible values. When some
+    /// memory location is not specified on some snapshot the nearest unknown location is used as source of data.
+    /// Indexes which is not in target structure will be ignored.
+    /// </summary>
     class MergeInfoWorker : IMergeWorker
     {
         private Dictionary<MemoryIndex, MemoryAliasBuilder> memoryAliases = new Dictionary<MemoryIndex, MemoryAliasBuilder>();
-
-        internal SnapshotStructure Structure { get; private set; }
-        internal SnapshotData Infos { get; private set; }
-
-        internal Snapshot targetSnapshot;
-        internal List<Snapshot> sourceSnapshots;
-
+        private Snapshot targetSnapshot;
+        private List<Snapshot> sourceSnapshots;
         private HashSet<ObjectValue> objects = new HashSet<ObjectValue>();
-
         private LinkedList<MergeOperation> operationStack = new LinkedList<MergeOperation>();
-
         private bool isCallMerge;
 
+        /// <summary>
+        /// Gets the structure of memory model which is used to merge info values into.
+        /// </summary>
+        /// <value>
+        /// The structure.
+        /// </value>
+        public SnapshotStructure Structure { get; private set; }
+
+        /// <summary>
+        /// Gets the data container with result of merge.
+        /// </summary>
+        /// <value>
+        /// The infos.
+        /// </value>
+        public SnapshotData Infos { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeInfoWorker"/> class.
+        /// </summary>
+        /// <param name="targetSnapshot">The target snapshot.</param>
+        /// <param name="sourceSnapshots">The source snapshots.</param>
+        /// <param name="isCallMerge">if set to <c>true</c> [is call merge].</param>
         public MergeInfoWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
         {
             Infos = SnapshotData.CreateEmpty(targetSnapshot);
@@ -39,6 +61,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             this.isCallMerge = isCallMerge;
         }
 
+        /// <summary>
+        /// Main method of merge algorithm.
+        /// 
+        /// iI first phase prepares new empty data collection. Then collects all root memory locations and
+        /// prepares their operations. As the final step process all merge operations which traverses the
+        /// memory tree and merges data from all source indexes.
+        /// </summary>
         internal void Merge()
         {
             ContainerOperations[] collectVariables = new ContainerOperations[targetSnapshot.CallLevel + 1];
@@ -79,14 +108,17 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             for (int x = 0; x <= targetSnapshot.CallLevel; x++)
             {
-                collectVariables[x].MergeContainer();
-                collectControl[x].MergeContainer();
+                collectVariables[x].MergeContainers();
+                collectControl[x].MergeContainers();
                 mergeTemporary(x);
             }
 
             processMerge();
         }
 
+        /// <summary>
+        /// Process all merge operations. Continues processing until operation stack is empty.
+        /// </summary>
         private void processMerge()
         {
             while (operationStack.Count > 0)
@@ -97,6 +129,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Processes single merge operation - prepares all valid values and alias informations from the source indexes.
+        /// When the source indexes contains some array values prepares operation for every descendant index and merge the
+        /// array into one which will be stored in the target memory entry.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
         private void processMergeOperation(MergeOperation operation)
         {
             HashSet<Value> values = new HashSet<Value>();
@@ -122,6 +160,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             Structure.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
         }
 
+        /// <summary>
+        /// Prepares operation for every descendant index of target array.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
+        /// <returns>Array where the input arrays is merged into.</returns>
         private void mergeArrays(MergeOperation operation)
         {
             AssociativeArray targetArray = Structure.GetArray(operation.TargetIndex);
@@ -145,11 +188,15 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
             }
 
-            collectIndexes.MergeContainer();
+            collectIndexes.MergeContainers();
         }
 
         #region Temporary
 
+        /// <summary>
+        /// Creates merge operations for all temporary indexes in the target structure.
+        /// </summary>
+        /// <param name="index">The index.</param>
         private void mergeTemporary(int index)
         {
             foreach (var temp in Structure.Temporary[index])
@@ -186,6 +233,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// For all fields of objects in the target structure prepares the merge operations.
+        /// </summary>
         private void mergeObjects()
         {
             foreach (var objectValue in targetSnapshot.Structure.ObjectDescriptors)
@@ -194,6 +244,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
         }
 
+        /// <summary>
+        /// Creates the merge operation for all fields of specified object.
+        /// </summary>
+        /// <param name="objectValue">The object value.</param>
         private void mergeObject(ObjectValue objectValue)
         {
             ObjectDescriptor targetDescriptor = Structure.GetDescriptor(objectValue);
@@ -212,16 +266,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 }
             }
 
-            collectVariables.MergeContainer();
+            collectVariables.MergeContainers();
         }
 
         #endregion
 
+        /// <summary>
+        /// Adds operation into stack of merge worker.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
         public void addOperation(MergeOperation operation)
         {
             operationStack.AddLast(operation);
         }
 
+        /// <summary>
+        /// Gets the operation at the top of operation stack. Operation is removed from stack.
+        /// </summary>
+        /// <returns>First operation in the memory stack</returns>
         private MergeOperation getOperation()
         {
             MergeOperation operation = operationStack.First.Value;

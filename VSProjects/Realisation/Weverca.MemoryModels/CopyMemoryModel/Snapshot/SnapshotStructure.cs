@@ -198,7 +198,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates empty structure which contains no data in containers.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        /// <returns></returns>
+        /// <returns>New empty structure which contains no data in containers.</returns>
         public static SnapshotStructure CreateEmpty(Snapshot snapshot)
         {
             SnapshotStructure data = new SnapshotStructure(snapshot);
@@ -224,7 +224,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="snapshotData">The snapshot data.</param>
-        /// <returns></returns>
+        /// <returns>New structure with memory stack with global level only.</returns>
         public static SnapshotStructure CreateGlobal(Snapshot snapshot, SnapshotData snapshotData)
         {
             SnapshotStructure data = new SnapshotStructure(snapshot);
@@ -251,7 +251,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="snapshotData">The snapshot data.</param>
-        /// <returns></returns>
+        /// <returns>New copy of this structure which contains the same data as this instace.</returns>
         public SnapshotStructure Copy(Snapshot snapshot, SnapshotData snapshotData)
         {
             SnapshotStructure data = new SnapshotStructure(snapshot);
@@ -278,7 +278,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="snapshotData">The snapshot data.</param>
-        /// <returns></returns>
+        /// <returns>New copy of this structure and adds new local level into memory stacks.</returns>
         public SnapshotStructure CopyAndAddLocalLevel(Snapshot snapshot, SnapshotData snapshotData)
         {
             SnapshotStructure data = new SnapshotStructure(snapshot);
@@ -304,7 +304,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the memory stack object with given unknown index.
         /// </summary>
         /// <param name="unknownIndex">Index of the unknown.</param>
-        /// <returns></returns>
+        /// <returns>New memory stack object with given unknown index.</returns>
         private VariableStack createMemoryStack(MemoryIndex unknownIndex)
         {
             return new VariableStack(createIndexContainer(unknownIndex));
@@ -314,7 +314,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the index container object with given unknown object.
         /// </summary>
         /// <param name="unknownIndex">Index of the unknown.</param>
-        /// <returns></returns>
+        /// <returns>New index container object with given unknown object.</returns>
         private IndexContainer createIndexContainer(MemoryIndex unknownIndex)
         {
             IndexContainer container = new IndexContainer(unknownIndex);
@@ -535,33 +535,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         }
 
         /// <summary>
-        /// Gets the index which is not above the local level of this structure.
-        /// This method alows to widen data in local levels of shared functions.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <param name="comparedStructure">The compared structure.</param>
-        /// <param name="thisStructure">The this structure.</param>
-        /// <returns></returns>
-        private MemoryIndex getIndexOrLocal(MemoryIndex index, SnapshotStructure comparedStructure, SnapshotStructure thisStructure)
-        {
-            /*if (index.CallLevel == comparedStructure.Snapshot.CallLevel && thisStructure.Snapshot.CallLevel < index.CallLevel)
-            {
-                return index.SetCallLevel(thisStructure.Snapshot.CallLevel);
-            }
-            else
-            {
-                return index;
-            }*/
-            return index;
-        }
-
-        /// <summary>
-        /// Gets the data if is set in structure or returns given empty data.
+        /// Gets the data is set in structure or returns given empty data.
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="snapshotStructure">The snapshot structure.</param>
         /// <param name="emptyData">The empty data.</param>
-        /// <returns></returns>
+        /// <returns>Data is set in structure or returns given empty data.</returns>
         private CopyMemoryModel.IndexData getDataOrUndefined(MemoryIndex index, SnapshotStructure snapshotStructure, IndexData emptyData)
         {
             IndexData data = null;
@@ -627,7 +606,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the data of specified index.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>Data of specified index.</returns>
         /// <exception cref="System.Exception">Missing alias value for given index</exception>
         internal IndexData GetIndexData(MemoryIndex index)
         {
@@ -647,7 +626,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the PHP object descriptor which contains defined fields and informations about object.
         /// </summary>
         /// <param name="objectValue">The object value.</param>
-        /// <returns></returns>
+        /// <returns>PHP object descriptor which contains defined fields and informations about object.</returns>
         /// <exception cref="System.Exception">Missing object descriptor</exception>
         internal ObjectDescriptor GetDescriptor(ObjectValue objectValue)
         {
@@ -667,7 +646,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="objectValue">The object value.</param>
         /// <param name="descriptor">The descriptor.</param>
-        /// <returns></returns>
+        /// <returns>True whether structure contains PHP object descriptor which contains defined fields and informations about object.</returns>
         internal bool TryGetDescriptor(ObjectValue objectValue, out ObjectDescriptor descriptor)
         {
             return ObjectDescriptors.TryGetValue(objectValue, out descriptor);
@@ -707,7 +686,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the objects for given index.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>Collection of objects for given index.</returns>
         public ObjectValueContainer GetObjects(MemoryIndex index)
         {
             IndexData data;
@@ -752,7 +731,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="arrayValue">The array value.</param>
         /// <param name="descriptor">The descriptor.</param>
-        /// <returns></returns>
+        /// <returns>Array descriptor which contains information about defined indexes in the specified array.</returns>
         internal bool TryGetDescriptor(AssociativeArray arrayValue, out ArrayDescriptor descriptor)
         {
             return ArrayDescriptors.TryGetValue(arrayValue, out descriptor);
@@ -762,7 +741,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the array descriptor which contains information about defined indexes in the specified array.
         /// </summary>
         /// <param name="arrayValue">The array value.</param>
-        /// <returns></returns>
+        /// <returns>True whether structure contains array descriptor which contains information about defined indexes in the specified array.</returns>
         /// <exception cref="System.Exception">Missing array descriptor</exception>
         internal ArrayDescriptor GetDescriptor(AssociativeArray arrayValue)
         {
@@ -793,7 +772,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the array descriptor which contains information about defined indexes in the specified array.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>Array descriptor which contains information about defined indexes in the specified array.</returns>
         /// <exception cref="System.Exception">Missing array for index  + index</exception>
         internal AssociativeArray GetArray(MemoryIndex index)
         {
@@ -813,7 +792,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether the specified index has array.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>True whether the specified index has array.</returns>
         internal bool HasArray(MemoryIndex index)
         {
             IndexData data;
@@ -832,7 +811,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="arrayValue">The array value.</param>
-        /// <returns></returns>
+        /// <returns>True whether the specified index has array.</returns>
         internal bool TryGetArray(MemoryIndex index, out AssociativeArray arrayValue)
         {
             IndexData data;
@@ -853,7 +832,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="array">The array.</param>
         /// <param name="snapshots">The snapshots.</param>
-        /// <returns></returns>
+        /// <returns>List of spashots which contains specified array.</returns>
         internal bool TryGetCallArraySnapshot(AssociativeArray array, out IEnumerable<Snapshot> snapshots)
         {
             IndexSet<Snapshot> snapshotSet = null;
@@ -949,7 +928,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether function with given name is defined.
         /// </summary>
         /// <param name="functionName">Name of the function.</param>
-        /// <returns></returns>
+        /// <returns>True whether function with given name is defined..</returns>
         internal bool IsFunctionDefined(PHP.Core.QualifiedName functionName)
         {
             return FunctionDecl.ContainsKey(functionName);
@@ -959,7 +938,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the function.
         /// </summary>
         /// <param name="functionName">Name of the function.</param>
-        /// <returns></returns>
+        /// <returns>List of functions with given name.</returns>
         internal IEnumerable<FunctionValue> GetFunction(PHP.Core.QualifiedName functionName)
         {
             return FunctionDecl.GetValue(functionName);
@@ -985,7 +964,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Determines whether class with specified name is defined.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <returns>True whether class with specified name is defined.</returns>
         internal bool IsClassDefined(PHP.Core.QualifiedName name)
         {
             return ClassDecl.ContainsKey(name);
@@ -1007,7 +986,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the class.
         /// </summary>
         /// <param name="className">Name of the class.</param>
-        /// <returns></returns>
+        /// <returns>Class with the specified name.</returns>
         internal IEnumerable<TypeValue> GetClass(PHP.Core.QualifiedName className)
         {
             return ClassDecl.GetValue(className);
@@ -1031,7 +1010,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="aliases">The aliases.</param>
-        /// <returns></returns>
+        /// <returns>True whether specified index has aliases.</returns>
         internal bool TryGetAliases(MemoryIndex index, out MemoryAlias aliases)
         {
             IndexData data;
@@ -1051,7 +1030,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the aliases for specified index.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>Aliases for the specified index.</returns>
         /// <exception cref="System.Exception">Missing alias value for  + index</exception>
         internal MemoryAlias GetAliases(MemoryIndex index)
         {
@@ -1115,7 +1094,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Gets the memory entry from actual index data collection.
         /// </summary>
         /// <param name="index">The index.</param>
-        /// <returns></returns>
+        /// <returns>Memory entry for the specified index.</returns>
         internal MemoryEntry GetMemoryEntry(MemoryIndex index)
         {
             return Data.GetMemoryEntry(index);
@@ -1126,7 +1105,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="index">The index.</param>
         /// <param name="entry">The entry.</param>
-        /// <returns></returns>
+        /// <returns>True whether specified index has memory entry.</returns>
         internal bool TryGetMemoryEntry(MemoryIndex index, out MemoryEntry entry)
         {
             return Data.TryGetMemoryEntry(index, out entry);
@@ -1188,7 +1167,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="data">The data.</param>
         /// <param name="infos">The infos.</param>
-        /// <returns></returns>
+        /// <returns>String representation of all arrays in the memory model.</returns>
         internal string GetArraysRepresentation(SnapshotData data, SnapshotData infos)
         {
             StringBuilder result = new StringBuilder();
@@ -1207,7 +1186,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="data">The data.</param>
         /// <param name="infos">The infos.</param>
-        /// <returns></returns>
+        /// <returns>String representation of all objects and fields in memory model.</returns>
         internal string GetFieldsRepresentation(SnapshotData data, SnapshotData infos)
         {
             StringBuilder result = new StringBuilder();
@@ -1224,7 +1203,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets string representation af aliases between memory locations in memory model.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>String representation af aliases between memory locations in memory model.</returns>
         internal string GetAliasesRepresentation()
         {
             StringBuilder result = new StringBuilder();
