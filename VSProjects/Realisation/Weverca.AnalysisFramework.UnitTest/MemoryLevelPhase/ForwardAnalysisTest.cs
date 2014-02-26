@@ -1603,10 +1603,24 @@ $result = true ? false : true ? 'a' : 'b';
 
 
         readonly static TestCase ArrayConditionalExpressionResult_CASE = @"
-$a[0]='a';
-$result = true ? $a[0] : 'b';
+$a[0]=$unknown;
+$a[1]='a';
+$a[2]='b';
+$result = $a[0] ? $a[1] : $a[2];
 
-".AssertVariable("result").HasValues("a");
+".AssertVariable("result").HasValues("a","b");
+
+        readonly static TestCase ArrayMayConditionalExpressionResult_CASE = @"
+$a[0]='a';
+$result= $unknown ? $a[0] : 'b' ;
+
+".AssertVariable("result").HasValues("a", "b").Analysis(Analyses.WevercaAnalysisTest);
+
+        [TestMethod]
+        public void ArrayMayConditionalExpressionResult()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayMayConditionalExpressionResult_CASE);
+        }
 
         [TestMethod]
         public void ArrayConditionalExpressionResult()

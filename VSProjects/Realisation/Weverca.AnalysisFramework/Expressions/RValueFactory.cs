@@ -55,6 +55,24 @@ namespace Weverca.AnalysisFramework.Expressions
             return result;
         }
 
+        /// <summary>
+        /// Append given point at end of current chain
+        /// </summary>
+        /// <param name="appendedPoint">Point that is appended</param>
+        internal void AppendToChain(ProgramPointBase appendedPoint)
+        {
+            _valueCreator.AppendToChain(appendedPoint);
+        }
+
+        /// <summary>
+        /// Prevent from adding edge when chaining points
+        /// </summary>
+        /// <param name="preventedPoint">Point which flow child wont be set</param>
+        internal void PreventChainEdge(ProgramPointBase preventedPoint)
+        {
+            _valueCreator.PreventChainEdge(preventedPoint);
+        }
+
         #region Creating program points
 
         /// <summary>
@@ -67,15 +85,6 @@ namespace Weverca.AnalysisFramework.Expressions
             _resultPoint = value;
         }
 
-        /// <summary>
-        /// Substitute occurence of given point by given chain. No chaining operation is processed on given chain.
-        /// </summary>
-        /// <param name="substitutedPoint">Substituted point</param>
-        /// <param name="chain">Substituting chain</param>
-        private void SubstituteByChain(ProgramPointBase substitutedPoint, ProgramPointBase[] chain)
-        {
-            _valueCreator.SubstituteByChain(substitutedPoint, chain);
-        }
         /// <summary>
         /// Visit element, which doesn't accept any values and it's value is constant during whole computation
         /// </summary>
@@ -280,41 +289,44 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitConditionalEx(ConditionalEx x)
         {
+            /* Points are created in current ordering
+                1. conditionExpr,
+                2. trueAssume,
+                3. trueExpr,
+                4. falseAssume,
+                5. falseExpr,              
+             */
+
+            //1.
             var conditionExpr = CreateRValue(x.CondExpr);
-            var trueExpr = CreateRValue(x.TrueExpr);
-            var falseExpr = CreateRValue(x.FalseExpr);
+
 
             //create true branch
             var trueAssumeCond = new AssumptionCondition(ConditionForm.All, x.CondExpr);
             var trueAssume = new AssumePoint(trueAssumeCond, new[] { conditionExpr });
-            trueAssume.AddFlowChild(trueExpr);
+            //2.
+            AppendToChain(trueAssume);
+            //3.
+            var trueExpr = CreateRValue(x.TrueExpr);
 
             //create false branch
             var falseAssumeCond = new AssumptionCondition(ConditionForm.None, x.CondExpr);
             var falseAssume = new AssumePoint(falseAssumeCond, new[] { conditionExpr });
-            falseAssume.AddFlowChild(falseExpr);
+            //4.
+            AppendToChain(falseAssume);
 
-            //connect condition
-            conditionExpr.AddFlowChild(trueAssume);
+            //5.
+            var falseExpr = CreateRValue(x.FalseExpr);
+
+            //connect condition - true assume will be connect via chaining            
             conditionExpr.AddFlowChild(falseAssume);
 
             //create result
-            var expression = new ConditionalExPoint(x, conditionExpr, trueAssume, falseAssume);
+            var expression = new ConditionalExPoint(x, conditionExpr, trueAssume, falseAssume, trueExpr, falseExpr);
 
             //false expr is added when processing substitution
+            PreventChainEdge(trueExpr);
             trueExpr.AddFlowChild(expression);
-
-            SubstituteByChain(conditionExpr, new ProgramPointBase[]{
-                conditionExpr,
-                trueAssume,
-                trueExpr,
-                falseAssume,
-                falseExpr,
-            });
-
-            //expr points are added with conditionExp
-            SubstituteByChain(falseExpr, new ProgramPointBase[0]);
-            SubstituteByChain(trueExpr, new ProgramPointBase[0]);
 
             Result(expression);
         }
@@ -329,13 +341,21 @@ namespace Weverca.AnalysisFramework.Expressions
         public override void VisitBinaryEx(BinaryEx x)
         {
             var lOperand = CreateRValue(x.LeftExpr);
-            var rOperand = CreateRValue(x.RightExpr);
-            var expression = new BinaryExPoint(x, lOperand, rOperand);
+            ValuePoint rOperand;
 
+            BinaryExPoint expression;
             switch (x.PublicOperation)
             {
                 case Operations.And:
                 case Operations.Or:
+
+                    /* Points are created in current ordering
+                          1. blockStart,
+                          2. shortendPath,
+                          3. nonShortendPath,
+                          4. rOperand
+                     */
+
                     var shortableForm = x.PublicOperation == Operations.And ? ConditionForm.None : ConditionForm.All;
                     var nonShortableForm = shortableForm == ConditionForm.All ? ConditionForm.None : ConditionForm.All;
 
@@ -346,24 +366,33 @@ namespace Weverca.AnalysisFramework.Expressions
                     var nonShortableCondition = new AssumptionCondition(nonShortableForm, x.LeftExpr);
                     //normal evaluation
                     var nonShortendPath = new AssumePoint(nonShortableCondition, new[] { lOperand });
-                    nonShortendPath.AddFlowChild(rOperand);
 
                     //block borders
                     var blockStart = new EmptyProgramPoint();
-                    blockStart.AddFlowChild(shortendPath);
+                    //1.
+                    AppendToChain(blockStart);
+                    //2.
+                    AppendToChain(shortendPath);
+                    //3. 
+                    AppendToChain(nonShortendPath);
+                    //4.
+                    rOperand = CreateRValue(x.RightExpr);
+
+                    expression = new BinaryExPoint(x, lOperand, rOperand);
+
+                    //shortend path is added via chain
                     blockStart.AddFlowChild(nonShortendPath);
 
-                    //because of explicit flow we have to create substitution
-                    SubstituteByChain(rOperand, new ProgramPointBase[]{
-                        blockStart,
-                        shortendPath,
-                        nonShortendPath,
-                        rOperand
-                    });
-
+                    //set explicit edge
+                    PreventChainEdge(shortendPath);
                     shortendPath.AddFlowChild(expression);
-                    //roperand is added when processing substitituion
 
+
+
+                    break;
+                default:
+                    rOperand = CreateRValue(x.RightExpr);
+                    expression = new BinaryExPoint(x, lOperand, rOperand);
                     break;
             }
 

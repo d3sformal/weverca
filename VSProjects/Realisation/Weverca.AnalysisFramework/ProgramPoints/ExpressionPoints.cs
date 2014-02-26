@@ -279,17 +279,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         /// <param name="expression">Conditional expression</param>
         /// <param name="condition">Condition determining whether true or false, or merge will be used</param>
-        /// <param name="trueAssume">Assume point with true binary operand (has to be connected with operand)</param>
-        /// <param name="falseAssume">Assume point with false binary operand (has to be connected with operand)</param>
-        internal ConditionalExPoint(ConditionalEx expression, ValuePoint condition, AssumePoint trueAssume, AssumePoint falseAssume)
+        /// <param name="trueAssume">Assume point for true binary operand </param>
+        /// <param name="falseAssume">Assume point for false binary operand </param>
+        /// <param name="trueOperand">True operand</param>
+        /// <param name="falseOperand">False operand</param>
+        internal ConditionalExPoint(ConditionalEx expression, ValuePoint condition, AssumePoint trueAssume, AssumePoint falseAssume, ValuePoint trueOperand, ValuePoint falseOperand)
         {
             Expression = expression;
             Condition = condition;
             _trueAssume = trueAssume;
             _falseAssume = falseAssume;
 
-            TrueOperand = (ValuePoint)_trueAssume.FlowChildren.First();
-            FalseOperand = (ValuePoint)_falseAssume.FlowChildren.First();
+            TrueOperand = trueOperand;
+            FalseOperand = falseOperand;
         }
 
         /// <inheritdoc />

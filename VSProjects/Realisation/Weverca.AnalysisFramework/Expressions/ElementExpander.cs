@@ -32,23 +32,24 @@ namespace Weverca.AnalysisFramework.Expressions
             = new Dictionary<LangElement, ProgramPointBase>();
 
         /// <summary>
-        /// Program points' substitutions
+        /// Ordering expanded program point chain in postfix
         /// </summary>
-        private readonly Dictionary<ProgramPointBase, ProgramPointBase[]> _substitutions
-            = new Dictionary<ProgramPointBase, ProgramPointBase[]>();
+        private readonly List<ProgramPointBase> _postfixChainOrdering = new List<ProgramPointBase>();
+
+        /// <summary>
+        /// Program points that are already contained within postfix chain
+        /// </summary>
+        private readonly HashSet<ProgramPointBase> _chainedPoints = new HashSet<ProgramPointBase>();
+
+        /// <summary>
+        /// Points that are prevent to be chained. Theire FlowChild is not implicitly added
+        /// </summary>
+        private readonly HashSet<ProgramPointBase> _preventedPoints = new HashSet<ProgramPointBase>();
 
         /// <summary>
         /// Factory used for creating RValues
         /// </summary>
         private readonly RValueFactory _rValueCreator;
-
-        /// <summary>
-        /// Types which program points are not implicitly created
-        /// </summary>
-        private static readonly Type[] FlowOmittedElements = new Type[]
-        {
-            typeof(ActualParam), typeof(FormalParam), typeof(DirectTypeRef), typeof(IndirectTypeRef)
-        };
 
         /// <summary>
         /// Prevents a default instance of the <see cref="ElementExpander" /> class from being created.
@@ -79,104 +80,55 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var expander = new ElementExpander();
             expander.Expand(statement);
-            var postfix = Converter.GetPostfix(statement);
 
-            var expandedChain = expander.createPointsChain(postfix);
-            var result = expandedChain.ToArray();
+            var expandedChain = expander.createPointsChain().ToArray();
 
-            registerCreatedPoints(result, onPointCreated);
-
-            return result;
+            registerCreatedPoints(expandedChain, onPointCreated);
+             
+            return expandedChain;
         }
 
         /// <summary>
         /// Create program point chain from partials orderd according to program flow
-        /// </summary>
-        /// <param name="orderedPartials">Partials that are base for created program points</param>
+        /// </summary>        
         /// <returns>Created program point chain</returns>
-        private IEnumerable<ProgramPointBase> createPointsChain(IEnumerable<LangElement> orderedPartials)
+        private IEnumerable<ProgramPointBase> createPointsChain()
         {
-            var result = new List<ProgramPointBase>();
-            ProgramPointBase lastPoint = null;
-
-            foreach (var partial in orderedPartials)
+            for (var i = 1; i < _postfixChainOrdering.Count; ++i)
             {
-                //skip all flow omitted lang elements
-                if (FlowOmittedElements.Contains(partial.GetType()))
-                {
+                var last = _postfixChainOrdering[i - 1];
+                var current = _postfixChainOrdering[i];
+
+                if (_preventedPoints.Contains(last))
                     continue;
-                }
 
-                var currentPoint = GetProgramPoint(partial);
-
-                if (lastPoint == null)
-                {
-                    //there is no parent to add child
-
-                    //because we dont want to miss first point
-                    foreach (var substitution in substitute(currentPoint))
-                    {
-                        lastPoint = substitution;
-                        result.Add(substitution);
-                    }
-
-                    continue;
-                }
-
-                //join statement chain with flow edges in postfix computation order
-                if (!currentPoint.FlowChildren.Any() || _substitutions.ContainsKey(currentPoint))
-                {
-                    var substitutions = substitute(currentPoint);
-                    if (substitutions.Length == 0)
-                        //substituted point has been removed
-                        continue;
-
-                    //because of sharing points in some expressions - point is on flow path before current
-                    lastPoint.AddFlowChild(substitutions[0]);
-
-                    foreach (var substitution in substitutions)
-                    {
-                        currentPoint = substitution;
-                        result.Add(currentPoint); //report point in correct order
-                    }
-                }
-
-                lastPoint = currentPoint;
+                last.AddFlowChild(current);
             }
 
-            return result;
+            return _postfixChainOrdering;
+        }
+
+
+        /// <summary>
+        /// Append given point at end of current chain
+        /// </summary>
+        /// <param name="appendedPoint">Point that is appended</param>
+        internal void AppendToChain(ProgramPointBase appendedPoint)
+        {
+            if (!_chainedPoints.Add(appendedPoint))
+                //point is already contained in the chain
+                return;
+
+            _postfixChainOrdering.Add(appendedPoint);
         }
 
         /// <summary>
-        /// Get substituted chain of point. Given chain is already chained within itself
+        /// Prevent from adding edge when chaining points
         /// </summary>
-        /// <param name="point">Substituted point</param>
-        /// <returns>Substitutions for given point</returns>
-        private ProgramPointBase[] substitute(ProgramPointBase point)
+        /// <param name="preventedPoint">Point which flow child wont be set</param>
+        internal void PreventChainEdge(ProgramPointBase preventedPoint)
         {
-            ProgramPointBase[] result;
-
-            if (!_substitutions.TryGetValue(point, out result))
-            {
-                result = new[] { point };
-            }
-            else
-            {
-                //remvoe substitutions to be sure that is used only once
-                _substitutions.Remove(point);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Substitute occurence of given point by given chain. No chaining operation is processed on given chain.
-        /// </summary>
-        /// <param name="substitutedPoint">Substituted point</param>
-        /// <param name="chain">Substituting chain</param>
-        internal void SubstituteByChain(ProgramPointBase substitutedPoint, ProgramPointBase[] chain)
-        {
-            _substitutions.Add(substitutedPoint, chain);
+            _preventedPoints.Add(preventedPoint);
         }
 
         /// <summary>
@@ -191,16 +143,6 @@ namespace Weverca.AnalysisFramework.Expressions
             {
                 onPointCreated(point);
             }
-        }
-        
-        /// <summary>
-        /// Get program point created for given partial
-        /// </summary>
-        /// <param name="partial">Partial of searched program point</param>
-        /// <returns>Created program point</returns>
-        private ProgramPointBase GetProgramPoint(LangElement partial)
-        {
-            return _programPoints[partial];
         }
 
         #region Program point creation
@@ -225,6 +167,8 @@ namespace Weverca.AnalysisFramework.Expressions
 
             var result = _rValueCreator.CreateValue(el);
             _programPoints.Add(el, result);
+
+            AppendToChain(result);
 
             return result;
         }
@@ -274,6 +218,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="point">Statement expansion</param>
         private void Result(ProgramPointBase point)
         {
+            AppendToChain(point);
             Register(point);
         }
 
