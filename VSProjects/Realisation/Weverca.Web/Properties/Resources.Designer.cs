@@ -70,7 +70,15 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to &lt;p&gt;
+        ///    Weverca web is a simple user-friendly GUI for Weverca tool, which can be used as an alternative to Weverca console application.
+        ///    It is written in ASP.NET MVC 4 under .NET framework 4.5. Framework version is required because Weverca is written in mentioned version.
+        ///    It is not needed for the web interface itself.
+        ///&lt;/p&gt;
+        ///
+        ///&lt;p&gt;
+        ///    The user interface consists of a PHP code editor, checkboxes which tells the framework if we want to run verification and what metrics we want to run.
+        ///    After th [rest of string was truncated]&quot;;.
         /// </summary>
         public static string AboutContent {
             get {
@@ -97,11 +105,47 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Endless loop.
+        /// </summary>
+        public static string EndlessLoop {
+            get {
+                return ResourceManager.GetString("EndlessLoop", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
         public static string Error {
             get {
                 return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?
+        ///// zabranime cashovani
+        ///header(&apos;Cache-Control: no-cache&apos;);
+        ///header(&apos;Pragma: no-cache&apos;);
+        ///header(&apos;Content-type: image/png&apos;); 
+        ///
+        ///  $re_st = -2;                                                         //Pozice začátku imaginární části
+        ///  $im_st = 1.2;                                                          //Pozice začátku reálné části
+        ///  $incr = 0.005;                                                           //Měřítko přírustku - 1px = 1 / 20
+        ///  $max_iter = 100;                                          [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string Fractal {
+            get {
+                return ResourceManager.GetString("Fractal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fractal.
+        /// </summary>
+        public static string FractalDescription {
+            get {
+                return ResourceManager.GetString("FractalDescription", resourceCulture);
             }
         }
         
@@ -153,15 +197,6 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Input 1.
-        /// </summary>
-        public static string Input1Description {
-            get {
-                return ResourceManager.GetString("Input1Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &lt;?
         ///function a(){
         ///echo &quot;function a&quot;;
@@ -197,15 +232,6 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Input 2.
-        /// </summary>
-        public static string Input2Description {
-            get {
-                return ResourceManager.GetString("Input2Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Custom Input.
         /// </summary>
         public static string InputCustomDescription {
@@ -229,6 +255,37 @@ namespace Weverca.Web.Properties {
         public static string IntegerFormat {
             get {
                 return ResourceManager.GetString("IntegerFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?php
+        ///  mysql_connect(&quot;localhost&quot;, &quot;root&quot;) or die(&quot;Neda sa pripojit k databaze: &quot; . mysql_error());
+        ///      mysql_select_db(&quot;metalcup&quot;) or die (&quot;Neda sa pracovat s databazov : &quot; . mysql_error());
+        ///      mysql_query(&quot;set names utf8&quot;);
+        ///$l=mysql_query(&quot;select * from admin&quot;)or die(mysql_error());
+        ///$zaznam=mysql_fetch_array($l);
+        ///$zostava=$_POST[&quot;Zostava&quot;];
+        ///$lw=$_POST[&quot;LW&quot;];
+        ///$rw=$_POST[&quot;RW&quot;];
+        ///$c=$_POST[&quot;C&quot;];
+        ///$ld=$_POST[&quot;LD&quot;];
+        ///$rd=$_POST[&quot;RD&quot;];
+        ///$g=$_POST[&quot;G&quot;];
+        ///$formacie=&quot;&lt;table width=\&quot;700\&quot;&gt;&lt;th align=\&quot;c [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string MetalcupStatis {
+            get {
+                return ResourceManager.GetString("MetalcupStatis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Metalcup statis.
+        /// </summary>
+        public static string MetalcupStatisDescription {
+            get {
+                return ResourceManager.GetString("MetalcupStatisDescription", resourceCulture);
             }
         }
         
@@ -274,6 +331,39 @@ namespace Weverca.Web.Properties {
         public static string QuantityMetrics {
             get {
                 return ResourceManager.GetString("QuantityMetrics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;html&gt;
+        /// &lt;head&gt;
+        ///  &lt;title&gt;PHP Test&lt;/title&gt;
+        /// &lt;/head&gt;
+        /// &lt;body style=&quot;font:14px Courier New&quot;&gt;
+        /// &lt;?
+        /// 
+        ///    $vratit=&quot;&quot;;
+        ///    for ($i=1;$i&lt;=12;$i++){
+        ///      $nah=rand(0,62);
+        ///      switch($nah){
+        ///        case 10: $znak=0; break;
+        ///        case 11: $znak=&apos;a&apos;; break; case 12: $znak=&apos;b&apos;; break; case 13: $znak=&apos;c&apos;; break;
+        ///        case 14: $znak=&apos;d&apos;; break; case 15: $znak=&apos;e&apos;; break; case 16: $znak=&apos;f&apos;; break;
+        ///        case 17: $znak=&apos;g&apos;; break; case 18: $znak=&apos;h&apos;; break; case 19: $znak=&apos;i&apos;; break;
+        ///        case 20: [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string Randomize {
+            get {
+                return ResourceManager.GetString("Randomize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Randomize.
+        /// </summary>
+        public static string RandomizeDescription {
+            get {
+                return ResourceManager.GetString("RandomizeDescription", resourceCulture);
             }
         }
         
@@ -346,6 +436,71 @@ namespace Weverca.Web.Properties {
         public static string Settings {
             get {
                 return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Simple example.
+        /// </summary>
+        public static string SimpleExample {
+            get {
+                return ResourceManager.GetString("SimpleExample", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;?
+        ///class human {
+        ///public $gender;
+        ///
+        ///public function __construct($gender)
+        ///{
+        ///$this-&gt;gender = $gender;
+        ///
+        ///echo self::get_gender();
+        ///}
+        ///
+        ///public function get_gender()
+        ///{
+        ///return $this-&gt;gender;
+        ///}
+        ///}
+        ///
+        ///class person extends human {
+        ///public $name;
+        ///public $surname;
+        ///
+        ///public function set_name($name)
+        ///{
+        ///$this-&gt;name = $name;
+        ///}
+        ///
+        ///public function set_surname($surname)
+        ///{
+        ///$this-&gt;surname = $surname;
+        ///}
+        ///
+        ///public  function get_name()
+        ///{
+        ///return $this-&gt;name;
+        ///}
+        ///
+        ///public  function get_surname()
+        ///{
+        ///return $this-&gt; [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string SimpleObject {
+            get {
+                return ResourceManager.GetString("SimpleObject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Simple object.
+        /// </summary>
+        public static string SimpleObjectDescription {
+            get {
+                return ResourceManager.GetString("SimpleObjectDescription", resourceCulture);
             }
         }
         

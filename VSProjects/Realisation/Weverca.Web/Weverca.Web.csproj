@@ -170,6 +170,10 @@
     <None Include="Resources\Input2.php" />
     <Content Include="jQuery\jquery-ui.js" />
     <None Include="Resources\AboutContent.htm" />
+    <None Include="Resources\fraktal.php" />
+    <None Include="Resources\metalcupStatis.php" />
+    <None Include="Resources\randomize.php" />
+    <None Include="Resources\simpleObject.php" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

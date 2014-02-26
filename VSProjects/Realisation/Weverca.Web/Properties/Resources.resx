@@ -133,6 +133,9 @@
   <data name="Error" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="Fractal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\fraktal.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+  </data>
   <data name="Home" xml:space="preserve">
     <value>Home</value>
   </data>
@@ -145,14 +148,14 @@
   <data name="Input1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Input1.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
-  <data name="Input1Description" xml:space="preserve">
-    <value>Input 1</value>
+  <data name="SimpleExample" xml:space="preserve">
+    <value>Simple example</value>
   </data>
   <data name="Input2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Input2.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
-  <data name="Input2Description" xml:space="preserve">
-    <value>Input 2</value>
+  <data name="EndlessLoop" xml:space="preserve">
+    <value>Endless loop</value>
   </data>
   <data name="InputCustomDescription" xml:space="preserve">
     <value>Custom Input</value>
@@ -162,6 +165,9 @@
   </data>
   <data name="IntegerFormat" xml:space="preserve">
     <value>{0:### ### ##0}</value>
+  </data>
+  <data name="MetalcupStatis" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\metalcupStatis.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
   <data name="MetricsResults" xml:space="preserve">
     <value>Metrics Results</value>
@@ -177,6 +183,9 @@
   </data>
   <data name="QuantityMetrics" xml:space="preserve">
     <value>Quantity Metrics</value>
+  </data>
+  <data name="Randomize" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\randomize.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
   <data name="RatingMetrics" xml:space="preserve">
     <value>Rating Metrics</value>
@@ -202,6 +211,9 @@
   <data name="Settings" xml:space="preserve">
     <value>Verification settings</value>
   </data>
+  <data name="SimpleObject" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\simpleObject.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+  </data>
   <data name="VerificationResults" xml:space="preserve">
     <value>Verifications Results</value>
   </data>
@@ -213,5 +225,17 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Yes</value>
+  </data>
+  <data name="FractalDescription" xml:space="preserve">
+    <value>Fractal</value>
+  </data>
+  <data name="MetalcupStatisDescription" xml:space="preserve">
+    <value>Metalcup statis</value>
+  </data>
+  <data name="RandomizeDescription" xml:space="preserve">
+    <value>Randomize</value>
+  </data>
+  <data name="SimpleObjectDescription" xml:space="preserve">
+    <value>Simple object</value>
   </data>
 </root>

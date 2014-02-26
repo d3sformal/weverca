@@ -11,11 +11,23 @@ namespace Weverca.Web.Models
 
         public enum InputType
         {
-            [LocalizedDescription(typeof(Resources), "Input1Description")]
-            Input1,
+            [LocalizedDescription(typeof(Resources), "SimpleExample")]
+            SimpleExample,
 
-            [LocalizedDescription(typeof(Resources), "Input2Description")]
-            Input2,
+            [LocalizedDescription(typeof(Resources), "EndlessLoop")]
+            EndlessLoop,
+
+            [LocalizedDescription(typeof(Resources), "FractalDescription")]
+            Fractal,
+
+            [LocalizedDescription(typeof(Resources), "MetalcupStatisDescription")]
+            MetalcupStatis,
+
+            [LocalizedDescription(typeof(Resources), "RandomizeDescription")]
+            Randomize,
+
+            [LocalizedDescription(typeof(Resources), "SimpleObjectDescription")]
+            SimpleObject,
 
             [LocalizedDescription(typeof(Resources), "InputCustomDescription")]
             Custom
@@ -41,7 +53,7 @@ namespace Weverca.Web.Models
 
         public WevercaModel()
         {
-            Input = InputType.Input1;
+            Input = InputType.SimpleExample;
             AssignInput();
             AnalysisModel = new AnalysisModel();
         }
@@ -52,13 +64,29 @@ namespace Weverca.Web.Models
 
         public void AssignInput()
         {
-            if (Input == InputType.Input1)
+            if (Input == InputType.SimpleExample)
             {
                 PhpCode = Resources.Input1;
             }
-            else if (Input == InputType.Input2)
+            else if (Input == InputType.EndlessLoop)
             {
                 PhpCode = Resources.Input2;
+            }
+            else if (Input == InputType.Fractal)
+            {
+                PhpCode = Resources.Fractal;
+            }
+            else if (Input == InputType.MetalcupStatis)
+            {
+                PhpCode = Resources.MetalcupStatis;
+            }
+            else if (Input == InputType.Randomize)
+            {
+                PhpCode = Resources.Randomize;
+            }
+            else if (Input == InputType.SimpleObject)
+            {
+                PhpCode = Resources.SimpleObject;
             }
         }
 
@@ -66,11 +94,27 @@ namespace Weverca.Web.Models
         {
             if (PhpCode == Resources.Input1)
             {
-                Input = InputType.Input1;
+                Input = InputType.SimpleExample;
             }
             else if (PhpCode == Resources.Input2)
             {
-                Input = InputType.Input2;
+                Input = InputType.EndlessLoop;
+            }
+            else if (PhpCode == Resources.Fractal)
+            {
+                Input = InputType.Fractal;
+            }
+            else if (PhpCode == Resources.MetalcupStatis)
+            {
+                Input = InputType.MetalcupStatis;
+            }
+            else if (PhpCode == Resources.Randomize)
+            {
+                Input = InputType.Randomize;
+            }
+            else if (PhpCode == Resources.SimpleObject)
+            {
+                Input = InputType.SimpleObject;
             }
             else
             {

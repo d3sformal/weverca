@@ -266,3 +266,8 @@ select
     width: 982px;
     padding: 8px 0px 8px 8px;
 }
+
+li .cm-s-default
+{
+    max-width: 780px;
+}
