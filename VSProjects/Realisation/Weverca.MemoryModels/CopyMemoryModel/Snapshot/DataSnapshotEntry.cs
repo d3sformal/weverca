@@ -404,6 +404,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Calls snapshot entry interface method readMemory to provide standard read from snapshot entry.
         /// </summary>
         /// <param name="snapshot">The memory context.</param>
+        /// <returns>
+        /// Memory represented by current snapshot entry.
+        /// </returns>
         public MemoryEntry ReadMemory(Snapshot snapshot)
         {
             return this.readMemory(snapshot);

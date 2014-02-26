@@ -36,27 +36,18 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </value>
         public Snapshot Snapshot { get; set; }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="value"></param>
         /// <inheritdoc />
         public override void VisitValue(Value value)
         {
             Values.Add(value);
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="value"></param>
         /// <inheritdoc />
         public override void VisitObjectValue(ObjectValue value)
         {
             Objects.Add(value);
         }
 
-        /// <summary>
-        /// </summary>
-        /// <param name="value"></param>
         /// <inheritdoc />
         public override void VisitAssociativeArray(AssociativeArray value)
         {

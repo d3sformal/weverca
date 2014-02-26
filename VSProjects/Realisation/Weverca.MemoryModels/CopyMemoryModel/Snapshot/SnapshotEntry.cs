@@ -481,6 +481,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
+        /// <returns>
+        /// Alias data fro the newly created aliases.
+        /// </returns>
         public AliasData CreateAliasToEntry(Snapshot snapshot)
         {
             //Collect alias indexes
@@ -510,6 +513,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Reads the memory.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
+        /// <returns>
+        /// Memory represented by current snapshot entry.
+        /// </returns>
         public MemoryEntry ReadMemory(Snapshot snapshot)
         {
             return this.readMemory(snapshot);

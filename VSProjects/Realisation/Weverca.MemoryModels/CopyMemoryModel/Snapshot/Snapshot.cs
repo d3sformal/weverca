@@ -155,6 +155,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the string representation of the data.
         /// </summary>
+        /// <returns>String representation of the data.</returns>
         public String DumpSnapshot()
         {
             StringBuilder builder = new StringBuilder();
@@ -196,6 +197,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Generates snapshot representation in Weverca format
         /// </summary>
+        /// <returns>String version snapshot representation in Weverca format.</returns>
         public string GetRepresentation()
         {
             var result = new StringBuilder();
@@ -230,6 +232,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Creates the string representation of the data where values for each index are at the same line.
         /// </summary>
+        /// <returns>String representation of the data where values for each index are at the same line.</returns>
         public String DumpSnapshotSimplified()
         {
             StringBuilder builder = new StringBuilder();
@@ -274,6 +277,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Gets the snapshot identification which consists of snapshot and data ID separated by colons.
         /// </summary>
+        /// <returns>String version snapshot identification which consists of snapshot and data ID separated by colons.</returns>
         public String getSnapshotIdentification()
         {
             return CallLevel + "." + snapId.ToString() + "::" + Structure.DataId.ToString();
@@ -465,14 +469,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 throw new Exception("Unknown object");
             }
         }
-        
+
         /// <summary>
         /// Resolves all possible functions for given functionName
         /// NOTE:
         /// Multiple declarations for single functionName can happen for example because of branch merging
         /// </summary>
-        /// <param name="value"></param>
-        /// <param name="methodName"></param>
+        /// <param name="value">The value.</param>
+        /// <param name="methodName">Name of the method.</param>
         /// <returns>
         /// Resolved functions
         /// </returns>
@@ -599,9 +603,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <summary>
         /// Extend snapshot as call from given callerContext
         /// </summary>
-        /// <param name="callerContext"></param>
-        /// <param name="thisObject"></param>
-        /// <param name="arguments"></param>
+        /// <param name="callerContext">The caller context.</param>
+        /// <param name="thisObject">The this object.</param>
+        /// <param name="arguments">The arguments.</param>
         protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(callerContext);

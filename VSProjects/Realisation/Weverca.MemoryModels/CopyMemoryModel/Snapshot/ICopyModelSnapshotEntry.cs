@@ -17,12 +17,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
+        /// <returns>Alias data fro the newly created aliases.</returns>
         AliasData CreateAliasToEntry(Snapshot snapshot);
 
         /// <summary>
         /// Reads the memory.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
+        /// <returns>Memory represented by current snapshot entry.</returns>
         MemoryEntry ReadMemory(Snapshot snapshot);
     }
 

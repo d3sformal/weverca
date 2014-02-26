@@ -216,6 +216,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Creates new path based on path of this object where the last index is any.
         /// Can be used in implementation of ToAny method.
         /// </summary>
+        /// <returns>Path based on path of this object where the last index is any.</returns>
         public List<IndexSegment> ListToAny()
         {
             List<IndexSegment> list = new List<IndexSegment>(MemoryPath);
