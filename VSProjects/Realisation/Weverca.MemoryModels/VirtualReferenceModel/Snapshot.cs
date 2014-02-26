@@ -658,7 +658,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// <inheritdoc />
         protected override void declareGlobal(TypeValue declaration)
         {
-            var storage = getTypeStorage(declaration.QualifiedName.Name.Value);
+            var storage = getTypeStorage(declaration.QualifiedName.Name.LowercaseValue);
 
             var entry = readValue(storage);
 
@@ -718,7 +718,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// </returns>
         protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
         {
-            var storage = getTypeStorage(typeName.Name.Value);
+            var storage = getTypeStorage(typeName.Name.LowercaseValue);
 
             MemoryEntry entry;
             if (tryReadValue(storage, out entry))
