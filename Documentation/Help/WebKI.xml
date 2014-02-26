@@ -78,7 +78,12 @@
     <HelpKINode Title="AnyResourceValue.Accept Method " Url="html/0e247aa3-6667-fce9-f04a-1ddeb9de40cf.htm" />
     <HelpKINode Title="AnyScalarValue.Accept Method " Url="html/a2a7d6b6-c636-7d71-ab7c-1b4689118710.htm" />
     <HelpKINode Title="AnyStringValue.Accept Method " Url="html/5b95026f-c4a9-5e68-1618-d8caa3947fef.htm" />
+    <HelpKINode Title="AnyStringValueLocation.Accept Method " Url="html/2c71fba0-46ed-2a43-d73b-79fe574ef277.htm" />
     <HelpKINode Title="AnyValue.Accept Method " Url="html/d6894ed3-2bff-19cd-2eb5-e653a7194a8f.htm" />
+    <HelpKINode Title="ArrayAnyValueLocation.Accept Method " Url="html/bf88d462-5f2c-6de0-5293-47b8c1d4bf12.htm" />
+    <HelpKINode Title="ArrayStringValueLocation.Accept Method " Url="html/2ee32d34-6380-bfb0-9496-69fd42884ade.htm" />
+    <HelpKINode Title="ArrayUndefinedValueLocation.Accept Method " Url="html/eecfdf58-ed76-f4c7-b1e3-ee36fe438e1c.htm" />
+    <HelpKINode Title="ArrayValueLocation.Accept Method " Url="html/7482d300-3cd4-2bc3-cf0d-2a42ed3e3d3e.htm" />
     <HelpKINode Title="AssociativeArray.Accept Method " Url="html/30d09e71-6197-7918-1376-4f9a0061272d.htm" />
     <HelpKINode Title="BooleanValue.Accept Method " Url="html/395b94f0-2c92-e322-aae9-c588a7303160.htm" />
     <HelpKINode Title="CompoundValue.Accept Method " Url="html/08cf02c5-2f62-1b39-ed99-c0621a55ef5a.htm" />
@@ -91,6 +96,7 @@
     <HelpKINode Title="IndexPathSegment.Accept Method " Url="html/81e99198-e546-97fb-98f1-b229393b1321.htm" />
     <HelpKINode Title="InfoValue(T).Accept Method " Url="html/491b8671-6542-1d1c-d43f-71e2e393b370.htm" />
     <HelpKINode Title="InfoValue.Accept Method " Url="html/0316ec5d-93fb-5827-eec8-7cc9cbbe1a6c.htm" />
+    <HelpKINode Title="InfoValueLocation.Accept Method " Url="html/eb009659-462c-596e-d765-b1428093ad14.htm" />
     <HelpKINode Title="IntegerIntervalValue.Accept Method " Url="html/3b3d167b-c92f-5c0e-1bac-d8242ce10f84.htm" />
     <HelpKINode Title="IntegerValue.Accept Method " Url="html/f81b4a41-5d0e-9f3f-8984-391530c328ca.htm" />
     <HelpKINode Title="IntervalValue(T).Accept Method " Url="html/1c73cfad-07fd-c647-d38f-8d50bbae1bea.htm" />
@@ -99,7 +105,10 @@
     <HelpKINode Title="LongintValue.Accept Method " Url="html/1604c2aa-9665-5390-495e-c103a9b8c887.htm" />
     <HelpKINode Title="NativeAnalyzerValue.Accept Method " Url="html/3c378ba5-c8ea-7681-8c64-984da7fcdda1.htm" />
     <HelpKINode Title="NumericValue(T).Accept Method " Url="html/ce463950-c518-7aa9-3889-73280cda192d.htm" />
+    <HelpKINode Title="ObjectAnyValueLocation.Accept Method " Url="html/62c40cae-8018-27bf-7409-978c744ec434.htm" />
+    <HelpKINode Title="ObjectUndefinedValueLocation.Accept Method " Url="html/d920a964-7c8b-f9c8-a485-4d79848a55a0.htm" />
     <HelpKINode Title="ObjectValue.Accept Method " Url="html/b8010416-20e1-a089-0430-ad662616b79e.htm" />
+    <HelpKINode Title="ObjectValueLocation.Accept Method " Url="html/96848454-396b-7411-7b52-1337488ec4fc.htm" />
     <HelpKINode Title="PathSegment.Accept Method " Url="html/df5eb60a-be08-0931-5990-fb4b9643d467.htm" />
     <HelpKINode Title="ResourceValue.Accept Method " Url="html/1d5be8a9-5d13-b9ad-1d4f-cb267985a4c4.htm" />
     <HelpKINode Title="ScalarValue(T).Accept Method " Url="html/f454b0ea-7afe-f2ec-61b2-c74b51674010.htm" />
@@ -112,31 +121,31 @@
     <HelpKINode Title="TypeValue.Accept Method " Url="html/ef60ed75-2cf1-773e-ca2e-3d2f10c941fb.htm" />
     <HelpKINode Title="UndefinedValue.Accept Method " Url="html/3e1fe897-56c3-0623-611d-aa4fab43a25f.htm" />
     <HelpKINode Title="Value.Accept Method " Url="html/60c2e407-ae1f-0c77-f453-7f1922432135.htm" />
+    <HelpKINode Title="ValueLocation.Accept Method " Url="html/2e0beac1-f619-83b2-f0aa-3895bb813ed4.htm" />
     <HelpKINode Title="VariablePathSegment.Accept Method " Url="html/de586b99-4e18-d1a8-cffe-08d6342af112.htm" />
   </HelpKINode>
   <HelpKINode Title="ACCESSING_INACCESSIBLE_FIELD enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="Add method">
     <HelpKINode Title="ArithmeticOperation.Add Method " Url="html/fdbdf8d8-d976-e236-1661-247a569830c8.htm" />
+    <HelpKINode Title="DeclarationContainer(T).Add Method " Url="html/71df6896-af68-2e25-d44f-e3b8b0f864b2.htm" />
     <HelpKINode Title="ErrorSinkThrowingException.Add Method " Url="html/e1697ff0-a7aa-ebf3-e6f9-881602d69c2c.htm" />
+    <HelpKINode Title="IndexSet(T).Add Method " Url="html/d1c65c15-3651-bc1c-6bdb-cb1d2193ae25.htm" />
+    <HelpKINode Title="MergeOperation.Add Method " Url="html/fc5c51c7-bf06-a65c-6b6a-88ab1102f8bc.htm" />
     <HelpKINode Title="ObjectValueContainerBuilder.Add Method " Url="html/f96addfb-f2d9-6988-502a-ff530ccb640b.htm" />
   </HelpKINode>
-  <HelpKINode Title="AddAlias method">
-    <HelpKINode Title="MergeWorker.AddAlias Method " Url="html/2349c72a-0785-f91b-0a8c-986f0ea2aae1.htm" />
-    <HelpKINode Title="Snapshot.AddAlias Method " Url="html/b4d1fa87-be95-f1fe-780e-811990fc9ffc.htm" />
-  </HelpKINode>
-  <HelpKINode Title="AddAliases method">
-    <HelpKINode Title="MergeWorker.AddAliases Method " Url="html/95d7b072-5d02-e1fa-3537-9e2dc8912787.htm" />
-    <HelpKINode Title="Snapshot.AddAliases Method " Url="html/1d3afd5e-06fd-5758-9cfc-0a537661796f.htm" />
-  </HelpKINode>
+  <HelpKINode Title="AddAlias method" Url="html/b4d1fa87-be95-f1fe-780e-811990fc9ffc.htm" />
+  <HelpKINode Title="AddAliases method" Url="html/1d3afd5e-06fd-5758-9cfc-0a537661796f.htm" />
   <HelpKINode Title="addCallBranch method" Url="html/d8fa7f66-f51c-18dc-56b4-5db6b9961511.htm" />
   <HelpKINode Title="AddConcreteFunctions method" Url="html/79508776-4e45-f134-6311-f8e9d7a77ff4.htm" />
   <HelpKINode Title="AddElement method" Url="html/f950ac6c-de23-b56c-011c-f1338ee2beb5.htm" />
   <HelpKINode Title="AddExtension method" Url="html/7c0f2d96-c69e-9e07-1998-b62a3efa1e1b.htm" />
   <HelpKINode Title="AddIncommingEdge method" Url="html/b5da3ed4-3e1f-e2c3-101d-54149d43fd28.htm" />
-  <HelpKINode Title="addOperation method">
-    <HelpKINode Title="MergeInfoWorker.addOperation Method " Url="html/c7ce9a96-b2f3-9caf-6fc4-a7e1ff9cb10c.htm" />
-    <HelpKINode Title="MergeWorker.addOperation Method " Url="html/02bd79b2-a5cd-1fee-69d3-e1891fc81c3c.htm" />
+  <HelpKINode Title="AddMayAlias method" Url="html/1f00f98a-79d4-e58c-0aa6-61e30029907c.htm" />
+  <HelpKINode Title="AddMustAlias method">
+    <HelpKINode Title="MemoryAliasBuilder.AddMustAlias Method " Url="html/ca61d1ca-ac88-7f2f-f0c4-cbbb3d55e34b.htm" />
+    <HelpKINode Title="ReferenceCollector.AddMustAlias Method " Url="html/10b6acf9-dcde-d2a1-03cb-b1511178df1b.htm" />
   </HelpKINode>
+  <HelpKINode Title="addOperation method" Url="html/06182aa3-2df2-0d6f-1d43-6f0a3c0985a1.htm" />
   <HelpKINode Title="AddOutgoingEdge method" Url="html/d8a9f751-983c-6e23-068a-b56470d8b456.htm" />
   <HelpKINode Title="afterPushCall method" Url="html/f27c95e9-ed7a-0dbd-3cfe-9e899a59cb5b.htm" />
   <HelpKINode Title="AliasAssign method">
@@ -166,12 +175,16 @@
     <HelpKINode Title="methods" Url="html/da386dac-ac8e-515a-e7df-2ec619b5d62a.htm" />
   </HelpKINode>
   <HelpKINode Title="AliasEntry.AliasEntry constructor" Url="html/264e0a70-e67e-6a8b-043b-64b619b8b800.htm" />
+  <HelpKINode Title="Aliases method" Url="html/c815d4e4-3149-5485-47ea-686974d35aee.htm" />
   <HelpKINode Title="aliases method">
     <HelpKINode Title="DataSnapshotEntry.aliases Method " Url="html/6ee5c10c-6e18-7808-e692-dcd316a3b8eb.htm" />
     <HelpKINode Title="ReadSnapshotEntryBase.aliases Method " Url="html/2007cd9d-2c4c-c27f-0272-c8d2594bd078.htm" />
     <HelpKINode Title="SnapshotEntry.aliases Method " Url="html/2854a528-4eb4-420c-0ea7-714cfd70c6e4.htm" />
   </HelpKINode>
-  <HelpKINode Title="Aliases method" Url="html/c815d4e4-3149-5485-47ea-686974d35aee.htm" />
+  <HelpKINode Title="Aliases property">
+    <HelpKINode Title="IndexData.Aliases Property " Url="html/b85419a8-4f84-e97f-a94c-272a0f090c14.htm" />
+    <HelpKINode Title="IndexDataBuilder.Aliases Property " Url="html/6f5bcc89-f519-137f-7ead-bfc9659a712a.htm" />
+  </HelpKINode>
   <HelpKINode Title="All enumeration member" Url="html/ef59ecd8-7aca-24d8-b768-55ce43f57133.htm" />
   <HelpKINode Title="AllExtends enumeration member" Url="html/ac4c8687-83a1-e082-f36d-5cafe2a261b4.htm" />
   <HelpKINode Title="Analyse method">
@@ -398,6 +411,21 @@
   </HelpKINode>
   <HelpKINode Title="AnyStringValue.Accept method" Url="html/5b95026f-c4a9-5e68-1618-d8caa3947fef.htm" />
   <HelpKINode Title="AnyStringValue.cloneValue method" Url="html/b4a1b293-66c2-652a-0c03-069920fc6467.htm" />
+  <HelpKINode Title="AnyStringValueLocation class">
+    <HelpKINode Title="AnyStringValueLocation Class" Url="html/f2eb5897-950e-58c7-1684-3d7ccd76c3d4.htm" />
+    <HelpKINode Title="AnyStringValueLocation Members" Url="html/b1fe7d74-61b1-a2ed-597d-ec209f309ab2.htm" />
+    <HelpKINode Title="about AnyStringValueLocation class" Url="html/f2eb5897-950e-58c7-1684-3d7ccd76c3d4.htm" />
+    <HelpKINode Title="all members" Url="html/b1fe7d74-61b1-a2ed-597d-ec209f309ab2.htm" />
+    <HelpKINode Title="constructor" Url="html/4c9962e3-bff6-9a53-68a5-edd30a3de538.htm" />
+    <HelpKINode Title="methods" Url="html/710be814-9db4-9e8b-e3fc-71abef61a2b0.htm" />
+    <HelpKINode Title="properties" Url="html/0c19dc09-c245-73a3-35ee-0c8a799bc949.htm" />
+  </HelpKINode>
+  <HelpKINode Title="AnyStringValueLocation.Accept method" Url="html/2c71fba0-46ed-2a43-d73b-79fe574ef277.htm" />
+  <HelpKINode Title="AnyStringValueLocation.AnyStringValueLocation constructor" Url="html/4c9962e3-bff6-9a53-68a5-edd30a3de538.htm" />
+  <HelpKINode Title="AnyStringValueLocation.ContainingIndex property" Url="html/4a0a3184-f927-9a6e-0b26-298570826ff2.htm" />
+  <HelpKINode Title="AnyStringValueLocation.ReadValues method" Url="html/fed11a01-d92c-722b-1634-9d04b1978fbb.htm" />
+  <HelpKINode Title="AnyStringValueLocation.Value property" Url="html/6b780984-07b9-d0d7-0346-10aa24d709ad.htm" />
+  <HelpKINode Title="AnyStringValueLocation.WriteValues method" Url="html/85d1aafa-a8f9-267b-b4ae-7b9c246ec059.htm" />
   <HelpKINode Title="AnyValue class">
     <HelpKINode Title="AnyValue Class" Url="html/c2554080-8889-b586-a899-1430f78d5a0e.htm" />
     <HelpKINode Title="AnyValue Members" Url="html/a983bd73-acb8-d38e-d85b-3579c933936d.htm" />
@@ -446,6 +474,24 @@
   <HelpKINode Title="ArithmeticOperation.RightAbstractBooleanArithmetic method" Url="html/7316533b-e425-68b8-614c-1a5b394bd02a.htm" />
   <HelpKINode Title="ArithmeticOperation.Subtract method" Url="html/7e7ef3c0-452a-c4d0-6a84-fb1f8173d46d.htm" />
   <HelpKINode Title="Array field" Url="html/ce3c4706-992e-777b-70cd-a7385a0f3bc6.htm" />
+  <HelpKINode Title="Array property">
+    <HelpKINode Title="IndexData.Array Property " Url="html/6d33dcfd-9762-e9c6-879b-7e1984f24414.htm" />
+    <HelpKINode Title="IndexDataBuilder.Array Property " Url="html/10d29563-8aac-f6d7-931a-d3263dd31a01.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ArrayAnyValueLocation class">
+    <HelpKINode Title="ArrayAnyValueLocation Class" Url="html/620a5ecc-a086-5b99-6712-27a4f727d168.htm" />
+    <HelpKINode Title="ArrayAnyValueLocation Members" Url="html/afacfac5-c23d-03e2-5647-8121632bdc82.htm" />
+    <HelpKINode Title="about ArrayAnyValueLocation class" Url="html/620a5ecc-a086-5b99-6712-27a4f727d168.htm" />
+    <HelpKINode Title="all members" Url="html/afacfac5-c23d-03e2-5647-8121632bdc82.htm" />
+    <HelpKINode Title="constructor" Url="html/0c795df9-926b-a8e0-334c-b598ef47104d.htm" />
+    <HelpKINode Title="methods" Url="html/a2acc6bd-6113-d3d0-c8fd-fc0f39259172.htm" />
+    <HelpKINode Title="properties" Url="html/c00c0586-4bbb-ba75-7173-2d594c0f3d63.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ArrayAnyValueLocation.Accept method" Url="html/bf88d462-5f2c-6de0-5293-47b8c1d4bf12.htm" />
+  <HelpKINode Title="ArrayAnyValueLocation.ArrayAnyValueLocation constructor" Url="html/0c795df9-926b-a8e0-334c-b598ef47104d.htm" />
+  <HelpKINode Title="ArrayAnyValueLocation.ContainingIndex property" Url="html/aa09b5b0-eeea-95a7-817f-6bcf0b551eab.htm" />
+  <HelpKINode Title="ArrayAnyValueLocation.ReadValues method" Url="html/df139069-8d2d-0161-69c8-d3ff5830826a.htm" />
+  <HelpKINode Title="ArrayAnyValueLocation.WriteValues method" Url="html/f2957d22-e954-b426-6065-187b00940ebe.htm" />
   <HelpKINode Title="ArrayEx method">
     <HelpKINode Title="ExpressionEvaluator.ArrayEx Method " Url="html/811e045b-abd4-9256-f785-c0d14fef0a5b.htm" />
     <HelpKINode Title="ExpressionEvaluatorBase.ArrayEx Method " Url="html/0108b4e5-536b-b9d2-0478-e30a670f5f29.htm" />
@@ -495,6 +541,50 @@
   <HelpKINode Title="ArrayIndexEvaluator.VisitStringValue method" Url="html/6c485931-1781-72f4-4ea6-f746b629851d.htm" />
   <HelpKINode Title="ArrayIndexEvaluator.VisitUndefinedValue method" Url="html/8e93bc16-f24b-d626-a353-d80e295f9d0c.htm" />
   <HelpKINode Title="ArrayIterations enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
+  <HelpKINode Title="Arrays field" Url="html/5669f9fc-d430-4d92-ed87-257fc8d72a90.htm" />
+  <HelpKINode Title="ArrayStringValueLocation class">
+    <HelpKINode Title="ArrayStringValueLocation Class" Url="html/4c739a36-bf14-4da8-19f0-852c9c54fb58.htm" />
+    <HelpKINode Title="ArrayStringValueLocation Members" Url="html/3083ace8-2f92-f8c4-3385-9b9e3690f3f7.htm" />
+    <HelpKINode Title="about ArrayStringValueLocation class" Url="html/4c739a36-bf14-4da8-19f0-852c9c54fb58.htm" />
+    <HelpKINode Title="all members" Url="html/3083ace8-2f92-f8c4-3385-9b9e3690f3f7.htm" />
+    <HelpKINode Title="constructor" Url="html/ef63172a-1291-6b8e-f175-77351d6e8b33.htm" />
+    <HelpKINode Title="methods" Url="html/abcfa994-73b0-bc3c-c08b-5e97bca6f6df.htm" />
+    <HelpKINode Title="properties" Url="html/3a9007da-5ba4-07d0-a013-24dd9d27fdf6.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ArrayStringValueLocation.Accept method" Url="html/2ee32d34-6380-bfb0-9496-69fd42884ade.htm" />
+  <HelpKINode Title="ArrayStringValueLocation.ArrayStringValueLocation constructor" Url="html/ef63172a-1291-6b8e-f175-77351d6e8b33.htm" />
+  <HelpKINode Title="ArrayStringValueLocation.ContainingIndex property" Url="html/e6a17048-accb-ea35-7967-242859f13f74.htm" />
+  <HelpKINode Title="ArrayStringValueLocation.ReadValues method" Url="html/93d8d3f0-cb29-115e-0b9c-bafcf4a91bc0.htm" />
+  <HelpKINode Title="ArrayStringValueLocation.Value property" Url="html/7d9b88f4-bb66-5a25-c0bc-53dbcd28d785.htm" />
+  <HelpKINode Title="ArrayStringValueLocation.WriteValues method" Url="html/6315228f-fbf8-be9f-d380-74e753e84647.htm" />
+  <HelpKINode Title="ArrayUndefinedValueLocation class">
+    <HelpKINode Title="ArrayUndefinedValueLocation Class" Url="html/d36eecea-0ca5-7486-1dc0-a70e02c95893.htm" />
+    <HelpKINode Title="ArrayUndefinedValueLocation Members" Url="html/fc25505d-3851-bee3-1913-182760adec3a.htm" />
+    <HelpKINode Title="about ArrayUndefinedValueLocation class" Url="html/d36eecea-0ca5-7486-1dc0-a70e02c95893.htm" />
+    <HelpKINode Title="all members" Url="html/fc25505d-3851-bee3-1913-182760adec3a.htm" />
+    <HelpKINode Title="constructor" Url="html/56fc9cd6-6668-03c5-7cdd-af7d282fb74a.htm" />
+    <HelpKINode Title="methods" Url="html/333d3a4b-41fd-1e5c-6ac4-9c7512a74356.htm" />
+    <HelpKINode Title="properties" Url="html/25f8ccdf-3540-1ed4-5682-0d66a9b294d7.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ArrayUndefinedValueLocation.Accept method" Url="html/eecfdf58-ed76-f4c7-b1e3-ee36fe438e1c.htm" />
+  <HelpKINode Title="ArrayUndefinedValueLocation.ArrayUndefinedValueLocation constructor" Url="html/56fc9cd6-6668-03c5-7cdd-af7d282fb74a.htm" />
+  <HelpKINode Title="ArrayUndefinedValueLocation.ContainingIndex property" Url="html/c3ebd685-81c5-be84-835d-6928e55ae7bf.htm" />
+  <HelpKINode Title="ArrayUndefinedValueLocation.ReadValues method" Url="html/0bdea991-2409-0cc8-a27a-0e3012e92620.htm" />
+  <HelpKINode Title="ArrayUndefinedValueLocation.WriteValues method" Url="html/6cdbe4f5-f82e-d959-187d-be77bdc9e34d.htm" />
+  <HelpKINode Title="ArrayValueLocation class">
+    <HelpKINode Title="ArrayValueLocation Class" Url="html/a5ee54be-2084-a627-3152-b37b6f26483b.htm" />
+    <HelpKINode Title="ArrayValueLocation Members" Url="html/abb9f540-8582-7fe0-14e0-c0381d2420d6.htm" />
+    <HelpKINode Title="about ArrayValueLocation class" Url="html/a5ee54be-2084-a627-3152-b37b6f26483b.htm" />
+    <HelpKINode Title="all members" Url="html/abb9f540-8582-7fe0-14e0-c0381d2420d6.htm" />
+    <HelpKINode Title="constructor" Url="html/c51f0331-f35d-f817-712e-9d6f0b27c83c.htm" />
+    <HelpKINode Title="methods" Url="html/39feb9da-3a25-7f71-d37f-d4a8569e8711.htm" />
+    <HelpKINode Title="properties" Url="html/349ea659-3456-adae-fbc5-6509fb177656.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ArrayValueLocation.Accept method" Url="html/7482d300-3cd4-2bc3-cf0d-2a42ed3e3d3e.htm" />
+  <HelpKINode Title="ArrayValueLocation.ArrayValueLocation constructor" Url="html/c51f0331-f35d-f817-712e-9d6f0b27c83c.htm" />
+  <HelpKINode Title="ArrayValueLocation.ContainingIndex property" Url="html/bfd603ac-dfe5-f406-9ad6-979a422cbcbb.htm" />
+  <HelpKINode Title="ArrayValueLocation.ReadValues method" Url="html/ff489e73-dded-b9ca-34df-c74702f5e618.htm" />
+  <HelpKINode Title="ArrayValueLocation.WriteValues method" Url="html/4f8aecba-1db0-6529-071d-6542a00157aa.htm" />
   <HelpKINode Title="AsCallExtendings enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
   <HelpKINode Title="Assign field">
     <HelpKINode Title="AssignConcatPoint.Assign Field" Url="html/c951422b-f1d9-a8fc-6e63-8934c69b3916.htm" />
@@ -734,9 +824,15 @@
   <HelpKINode Title="BREAK_NOT_IN_CYCLE enumeration member" Url="html/fbb6e53a-b368-e719-7554-ea2fe9330b6c.htm" />
   <HelpKINode Title="Build method">
     <HelpKINode Title="ClassDeclBuilder.Build Method " Url="html/4670f685-edad-3b00-83ad-9a3a1bc79b8d.htm" />
+    <HelpKINode Title="IndexDataBuilder.Build Method " Url="html/2d70207a-2987-05d8-e108-87deb863fd85.htm" />
+    <HelpKINode Title="MemoryAliasBuilder.Build Method " Url="html/b3b47122-c2ce-217f-4b46-8d0655a9ff3b.htm" />
     <HelpKINode Title="ObjectValueContainerBuilder.Build Method " Url="html/4450b8bc-117e-963c-9c5a-7ffd085583bd.htm" />
   </HelpKINode>
-  <HelpKINode Title="Builder method" Url="html/bda6564b-e7f0-8909-967c-1630a8c35879.htm" />
+  <HelpKINode Title="Builder method">
+    <HelpKINode Title="IndexData.Builder Method " Url="html/b59c4df0-1d2b-64c2-a993-cbe772b905dc.htm" />
+    <HelpKINode Title="MemoryAlias.Builder Method " Url="html/8fde9b07-ea96-7574-14ad-5ad88e80004d.htm" />
+    <HelpKINode Title="ObjectValueContainer.Builder Method " Url="html/bda6564b-e7f0-8909-967c-1630a8c35879.htm" />
+  </HelpKINode>
   <HelpKINode Title="ByReference field" Url="html/d7902961-c479-67cb-818e-a18ab205e48a.htm" />
   <HelpKINode Title="ByReference property" Url="html/e589814f-9ca0-75c6-495a-9f7729edbe85.htm" />
   <HelpKINode Title="Call method">
@@ -754,6 +850,7 @@
   <HelpKINode Title="CallExtends enumeration member" Url="html/ac4c8687-83a1-e082-f36d-5cafe2a261b4.htm" />
   <HelpKINode Title="CALLING_INACCESSIBLE_METHOD enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="CallLevel property">
+    <HelpKINode Title="IndexCollector.CallLevel Property " Url="html/39b9e9fa-6253-58e0-2f7a-b6489c5ac732.htm" />
     <HelpKINode Title="MemoryIndex.CallLevel Property " Url="html/37483028-f222-beba-078f-444aeede119e.htm" />
     <HelpKINode Title="MemoryPath.CallLevel Property " Url="html/5daa9ff0-5dfe-902b-2e6f-96109eb94c1a.htm" />
   </HelpKINode>
@@ -925,9 +1022,9 @@
   <HelpKINode Title="ClassName field">
     <HelpKINode Title="ConstantInfo.ClassName Field" Url="html/aa712292-cd90-9821-a1d8-996dff1f008a.htm" />
     <HelpKINode Title="FieldIdentifier.ClassName Field" Url="html/beac0412-46f3-0201-99b4-e0d1424426cd.htm" />
-    <HelpKINode Title="FieldInfo.ClassName Field" Url="html/778d934c-6ca4-a80a-da1d-7dc446371a8b.htm" />
     <HelpKINode Title="MethodIdentifier.ClassName Field" Url="html/227079a9-299c-95c7-54cb-afeab3bcb435.htm" />
     <HelpKINode Title="MethodInfo.ClassName Field" Url="html/90ee0ef4-4964-4469-13b5-619bd35da2b2.htm" />
+    <HelpKINode Title="FieldInfo.ClassName Field" Url="html/778d934c-6ca4-a80a-da1d-7dc446371a8b.htm" />
   </HelpKINode>
   <HelpKINode Title="className field" Url="html/5bae4d40-f0c8-9aec-2e37-1ac0bb94100d.htm" />
   <HelpKINode Title="ClassName property" Url="html/8f5dfa2b-78eb-c144-f715-4ad3eb9a3476.htm" />
@@ -942,7 +1039,11 @@
   <HelpKINode Title="Clean method" Url="html/92551126-3d9b-c41b-a6de-680986ddb892.htm" />
   <HelpKINode Title="CleaningFunctions field" Url="html/70c0bfc6-cdc1-9716-9961-5fc75fc8d44a.htm" />
   <HelpKINode Title="Clear method" Url="html/23e3465c-eec8-f60d-a0d2-65276289a9e9.htm" />
-  <HelpKINode Title="Clone method" Url="html/a2d32eb2-1adb-681d-a054-695490dd15b5.htm" />
+  <HelpKINode Title="Clone method">
+    <HelpKINode Title="IGenericCloneable(T).Clone Method " Url="html/af5118c1-2ea2-c316-39dc-40f2a573d732.htm" />
+    <HelpKINode Title="IndexContainer.Clone Method " Url="html/a2d32eb2-1adb-681d-a054-695490dd15b5.htm" />
+    <HelpKINode Title="IndexSet(T).Clone Method " Url="html/ec135956-0fce-0576-5eac-fcf51cc3359f.htm" />
+  </HelpKINode>
   <HelpKINode Title="cloneValue method">
     <HelpKINode Title="AnyArrayValue.cloneValue Method " Url="html/8bc4ec55-88e4-687b-d866-b8f76ab7437f.htm" />
     <HelpKINode Title="AnyBooleanValue.cloneValue Method " Url="html/44ef5c1e-9ce2-d75b-b208-a8793aa3b3e8.htm" />
@@ -973,21 +1074,46 @@
   </HelpKINode>
   <HelpKINode Title="CloneWithNewQualifiedName method" Url="html/3dedbaf1-cb65-5197-bb63-0f0a61b5b25a.htm" />
   <HelpKINode Title="Code property" Url="html/d4587ce6-1613-947e-5abe-6eba206b5458.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor class">
+    <HelpKINode Title="CollectComposedValuesVisitor Class" Url="html/3f07ecba-8195-8a84-af38-f8e6038c0c59.htm" />
+    <HelpKINode Title="CollectComposedValuesVisitor Members" Url="html/6e7d2800-b695-e3c0-089c-4f662e89b736.htm" />
+    <HelpKINode Title="about CollectComposedValuesVisitor class" Url="html/3f07ecba-8195-8a84-af38-f8e6038c0c59.htm" />
+    <HelpKINode Title="all members" Url="html/6e7d2800-b695-e3c0-089c-4f662e89b736.htm" />
+    <HelpKINode Title="constructor" Url="html/8b6808de-3e8c-7a89-1f76-b097bdab3a9a.htm" />
+    <HelpKINode Title="fields" Url="html/35051e88-b0bc-d15b-13f2-4fd9dd673247.htm" />
+    <HelpKINode Title="methods" Url="html/ae5b3cad-68b8-d3c1-d0ab-a5eb6ac0efa1.htm" />
+    <HelpKINode Title="properties" Url="html/bf5b9b8f-7ad7-1571-c1d6-ef82f8e1dc3c.htm" />
+  </HelpKINode>
+  <HelpKINode Title="CollectComposedValuesVisitor.Arrays field" Url="html/5669f9fc-d430-4d92-ed87-257fc8d72a90.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.CollectComposedValuesVisitor constructor" Url="html/8b6808de-3e8c-7a89-1f76-b097bdab3a9a.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.CollectFields method" Url="html/efa1b46e-d2db-8b47-a1b9-fa6c123b4484.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.CollectIndexes method" Url="html/36c6989c-8e41-4fd4-d372-ba3904704cf2.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.Objects field" Url="html/33972991-2626-6e70-6646-de550bfe61e6.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.ResolveObjectsTypes method" Url="html/23dfacf3-7ce6-3e62-9e28-24cf0bc7fa51.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.Snapshot property" Url="html/e1a768cf-8f9e-7104-8a81-0f0d79b8cba0.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.Values field" Url="html/b62a9667-0ab7-afc7-1e74-d582b6aa04c7.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.VisitAssociativeArray method" Url="html/3ef0efff-227f-0c39-d916-f0003a39291e.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.VisitObjectValue method" Url="html/cf69e7fc-0206-f2ee-e29f-8736ad232d7a.htm" />
+  <HelpKINode Title="CollectComposedValuesVisitor.VisitValue method" Url="html/c9c9962f-d892-f15a-4775-4599e6a381d8.htm" />
+  <HelpKINode Title="CollectFields method" Url="html/efa1b46e-d2db-8b47-a1b9-fa6c123b4484.htm" />
+  <HelpKINode Title="CollectIndexes method" Url="html/36c6989c-8e41-4fd4-d372-ba3904704cf2.htm" />
+  <HelpKINode Title="CollectMay method" Url="html/890b0b2c-e83d-db3d-f3fc-800aa5060979.htm" />
+  <HelpKINode Title="CollectMust method" Url="html/7bb224cf-60a3-dec2-bed3-2736431f5744.htm" />
   <HelpKINode Title="comment method" Url="html/2809309a-7002-abd0-1cc0-191900bd710c.htm" />
   <HelpKINode Title="CommentLine method" Url="html/230eb979-8d2f-a8a7-d848-1ddd7ba067b1.htm" />
   <HelpKINode Title="commitFlow method" Url="html/e6674dd6-5d60-3321-88c4-9e694b50d6b1.htm" />
-  <HelpKINode Title="CommitTransaction method" Url="html/f7b5b209-b409-2af7-066a-5ad8a0ef010a.htm" />
   <HelpKINode Title="commitTransaction method">
-    <HelpKINode Title="Snapshot.commitTransaction Method " Url="html/e3427e66-a31d-d542-ec22-485fa54a38c2.htm" />
     <HelpKINode Title="Snapshot.commitTransaction Method " Url="html/f5994eaf-c540-4d88-afb7-88da7085291c.htm" />
+    <HelpKINode Title="Snapshot.commitTransaction Method " Url="html/e3427e66-a31d-d542-ec22-485fa54a38c2.htm" />
     <HelpKINode Title="SnapshotBase.commitTransaction Method " Url="html/fe72f422-1314-6dc9-afe2-dd2e61d6fd81.htm" />
   </HelpKINode>
+  <HelpKINode Title="CommitTransaction method" Url="html/f7b5b209-b409-2af7-066a-5ad8a0ef010a.htm" />
   <HelpKINode Title="Compare method" Url="html/5eb1f239-9b6f-4463-d5ad-965bd69359f8.htm" />
+  <HelpKINode Title="compareTo method" Url="html/ebf73918-c8d3-325d-6b68-eeb16b317bf3.htm" />
   <HelpKINode Title="CompareTo method">
     <HelpKINode Title="AnalysisSecurityWarning.CompareTo Method " Url="html/4476e307-b479-d258-c9ab-21f34e6da535.htm" />
     <HelpKINode Title="AnalysisWarning.CompareTo Method " Url="html/fe354b81-f4b7-b3c8-4f58-b3c896792e88.htm" />
   </HelpKINode>
-  <HelpKINode Title="compareTo method" Url="html/ebf73918-c8d3-325d-6b68-eeb16b317bf3.htm" />
   <HelpKINode Title="Comparison class">
     <HelpKINode Title="Comparison Class" Url="html/af523f20-ea63-181e-037f-375c48412934.htm" />
     <HelpKINode Title="Comparison Members" Url="html/045e0f82-7486-28df-d168-555c4300b5cd.htm" />
@@ -1171,11 +1297,24 @@
   <HelpKINode Title="ContainerIteratorBase.getNextIndex method" Url="html/459b62b3-a0e9-01fe-73e0-7f21ef00ce78.htm" />
   <HelpKINode Title="ContainerIteratorBase.IterationEnd property" Url="html/54cbf7b7-b356-1e10-9da5-ad753796d59d.htm" />
   <HelpKINode Title="ContainerIteratorBase.MoveNext method" Url="html/cbafee2c-db05-5db6-ddff-aefbaddda0b7.htm" />
+  <HelpKINode Title="ContainingIndex field" Url="html/98dbefda-a3c5-263d-5f0e-8365043408ac.htm" />
+  <HelpKINode Title="ContainingIndex property">
+    <HelpKINode Title="AnyStringValueLocation.ContainingIndex Property " Url="html/4a0a3184-f927-9a6e-0b26-298570826ff2.htm" />
+    <HelpKINode Title="ArrayAnyValueLocation.ContainingIndex Property " Url="html/aa09b5b0-eeea-95a7-817f-6bcf0b551eab.htm" />
+    <HelpKINode Title="ArrayStringValueLocation.ContainingIndex Property " Url="html/e6a17048-accb-ea35-7967-242859f13f74.htm" />
+    <HelpKINode Title="ArrayUndefinedValueLocation.ContainingIndex Property " Url="html/c3ebd685-81c5-be84-835d-6928e55ae7bf.htm" />
+    <HelpKINode Title="ArrayValueLocation.ContainingIndex Property " Url="html/bfd603ac-dfe5-f406-9ad6-979a422cbcbb.htm" />
+    <HelpKINode Title="ObjectAnyValueLocation.ContainingIndex Property " Url="html/dbbba8f6-4ed5-13b6-69b0-7ac28c589907.htm" />
+    <HelpKINode Title="ObjectUndefinedValueLocation.ContainingIndex Property " Url="html/ba942708-adf5-8715-2849-5e593fa89d79.htm" />
+    <HelpKINode Title="ObjectValueLocation.ContainingIndex Property " Url="html/6dcb5ae8-20be-c0cd-4bc5-ef094beac473.htm" />
+  </HelpKINode>
   <HelpKINode Title="Contains method">
+    <HelpKINode Title="IndexSet(T).Contains Method " Url="html/e35a457b-427b-00e9-4667-85abbda09464.htm" />
     <HelpKINode Title="ObjectValueContainer.Contains Method " Url="html/e32943b1-9ebb-8589-214b-7866e59977f3.htm" />
     <HelpKINode Title="ObjectValueContainerBuilder.Contains Method " Url="html/533ff034-b84c-060f-44f2-f5662b4d429d.htm" />
   </HelpKINode>
   <HelpKINode Title="ContainsAssociativeArray field" Url="html/fcc5ba87-b703-62e6-deb5-27ee941fb906.htm" />
+  <HelpKINode Title="ContainsKey method" Url="html/d43a91cc-12e3-9197-19b6-b017cc734ac6.htm" />
   <HelpKINode Title="ContainsUndefinedValue field" Url="html/0d6b7c83-6417-7243-d457-00963ce19931.htm" />
   <HelpKINode Title="Context property" Url="html/10cdc901-cece-dc7f-4495-2130b8c27d8f.htm" />
   <HelpKINode Title="CONTINUE_NOT_IN_CYCLE enumeration member" Url="html/fbb6e53a-b368-e719-7554-ea2fe9330b6c.htm" />
@@ -1256,12 +1395,17 @@
   </HelpKINode>
   <HelpKINode Title="CopyAndAddLocalLevel method" Url="html/0d785bee-9319-44bc-8560-7095903e8eaa.htm" />
   <HelpKINode Title="CopyFlags method" Url="html/e715a537-b48f-e912-3cc3-c40d68e211b8.htm" />
+  <HelpKINode Title="CopyMayReferencesTo method" Url="html/d28a93e1-cc27-0ec9-089c-4a641db1080d.htm" />
   <HelpKINode Title="CopyMM field" Url="html/318a1165-e97a-16f5-06d5-0439b9b99e38.htm" />
+  <HelpKINode Title="CopyMustReferencesTo method" Url="html/de410039-0226-6cbd-cfbc-a6ec8b2e50dc.htm" />
   <HelpKINode Title="COULDNT_RESOLVE_ALL_CALLS enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="COULDNT_RESOLVE_ALL_EVALS enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="COULDNT_RESOLVE_ALL_INCLUDES enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="Count field" Url="html/bb6701dc-1bf0-1ffa-3443-9792609fb6bf.htm" />
-  <HelpKINode Title="Count property" Url="html/76f22d5e-7cf5-74ce-0c31-510ead0079cd.htm" />
+  <HelpKINode Title="Count property">
+    <HelpKINode Title="DeclarationContainer(T).Count Property " Url="html/e705c075-fc54-c80a-ce67-d8bea644e3d7.htm" />
+    <HelpKINode Title="ObjectValueContainer.Count Property " Url="html/76f22d5e-7cf5-74ce-0c31-510ead0079cd.htm" />
+  </HelpKINode>
   <HelpKINode Title="Create method">
     <HelpKINode Title="ControlIndex.Create Method " Url="html/f3acead6-db48-e9ed-61da-f8077489e131.htm" />
     <HelpKINode Title="ObjectIndex.Create Method " Url="html/7c5d3c79-8639-4428-9723-ab6840e7b3c5.htm" />
@@ -1388,13 +1532,13 @@
   <HelpKINode Title="CreateSnapshot delegate" Url="html/caedf7a2-bed1-a2a0-3639-9b15eff388b9.htm" />
   <HelpKINode Title="CreateSnapshot method" Url="html/c42a2447-83c4-ec09-3afa-a44a99726eb3.htm" />
   <HelpKINode Title="createSnapshotEntry method">
-    <HelpKINode Title="SnapshotBase.createSnapshotEntry Method " Url="html/e0c7b480-b426-ee38-dcd9-d220b1b32ba7.htm" />
     <HelpKINode Title="Snapshot.createSnapshotEntry Method " Url="html/f9ce2dca-313c-17c2-1afe-0efc8c34cdc9.htm" />
+    <HelpKINode Title="SnapshotBase.createSnapshotEntry Method " Url="html/e0c7b480-b426-ee38-dcd9-d220b1b32ba7.htm" />
     <HelpKINode Title="Snapshot.createSnapshotEntry Method " Url="html/db9c7acf-4503-212c-e7e8-639bdc26e942.htm" />
   </HelpKINode>
   <HelpKINode Title="CreateSnapshotEntry method">
-    <HelpKINode Title="FlowOutputSet.CreateSnapshotEntry Method " Url="html/7482a1be-6f9d-4639-d7c3-a8111e1b0a92.htm" />
     <HelpKINode Title="ISnapshotReadWrite.CreateSnapshotEntry Method " Url="html/77d15584-4270-d984-5577-6d90c1af9ebe.htm" />
+    <HelpKINode Title="FlowOutputSet.CreateSnapshotEntry Method " Url="html/7482a1be-6f9d-4639-d7c3-a8111e1b0a92.htm" />
     <HelpKINode Title="SnapshotBase.CreateSnapshotEntry Method " Url="html/85bfd8bf-7294-341c-86f3-7acb126c2223.htm" />
   </HelpKINode>
   <HelpKINode Title="CreateString method">
@@ -1484,21 +1628,53 @@
     <HelpKINode Title="TypeDeclPoint.Declaration Field" Url="html/a6f8be29-ac96-cab7-b018-1680ac69a6cc.htm" />
     <HelpKINode Title="TypeValue.Declaration Field" Url="html/870d5c5f-6714-8b81-1d60-c7d51c1b1093.htm" />
   </HelpKINode>
+  <HelpKINode Title="DeclarationContainer(Of T) class">
+    <HelpKINode Title="DeclarationContainer(T) Class" Url="html/8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" />
+    <HelpKINode Title="DeclarationContainer(T) Members" Url="html/25baf3e4-36ab-639a-3f03-dfa8d0c752ba.htm" />
+    <HelpKINode Title="about DeclarationContainer(Of T) class" Url="html/8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" />
+    <HelpKINode Title="all members" Url="html/25baf3e4-36ab-639a-3f03-dfa8d0c752ba.htm" />
+    <HelpKINode Title="constructor" Url="html/16fc9aa4-2daa-8a56-0e22-119b7310a04b.htm" />
+    <HelpKINode Title="methods" Url="html/e95a3f4c-e2e3-ef95-cf04-026998f9ce40.htm" />
+    <HelpKINode Title="properties" Url="html/c37bd1cd-68f3-20a3-3c22-080132e917d6.htm" />
+  </HelpKINode>
+  <HelpKINode Title="DeclarationContainer(Of T).Add method" Url="html/71df6896-af68-2e25-d44f-e3b8b0f864b2.htm" />
+  <HelpKINode Title="DeclarationContainer(Of T).ContainsKey method" Url="html/d43a91cc-12e3-9197-19b6-b017cc734ac6.htm" />
+  <HelpKINode Title="DeclarationContainer(Of T).Count property" Url="html/e705c075-fc54-c80a-ce67-d8bea644e3d7.htm" />
+  <HelpKINode Title="DeclarationContainer(Of T).DeclarationContainer constructor" Url="html/16fc9aa4-2daa-8a56-0e22-119b7310a04b.htm" />
+  <HelpKINode Title="DeclarationContainer(Of T).GetNames method" Url="html/d78d273c-3c65-a3fa-c3e4-0082bb83d8af.htm" />
+  <HelpKINode Title="DeclarationContainer(Of T).GetValue method" Url="html/83f6cebe-1183-85a4-8fd8-564c184bcd66.htm" />
+  <HelpKINode Title="DeclarationContainer(Of T).TryGetValue method" Url="html/ea0a374b-9392-53a7-10e8-e0e7a443d1dc.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt; class">
+    <HelpKINode Title="DeclarationContainer(T) Class" Url="html/8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" />
+    <HelpKINode Title="DeclarationContainer(T) Members" Url="html/25baf3e4-36ab-639a-3f03-dfa8d0c752ba.htm" />
+    <HelpKINode Title="about DeclarationContainer&lt;T&gt; class" Url="html/8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" />
+    <HelpKINode Title="all members" Url="html/25baf3e4-36ab-639a-3f03-dfa8d0c752ba.htm" />
+    <HelpKINode Title="constructor" Url="html/16fc9aa4-2daa-8a56-0e22-119b7310a04b.htm" />
+    <HelpKINode Title="methods" Url="html/e95a3f4c-e2e3-ef95-cf04-026998f9ce40.htm" />
+    <HelpKINode Title="properties" Url="html/c37bd1cd-68f3-20a3-3c22-080132e917d6.htm" />
+  </HelpKINode>
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.Add method" Url="html/71df6896-af68-2e25-d44f-e3b8b0f864b2.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.ContainsKey method" Url="html/d43a91cc-12e3-9197-19b6-b017cc734ac6.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.Count property" Url="html/e705c075-fc54-c80a-ce67-d8bea644e3d7.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.DeclarationContainer constructor" Url="html/16fc9aa4-2daa-8a56-0e22-119b7310a04b.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.GetNames method" Url="html/d78d273c-3c65-a3fa-c3e4-0082bb83d8af.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.GetValue method" Url="html/83f6cebe-1183-85a4-8fd8-564c184bcd66.htm" />
+  <HelpKINode Title="DeclarationContainer&lt;T&gt;.TryGetValue method" Url="html/ea0a374b-9392-53a7-10e8-e0e7a443d1dc.htm" />
   <HelpKINode Title="DeclaredFunctions enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
   <HelpKINode Title="DeclaredTypes enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
-  <HelpKINode Title="DeclareGlobal method">
-    <HelpKINode Title="ExpressionEvaluatorBase.DeclareGlobal Method " Url="html/1da9662d-1550-a3f9-4324-0149ca790ca5.htm" />
-    <HelpKINode Title="FlowOutputSet.DeclareGlobal Method " Url="html/f2ce8401-a212-86c7-c31a-22ce4c046d22.htm" />
-    <HelpKINode Title="ExpressionEvaluator.DeclareGlobal Method " Url="html/eebd6841-d771-9408-10a2-d7003ac770c0.htm" />
-    <HelpKINode Title="FunctionResolverBase.DeclareGlobal Method " Url="html/ad9f2758-bfaf-013b-9f53-0641476cec4a.htm" />
-    <HelpKINode Title="FunctionResolver.DeclareGlobal Method " Url="html/f5a82f54-b339-c9b9-39d5-ce51c32ed93c.htm" />
-    <HelpKINode Title="ISnapshotReadWrite.DeclareGlobal Method " Url="html/ff4bf3fe-95cd-dd32-4f4a-1358edf5bddd.htm" />
-    <HelpKINode Title="SnapshotBase.DeclareGlobal Method " Url="html/d417ddda-58a2-6313-f1fe-782730505d1b.htm" />
-  </HelpKINode>
   <HelpKINode Title="declareGlobal method">
     <HelpKINode Title="Snapshot.declareGlobal Method " Url="html/ada66d4b-406e-dc1e-0fce-7426ff081f1c.htm" />
     <HelpKINode Title="Snapshot.declareGlobal Method " Url="html/21c7d588-ca2d-ff79-43c0-c44116be6579.htm" />
     <HelpKINode Title="SnapshotBase.declareGlobal Method " Url="html/8f0e144e-2796-8f89-d4bb-fe20d5d03aad.htm" />
+  </HelpKINode>
+  <HelpKINode Title="DeclareGlobal method">
+    <HelpKINode Title="FunctionResolver.DeclareGlobal Method " Url="html/f5a82f54-b339-c9b9-39d5-ce51c32ed93c.htm" />
+    <HelpKINode Title="FunctionResolverBase.DeclareGlobal Method " Url="html/ad9f2758-bfaf-013b-9f53-0641476cec4a.htm" />
+    <HelpKINode Title="ISnapshotReadWrite.DeclareGlobal Method " Url="html/ff4bf3fe-95cd-dd32-4f4a-1358edf5bddd.htm" />
+    <HelpKINode Title="ExpressionEvaluatorBase.DeclareGlobal Method " Url="html/1da9662d-1550-a3f9-4324-0149ca790ca5.htm" />
+    <HelpKINode Title="ExpressionEvaluator.DeclareGlobal Method " Url="html/eebd6841-d771-9408-10a2-d7003ac770c0.htm" />
+    <HelpKINode Title="FlowOutputSet.DeclareGlobal Method " Url="html/f2ce8401-a212-86c7-c31a-22ce4c046d22.htm" />
+    <HelpKINode Title="SnapshotBase.DeclareGlobal Method " Url="html/d417ddda-58a2-6313-f1fe-782730505d1b.htm" />
   </HelpKINode>
   <HelpKINode Title="DeclaringElement field" Url="html/4a490555-c256-6df6-6b00-b7b509f630f0.htm" />
   <HelpKINode Title="DeclaringScript field" Url="html/73cbc4b0-2131-c13c-f6c7-8f54a1a26500.htm" />
@@ -1614,44 +1790,44 @@
   <HelpKINode Title="Equal method" Url="html/2f2ebbba-442b-a964-9a25-7064caa7434a.htm" />
   <HelpKINode Title="Equals method">
     <HelpKINode Title="AnalysisWarning.Equals Method " Url="html/1634973f-92bc-6e9b-f6ba-b2e7c36276f7.htm" />
+    <HelpKINode Title="ContainerIndex.Equals Method " Url="html/bc4adcc8-0a05-5c15-9f2e-2789666f90f8.htm" />
     <HelpKINode Title="CatchBlockDescription.Equals Method " Url="html/c7e3db70-8dae-a2c2-b2a8-022ff0171661.htm" />
     <HelpKINode Title="AnalysisSecurityWarning.Equals Method " Url="html/9fd998ea-5a31-65ad-fcdc-dba242d4e5b5.htm" />
-    <HelpKINode Title="ContainerIndex.Equals Method " Url="html/bc4adcc8-0a05-5c15-9f2e-2789666f90f8.htm" />
-    <HelpKINode Title="Flags.Equals Method " Url="html/0d765820-b246-36b9-5521-bcba6a66ad84.htm" />
     <HelpKINode Title="FieldIdentifier.Equals Method " Url="html/d13cde93-681b-d74a-71bd-5b5b78722a61.htm" />
-    <HelpKINode Title="InfoDataStorage.Equals Method " Url="html/f2e52007-c899-a9fa-8593-dfd68d09765a.htm" />
     <HelpKINode Title="IndexSegment.Equals Method " Url="html/bc1bc87b-68b0-2080-4e37-8ced0e8a5bd5.htm" />
+    <HelpKINode Title="Flags.Equals Method " Url="html/0d765820-b246-36b9-5521-bcba6a66ad84.htm" />
+    <HelpKINode Title="InfoDataStorage.Equals Method " Url="html/f2e52007-c899-a9fa-8593-dfd68d09765a.htm" />
+    <HelpKINode Title="MemoryEntry.Equals Method " Url="html/4be955e9-ea62-7a49-d50c-935ad1cad4fe.htm" />
+    <HelpKINode Title="MemoryIndex.Equals Method " Url="html/ddcdcaac-b6e5-1774-48c2-faadd913aebf.htm" />
+    <HelpKINode Title="NumberOfCalledFunctions(T).Equals Method " Url="html/2936ba66-9bf3-982b-34d5-1884fc25cfae.htm" />
+    <HelpKINode Title="ObjectIndex.Equals Method " Url="html/118e41ed-072b-5fd7-1360-c9de19ad6661.htm" />
+    <HelpKINode Title="TryBlockStack.Equals Method " Url="html/099ca42e-39da-717f-e331-07e1b4148c8a.htm" />
+    <HelpKINode Title="TemporaryIndex.Equals Method " Url="html/9368321c-2b79-ad87-d159-ce7fe388e873.htm" />
     <HelpKINode Title="NamedIndex.Equals Method " Url="html/a49591a5-7d74-e505-a96d-ff593042174b.htm" />
     <HelpKINode Title="NativeAnalyzer.Equals Method " Url="html/fd5c4696-7f83-eb2c-4e2a-d8386952c88c.htm" />
-    <HelpKINode Title="MemoryIndex.Equals Method " Url="html/ddcdcaac-b6e5-1774-48c2-faadd913aebf.htm" />
     <HelpKINode Title="MethodIdentifier.Equals Method " Url="html/398c02e9-3be7-80e8-d4bf-f76253cdd5f3.htm" />
-    <HelpKINode Title="MemoryEntry.Equals Method " Url="html/4be955e9-ea62-7a49-d50c-935ad1cad4fe.htm" />
-    <HelpKINode Title="TemporaryIndex.Equals Method " Url="html/9368321c-2b79-ad87-d159-ce7fe388e873.htm" />
     <HelpKINode Title="Value.Equals Method " Url="html/1c65109c-f043-98b8-9837-d8dfb48892f4.htm" />
-    <HelpKINode Title="NumberOfCalledFunctions(T).Equals Method " Url="html/2936ba66-9bf3-982b-34d5-1884fc25cfae.htm" />
-    <HelpKINode Title="TryBlockStack.Equals Method " Url="html/099ca42e-39da-717f-e331-07e1b4148c8a.htm" />
-    <HelpKINode Title="ObjectIndex.Equals Method " Url="html/118e41ed-072b-5fd7-1360-c9de19ad6661.htm" />
   </HelpKINode>
   <HelpKINode Title="equals method">
-    <HelpKINode Title="TypeValue.equals Method " Url="html/b51e0c07-99f1-9d70-0ef6-3d34c9198ed7.htm" />
-    <HelpKINode Title="ScalarValue(T).equals Method " Url="html/96dd45e6-7415-fe37-79b0-2e7e8a1f26f7.htm" />
-    <HelpKINode Title="Value.equals Method " Url="html/1ca73e81-63b7-ce5a-e1c3-d5b0abc263d7.htm" />
-    <HelpKINode Title="InfoDataBase.equals Method " Url="html/de39aa01-4e8b-78b6-9148-afde9a647b62.htm" />
-    <HelpKINode Title="InfoValue.equals Method " Url="html/ba4ef819-c70f-1e96-3a46-c7f2502bf3dc.htm" />
-    <HelpKINode Title="LambdaFunctionValue.equals Method " Url="html/58bd4ac6-d134-5bcd-1bce-82a0b3d942db.htm" />
-    <HelpKINode Title="CompoundValue.equals Method " Url="html/f7e159d1-c27a-2bf4-0968-63c237c660f8.htm" />
-    <HelpKINode Title="Flags.equals Method " Url="html/ac9610b7-a628-fa53-7d90-d6e7669093e1.htm" />
-    <HelpKINode Title="ResourceValue.equals Method " Url="html/e0c2908e-a4ed-2a5e-608f-c855279c0e15.htm" />
     <HelpKINode Title="SourceFunctionValue.equals Method " Url="html/02604aad-3536-f03b-e4fc-204fd4fa331e.htm" />
+    <HelpKINode Title="UndefinedValue.equals Method " Url="html/42a267fe-a24d-2a90-c37c-cfd2239d72cf.htm" />
+    <HelpKINode Title="Value.equals Method " Url="html/1ca73e81-63b7-ce5a-e1c3-d5b0abc263d7.htm" />
     <HelpKINode Title="SpecialValue.equals Method " Url="html/ee6345bd-1a20-898c-69d5-ee42ca6375f5.htm" />
-    <HelpKINode Title="IntervalValue(T).equals Method " Url="html/0e1af899-0d1d-cb1c-7f2f-3c8e134c9935.htm" />
+    <HelpKINode Title="LambdaFunctionValue.equals Method " Url="html/58bd4ac6-d134-5bcd-1bce-82a0b3d942db.htm" />
+    <HelpKINode Title="ResourceValue.equals Method " Url="html/e0c2908e-a4ed-2a5e-608f-c855279c0e15.htm" />
     <HelpKINode Title="AnyValue.equals Method " Url="html/948fc9b4-dd29-0182-64a7-28ef936380d9.htm" />
     <HelpKINode Title="NativeAnalyzerValue.equals Method " Url="html/80991368-2372-8d84-4fe7-771792f25ad0.htm" />
+    <HelpKINode Title="IntervalValue(T).equals Method " Url="html/0e1af899-0d1d-cb1c-7f2f-3c8e134c9935.htm" />
+    <HelpKINode Title="InfoDataBase.equals Method " Url="html/de39aa01-4e8b-78b6-9148-afde9a647b62.htm" />
+    <HelpKINode Title="InfoValue.equals Method " Url="html/ba4ef819-c70f-1e96-3a46-c7f2502bf3dc.htm" />
+    <HelpKINode Title="TypeValue.equals Method " Url="html/b51e0c07-99f1-9d70-0ef6-3d34c9198ed7.htm" />
+    <HelpKINode Title="Flags.equals Method " Url="html/ac9610b7-a628-fa53-7d90-d6e7669093e1.htm" />
+    <HelpKINode Title="CompoundValue.equals Method " Url="html/f7e159d1-c27a-2bf4-0968-63c237c660f8.htm" />
     <HelpKINode Title="SourceMethodValue.equals Method " Url="html/8aca6439-99dd-fea6-cbbc-12369ace360c.htm" />
-    <HelpKINode Title="UndefinedValue.equals Method " Url="html/42a267fe-a24d-2a90-c37c-cfd2239d72cf.htm" />
+    <HelpKINode Title="ScalarValue(T).equals Method " Url="html/96dd45e6-7415-fe37-79b0-2e7e8a1f26f7.htm" />
   </HelpKINode>
-  <HelpKINode Title="error method" Url="html/a89a04d6-4f91-3ccd-9c1a-3459f6dbc712.htm" />
   <HelpKINode Title="Error method" Url="html/7b16a935-6fc9-2458-1a79-3f9c52b68805.htm" />
+  <HelpKINode Title="error method" Url="html/a89a04d6-4f91-3ccd-9c1a-3459f6dbc712.htm" />
   <HelpKINode Title="Errors property" Url="html/e9233126-e684-b6b5-495a-5d37c0b048d5.htm" />
   <HelpKINode Title="ErrorSinkThrowingException class">
     <HelpKINode Title="ErrorSinkThrowingException Class" Url="html/854914fd-27f2-9619-7dfd-90b91559c507.htm" />
@@ -1839,8 +2015,8 @@
   <HelpKINode Title="ExpressionEvaluatorBase.VariableNames method" Url="html/06f053fc-8d91-882d-969b-957a499d5a1d.htm" />
   <HelpKINode Title="ExpressionParts field" Url="html/cf828b5c-d80a-d8d7-45df-1276070eecd8.htm" />
   <HelpKINode Title="Extend method">
-    <HelpKINode Title="ISnapshotReadWrite.Extend Method " Url="html/3e9bfc8d-e0fc-2228-aedb-91d6cb7067a2.htm" />
     <HelpKINode Title="FlowOutputSet.Extend Method " Url="html/1aa3bc26-f8f4-1be0-1ba4-480221e1eac8.htm" />
+    <HelpKINode Title="ISnapshotReadWrite.Extend Method " Url="html/3e9bfc8d-e0fc-2228-aedb-91d6cb7067a2.htm" />
     <HelpKINode Title="SnapshotBase.Extend Method " Url="html/059fb68f-df32-e81b-a30a-3f572174d134.htm" />
   </HelpKINode>
   <HelpKINode Title="extend method">
@@ -1894,15 +2070,15 @@
   <HelpKINode Title="ExtensionSinkPoint.ResolveReturnValue method" Url="html/bc368ac9-6e10-c74c-8782-20072787bec5.htm" />
   <HelpKINode Title="ExtensionType enumeration" Url="html/191a2fdf-d835-8829-797f-a6af8b8d809a.htm" />
   <HelpKINode Title="FalseOperand field" Url="html/4ec828ae-6692-2ed9-f663-3ffdd3616a53.htm" />
+  <HelpKINode Title="fetchFromGlobal method">
+    <HelpKINode Title="Snapshot.fetchFromGlobal Method " Url="html/32415da1-fa4a-b7a4-09b7-21e51961357c.htm" />
+    <HelpKINode Title="Snapshot.fetchFromGlobal Method " Url="html/75bf42b1-7203-59f6-30f8-8d89ecd405e5.htm" />
+    <HelpKINode Title="SnapshotBase.fetchFromGlobal Method " Url="html/5101882c-bfba-c368-34fa-0d332006b645.htm" />
+  </HelpKINode>
   <HelpKINode Title="FetchFromGlobal method">
     <HelpKINode Title="FlowOutputSet.FetchFromGlobal Method " Url="html/9fd55466-4b91-34fe-dea1-f2c4f98c6cd0.htm" />
-    <HelpKINode Title="ISnapshotReadWrite.FetchFromGlobal Method " Url="html/33e7d858-1eb7-a16e-5da0-a9c23d87838f.htm" />
     <HelpKINode Title="SnapshotBase.FetchFromGlobal Method " Url="html/23a4887a-6482-2ce4-3a7f-5ca9ff4bf44e.htm" />
-  </HelpKINode>
-  <HelpKINode Title="fetchFromGlobal method">
-    <HelpKINode Title="Snapshot.fetchFromGlobal Method " Url="html/75bf42b1-7203-59f6-30f8-8d89ecd405e5.htm" />
-    <HelpKINode Title="Snapshot.fetchFromGlobal Method " Url="html/32415da1-fa4a-b7a4-09b7-21e51961357c.htm" />
-    <HelpKINode Title="SnapshotBase.fetchFromGlobal Method " Url="html/5101882c-bfba-c368-34fa-0d332006b645.htm" />
+    <HelpKINode Title="ISnapshotReadWrite.FetchFromGlobal Method " Url="html/33e7d858-1eb7-a16e-5da0-a9c23d87838f.htm" />
   </HelpKINode>
   <HelpKINode Title="FetchFromGlobalAll method">
     <HelpKINode Title="FlowOutputSet.FetchFromGlobalAll Method " Url="html/2a691ec3-44b8-bd6d-ce80-d68f27000ffa.htm" />
@@ -1981,8 +2157,8 @@
   </HelpKINode>
   <HelpKINode Title="Flags.CreateCleanFlags method" Url="html/35ee3d01-58a4-f231-b86e-94b196e32492.htm" />
   <HelpKINode Title="Flags.CreateDirtyFlags method" Url="html/ee6252e9-645f-ec2a-f4f5-d9cbbf6e5a23.htm" />
-  <HelpKINode Title="Flags.Equals method" Url="html/0d765820-b246-36b9-5521-bcba6a66ad84.htm" />
   <HelpKINode Title="Flags.equals method" Url="html/ac9610b7-a628-fa53-7d90-d6e7669093e1.htm" />
+  <HelpKINode Title="Flags.Equals method" Url="html/0d765820-b246-36b9-5521-bcba6a66ad84.htm" />
   <HelpKINode Title="Flags.Flags constructor" Url="html/e42b6ab9-046d-dae2-faa7-ff88d2ace6ab.htm" />
   <HelpKINode Title="Flags.GetHashCode method" Url="html/465f2dd4-5eaf-4e74-5a92-00cc3c804726.htm" />
   <HelpKINode Title="Flags.getHashCode method" Url="html/681686ad-9bdd-055a-20fd-a9faf55ae160.htm" />
@@ -2024,8 +2200,8 @@
   <HelpKINode Title="FloatValue.Accept method" Url="html/751711a3-410b-8f5d-26fd-21cc46452b1c.htm" />
   <HelpKINode Title="FloatValue.cloneValue method" Url="html/61f11f82-f17a-4dcd-147c-c26fd77f93e6.htm" />
   <HelpKINode Title="FloatValue.Zero property" Url="html/fda2904b-3c3a-9bcb-a1cf-2e72f93e4f9a.htm" />
-  <HelpKINode Title="Flow field" Url="html/0efb19ec-a889-2a83-d7b5-317e1e7d326d.htm" />
   <HelpKINode Title="flow field" Url="html/0592b1a1-1498-13f1-9570-c51f18eb156c.htm" />
+  <HelpKINode Title="Flow field" Url="html/0efb19ec-a889-2a83-d7b5-317e1e7d326d.htm" />
   <HelpKINode Title="Flow property">
     <HelpKINode Title="ExpressionEvaluatorBase.Flow Property " Url="html/9511689b-aedc-cdfd-d1c1-afdf6a428b09.htm" />
     <HelpKINode Title="FunctionResolverBase.Flow Property " Url="html/3701faa7-c6a4-e545-7027-f43f46379e31.htm" />
@@ -2197,8 +2373,8 @@
     <HelpKINode Title="IncDecExPoint.flowThrough Method " Url="html/46b1d40b-74ea-6807-3bbd-f78b52bd6f12.htm" />
     <HelpKINode Title="IncludingExPoint.flowThrough Method " Url="html/fd8dd241-2d6c-3196-2b3b-f0d576277f79.htm" />
     <HelpKINode Title="IndirectFunctionCallPoint.flowThrough Method " Url="html/2cd85525-52c1-ce9d-5790-dd9cfe20518d.htm" />
-    <HelpKINode Title="IndirectStaticMethodCallPoint.flowThrough Method " Url="html/237c2897-1a1d-3884-10f5-65ed380f6e75.htm" />
     <HelpKINode Title="IndirectStaticFieldPoint.flowThrough Method " Url="html/9cba5d08-be15-e5bf-fa28-2ddabd21070b.htm" />
+    <HelpKINode Title="IndirectStaticMethodCallPoint.flowThrough Method " Url="html/237c2897-1a1d-3884-10f5-65ed380f6e75.htm" />
     <HelpKINode Title="IndirectVariablePoint.flowThrough Method " Url="html/79ed5332-f8b4-4333-f0a0-e100b6795020.htm" />
     <HelpKINode Title="InstanceOfExPoint.flowThrough Method " Url="html/c2076c80-b196-67f0-1335-fe1262189a1c.htm" />
     <HelpKINode Title="IssetPoint.flowThrough Method " Url="html/896a78b2-03b9-0240-0994-707db1707aab.htm" />
@@ -2207,8 +2383,8 @@
     <HelpKINode Title="NativeAnalyzerPoint.flowThrough Method " Url="html/df3a6005-af2f-73ab-5f0e-a71caf5d18ae.htm" />
     <HelpKINode Title="NewExPoint.flowThrough Method " Url="html/5abae702-2ad6-44d6-df75-e93900c9d917.htm" />
     <HelpKINode Title="ProgramPointBase.flowThrough Method " Url="html/fd9747fe-6955-873c-cd15-f5b884d55ad8.htm" />
-    <HelpKINode Title="RefAssignPoint.flowThrough Method " Url="html/1d9c9f7b-0028-acca-d773-322719fdb396.htm" />
     <HelpKINode Title="StaticFieldPoint.flowThrough Method " Url="html/c8268a23-9c44-e342-af75-bb4ce3359807.htm" />
+    <HelpKINode Title="RefAssignPoint.flowThrough Method " Url="html/1d9c9f7b-0028-acca-d773-322719fdb396.htm" />
     <HelpKINode Title="StaticMethodCallPoint.flowThrough Method " Url="html/d14ab219-880a-0d67-a8fa-c72ada50867e.htm" />
     <HelpKINode Title="TestMemoryEntryPoint.flowThrough Method " Url="html/a19b8820-a386-1b3d-172c-ee6eefa4296a.htm" />
     <HelpKINode Title="ThrowStmtPoint.flowThrough Method " Url="html/ad5af167-1d4f-ee79-89a5-f0f4d53cad41.htm" />
@@ -2472,18 +2648,20 @@
   <HelpKINode Title="GetAllClasses method" Url="html/3d4b6d3e-30da-39fc-1b8b-bb997a0c0af0.htm" />
   <HelpKINode Title="GetCallerScript method" Url="html/c4bb57c7-21cb-5ec9-e669-880e9b66815b.htm" />
   <HelpKINode Title="GetClass method" Url="html/7d8c2aeb-0cb0-8a3a-8984-b1f166623ccd.htm" />
-  <HelpKINode Title="getControlVariable method">
-    <HelpKINode Title="Snapshot.getControlVariable Method " Url="html/7e823482-e3e3-a1e7-9953-06a6ba384997.htm" />
-    <HelpKINode Title="Snapshot.getControlVariable Method " Url="html/ba8894f5-22c7-0c0c-fd8b-d88708a05088.htm" />
-    <HelpKINode Title="SnapshotBase.getControlVariable Method " Url="html/096a3408-e8c7-9ca9-6d50-461d01dc6144.htm" />
-  </HelpKINode>
   <HelpKINode Title="GetControlVariable method">
     <HelpKINode Title="SnapshotBase.GetControlVariable Method " Url="html/6563063e-44ae-c2e5-bd16-17e8866ee3a3.htm" />
     <HelpKINode Title="FlowOutputSet.GetControlVariable Method " Url="html/b211e488-2f0c-f6ea-a3d6-c1cd0a87c575.htm" />
     <HelpKINode Title="ISnapshotReadWrite.GetControlVariable Method " Url="html/b287fa7f-b7c5-fe7c-fd12-2b4528d212bd.htm" />
   </HelpKINode>
+  <HelpKINode Title="getControlVariable method">
+    <HelpKINode Title="Snapshot.getControlVariable Method " Url="html/7e823482-e3e3-a1e7-9953-06a6ba384997.htm" />
+    <HelpKINode Title="SnapshotBase.getControlVariable Method " Url="html/096a3408-e8c7-9ca9-6d50-461d01dc6144.htm" />
+    <HelpKINode Title="Snapshot.getControlVariable Method " Url="html/ba8894f5-22c7-0c0c-fd8b-d88708a05088.htm" />
+  </HelpKINode>
   <HelpKINode Title="GetElement method" Url="html/9a02c3ba-50af-39f7-1e7f-bea349d8ed1c.htm" />
   <HelpKINode Title="GetEnumerator method">
+    <HelpKINode Title="IndexSet(T).GetEnumerator Method " Url="html/e2379873-9458-9923-d801-52c9515bbf47.htm" />
+    <HelpKINode Title="MemoryStack(T).GetEnumerator Method " Url="html/080b5102-d117-7d7f-c1a8-7f67578f874a.htm" />
     <HelpKINode Title="ObjectValueContainer.GetEnumerator Method " Url="html/422ce9a7-d0b0-d8b1-b398-0beb322a24bb.htm" />
     <HelpKINode Title="ObjectValueContainerBuilder.GetEnumerator Method " Url="html/ae70fb8f-c9b9-cf7e-4245-58740134d8e6.htm" />
     <HelpKINode Title="Postfix.GetEnumerator Method " Url="html/5d62f326-5f1b-2549-d8be-6970d04940cf.htm" />
@@ -2493,47 +2671,47 @@
   <HelpKINode Title="GetFlagsFromValues method" Url="html/e3866c70-31bd-c290-454a-9387f2398b28.htm" />
   <HelpKINode Title="GetFunctionNames method" Url="html/1243295b-5602-c831-928a-1cf6ab5c8d79.htm" />
   <HelpKINode Title="getGlobalVariables method">
-    <HelpKINode Title="Snapshot.getGlobalVariables Method " Url="html/7f3a286b-3f22-cf5c-7434-090f9467d01b.htm" />
     <HelpKINode Title="Snapshot.getGlobalVariables Method " Url="html/b6a9fe0f-b523-2b66-cdb0-5e7f38d77d89.htm" />
+    <HelpKINode Title="Snapshot.getGlobalVariables Method " Url="html/7f3a286b-3f22-cf5c-7434-090f9467d01b.htm" />
     <HelpKINode Title="SnapshotBase.getGlobalVariables Method " Url="html/ee0e10a9-424b-d14a-f917-a3f642caaee8.htm" />
   </HelpKINode>
+  <HelpKINode Title="getHashCode method">
+    <HelpKINode Title="InfoValue.getHashCode Method " Url="html/e040e191-cae6-7113-a119-cdf299fa9f3e.htm" />
+    <HelpKINode Title="UndefinedValue.getHashCode Method " Url="html/b1ecc7ff-db7d-0dea-50b1-c598cff91f06.htm" />
+    <HelpKINode Title="ScalarValue(T).getHashCode Method " Url="html/3af5d525-58e3-f2be-6037-2b6e999addbb.htm" />
+    <HelpKINode Title="Value.getHashCode Method " Url="html/00f0659d-99ed-33b2-0157-b47e82d1266a.htm" />
+    <HelpKINode Title="IntervalValue(T).getHashCode Method " Url="html/a2b65267-92d9-ad20-e664-c62fb3fe9adb.htm" />
+    <HelpKINode Title="CompoundValue.getHashCode Method " Url="html/4ca77e0e-d962-4fc4-a179-99f42d468964.htm" />
+    <HelpKINode Title="Flags.getHashCode Method " Url="html/681686ad-9bdd-055a-20fd-a9faf55ae160.htm" />
+    <HelpKINode Title="AnyValue.getHashCode Method " Url="html/0941c42b-40a7-7ebf-23ef-25711338e93a.htm" />
+    <HelpKINode Title="InfoDataBase.getHashCode Method " Url="html/40dc5b20-7af7-3182-f179-79c0db1da81a.htm" />
+    <HelpKINode Title="LambdaFunctionValue.getHashCode Method " Url="html/59d0388c-bef8-83a1-c931-8fc3a5873192.htm" />
+    <HelpKINode Title="NativeAnalyzerValue.getHashCode Method " Url="html/9e479969-948b-e03e-99e7-db39d06ff179.htm" />
+    <HelpKINode Title="ResourceValue.getHashCode Method " Url="html/f75eed6e-a069-5452-1248-d82eec9911fc.htm" />
+    <HelpKINode Title="SourceFunctionValue.getHashCode Method " Url="html/e97493f4-c2d1-2f1d-f6c8-dd3ea05206cd.htm" />
+    <HelpKINode Title="SourceMethodValue.getHashCode Method " Url="html/9e0fc35e-bbb4-6fb9-d14c-3494a6a4dfb4.htm" />
+    <HelpKINode Title="TypeValue.getHashCode Method " Url="html/286825c1-ecf3-3315-cbb5-eab4d095b006.htm" />
+    <HelpKINode Title="SpecialValue.getHashCode Method " Url="html/10f8f3e2-8b2f-5a92-ed6b-f65d2160866d.htm" />
+  </HelpKINode>
   <HelpKINode Title="GetHashCode method">
-    <HelpKINode Title="NativeAnalyzer.GetHashCode Method " Url="html/d4e4f790-2ca5-1834-5ab7-99fc57ed2b09.htm" />
-    <HelpKINode Title="ObjectIndex.GetHashCode Method " Url="html/7ad9dd8f-87f2-722f-4bf7-0568a30fa039.htm" />
-    <HelpKINode Title="AnalysisWarning.GetHashCode Method " Url="html/6f907c15-05f5-c9ed-5b35-ff6bf8c7006c.htm" />
-    <HelpKINode Title="ContainerIndex.GetHashCode Method " Url="html/1529bbf7-4a79-4682-e21c-a8d34ffdbce6.htm" />
-    <HelpKINode Title="IndexSegment.GetHashCode Method " Url="html/881c71de-b254-74b3-c340-ffa16c04c5ba.htm" />
-    <HelpKINode Title="NamedIndex.GetHashCode Method " Url="html/f4439727-db86-4a4c-7265-b1f7fcdf231b.htm" />
-    <HelpKINode Title="Flags.GetHashCode Method " Url="html/465f2dd4-5eaf-4e74-5a92-00cc3c804726.htm" />
-    <HelpKINode Title="TemporaryIndex.GetHashCode Method " Url="html/de2ee824-5c2d-2c3f-7ce7-e9fd584d0d95.htm" />
-    <HelpKINode Title="TryBlockStack.GetHashCode Method " Url="html/d45ce7b2-4bb4-721c-1ead-230c50432050.htm" />
-    <HelpKINode Title="Value.GetHashCode Method " Url="html/b61284db-a3e8-f211-0720-a0383c37ebcc.htm" />
-    <HelpKINode Title="CatchBlockDescription.GetHashCode Method " Url="html/8181f751-6e9d-0d6f-1ed1-4cc9aa0a0a99.htm" />
-    <HelpKINode Title="InfoDataStorage.GetHashCode Method " Url="html/588356f0-6c4f-ddf5-d118-887c2147fe56.htm" />
     <HelpKINode Title="AnalysisSecurityWarning.GetHashCode Method " Url="html/ba7ce9d1-2c75-92da-5eaa-0161c68fa6f2.htm" />
+    <HelpKINode Title="AnalysisWarning.GetHashCode Method " Url="html/6f907c15-05f5-c9ed-5b35-ff6bf8c7006c.htm" />
+    <HelpKINode Title="CatchBlockDescription.GetHashCode Method " Url="html/8181f751-6e9d-0d6f-1ed1-4cc9aa0a0a99.htm" />
+    <HelpKINode Title="ContainerIndex.GetHashCode Method " Url="html/1529bbf7-4a79-4682-e21c-a8d34ffdbce6.htm" />
     <HelpKINode Title="FieldIdentifier.GetHashCode Method " Url="html/2e93e02b-fb28-e79b-816c-a7de29708be5.htm" />
+    <HelpKINode Title="Flags.GetHashCode Method " Url="html/465f2dd4-5eaf-4e74-5a92-00cc3c804726.htm" />
+    <HelpKINode Title="IndexSegment.GetHashCode Method " Url="html/881c71de-b254-74b3-c340-ffa16c04c5ba.htm" />
+    <HelpKINode Title="InfoDataStorage.GetHashCode Method " Url="html/588356f0-6c4f-ddf5-d118-887c2147fe56.htm" />
     <HelpKINode Title="MemoryEntry.GetHashCode Method " Url="html/29b89f9a-9165-1800-8a2c-912dd531bc24.htm" />
     <HelpKINode Title="MemoryIndex.GetHashCode Method " Url="html/c051f6ef-06f5-36ac-fa98-810e586d9f41.htm" />
     <HelpKINode Title="MethodIdentifier.GetHashCode Method " Url="html/32b504ab-018d-fbd9-d7be-5913292abff8.htm" />
+    <HelpKINode Title="NamedIndex.GetHashCode Method " Url="html/f4439727-db86-4a4c-7265-b1f7fcdf231b.htm" />
+    <HelpKINode Title="NativeAnalyzer.GetHashCode Method " Url="html/d4e4f790-2ca5-1834-5ab7-99fc57ed2b09.htm" />
+    <HelpKINode Title="ObjectIndex.GetHashCode Method " Url="html/7ad9dd8f-87f2-722f-4bf7-0568a30fa039.htm" />
     <HelpKINode Title="NumberOfCalledFunctions(T).GetHashCode Method " Url="html/d0b8c140-da36-877d-c11c-5a7451414d1f.htm" />
-  </HelpKINode>
-  <HelpKINode Title="getHashCode method">
-    <HelpKINode Title="AnyValue.getHashCode Method " Url="html/0941c42b-40a7-7ebf-23ef-25711338e93a.htm" />
-    <HelpKINode Title="CompoundValue.getHashCode Method " Url="html/4ca77e0e-d962-4fc4-a179-99f42d468964.htm" />
-    <HelpKINode Title="Flags.getHashCode Method " Url="html/681686ad-9bdd-055a-20fd-a9faf55ae160.htm" />
-    <HelpKINode Title="InfoDataBase.getHashCode Method " Url="html/40dc5b20-7af7-3182-f179-79c0db1da81a.htm" />
-    <HelpKINode Title="InfoValue.getHashCode Method " Url="html/e040e191-cae6-7113-a119-cdf299fa9f3e.htm" />
-    <HelpKINode Title="LambdaFunctionValue.getHashCode Method " Url="html/59d0388c-bef8-83a1-c931-8fc3a5873192.htm" />
-    <HelpKINode Title="IntervalValue(T).getHashCode Method " Url="html/a2b65267-92d9-ad20-e664-c62fb3fe9adb.htm" />
-    <HelpKINode Title="NativeAnalyzerValue.getHashCode Method " Url="html/9e479969-948b-e03e-99e7-db39d06ff179.htm" />
-    <HelpKINode Title="ResourceValue.getHashCode Method " Url="html/f75eed6e-a069-5452-1248-d82eec9911fc.htm" />
-    <HelpKINode Title="ScalarValue(T).getHashCode Method " Url="html/3af5d525-58e3-f2be-6037-2b6e999addbb.htm" />
-    <HelpKINode Title="SourceFunctionValue.getHashCode Method " Url="html/e97493f4-c2d1-2f1d-f6c8-dd3ea05206cd.htm" />
-    <HelpKINode Title="SourceMethodValue.getHashCode Method " Url="html/9e0fc35e-bbb4-6fb9-d14c-3494a6a4dfb4.htm" />
-    <HelpKINode Title="SpecialValue.getHashCode Method " Url="html/10f8f3e2-8b2f-5a92-ed6b-f65d2160866d.htm" />
-    <HelpKINode Title="UndefinedValue.getHashCode Method " Url="html/b1ecc7ff-db7d-0dea-50b1-c598cff91f06.htm" />
-    <HelpKINode Title="TypeValue.getHashCode Method " Url="html/286825c1-ecf3-3315-cbb5-eab4d095b006.htm" />
-    <HelpKINode Title="Value.getHashCode Method " Url="html/00f0659d-99ed-33b2-0157-b47e82d1266a.htm" />
+    <HelpKINode Title="Value.GetHashCode Method " Url="html/b61284db-a3e8-f211-0720-a0383c37ebcc.htm" />
+    <HelpKINode Title="TryBlockStack.GetHashCode Method " Url="html/d45ce7b2-4bb4-721c-1ead-230c50432050.htm" />
+    <HelpKINode Title="TemporaryIndex.GetHashCode Method " Url="html/de2ee824-5c2d-2c3f-7ce7-e9fd584d0d95.htm" />
   </HelpKINode>
   <HelpKINode Title="GetInfo(Of DataKey) method" Url="html/9998f6bd-16be-c9db-877c-425e6213df41.htm" />
   <HelpKINode Title="GetInfo&lt;DataKey&gt; method" Url="html/9998f6bd-16be-c9db-877c-425e6213df41.htm" />
@@ -2542,9 +2720,9 @@
     <HelpKINode Title="NativeObjectAnalyzer.GetInstance Method " Url="html/bab241bc-c4cb-06d3-4414-2a0c2991cb80.htm" />
   </HelpKINode>
   <HelpKINode Title="getLocalControlVariable method">
+    <HelpKINode Title="Snapshot.getLocalControlVariable Method " Url="html/554d4049-d1dc-dc75-074f-0ff2a6019e8d.htm" />
     <HelpKINode Title="Snapshot.getLocalControlVariable Method " Url="html/a0d1a9dd-909c-b9a9-7bc7-e329065ad86d.htm" />
     <HelpKINode Title="SnapshotBase.getLocalControlVariable Method " Url="html/f1d8d08c-2b7e-9d86-cbd3-c757814a08e3.htm" />
-    <HelpKINode Title="Snapshot.getLocalControlVariable Method " Url="html/554d4049-d1dc-dc75-074f-0ff2a6019e8d.htm" />
   </HelpKINode>
   <HelpKINode Title="GetLocalControlVariable method">
     <HelpKINode Title="FlowOutputSet.GetLocalControlVariable Method " Url="html/2d79e316-1eed-c40f-3ec9-6b7c41cc0920.htm" />
@@ -2552,6 +2730,7 @@
     <HelpKINode Title="SnapshotBase.GetLocalControlVariable Method " Url="html/9f330fc6-ee08-553c-7898-8ddaf0b03fd6.htm" />
   </HelpKINode>
   <HelpKINode Title="GetMethodVisibility method" Url="html/eb48e975-538e-ae2f-1ee6-b995f024a078.htm" />
+  <HelpKINode Title="GetNames method" Url="html/d78d273c-3c65-a3fa-c3e4-0082bb83d8af.htm" />
   <HelpKINode Title="getNativeFunctions method" Url="html/fa6d7b8d-d0c0-f526-d737-2810bba6c6e3.htm" />
   <HelpKINode Title="getNextIndex method" Url="html/459b62b3-a0e9-01fe-73e0-7f21ef00ce78.htm" />
   <HelpKINode Title="GetObjects method" Url="html/9901e8c9-0130-d60e-036c-415c2bdf084b.htm" />
@@ -2575,10 +2754,11 @@
   <HelpKINode Title="GetStatisticsValues method" Url="html/629fdd9f-3c60-678c-e2b1-7c7e54971176.htm" />
   <HelpKINode Title="getStorage method" Url="html/7db33a1e-d57b-d8b0-658d-83204f7a86e6.htm" />
   <HelpKINode Title="getTextRepresentation method" Url="html/4b2e90a9-2998-a120-5478-7266731369fe.htm" />
+  <HelpKINode Title="GetValue method" Url="html/83f6cebe-1183-85a4-8fd8-564c184bcd66.htm" />
   <HelpKINode Title="getVariable method">
-    <HelpKINode Title="Snapshot.getVariable Method " Url="html/3095a616-e521-652a-404e-d6d185cd243f.htm" />
-    <HelpKINode Title="Snapshot.getVariable Method " Url="html/858afa0a-4ea1-1343-9d39-b3b6ed6de057.htm" />
     <HelpKINode Title="SnapshotBase.getVariable Method " Url="html/64bfdb30-0999-4b79-9599-e8d728424e7f.htm" />
+    <HelpKINode Title="Snapshot.getVariable Method " Url="html/858afa0a-4ea1-1343-9d39-b3b6ed6de057.htm" />
+    <HelpKINode Title="Snapshot.getVariable Method " Url="html/3095a616-e521-652a-404e-d6d185cd243f.htm" />
   </HelpKINode>
   <HelpKINode Title="GetVariable method">
     <HelpKINode Title="FlowOutputSet.GetVariable Method " Url="html/d5618149-53ec-80b4-b4bb-b8b0ebd5e458.htm" />
@@ -2594,7 +2774,11 @@
   <HelpKINode Title="GetWarnings method" Url="html/f360b997-88e7-e7e8-955c-cf2f4f2b4cc4.htm" />
   <HelpKINode Title="Global enumeration member" Url="html/ac4c8687-83a1-e082-f36d-5cafe2a261b4.htm" />
   <HelpKINode Title="Global field" Url="html/07281f22-af86-8f7f-4549-c2ed428235e1.htm" />
-  <HelpKINode Title="Global property" Url="html/1399ee85-7450-2a74-c06a-65d7040eff04.htm" />
+  <HelpKINode Title="Global property">
+    <HelpKINode Title="IndexCollector.Global Property " Url="html/757311c4-b849-7644-cfe3-864a2bfff301.htm" />
+    <HelpKINode Title="MemoryPath.Global Property " Url="html/1399ee85-7450-2a74-c06a-65d7040eff04.htm" />
+    <HelpKINode Title="MemoryStack(T).Global Property " Url="html/a76c9555-97c1-ddc4-1ef3-faecd54105c6.htm" />
+  </HelpKINode>
   <HelpKINode Title="globalCode property" Url="html/dd81cd62-d6c7-69a5-d4f8-55a6ca050ac6.htm" />
   <HelpKINode Title="GlobalConstantDeclarationReduced method" Url="html/1e21a800-8e36-5903-3e87-d4e42c254401.htm" />
   <HelpKINode Title="GlobalContext enumeration" Url="html/8f45245c-4666-15f3-1fcf-47fc069ba925.htm" />
@@ -2638,8 +2822,10 @@
   <HelpKINode Title="GreaterThan method" Url="html/c7898e62-1acc-af0d-1cb6-486f92f8982d.htm" />
   <HelpKINode Title="GreaterThanOrEqual method" Url="html/f09d7868-c27f-fc36-4161-e89cc76c313f.htm" />
   <HelpKINode Title="Group property" Url="html/e5ea36f1-a750-2bc7-3312-e4f22a501df8.htm" />
+  <HelpKINode Title="HasAliases property" Url="html/def27c0e-1790-6897-2cbc-e8e200d21e14.htm" />
   <HelpKINode Title="HasChanged property" Url="html/a1205df9-293d-dc40-8934-5fc297a26a5b.htm" />
   <HelpKINode Title="HasIndicator method" Url="html/8e7e5f2e-74b9-a020-b2cc-b4bca59574ad.htm" />
+  <HelpKINode Title="HasMustAliases property" Url="html/70784695-5983-b3bd-981d-17410190d882.htm" />
   <HelpKINode Title="HasResolvedOccurrences field" Url="html/22d12865-8a75-125f-b8ef-cfcc8cb34ad7.htm" />
   <HelpKINode Title="head method" Url="html/e20d1df2-6f0c-ddf2-8103-e09ead02c8aa.htm" />
   <HelpKINode Title="hint method" Url="html/002c701e-847f-c865-be81-3e92f93adb1b.htm" />
@@ -2665,6 +2851,46 @@
   <HelpKINode Title="ICopyModelSnapshotEntry.CreateAliasToEntry method" Url="html/3be0d162-8404-fe86-b384-7d14b7cc0079.htm" />
   <HelpKINode Title="ICopyModelSnapshotEntry.ReadMemory method" Url="html/ba10c0bf-4fa9-60e6-ac3f-52d10ad2a0f4.htm" />
   <HelpKINode Title="Identifier field" Url="html/074f8b3b-ca13-b590-5501-97a7ac1cd04c.htm" />
+  <HelpKINode Title="IGenericCloneable(Of T) interface">
+    <HelpKINode Title="IGenericCloneable(T) Interface" Url="html/1cf7356f-96e5-4907-8402-fe3979423316.htm" />
+    <HelpKINode Title="IGenericCloneable(T) Members" Url="html/faab6694-69b5-f010-0e61-147aabfdfb74.htm" />
+    <HelpKINode Title="about IGenericCloneable(Of T) interface" Url="html/1cf7356f-96e5-4907-8402-fe3979423316.htm" />
+    <HelpKINode Title="all members" Url="html/faab6694-69b5-f010-0e61-147aabfdfb74.htm" />
+    <HelpKINode Title="methods" Url="html/daf4bc0b-80a7-b9f4-9f21-f8a8416a251d.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IGenericCloneable(Of T).Clone method" Url="html/af5118c1-2ea2-c316-39dc-40f2a573d732.htm" />
+  <HelpKINode Title="IGenericCloneable&lt;T&gt; interface">
+    <HelpKINode Title="IGenericCloneable(T) Interface" Url="html/1cf7356f-96e5-4907-8402-fe3979423316.htm" />
+    <HelpKINode Title="IGenericCloneable(T) Members" Url="html/faab6694-69b5-f010-0e61-147aabfdfb74.htm" />
+    <HelpKINode Title="about IGenericCloneable&lt;T&gt; interface" Url="html/1cf7356f-96e5-4907-8402-fe3979423316.htm" />
+    <HelpKINode Title="all members" Url="html/faab6694-69b5-f010-0e61-147aabfdfb74.htm" />
+    <HelpKINode Title="methods" Url="html/daf4bc0b-80a7-b9f4-9f21-f8a8416a251d.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IGenericCloneable&lt;T&gt;.Clone method" Url="html/af5118c1-2ea2-c316-39dc-40f2a573d732.htm" />
+  <HelpKINode Title="IIndexCollector interface">
+    <HelpKINode Title="IIndexCollector Interface" Url="html/d829ac76-e56a-2d98-84df-f5b5496d96fe.htm" />
+    <HelpKINode Title="IIndexCollector Members" Url="html/966c0085-6ace-0f54-ca13-d96ab5339ba8.htm" />
+    <HelpKINode Title="about IIndexCollector interface" Url="html/d829ac76-e56a-2d98-84df-f5b5496d96fe.htm" />
+    <HelpKINode Title="all members" Url="html/966c0085-6ace-0f54-ca13-d96ab5339ba8.htm" />
+    <HelpKINode Title="methods" Url="html/8f815468-013b-27f9-43d1-ffeb304146af.htm" />
+    <HelpKINode Title="properties" Url="html/e8e1df1e-69bd-fb5a-1d36-cac0dd7f3a31.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IIndexCollector.IsDefined property" Url="html/1a6afe7e-30e7-5a60-f5ad-a8d1c9e51e27.htm" />
+  <HelpKINode Title="IIndexCollector.MayIndexes property" Url="html/b8dca122-26a6-60ec-a20f-ea09e90f54d1.htm" />
+  <HelpKINode Title="IIndexCollector.MayIndexesCount property" Url="html/f26cc0ea-10a2-74b2-b2fa-f0088436ebb8.htm" />
+  <HelpKINode Title="IIndexCollector.MayLocaton property" Url="html/9616235d-512d-dbb1-6b3f-0d38f3ae40f4.htm" />
+  <HelpKINode Title="IIndexCollector.MustIndexes property" Url="html/cf531bcc-076e-aedc-9a09-44e44ffb7814.htm" />
+  <HelpKINode Title="IIndexCollector.MustIndexesCount property" Url="html/eb024237-08f9-66ea-f163-13ffc1225fe3.htm" />
+  <HelpKINode Title="IIndexCollector.MustLocation property" Url="html/dd6a1bce-64fc-3576-1244-ec30a40d3772.htm" />
+  <HelpKINode Title="IIndexCollector.Next method" Url="html/0c315ab0-d8c7-54e0-5f7e-cedd3c6d1d2d.htm" />
+  <HelpKINode Title="IMergeWorker interface">
+    <HelpKINode Title="IMergeWorker Interface" Url="html/3ad65e17-e9c8-7cbc-367b-f8112d14b7aa.htm" />
+    <HelpKINode Title="IMergeWorker Members" Url="html/dbc0de70-9d58-0735-4699-0b2e91d49e39.htm" />
+    <HelpKINode Title="about IMergeWorker interface" Url="html/3ad65e17-e9c8-7cbc-367b-f8112d14b7aa.htm" />
+    <HelpKINode Title="all members" Url="html/dbc0de70-9d58-0735-4699-0b2e91d49e39.htm" />
+    <HelpKINode Title="methods" Url="html/45aedd97-8e0b-3782-f50f-61250a9d4ba7.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IMergeWorker.addOperation method" Url="html/06182aa3-2df2-0d6f-1d43-6f0a3c0985a1.htm" />
   <HelpKINode Title="IncDecEx field" Url="html/43b2a2bb-80a0-85ae-5128-3f002846b305.htm" />
   <HelpKINode Title="IncDecEx method">
     <HelpKINode Title="ExpressionEvaluator.IncDecEx Method " Url="html/1c4f718e-56c5-fab5-e2f7-ebdc99e294cb.htm" />
@@ -2742,6 +2968,27 @@
   <HelpKINode Title="IncrementTarget field" Url="html/54d1efee-852f-df56-f008-b2611d25e88d.htm" />
   <HelpKINode Title="Indent method" Url="html/6417f112-e78d-218c-72f5-acce3af6f401.htm" />
   <HelpKINode Title="Index field" Url="html/17abd991-f82a-be58-1eb3-5aeb9668f22c.htm" />
+  <HelpKINode Title="IndexCollector class">
+    <HelpKINode Title="IndexCollector Class" Url="html/a05ace75-01e3-635c-f8f1-ad9f3760baef.htm" />
+    <HelpKINode Title="IndexCollector Members" Url="html/050e9c33-b10e-f148-7a73-5c3e49528a0e.htm" />
+    <HelpKINode Title="about IndexCollector class" Url="html/a05ace75-01e3-635c-f8f1-ad9f3760baef.htm" />
+    <HelpKINode Title="all members" Url="html/050e9c33-b10e-f148-7a73-5c3e49528a0e.htm" />
+    <HelpKINode Title="constructor" Url="html/a27ad50a-5477-0a60-ea38-24d695615e34.htm" />
+    <HelpKINode Title="methods" Url="html/b8841f5f-068f-9e85-e819-eb783a23e616.htm" />
+    <HelpKINode Title="properties" Url="html/06b73892-4e3e-394a-cb75-962cf22098b0.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IndexCollector.CallLevel property" Url="html/39b9e9fa-6253-58e0-2f7a-b6489c5ac732.htm" />
+  <HelpKINode Title="IndexCollector.Global property" Url="html/757311c4-b849-7644-cfe3-864a2bfff301.htm" />
+  <HelpKINode Title="IndexCollector.IndexCollector constructor" Url="html/a27ad50a-5477-0a60-ea38-24d695615e34.htm" />
+  <HelpKINode Title="IndexCollector.IsDefined property" Url="html/a88997af-c910-b586-4023-5ba746710f2c.htm" />
+  <HelpKINode Title="IndexCollector.MayIndexes property" Url="html/d0489635-e691-cd11-9337-c34e1ba7e5c2.htm" />
+  <HelpKINode Title="IndexCollector.MayIndexesCount property" Url="html/0f7834da-6a13-7e2c-531d-31afc99f9431.htm" />
+  <HelpKINode Title="IndexCollector.MayLocaton property" Url="html/b628083b-c14d-1fd3-9e0b-09637d72c137.htm" />
+  <HelpKINode Title="IndexCollector.MustIndexes property" Url="html/0008f3cb-2c2d-5d2e-9bf5-85d1fef80f4e.htm" />
+  <HelpKINode Title="IndexCollector.MustIndexesCount property" Url="html/61bea804-8bba-32a0-9409-414822f1f022.htm" />
+  <HelpKINode Title="IndexCollector.MustLocation property" Url="html/f8bb5cb2-8415-bd99-6b2c-9e76239f81b0.htm" />
+  <HelpKINode Title="IndexCollector.Next method" Url="html/d9f5f1d9-eed3-a539-d6e7-8c9ee0ad5c02.htm" />
+  <HelpKINode Title="IndexCollector.ProcessPath method" Url="html/de21eb55-3f76-94b0-81b2-9c5d4ef6b55e.htm" />
   <HelpKINode Title="IndexContainer class">
     <HelpKINode Title="IndexContainer Class" Url="html/88330db4-27c3-295b-5665-982c083fca55.htm" />
     <HelpKINode Title="IndexContainer Members" Url="html/12ddbd3b-4a66-f10c-7939-153712724d56.htm" />
@@ -2755,6 +3002,34 @@
   <HelpKINode Title="IndexContainer.IndexContainer constructor" Url="html/bbce6700-bfc1-f7e5-8704-e10deb51eb39.htm" />
   <HelpKINode Title="IndexContainer.Indexes property" Url="html/a3575af3-4412-ad3e-caad-3ecfac29339e.htm" />
   <HelpKINode Title="IndexContainer.UnknownIndex property" Url="html/f70fe745-3b4d-08ca-97c3-ec6ad6f59efa.htm" />
+  <HelpKINode Title="IndexData class">
+    <HelpKINode Title="IndexData Class" Url="html/1f3c85b1-35bf-7395-fee8-9f09ab4ff86b.htm" />
+    <HelpKINode Title="IndexData Members" Url="html/f7d69f15-f37f-ab0b-dfe0-360670d6a468.htm" />
+    <HelpKINode Title="about IndexData class" Url="html/1f3c85b1-35bf-7395-fee8-9f09ab4ff86b.htm" />
+    <HelpKINode Title="all members" Url="html/f7d69f15-f37f-ab0b-dfe0-360670d6a468.htm" />
+    <HelpKINode Title="constructor" Url="html/2878d766-c60a-efa4-1d32-def1c92dab74.htm" />
+    <HelpKINode Title="methods" Url="html/249e6f30-a390-a542-ade6-857bb027c324.htm" />
+    <HelpKINode Title="properties" Url="html/bd12d119-fded-24ed-5db9-f166e915fa6f.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IndexData.Aliases property" Url="html/b85419a8-4f84-e97f-a94c-272a0f090c14.htm" />
+  <HelpKINode Title="IndexData.Array property" Url="html/6d33dcfd-9762-e9c6-879b-7e1984f24414.htm" />
+  <HelpKINode Title="IndexData.Builder method" Url="html/b59c4df0-1d2b-64c2-a993-cbe772b905dc.htm" />
+  <HelpKINode Title="IndexData.IndexData constructor" Url="html/2878d766-c60a-efa4-1d32-def1c92dab74.htm" />
+  <HelpKINode Title="IndexData.Objects property" Url="html/e12128b8-9a3f-a04f-500f-31de8c944fe8.htm" />
+  <HelpKINode Title="IndexDataBuilder class">
+    <HelpKINode Title="IndexDataBuilder Class" Url="html/2b9b60bd-1186-c266-3880-e18a54c8f2ab.htm" />
+    <HelpKINode Title="IndexDataBuilder Members" Url="html/2207c816-2c9e-8c7c-ded7-048573bc72ba.htm" />
+    <HelpKINode Title="about IndexDataBuilder class" Url="html/2b9b60bd-1186-c266-3880-e18a54c8f2ab.htm" />
+    <HelpKINode Title="all members" Url="html/2207c816-2c9e-8c7c-ded7-048573bc72ba.htm" />
+    <HelpKINode Title="constructor" Url="html/860e77cd-b533-ae87-2983-d72d1a7b69f7.htm" />
+    <HelpKINode Title="methods" Url="html/a83acf19-0978-78b5-2096-36c2d955f4c9.htm" />
+    <HelpKINode Title="properties" Url="html/7dc111c8-f56a-c30e-1805-f1de062100c2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IndexDataBuilder.Aliases property" Url="html/6f5bcc89-f519-137f-7ead-bfc9659a712a.htm" />
+  <HelpKINode Title="IndexDataBuilder.Array property" Url="html/10d29563-8aac-f6d7-931a-d3263dd31a01.htm" />
+  <HelpKINode Title="IndexDataBuilder.Build method" Url="html/2d70207a-2987-05d8-e108-87deb863fd85.htm" />
+  <HelpKINode Title="IndexDataBuilder.IndexDataBuilder constructor" Url="html/860e77cd-b533-ae87-2983-d72d1a7b69f7.htm" />
+  <HelpKINode Title="IndexDataBuilder.Objects property" Url="html/64069018-857a-3bd5-90ec-37d70520fba7.htm" />
   <HelpKINode Title="Indexes field" Url="html/ea915def-e068-44b0-1eb7-67975b15ad26.htm" />
   <HelpKINode Title="Indexes property">
     <HelpKINode Title="IndexContainer.Indexes Property " Url="html/a3575af3-4412-ad3e-caad-3ecfac29339e.htm" />
@@ -2793,6 +3068,34 @@
   <HelpKINode Title="IndexSegment.Name property" Url="html/def395ff-3139-fc30-7a51-ec9ffc77579d.htm" />
   <HelpKINode Title="IndexSegment.ToString method" Url="html/8f46ff14-4c6d-660d-bcf7-ea2c5a5700f6.htm" />
   <HelpKINode Title="IndexSegment.UNDEFINED_STR field" Url="html/aa195ada-416d-f15a-296a-1f189c53891e.htm" />
+  <HelpKINode Title="IndexSet(Of T) class">
+    <HelpKINode Title="IndexSet(T) Class" Url="html/b424385a-1f02-0700-903f-279a36eec86e.htm" />
+    <HelpKINode Title="IndexSet(T) Members" Url="html/c1fe4da1-a8ac-54cb-3d15-238add0aec6a.htm" />
+    <HelpKINode Title="about IndexSet(Of T) class" Url="html/b424385a-1f02-0700-903f-279a36eec86e.htm" />
+    <HelpKINode Title="all members" Url="html/c1fe4da1-a8ac-54cb-3d15-238add0aec6a.htm" />
+    <HelpKINode Title="constructor" Url="html/30f13ab5-e981-4171-8240-0a2d25237238.htm" />
+    <HelpKINode Title="methods" Url="html/76c1177c-363b-bc35-574f-ecd54ab2568c.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IndexSet(Of T).Add method" Url="html/d1c65c15-3651-bc1c-6bdb-cb1d2193ae25.htm" />
+  <HelpKINode Title="IndexSet(Of T).Clone method" Url="html/ec135956-0fce-0576-5eac-fcf51cc3359f.htm" />
+  <HelpKINode Title="IndexSet(Of T).Contains method" Url="html/e35a457b-427b-00e9-4667-85abbda09464.htm" />
+  <HelpKINode Title="IndexSet(Of T).GetEnumerator method" Url="html/e2379873-9458-9923-d801-52c9515bbf47.htm" />
+  <HelpKINode Title="IndexSet(Of T).IndexSet constructor" Url="html/30f13ab5-e981-4171-8240-0a2d25237238.htm" />
+  <HelpKINode Title="IndexSet(Of T).Remove method" Url="html/4b3bc309-b10c-daa9-0699-461fcfaaee19.htm" />
+  <HelpKINode Title="IndexSet&lt;T&gt; class">
+    <HelpKINode Title="IndexSet(T) Class" Url="html/b424385a-1f02-0700-903f-279a36eec86e.htm" />
+    <HelpKINode Title="IndexSet(T) Members" Url="html/c1fe4da1-a8ac-54cb-3d15-238add0aec6a.htm" />
+    <HelpKINode Title="about IndexSet&lt;T&gt; class" Url="html/b424385a-1f02-0700-903f-279a36eec86e.htm" />
+    <HelpKINode Title="all members" Url="html/c1fe4da1-a8ac-54cb-3d15-238add0aec6a.htm" />
+    <HelpKINode Title="constructor" Url="html/30f13ab5-e981-4171-8240-0a2d25237238.htm" />
+    <HelpKINode Title="methods" Url="html/76c1177c-363b-bc35-574f-ecd54ab2568c.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IndexSet&lt;T&gt;.Add method" Url="html/d1c65c15-3651-bc1c-6bdb-cb1d2193ae25.htm" />
+  <HelpKINode Title="IndexSet&lt;T&gt;.Clone method" Url="html/ec135956-0fce-0576-5eac-fcf51cc3359f.htm" />
+  <HelpKINode Title="IndexSet&lt;T&gt;.Contains method" Url="html/e35a457b-427b-00e9-4667-85abbda09464.htm" />
+  <HelpKINode Title="IndexSet&lt;T&gt;.GetEnumerator method" Url="html/e2379873-9458-9923-d801-52c9515bbf47.htm" />
+  <HelpKINode Title="IndexSet&lt;T&gt;.IndexSet constructor" Url="html/30f13ab5-e981-4171-8240-0a2d25237238.htm" />
+  <HelpKINode Title="IndexSet&lt;T&gt;.Remove method" Url="html/4b3bc309-b10c-daa9-0699-461fcfaaee19.htm" />
   <HelpKINode Title="INDEX_OUT_OF_RANGE enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="IndirectCall method">
     <HelpKINode Title="FunctionResolver.IndirectCall Method " Url="html/646ad12a-00d0-3081-7701-26aa0e62f242.htm" />
@@ -2928,6 +3231,21 @@
   <HelpKINode Title="InfoValue&lt;T&gt;.cloneValue method" Url="html/67be628a-f776-3fa7-31a2-7a34b1d0290a.htm" />
   <HelpKINode Title="InfoValue&lt;T&gt;.Data field" Url="html/0c6184bb-8434-88a1-7f11-da0e09b0502a.htm" />
   <HelpKINode Title="InfoValue&lt;T&gt;.ToString method" Url="html/bd5fa7d1-ec94-57f4-8869-a2747718b5a8.htm" />
+  <HelpKINode Title="InfoValueLocation class">
+    <HelpKINode Title="InfoValueLocation Class" Url="html/939fcb46-b99a-1d57-aac4-74b98c78d9e7.htm" />
+    <HelpKINode Title="InfoValueLocation Members" Url="html/d171f242-e747-d02b-7c2c-38ab00c6d31f.htm" />
+    <HelpKINode Title="about InfoValueLocation class" Url="html/939fcb46-b99a-1d57-aac4-74b98c78d9e7.htm" />
+    <HelpKINode Title="all members" Url="html/d171f242-e747-d02b-7c2c-38ab00c6d31f.htm" />
+    <HelpKINode Title="constructor" Url="html/f2af17d2-ad3b-57d4-e697-d6b4d09e6c94.htm" />
+    <HelpKINode Title="fields" Url="html/8dc4a45a-cccb-905f-6831-8faa52687bcb.htm" />
+    <HelpKINode Title="methods" Url="html/30a418e6-21c6-da60-bbae-ea6e509d5a5e.htm" />
+  </HelpKINode>
+  <HelpKINode Title="InfoValueLocation.Accept method" Url="html/eb009659-462c-596e-d765-b1428093ad14.htm" />
+  <HelpKINode Title="InfoValueLocation.ContainingIndex field" Url="html/98dbefda-a3c5-263d-5f0e-8365043408ac.htm" />
+  <HelpKINode Title="InfoValueLocation.InfoValueLocation constructor" Url="html/f2af17d2-ad3b-57d4-e697-d6b4d09e6c94.htm" />
+  <HelpKINode Title="InfoValueLocation.ReadValues method" Url="html/32be0eb1-dbae-8c12-1613-4dc9041c0b73.htm" />
+  <HelpKINode Title="InfoValueLocation.Value field" Url="html/adaf6af8-e45b-05db-851c-334bd59d85e8.htm" />
+  <HelpKINode Title="InfoValueLocation.WriteValues method" Url="html/ebdce3b0-d351-32ee-c52e-8d4270637445.htm" />
   <HelpKINode Title="InitAssistant method" Url="html/7b2049f4-c9bb-5efb-3b0b-df54bcc2d827.htm" />
   <HelpKINode Title="InitContext method" Url="html/99b768b7-b06d-a8da-42f0-04b69a95855e.htm" />
   <HelpKINode Title="initializationValue field" Url="html/6dd71dad-ce27-765d-38c7-c976e19c5901.htm" />
@@ -2945,15 +3263,15 @@
     <HelpKINode Title="FunctionResolverBase.InitializeCalledObject Method " Url="html/a2e03002-55c2-77a2-e34a-b12d88bbdd6a.htm" />
   </HelpKINode>
   <HelpKINode Title="InitializedValues property" Url="html/1b1eb5be-a84d-aefd-0057-362ae1f21f87.htm" />
+  <HelpKINode Title="InitializeObject method">
+    <HelpKINode Title="FunctionResolver.InitializeObject Method " Url="html/523f6e7a-d2e0-8e1a-1f9f-8c848632e1c8.htm" />
+    <HelpKINode Title="FunctionResolverBase.InitializeObject Method " Url="html/e902d08a-3be2-85b9-eb2f-21c169f00e1c.htm" />
+    <HelpKINode Title="ObjectInitializer.InitializeObject Method " Url="html/1c1ec4a6-eab0-73f9-2465-33ca18449da1.htm" />
+  </HelpKINode>
   <HelpKINode Title="initializeObject method">
-    <HelpKINode Title="Snapshot.initializeObject Method " Url="html/ac064013-c514-a6d8-81e7-fae1a480b380.htm" />
     <HelpKINode Title="Snapshot.initializeObject Method " Url="html/d2c7b087-0fcc-feda-40f6-533ec96b41ca.htm" />
     <HelpKINode Title="SnapshotBase.initializeObject Method " Url="html/cd068e00-a067-b1c4-27d3-85fcd96a02ad.htm" />
-  </HelpKINode>
-  <HelpKINode Title="InitializeObject method">
-    <HelpKINode Title="FunctionResolverBase.InitializeObject Method " Url="html/e902d08a-3be2-85b9-eb2f-21c169f00e1c.htm" />
-    <HelpKINode Title="FunctionResolver.InitializeObject Method " Url="html/523f6e7a-d2e0-8e1a-1f9f-8c848632e1c8.htm" />
-    <HelpKINode Title="ObjectInitializer.InitializeObject Method " Url="html/1c1ec4a6-eab0-73f9-2465-33ca18449da1.htm" />
+    <HelpKINode Title="Snapshot.initializeObject Method " Url="html/ac064013-c514-a6d8-81e7-fae1a480b380.htm" />
   </HelpKINode>
   <HelpKINode Title="Initializer field">
     <HelpKINode Title="ConstantDeclPoint.Initializer Field" Url="html/fd438f92-0021-8156-af82-2da608424166.htm" />
@@ -3067,6 +3385,7 @@
   <HelpKINode Title="IntervalValue&lt;T&gt;.ToString method" Url="html/7c77e581-2aa1-c13f-1494-a93320859427.htm" />
   <HelpKINode Title="IntervalValue&lt;T&gt;.Zero property" Url="html/bc034dc7-517b-4905-7635-c517e3776fdb.htm" />
   <HelpKINode Title="IntLiteral method" Url="html/ca3cbe4b-3300-8c4a-24ab-1dc6951cc798.htm" />
+  <HelpKINode Title="InvalidateMust method" Url="html/2b2ba6c5-4f6e-7671-ac1d-68ba066039e7.htm" />
   <HelpKINode Title="InvokingElement field" Url="html/187f60cc-3afd-d3a0-a3fe-38d9f406a5a0.htm" />
   <HelpKINode Title="IPathSegmentVisitor interface">
     <HelpKINode Title="IPathSegmentVisitor Interface" Url="html/af9d0790-d0a0-dc0e-7f88-55556bb03abc.htm" />
@@ -3102,18 +3421,22 @@
   <HelpKINode Title="IsConnected property" Url="html/c46ac0cd-02e8-069f-ce14-74a5980d904f.htm" />
   <HelpKINode Title="isDefined method">
     <HelpKINode Title="DataSnapshotEntry.isDefined Method " Url="html/e6356936-447d-2885-7d41-97b7c701412c.htm" />
-    <HelpKINode Title="SnapshotEntry.isDefined Method " Url="html/e2168bae-e545-49e9-b647-61ac0f05b53d.htm" />
     <HelpKINode Title="ReadSnapshotEntryBase.isDefined Method " Url="html/70518735-af91-3614-cd04-0e8844f43e0d.htm" />
+    <HelpKINode Title="SnapshotEntry.isDefined Method " Url="html/e2168bae-e545-49e9-b647-61ac0f05b53d.htm" />
   </HelpKINode>
   <HelpKINode Title="IsDefined method" Url="html/6af5cfbf-83a7-a770-4fc3-f4d112944bfb.htm" />
+  <HelpKINode Title="IsDefined property">
+    <HelpKINode Title="IIndexCollector.IsDefined Property " Url="html/1a6afe7e-30e7-5a60-f5ad-a8d1c9e51e27.htm" />
+    <HelpKINode Title="IndexCollector.IsDefined Property " Url="html/a88997af-c910-b586-4023-5ba746710f2c.htm" />
+  </HelpKINode>
   <HelpKINode Title="IsDirect property">
     <HelpKINode Title="MemberIdentifier.IsDirect Property " Url="html/d9751d2a-042f-3d87-f3bd-acdb0853ed19.htm" />
     <HelpKINode Title="MemoryPath.IsDirect Property " Url="html/6deb1c7d-af41-6174-592a-9b95df0c3924.htm" />
     <HelpKINode Title="PathSegment.IsDirect Property " Url="html/681dd836-04ad-db1b-5603-9c8df5a17271.htm" />
     <HelpKINode Title="VariableIdentifier.IsDirect Property " Url="html/c2f216d4-4678-9393-b76c-8216654f2788.htm" />
   </HelpKINode>
-  <HelpKINode Title="isDirty method" Url="html/65bc635d-cb9b-c8bd-e8ab-5c0e7fbe6926.htm" />
   <HelpKINode Title="IsDirty method" Url="html/aa5ba2fa-13ff-b047-7958-80975ae046f2.htm" />
+  <HelpKINode Title="isDirty method" Url="html/65bc635d-cb9b-c8bd-e8ab-5c0e7fbe6926.htm" />
   <HelpKINode Title="IsFileIncluded method" Url="html/7edb82a8-256b-220c-8b09-875ab31050b1.htm" />
   <HelpKINode Title="IsFinal field">
     <HelpKINode Title="ClassDecl.IsFinal Field" Url="html/c88dd8a3-5ae3-3560-6095-cf0d7f690c82.htm" />
@@ -3225,6 +3548,7 @@
     <HelpKINode Title="MemberIdentifier.IsUnknown Property " Url="html/519de339-fa00-ff29-9f40-a80383623fd3.htm" />
     <HelpKINode Title="VariableIdentifier.IsUnknown Property " Url="html/f3c7b643-7946-0f76-a774-d36301ca507d.htm" />
   </HelpKINode>
+  <HelpKINode Title="Item property" Url="html/dda132d9-c014-b216-0c21-cfe5085fb932.htm" />
   <HelpKINode Title="ItemUse field" Url="html/3660cfad-96b4-89f5-812b-bc33d73b24af.htm" />
   <HelpKINode Title="ItemUsePoint class">
     <HelpKINode Title="ItemUsePoint Class" Url="html/b6f8b7a1-ab23-af75-7ad9-9ef4de255da4.htm" />
@@ -3242,12 +3566,12 @@
   <HelpKINode Title="ItemUsePoint.Partial property" Url="html/60c11b53-50c4-341f-00c4-72d68cdf2f62.htm" />
   <HelpKINode Title="ItemUsePoint.UsedItem field" Url="html/f98fe3a5-bc95-3867-58dd-a16d554850de.htm" />
   <HelpKINode Title="iterateArray method" Url="html/d5c28975-ac6e-2ba9-0ac1-409d7c57f492.htm" />
+  <HelpKINode Title="IterateFields method" Url="html/b9bdc211-1e3c-7745-bdad-e07519d9c6d5.htm" />
   <HelpKINode Title="iterateFields method">
     <HelpKINode Title="DataSnapshotEntry.iterateFields Method " Url="html/6957efeb-384c-cf87-5111-ab110e905aa6.htm" />
-    <HelpKINode Title="SnapshotEntry.iterateFields Method " Url="html/71a90e2b-6366-f8d5-2929-bf730eda4a67.htm" />
     <HelpKINode Title="ReadSnapshotEntryBase.iterateFields Method " Url="html/906cbd99-1ca9-dde4-25a5-b03336e9365a.htm" />
+    <HelpKINode Title="SnapshotEntry.iterateFields Method " Url="html/71a90e2b-6366-f8d5-2929-bf730eda4a67.htm" />
   </HelpKINode>
-  <HelpKINode Title="IterateFields method" Url="html/b9bdc211-1e3c-7745-bdad-e07519d9c6d5.htm" />
   <HelpKINode Title="iterateIndexes method">
     <HelpKINode Title="DataSnapshotEntry.iterateIndexes Method " Url="html/efc7f162-2d94-bd5f-5e35-42b2643180d2.htm" />
     <HelpKINode Title="ReadSnapshotEntryBase.iterateIndexes Method " Url="html/41f60c60-74d8-b688-f5cf-d0a33c895032.htm" />
@@ -3256,6 +3580,22 @@
   <HelpKINode Title="IterateIndexes method" Url="html/63ad0326-dbb4-18c9-c956-b2029a799ad5.htm" />
   <HelpKINode Title="iterateObject method" Url="html/d9891f3e-647d-8d60-34ea-4765a631bdd5.htm" />
   <HelpKINode Title="IterationEnd property" Url="html/54cbf7b7-b356-1e10-9da5-ad753796d59d.htm" />
+  <HelpKINode Title="IValueLocationVisitor interface">
+    <HelpKINode Title="IValueLocationVisitor Interface" Url="html/0050fec8-5c45-9e44-c286-e5f16b226f9d.htm" />
+    <HelpKINode Title="IValueLocationVisitor Members" Url="html/7ffd2035-6884-050c-3841-76d855392341.htm" />
+    <HelpKINode Title="about IValueLocationVisitor interface" Url="html/0050fec8-5c45-9e44-c286-e5f16b226f9d.htm" />
+    <HelpKINode Title="all members" Url="html/7ffd2035-6884-050c-3841-76d855392341.htm" />
+    <HelpKINode Title="methods" Url="html/741bdfd0-9a1c-19b6-68cf-59bf8d894d8b.htm" />
+  </HelpKINode>
+  <HelpKINode Title="IValueLocationVisitor.VisitAnyStringValueLocation method" Url="html/29d43f6d-549f-33e5-d3ef-499d1c7d4ccc.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitArrayAnyValueLocation method" Url="html/76c4070a-f334-57ba-94ad-94862380a199.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitArrayStringValueLocation method" Url="html/8e5474a6-ee33-0f40-332b-9ea63c7cc74c.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitArrayUndefinedValueLocation method" Url="html/26b50d6e-1586-fce1-77ba-225eac551e06.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitArrayValueLocation method" Url="html/98a16184-27f2-eaeb-5a56-ad52ea3058fa.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitInfoValueLocation method" Url="html/c1dac5f0-f15e-6489-f6aa-7c87c35b2b4f.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitObjectAnyValueLocation method" Url="html/8eb05b95-e943-a06b-a0d3-ea5a385c6054.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitObjectUndefinedValueLocation method" Url="html/99e76910-6847-9246-f2df-51480aae99c4.htm" />
+  <HelpKINode Title="IValueLocationVisitor.VisitObjectValueLocation method" Url="html/6c1a7f6d-980d-34cb-b4cf-324803cd61ec.htm" />
   <HelpKINode Title="IValueVisitor interface">
     <HelpKINode Title="IValueVisitor Interface" Url="html/d7b7e962-8e1a-fdaa-8fb9-ae3678fe8c79.htm" />
     <HelpKINode Title="IValueVisitor Members" Url="html/bb188885-57e6-c780-f13c-0f3395827857.htm" />
@@ -3996,8 +4336,8 @@
   <HelpKINode Title="LeftObjectOperandVisitor.VisitScalarValue method" Url="html/2c25d7c1-f7c7-6c08-d58c-2ef46d1f12ab.htm" />
   <HelpKINode Title="LeftObjectOperandVisitor.VisitStringValue method" Url="html/d5e23da1-b6e7-66e3-03bb-4aff3f1e98b6.htm" />
   <HelpKINode Title="LeftObjectOperandVisitor.VisitUndefinedValue method" Url="html/48aa86e6-4a98-09fd-5ea7-076dbc3007a1.htm" />
-  <HelpKINode Title="LeftOperand field" Url="html/f76d3406-c358-670c-ecda-b5d476322d67.htm" />
   <HelpKINode Title="leftOperand field" Url="html/a5640f48-b561-ef87-6809-06a67d3e8206.htm" />
+  <HelpKINode Title="LeftOperand field" Url="html/f76d3406-c358-670c-ecda-b5d476322d67.htm" />
   <HelpKINode Title="LeftOperandVisitor class">
     <HelpKINode Title="LeftOperandVisitor Class" Url="html/a91b395f-f13e-3130-5452-3e2c5a326877.htm" />
     <HelpKINode Title="LeftOperandVisitor Members" Url="html/e6ff07f1-7bb2-5c1b-db03-571e85f06054.htm" />
@@ -4137,6 +4477,7 @@
   <HelpKINode Title="Length property">
     <HelpKINode Title="MemoryIndex.Length Property " Url="html/1ca53670-5690-7707-e2af-5389d172af2b.htm" />
     <HelpKINode Title="MemoryPath.Length Property " Url="html/32272a7c-49c3-a006-5204-607d523dff4a.htm" />
+    <HelpKINode Title="MemoryStack(T).Length Property " Url="html/af9adefb-58c7-d16e-f871-e5ee8c24689b.htm" />
     <HelpKINode Title="Postfix.Length Property " Url="html/be37afac-5b2e-777a-87c3-5945129cee23.htm" />
   </HelpKINode>
   <HelpKINode Title="LessThan method" Url="html/9cf325f3-416a-39c0-05e3-e43e46254296.htm" />
@@ -4144,6 +4485,7 @@
   <HelpKINode Title="line method" Url="html/5c73f437-dd78-43de-6ed7-9d9d72f6e0d9.htm" />
   <HelpKINode Title="ListToAny method" Url="html/fffa58c1-26d6-92aa-a845-e67e7278341b.htm" />
   <HelpKINode Title="Local enumeration member" Url="html/ac4c8687-83a1-e082-f36d-5cafe2a261b4.htm" />
+  <HelpKINode Title="Local property" Url="html/67d0b342-812b-a224-eafc-7692b6e37ce2.htm" />
   <HelpKINode Title="LocalControl enumeration member" Url="html/ac4c8687-83a1-e082-f36d-5cafe2a261b4.htm" />
   <HelpKINode Title="LocalOnly enumeration member" Url="html/8f45245c-4666-15f3-1fcf-47fc069ba925.htm" />
   <HelpKINode Title="Locked property" Url="html/8f08f2af-d5f7-bb08-86b2-1e5699b9a5cc.htm" />
@@ -4232,7 +4574,23 @@
   <HelpKINode Title="MaxArgumentCount field" Url="html/6a031e90-2778-2595-c77b-b8d7603d4f88.htm" />
   <HelpKINode Title="MaxInheritanceDepth enumeration member" Url="html/822dc4f0-36e4-b11a-0843-6e8c6dea3163.htm" />
   <HelpKINode Title="MaxMethodOverridingDepth enumeration member" Url="html/822dc4f0-36e4-b11a-0843-6e8c6dea3163.htm" />
-  <HelpKINode Title="MayIndexes property" Url="html/de31ed75-7e5d-48f9-a234-1700fb5aab2e.htm" />
+  <HelpKINode Title="MayAliasses property">
+    <HelpKINode Title="MemoryAlias.MayAliasses Property " Url="html/d4600b60-9977-16a3-ba07-9597bcb489d7.htm" />
+    <HelpKINode Title="MemoryAliasBuilder.MayAliasses Property " Url="html/89d935dc-29f4-8ce2-80d2-4b17192cf9b3.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MayIndexes property">
+    <HelpKINode Title="AliasData.MayIndexes Property " Url="html/de31ed75-7e5d-48f9-a234-1700fb5aab2e.htm" />
+    <HelpKINode Title="IIndexCollector.MayIndexes Property " Url="html/b8dca122-26a6-60ec-a20f-ea09e90f54d1.htm" />
+    <HelpKINode Title="IndexCollector.MayIndexes Property " Url="html/d0489635-e691-cd11-9337-c34e1ba7e5c2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MayIndexesCount property">
+    <HelpKINode Title="IIndexCollector.MayIndexesCount Property " Url="html/f26cc0ea-10a2-74b2-b2fa-f0088436ebb8.htm" />
+    <HelpKINode Title="IndexCollector.MayIndexesCount Property " Url="html/0f7834da-6a13-7e2c-531d-31afc99f9431.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MayLocaton property">
+    <HelpKINode Title="IIndexCollector.MayLocaton Property " Url="html/9616235d-512d-dbb1-6b3f-0d38f3ae40f4.htm" />
+    <HelpKINode Title="IndexCollector.MayLocaton Property " Url="html/b628083b-c14d-1fd3-9e0b-09637d72c137.htm" />
+  </HelpKINode>
   <HelpKINode Title="MaySetAliases method" Url="html/bb6aacd0-8c7b-dbee-587a-ef18cb197f09.htm" />
   <HelpKINode Title="MemberIdentifier class">
     <HelpKINode Title="MemberIdentifier Class" Url="html/189ec8f9-cf06-69e5-bf55-f503032a0638.htm" />
@@ -4253,6 +4611,34 @@
   <HelpKINode Title="MemberIdentifier.MemberIdentifier constructor" Url="html/b89ea4c3-1d50-84e5-70aa-4322068f88fb.htm" />
   <HelpKINode Title="MemberIdentifier.NamesCount property" Url="html/7d48561d-5d63-6b3c-ee83-beb5aa3bb817.htm" />
   <HelpKINode Title="MemberIdentifier.PossibleNames property" Url="html/26582e76-c6c1-4eef-20f8-63b66490f554.htm" />
+  <HelpKINode Title="MemoryAlias class">
+    <HelpKINode Title="MemoryAlias Class" Url="html/fa089cf7-6188-b516-e456-7b17ff70f93c.htm" />
+    <HelpKINode Title="MemoryAlias Members" Url="html/1a6fbdbd-8891-e1a7-63c9-6140e555188b.htm" />
+    <HelpKINode Title="about MemoryAlias class" Url="html/fa089cf7-6188-b516-e456-7b17ff70f93c.htm" />
+    <HelpKINode Title="all members" Url="html/1a6fbdbd-8891-e1a7-63c9-6140e555188b.htm" />
+    <HelpKINode Title="methods" Url="html/db6a68c3-d237-4804-1098-3bc74802523b.htm" />
+    <HelpKINode Title="properties" Url="html/1b4400c9-d993-08c0-836c-c04865c0e231.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MemoryAlias.Builder method" Url="html/8fde9b07-ea96-7574-14ad-5ad88e80004d.htm" />
+  <HelpKINode Title="MemoryAlias.MayAliasses property" Url="html/d4600b60-9977-16a3-ba07-9597bcb489d7.htm" />
+  <HelpKINode Title="MemoryAlias.MustAliasses property" Url="html/1602a7ea-a77c-8c83-d86a-19832194e26c.htm" />
+  <HelpKINode Title="MemoryAliasBuilder class">
+    <HelpKINode Title="MemoryAliasBuilder Class" Url="html/e2759deb-ba4b-a5f7-2eb6-dc0c2b3c0338.htm" />
+    <HelpKINode Title="MemoryAliasBuilder Members" Url="html/e8202e5d-b9e5-e767-6f02-d1d43689ec98.htm" />
+    <HelpKINode Title="about MemoryAliasBuilder class" Url="html/e2759deb-ba4b-a5f7-2eb6-dc0c2b3c0338.htm" />
+    <HelpKINode Title="all members" Url="html/e8202e5d-b9e5-e767-6f02-d1d43689ec98.htm" />
+    <HelpKINode Title="constructor" Url="html/87870c86-d5e2-a87e-5c33-f8c0026ac144.htm" />
+    <HelpKINode Title="methods" Url="html/e84b7d13-0de8-338b-79b1-56b5e9e2ad04.htm" />
+    <HelpKINode Title="properties" Url="html/38ec6afa-b799-c044-d770-960bb17542eb.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MemoryAliasBuilder.AddMayAlias method" Url="html/1f00f98a-79d4-e58c-0aa6-61e30029907c.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.AddMustAlias method" Url="html/ca61d1ca-ac88-7f2f-f0c4-cbbb3d55e34b.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.Build method" Url="html/b3b47122-c2ce-217f-4b46-8d0655a9ff3b.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.MayAliasses property" Url="html/89d935dc-29f4-8ce2-80d2-4b17192cf9b3.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.MemoryAliasBuilder constructor" Url="html/87870c86-d5e2-a87e-5c33-f8c0026ac144.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.MustAliasses property" Url="html/da140f33-82af-e109-1525-785918231ce2.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.RemoveMayAlias method" Url="html/e4097308-ee86-39e2-bd00-ba44b780441e.htm" />
+  <HelpKINode Title="MemoryAliasBuilder.RemoveMustAlias method" Url="html/c979a1eb-9fef-5c8b-ace7-5103a3b6f604.htm" />
   <HelpKINode Title="MemoryAssistantBase class">
     <HelpKINode Title="MemoryAssistantBase Class" Url="html/ed54ef6e-8385-b7a2-b503-b6baaafd63ce.htm" />
     <HelpKINode Title="MemoryAssistantBase Members" Url="html/a9fa1ce0-defc-039c-1efb-76752aa7bf2b.htm" />
@@ -4361,20 +4747,44 @@
   <HelpKINode Title="MemoryPath.PathSegments property" Url="html/faa7e528-d131-6c27-8e9d-4f44da2cc5f1.htm" />
   <HelpKINode Title="MemoryPath.ToString method" Url="html/ff33f237-5eee-d19a-1c40-2f88b7b2fce8.htm" />
   <HelpKINode Title="MemoryRoot property" Url="html/c79a9a08-ba81-7537-2df5-af805b839e18.htm" />
+  <HelpKINode Title="MemoryStack(Of T) class">
+    <HelpKINode Title="MemoryStack(T) Class" Url="html/8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" />
+    <HelpKINode Title="MemoryStack(T) Members" Url="html/91d5373a-7226-5c37-3f69-1262ffa98314.htm" />
+    <HelpKINode Title="about MemoryStack(Of T) class" Url="html/8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" />
+    <HelpKINode Title="all members" Url="html/91d5373a-7226-5c37-3f69-1262ffa98314.htm" />
+    <HelpKINode Title="constructor" Url="html/6bb74895-851a-a1de-a4c5-558caf507344.htm" />
+    <HelpKINode Title="fields" Url="html/2388fb76-3fd5-6680-a00d-ba2a6601f80e.htm" />
+    <HelpKINode Title="methods" Url="html/ddcd552d-3290-9490-818c-cbe29b125691.htm" />
+    <HelpKINode Title="properties" Url="html/62fd46c6-7d2c-66f7-d095-53f66a11f073.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MemoryStack(Of T).GetEnumerator method" Url="html/080b5102-d117-7d7f-c1a8-7f67578f874a.htm" />
+  <HelpKINode Title="MemoryStack(Of T).Global property" Url="html/a76c9555-97c1-ddc4-1ef3-faecd54105c6.htm" />
+  <HelpKINode Title="MemoryStack(Of T).Item property" Url="html/dda132d9-c014-b216-0c21-cfe5085fb932.htm" />
+  <HelpKINode Title="MemoryStack(Of T).Length property" Url="html/af9adefb-58c7-d16e-f871-e5ee8c24689b.htm" />
+  <HelpKINode Title="MemoryStack(Of T).Local property" Url="html/67d0b342-812b-a224-eafc-7692b6e37ce2.htm" />
+  <HelpKINode Title="MemoryStack(Of T).MemoryStack constructor" Url="html/6bb74895-851a-a1de-a4c5-558caf507344.htm" />
+  <HelpKINode Title="MemoryStack(Of T).stack field" Url="html/483b62fa-0846-7695-660e-c898e26746f6.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt; class">
+    <HelpKINode Title="MemoryStack(T) Class" Url="html/8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" />
+    <HelpKINode Title="MemoryStack(T) Members" Url="html/91d5373a-7226-5c37-3f69-1262ffa98314.htm" />
+    <HelpKINode Title="about MemoryStack&lt;T&gt; class" Url="html/8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" />
+    <HelpKINode Title="all members" Url="html/91d5373a-7226-5c37-3f69-1262ffa98314.htm" />
+    <HelpKINode Title="constructor" Url="html/6bb74895-851a-a1de-a4c5-558caf507344.htm" />
+    <HelpKINode Title="fields" Url="html/2388fb76-3fd5-6680-a00d-ba2a6601f80e.htm" />
+    <HelpKINode Title="methods" Url="html/ddcd552d-3290-9490-818c-cbe29b125691.htm" />
+    <HelpKINode Title="properties" Url="html/62fd46c6-7d2c-66f7-d095-53f66a11f073.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MemoryStack&lt;T&gt;.GetEnumerator method" Url="html/080b5102-d117-7d7f-c1a8-7f67578f874a.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt;.Global property" Url="html/a76c9555-97c1-ddc4-1ef3-faecd54105c6.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt;.Item property" Url="html/dda132d9-c014-b216-0c21-cfe5085fb932.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt;.Length property" Url="html/af9adefb-58c7-d16e-f871-e5ee8c24689b.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt;.Local property" Url="html/67d0b342-812b-a224-eafc-7692b6e37ce2.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt;.MemoryStack constructor" Url="html/6bb74895-851a-a1de-a4c5-558caf507344.htm" />
+  <HelpKINode Title="MemoryStack&lt;T&gt;.stack field" Url="html/483b62fa-0846-7695-660e-c898e26746f6.htm" />
   <HelpKINode Title="Merge method">
     <HelpKINode Title="MemoryEntry.Merge Method " Url="html/81098990-f195-3e4d-67b8-dafd03d79382.htm" />
     <HelpKINode Title="MetricInfo.Merge Method " Url="html/23420e4b-d4b7-2f0d-5046-c81be3f17397.htm" />
   </HelpKINode>
-  <HelpKINode Title="MergeInfoWorker class">
-    <HelpKINode Title="MergeInfoWorker Class" Url="html/b96bd187-1ae0-7aad-f416-0d62827bc56b.htm" />
-    <HelpKINode Title="MergeInfoWorker Members" Url="html/3f9e3118-d2c6-bf59-0fa4-14a03d662c4d.htm" />
-    <HelpKINode Title="about MergeInfoWorker class" Url="html/b96bd187-1ae0-7aad-f416-0d62827bc56b.htm" />
-    <HelpKINode Title="all members" Url="html/3f9e3118-d2c6-bf59-0fa4-14a03d662c4d.htm" />
-    <HelpKINode Title="constructor" Url="html/74d12ac2-3dad-dcb4-9a9e-fb6f537bf54e.htm" />
-    <HelpKINode Title="methods" Url="html/b871dd06-30a8-7897-d77e-e2b1c16dea2c.htm" />
-  </HelpKINode>
-  <HelpKINode Title="MergeInfoWorker.addOperation method" Url="html/c7ce9a96-b2f3-9caf-6fc4-a7e1ff9cb10c.htm" />
-  <HelpKINode Title="MergeInfoWorker.MergeInfoWorker constructor" Url="html/74d12ac2-3dad-dcb4-9a9e-fb6f537bf54e.htm" />
   <HelpKINode Title="MergeOperation class">
     <HelpKINode Title="MergeOperation Class" Url="html/cef8e7ec-1d06-45d7-639f-a2e30d11074f.htm" />
     <HelpKINode Title="MergeOperation Members" Url="html/5e80a7d9-66b9-042a-2398-f54dcc774990.htm" />
@@ -4385,34 +4795,25 @@
     <HelpKINode Title="methods" Url="html/84a6674a-093d-8112-b9d6-1039d7a43217.htm" />
     <HelpKINode Title="properties" Url="html/571fb4e0-6cbb-2a22-87af-df0f91f9537a.htm" />
   </HelpKINode>
+  <HelpKINode Title="MergeOperation.Add method" Url="html/fc5c51c7-bf06-a65c-6b6a-88ab1102f8bc.htm" />
   <HelpKINode Title="MergeOperation.Indexes field" Url="html/ea915def-e068-44b0-1eb7-67975b15ad26.htm" />
   <HelpKINode Title="MergeOperation.IsRoot property" Url="html/2ad7c0d6-28da-e5b1-fde0-9c6b0e09ebd3.htm" />
   <HelpKINode Title="MergeOperation.IsUndefined property" Url="html/d8677ab5-3b13-154c-da35-d7b835892102.htm" />
   <HelpKINode Title="MergeOperation.MergeOperation constructor" Url="html/1747f6d8-f7d3-26c3-d146-241360b2871c.htm" />
+  <HelpKINode Title="MergeOperation.SetTargetIndex method" Url="html/70b07a3a-1aa7-229c-3378-3eff1513db9a.htm" />
+  <HelpKINode Title="MergeOperation.SetUndefined method" Url="html/12200918-7c4f-ea59-8efd-99e7f1ba16c0.htm" />
   <HelpKINode Title="MergeOperation.TargetIndex property" Url="html/3a8a75b7-4e43-875f-1480-cb8adafb2450.htm" />
   <HelpKINode Title="MergeOperation.ToString method" Url="html/1cfb39cd-32e4-a890-46fb-441af9c3d69c.htm" />
   <HelpKINode Title="mergeWithCallLevel method">
+    <HelpKINode Title="Snapshot.mergeWithCallLevel Method " Url="html/d34a0ef5-e082-e2da-0d51-6646b48cdd80.htm" />
     <HelpKINode Title="Snapshot.mergeWithCallLevel Method " Url="html/52cb873e-21f8-cf57-6991-b78353dd3d70.htm" />
     <HelpKINode Title="SnapshotBase.mergeWithCallLevel Method " Url="html/4c530c6e-a400-d702-52e5-c4ec9f05edf8.htm" />
-    <HelpKINode Title="Snapshot.mergeWithCallLevel Method " Url="html/d34a0ef5-e082-e2da-0d51-6646b48cdd80.htm" />
   </HelpKINode>
   <HelpKINode Title="MergeWithCallLevel method">
+    <HelpKINode Title="ISnapshotReadWrite.MergeWithCallLevel Method " Url="html/40ea49d7-7ab7-c908-def8-8690fbf11978.htm" />
     <HelpKINode Title="FlowOutputSet.MergeWithCallLevel Method " Url="html/8078d23e-a6b1-d055-4923-fe5e04297dfc.htm" />
     <HelpKINode Title="SnapshotBase.MergeWithCallLevel Method " Url="html/ef32d262-ae68-3133-74a9-15e351f939d8.htm" />
-    <HelpKINode Title="ISnapshotReadWrite.MergeWithCallLevel Method " Url="html/40ea49d7-7ab7-c908-def8-8690fbf11978.htm" />
   </HelpKINode>
-  <HelpKINode Title="MergeWorker class">
-    <HelpKINode Title="MergeWorker Class" Url="html/3ab33529-71a4-d781-31f9-3d3c7f1c2f57.htm" />
-    <HelpKINode Title="MergeWorker Members" Url="html/8805de44-b71c-75ea-c5e8-9809006ab35a.htm" />
-    <HelpKINode Title="about MergeWorker class" Url="html/3ab33529-71a4-d781-31f9-3d3c7f1c2f57.htm" />
-    <HelpKINode Title="all members" Url="html/8805de44-b71c-75ea-c5e8-9809006ab35a.htm" />
-    <HelpKINode Title="constructor" Url="html/23140d99-e5fe-7d89-b3fe-045bac588dd0.htm" />
-    <HelpKINode Title="methods" Url="html/914ae801-fb90-720f-8933-8bc0d827b187.htm" />
-  </HelpKINode>
-  <HelpKINode Title="MergeWorker.AddAlias method" Url="html/2349c72a-0785-f91b-0a8c-986f0ea2aae1.htm" />
-  <HelpKINode Title="MergeWorker.AddAliases method" Url="html/95d7b072-5d02-e1fa-3537-9e2dc8912787.htm" />
-  <HelpKINode Title="MergeWorker.addOperation method" Url="html/02bd79b2-a5cd-1fee-69d3-e1891fc81c3c.htm" />
-  <HelpKINode Title="MergeWorker.MergeWorker constructor" Url="html/23140d99-e5fe-7d89-b3fe-045bac588dd0.htm" />
   <HelpKINode Title="Message property" Url="html/a01f2634-91d8-b598-dca9-c41989cb75a4.htm" />
   <HelpKINode Title="Meta enumeration member" Url="html/ac4c8687-83a1-e082-f36d-5cafe2a261b4.htm" />
   <HelpKINode Title="Method field" Url="html/b50c6957-8ac5-7bb9-146e-7ac64d5aa567.htm" />
@@ -4521,7 +4922,23 @@
   <HelpKINode Title="MoveNext method" Url="html/cbafee2c-db05-5db6-ddff-aefbaddda0b7.htm" />
   <HelpKINode Title="MULTIPLE_RESULTS enumeration member" Url="html/dade0a28-2c74-aa4b-1a38-89c781db3398.htm" />
   <HelpKINode Title="Multiply method" Url="html/0ee23b67-e56f-1b26-01aa-7dc812bb5a4f.htm" />
-  <HelpKINode Title="MustIndexes property" Url="html/00b42bb1-1c1a-b948-dffc-9a7bf802b1f4.htm" />
+  <HelpKINode Title="MustAliasses property">
+    <HelpKINode Title="MemoryAlias.MustAliasses Property " Url="html/1602a7ea-a77c-8c83-d86a-19832194e26c.htm" />
+    <HelpKINode Title="MemoryAliasBuilder.MustAliasses Property " Url="html/da140f33-82af-e109-1525-785918231ce2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MustIndexes property">
+    <HelpKINode Title="AliasData.MustIndexes Property " Url="html/00b42bb1-1c1a-b948-dffc-9a7bf802b1f4.htm" />
+    <HelpKINode Title="IIndexCollector.MustIndexes Property " Url="html/cf531bcc-076e-aedc-9a09-44e44ffb7814.htm" />
+    <HelpKINode Title="IndexCollector.MustIndexes Property " Url="html/0008f3cb-2c2d-5d2e-9bf5-85d1fef80f4e.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MustIndexesCount property">
+    <HelpKINode Title="IIndexCollector.MustIndexesCount Property " Url="html/eb024237-08f9-66ea-f163-13ffc1225fe3.htm" />
+    <HelpKINode Title="IndexCollector.MustIndexesCount Property " Url="html/61bea804-8bba-32a0-9409-414822f1f022.htm" />
+  </HelpKINode>
+  <HelpKINode Title="MustLocation property">
+    <HelpKINode Title="IIndexCollector.MustLocation Property " Url="html/dd6a1bce-64fc-3576-1244-ec30a40d3772.htm" />
+    <HelpKINode Title="IndexCollector.MustLocation Property " Url="html/f8bb5cb2-8415-bd99-6b2c-9e76239f81b0.htm" />
+  </HelpKINode>
   <HelpKINode Title="MustSetAliases method" Url="html/2f0dddea-6bae-989c-b2be-77c4105068b2.htm" />
   <HelpKINode Title="MySql enumeration member" Url="html/a00cca5c-4294-e2d8-4608-8b244e8781ea.htm" />
   <HelpKINode Title="Name field">
@@ -4714,6 +5131,10 @@
   <HelpKINode Title="NewExPoint.NewEx field" Url="html/42dcab76-74ae-4737-be14-122df6b0681c.htm" />
   <HelpKINode Title="NewExPoint.Partial property" Url="html/3a567379-9c13-fa22-818f-9324a8e3a606.htm" />
   <HelpKINode Title="NewExPoint.Value property" Url="html/e98f3470-6d02-38a6-b097-0a7d6a34dbf3.htm" />
+  <HelpKINode Title="Next method">
+    <HelpKINode Title="IIndexCollector.Next Method " Url="html/0c315ab0-d8c7-54e0-5f7e-cedd3c6d1d2d.htm" />
+    <HelpKINode Title="IndexCollector.Next Method " Url="html/d9f5f1d9-eed3-a539-d6e7-8c9ee0ad5c02.htm" />
+  </HelpKINode>
   <HelpKINode Title="NextPhaseAnalysis class">
     <HelpKINode Title="NextPhaseAnalysis Class" Url="html/a82b7c90-3338-0c70-985e-fab1d2cf4d30.htm" />
     <HelpKINode Title="NextPhaseAnalysis Members" Url="html/cf3acb3f-583d-016e-e329-3e30210f5851.htm" />
@@ -4812,6 +5233,20 @@
     <HelpKINode Title="SnapshotBase.NumMemoryLocations Method " Url="html/da9d85e3-032e-cabc-7364-3998f73a7911.htm" />
   </HelpKINode>
   <HelpKINode Title="Object property" Url="html/372da79d-2a4a-dad1-f728-5f03896a24b4.htm" />
+  <HelpKINode Title="ObjectAnyValueLocation class">
+    <HelpKINode Title="ObjectAnyValueLocation Class" Url="html/17f98c98-ddb8-90dd-d8ef-0235845dd69d.htm" />
+    <HelpKINode Title="ObjectAnyValueLocation Members" Url="html/82ec4823-cae2-67d3-1968-25ce78e78aa0.htm" />
+    <HelpKINode Title="about ObjectAnyValueLocation class" Url="html/17f98c98-ddb8-90dd-d8ef-0235845dd69d.htm" />
+    <HelpKINode Title="all members" Url="html/82ec4823-cae2-67d3-1968-25ce78e78aa0.htm" />
+    <HelpKINode Title="constructor" Url="html/1edfcc1a-79e5-eb26-f9e6-f5e04f038518.htm" />
+    <HelpKINode Title="methods" Url="html/3cb717da-5612-b71b-7f9e-cf5ef4736d1d.htm" />
+    <HelpKINode Title="properties" Url="html/11d7804b-b5bf-6518-7cfb-2895ddfff9f2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ObjectAnyValueLocation.Accept method" Url="html/62c40cae-8018-27bf-7409-978c744ec434.htm" />
+  <HelpKINode Title="ObjectAnyValueLocation.ContainingIndex property" Url="html/dbbba8f6-4ed5-13b6-69b0-7ac28c589907.htm" />
+  <HelpKINode Title="ObjectAnyValueLocation.ObjectAnyValueLocation constructor" Url="html/1edfcc1a-79e5-eb26-f9e6-f5e04f038518.htm" />
+  <HelpKINode Title="ObjectAnyValueLocation.ReadValues method" Url="html/d8117697-affb-4bcd-876d-17ad7e79c573.htm" />
+  <HelpKINode Title="ObjectAnyValueLocation.WriteValues method" Url="html/75323202-2fed-9024-c645-d2ef0f5ecf58.htm" />
   <HelpKINode Title="ObjectIndex class">
     <HelpKINode Title="ObjectIndex Class" Url="html/8628f076-78c6-5560-f226-5da6f7b438ca.htm" />
     <HelpKINode Title="ObjectIndex Members" Url="html/7973ee6d-d5b9-3703-5abe-187432301ed9.htm" />
@@ -4858,17 +5293,36 @@
   <HelpKINode Title="ObjectInitializer.VisitStringLiteral method" Url="html/6bafa732-1d66-f302-91f3-83a9f81d577a.htm" />
   <HelpKINode Title="ObjectIterations enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
   <HelpKINode Title="ObjectName field" Url="html/e2149d20-cf22-7e12-0cdb-78643d51a157.htm" />
-  <HelpKINode Title="ObjectType method">
-    <HelpKINode Title="FlowInputSet.ObjectType Method " Url="html/4a1187bb-2a2d-b5ad-90fd-466e2bc42ec7.htm" />
-    <HelpKINode Title="ISnapshotReadonly.ObjectType Method " Url="html/89786093-5f43-403c-9973-4586e96b55b9.htm" />
-    <HelpKINode Title="SnapshotBase.ObjectType Method " Url="html/62d79ebb-73bd-a188-1ff6-c05be121818d.htm" />
+  <HelpKINode Title="Objects field" Url="html/33972991-2626-6e70-6646-de550bfe61e6.htm" />
+  <HelpKINode Title="Objects property">
+    <HelpKINode Title="IndexData.Objects Property " Url="html/e12128b8-9a3f-a04f-500f-31de8c944fe8.htm" />
+    <HelpKINode Title="IndexDataBuilder.Objects Property " Url="html/64069018-857a-3bd5-90ec-37d70520fba7.htm" />
   </HelpKINode>
   <HelpKINode Title="objectType method">
     <HelpKINode Title="Snapshot.objectType Method " Url="html/3fb8b37d-9027-ce49-87ff-d2fbebf60ba3.htm" />
     <HelpKINode Title="Snapshot.objectType Method " Url="html/249f21ab-c872-bfd8-d96a-4b89ae2e1181.htm" />
     <HelpKINode Title="SnapshotBase.objectType Method " Url="html/17f7f4d1-6b2b-ba91-e291-09f244a62bf3.htm" />
   </HelpKINode>
+  <HelpKINode Title="ObjectType method">
+    <HelpKINode Title="FlowInputSet.ObjectType Method " Url="html/4a1187bb-2a2d-b5ad-90fd-466e2bc42ec7.htm" />
+    <HelpKINode Title="ISnapshotReadonly.ObjectType Method " Url="html/89786093-5f43-403c-9973-4586e96b55b9.htm" />
+    <HelpKINode Title="SnapshotBase.ObjectType Method " Url="html/62d79ebb-73bd-a188-1ff6-c05be121818d.htm" />
+  </HelpKINode>
   <HelpKINode Title="ObjectTypeSearches enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
+  <HelpKINode Title="ObjectUndefinedValueLocation class">
+    <HelpKINode Title="ObjectUndefinedValueLocation Class" Url="html/b128b5ca-810f-e391-4738-03f08627f7c9.htm" />
+    <HelpKINode Title="ObjectUndefinedValueLocation Members" Url="html/1a34be75-8741-eeeb-67e8-ac0f95302b3c.htm" />
+    <HelpKINode Title="about ObjectUndefinedValueLocation class" Url="html/b128b5ca-810f-e391-4738-03f08627f7c9.htm" />
+    <HelpKINode Title="all members" Url="html/1a34be75-8741-eeeb-67e8-ac0f95302b3c.htm" />
+    <HelpKINode Title="constructor" Url="html/f1a6247d-e6d9-e6d2-60e3-09f7218582d1.htm" />
+    <HelpKINode Title="methods" Url="html/7853d791-dd76-7daf-f6e7-2a6e5511f0c6.htm" />
+    <HelpKINode Title="properties" Url="html/05da7142-e62c-300f-1a1e-f77654636d07.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ObjectUndefinedValueLocation.Accept method" Url="html/d920a964-7c8b-f9c8-a485-4d79848a55a0.htm" />
+  <HelpKINode Title="ObjectUndefinedValueLocation.ContainingIndex property" Url="html/ba942708-adf5-8715-2849-5e593fa89d79.htm" />
+  <HelpKINode Title="ObjectUndefinedValueLocation.ObjectUndefinedValueLocation constructor" Url="html/f1a6247d-e6d9-e6d2-60e3-09f7218582d1.htm" />
+  <HelpKINode Title="ObjectUndefinedValueLocation.ReadValues method" Url="html/a362b2bb-a4d9-b1b9-e126-67662eaaac9b.htm" />
+  <HelpKINode Title="ObjectUndefinedValueLocation.WriteValues method" Url="html/7dcdabaf-7448-15cc-b84e-582280b2da17.htm" />
   <HelpKINode Title="ObjectValue class">
     <HelpKINode Title="ObjectValue Class" Url="html/c5c1cff6-e783-0b48-2336-bad1aed5a487.htm" />
     <HelpKINode Title="ObjectValue Members" Url="html/99c5049e-58fd-f687-df0c-d96e31a603aa.htm" />
@@ -4909,6 +5363,20 @@
   <HelpKINode Title="ObjectValueContainerBuilder.ObjectValueContainerBuilder constructor" Url="html/c38975bf-6019-9627-5923-42169f017da3.htm" />
   <HelpKINode Title="ObjectValueContainerBuilder.Remove method" Url="html/bef13245-b9e6-15de-3903-a2297398d393.htm" />
   <HelpKINode Title="ObjectValueContainerBuilder.Values property" Url="html/8c402208-608a-c251-746d-2dfbadcd705a.htm" />
+  <HelpKINode Title="ObjectValueLocation class">
+    <HelpKINode Title="ObjectValueLocation Class" Url="html/5e85829e-74a0-70a8-574f-3b5b8b0f81ae.htm" />
+    <HelpKINode Title="ObjectValueLocation Members" Url="html/eeb52d1c-006f-0b1c-69a6-4303ed840fec.htm" />
+    <HelpKINode Title="about ObjectValueLocation class" Url="html/5e85829e-74a0-70a8-574f-3b5b8b0f81ae.htm" />
+    <HelpKINode Title="all members" Url="html/eeb52d1c-006f-0b1c-69a6-4303ed840fec.htm" />
+    <HelpKINode Title="constructor" Url="html/977fd0a6-b94e-3670-d47f-34136ec6be7f.htm" />
+    <HelpKINode Title="methods" Url="html/0d54b640-6dff-c9dd-29fc-8b2b7157d6b3.htm" />
+    <HelpKINode Title="properties" Url="html/eca93385-17be-d57e-e7d3-15142da55754.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ObjectValueLocation.Accept method" Url="html/96848454-396b-7411-7b52-1337488ec4fc.htm" />
+  <HelpKINode Title="ObjectValueLocation.ContainingIndex property" Url="html/6dcb5ae8-20be-c0cd-4bc5-ef094beac473.htm" />
+  <HelpKINode Title="ObjectValueLocation.ObjectValueLocation constructor" Url="html/977fd0a6-b94e-3670-d47f-34136ec6be7f.htm" />
+  <HelpKINode Title="ObjectValueLocation.ReadValues method" Url="html/5a5cd58f-7248-e155-299f-41c588040498.htm" />
+  <HelpKINode Title="ObjectValueLocation.WriteValues method" Url="html/3d449242-025b-8602-004b-93edc5bfe73d.htm" />
   <HelpKINode Title="OBJECT_CONVERTED_TO_INTEGER enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="OnCloseTag method" Url="html/5d07870f-b6b9-29fe-4716-22a10c11cd99.htm" />
   <HelpKINode Title="OnComment method" Url="html/0fea5791-52cd-688d-e1b8-7a2750932189.htm" />
@@ -5123,6 +5591,7 @@
   <HelpKINode Title="Postfix.SourceElement field" Url="html/18180089-f9e1-8454-e85f-7664de76d827.htm" />
   <HelpKINode Title="prepareFlow method" Url="html/e0d4a07a-d77a-c259-1c87-6da0b901c213.htm" />
   <HelpKINode Title="PRIVATE enumeration member" Url="html/0a6bd4c1-f62f-7fec-d0e9-22b8e23adf3e.htm" />
+  <HelpKINode Title="ProcessPath method" Url="html/de21eb55-3f76-94b0-81b2-9c5d4ef6b55e.htm" />
   <HelpKINode Title="ProgramEnd property" Url="html/c9b9efb6-6934-9e92-44b6-961372c2aa96.htm" />
   <HelpKINode Title="ProgramPoint field" Url="html/856791d7-21f0-1600-9b5f-0c4cbcdf05c3.htm" />
   <HelpKINode Title="ProgramPointBase class">
@@ -5278,31 +5747,31 @@
     <HelpKINode Title="ReadSnapshotEntryBase.readIndex Method " Url="html/128b8fa1-ad1a-558a-0b2c-ec9f775f494e.htm" />
     <HelpKINode Title="SnapshotEntry.readIndex Method " Url="html/bb8debcc-0785-5f27-295a-d9876b719327.htm" />
   </HelpKINode>
-  <HelpKINode Title="ReadInfo method">
-    <HelpKINode Title="FlowInputSet.ReadInfo Method " Url="html/ec5a046e-0566-1851-24fb-e8196460e8d7.htm" />
-    <HelpKINode Title="ISnapshotReadonly.ReadInfo Method " Url="html/6c8c444a-78dc-8d97-a8c0-45317ebb5f78.htm" />
-    <HelpKINode Title="SnapshotBase.ReadInfo Method " Url="html/b44f89ba-7ad9-07a9-d9bc-d233c330f4f5.htm" />
-  </HelpKINode>
   <HelpKINode Title="readInfo method">
     <HelpKINode Title="Snapshot.readInfo Method " Url="html/1b98baa4-5322-db7e-769c-8f28985239f6.htm" />
     <HelpKINode Title="Snapshot.readInfo Method " Url="html/6dbef730-c384-7f9b-196e-7c8a41bb4a03.htm" />
     <HelpKINode Title="SnapshotBase.readInfo Method " Url="html/9662e2aa-cb63-86bf-9f72-06abec3d536d.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ReadInfo method">
+    <HelpKINode Title="FlowInputSet.ReadInfo Method " Url="html/ec5a046e-0566-1851-24fb-e8196460e8d7.htm" />
+    <HelpKINode Title="SnapshotBase.ReadInfo Method " Url="html/b44f89ba-7ad9-07a9-d9bc-d233c330f4f5.htm" />
+    <HelpKINode Title="ISnapshotReadonly.ReadInfo Method " Url="html/6c8c444a-78dc-8d97-a8c0-45317ebb5f78.htm" />
   </HelpKINode>
   <HelpKINode Title="ReadLocalControlVariable method">
     <HelpKINode Title="FlowInputSet.ReadLocalControlVariable Method " Url="html/a1fbe164-8d37-4d01-a57f-6d65fc30d36d.htm" />
     <HelpKINode Title="ISnapshotReadonly.ReadLocalControlVariable Method " Url="html/97fc0f46-18ca-4cce-3b37-720e3c9c334f.htm" />
     <HelpKINode Title="SnapshotBase.ReadLocalControlVariable Method " Url="html/fb69754f-1d7e-8e99-df1e-763f01b3171d.htm" />
   </HelpKINode>
+  <HelpKINode Title="readMemory method">
+    <HelpKINode Title="DataSnapshotEntry.readMemory Method " Url="html/6e939966-58d6-aa58-ee8b-eb07c296cd0f.htm" />
+    <HelpKINode Title="ReadSnapshotEntryBase.readMemory Method " Url="html/47d25e8f-9ae0-69d9-3ec1-8b5d249514f4.htm" />
+    <HelpKINode Title="SnapshotEntry.readMemory Method " Url="html/f8b1c1ad-fa82-3d8a-7097-51d30d9164d3.htm" />
+  </HelpKINode>
   <HelpKINode Title="ReadMemory method">
     <HelpKINode Title="DataSnapshotEntry.ReadMemory Method " Url="html/af866f98-d781-e87c-085d-6b949c250afa.htm" />
+    <HelpKINode Title="SnapshotEntry.ReadMemory Method " Url="html/8132b1be-5c0e-3795-7f25-38b93b34df79.htm" />
     <HelpKINode Title="ICopyModelSnapshotEntry.ReadMemory Method " Url="html/ba10c0bf-4fa9-60e6-ac3f-52d10ad2a0f4.htm" />
     <HelpKINode Title="ReadSnapshotEntryBase.ReadMemory Method " Url="html/2d306a7d-2649-89b9-8554-15644a40ae08.htm" />
-    <HelpKINode Title="SnapshotEntry.ReadMemory Method " Url="html/8132b1be-5c0e-3795-7f25-38b93b34df79.htm" />
-  </HelpKINode>
-  <HelpKINode Title="readMemory method">
-    <HelpKINode Title="ReadSnapshotEntryBase.readMemory Method " Url="html/47d25e8f-9ae0-69d9-3ec1-8b5d249514f4.htm" />
-    <HelpKINode Title="DataSnapshotEntry.readMemory Method " Url="html/6e939966-58d6-aa58-ee8b-eb07c296cd0f.htm" />
-    <HelpKINode Title="SnapshotEntry.readMemory Method " Url="html/f8b1c1ad-fa82-3d8a-7097-51d30d9164d3.htm" />
   </HelpKINode>
   <HelpKINode Title="ReadonlyCallStack class">
     <HelpKINode Title="ReadonlyCallStack Class" Url="html/b2a6c5e2-b496-b3aa-bed2-5d8651d32085.htm" />
@@ -5338,28 +5807,40 @@
   </HelpKINode>
   <HelpKINode Title="ReadSnapshotEntryBase.Aliases method" Url="html/c815d4e4-3149-5485-47ea-686974d35aee.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.aliases method" Url="html/2007cd9d-2c4c-c27f-0272-c8d2594bd078.htm" />
-  <HelpKINode Title="ReadSnapshotEntryBase.getVariableIdentifier method" Url="html/2b046c70-fa27-4045-3a6a-b9cd9b8500bd.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.GetVariableIdentifier method" Url="html/661a8b33-7fec-e02a-61df-deb377f2078f.htm" />
-  <HelpKINode Title="ReadSnapshotEntryBase.isDefined method" Url="html/70518735-af91-3614-cd04-0e8844f43e0d.htm" />
+  <HelpKINode Title="ReadSnapshotEntryBase.getVariableIdentifier method" Url="html/2b046c70-fa27-4045-3a6a-b9cd9b8500bd.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.IsDefined method" Url="html/6af5cfbf-83a7-a770-4fc3-f4d112944bfb.htm" />
+  <HelpKINode Title="ReadSnapshotEntryBase.isDefined method" Url="html/70518735-af91-3614-cd04-0e8844f43e0d.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.iterateFields method" Url="html/906cbd99-1ca9-dde4-25a5-b03336e9365a.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.IterateFields method" Url="html/b9bdc211-1e3c-7745-bdad-e07519d9c6d5.htm" />
-  <HelpKINode Title="ReadSnapshotEntryBase.IterateIndexes method" Url="html/63ad0326-dbb4-18c9-c956-b2029a799ad5.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.iterateIndexes method" Url="html/41f60c60-74d8-b688-f5cf-d0a33c895032.htm" />
+  <HelpKINode Title="ReadSnapshotEntryBase.IterateIndexes method" Url="html/63ad0326-dbb4-18c9-c956-b2029a799ad5.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.ReadField method" Url="html/8e8497b6-b41d-472d-59af-ab2fadba3d2b.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.readField method" Url="html/01b91f25-5759-bbb7-732f-d7272853442f.htm" />
-  <HelpKINode Title="ReadSnapshotEntryBase.readIndex method" Url="html/128b8fa1-ad1a-558a-0b2c-ec9f775f494e.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.ReadIndex method" Url="html/3f4a20c2-0ff5-01c5-c985-5cf5a9cd2440.htm" />
-  <HelpKINode Title="ReadSnapshotEntryBase.ReadMemory method" Url="html/2d306a7d-2649-89b9-8554-15644a40ae08.htm" />
+  <HelpKINode Title="ReadSnapshotEntryBase.readIndex method" Url="html/128b8fa1-ad1a-558a-0b2c-ec9f775f494e.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.readMemory method" Url="html/47d25e8f-9ae0-69d9-3ec1-8b5d249514f4.htm" />
+  <HelpKINode Title="ReadSnapshotEntryBase.ReadMemory method" Url="html/2d306a7d-2649-89b9-8554-15644a40ae08.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.ReadSnapshotEntryBase constructor" Url="html/c2b1ddd4-72fd-aea0-9233-c1e0736f1e3c.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.ResolveMethod method" Url="html/2b2d8270-d145-ce33-8158-6bd9499443a9.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.resolveMethod method" Url="html/a8676d54-34fc-0b92-aca2-dfe0fbd21935.htm" />
-  <HelpKINode Title="ReadSnapshotEntryBase.ResolveType method" Url="html/cbca5579-e69c-2ccc-c801-b46cc57e4c57.htm" />
   <HelpKINode Title="ReadSnapshotEntryBase.resolveType method" Url="html/664b1d33-1384-1e68-444a-3e6f45d6981e.htm" />
+  <HelpKINode Title="ReadSnapshotEntryBase.ResolveType method" Url="html/cbca5579-e69c-2ccc-c801-b46cc57e4c57.htm" />
   <HelpKINode Title="ReadStringIndex method" Url="html/a5327c8b-a449-507a-61eb-42db42b59d18.htm" />
   <HelpKINode Title="ReadValueField method" Url="html/68be223f-6ad9-ad94-e742-20177203bc35.htm" />
   <HelpKINode Title="ReadValueIndex method" Url="html/93d4c840-f6b4-4859-eef4-9d25e0d6352c.htm" />
+  <HelpKINode Title="ReadValues method">
+    <HelpKINode Title="AnyStringValueLocation.ReadValues Method " Url="html/fed11a01-d92c-722b-1634-9d04b1978fbb.htm" />
+    <HelpKINode Title="ArrayAnyValueLocation.ReadValues Method " Url="html/df139069-8d2d-0161-69c8-d3ff5830826a.htm" />
+    <HelpKINode Title="ArrayStringValueLocation.ReadValues Method " Url="html/93d8d3f0-cb29-115e-0b9c-bafcf4a91bc0.htm" />
+    <HelpKINode Title="ArrayUndefinedValueLocation.ReadValues Method " Url="html/0bdea991-2409-0cc8-a27a-0e3012e92620.htm" />
+    <HelpKINode Title="ArrayValueLocation.ReadValues Method " Url="html/ff489e73-dded-b9ca-34df-c74702f5e618.htm" />
+    <HelpKINode Title="InfoValueLocation.ReadValues Method " Url="html/32be0eb1-dbae-8c12-1613-4dc9041c0b73.htm" />
+    <HelpKINode Title="ObjectAnyValueLocation.ReadValues Method " Url="html/d8117697-affb-4bcd-876d-17ad7e79c573.htm" />
+    <HelpKINode Title="ObjectUndefinedValueLocation.ReadValues Method " Url="html/a362b2bb-a4d9-b1b9-e126-67662eaaac9b.htm" />
+    <HelpKINode Title="ObjectValueLocation.ReadValues Method " Url="html/5a5cd58f-7248-e155-299f-41c588040498.htm" />
+    <HelpKINode Title="ValueLocation.ReadValues Method " Url="html/077118fc-05c8-81de-03ca-0c6e6f32859f.htm" />
+  </HelpKINode>
   <HelpKINode Title="ReadVariable method">
     <HelpKINode Title="FlowInputSet.ReadVariable Method " Url="html/f28113ce-6913-8401-d93a-3c1337eb789c.htm" />
     <HelpKINode Title="ISnapshotReadonly.ReadVariable Method " Url="html/2945ca72-149d-a4aa-aab0-a3333cee9ccf.htm" />
@@ -5375,8 +5856,8 @@
     <HelpKINode Title="methods" Url="html/c0de2189-274c-23bd-d773-6b7afcefbf4d.htm" />
   </HelpKINode>
   <HelpKINode Title="ReadWriteSnapshotEntryBase.ReadWriteSnapshotEntryBase constructor" Url="html/5787e324-6631-e944-63cb-722755863ad3.htm" />
-  <HelpKINode Title="ReadWriteSnapshotEntryBase.SetAliases method" Url="html/5f8d1617-9d3d-fa75-f21f-0fc33924e278.htm" />
   <HelpKINode Title="ReadWriteSnapshotEntryBase.setAliases method" Url="html/f19a617d-c309-157f-ee8c-0d793b2de567.htm" />
+  <HelpKINode Title="ReadWriteSnapshotEntryBase.SetAliases method" Url="html/5f8d1617-9d3d-fa75-f21f-0fc33924e278.htm" />
   <HelpKINode Title="ReadWriteSnapshotEntryBase.writeMemory method" Url="html/4a82b100-d136-3026-ca38-9a46e5d51546.htm" />
   <HelpKINode Title="ReadWriteSnapshotEntryBase.WriteMemory method" Url="html/18c9d073-f028-ee9c-7527-29d27c68cf39.htm" />
   <HelpKINode Title="ReadWriteSnapshotEntryBase.WriteMemoryWithoutCopy method" Url="html/62fbfa55-a201-08a8-b436-9be4e040fb57.htm" />
@@ -5395,9 +5876,32 @@
   <HelpKINode Title="RefAssignPoint.LOperand field" Url="html/e607a07e-e4a9-5d01-586e-ab05d9901e9e.htm" />
   <HelpKINode Title="RefAssignPoint.Partial property" Url="html/eca39a4b-7ecf-b923-5749-f0d90f6d44cb.htm" />
   <HelpKINode Title="RefAssignPoint.ROperand field" Url="html/a96e46a9-a7a8-86cb-485d-5bc16c26efd1.htm" />
+  <HelpKINode Title="ReferenceCollector class">
+    <HelpKINode Title="ReferenceCollector Class" Url="html/3e153b99-f065-56d3-cfd7-8d9217260397.htm" />
+    <HelpKINode Title="ReferenceCollector Members" Url="html/5e37aa2a-07fa-730b-4f3f-15bd55a571be.htm" />
+    <HelpKINode Title="about ReferenceCollector class" Url="html/3e153b99-f065-56d3-cfd7-8d9217260397.htm" />
+    <HelpKINode Title="all members" Url="html/5e37aa2a-07fa-730b-4f3f-15bd55a571be.htm" />
+    <HelpKINode Title="constructor" Url="html/ecc5cab5-9168-90c7-944a-8a85f1274050.htm" />
+    <HelpKINode Title="methods" Url="html/c40e657f-3976-dfa3-08d3-42ece43cfda2.htm" />
+    <HelpKINode Title="properties" Url="html/58386177-a03e-a142-f03e-eeb011a45054.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ReferenceCollector.AddMustAlias method" Url="html/10b6acf9-dcde-d2a1-03cb-b1511178df1b.htm" />
+  <HelpKINode Title="ReferenceCollector.CollectMay method" Url="html/890b0b2c-e83d-db3d-f3fc-800aa5060979.htm" />
+  <HelpKINode Title="ReferenceCollector.CollectMust method" Url="html/7bb224cf-60a3-dec2-bed3-2736431f5744.htm" />
+  <HelpKINode Title="ReferenceCollector.CopyMayReferencesTo method" Url="html/d28a93e1-cc27-0ec9-089c-4a641db1080d.htm" />
+  <HelpKINode Title="ReferenceCollector.CopyMustReferencesTo method" Url="html/de410039-0226-6cbd-cfbc-a6ec8b2e50dc.htm" />
+  <HelpKINode Title="ReferenceCollector.HasAliases property" Url="html/def27c0e-1790-6897-2cbc-e8e200d21e14.htm" />
+  <HelpKINode Title="ReferenceCollector.HasMustAliases property" Url="html/70784695-5983-b3bd-981d-17410190d882.htm" />
+  <HelpKINode Title="ReferenceCollector.InvalidateMust method" Url="html/2b2ba6c5-4f6e-7671-ac1d-68ba066039e7.htm" />
+  <HelpKINode Title="ReferenceCollector.ReferenceCollector constructor" Url="html/ecc5cab5-9168-90c7-944a-8a85f1274050.htm" />
   <HelpKINode Title="References enumeration member" Url="html/a00cca5c-4294-e2d8-4608-8b244e8781ea.htm" />
-  <HelpKINode Title="Remove method" Url="html/bef13245-b9e6-15de-3903-a2297398d393.htm" />
+  <HelpKINode Title="Remove method">
+    <HelpKINode Title="IndexSet(T).Remove Method " Url="html/4b3bc309-b10c-daa9-0699-461fcfaaee19.htm" />
+    <HelpKINode Title="ObjectValueContainerBuilder.Remove Method " Url="html/bef13245-b9e6-15de-3903-a2297398d393.htm" />
+  </HelpKINode>
   <HelpKINode Title="RemoveExtension method" Url="html/83469781-620c-0a87-7f31-71b82c9c6a5e.htm" />
+  <HelpKINode Title="RemoveMayAlias method" Url="html/e4097308-ee86-39e2-bd00-ba44b780441e.htm" />
+  <HelpKINode Title="RemoveMustAlias method" Url="html/c979a1eb-9fef-5c8b-ace7-5103a3b6f604.htm" />
   <HelpKINode Title="RemoveUndefined method" Url="html/ed953d38-983c-c08b-4398-0160e2aef3d5.htm" />
   <HelpKINode Title="REPORT method" Url="html/3f53c338-bad8-3804-ab4a-3ad8e814a181.htm" />
   <HelpKINode Title="ReportingFunctions field">
@@ -5419,15 +5923,15 @@
     <HelpKINode Title="ExpressionEvaluator.ResolveField Method " Url="html/ba82d63b-d4ce-15a8-8268-f986d25b8a0a.htm" />
     <HelpKINode Title="ExpressionEvaluatorBase.ResolveField Method " Url="html/5a6fc419-52f1-5a82-c9e0-74031124c359.htm" />
   </HelpKINode>
-  <HelpKINode Title="ResolveFunction method">
-    <HelpKINode Title="FlowInputSet.ResolveFunction Method " Url="html/a1f37947-e6b0-1c6b-2451-eee091d734ae.htm" />
-    <HelpKINode Title="ISnapshotReadonly.ResolveFunction Method " Url="html/c5e628bb-14d0-c85d-2905-df2ad7fe76a2.htm" />
-    <HelpKINode Title="SnapshotBase.ResolveFunction Method " Url="html/b6481ab7-218c-8e89-f53e-eebfb592d840.htm" />
-  </HelpKINode>
   <HelpKINode Title="resolveFunction method">
+    <HelpKINode Title="Snapshot.resolveFunction Method " Url="html/c3bbdf09-68bf-a012-9a0b-b3f58786fc50.htm" />
     <HelpKINode Title="Snapshot.resolveFunction Method " Url="html/bd3fbbcc-8148-866f-f9db-2d791545e6c5.htm" />
     <HelpKINode Title="SnapshotBase.resolveFunction Method " Url="html/e67109d7-b888-ad66-182c-34e13a1289b6.htm" />
-    <HelpKINode Title="Snapshot.resolveFunction Method " Url="html/c3bbdf09-68bf-a012-9a0b-b3f58786fc50.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ResolveFunction method">
+    <HelpKINode Title="ISnapshotReadonly.ResolveFunction Method " Url="html/c5e628bb-14d0-c85d-2905-df2ad7fe76a2.htm" />
+    <HelpKINode Title="FlowInputSet.ResolveFunction Method " Url="html/a1f37947-e6b0-1c6b-2451-eee091d734ae.htm" />
+    <HelpKINode Title="SnapshotBase.ResolveFunction Method " Url="html/b6481ab7-218c-8e89-f53e-eebfb592d840.htm" />
   </HelpKINode>
   <HelpKINode Title="ResolveIndex method">
     <HelpKINode Title="ExpressionEvaluator.ResolveIndex Method " Url="html/0bf5ea66-1119-b619-f412-bd83105e131f.htm" />
@@ -5441,13 +5945,14 @@
     <HelpKINode Title="ExpressionEvaluator.ResolveIndirectStaticField Method " Url="html/e2c664ed-5ae6-3502-06fd-19de19dec522.htm" />
     <HelpKINode Title="ExpressionEvaluatorBase.ResolveIndirectStaticField Method " Url="html/a4ca6ded-c51c-8c09-8f87-f9f21e2583e1.htm" />
   </HelpKINode>
-  <HelpKINode Title="ResolveMethod method" Url="html/2b2d8270-d145-ce33-8158-6bd9499443a9.htm" />
   <HelpKINode Title="resolveMethod method">
-    <HelpKINode Title="DataSnapshotEntry.resolveMethod Method " Url="html/b7b27bc3-7cf9-1d77-2c43-b86d27ebee23.htm" />
-    <HelpKINode Title="ReadSnapshotEntryBase.resolveMethod Method " Url="html/a8676d54-34fc-0b92-aca2-dfe0fbd21935.htm" />
     <HelpKINode Title="SnapshotEntry.resolveMethod Method " Url="html/184ef5a6-69df-f6e7-16de-7946f662752b.htm" />
+    <HelpKINode Title="ReadSnapshotEntryBase.resolveMethod Method " Url="html/a8676d54-34fc-0b92-aca2-dfe0fbd21935.htm" />
+    <HelpKINode Title="DataSnapshotEntry.resolveMethod Method " Url="html/b7b27bc3-7cf9-1d77-2c43-b86d27ebee23.htm" />
   </HelpKINode>
+  <HelpKINode Title="ResolveMethod method" Url="html/2b2d8270-d145-ce33-8158-6bd9499443a9.htm" />
   <HelpKINode Title="ResolveMethods method" Url="html/99d1b0be-7372-7f03-3fc9-32c562440843.htm" />
+  <HelpKINode Title="ResolveObjectsTypes method" Url="html/23dfacf3-7ce6-3e62-9e28-24cf0bc7fa51.htm" />
   <HelpKINode Title="ResolveReturnValue method">
     <HelpKINode Title="ExtensionSinkPoint.ResolveReturnValue Method " Url="html/bc368ac9-6e10-c74c-8782-20072787bec5.htm" />
     <HelpKINode Title="FunctionResolver.ResolveReturnValue Method " Url="html/35d49cbc-462f-99ed-849c-49cb462f745d.htm" />
@@ -5460,29 +5965,29 @@
     <HelpKINode Title="ExpressionEvaluatorBase.ResolveStaticField Method " Url="html/ee8697f7-fa34-43af-f8e6-0b809da15c84.htm" />
   </HelpKINode>
   <HelpKINode Title="resolveStaticMethod method">
-    <HelpKINode Title="Snapshot.resolveStaticMethod Method " Url="html/fc472132-5d39-44e9-70ce-bf00253a55c6.htm" />
     <HelpKINode Title="Snapshot.resolveStaticMethod Method " Url="html/ea2cb383-6837-bd7a-9494-fcd2819fe809.htm" />
+    <HelpKINode Title="Snapshot.resolveStaticMethod Method " Url="html/fc472132-5d39-44e9-70ce-bf00253a55c6.htm" />
     <HelpKINode Title="SnapshotBase.resolveStaticMethod Method " Url="html/cd79d036-cba0-417a-0c0e-5af5ff145e38.htm" />
   </HelpKINode>
   <HelpKINode Title="ResolveStaticMethod method">
-    <HelpKINode Title="ISnapshotReadonly.ResolveStaticMethod Method " Url="html/8d22ae0e-92fc-213b-7876-799dd140e848.htm" />
     <HelpKINode Title="FlowInputSet.ResolveStaticMethod Method " Url="html/605a3a72-4e0d-5b52-ad98-df3b743ccb85.htm" />
+    <HelpKINode Title="ISnapshotReadonly.ResolveStaticMethod Method " Url="html/8d22ae0e-92fc-213b-7876-799dd140e848.htm" />
     <HelpKINode Title="SnapshotBase.ResolveStaticMethod Method " Url="html/9ff05d2b-0b10-b5a9-de4c-08660311b8ee.htm" />
   </HelpKINode>
-  <HelpKINode Title="resolveType method">
-    <HelpKINode Title="ReadSnapshotEntryBase.resolveType Method " Url="html/664b1d33-1384-1e68-444a-3e6f45d6981e.htm" />
-    <HelpKINode Title="DataSnapshotEntry.resolveType Method " Url="html/7e1fc972-d97d-b01e-851b-c3f2788625e9.htm" />
-    <HelpKINode Title="Snapshot.resolveType Method " Url="html/b2def3ca-40b1-dd14-a22d-b4a5a8d2165a.htm" />
-    <HelpKINode Title="Snapshot.resolveType Method " Url="html/740adc44-a3ff-77e9-6108-dad2e4caa950.htm" />
-    <HelpKINode Title="SnapshotBase.resolveType Method " Url="html/d0364e91-29ac-d56d-d60f-c7f17ae7b867.htm" />
-    <HelpKINode Title="SnapshotEntry.resolveType Method " Url="html/c4b2534e-9d4e-af30-5596-f2f50bb6df94.htm" />
-  </HelpKINode>
   <HelpKINode Title="ResolveType method">
-    <HelpKINode Title="ISnapshotReadonly.ResolveType Method " Url="html/a3c11f5c-1828-115d-fc87-cfeedc0dda5e.htm" />
     <HelpKINode Title="FlowInputSet.ResolveType Method " Url="html/c484afc8-db3d-4e35-b228-eb5411734c5b.htm" />
-    <HelpKINode Title="ReadSnapshotEntryBase.ResolveType Method " Url="html/cbca5579-e69c-2ccc-c801-b46cc57e4c57.htm" />
     <HelpKINode Title="SnapshotBase.ResolveType Method " Url="html/96f8df95-6fef-09cc-3f8c-7a90cb73d2f0.htm" />
+    <HelpKINode Title="ReadSnapshotEntryBase.ResolveType Method " Url="html/cbca5579-e69c-2ccc-c801-b46cc57e4c57.htm" />
+    <HelpKINode Title="ISnapshotReadonly.ResolveType Method " Url="html/a3c11f5c-1828-115d-fc87-cfeedc0dda5e.htm" />
     <HelpKINode Title="FunctionResolver.ResolveType Method " Url="html/37f081ae-081e-ba9f-aa25-41dc66daf3ff.htm" />
+  </HelpKINode>
+  <HelpKINode Title="resolveType method">
+    <HelpKINode Title="DataSnapshotEntry.resolveType Method " Url="html/7e1fc972-d97d-b01e-851b-c3f2788625e9.htm" />
+    <HelpKINode Title="Snapshot.resolveType Method " Url="html/740adc44-a3ff-77e9-6108-dad2e4caa950.htm" />
+    <HelpKINode Title="ReadSnapshotEntryBase.resolveType Method " Url="html/664b1d33-1384-1e68-444a-3e6f45d6981e.htm" />
+    <HelpKINode Title="Snapshot.resolveType Method " Url="html/b2def3ca-40b1-dd14-a22d-b4a5a8d2165a.htm" />
+    <HelpKINode Title="SnapshotEntry.resolveType Method " Url="html/c4b2534e-9d4e-af30-5596-f2f50bb6df94.htm" />
+    <HelpKINode Title="SnapshotBase.resolveType Method " Url="html/d0364e91-29ac-d56d-d60f-c7f17ae7b867.htm" />
   </HelpKINode>
   <HelpKINode Title="ResolveVariable method">
     <HelpKINode Title="ExpressionEvaluator.ResolveVariable Method " Url="html/f50e7586-49d7-a96c-8939-be750d6eff51.htm" />
@@ -5500,8 +6005,8 @@
   <HelpKINode Title="ResourceValue.cloneValue method" Url="html/4ec711ef-cad7-20f0-ec73-f3fbf94a8823.htm" />
   <HelpKINode Title="ResourceValue.equals method" Url="html/e0c2908e-a4ed-2a5e-608f-c855279c0e15.htm" />
   <HelpKINode Title="ResourceValue.getHashCode method" Url="html/f75eed6e-a069-5452-1248-d82eec9911fc.htm" />
-  <HelpKINode Title="result field" Url="html/80f4b475-1677-0cf3-654a-317ee483c2b9.htm" />
   <HelpKINode Title="Result field" Url="html/f20a4f8d-1200-cdc9-f4ff-12cd93c64bf2.htm" />
+  <HelpKINode Title="result field" Url="html/80f4b475-1677-0cf3-654a-317ee483c2b9.htm" />
   <HelpKINode Title="ResultExpression field" Url="html/989d5e05-3497-6d43-4291-f583943bf306.htm" />
   <HelpKINode Title="Return method">
     <HelpKINode Title="FunctionResolver.Return Method " Url="html/95f727c1-7fe7-46f2-4696-382531d5aae6.htm" />
@@ -5580,8 +6085,8 @@
   <HelpKINode Title="Session enumeration member" Url="html/a00cca5c-4294-e2d8-4608-8b244e8781ea.htm" />
   <HelpKINode Title="setAliases method">
     <HelpKINode Title="DataSnapshotEntry.setAliases Method " Url="html/eef312aa-aa7e-9ada-6e31-386528e26c26.htm" />
-    <HelpKINode Title="ReadWriteSnapshotEntryBase.setAliases Method " Url="html/f19a617d-c309-157f-ee8c-0d793b2de567.htm" />
     <HelpKINode Title="SnapshotEntry.setAliases Method " Url="html/72484f24-9357-9cd0-729d-30bc04ecf5bb.htm" />
+    <HelpKINode Title="ReadWriteSnapshotEntryBase.setAliases Method " Url="html/f19a617d-c309-157f-ee8c-0d793b2de567.htm" />
   </HelpKINode>
   <HelpKINode Title="SetAliases method" Url="html/5f8d1617-9d3d-fa75-f21f-0fc33924e278.htm" />
   <HelpKINode Title="SetContext method">
@@ -5590,24 +6095,26 @@
   </HelpKINode>
   <HelpKINode Title="SetDefaultBranch method" Url="html/610654f7-174e-4e99-eb82-28cab53cd460.htm" />
   <HelpKINode Title="setIndentation method" Url="html/d017dbbe-fc8f-203a-3b6c-079ccdee15d3.htm" />
-  <HelpKINode Title="SetInfo method">
-    <HelpKINode Title="SnapshotBase.SetInfo Method " Url="html/68e53749-e03f-2e8f-dd94-8d30b6f5f836.htm" />
-    <HelpKINode Title="FlowOutputSet.SetInfo Method " Url="html/b457111c-3925-5467-4336-847fac4d7971.htm" />
-    <HelpKINode Title="ISnapshotReadWrite.SetInfo Method " Url="html/0013203d-ae86-3b5c-d5bc-14ceed36acbf.htm" />
-  </HelpKINode>
   <HelpKINode Title="setInfo method">
     <HelpKINode Title="Snapshot.setInfo Method " Url="html/389248d2-ebee-47c5-7086-11758a2419ca.htm" />
     <HelpKINode Title="Snapshot.setInfo Method " Url="html/2f35127c-a98e-fc8b-4324-a0548acf5e14.htm" />
     <HelpKINode Title="SnapshotBase.setInfo Method " Url="html/83558ba2-1829-5772-366e-491741090a36.htm" />
   </HelpKINode>
+  <HelpKINode Title="SetInfo method">
+    <HelpKINode Title="FlowOutputSet.SetInfo Method " Url="html/b457111c-3925-5467-4336-847fac4d7971.htm" />
+    <HelpKINode Title="ISnapshotReadWrite.SetInfo Method " Url="html/0013203d-ae86-3b5c-d5bc-14ceed36acbf.htm" />
+    <HelpKINode Title="SnapshotBase.SetInfo Method " Url="html/68e53749-e03f-2e8f-dd94-8d30b6f5f836.htm" />
+  </HelpKINode>
   <HelpKINode Title="SetInfo(Of DataKey) method" Url="html/09d52541-ced3-3c1b-ffb4-38af4a29a31f.htm" />
   <HelpKINode Title="SetInfo&lt;DataKey&gt; method" Url="html/09d52541-ced3-3c1b-ffb4-38af4a29a31f.htm" />
   <HelpKINode Title="SetLeftOperand method" Url="html/ab0b49c3-0945-be5a-93b1-3348913caf1d.htm" />
-  <HelpKINode Title="setMode method" Url="html/22434786-015a-7470-ce45-576d65bfbe32.htm" />
   <HelpKINode Title="SetMode method" Url="html/af23649d-8ceb-1068-e907-8815f09ac109.htm" />
+  <HelpKINode Title="setMode method" Url="html/22434786-015a-7470-ce45-576d65bfbe32.htm" />
   <HelpKINode Title="SetReturn method" Url="html/66bc266b-1132-fb76-3b91-7792cd29e81b.htm" />
   <HelpKINode Title="setStorage method" Url="html/aa87a438-f23e-b2c4-020c-64361217702b.htm" />
+  <HelpKINode Title="SetTargetIndex method" Url="html/70b07a3a-1aa7-229c-3378-3eff1513db9a.htm" />
   <HelpKINode Title="SetThrowBranching method" Url="html/db6c73b9-7db7-24c5-8d85-fbf6e2d446d6.htm" />
+  <HelpKINode Title="SetUndefined method" Url="html/12200918-7c4f-ea59-8efd-99e7f1ba16c0.htm" />
   <HelpKINode Title="SetValueContent method" Url="html/889f4889-c02d-e682-1247-a7e96d535be1.htm" />
   <HelpKINode Title="SetWarning method">
     <HelpKINode Title="AnalysisWarningHandler.SetWarning Method " Url="html/f3c1e375-a85d-c3f3-298f-94bfc6a7915d.htm" />
@@ -5647,24 +6154,27 @@
   </HelpKINode>
   <HelpKINode Title="SimplifyLimit property" Url="html/a33314d1-0d4b-9d3b-085a-2b91f24e3d66.htm" />
   <HelpKINode Title="Snapshot class">
-    <HelpKINode Title="Snapshot Class" Url="html/8e87d8ba-b022-e2d2-0b87-fd6f9c55ad19.htm" />
     <HelpKINode Title="Snapshot Class" Url="html/79b8ce30-53ff-d868-b3b4-f1d596664154.htm" />
+    <HelpKINode Title="Snapshot Class" Url="html/8e87d8ba-b022-e2d2-0b87-fd6f9c55ad19.htm" />
     <HelpKINode Title="Snapshot Members" Url="html/4c415db0-f5a9-f42d-3f03-53c03916c4fe.htm" />
     <HelpKINode Title="Snapshot Members" Url="html/dda3399a-24da-e6d0-a687-d83d7bea3168.htm" />
-    <HelpKINode Title="about Snapshot class" Url="html/8e87d8ba-b022-e2d2-0b87-fd6f9c55ad19.htm" />
     <HelpKINode Title="about Snapshot class" Url="html/79b8ce30-53ff-d868-b3b4-f1d596664154.htm" />
+    <HelpKINode Title="about Snapshot class" Url="html/8e87d8ba-b022-e2d2-0b87-fd6f9c55ad19.htm" />
     <HelpKINode Title="all members" Url="html/4c415db0-f5a9-f42d-3f03-53c03916c4fe.htm" />
     <HelpKINode Title="all members" Url="html/dda3399a-24da-e6d0-a687-d83d7bea3168.htm" />
-    <HelpKINode Title="constructor" Url="html/18c634c1-b732-7775-8211-eb4afa698d88.htm" />
     <HelpKINode Title="constructor" Url="html/a047cc2c-0e6e-6879-afec-aae777f7cc40.htm" />
+    <HelpKINode Title="constructor" Url="html/18c634c1-b732-7775-8211-eb4afa698d88.htm" />
     <HelpKINode Title="fields" Url="html/616518bc-a7ee-a053-e5ca-6069d73b38d9.htm" />
     <HelpKINode Title="methods" Url="html/637efe48-f0b9-4bce-2957-16be1326de00.htm" />
     <HelpKINode Title="methods" Url="html/ad2928ba-8bba-ec30-a6b2-ddb55d6554a3.htm" />
-    <HelpKINode Title="properties" Url="html/67698a83-e1fc-cf87-95db-eaca145cd832.htm" />
     <HelpKINode Title="properties" Url="html/09696d6f-dc90-9d61-64e2-a549d70e94c7.htm" />
+    <HelpKINode Title="properties" Url="html/67698a83-e1fc-cf87-95db-eaca145cd832.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot field" Url="html/f058d38b-fbfc-93c0-549b-79fa83ce23e5.htm" />
-  <HelpKINode Title="Snapshot property" Url="html/4f723ab4-844f-beff-1271-e8e3aaee0369.htm" />
+  <HelpKINode Title="Snapshot property">
+    <HelpKINode Title="CollectComposedValuesVisitor.Snapshot Property " Url="html/e1a768cf-8f9e-7104-8a81-0f0d79b8cba0.htm" />
+    <HelpKINode Title="PartialExpressionEvaluator.Snapshot Property " Url="html/4f723ab4-844f-beff-1271-e8e3aaee0369.htm" />
+  </HelpKINode>
   <HelpKINode Title="Snapshot.AddAlias method" Url="html/b4d1fa87-be95-f1fe-780e-811990fc9ffc.htm" />
   <HelpKINode Title="Snapshot.AddAliases method" Url="html/1d3afd5e-06fd-5758-9cfc-0a537661796f.htm" />
   <HelpKINode Title="Snapshot.commitTransaction method">
@@ -5672,8 +6182,8 @@
     <HelpKINode Title="Snapshot.commitTransaction Method " Url="html/f5994eaf-c540-4d88-afb7-88da7085291c.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.createSnapshotEntry method">
-    <HelpKINode Title="Snapshot.createSnapshotEntry Method " Url="html/f9ce2dca-313c-17c2-1afe-0efc8c34cdc9.htm" />
     <HelpKINode Title="Snapshot.createSnapshotEntry Method " Url="html/db9c7acf-4503-212c-e7e8-639bdc26e942.htm" />
+    <HelpKINode Title="Snapshot.createSnapshotEntry Method " Url="html/f9ce2dca-313c-17c2-1afe-0efc8c34cdc9.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.CurrentMode property" Url="html/244f4973-8d48-3a6f-8f70-7ad0d8b008ca.htm" />
   <HelpKINode Title="Snapshot.declareGlobal method">
@@ -5688,8 +6198,8 @@
     <HelpKINode Title="Snapshot.extend Method " Url="html/2d84ac2a-2f9d-f76a-d422-78959e79e4c0.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.extendAsCall method">
-    <HelpKINode Title="Snapshot.extendAsCall Method " Url="html/75b6d916-7ea8-d9f6-6ae9-1891ae964973.htm" />
     <HelpKINode Title="Snapshot.extendAsCall Method " Url="html/106e1012-39f8-7d26-69f5-895bcc5253b8.htm" />
+    <HelpKINode Title="Snapshot.extendAsCall Method " Url="html/75b6d916-7ea8-d9f6-6ae9-1891ae964973.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.fetchFromGlobal method">
     <HelpKINode Title="Snapshot.fetchFromGlobal Method " Url="html/75bf42b1-7203-59f6-30f8-8d89ecd405e5.htm" />
@@ -5700,16 +6210,16 @@
     <HelpKINode Title="Snapshot.getControlVariable Method " Url="html/ba8894f5-22c7-0c0c-fd8b-d88708a05088.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.getGlobalVariables method">
-    <HelpKINode Title="Snapshot.getGlobalVariables Method " Url="html/7f3a286b-3f22-cf5c-7434-090f9467d01b.htm" />
     <HelpKINode Title="Snapshot.getGlobalVariables Method " Url="html/b6a9fe0f-b523-2b66-cdb0-5e7f38d77d89.htm" />
+    <HelpKINode Title="Snapshot.getGlobalVariables Method " Url="html/7f3a286b-3f22-cf5c-7434-090f9467d01b.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.getLocalControlVariable method">
     <HelpKINode Title="Snapshot.getLocalControlVariable Method " Url="html/554d4049-d1dc-dc75-074f-0ff2a6019e8d.htm" />
     <HelpKINode Title="Snapshot.getLocalControlVariable Method " Url="html/a0d1a9dd-909c-b9a9-7bc7-e329065ad86d.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.GetRepresentation method">
-    <HelpKINode Title="Snapshot.GetRepresentation Method " Url="html/bbc0314c-06ea-a0fd-e305-0d61d527371a.htm" />
     <HelpKINode Title="Snapshot.GetRepresentation Method " Url="html/3cfb2d34-b400-76be-db6a-8ca68b1829c0.htm" />
+    <HelpKINode Title="Snapshot.GetRepresentation Method " Url="html/bbc0314c-06ea-a0fd-e305-0d61d527371a.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.getSnapshotIdentification method" Url="html/bf3c1bd5-aac1-6680-4053-ea007ce993a5.htm" />
   <HelpKINode Title="Snapshot.getVariable method">
@@ -5718,8 +6228,8 @@
   </HelpKINode>
   <HelpKINode Title="Snapshot.GLOBAL_CALL_LEVEL field" Url="html/4a9b0de8-214d-e42c-50f1-7ec89d1b62c8.htm" />
   <HelpKINode Title="Snapshot.initializeArray method">
-    <HelpKINode Title="Snapshot.initializeArray Method " Url="html/0d62b7eb-7a52-b473-24e1-2257ea1bc19f.htm" />
     <HelpKINode Title="Snapshot.initializeArray Method " Url="html/dc9489e1-d053-5003-15be-1e5693cfb989.htm" />
+    <HelpKINode Title="Snapshot.initializeArray Method " Url="html/0d62b7eb-7a52-b473-24e1-2257ea1bc19f.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.initializeObject method">
     <HelpKINode Title="Snapshot.initializeObject Method " Url="html/d2c7b087-0fcc-feda-40f6-533ec96b41ca.htm" />
@@ -5729,14 +6239,14 @@
   <HelpKINode Title="Snapshot.iterateObject method" Url="html/d9891f3e-647d-8d60-34ea-4765a631bdd5.htm" />
   <HelpKINode Title="Snapshot.MaySetAliases method" Url="html/bb6aacd0-8c7b-dbee-587a-ef18cb197f09.htm" />
   <HelpKINode Title="Snapshot.mergeWithCallLevel method">
-    <HelpKINode Title="Snapshot.mergeWithCallLevel Method " Url="html/d34a0ef5-e082-e2da-0d51-6646b48cdd80.htm" />
     <HelpKINode Title="Snapshot.mergeWithCallLevel Method " Url="html/52cb873e-21f8-cf57-6991-b78353dd3d70.htm" />
+    <HelpKINode Title="Snapshot.mergeWithCallLevel Method " Url="html/d34a0ef5-e082-e2da-0d51-6646b48cdd80.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.MustSetAliases method" Url="html/2f0dddea-6bae-989c-b2be-77c4105068b2.htm" />
   <HelpKINode Title="Snapshot.NumMemoryLocations method" Url="html/d4bc66a1-789c-9440-3986-87d02bd38384.htm" />
   <HelpKINode Title="Snapshot.objectType method">
-    <HelpKINode Title="Snapshot.objectType Method " Url="html/3fb8b37d-9027-ce49-87ff-d2fbebf60ba3.htm" />
     <HelpKINode Title="Snapshot.objectType Method " Url="html/249f21ab-c872-bfd8-d96a-4b89ae2e1181.htm" />
+    <HelpKINode Title="Snapshot.objectType Method " Url="html/3fb8b37d-9027-ce49-87ff-d2fbebf60ba3.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.readInfo method">
     <HelpKINode Title="Snapshot.readInfo Method " Url="html/6dbef730-c384-7f9b-196e-7c8a41bb4a03.htm" />
@@ -5744,28 +6254,28 @@
   </HelpKINode>
   <HelpKINode Title="Snapshot.Representation property" Url="html/96c3fdb0-1a0d-03ca-6c06-2d44099f9f82.htm" />
   <HelpKINode Title="Snapshot.resolveFunction method">
-    <HelpKINode Title="Snapshot.resolveFunction Method " Url="html/c3bbdf09-68bf-a012-9a0b-b3f58786fc50.htm" />
     <HelpKINode Title="Snapshot.resolveFunction Method " Url="html/bd3fbbcc-8148-866f-f9db-2d791545e6c5.htm" />
+    <HelpKINode Title="Snapshot.resolveFunction Method " Url="html/c3bbdf09-68bf-a012-9a0b-b3f58786fc50.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.resolveStaticMethod method">
     <HelpKINode Title="Snapshot.resolveStaticMethod Method " Url="html/fc472132-5d39-44e9-70ce-bf00253a55c6.htm" />
     <HelpKINode Title="Snapshot.resolveStaticMethod Method " Url="html/ea2cb383-6837-bd7a-9494-fcd2819fe809.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.resolveType method">
-    <HelpKINode Title="Snapshot.resolveType Method " Url="html/b2def3ca-40b1-dd14-a22d-b4a5a8d2165a.htm" />
     <HelpKINode Title="Snapshot.resolveType Method " Url="html/740adc44-a3ff-77e9-6108-dad2e4caa950.htm" />
+    <HelpKINode Title="Snapshot.resolveType Method " Url="html/b2def3ca-40b1-dd14-a22d-b4a5a8d2165a.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.setInfo method">
-    <HelpKINode Title="Snapshot.setInfo Method " Url="html/2f35127c-a98e-fc8b-4324-a0548acf5e14.htm" />
     <HelpKINode Title="Snapshot.setInfo Method " Url="html/389248d2-ebee-47c5-7086-11758a2419ca.htm" />
+    <HelpKINode Title="Snapshot.setInfo Method " Url="html/2f35127c-a98e-fc8b-4324-a0548acf5e14.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.Snapshot constructor">
     <HelpKINode Title="Snapshot Constructor " Url="html/18c634c1-b732-7775-8211-eb4afa698d88.htm" />
     <HelpKINode Title="Snapshot Constructor " Url="html/a047cc2c-0e6e-6879-afec-aae777f7cc40.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.startTransaction method">
-    <HelpKINode Title="Snapshot.startTransaction Method " Url="html/49a1ae58-3607-8533-4a0b-f4a5d2c12b25.htm" />
     <HelpKINode Title="Snapshot.startTransaction Method " Url="html/490c4837-8b0e-0978-e13a-d86b417b4049.htm" />
+    <HelpKINode Title="Snapshot.startTransaction Method " Url="html/49a1ae58-3607-8533-4a0b-f4a5d2c12b25.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.THIS_VARIABLE_IDENTIFIER field" Url="html/31f2c17f-a874-8be7-347e-b4da814cff2c.htm" />
   <HelpKINode Title="Snapshot.ToString method">
@@ -5773,8 +6283,8 @@
     <HelpKINode Title="Snapshot.ToString Method " Url="html/d080fff0-339c-fa15-c2e4-eb66e0d838a1.htm" />
   </HelpKINode>
   <HelpKINode Title="Snapshot.widenAndCommitTransaction method">
-    <HelpKINode Title="Snapshot.widenAndCommitTransaction Method " Url="html/10baa440-8ba5-c552-2727-f3576bd79a2d.htm" />
     <HelpKINode Title="Snapshot.widenAndCommitTransaction Method " Url="html/00ccefd7-8e95-a621-7bff-b911d711ac36.htm" />
+    <HelpKINode Title="Snapshot.widenAndCommitTransaction Method " Url="html/10baa440-8ba5-c552-2727-f3576bd79a2d.htm" />
   </HelpKINode>
   <HelpKINode Title="SnapshotBase class">
     <HelpKINode Title="SnapshotBase Class" Url="html/1b036613-2178-1349-6ba8-24c33c02d7d0.htm" />
@@ -5816,22 +6326,22 @@
   <HelpKINode Title="SnapshotBase.CreateString method" Url="html/2d9fdcb8-ec32-7acd-be55-aa82095ee5ef.htm" />
   <HelpKINode Title="SnapshotBase.CreateType method" Url="html/0cd9aca5-700a-85ca-88a5-bd24d280a72a.htm" />
   <HelpKINode Title="SnapshotBase.CurrentMode property" Url="html/2ab48ba9-66d2-4cad-e98d-7659ef16be36.htm" />
-  <HelpKINode Title="SnapshotBase.DeclareGlobal method" Url="html/d417ddda-58a2-6313-f1fe-782730505d1b.htm" />
   <HelpKINode Title="SnapshotBase.declareGlobal method" Url="html/8f0e144e-2796-8f89-d4bb-fe20d5d03aad.htm" />
+  <HelpKINode Title="SnapshotBase.DeclareGlobal method" Url="html/d417ddda-58a2-6313-f1fe-782730505d1b.htm" />
   <HelpKINode Title="SnapshotBase.Extend method" Url="html/059fb68f-df32-e81b-a30a-3f572174d134.htm" />
   <HelpKINode Title="SnapshotBase.extend method" Url="html/5902c8a1-1a96-8c00-ea6f-b67b5b41ae8f.htm" />
   <HelpKINode Title="SnapshotBase.extendAsCall method" Url="html/7d23e460-eed4-7cdd-999a-ad6fec155679.htm" />
   <HelpKINode Title="SnapshotBase.fetchFromGlobal method" Url="html/5101882c-bfba-c368-34fa-0d332006b645.htm" />
   <HelpKINode Title="SnapshotBase.FetchFromGlobal method" Url="html/23a4887a-6482-2ce4-3a7f-5ca9ff4bf44e.htm" />
   <HelpKINode Title="SnapshotBase.FetchFromGlobalAll method" Url="html/dbf06dbe-6f33-2977-90f8-5207d68ffe75.htm" />
-  <HelpKINode Title="SnapshotBase.GetControlVariable method" Url="html/6563063e-44ae-c2e5-bd16-17e8866ee3a3.htm" />
   <HelpKINode Title="SnapshotBase.getControlVariable method" Url="html/096a3408-e8c7-9ca9-6d50-461d01dc6144.htm" />
+  <HelpKINode Title="SnapshotBase.GetControlVariable method" Url="html/6563063e-44ae-c2e5-bd16-17e8866ee3a3.htm" />
   <HelpKINode Title="SnapshotBase.getGlobalVariables method" Url="html/ee0e10a9-424b-d14a-f917-a3f642caaee8.htm" />
-  <HelpKINode Title="SnapshotBase.getLocalControlVariable method" Url="html/f1d8d08c-2b7e-9d86-cbd3-c757814a08e3.htm" />
   <HelpKINode Title="SnapshotBase.GetLocalControlVariable method" Url="html/9f330fc6-ee08-553c-7898-8ddaf0b03fd6.htm" />
+  <HelpKINode Title="SnapshotBase.getLocalControlVariable method" Url="html/f1d8d08c-2b7e-9d86-cbd3-c757814a08e3.htm" />
   <HelpKINode Title="SnapshotBase.GetStatistics method" Url="html/202a7d1f-503b-1abd-b6cc-71827360f198.htm" />
-  <HelpKINode Title="SnapshotBase.GetVariable method" Url="html/ff0a6c38-f1a0-d23d-8edf-7ce92cb91afc.htm" />
   <HelpKINode Title="SnapshotBase.getVariable method" Url="html/64bfdb30-0999-4b79-9599-e8d728424e7f.htm" />
+  <HelpKINode Title="SnapshotBase.GetVariable method" Url="html/ff0a6c38-f1a0-d23d-8edf-7ce92cb91afc.htm" />
   <HelpKINode Title="SnapshotBase.HasChanged property" Url="html/a1205df9-293d-dc40-8934-5fc297a26a5b.htm" />
   <HelpKINode Title="SnapshotBase.InitAssistant method" Url="html/7b2049f4-c9bb-5efb-3b0b-df54bcc2d827.htm" />
   <HelpKINode Title="SnapshotBase.initializeArray method" Url="html/934e6b28-7b7e-a7f1-19fb-8353b9293505.htm" />
@@ -5856,21 +6366,21 @@
   <HelpKINode Title="SnapshotBase.ReportSimpleHashSearch method" Url="html/5aa95f85-f384-d00c-9e1b-e522b17ab34a.htm" />
   <HelpKINode Title="SnapshotBase.ResolveFunction method" Url="html/b6481ab7-218c-8e89-f53e-eebfb592d840.htm" />
   <HelpKINode Title="SnapshotBase.resolveFunction method" Url="html/e67109d7-b888-ad66-182c-34e13a1289b6.htm" />
-  <HelpKINode Title="SnapshotBase.resolveStaticMethod method" Url="html/cd79d036-cba0-417a-0c0e-5af5ff145e38.htm" />
   <HelpKINode Title="SnapshotBase.ResolveStaticMethod method" Url="html/9ff05d2b-0b10-b5a9-de4c-08660311b8ee.htm" />
+  <HelpKINode Title="SnapshotBase.resolveStaticMethod method" Url="html/cd79d036-cba0-417a-0c0e-5af5ff145e38.htm" />
   <HelpKINode Title="SnapshotBase.ResolveType method" Url="html/96f8df95-6fef-09cc-3f8c-7a90cb73d2f0.htm" />
   <HelpKINode Title="SnapshotBase.resolveType method" Url="html/d0364e91-29ac-d56d-d60f-c7f17ae7b867.htm" />
   <HelpKINode Title="SnapshotBase.ReturnValue field" Url="html/adfc3222-84f3-103f-1ded-1861d385bfe3.htm" />
-  <HelpKINode Title="SnapshotBase.setInfo method" Url="html/83558ba2-1829-5772-366e-491741090a36.htm" />
   <HelpKINode Title="SnapshotBase.SetInfo method" Url="html/68e53749-e03f-2e8f-dd94-8d30b6f5f836.htm" />
-  <HelpKINode Title="SnapshotBase.SetMode method" Url="html/af23649d-8ceb-1068-e907-8815f09ac109.htm" />
+  <HelpKINode Title="SnapshotBase.setInfo method" Url="html/83558ba2-1829-5772-366e-491741090a36.htm" />
   <HelpKINode Title="SnapshotBase.setMode method" Url="html/22434786-015a-7470-ce45-576d65bfbe32.htm" />
+  <HelpKINode Title="SnapshotBase.SetMode method" Url="html/af23649d-8ceb-1068-e907-8815f09ac109.htm" />
   <HelpKINode Title="SnapshotBase.SnapshotBase constructor" Url="html/8705c86d-eb6d-e363-d06a-932c8125419a.htm" />
   <HelpKINode Title="SnapshotBase.StartTransaction method" Url="html/21db4fbd-db3d-9c8b-7fa7-6cb02cd5638c.htm" />
   <HelpKINode Title="SnapshotBase.startTransaction method" Url="html/1a78fba0-720d-bc74-a5af-6299866973d3.htm" />
   <HelpKINode Title="SnapshotBase.UndefinedValue property" Url="html/19556541-ae6c-fe88-3cfd-309405e311f3.htm" />
-  <HelpKINode Title="SnapshotBase.widenAndCommitTransaction method" Url="html/32caf245-6fa7-48a6-a668-7b646716fb61.htm" />
   <HelpKINode Title="SnapshotBase.WidenAndCommitTransaction method" Url="html/74688c0e-96ef-4811-cbdf-3d0df65b0e57.htm" />
+  <HelpKINode Title="SnapshotBase.widenAndCommitTransaction method" Url="html/32caf245-6fa7-48a6-a668-7b646716fb61.htm" />
   <HelpKINode Title="SnapshotData class">
     <HelpKINode Title="SnapshotData Class" Url="html/f211536d-3411-c37b-7b15-46b971cccb5c.htm" />
     <HelpKINode Title="SnapshotData Members" Url="html/d6238e4a-bd00-56d6-97f1-0043aaffc418.htm" />
@@ -5901,8 +6411,8 @@
   <HelpKINode Title="SnapshotEntry.iterateIndexes method" Url="html/cc2ca318-0eac-fea7-6288-e64c114870b5.htm" />
   <HelpKINode Title="SnapshotEntry.readField method" Url="html/67cf929b-f9be-91f3-7a4b-fa7c2f5b5684.htm" />
   <HelpKINode Title="SnapshotEntry.readIndex method" Url="html/bb8debcc-0785-5f27-295a-d9876b719327.htm" />
-  <HelpKINode Title="SnapshotEntry.readMemory method" Url="html/f8b1c1ad-fa82-3d8a-7097-51d30d9164d3.htm" />
   <HelpKINode Title="SnapshotEntry.ReadMemory method" Url="html/8132b1be-5c0e-3795-7f25-38b93b34df79.htm" />
+  <HelpKINode Title="SnapshotEntry.readMemory method" Url="html/f8b1c1ad-fa82-3d8a-7097-51d30d9164d3.htm" />
   <HelpKINode Title="SnapshotEntry.resolveMethod method" Url="html/184ef5a6-69df-f6e7-16de-7946f662752b.htm" />
   <HelpKINode Title="SnapshotEntry.resolveType method" Url="html/c4b2534e-9d4e-af30-5596-f2f50bb6df94.htm" />
   <HelpKINode Title="SnapshotEntry.setAliases method" Url="html/72484f24-9357-9cd0-729d-30bc04ecf5bb.htm" />
@@ -5992,14 +6502,15 @@
   <HelpKINode Title="SpecialValue.getHashCode method" Url="html/10f8f3e2-8b2f-5a92-ed6b-f65d2160866d.htm" />
   <HelpKINode Title="SpecialValue.SpecialValue constructor" Url="html/2833b694-0d6c-470d-4917-1d2022235580.htm" />
   <HelpKINode Title="SQLDirty enumeration member" Url="html/2d9e1377-d175-0a3f-5630-f7435c06384a.htm" />
+  <HelpKINode Title="stack field" Url="html/483b62fa-0846-7695-660e-c898e26746f6.htm" />
   <HelpKINode Title="Start field">
     <HelpKINode Title="IntervalValue(T).Start Field" Url="html/d3b3f382-5f82-0bd9-185c-c57fd29c073e.htm" />
     <HelpKINode Title="ProgramPointGraph.Start Field" Url="html/d301c1b8-d990-e59b-dfe2-082104aecd25.htm" />
   </HelpKINode>
   <HelpKINode Title="start field" Url="html/b6a844c4-1022-e5bb-845a-fe79350ca67e.htm" />
   <HelpKINode Title="startTransaction method">
-    <HelpKINode Title="Snapshot.startTransaction Method " Url="html/49a1ae58-3607-8533-4a0b-f4a5d2c12b25.htm" />
     <HelpKINode Title="Snapshot.startTransaction Method " Url="html/490c4837-8b0e-0978-e13a-d86b417b4049.htm" />
+    <HelpKINode Title="Snapshot.startTransaction Method " Url="html/49a1ae58-3607-8533-4a0b-f4a5d2c12b25.htm" />
     <HelpKINode Title="SnapshotBase.startTransaction Method " Url="html/1a78fba0-720d-bc74-a5af-6299866973d3.htm" />
   </HelpKINode>
   <HelpKINode Title="StartTransaction method" Url="html/21db4fbd-db3d-9c8b-7fa7-6cb02cd5638c.htm" />
@@ -6283,8 +6794,8 @@
     <HelpKINode Title="PathSegment.ToString Method " Url="html/6115ea2b-50a4-132f-28cc-2ae49308cce5.htm" />
     <HelpKINode Title="ProgramPointBase.ToString Method " Url="html/8beba346-3b84-8698-b1cb-7d83af54c59b.htm" />
     <HelpKINode Title="ScalarValue(T).ToString Method " Url="html/229342a0-e356-10dc-ee85-620b254efd42.htm" />
-    <HelpKINode Title="Snapshot.ToString Method " Url="html/d080fff0-339c-fa15-c2e4-eb66e0d838a1.htm" />
     <HelpKINode Title="Snapshot.ToString Method " Url="html/cf4504ba-f8bc-c5f3-4cb9-335875ea3ca4.htm" />
+    <HelpKINode Title="Snapshot.ToString Method " Url="html/d080fff0-339c-fa15-c2e4-eb66e0d838a1.htm" />
     <HelpKINode Title="SnapshotEntry.ToString Method " Url="html/d207bab6-b6d3-c3eb-14cf-7596165f19f1.htm" />
     <HelpKINode Title="SnapshotStructure.ToString Method " Url="html/b18a3eaa-0f2a-f4b1-9db3-f9379d04479b.htm" />
     <HelpKINode Title="TemporaryIndex.ToString Method " Url="html/16e8d7ea-ebf2-0f2e-f16e-f0eaa26ca92c.htm" />
@@ -6342,6 +6853,7 @@
   <HelpKINode Title="TryConvertToIntegerInterval method" Url="html/8074dbd8-f0e4-4720-4e0f-a31e0c60ad31.htm" />
   <HelpKINode Title="TryConvertToNumber method" Url="html/50968f52-09eb-2bcf-b801-b52e2cdd49b7.htm" />
   <HelpKINode Title="TryGetClass method" Url="html/66fda0fa-a8bd-5d65-d6f9-c51d0bd0ff70.htm" />
+  <HelpKINode Title="TryGetValue method" Url="html/ea0a374b-9392-53a7-10e8-e0e7a443d1dc.htm" />
   <HelpKINode Title="TryIdentifyInteger method" Url="html/25a53e01-cf94-9b88-add9-de0a726a2ac4.htm" />
   <HelpKINode Title="TryScopeEnd method">
     <HelpKINode Title="FlowResolver.TryScopeEnd Method " Url="html/bc9ac369-9922-04b7-e9c5-ff1c1fad5d6d.htm" />
@@ -6535,9 +7047,12 @@
   </HelpKINode>
   <HelpKINode Title="Value field">
     <HelpKINode Title="ConstantInfo.Value Field" Url="html/90b27286-3351-25d9-580d-188d949d4b87.htm" />
+    <HelpKINode Title="InfoValueLocation.Value Field" Url="html/adaf6af8-e45b-05db-851c-334bd59d85e8.htm" />
     <HelpKINode Title="ScalarValue(T).Value Field" Url="html/b6b8d33f-f910-ba8c-6bc6-a5f1a5bb50fd.htm" />
   </HelpKINode>
   <HelpKINode Title="Value property">
+    <HelpKINode Title="AnyStringValueLocation.Value Property " Url="html/6b780984-07b9-d0d7-0346-10aa24d709ad.htm" />
+    <HelpKINode Title="ArrayStringValueLocation.Value Property " Url="html/7d9b88f4-bb66-5a25-c0bc-53dbcd28d785.htm" />
     <HelpKINode Title="LValuePoint.Value Property " Url="html/1493a5c2-8c73-648e-a5fa-0b7a8b775202.htm" />
     <HelpKINode Title="NewExPoint.Value Property " Url="html/e98f3470-6d02-38a6-b097-0a7d6a34dbf3.htm" />
     <HelpKINode Title="RCallPoint.Value Property " Url="html/a61b955f-88b4-cc22-cdc8-c7bc044d2224.htm" />
@@ -6547,8 +7062,8 @@
   <HelpKINode Title="Value.cloneValue method" Url="html/f0614520-ce86-cc01-41f5-9942e0ab2a3b.htm" />
   <HelpKINode Title="Value.Equals method" Url="html/1c65109c-f043-98b8-9837-d8dfb48892f4.htm" />
   <HelpKINode Title="Value.equals method" Url="html/1ca73e81-63b7-ce5a-e1c3-d5b0abc263d7.htm" />
-  <HelpKINode Title="Value.getHashCode method" Url="html/00f0659d-99ed-33b2-0157-b47e82d1266a.htm" />
   <HelpKINode Title="Value.GetHashCode method" Url="html/b61284db-a3e8-f211-0720-a0383c37ebcc.htm" />
+  <HelpKINode Title="Value.getHashCode method" Url="html/00f0659d-99ed-33b2-0157-b47e82d1266a.htm" />
   <HelpKINode Title="Value.GetInfo(Of DataKey) method" Url="html/9998f6bd-16be-c9db-877c-425e6213df41.htm" />
   <HelpKINode Title="Value.GetInfo&lt;DataKey&gt; method" Url="html/9998f6bd-16be-c9db-877c-425e6213df41.htm" />
   <HelpKINode Title="Value.getStorage method" Url="html/7db33a1e-d57b-d8b0-658d-83204f7a86e6.htm" />
@@ -6559,6 +7074,18 @@
   <HelpKINode Title="Value.UID field" Url="html/a5b56c99-4fbe-78c9-408c-d5a43158b9dc.htm" />
   <HelpKINode Title="ValueInfoReads enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
   <HelpKINode Title="ValueInfoSettings enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
+  <HelpKINode Title="ValueLocation class">
+    <HelpKINode Title="ValueLocation Class" Url="html/d8c0eb0f-8b5d-eca8-3885-2a7c6396f3e8.htm" />
+    <HelpKINode Title="ValueLocation Members" Url="html/de97d0d0-a76a-b221-4e5b-084d59fd8e90.htm" />
+    <HelpKINode Title="about ValueLocation class" Url="html/d8c0eb0f-8b5d-eca8-3885-2a7c6396f3e8.htm" />
+    <HelpKINode Title="all members" Url="html/de97d0d0-a76a-b221-4e5b-084d59fd8e90.htm" />
+    <HelpKINode Title="constructor" Url="html/c721bddc-41dd-7258-51ac-3c60cb69f059.htm" />
+    <HelpKINode Title="methods" Url="html/d25c57de-f495-3cd5-a68e-69149d772302.htm" />
+  </HelpKINode>
+  <HelpKINode Title="ValueLocation.Accept method" Url="html/2e0beac1-f619-83b2-f0aa-3895bb813ed4.htm" />
+  <HelpKINode Title="ValueLocation.ReadValues method" Url="html/077118fc-05c8-81de-03ca-0c6e6f32859f.htm" />
+  <HelpKINode Title="ValueLocation.ValueLocation constructor" Url="html/c721bddc-41dd-7258-51ac-3c60cb69f059.htm" />
+  <HelpKINode Title="ValueLocation.WriteValues method" Url="html/b97d7d64-0a5d-ca97-89bb-1bbfd0ea8ae0.htm" />
   <HelpKINode Title="ValuePoint class">
     <HelpKINode Title="ValuePoint Class" Url="html/00cb874d-46f5-f982-9ff3-3a0309b22763.htm" />
     <HelpKINode Title="ValuePoint Members" Url="html/9998f215-11c1-9299-6920-1e865445345d.htm" />
@@ -6573,6 +7100,7 @@
   <HelpKINode Title="ValuePoint.Value property" Url="html/340044ad-c172-2081-802e-09536bf02642.htm" />
   <HelpKINode Title="ValuePoint.ValuePoint constructor" Url="html/2e92623c-0363-f460-6032-692248bf1cca.htm" />
   <HelpKINode Title="ValueReads enumeration member" Url="html/31894925-c798-b0b0-97d6-1bfee7f27560.htm" />
+  <HelpKINode Title="Values field" Url="html/b62a9667-0ab7-afc7-1e74-d582b6aa04c7.htm" />
   <HelpKINode Title="Values property" Url="html/8c402208-608a-c251-746d-2dfbadcd705a.htm" />
   <HelpKINode Title="ValueTypeResolver class">
     <HelpKINode Title="ValueTypeResolver Class" Url="html/34837de0-c1a0-0406-1b17-fca8d978a12c.htm" />
@@ -6946,6 +7474,7 @@
     <HelpKINode Title="UnaryOperationEvaluator.VisitAnyStringValue Method " Url="html/d1c4a0b5-8202-f433-cb28-7e7834831b7f.htm" />
     <HelpKINode Title="WidenningVisitor.VisitAnyStringValue Method " Url="html/3b743aaa-50e5-eb2d-57a6-03e2a21d7241.htm" />
   </HelpKINode>
+  <HelpKINode Title="VisitAnyStringValueLocation method" Url="html/29d43f6d-549f-33e5-d3ef-499d1c7d4ccc.htm" />
   <HelpKINode Title="VisitAnyValue method">
     <HelpKINode Title="AbstractValueVisitor.VisitAnyValue Method " Url="html/f5061039-1c64-cb57-1d3a-131be312c1a1.htm" />
     <HelpKINode Title="ArrayIndexEvaluator.VisitAnyValue Method " Url="html/936ad42e-a2ec-ca65-9a9a-8f4acef8342c.htm" />
@@ -6972,7 +7501,11 @@
     <HelpKINode Title="UnaryOperationEvaluator.VisitAnyValue Method " Url="html/745f62d3-d121-5223-5a9d-f01178185ae5.htm" />
   </HelpKINode>
   <HelpKINode Title="VisitArray method" Url="html/6f2d600d-d2df-a88b-3b42-3fc9a87a28a2.htm" />
+  <HelpKINode Title="VisitArrayAnyValueLocation method" Url="html/76c4070a-f334-57ba-94ad-94862380a199.htm" />
   <HelpKINode Title="VisitArrayEx method" Url="html/baf34b55-3d6a-0445-3c0b-8a3885b9f0ef.htm" />
+  <HelpKINode Title="VisitArrayStringValueLocation method" Url="html/8e5474a6-ee33-0f40-332b-9ea63c7cc74c.htm" />
+  <HelpKINode Title="VisitArrayUndefinedValueLocation method" Url="html/26b50d6e-1586-fce1-77ba-225eac551e06.htm" />
+  <HelpKINode Title="VisitArrayValueLocation method" Url="html/98a16184-27f2-eaeb-5a56-ad52ea3058fa.htm" />
   <HelpKINode Title="VisitAssign method" Url="html/34682087-c956-a41e-108c-4dbf4d269047.htm" />
   <HelpKINode Title="VisitAssignConcat method" Url="html/12b1dc4f-b44c-49a7-d49a-3c0874aa96be.htm" />
   <HelpKINode Title="VisitAssignOperation method" Url="html/2c012e47-98eb-409d-c643-bea167317724.htm" />
@@ -6980,6 +7513,7 @@
     <HelpKINode Title="AbstractValueVisitor.VisitAssociativeArray Method " Url="html/498ac288-f5c1-c5f0-d28d-0b86cbb04b1c.htm" />
     <HelpKINode Title="BinaryOperationEvaluator.VisitAssociativeArray Method " Url="html/00e3d450-a541-f42d-04d0-f701826b5d54.htm" />
     <HelpKINode Title="BooleanConverter.VisitAssociativeArray Method " Url="html/94a84b43-b7ae-59c1-29b4-e26c5d0a1ce2.htm" />
+    <HelpKINode Title="CollectComposedValuesVisitor.VisitAssociativeArray Method " Url="html/3ef0efff-227f-0c39-d916-f0003a39291e.htm" />
     <HelpKINode Title="IValueVisitor.VisitAssociativeArray Method " Url="html/6ab10d2b-ce0b-df7b-29a3-e63fc9de4281.htm" />
     <HelpKINode Title="LeftAnyArrayOperandVisitor.VisitAssociativeArray Method " Url="html/706db645-9716-5d39-eec3-0f55ab42ef8a.htm" />
     <HelpKINode Title="LeftAnyBooleanOperandVisitor.VisitAssociativeArray Method " Url="html/23c133a8-bf3d-d051-9c04-aac7ff2211db.htm" />
@@ -7191,6 +7725,7 @@
     <HelpKINode Title="AbstractValueVisitor.VisitInfoValue Method " Url="html/9db28949-9ef1-7bad-d8d6-c32ecca0563d.htm" />
     <HelpKINode Title="IValueVisitor.VisitInfoValue Method " Url="html/3bcbd03e-84ef-7a29-6c46-8f3014c79116.htm" />
   </HelpKINode>
+  <HelpKINode Title="VisitInfoValueLocation method" Url="html/c1dac5f0-f15e-6489-f6aa-7c87c35b2b4f.htm" />
   <HelpKINode Title="VisitInstanceOf method" Url="html/8e2c2e25-bce6-3398-eef4-bc8bbbe6dab4.htm" />
   <HelpKINode Title="VisitIntegerValue method">
     <HelpKINode Title="AbstractValueVisitor.VisitIntegerValue Method " Url="html/31305667-709d-852a-f7dc-f23acdaa6bcd.htm" />
@@ -7320,10 +7855,13 @@
   </HelpKINode>
   <HelpKINode Title="VisitNew method" Url="html/701bd520-a45c-8a85-d488-588a79965ae1.htm" />
   <HelpKINode Title="VisitNullLiteral method" Url="html/4037c6b1-4ec7-6bce-8c8e-f18f3f582b75.htm" />
+  <HelpKINode Title="VisitObjectAnyValueLocation method" Url="html/8eb05b95-e943-a06b-a0d3-ea5a385c6054.htm" />
+  <HelpKINode Title="VisitObjectUndefinedValueLocation method" Url="html/99e76910-6847-9246-f2df-51480aae99c4.htm" />
   <HelpKINode Title="VisitObjectValue method">
     <HelpKINode Title="AbstractValueVisitor.VisitObjectValue Method " Url="html/c12d99e5-403c-88c4-6689-11b759a03435.htm" />
     <HelpKINode Title="BinaryOperationEvaluator.VisitObjectValue Method " Url="html/bd955b74-883a-2b48-2dab-e64734c2ca1b.htm" />
     <HelpKINode Title="BooleanConverter.VisitObjectValue Method " Url="html/d961e004-7529-9353-7fe3-8fc9844e4d4a.htm" />
+    <HelpKINode Title="CollectComposedValuesVisitor.VisitObjectValue Method " Url="html/cf69e7fc-0206-f2ee-e29f-8736ad232d7a.htm" />
     <HelpKINode Title="IValueVisitor.VisitObjectValue Method " Url="html/b6326b77-2a22-c81b-22d0-94dbed72e9d0.htm" />
     <HelpKINode Title="LeftAnyArrayOperandVisitor.VisitObjectValue Method " Url="html/03b9cdf2-da9b-2f37-00c1-b98b1072e6cd.htm" />
     <HelpKINode Title="LeftAnyBooleanOperandVisitor.VisitObjectValue Method " Url="html/6403ab58-85e4-2429-adbc-867b2a0ea709.htm" />
@@ -7350,6 +7888,7 @@
     <HelpKINode Title="StringConverter.VisitObjectValue Method " Url="html/5294ef7e-6b45-bb41-90e4-762f42e71d71.htm" />
     <HelpKINode Title="UnaryOperationEvaluator.VisitObjectValue Method " Url="html/a307c5d8-d2c7-df15-58d6-20e172f58b86.htm" />
   </HelpKINode>
+  <HelpKINode Title="VisitObjectValueLocation method" Url="html/6c1a7f6d-980d-34cb-b4cf-324803cd61ec.htm" />
   <HelpKINode Title="VisitPoint method" Url="html/0e8c48f1-74e2-ba62-4129-ac20863460f5.htm" />
   <HelpKINode Title="VisitRCall method" Url="html/5f75278a-2fc4-5a13-75e3-c06313b01eef.htm" />
   <HelpKINode Title="VisitRefAssign method" Url="html/a8790085-b2d3-dfbc-b0fc-ce53a101befc.htm" />
@@ -7476,6 +8015,7 @@
   <HelpKINode Title="VisitValue method">
     <HelpKINode Title="AbstractValueVisitor.VisitValue Method " Url="html/c7a2ea03-ebfd-9d64-bcce-97634e46e4e5.htm" />
     <HelpKINode Title="BooleanConverter.VisitValue Method " Url="html/78de816c-736a-6771-14f7-d5f7ff9425b4.htm" />
+    <HelpKINode Title="CollectComposedValuesVisitor.VisitValue Method " Url="html/c9c9962f-d892-f15a-4775-4599e6a381d8.htm" />
     <HelpKINode Title="IValueVisitor.VisitValue Method " Url="html/c9d585cd-d94b-66c1-460c-a3b5ecf03ea0.htm" />
     <HelpKINode Title="LeftAnyArrayOperandVisitor.VisitValue Method " Url="html/e5beaec6-a760-3ec6-a3bc-39e4029b26db.htm" />
     <HelpKINode Title="LeftAnyValueOperandVisitor.VisitValue Method " Url="html/ec038e46-e7a7-0d6e-5e4f-544a8599b017.htm" />
@@ -8403,6 +8943,30 @@
     <HelpKINode Title="AliasData Class" Url="html/34585f69-eff9-406d-d25d-ef6d59ec0d90.htm" />
     <HelpKINode Title="AliasData Members" Url="html/46e9f971-0597-70de-4b69-058c39d74207.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.AnyStringValueLocation class">
+    <HelpKINode Title="AnyStringValueLocation Class" Url="html/f2eb5897-950e-58c7-1684-3d7ccd76c3d4.htm" />
+    <HelpKINode Title="AnyStringValueLocation Members" Url="html/b1fe7d74-61b1-a2ed-597d-ec209f309ab2.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ArrayAnyValueLocation class">
+    <HelpKINode Title="ArrayAnyValueLocation Class" Url="html/620a5ecc-a086-5b99-6712-27a4f727d168.htm" />
+    <HelpKINode Title="ArrayAnyValueLocation Members" Url="html/afacfac5-c23d-03e2-5647-8121632bdc82.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ArrayStringValueLocation class">
+    <HelpKINode Title="ArrayStringValueLocation Class" Url="html/4c739a36-bf14-4da8-19f0-852c9c54fb58.htm" />
+    <HelpKINode Title="ArrayStringValueLocation Members" Url="html/3083ace8-2f92-f8c4-3385-9b9e3690f3f7.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ArrayUndefinedValueLocation class">
+    <HelpKINode Title="ArrayUndefinedValueLocation Class" Url="html/d36eecea-0ca5-7486-1dc0-a70e02c95893.htm" />
+    <HelpKINode Title="ArrayUndefinedValueLocation Members" Url="html/fc25505d-3851-bee3-1913-182760adec3a.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ArrayValueLocation class">
+    <HelpKINode Title="ArrayValueLocation Class" Url="html/a5ee54be-2084-a627-3152-b37b6f26483b.htm" />
+    <HelpKINode Title="ArrayValueLocation Members" Url="html/abb9f540-8582-7fe0-14e0-c0381d2420d6.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.CollectComposedValuesVisitor class">
+    <HelpKINode Title="CollectComposedValuesVisitor Class" Url="html/3f07ecba-8195-8a84-af38-f8e6038c0c59.htm" />
+    <HelpKINode Title="CollectComposedValuesVisitor Members" Url="html/6e7d2800-b695-e3c0-089c-4f662e89b736.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ControlIndex class">
     <HelpKINode Title="ControlIndex Class" Url="html/e7444e7a-756b-690d-82d5-acea0c0b2f6c.htm" />
     <HelpKINode Title="ControlIndex Members" Url="html/b5842611-5539-e407-10f8-8b0383d8e86c.htm" />
@@ -8415,6 +8979,14 @@
     <HelpKINode Title="DataSnapshotEntry Class" Url="html/017f7bc3-c138-0185-6a8e-34e5be97c170.htm" />
     <HelpKINode Title="DataSnapshotEntry Members" Url="html/c64b7e0c-c159-f277-ea73-31c869e1b62b.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.DeclarationContainer(Of T) class">
+    <HelpKINode Title="DeclarationContainer(T) Class" Url="html/8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" />
+    <HelpKINode Title="DeclarationContainer(T) Members" Url="html/25baf3e4-36ab-639a-3f03-dfa8d0c752ba.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.DeclarationContainer&lt;T&gt; class">
+    <HelpKINode Title="DeclarationContainer(T) Class" Url="html/8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" />
+    <HelpKINode Title="DeclarationContainer(T) Members" Url="html/25baf3e4-36ab-639a-3f03-dfa8d0c752ba.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.FieldPathSegment class">
     <HelpKINode Title="FieldPathSegment Class" Url="html/310bcc2c-c004-9447-2463-23d004719285.htm" />
     <HelpKINode Title="FieldPathSegment Members" Url="html/1c756794-b820-9d69-cea1-2e04958e53ae.htm" />
@@ -8424,9 +8996,37 @@
     <HelpKINode Title="ICopyModelSnapshotEntry Interface" Url="html/f72e1bfe-c669-2e7d-0321-8d8cb45c9613.htm" />
     <HelpKINode Title="ICopyModelSnapshotEntry Members" Url="html/f8dd7ae8-5119-d8cd-3885-725d64debc31.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IGenericCloneable(Of T) interface">
+    <HelpKINode Title="IGenericCloneable(T) Interface" Url="html/1cf7356f-96e5-4907-8402-fe3979423316.htm" />
+    <HelpKINode Title="IGenericCloneable(T) Members" Url="html/faab6694-69b5-f010-0e61-147aabfdfb74.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IGenericCloneable&lt;T&gt; interface">
+    <HelpKINode Title="IGenericCloneable(T) Interface" Url="html/1cf7356f-96e5-4907-8402-fe3979423316.htm" />
+    <HelpKINode Title="IGenericCloneable(T) Members" Url="html/faab6694-69b5-f010-0e61-147aabfdfb74.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IIndexCollector interface">
+    <HelpKINode Title="IIndexCollector Interface" Url="html/d829ac76-e56a-2d98-84df-f5b5496d96fe.htm" />
+    <HelpKINode Title="IIndexCollector Members" Url="html/966c0085-6ace-0f54-ca13-d96ab5339ba8.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IMergeWorker interface">
+    <HelpKINode Title="IMergeWorker Interface" Url="html/3ad65e17-e9c8-7cbc-367b-f8112d14b7aa.htm" />
+    <HelpKINode Title="IMergeWorker Members" Url="html/dbc0de70-9d58-0735-4699-0b2e91d49e39.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexCollector class">
+    <HelpKINode Title="IndexCollector Class" Url="html/a05ace75-01e3-635c-f8f1-ad9f3760baef.htm" />
+    <HelpKINode Title="IndexCollector Members" Url="html/050e9c33-b10e-f148-7a73-5c3e49528a0e.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexContainer class">
     <HelpKINode Title="IndexContainer Class" Url="html/88330db4-27c3-295b-5665-982c083fca55.htm" />
     <HelpKINode Title="IndexContainer Members" Url="html/12ddbd3b-4a66-f10c-7939-153712724d56.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexData class">
+    <HelpKINode Title="IndexData Class" Url="html/1f3c85b1-35bf-7395-fee8-9f09ab4ff86b.htm" />
+    <HelpKINode Title="IndexData Members" Url="html/f7d69f15-f37f-ab0b-dfe0-360670d6a468.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexDataBuilder class">
+    <HelpKINode Title="IndexDataBuilder Class" Url="html/2b9b60bd-1186-c266-3880-e18a54c8f2ab.htm" />
+    <HelpKINode Title="IndexDataBuilder Members" Url="html/2207c816-2c9e-8c7c-ded7-048573bc72ba.htm" />
   </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexPathSegment class">
     <HelpKINode Title="IndexPathSegment Class" Url="html/adca1a18-65f2-06df-5313-d978bef4cd54.htm" />
@@ -8436,13 +9036,37 @@
     <HelpKINode Title="IndexSegment Class" Url="html/97342990-a6dc-e2a0-2c02-ce1d2550a5bd.htm" />
     <HelpKINode Title="IndexSegment Members" Url="html/08e6eed5-3230-1add-ff12-e0146eaac3d4.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexSet(Of T) class">
+    <HelpKINode Title="IndexSet(T) Class" Url="html/b424385a-1f02-0700-903f-279a36eec86e.htm" />
+    <HelpKINode Title="IndexSet(T) Members" Url="html/c1fe4da1-a8ac-54cb-3d15-238add0aec6a.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IndexSet&lt;T&gt; class">
+    <HelpKINode Title="IndexSet(T) Class" Url="html/b424385a-1f02-0700-903f-279a36eec86e.htm" />
+    <HelpKINode Title="IndexSet(T) Members" Url="html/c1fe4da1-a8ac-54cb-3d15-238add0aec6a.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.InfoValueLocation class">
+    <HelpKINode Title="InfoValueLocation Class" Url="html/939fcb46-b99a-1d57-aac4-74b98c78d9e7.htm" />
+    <HelpKINode Title="InfoValueLocation Members" Url="html/d171f242-e747-d02b-7c2c-38ab00c6d31f.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IPathSegmentVisitor interface">
     <HelpKINode Title="IPathSegmentVisitor Interface" Url="html/af9d0790-d0a0-dc0e-7f88-55556bb03abc.htm" />
     <HelpKINode Title="IPathSegmentVisitor Members" Url="html/465e56a0-3e27-2353-49e6-8fd05cc61ff7.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IValueLocationVisitor interface">
+    <HelpKINode Title="IValueLocationVisitor Interface" Url="html/0050fec8-5c45-9e44-c286-e5f16b226f9d.htm" />
+    <HelpKINode Title="IValueLocationVisitor Members" Url="html/7ffd2035-6884-050c-3841-76d855392341.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.IWriteableIndexContainer interface">
     <HelpKINode Title="IWriteableIndexContainer Interface" Url="html/d27c8f0f-e310-7e74-7ac1-bca526d6c8e3.htm" />
     <HelpKINode Title="IWriteableIndexContainer Members" Url="html/4fd0ee40-d0d6-973d-c594-b4a2ab666bea.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MemoryAlias class">
+    <HelpKINode Title="MemoryAlias Class" Url="html/fa089cf7-6188-b516-e456-7b17ff70f93c.htm" />
+    <HelpKINode Title="MemoryAlias Members" Url="html/1a6fbdbd-8891-e1a7-63c9-6140e555188b.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MemoryAliasBuilder class">
+    <HelpKINode Title="MemoryAliasBuilder Class" Url="html/e2759deb-ba4b-a5f7-2eb6-dc0c2b3c0338.htm" />
+    <HelpKINode Title="MemoryAliasBuilder Members" Url="html/e8202e5d-b9e5-e767-6f02-d1d43689ec98.htm" />
   </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MemoryIndex class">
     <HelpKINode Title="MemoryIndex Class" Url="html/918f73fe-38ac-9555-ae2c-3d996b7ac07b.htm" />
@@ -8452,25 +9076,33 @@
     <HelpKINode Title="MemoryPath Class" Url="html/3385275c-4dbe-d81a-ba2a-4a96ca42cc62.htm" />
     <HelpKINode Title="MemoryPath Members" Url="html/3f405184-0145-0da0-f789-88c99624e9d1.htm" />
   </HelpKINode>
-  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MergeInfoWorker class">
-    <HelpKINode Title="MergeInfoWorker Class" Url="html/b96bd187-1ae0-7aad-f416-0d62827bc56b.htm" />
-    <HelpKINode Title="MergeInfoWorker Members" Url="html/3f9e3118-d2c6-bf59-0fa4-14a03d662c4d.htm" />
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MemoryStack(Of T) class">
+    <HelpKINode Title="MemoryStack(T) Class" Url="html/8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" />
+    <HelpKINode Title="MemoryStack(T) Members" Url="html/91d5373a-7226-5c37-3f69-1262ffa98314.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MemoryStack&lt;T&gt; class">
+    <HelpKINode Title="MemoryStack(T) Class" Url="html/8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" />
+    <HelpKINode Title="MemoryStack(T) Members" Url="html/91d5373a-7226-5c37-3f69-1262ffa98314.htm" />
   </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MergeOperation class">
     <HelpKINode Title="MergeOperation Class" Url="html/cef8e7ec-1d06-45d7-639f-a2e30d11074f.htm" />
     <HelpKINode Title="MergeOperation Members" Url="html/5e80a7d9-66b9-042a-2398-f54dcc774990.htm" />
   </HelpKINode>
-  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.MergeWorker class">
-    <HelpKINode Title="MergeWorker Class" Url="html/3ab33529-71a4-d781-31f9-3d3c7f1c2f57.htm" />
-    <HelpKINode Title="MergeWorker Members" Url="html/8805de44-b71c-75ea-c5e8-9809006ab35a.htm" />
-  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.NamedIndex class">
     <HelpKINode Title="NamedIndex Class" Url="html/3df56b30-8593-e7d9-6fc2-ffa4461c9d61.htm" />
     <HelpKINode Title="NamedIndex Members" Url="html/34371a63-2fe0-9ff3-1c82-1e09eb922ecf.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ObjectAnyValueLocation class">
+    <HelpKINode Title="ObjectAnyValueLocation Class" Url="html/17f98c98-ddb8-90dd-d8ef-0235845dd69d.htm" />
+    <HelpKINode Title="ObjectAnyValueLocation Members" Url="html/82ec4823-cae2-67d3-1968-25ce78e78aa0.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ObjectIndex class">
     <HelpKINode Title="ObjectIndex Class" Url="html/8628f076-78c6-5560-f226-5da6f7b438ca.htm" />
     <HelpKINode Title="ObjectIndex Members" Url="html/7973ee6d-d5b9-3703-5abe-187432301ed9.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ObjectUndefinedValueLocation class">
+    <HelpKINode Title="ObjectUndefinedValueLocation Class" Url="html/b128b5ca-810f-e391-4738-03f08627f7c9.htm" />
+    <HelpKINode Title="ObjectUndefinedValueLocation Members" Url="html/1a34be75-8741-eeeb-67e8-ac0f95302b3c.htm" />
   </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ObjectValueContainer class">
     <HelpKINode Title="ObjectValueContainer Class" Url="html/a90173a3-f32e-ead9-d2d1-5baa9b6498b6.htm" />
@@ -8480,6 +9112,10 @@
     <HelpKINode Title="ObjectValueContainerBuilder Class" Url="html/6c96b12b-8d09-94ce-9546-0c9469953a64.htm" />
     <HelpKINode Title="ObjectValueContainerBuilder Members" Url="html/fee464cb-3668-8eb3-bf20-7cbe3e6f1912.htm" />
   </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ObjectValueLocation class">
+    <HelpKINode Title="ObjectValueLocation Class" Url="html/5e85829e-74a0-70a8-574f-3b5b8b0f81ae.htm" />
+    <HelpKINode Title="ObjectValueLocation Members" Url="html/eeb52d1c-006f-0b1c-69a6-4303ed840fec.htm" />
+  </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.PathSegment class">
     <HelpKINode Title="PathSegment Class" Url="html/c7e47abb-2630-2f74-b15d-66007c8ada2c.htm" />
     <HelpKINode Title="PathSegment Members" Url="html/d2697cf5-ce53-e629-eeae-959aa5551c2b.htm" />
@@ -8487,6 +9123,10 @@
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ReadonlyIndexContainer interface">
     <HelpKINode Title="ReadonlyIndexContainer Interface" Url="html/fbf8c6d5-dc79-0c69-1582-2d666c1a2f61.htm" />
     <HelpKINode Title="ReadonlyIndexContainer Members" Url="html/9e0997e9-41bc-4f0e-5906-12e76eaa9b1a.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ReferenceCollector class">
+    <HelpKINode Title="ReferenceCollector Class" Url="html/3e153b99-f065-56d3-cfd7-8d9217260397.htm" />
+    <HelpKINode Title="ReferenceCollector Members" Url="html/5e37aa2a-07fa-730b-4f3f-15bd55a571be.htm" />
   </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.Snapshot class">
     <HelpKINode Title="Snapshot Class" Url="html/8e87d8ba-b022-e2d2-0b87-fd6f9c55ad19.htm" />
@@ -8511,6 +9151,10 @@
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.TemporaryPathSegment class">
     <HelpKINode Title="TemporaryPathSegment Class" Url="html/c358f8f5-93fa-df9e-bc2d-717f006c4b53.htm" />
     <HelpKINode Title="TemporaryPathSegment Members" Url="html/edd8535c-e6ed-70a7-6e50-bf5e32634c89.htm" />
+  </HelpKINode>
+  <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.ValueLocation class">
+    <HelpKINode Title="ValueLocation Class" Url="html/d8c0eb0f-8b5d-eca8-3885-2a7c6396f3e8.htm" />
+    <HelpKINode Title="ValueLocation Members" Url="html/de97d0d0-a76a-b221-4e5b-084d59fd8e90.htm" />
   </HelpKINode>
   <HelpKINode Title="Weverca.MemoryModels.CopyMemoryModel.VariableIndex class">
     <HelpKINode Title="VariableIndex Class" Url="html/1328f8f7-b37b-a9c7-ceac-66e6d658a178.htm" />
@@ -8568,9 +9212,9 @@
   </HelpKINode>
   <HelpKINode Title="WidenAndCommitTransaction method" Url="html/74688c0e-96ef-4811-cbdf-3d0df65b0e57.htm" />
   <HelpKINode Title="widenAndCommitTransaction method">
+    <HelpKINode Title="Snapshot.widenAndCommitTransaction Method " Url="html/00ccefd7-8e95-a621-7bff-b911d711ac36.htm" />
     <HelpKINode Title="Snapshot.widenAndCommitTransaction Method " Url="html/10baa440-8ba5-c552-2727-f3576bd79a2d.htm" />
     <HelpKINode Title="SnapshotBase.widenAndCommitTransaction Method " Url="html/32caf245-6fa7-48a6-a668-7b646716fb61.htm" />
-    <HelpKINode Title="Snapshot.widenAndCommitTransaction Method " Url="html/00ccefd7-8e95-a621-7bff-b911d711ac36.htm" />
   </HelpKINode>
   <HelpKINode Title="WideningLimit property">
     <HelpKINode Title="ForwardAnalysisBase.WideningLimit Property " Url="html/bdb75971-d8e9-76a0-79cd-e42b16d5532e.htm" />
@@ -8601,12 +9245,12 @@
   <HelpKINode Title="WidenningVisitor.Widen method" Url="html/83169341-8fd4-b9c8-16a9-bd54a828cb67.htm" />
   <HelpKINode Title="WidenningVisitor.WidenningVisitor constructor" Url="html/f02a03f1-f8b5-0666-2af5-80dd74e7280d.htm" />
   <HelpKINode Title="WidenNotEqual method" Url="html/fd6f519a-1571-8fed-a24a-fe66c55a22f9.htm" />
-  <HelpKINode Title="WriteMemory method" Url="html/18c9d073-f028-ee9c-7527-29d27c68cf39.htm" />
   <HelpKINode Title="writeMemory method">
     <HelpKINode Title="DataSnapshotEntry.writeMemory Method " Url="html/f81f94bc-396f-d5f6-d745-f0e5a8836fbf.htm" />
     <HelpKINode Title="ReadWriteSnapshotEntryBase.writeMemory Method " Url="html/4a82b100-d136-3026-ca38-9a46e5d51546.htm" />
     <HelpKINode Title="SnapshotEntry.writeMemory Method " Url="html/eecd5e47-bb64-74a8-79a9-81979524f24f.htm" />
   </HelpKINode>
+  <HelpKINode Title="WriteMemory method" Url="html/18c9d073-f028-ee9c-7527-29d27c68cf39.htm" />
   <HelpKINode Title="writeMemoryWithoutCopy method">
     <HelpKINode Title="DataSnapshotEntry.writeMemoryWithoutCopy Method " Url="html/69f2e19e-d0c9-0a34-baf3-566ff7b94a32.htm" />
     <HelpKINode Title="ReadWriteSnapshotEntryBase.writeMemoryWithoutCopy Method " Url="html/70ab9e59-0e9a-88f0-821c-dacac20f5bc7.htm" />
@@ -8616,6 +9260,18 @@
   <HelpKINode Title="WriteStringIndex method" Url="html/62fec302-2a16-c98f-7056-a2abf3d547cc.htm" />
   <HelpKINode Title="WriteValueField method" Url="html/d7d1abcc-4ed9-d79e-ccee-be0eebbc2964.htm" />
   <HelpKINode Title="WriteValueIndex method" Url="html/88518e24-7e93-de9d-5735-674a334378e9.htm" />
+  <HelpKINode Title="WriteValues method">
+    <HelpKINode Title="AnyStringValueLocation.WriteValues Method " Url="html/85d1aafa-a8f9-267b-b4ae-7b9c246ec059.htm" />
+    <HelpKINode Title="ArrayAnyValueLocation.WriteValues Method " Url="html/f2957d22-e954-b426-6065-187b00940ebe.htm" />
+    <HelpKINode Title="ArrayStringValueLocation.WriteValues Method " Url="html/6315228f-fbf8-be9f-d380-74e753e84647.htm" />
+    <HelpKINode Title="ArrayUndefinedValueLocation.WriteValues Method " Url="html/6cdbe4f5-f82e-d959-187d-be77bdc9e34d.htm" />
+    <HelpKINode Title="ArrayValueLocation.WriteValues Method " Url="html/4f8aecba-1db0-6529-071d-6542a00157aa.htm" />
+    <HelpKINode Title="InfoValueLocation.WriteValues Method " Url="html/ebdce3b0-d351-32ee-c52e-8d4270637445.htm" />
+    <HelpKINode Title="ObjectAnyValueLocation.WriteValues Method " Url="html/75323202-2fed-9024-c645-d2ef0f5ecf58.htm" />
+    <HelpKINode Title="ObjectUndefinedValueLocation.WriteValues Method " Url="html/7dcdabaf-7448-15cc-b84e-582280b2da17.htm" />
+    <HelpKINode Title="ObjectValueLocation.WriteValues Method " Url="html/3d449242-025b-8602-004b-93edc5bfe73d.htm" />
+    <HelpKINode Title="ValueLocation.WriteValues Method " Url="html/b97d7d64-0a5d-ca97-89bb-1bbfd0ea8ae0.htm" />
+  </HelpKINode>
   <HelpKINode Title="WRONG_ARGUMENTS_TYPE enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="WRONG_NUMBER_OF_ARGUMENTS enumeration member" Url="html/0f476c83-09ed-c236-fd61-bc51cd85227d.htm" />
   <HelpKINode Title="Xor method" Url="html/98a58c76-e3b1-0315-4c5c-eb6d84f04b9d.htm" />

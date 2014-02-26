@@ -9,6 +9,31 @@
 					 
 				</th><th class="ps_nameColumn">Class</th><th class="ps_descriptionColumn">Description</th></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="34585f69-eff9-406d-d25d-ef6d59ec0d90.htm" target="">AliasData</a></td><td><div class="summary">
             Collects information about aliases in order to transfer it between entries.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="f2eb5897-950e-58c7-1684-3d7ccd76c3d4.htm" target="">AnyStringValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing indexes on any string values.
+            
+            Read using memory asisstant returnes any character or emit warning if the index is not valid.
+            Write operation do not change the structure or emit warning if written value or index are wrong.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="620a5ecc-a086-5b99-6712-27a4f727d168.htm" target="">ArrayAnyValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing indexes on any values.
+            
+            Read using memory assistant returns any value. Write do not make any change in structure.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="4c739a36-bf14-4da8-19f0-852c9c54fb58.htm" target="">ArrayStringValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing indexes on string values.
+            
+            Read using memory asisstant returnes character in the requested index or emit warning if the index is not valid.
+            Write operation creates new string with modified character or emit warning if written value or index are wrong.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="d36eecea-0ca5-7486-1dc0-a70e02c95893.htm" target="">ArrayUndefinedValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing indexes on undefined values.
+            
+            Read using memory assistant returns undefined value. Write into undefined value should not be processed becouse
+            collecter creates new empty array and uses it rather than accesing this undefined location.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="a5ee54be-2084-a627-3152-b37b6f26483b.htm" target="">ArrayValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing indexes on scalar values.
+            
+            Read and write do not modify the structure. Using memory the assistant the warning is emited and old value is returned.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="3f07ecba-8195-8a84-af38-f8e6038c0c59.htm" target="">CollectComposedValuesVisitor</a></td><td><div class="summary">
+            Value visitor to get all composed values (arrays and objects) from the given memory entry.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="e7444e7a-756b-690d-82d5-acea0c0b2f6c.htm" target="">ControlIndex</a></td><td><div class="summary">
             Similar to VariableIndex to identify memory location which is stored as analysis controll variable.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b1a57ac8-9b9d-eb3f-8c6d-8156c1f1ff39.htm" target="">ControlPathSegment</a></td><td><div class="summary">
@@ -18,13 +43,59 @@
             
             Memory entry is stored just in the Snaphot Entry instance where can be accesed with Snaphot Entry public interface.
             Any change on data persists memory entry as temporary memory in current context.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="8b536705-0aa4-86c2-e124-fbd39520aa1d.htm" target="">DeclarationContainer<span id="ID0ECAB0BB0ACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECAB0BB0ACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAAB0BB0ACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAAB0BB0ACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Container for class and function declarations. Provides mapping between qualified 
+            names and declarations data.
+            
+            This is not imutable class.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="310bcc2c-c004-9447-2463-23d004719285.htm" target="">FieldPathSegment</a></td><td><div class="summary">
             Traversing path segment which continues path in field of PHP object with specified names.
-            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="88330db4-27c3-295b-5665-982c083fca55.htm" target="">IndexContainer</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="adca1a18-65f2-06df-5313-d978bef4cd54.htm" target="">IndexPathSegment</a></td><td><div class="summary">
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="a05ace75-01e3-635c-f8f1-ad9f3760baef.htm" target="">IndexCollector</a></td><td><div class="summary">
+            Abstract implementation of <a href="d829ac76-e56a-2d98-84df-f5b5496d96fe.htm" target="">IIndexCollector</a> interface which defines basic interface and provides basic operation.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="88330db4-27c3-295b-5665-982c083fca55.htm" target="">IndexContainer</a></td><td><div class="summary">
+            Typycal implementation of index container which can be used to store variable names and their mapping
+            to memory indexes.
+            
+            This is NOT imutable class.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="1f3c85b1-35bf-7395-fee8-9f09ab4ff86b.htm" target="">IndexData</a></td><td><div class="summary">
+            Contains structural data about memory indexes. Every memory index used in snapshot is mapped
+            to one instance of IndexData class. This class allows to set structural data like aliases,
+            array associated with index and associated object which is used to traverse the memory tree.
+            This class is extension of memory index so when there is structural change the instane of
+            iIndexData is changed and memory index can stay the same which prevents cascade of changes
+            across whole snapshot.
+            
+            Imutable class. For modification use builder object 
+                data.Builder().modify().Build()
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="2b9b60bd-1186-c266-3880-e18a54c8f2ab.htm" target="">IndexDataBuilder</a></td><td><div class="summary">
+            Builder class to modify IndexData instances.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="adca1a18-65f2-06df-5313-d978bef4cd54.htm" target="">IndexPathSegment</a></td><td><div class="summary">
             Traversing path segment which continues path in index of associative array with specified names.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="97342990-a6dc-e2a0-2c02-ce1d2550a5bd.htm" target="">IndexSegment</a></td><td><div class="summary">
             Represents single index in memory location acces path. Contains name of index or whether this is
             undefined index.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b424385a-1f02-0700-903f-279a36eec86e.htm" target="">IndexSet<span id="ID0ECABZACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECABZACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAABZACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAABZACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Represents cloneable and enumerable set of indexes which can be used in memory stack object.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="939fcb46-b99a-1d57-aac4-74b98c78d9e7.htm" target="">InfoValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for info values.
+            
+            Read and write methods do not modify the value and just return associated info value.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="fa089cf7-6188-b516-e456-7b17ff70f93c.htm" target="">MemoryAlias</a></td><td><div class="summary">
+            Contains information about alias structure for given memory location
+            
+            Imutable class 
+                For modification use builder object 
+                    descriptor.Builder().modify().Build() //Creates new modified object
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="e2759deb-ba4b-a5f7-2eb6-dc0c2b3c0338.htm" target="">MemoryAliasBuilder</a></td><td><div class="summary">
+            Mutable variant of MemoryAlias - use for creating new structure
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="918f73fe-38ac-9555-ae2c-3d996b7ac07b.htm" target="">MemoryIndex</a></td><td><div class="summary">
             Represents index to memory location in the structure of copy memory model.
             
@@ -60,21 +131,62 @@
             traverse memory tree and determine sets of indexes which MUST or MAY be changed.
             
             This is imutable class and cannot be changed.
-            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b96bd187-1ae0-7aad-f416-0d62827bc56b.htm" target="">MergeInfoWorker</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="cef8e7ec-1d06-45d7-639f-a2e30d11074f.htm" target="">MergeOperation</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="3ab33529-71a4-d781-31f9-3d3c7f1c2f57.htm" target="">MergeWorker</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="3df56b30-8593-e7d9-6fc2-ffa4461c9d61.htm" target="">NamedIndex</a></td><td><div class="summary">
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="8484bf13-715a-66f2-f45d-12d4e17f9bba.htm" target="">MemoryStack<span id="ID0ECABTACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECABTACAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAABTACAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAABTACAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Implmentation of stack which contains cloneable containers. Used to model memory call stack
+            of variables. Every instance can contain collections of indexes for each call level. Memory model
+            then can alasyly acces global and local level of memory stack. Once the stack is created the number
+            of levels can not be changed. However class also provides deep copy functionality or allows 
+            to add new stack level after copying.
+            
+            This class is not imutable.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="cef8e7ec-1d06-45d7-639f-a2e30d11074f.htm" target="">MergeOperation</a></td><td><div class="summary">
+            Represents data structure for information merge operation. Every instance contains set of source
+            indexes and snapshot which contains these indexes and target index. Merge algorithm stores instances
+            of this class in operation stack and merges data from source indexes into target indexes.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="3df56b30-8593-e7d9-6fc2-ffa4461c9d61.htm" target="">NamedIndex</a></td><td><div class="summary">
             Specifies the root informations for memory indexes which starts in single variable
             with specified name.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="17f98c98-ddb8-90dd-d8ef-0235845dd69d.htm" target="">ObjectAnyValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing fields on any values.
+            
+            Read using memory assistant returns any value. Write do not make any change in structure.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="8628f076-78c6-5560-f226-5da6f7b438ca.htm" target="">ObjectIndex</a></td><td><div class="summary">
             Identifies memory locations rooted in the PHP object instance. Every root index represents one of
             field (named or any) associated with the object with given ObjectValue or associative array
             rooted in some field of object.
             
             Every object index is located at global call level in memory stack.
-            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="a90173a3-f32e-ead9-d2d1-5baa9b6498b6.htm" target="">ObjectValueContainer</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="6c96b12b-8d09-94ce-9546-0c9469953a64.htm" target="">ObjectValueContainerBuilder</a></td><td></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="c7e47abb-2630-2f74-b15d-66007c8ada2c.htm" target="">PathSegment</a></td><td><div class="summary">
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="b128b5ca-810f-e391-4738-03f08627f7c9.htm" target="">ObjectUndefinedValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing fields on undefined values.
+            
+            Read using memory assistant returns undefined value. Write into undefined value should not be processed becouse
+            collecter creates new implicit object and uses it rather than accesing this undefined location.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="a90173a3-f32e-ead9-d2d1-5baa9b6498b6.htm" target="">ObjectValueContainer</a></td><td><div class="summary">
+            Contains all PHP objects which can be stored in some memory location. This class is used as part
+            of IndexData objects to provide shortcut in order to not to access memory entry for the list
+            of objects. Algorithms can easilly found that there is no object or even list all objects without
+            lookup in data and listing all values in memory entry.
+            
+            Imutable class. For modification use builder object 
+                data.Builder().modify().Build()
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="6c96b12b-8d09-94ce-9546-0c9469953a64.htm" target="">ObjectValueContainerBuilder</a></td><td><div class="summary">
+            Builder class to modify ObjectValueContainer instances.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="5e85829e-74a0-70a8-574f-3b5b8b0f81ae.htm" target="">ObjectValueLocation</a></td><td><div class="summary">
+            Implementation of value location class for accesing fields on non object values.
+            
+            Read and write do not modify the structure. Using memory the assistant the warning is emited and old value is returned.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="c7e47abb-2630-2f74-b15d-66007c8ada2c.htm" target="">PathSegment</a></td><td><div class="summary">
             Base class for path segment which holds set of names for this segment.
             
             Derived classes typically adds no functionality (except temporary index). Their main purpose is 
             to be visited by IPathSegmentVisitor in order to process each type of segment. They should also
             override to string nethod.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="3e153b99-f065-56d3-cfd7-8d9217260397.htm" target="">ReferenceCollector</a></td><td><div class="summary">
+            Collet must or may aliases in order to use it in merge and assign algoritms.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="8e87d8ba-b022-e2d2-0b87-fd6f9c55ad19.htm" target="">Snapshot</a></td><td><div class="summary">
             Implementation of the memory snapshot based on copy semantics.
             
@@ -85,12 +197,12 @@
             Basic unit of the memory model is MemoryIndex which allows undirect links between aliases
             and collection indexes. Every index is just pointer into the memory location where the data is stored.
             So when the data is changed is not necessary to change every connected memory locations. See
-            <a href="918f73fe-38ac-9555-ae2c-3d996b7ac07b.htm" target="">MemoryIndex</a> and <span class="nolink">[!:MemoryContainer]</span> for more information. Data model itself is
-            implemented in <a href="8ce0b43e-7865-0f7e-5ff1-25368b27b323.htm" target="">SnapshotStructure</a> class.
+            MemoryIndex and MemoryContainer for more information. Data model itself is implemented
+            in <a href="8ce0b43e-7865-0f7e-5ff1-25368b27b323.htm" target="">SnapshotStructure</a> class.
             
             Algorithms for reading or modifying snapshots are splitted into two groups. Memory collectors represents
             algorithms to gathering indexes and memory workers provides implementation of read/write
-            algorithm. For more informations see <span class="nolink">[!:IndexCollectors]</span> and <span class="nolink">[!:MemoryWorkers]</span>.
+            algorithm. For more informations see ÏndexCollectors and MemoryWorkers.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="f211536d-3411-c37b-7b15-46b971cccb5c.htm" target="">SnapshotData</a></td><td><div class="summary">
             Contains data for all definned memory location in memory snapshot.
             
@@ -136,6 +248,10 @@
             has to be shared between several snapshots (e.g. anonymus arrays, foreach arguments, ...).
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="c358f8f5-93fa-df9e-bc2d-717f006c4b53.htm" target="">TemporaryPathSegment</a></td><td><div class="summary">
             Root segment which starts in temporary location specified by given index.
+            </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="d8c0eb0f-8b5d-eca8-3885-2a7c6396f3e8.htm" target="">ValueLocation</a></td><td><div class="summary">
+            Represents data structure to provide alternative memory locations which is not based on memory index model
+            but concrete value in particular memoru location. This class is ment to allow accesing fields or indexes on
+            variables where is no array nor object - error reporting or accesing indexes of special values.
             </div></td></tr><tr data="class; public"><td><img src="./../icons/pubclass.gif" alt="Public class" title="Public class" /></td><td><a href="1328f8f7-b37b-a9c7-ceac-66e6d658a178.htm" target="">VariableIndex</a></td><td><div class="summary">
             Identifies memory locations rooted as local or global PHP variable. Every variable has string name
             (or any), cal level and array path where the data can be located.
@@ -149,11 +265,44 @@
 					 
 				</th><th class="ps_nameColumn">Interface</th><th class="ps_descriptionColumn">Description</th></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="f72e1bfe-c669-2e7d-0321-8d8cb45c9613.htm" target="">ICopyModelSnapshotEntry</a></td><td><div class="summary">
             Defines basic methods for copy memory model snapshot entries.
+            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="1cf7356f-96e5-4907-8402-fe3979423316.htm" target="">IGenericCloneable<span id="ID0ECABGABAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0ECABGABAAAAA?vb=(Of |cpp=&lt;|cs=&lt;|fs=&lt;'|nu=(");
+				</script>T<span id="ID0EAABGABAAAAA"> </span><script type="text/javascript">
+					addToLanSpecTextIdSet("ID0EAABGABAAAAA?vb=)|cpp=&gt;|cs=&gt;|fs=&gt;|nu=)");
+				</script></a></td><td><div class="summary">
+            Generic version of cloneable interface.
+            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="d829ac76-e56a-2d98-84df-f5b5496d96fe.htm" target="">IIndexCollector</a></td><td><div class="summary">
+            Base interface for collection algorithms with definition of interface of collectors.
+            
+            Collection algorithm is the first part of write/read operation. Collector's responsibility
+            is to prepare all memory location which satisfies given access path. There are two types
+            of collectors. Read collector which just traverse the memory tree and looks for defined
+            locations. Then there is update collector which also traverse the memory tree but when there
+            is missing memory location which should be added into output list the new location is created
+            (new variable, associative array or implicit object is created).
+            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="3ad65e17-e9c8-7cbc-367b-f8112d14b7aa.htm" target="">IMergeWorker</a></td><td><div class="summary">
+            Defines common methods for merge algorithms.
             </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="af9d0790-d0a0-dc0e-7f88-55556bb03abc.htm" target="">IPathSegmentVisitor</a></td><td><div class="summary">
             Defines visitor to acces path segment.
             
             This interface is usually implemented by collector algorithms in order to traverse and process given path by segments.
-            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="d27c8f0f-e310-7e74-7ac1-bca526d6c8e3.htm" target="">IWriteableIndexContainer</a></td><td></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="fbf8c6d5-dc79-0c69-1582-2d666c1a2f61.htm" target="">ReadonlyIndexContainer</a></td><td></td></tr></table><div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Enumerations</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><table id="typeList" class="members"><tr><th class="ps_iconColumn">
+            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="0050fec8-5c45-9e44-c286-e5f16b226f9d.htm" target="">IValueLocationVisitor</a></td><td><div class="summary">
+            Definition of visitor pattern for ValueLocations.
+            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="d27c8f0f-e310-7e74-7ac1-bca526d6c8e3.htm" target="">IWriteableIndexContainer</a></td><td><div class="summary">
+            Mutable version of ReadonlyIndexContainer interface.
+            
+            Represents special object which has semantics as index container. This container contains
+            collection of memory indexes and their names and unknown index.
+            
+            Each instance of this interface represents inner node of memory tree (array with indexes, object with fields,
+            variable container).
+            </div></td></tr><tr data="interface; public"><td><img src="./../icons/pubinterface.gif" alt="Public interface" title="Public interface" /></td><td><a href="fbf8c6d5-dc79-0c69-1582-2d666c1a2f61.htm" target="">ReadonlyIndexContainer</a></td><td><div class="summary">
+            Represents special object which has semantics as imutable index container. This container contains
+            imutable collection of memory indexes and their names and unknown index.
+            
+            Each instance of this interface represents inner node of memory tree (array with indexes, object with fields,
+            variable container).
+            </div></td></tr></table><div class="OH_CollapsibleAreaRegion"><div class="OH_regiontitle">Enumerations</div><div class="OH_CollapsibleArea_HrDiv"><hr class="OH_CollapsibleArea_Hr" /></div></div><div class="OH_clear"></div><table id="typeList" class="members"><tr><th class="ps_iconColumn">
 					 
 				</th><th class="ps_nameColumn">Enumeration</th><th class="ps_descriptionColumn">Description</th></tr><tr data="enumeration; public"><td><img src="./../icons/pubenumeration.gif" alt="Public enumeration" title="Public enumeration" /></td><td><a href="8f45245c-4666-15f3-1fcf-47fc069ba925.htm" target="">GlobalContext</a></td><td><div class="summary">
             Determines in which stack context is has to be looked for the root memory indexes. 
