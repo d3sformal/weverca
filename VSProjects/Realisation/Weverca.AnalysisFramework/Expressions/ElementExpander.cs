@@ -84,7 +84,7 @@ namespace Weverca.AnalysisFramework.Expressions
             var expandedChain = expander.createPointsChain().ToArray();
 
             registerCreatedPoints(expandedChain, onPointCreated);
-             
+
             return expandedChain;
         }
 
@@ -148,11 +148,12 @@ namespace Weverca.AnalysisFramework.Expressions
         #region Program point creation
 
         /// <summary>
-        /// Creates RValue from given element
+        /// Create RValue from given element with forced thisObject if available
         /// </summary>
-        /// <param name="el">Base element from created RValue</param>
-        /// <returns>Created RValue</returns>
-        internal ValuePoint CreateRValue(LangElement el)
+        /// <param name="el">Element which value will be created</param>
+        /// <param name="thisObject">This object used by created RValue</param>
+        /// <returns>Created value</returns>
+        internal ValuePoint CreateRValue(LangElement el, ValuePoint thisObject = null)
         {
             if (el == null)
             {
@@ -165,14 +166,14 @@ namespace Weverca.AnalysisFramework.Expressions
                 return existingPoint as ValuePoint;
             }
 
-            var result = _rValueCreator.CreateValue(el);
+            var result = _rValueCreator.CreateValue(el, thisObject);
             _programPoints.Add(el, result);
 
             AppendToChain(result);
 
             return result;
         }
-
+        
         /// <summary>
         /// Creates LValue from given element
         /// </summary>

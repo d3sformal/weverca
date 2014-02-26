@@ -23,6 +23,9 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         private ValuePoint _resultPoint;
 
+        private readonly Stack<ValuePoint> _forcedThisObjects = new Stack<ValuePoint>();
+
+
         /// <summary>
         /// Expander is used for creating sub values
         /// </summary>
@@ -34,16 +37,20 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// Create RValue point from given element
+        /// Create RValue point from given element with forced thisObject
         /// </summary>
         /// <param name="el">Element from which RValue point will be created</param>
+        /// <param name="thisObject">This object used by created RValue if specified</param>
         /// <returns>Created RValue</returns>
-        internal ValuePoint CreateValue(LangElement el)
+        internal ValuePoint CreateValue(LangElement el, ValuePoint thisObject)
         {
             //empty current result, because of avoiding incorrect use
             _resultPoint = null;
 
+            _forcedThisObjects.Push(thisObject);
             el.VisitMe(this);
+            _forcedThisObjects.Pop();
+
             //assert that result has been set
             if (_resultPoint == null)
                 throw new NotSupportedException("Element " + el + " is not supported RValue");
@@ -105,13 +112,32 @@ namespace Weverca.AnalysisFramework.Expressions
         }
 
         /// <summary>
-        /// Create RValue from given element
+        /// Create RValue from given element with forced thisObject
         /// </summary>
         /// <param name="el">Element which value will be created</param>
+        /// <param name="thisObject">This object used by created RValue</param>
         /// <returns>Created value</returns>
-        private ValuePoint CreateRValue(LangElement el)
+        private ValuePoint CreateRValue(LangElement el, ValuePoint thisObject = null)
         {
-            return _valueCreator.CreateRValue(el);
+            return _valueCreator.CreateRValue(el, thisObject);
+        }
+
+        /// <summary>
+        /// Get member of value point for given element if possible. Forced member of points are prioritized
+        /// </summary>
+        /// <param name="el">Element which member of is needed</param>
+        /// <returns>Value point of MemberOf if available</returns>
+        private ValuePoint GetMemberOf(VarLikeConstructUse el)
+        {
+            var forcedMemberOf = _forcedThisObjects.Peek();
+            if (forcedMemberOf != null)
+                return forcedMemberOf;
+
+            var memberEl = el.IsMemberOf;
+            if (memberEl == null)
+                return null;
+
+            return CreateRValue(memberEl);
         }
 
         /// <summary>
@@ -250,23 +276,13 @@ namespace Weverca.AnalysisFramework.Expressions
 
         public override void VisitDirectVarUse(DirectVarUse x)
         {
-            ValuePoint thisObj = null;
-            if (x.IsMemberOf != null)
-            {
-                thisObj = CreateRValue(x.IsMemberOf);
-            }
-
+            var thisObj = GetMemberOf(x);
             Result(new VariablePoint(x, thisObj));
         }
 
         public override void VisitIndirectVarUse(IndirectVarUse x)
         {
-            ValuePoint thisObj = null;
-            if (x.IsMemberOf != null)
-            {
-                thisObj = CreateRValue(x.IsMemberOf);
-            }
-
+            var thisObj = GetMemberOf(x);
             var name = CreateRValue(x.VarNameEx);
             Result(new IndirectVariablePoint(x, name, thisObj));
         }
@@ -487,11 +503,7 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var arguments = CreateArguments(x.CallSignature);
 
-            ValuePoint thisObj = null;
-            if (x.IsMemberOf != null)
-            {
-                thisObj = CreateRValue(x.IsMemberOf);
-            }
+            var thisObj = GetMemberOf(x);
 
             Result(new FunctionCallPoint(x, thisObj, arguments));
         }
@@ -501,11 +513,7 @@ namespace Weverca.AnalysisFramework.Expressions
             var arguments = CreateArguments(x.CallSignature);
             var name = CreateRValue(x.PublicNameExpr);
 
-            ValuePoint thisObj = null;
-            if (x.IsMemberOf != null)
-            {
-                thisObj = CreateRValue(x.IsMemberOf);
-            }
+            var thisObj = GetMemberOf(x);
 
             Result(new IndirectFunctionCallPoint(x, name, thisObj, arguments));
         }
@@ -576,35 +584,10 @@ namespace Weverca.AnalysisFramework.Expressions
         {
             var index = CreateRValue(x.Index);
 
-            ValuePoint array;
-            if (x.IsMemberOf == null)
-            {
-                array = CreateRValue(x.Array);
-            }
-            else
-            {
-                var thisObj = CreateRValue(x.IsMemberOf);
+            var thisObj = GetMemberOf(x);
 
-                var indirectArray = x.Array as IndirectVarUse;
-                var directArray = x.Array as DirectVarUse;
-                if (indirectArray != null)
-                {
-                    var arrayName = CreateRValue(indirectArray.VarNameEx);
-                    array = new IndirectVariablePoint(indirectArray, arrayName, thisObj);
+            var array = CreateRValue(x.Array, thisObj);
 
-                    RegisterPoint(array);
-                }
-                else if (directArray != null)
-                {
-                    array = new VariablePoint(directArray, thisObj);
-
-                    RegisterPoint(array);
-                }
-                else
-                {
-                    throw new NotSupportedException("Unknown array construct: " + x.Array);
-                }
-            }
 
             Result(new ItemUsePoint(x, array, index));
         }

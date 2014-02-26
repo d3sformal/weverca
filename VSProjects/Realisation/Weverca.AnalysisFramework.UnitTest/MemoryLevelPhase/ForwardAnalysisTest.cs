@@ -1616,6 +1616,30 @@ $result= $unknown ? $a[0] : 'b' ;
 
 ".AssertVariable("result").HasValues("a", "b").Analysis(Analyses.WevercaAnalysisTest);
 
+        readonly static TestCase IndexingField_CASE = @"
+
+class Test{
+    var $b;
+    var $t;
+}
+
+$b=new Test();
+$b->t=$b;
+
+$b->t->r[4][5] = 7;
+
+$result=$b->r[4][5];
+
+".AssertVariable("result").HasValues(7).Analysis(Analyses.WevercaAnalysisTest);
+
+        
+        [TestMethod]
+        public void IndexingField()
+        {
+            AnalysisTestUtils.RunTestCase(IndexingField_CASE);
+        }
+
+
         [TestMethod]
         public void ArrayMayConditionalExpressionResult()
         {
