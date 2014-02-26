@@ -239,12 +239,10 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
             }
         }
 
-        /// <summary>
-        /// TODO this implementation is inefficient
-        /// </summary>
-        /// <param name="inputs"></param>
+        /// <inheritdoc />
         protected override void extend(ISnapshotReadonly[] inputs)
         {
+            //TODO: this is inefficient
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
@@ -669,12 +667,12 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         /// <inheritdoc />
-        protected override void declareGlobal(FunctionValue function)
+        protected override void declareGlobal(FunctionValue declaration)
         {
-            var storage = getFunctionStorage(function.Name.Value);
+            var storage = getFunctionStorage(declaration.Name.Value);
 
             ReportMemoryEntryCreation();
-            assign(storage, new MemoryEntry(function));
+            assign(storage, new MemoryEntry(declaration));
         }
 
         /// <summary>
