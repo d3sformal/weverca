@@ -175,7 +175,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "write: " + this.ToString() + " value: " + value.ToString());
+            // SnapshotLogger.append(context, "write: " + this.ToString() + " value: " + value.ToString());
 
             switch (snapshot.CurrentMode)
             {
@@ -247,7 +247,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "write without copy:" + this.ToString());
+            // SnapshotLogger.append(context, "write without copy:" + this.ToString());
 
             AssignCollector collector = new AssignCollector(snapshot);
             collector.ProcessPath(path);
@@ -265,7 +265,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "set alias: " + this.ToString() + " from: " + aliasedEntry.ToString());
+            // SnapshotLogger.append(context, "set alias: " + this.ToString() + " from: " + aliasedEntry.ToString());
 
             if (snapshot.CurrentMode == SnapshotMode.InfoLevel)
             {
@@ -300,7 +300,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override bool isDefined(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "is defined:" + this.ToString());
+            // SnapshotLogger.append(context, "is defined:" + this.ToString());
 
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
@@ -332,14 +332,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "read: " + this.ToString());
+            // SnapshotLogger.append(context, "read: " + this.ToString());
 
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
 
             ReadWorker worker = new ReadWorker(snapshot);
             MemoryEntry entry = worker.ReadValue(collector);
-            SnapshotLogger.appendToSameLine(" value: " + entry.ToString());
+            // SnapshotLogger.appendToSameLine(" value: " + entry.ToString());
 
             return entry;
         }
@@ -391,7 +391,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "resolve method - path: " + this.ToString() + " method: " + methodName); 
+            // SnapshotLogger.append(context, "resolve method - path: " + this.ToString() + " method: " + methodName); 
             
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
