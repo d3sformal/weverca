@@ -70,7 +70,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         }
     }
 
-   
+
     /// <summary>
     /// Stores information about native object
     /// </summary>
@@ -86,7 +86,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Structure which stores all native objects
         /// </summary>
         private Dictionary<QualifiedName, ClassDecl> nativeObjects;
-        
+
         /// <summary>
         /// Structure which stores all native objects, with concrete implementation
         /// </summary>
@@ -360,30 +360,30 @@ namespace Weverca.Analysis.NativeAnalyzers
             foreach (var nativeObject in NativeObjectsAnalyzerHelper.mutableNativeObjects.Values)
             {
                 List<QualifiedName> newBaseClasses = new List<QualifiedName>();
-                if(nativeObject.BaseClasses!=null)
+                if (nativeObject.BaseClasses != null)
                 {
-                    QualifiedName baseClassName=nativeObject.BaseClasses.Last();
+                    QualifiedName baseClassName = nativeObject.BaseClasses.Last();
                     while (true)
                     {
                         newBaseClasses.Add(baseClassName);
                         var baseClass = NativeObjectsAnalyzerHelper.mutableNativeObjects[baseClassName];
                         foreach (var constant in baseClass.Constants)
                         {
-                            nativeObject.Constants[constant.Key]=constant.Value;
+                            nativeObject.Constants[constant.Key] = constant.Value;
                         }
                         foreach (var field in baseClass.Fields)
                         {
-                            nativeObject.Fields[field.Key]=field.Value;
+                            nativeObject.Fields[field.Key] = field.Value;
                         }
                         foreach (var method in baseClass.ModeledMethods)
                         {
-                            nativeObject.ModeledMethods[method.Key]=method.Value;
+                            nativeObject.ModeledMethods[method.Key] = method.Value;
                         }
                         if (baseClass.BaseClasses != null && baseClass.BaseClasses.Count > 0)
                         {
                             baseClassName = baseClass.BaseClasses.Last();
                         }
-                        else 
+                        else
                         {
                             break;
                         }
@@ -393,8 +393,8 @@ namespace Weverca.Analysis.NativeAnalyzers
                 nativeObject.BaseClasses = newBaseClasses;
                 nativeObjects[nativeObject.QualifiedName] = nativeObject.Build();
 
-                
-                
+
+
             }
             initReportingFunctions();
             initCleaningFunctions();
@@ -428,25 +428,26 @@ namespace Weverca.Analysis.NativeAnalyzers
 
         private void initReportingFunctions()
         {
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("query")), getList(FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("real_query")), getList(FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("send_query")), getList(FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("change_user")), getList(FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("multi_query"), new Name("select_db")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("query")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("real_query")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("send_query")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("change_user")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("select_db")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli_stmt"), new Name("execute")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli_stmt"), new Name("execute")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("query")),getList( FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("sendQuery")),getList( FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("query")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhConnection"), new Name("sendQuery")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhPreparedStatement"), new Name("execute")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("MysqlndUhPreparedStatement"), new Name("execute")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("exec")), getList(FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("query")), getList(FlagType.SQLDirty));
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("querySingle")),getList( FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("exec")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("query")), getList(FlagType.SQLDirty));
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3"), new Name("querySingle")), getList(FlagType.SQLDirty));
 
-           ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3Stmt"), new Name("execute")), getList(FlagType.SQLDirty));
-          
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("SQLite3Stmt"), new Name("execute")), getList(FlagType.SQLDirty));
+
+            ReportingFunctions.Add(new MethodIdentifier(getQualifiedName("mysqli"), new Name("__construct")), getList(FlagType.SQLDirty));
         }
         #endregion
 
@@ -553,16 +554,16 @@ namespace Weverca.Analysis.NativeAnalyzers
 
             var functionResult = NativeAnalyzerUtils.ResolveReturnValue(Method.ReturnType, flow);
             var arguments = getArguments(flow);
-            
+
             var thisVariable = flow.OutSet.GetVariable(new VariableIdentifier("this"));
             List<Value> inputValues = new List<Value>();
             bool isStaticCall = false;
-            
+
             if (thisVariable.ReadMemory(flow.OutSet.Snapshot).PossibleValues.Count() == 1 && thisVariable.ReadMemory(flow.OutSet.Snapshot).PossibleValues.First() is UndefinedValue)
             {
                 isStaticCall = true;
                 var fieldsEntries = new List<MemoryEntry>();
-                
+
                 foreach (FieldInfo field in fields.Values)
                 {
                     var fieldEntry = thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
@@ -585,7 +586,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                     thisVariable.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value)).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(newValues));
                 }
             }
-            
+
             foreach (var argument in arguments)
             {
                 inputValues.AddRange(argument.PossibleValues);
@@ -611,13 +612,13 @@ namespace Weverca.Analysis.NativeAnalyzers
             functionResult = new MemoryEntry(FlagsHandler.CopyFlags(inputValues, functionResult.PossibleValues));
             if (NativeObjectAnalyzer.CleaningFunctions.ContainsKey(methodIdentifier))
             {
-                foreach(var flag in NativeObjectAnalyzer.CleaningFunctions[methodIdentifier])
+                foreach (var flag in NativeObjectAnalyzer.CleaningFunctions[methodIdentifier])
                 {
                     functionResult = new MemoryEntry(FlagsHandler.Clean(functionResult.PossibleValues, flag));
                 }
             }
             flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
-            
+
             var assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, inputValues, (new NativeFunction[1] { Method }).ToList());
         }
 
@@ -645,12 +646,25 @@ namespace Weverca.Analysis.NativeAnalyzers
             var fields = nativeClass.Fields;
 
             var thisVariable = flow.OutSet.GetVariable(new VariableIdentifier("this"));
-            List<Value> inputValues=new List<Value>();
-           
+            List<Value> inputValues = new List<Value>();
+
             foreach (var argument in getArguments(flow))
             {
                 inputValues.AddRange(argument.PossibleValues);
             }
+            MethodIdentifier methodIdentifier = new MethodIdentifier(ObjectName, Method.Name.Name);
+            if (NativeObjectAnalyzer.ReportingFunctions.ContainsKey(methodIdentifier))
+            {
+                foreach (var flag in NativeObjectAnalyzer.ReportingFunctions[methodIdentifier])
+                {
+                    if (FlagsHandler.IsDirty(inputValues, flag))
+                    {
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flag));
+                        break;
+                    }
+                }
+            }
+            
             foreach (FieldInfo field in fields.Values)
             {
                 if (field.IsStatic == false)

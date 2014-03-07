@@ -26,7 +26,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Stored native analyzer
         /// </summary>
-        internal readonly NativeAnalyzerMethod Method;
+        public readonly NativeAnalyzerMethod Method;
 
         /// <summary>
         /// Element which caused invoking of this analyzer - is used for sharing position

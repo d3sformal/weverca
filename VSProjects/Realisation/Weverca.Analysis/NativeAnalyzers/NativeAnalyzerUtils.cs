@@ -457,7 +457,6 @@ namespace Weverca.Analysis.NativeAnalyzers
             if (objectAnalyzer.ExistClass(typeName))
             {
                 ClassDecl decl = objectAnalyzer.GetClass(typeName);
-
                 var fields = objectAnalyzer.GetClass(typeName).Fields;
                 ObjectValue value = flow.OutSet.CreateObject(flow.OutSet.CreateType(decl));
                 var newObject=flow.OutSet.GetLocalControlVariable(new VariableName(".tmpObject"));

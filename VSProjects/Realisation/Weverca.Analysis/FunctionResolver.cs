@@ -1021,7 +1021,15 @@ namespace Weverca.Analysis
             var methods = thisObject.ResolveMethod(OutSnapshot, name);
             foreach (var method in methods)
             {
-                result[method.DeclaringElement] = method;
+                if (method is NativeAnalyzerValue)
+                {
+                    NativeAnalyzerValue value = method as NativeAnalyzerValue;
+                    result[method.DeclaringElement] = OutSet.CreateFunction(value.Name, new NativeAnalyzer(value.Analyzer.Method,Flow.CurrentPartial));
+                }
+                else
+                {
+                    result[method.DeclaringElement] = method;
+                }
             }
 
             if (result.Count == 0)
@@ -1038,7 +1046,15 @@ namespace Weverca.Analysis
             var methods = OutSet.ResolveStaticMethod(value, name);
             foreach (var method in methods)
             {
-                result[method.DeclaringElement] = method;
+                if (method is NativeAnalyzerValue)
+                {
+                    NativeAnalyzerValue analyzer = method as NativeAnalyzerValue;
+                    result[method.DeclaringElement] = OutSet.CreateFunction(analyzer.Name, new NativeAnalyzer(analyzer.Analyzer.Method, Flow.CurrentPartial));
+                }
+                else
+                {
+                    result[method.DeclaringElement] = method;
+                }
             }
 
             if (result.Count == 0)
