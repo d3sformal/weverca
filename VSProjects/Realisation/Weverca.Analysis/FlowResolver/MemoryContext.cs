@@ -134,7 +134,7 @@ namespace Weverca.Analysis.FlowResolver
         }
 
         /// <summary>
-        /// Assigns the values which are avaluable as <c>true</c> to the variable.
+        /// Assigns the values which are evaluable as <c>true</c> to the variable.
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
@@ -144,7 +144,7 @@ namespace Weverca.Analysis.FlowResolver
         }
 
         /// <summary>
-        /// Assigns the values which are avaluable as <c>false</c> to the variable.
+        /// Assigns the values which are evaluable as <c>false</c> to the variable.
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
