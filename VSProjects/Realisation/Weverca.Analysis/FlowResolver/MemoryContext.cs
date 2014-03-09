@@ -138,9 +138,9 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
-        public void AssignTrueAvaluable(VariableName variableName, LangElement element)
+        public void AssignTrueEvaluable(VariableName variableName, LangElement element)
         {
-            AssignAvaluable(variableName, element, true);
+            AssignEvaluable(variableName, element, true);
         }
 
         /// <summary>
@@ -148,9 +148,9 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         /// <param name="variableName">Name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
-        public void AssignFalseAvaluable(VariableName variableName, LangElement element)
+        public void AssignFalseEvaluable(VariableName variableName, LangElement element)
         {
-            AssignAvaluable(variableName, element, false);
+            AssignEvaluable(variableName, element, false);
         }
 
         #endregion
@@ -219,7 +219,7 @@ namespace Weverca.Analysis.FlowResolver
             }
         }
 
-        void AssignAvaluable(VariableName variableName, LangElement element, bool desiredAvaluation)
+        void AssignEvaluable(VariableName variableName, LangElement element, bool desiredEvaluation)
         {
             var variableInfo = log.ReadSnapshotEntry(element);
             if (variableInfo != null)
@@ -227,7 +227,7 @@ namespace Weverca.Analysis.FlowResolver
                 MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
                 if (memoryEntry != null && memoryEntry.PossibleValues != null)
                 {
-                    var possibleValues = memoryEntry.PossibleValues.Where(a => ToBoolean(valueFactory.Snapshot, a, desiredAvaluation) == desiredAvaluation);
+                    var possibleValues = memoryEntry.PossibleValues.Where(a => ToBoolean(valueFactory.Snapshot, a, desiredEvaluation) == desiredEvaluation);
 
                     if (!variableValues.ContainsKey(variableName))
                     {

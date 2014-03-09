@@ -586,12 +586,12 @@ namespace Weverca.Analysis.FlowResolver
 
         void AssumeTrueDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            memoryContext.AssignTrueAvaluable(directVarUse.VarName, directVarUse);
+            memoryContext.AssignTrueEvaluable(directVarUse.VarName, directVarUse);
         }
 
         void AssumeFalseDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            memoryContext.AssignFalseAvaluable(directVarUse.VarName, directVarUse);
+            memoryContext.AssignFalseEvaluable(directVarUse.VarName, directVarUse);
         }
 
         #endregion
