@@ -7,8 +7,11 @@ using System.Text;
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.AnalysisFramework.Memory;
 using Weverca.CodeMetrics;
 using Weverca.Parsers;
+using Weverca.Output;
+using Weverca.Analysis;
 
 namespace Weverca
 {
@@ -25,8 +28,8 @@ namespace Weverca
         /// </summary>
         /// <param name="metricsType"></param>
         /// <param name="analyzedFile"></param>
-        /// <param name="metricsArgs"></param>
-        internal static void Run(string metricsType, string analyzedFile, string[] metricsArgs)
+        /// <param name="otherArgs"></param>
+        internal static void Run(string metricsType, string analyzedFile, string[] otherArgs)
         {
             // The first argument determines an action
             if (metricsType == "-quantity")
@@ -44,22 +47,22 @@ namespace Weverca
                     }
                 }
             }
-            else if (metricsType == "-constructs" && metricsArgs.Length > 0)
+            else if (metricsType == "-constructs" && otherArgs.Length > 0)
             {
                 if (Directory.Exists(analyzedFile))
                 {
-                    ProcessDirectory(analyzedFile, metricsArgs);
+                    ProcessDirectory(analyzedFile, otherArgs);
                 }
                 else if (File.Exists(analyzedFile))
                 {
                     string fileExtension = Path.GetExtension(analyzedFile);
                     if (fileExtension == PHP_FILE_EXTENSION)
                     {
-                        ProcessFile(analyzedFile, metricsArgs);
+                        ProcessFile(analyzedFile, otherArgs);
                     }
                 }
             }
-            else if (metricsType == "-constructsFromFileOfFiles" && metricsArgs.Length > 0)
+            else if (metricsType == "-constructsFromFileOfFiles" && otherArgs.Length > 0)
             {
                 var fileToRead = new StreamReader(analyzedFile);
                 string line;
@@ -67,19 +70,43 @@ namespace Weverca
                 {
                     if (Directory.Exists(line))
                     {
-                        ProcessDirectory(line, metricsArgs);
+                        ProcessDirectory(line, otherArgs);
                     }
                     else if (File.Exists(line))
                     {
                         var fileExtension = Path.GetExtension(line);
                         if (fileExtension == PHP_FILE_EXTENSION)
                         {
-                            ProcessFile(line, metricsArgs);
+                            ProcessFile(line, otherArgs);
                         }
                     }
                 }
 
                 fileToRead.Close();
+            }
+            else if (metricsType == "-warnings")
+            {
+                List<string> filesToAnalyze = new List<string>();
+                
+                string fileExtension = Path.GetExtension(analyzedFile);
+                if (fileExtension == PHP_FILE_EXTENSION)
+                {
+                    filesToAnalyze.Add(analyzedFile);
+                }
+                
+                for (int i = 0; i< otherArgs.Length; i++)
+                {
+                    fileExtension = Path.GetExtension(otherArgs[i]);
+                    if (fileExtension == PHP_FILE_EXTENSION)
+                    {
+                        filesToAnalyze.Add(otherArgs[i]);
+                    }
+                }
+
+                var memoryModel = MemoryModels.MemoryModels.CopyMM;
+                var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
+                RunStaticAnalysis(filesToAnalyze.ToArray(), analysis, memoryModel);
+
             }
         }
 
@@ -230,6 +257,48 @@ namespace Weverca
             var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(fileName)),
                 new FullPath(fileName));
             return new SyntaxParser(sourceFile, code);
+        }
+
+        private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
+        {
+            var console = new ConsoleOutput();
+
+            foreach (var argument in filenames)
+            {
+                var filesInfo = Analyzer.GetFileNames(argument);
+                if (filesInfo == null)
+                {
+                    Console.WriteLine("Path \"{0}\" cannot be recognized", argument);
+                    Console.WriteLine(); 
+                    continue;
+                }
+
+                else if (filesInfo.Length <= 0)
+                {
+                    Console.WriteLine("Path pattern \"{0}\" does not match any file", argument);
+                    Console.WriteLine();
+                }
+
+                foreach (var fileInfo in filesInfo)
+                {
+                    console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+
+                    try
+                    {
+
+                        var watch = System.Diagnostics.Stopwatch.StartNew();
+                        var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
+                        watch.Stop();
+
+                        console.Warnings(AnalysisWarningHandler.GetWarnings());
+                        console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+                    }
+                    catch (Exception e)
+                    {
+                        console.Error(e.Message);
+                    }
+                }
+            }
         }
     }
 }

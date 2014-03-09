@@ -79,11 +79,11 @@ namespace Weverca
                     Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
                     RunStaticAnalysis(analysisFiles, analysis, memoryModel);
                     break;
-                /*case "-cmide":
+                case "-cmide":
                     var metricsArgs = new string[args.Length - 3];
                     Array.Copy(args, 2, metricsArgs, 0, args.Length - 3);
                     MetricsForIDEIntegration.Run(args[1], args[args.Length - 1], metricsArgs);
-                    break;*/
+                    break;
                 case "-metrics":
                     var metricFileNames=new string[args.Length-1];
                     Array.Copy(args, 1, metricFileNames, 0, args.Length - 1);
