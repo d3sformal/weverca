@@ -586,37 +586,12 @@ namespace Weverca.Analysis.FlowResolver
 
         void AssumeTrueDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            var snapshotEntry = log.ReadSnapshotEntry(directVarUse);
-            if (snapshotEntry != null)
-            {
-                MemoryEntry memoryEntry = snapshotEntry.ReadMemory(flowOutputSet);
-                if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
-                {
-                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(true));
-                }
-            }
+            memoryContext.AssignTrueAvaluable(directVarUse.VarName, directVarUse);
         }
 
         void AssumeFalseDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            var snapshotEntry = log.ReadSnapshotEntry(directVarUse);
-            if (snapshotEntry != null)
-            {
-                MemoryEntry memoryEntry = snapshotEntry.ReadMemory(flowOutputSet);
-                if (memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue))
-                {
-                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateBool(false));
-                }
-                else if (memoryEntry.PossibleValues.Any(a => a is AnyIntegerValue))
-                {
-                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateInt(0));
-                }
-                else if (memoryEntry.PossibleValues.Any(a => a is IntegerIntervalValue))
-                {
-                    //there should be 0 in the interval
-                    memoryContext.IntersectionAssign(directVarUse.VarName, directVarUse, memoryContext.CreateInt(0));
-                }
-            }
+            memoryContext.AssignFalseAvaluable(directVarUse.VarName, directVarUse);
         }
 
         #endregion

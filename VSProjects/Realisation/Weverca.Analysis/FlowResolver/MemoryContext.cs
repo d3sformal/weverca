@@ -133,6 +133,26 @@ namespace Weverca.Analysis.FlowResolver
             IntersectValues(variableValues[variableName], value);
         }
 
+        /// <summary>
+        /// Assigns the values which are avaluable as <c>true</c> to the variable.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
+        public void AssignTrueAvaluable(VariableName variableName, LangElement element)
+        {
+            AssignAvaluable(variableName, element, true);
+        }
+
+        /// <summary>
+        /// Assigns the values which are avaluable as <c>false</c> to the variable.
+        /// </summary>
+        /// <param name="variableName">Name of the variable.</param>
+        /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
+        public void AssignFalseAvaluable(VariableName variableName, LangElement element)
+        {
+            AssignAvaluable(variableName, element, false);
+        }
+
         #endregion
 
         #region Factory Methods
@@ -184,6 +204,42 @@ namespace Weverca.Analysis.FlowResolver
         #endregion
 
         #region private methods
+
+        bool ToBoolean(SnapshotBase snapshot, Value value, bool defaultValue)
+        {
+            var converter = new BooleanConverter(snapshot);
+            var result = converter.EvaluateToBoolean(value);
+            if (result != null)
+            {
+                return result.Value;
+            }
+            else
+            {
+                return defaultValue;
+            }
+        }
+
+        void AssignAvaluable(VariableName variableName, LangElement element, bool desiredAvaluation)
+        {
+            var variableInfo = log.ReadSnapshotEntry(element);
+            if (variableInfo != null)
+            {
+                MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
+                if (memoryEntry != null && memoryEntry.PossibleValues != null)
+                {
+                    var possibleValues = memoryEntry.PossibleValues.Where(a => ToBoolean(valueFactory.Snapshot, a, desiredAvaluation) == desiredAvaluation);
+
+                    if (!variableValues.ContainsKey(variableName))
+                    {
+                        variableValues.Add(variableName, possibleValues.ToList());
+                    }
+                    else
+                    {
+                        variableValues[variableName] = possibleValues.ToList();
+                    }
+                }
+            }
+        }
 
         void IntersectValues(List<Value> values, Value newValue)
         {
