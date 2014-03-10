@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -116,6 +117,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         fatalError(false);
                     }
+
                     return objectValue.ReadField(OutSnapshot, new VariableIdentifier(fieldNames));
                 }
             }
@@ -140,6 +142,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     }
                 }
             }
+
             if (types.Count() == 0)
             {
                 foreach (var f in field.PossibleNames)
@@ -216,7 +219,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                                     {
                                         result.Add(name.Value);
                                     }
-
                                 }
                                 else
                                 {
@@ -1120,48 +1122,58 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     continue;
                 }
 
+                var typeValue = typeValues.First();
+
                 foreach (var value in expression.PossibleValues)
                 {
                     var objectValue = value as ObjectValue;
-                    if (objectValue != null)
+                    if (objectValue == null)
                     {
-                        // TODO: Resolving of type inheritance
-                        // var typeValue = OutSet.ObjectType(objectValue);
-                        var isInstanceOf = OutSet.AnyBooleanValue as Value;
-
-                        var booleanValue = isInstanceOf as BooleanValue;
-                        if (booleanValue != null)
+                        if (isAlwaysInstanceOf)
                         {
-                            if (booleanValue.Value)
+                            isAlwaysInstanceOf = false;
+                            if (!isNeverInstanceOf)
                             {
-                                if (isNeverInstanceOf)
-                                {
-                                    isNeverInstanceOf = false;
-                                    if (!isAlwaysInstanceOf)
-                                    {
-                                        return new MemoryEntry(OutSet.AnyBooleanValue);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (isAlwaysInstanceOf)
-                                {
-                                    isAlwaysInstanceOf = false;
-                                    if (!isNeverInstanceOf)
-                                    {
-                                        return new MemoryEntry(OutSet.AnyBooleanValue);
-                                    }
-                                }
+                                return new MemoryEntry(OutSet.AnyBooleanValue);
                             }
                         }
-                        else
-                        {
-                            var anyBooleanValue = isInstanceOf as AnyBooleanValue;
-                            Debug.Assert(anyBooleanValue != null,
-                                "Casting to boolean can result only to boolean value");
 
-                            return new MemoryEntry(anyBooleanValue);
+                        continue;
+                    }
+
+                    var objectType = OutSet.ObjectType(objectValue);
+                    var booleanValue = (objectType == typeValue);
+                    if (booleanValue)
+                    {
+                        if (isNeverInstanceOf)
+                        {
+                            isNeverInstanceOf = false;
+                            if (!isAlwaysInstanceOf)
+                            {
+                                return new MemoryEntry(OutSet.AnyBooleanValue);
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    foreach (var baseClass in objectType.Declaration.BaseClasses)
+                    {
+                        if (baseClass == typeName)
+                        {
+                            booleanValue = true;
+                        }
+                    }
+
+                    if (booleanValue)
+                    {
+                        if (isNeverInstanceOf)
+                        {
+                            isNeverInstanceOf = false;
+                            if (!isAlwaysInstanceOf)
+                            {
+                                return new MemoryEntry(OutSet.AnyBooleanValue);
+                            }
                         }
                     }
                     else
@@ -1252,6 +1264,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         {
                             numberOfWarnings++;
                         }
+
                         result.AddRange(res.PossibleValues);
 
                         break;
@@ -1260,6 +1273,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                         break;
                 }
             }
+
             if (numberOfWarnings > 0)
             {
                 if (numberOfWarnings >= thisObject.Count)
@@ -1271,6 +1285,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     fatalError(false);
                 }
             }
+
             return new MemoryEntry(result);
         }
 
@@ -1297,14 +1312,38 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private MemoryEntry classConstant(QualifiedName qualifiedName, VariableName variableName,
             out bool success)
         {
-            success = true;
-            NativeObjectAnalyzer analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
+            var typeNames = ResolveSpecialClassKeywords(qualifiedName);
+
+            var enumerator = typeNames.GetEnumerator();
+            if (!enumerator.MoveNext())
+            {
+                success = false;
+                return new MemoryEntry(OutSet.UndefinedValue);
+            }
+
+            qualifiedName = enumerator.Current;
+
+            if (enumerator.MoveNext())
+            {
+                var names = new HashSet<StringValue>();
+                foreach (var typeName in typeNames)
+                {
+                    names.Add(OutSet.CreateString(typeName.Name.Value));
+                }
+
+                success = true;
+                var memoryEntry = new MemoryEntry(names);
+                return ClassConstant(memoryEntry, variableName);
+            }
+
+            var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             if (analyzer.ExistClass(qualifiedName))
             {
                 var constants = analyzer.GetClass(qualifiedName).Constants;
                 ConstantInfo value;
                 if (constants.TryGetValue(new FieldIdentifier(qualifiedName, variableName), out value))
                 {
+                    success = true;
                     return value.Value;
                 }
                 else
@@ -1322,6 +1361,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 var constant = OutSet.GetControlVariable(new VariableName(name));
                 if (constant.IsDefined(OutSet.Snapshot))
                 {
+                    success = true;
                     return constant.ReadMemory(OutSet.Snapshot);
                 }
                 else
@@ -1332,6 +1372,74 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     return new MemoryEntry(OutSet.UndefinedValue);
                 }
             }
+        }
+
+        private IEnumerable<QualifiedName> ResolveSpecialClassKeywords(QualifiedName qualifiedName)
+        {
+            var result = new List<QualifiedName>();
+            var typeName = qualifiedName.Name.Value;
+
+            if (string.Equals(typeName, "self", StringComparison.Ordinal)
+                || string.Equals(typeName, "parent", StringComparison.Ordinal))
+            {
+                var snapshotEntry = OutSet.ReadLocalControlVariable(FunctionResolver.calledObjectTypeName);
+
+                if (snapshotEntry.IsDefined(OutSet.Snapshot))
+                {
+                    var calledObjectTypes = snapshotEntry.ReadMemory(OutSet.Snapshot);
+
+                    if (string.Equals(typeName, "self", StringComparison.Ordinal))
+                    {
+                        foreach (var calledObjectType in calledObjectTypes.PossibleValues)
+                        {
+                            var classValue = calledObjectType as TypeValue;
+                            Debug.Assert(classValue != null, "The control variable is always type value");
+                            result.Add(classValue.QualifiedName);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Assert(string.Equals(typeName, "parent", StringComparison.Ordinal),
+                            "There must be \"parent\" value");
+
+                        foreach (var calledObjectType in calledObjectTypes.PossibleValues)
+                        {
+                            var classValue = calledObjectType as TypeValue;
+                            Debug.Assert(classValue != null, "The control variable is always type value");
+                            var baseClassDeclarations = classValue.Declaration.BaseClasses;
+
+                            if (baseClassDeclarations.Count > 0)
+                            {
+                                result.Add(baseClassDeclarations.Last());
+                            }
+                            else
+                            {
+                                SetWarning("Cannot access to parent class, class has no parent",
+                                    AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (string.Equals(typeName, "self", StringComparison.Ordinal))
+                    {
+                        SetWarning("Cannot access to itself when it is not in class",
+                            AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS);
+                    }
+                    else
+                    {
+                        SetWarning("Cannot access to parent when it is not in class",
+                            AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS);
+                    }
+                }
+            }
+            else
+            {
+                result.Add(qualifiedName);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -1350,23 +1458,25 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             if (resolvedTypes.Count() > 0)
             {
-                if (!analyzer.ExistClass(resolvedTypes.First()))
+                var resolvedType = resolvedTypes.First();
+
+                if (!analyzer.ExistClass(resolvedType))
                 {
                     var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
-                    var identifier = new MemberIdentifier(resolvedTypes.First().Name.LowercaseValue);
+                    var identifier = new MemberIdentifier(resolvedType.Name.LowercaseValue);
                     var classStorage = snapshotEntry.ReadIndex(OutSet.Snapshot, identifier);
 
                     if (!classStorage.IsDefined(OutSet.Snapshot))
                     {
-                        var message = "Class " + resolvedTypes.First().Name.Value + " doesn't exist";
+                        var message = "Class " + resolvedType.Name.Value + " doesn't exist";
                         SetWarning(message, AnalysisWarningCause.CLASS_DOESNT_EXIST);
                         return getStaticVariableSink();
                     }
                 }
 
                 var names = new List<QualifiedName>();
-                names.Add(resolvedTypes.First());
-                return resolveStaticVariable(names, field,true);
+                names.Add(resolvedType);
+                return resolveStaticVariable(names, field, true);
             }
             else
             {
@@ -1381,7 +1491,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var analyzer = NativeObjectAnalyzer.GetInstance(OutSet);
             var classes = new List<QualifiedName>();
             bool isAllwasConcrete = true;
-            foreach (var name in typeNames(possibleTypes,out isAllwasConcrete))
+            foreach (var name in typeNames(possibleTypes, out isAllwasConcrete))
             {
                 if (!analyzer.ExistClass(name.QualifiedName))
                 {
@@ -1533,6 +1643,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         fatalError(false);
                     }
+
                     var snapshotEntry = OutSet.ReadControlVariable(FunctionResolver.staticVariables);
                     var storage = snapshotEntry.ReadIndex(OutSet.Snapshot, new MemberIdentifier(names));
                     return storage.ReadIndex(OutSet.Snapshot, new MemberIdentifier(newNames));
@@ -1540,8 +1651,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
         }
 
-
-        private IEnumerable<GenericQualifiedName> typeNames(MemoryEntry typeValue,out bool isAllwasConcrete)
+        private IEnumerable<GenericQualifiedName> typeNames(MemoryEntry typeValue, out bool isAllwasConcrete)
         {
             isAllwasConcrete = true;
             var result = new List<GenericQualifiedName>();

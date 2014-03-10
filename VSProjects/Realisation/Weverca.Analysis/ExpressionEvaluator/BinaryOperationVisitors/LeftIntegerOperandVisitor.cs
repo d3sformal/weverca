@@ -474,11 +474,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyNumericValue(AnyNumericValue value)
         {
-            result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand.Value);
-            if (result != null)
-            {
-                return;
-            }
+
 
             base.VisitAnyNumericValue(value);
         }
@@ -493,6 +489,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.AnyBooleanValue;
                     break;
                 default:
+                    result = ArithmeticOperation.RightAbstractArithmetic(flow, operation, leftOperand.Value);
+                    if (result != null)
+                    {
+                        return;
+                    }
+
                     base.VisitAnyIntegerValue(value);
                     break;
             }
@@ -510,6 +512,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     result = OutSet.CreateBool(true);
                     break;
                 default:
+                    result = ArithmeticOperation.AbstractFloatArithmetic(Snapshot, operation);
+                    if (result != null)
+                    {
+                        return;
+                    }
+
                     base.VisitAnyFloatValue(value);
                     break;
             }
