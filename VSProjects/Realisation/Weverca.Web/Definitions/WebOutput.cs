@@ -4,6 +4,7 @@ using System.Text;
 
 using Common.WebDefinitions.Extensions;
 using Weverca.Output.Output;
+using System.Web;
 
 namespace Weverca.Web.Definitions
 {
@@ -53,12 +54,12 @@ namespace Weverca.Web.Definitions
 
         protected override void info(string text)
         {
-            print(Info, text);
+            print(Info, System.Web.HttpUtility.HtmlEncode(text));
         }
 
         protected override void hint(string text)
         {
-            print(Hint, text);
+            print(Hint, System.Web.HttpUtility.HtmlEncode(text));
         }
 
         protected override void comment(string text)
@@ -73,7 +74,7 @@ namespace Weverca.Web.Definitions
 
         protected override void variable(string name)
         {
-            print(Variable, name);
+            print(Variable, System.Web.HttpUtility.HtmlEncode(name));
         }
 
         protected override void line()
