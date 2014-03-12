@@ -263,5 +263,12 @@ namespace Weverca.AnalysisFramework.Memory
             value.setStorage(getStorage());
             return value;
         }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return this.Value.Replace("\n", "\\n");
+        }
+
     }
 }

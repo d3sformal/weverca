@@ -54,7 +54,7 @@ namespace Weverca.Web.Definitions
 
         protected override void info(string text)
         {
-            print(Info, System.Web.HttpUtility.HtmlEncode(text));
+              print(Info, System.Web.HttpUtility.HtmlEncode(text));
         }
 
         protected override void hint(string text)
