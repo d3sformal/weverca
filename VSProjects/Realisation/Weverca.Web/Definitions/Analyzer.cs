@@ -63,10 +63,25 @@ namespace Weverca.Web.Definitions
 
         static string RunVerification(ControlFlowGraph.ControlFlowGraph controlFlowGraph, string fileName, MemoryModels.MemoryModels memoryModel)
         {
-            var ppGraph = Analyze(controlFlowGraph, fileName, memoryModel);
+
             var output = new WebOutput();
-            var graphWalker = new CallGraphPrinter(ppGraph);
-            graphWalker.Run(output);
+            try
+            {
+                var ppGraph = Analyze(controlFlowGraph, fileName, memoryModel);    
+                if (ppGraph.End!=null)
+                {
+                    output.ProgramPointInfo("End point", ppGraph.End);
+                }
+                else
+                {
+                    output.Error("End point was not reached");
+                }
+            }
+            catch (Exception e)
+            {
+                output.Error(e.Message);
+            }
+          
             return output.Output;
         }
 

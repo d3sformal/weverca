@@ -40,6 +40,7 @@ namespace Weverca.Web.Controllers
                 model.AssignInputType();
                 
                 ResultModel result;
+                
                 bool completed = TryExecute(() => Analyzer.Run(model.PhpCode, model.AnalysisModel), Settings.Default.AnalysisTimeout, out result);
                 if (completed)
                 {
@@ -49,6 +50,7 @@ namespace Weverca.Web.Controllers
                 {
                     return View("Message", new MessageModel(Resources.Error, Resources.AnalysisTimeouted));
                 }
+
             }
         }
 
@@ -71,6 +73,7 @@ namespace Weverca.Web.Controllers
             }
             result = t;
             return completed;
+            
         }
     }
 }

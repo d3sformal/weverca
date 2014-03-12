@@ -200,7 +200,7 @@
     <value>Rating Metrics</value>
   </data>
   <data name="ResultTitle" xml:space="preserve">
-    <value>Verification results</value>
+    <value>Memory snapshot</value>
   </data>
   <data name="RunIndicatorMetrics" xml:space="preserve">
     <value>Run metrics indicating construct presence</value>
@@ -224,7 +224,7 @@
     <value>..\Resources\simpleObject.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
   <data name="VerificationResults" xml:space="preserve">
-    <value>Verifications Results</value>
+    <value>Memory snapshot</value>
   </data>
   <data name="Verify" xml:space="preserve">
     <value>Verify</value>
