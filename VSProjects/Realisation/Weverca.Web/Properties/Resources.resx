@@ -178,6 +178,9 @@
   <data name="MetalcupStatis" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\metalcupStatis.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
   </data>
+  <data name="SimpleTests" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\simpleTests.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+  </data>
   <data name="MetricsResults" xml:space="preserve">
     <value>Metrics Results</value>
   </data>
@@ -200,7 +203,7 @@
     <value>Rating Metrics</value>
   </data>
   <data name="ResultTitle" xml:space="preserve">
-    <value>Memory snapshot</value>
+    <value>Analysis results</value>
   </data>
   <data name="RunIndicatorMetrics" xml:space="preserve">
     <value>Run metrics indicating construct presence</value>
@@ -221,7 +224,7 @@
     <value>Verification settings</value>
   </data>
   <data name="SimpleObject" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\simpleObject.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;windows-1250</value>
+    <value>..\Resources\simpleObject.php;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;iso-8859-2</value>
   </data>
   <data name="VerificationResults" xml:space="preserve">
     <value>Memory snapshot</value>
@@ -246,5 +249,8 @@
   </data>
   <data name="SimpleObjectDescription" xml:space="preserve">
     <value>Simple object</value>
+  </data>
+  <data name="SimpleTestsDescription" xml:space="preserve">
+    <value>Small tests</value>
   </data>
 </root>

@@ -395,7 +395,7 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Memory snapshot.
+        ///   Looks up a localized string similar to Analysis results.
         /// </summary>
         public static string ResultTitle {
             get {
@@ -512,13 +512,30 @@ namespace Weverca.Web.Properties {
                 return ResourceManager.GetString("SimpleObject", resourceCulture);
             }
         }
-        
+
+        public static string SimpleTests
+        {
+            get
+            {
+                return ResourceManager.GetString("SimpleTests", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Simple object.
         /// </summary>
         public static string SimpleObjectDescription {
             get {
                 return ResourceManager.GetString("SimpleObjectDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Small tests.
+        /// </summary>
+        public static string SimpleTestsDescription {
+            get {
+                return ResourceManager.GetString("SimpleTestsDescription", resourceCulture);
             }
         }
         

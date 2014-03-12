@@ -29,6 +29,9 @@ namespace Weverca.Web.Models
             [LocalizedDescription(typeof(Resources), "SimpleObjectDescription")]
             SimpleObject,
 
+            [LocalizedDescription(typeof(Resources), "SimpleTestsDescription")]
+            SimpleTests,
+
             [LocalizedDescription(typeof(Resources), "InputCustomDescription")]
             Custom
         }
@@ -88,6 +91,10 @@ namespace Weverca.Web.Models
             {
                 PhpCode = Resources.SimpleObject;
             }
+            else if (Input == InputType.SimpleTests)
+            {
+                PhpCode = Resources.SimpleTests;
+            }
         }
 
         public void AssignInputType()
@@ -115,6 +122,10 @@ namespace Weverca.Web.Models
             else if (PhpCode == Resources.SimpleObject)
             {
                 Input = InputType.SimpleObject;
+            }
+            else if (PhpCode == Resources.SimpleTests)
+            {
+                Input = InputType.SimpleTests;
             }
             else
             {
