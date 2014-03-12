@@ -11,10 +11,25 @@ namespace Weverca.Web.Controllers
 {
     public class ValueHelperController : Controller
     {
-        public static IEnumerable<SelectListItem> GetValueTypes()
+        public static IEnumerable<SelectListItem> GetInputValueTypes()
         {
             List<SelectListItem> selectList = new List<SelectListItem>();
             foreach (WevercaModel.InputType value in Enum.GetValues(typeof(WevercaModel.InputType)))
+            {
+                selectList.Add(new SelectListItem()
+                {
+                    Value = value.ToString(),
+                    Text = EnumHelper.GetDescription(value)
+                });
+            }
+
+            return selectList;
+        }
+
+        public static IEnumerable<SelectListItem> GetMemoryModelValueTypes()
+        {
+            List<SelectListItem> selectList = new List<SelectListItem>();
+            foreach (AnalysisModel.MemoryModelType value in Enum.GetValues(typeof(AnalysisModel.MemoryModelType)))
             {
                 selectList.Add(new SelectListItem()
                 {

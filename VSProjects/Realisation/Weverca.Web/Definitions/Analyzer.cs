@@ -27,7 +27,7 @@ namespace Weverca.Web.Definitions
             AnalysisWarningHandler.ResetWarnings();
             if (analysisModel.RunVerification)
             {
-                result.Output = RunVerification(cfg, fileName);
+                result.Output = RunVerification(cfg, fileName, analysisModel.GetMemoryModel());
             }
 
             if (analysisModel.RunMetrics)
@@ -53,17 +53,17 @@ namespace Weverca.Web.Definitions
             return parser;
         }
 
-        static ProgramPointGraph Analyze(ControlFlowGraph.ControlFlowGraph entryMethod, string fileName)
+        static ProgramPointGraph Analyze(ControlFlowGraph.ControlFlowGraph entryMethod, string fileName, MemoryModels.MemoryModels memoryModel)
         {
             FileInfo fileInfo = new FileInfo(fileName);
-            var analysis = new ForwardAnalysis(entryMethod, MemoryModels.MemoryModels.VirtualReferenceMM);
+            var analysis = new ForwardAnalysis(entryMethod, memoryModel);
             analysis.Analyse();
             return analysis.ProgramPointGraph;
         }
 
-        static string RunVerification(ControlFlowGraph.ControlFlowGraph controlFlowGraph, string fileName)
+        static string RunVerification(ControlFlowGraph.ControlFlowGraph controlFlowGraph, string fileName, MemoryModels.MemoryModels memoryModel)
         {
-            var ppGraph = Analyze(controlFlowGraph, fileName);
+            var ppGraph = Analyze(controlFlowGraph, fileName, memoryModel);
             var output = new WebOutput();
             var graphWalker = new CallGraphPrinter(ppGraph);
             graphWalker.Run(output);

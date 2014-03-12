@@ -1,11 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
+using Common.WebDefinitions.Localization;
 using Weverca.Web.Properties;
+
 
 namespace Weverca.Web.Models
 {
     public class AnalysisModel
     {
+        #region Enums
+        public enum MemoryModelType
+        {
+            [LocalizedDescription(typeof(Resources), "VirtualReference")]
+            VirtualReference,
+
+            [LocalizedDescription(typeof(Resources), "Copy")]
+            Copy
+        }
+        #endregion
+
+        [Display(ResourceType = typeof(Resources), Name = "MemoryModelType")]
+        public MemoryModelType MemoryModel { get; set; }
+
         [Display(ResourceType = typeof(Resources), Name = "RunVerification")]
         public bool RunVerification { get; set; }
 
@@ -32,6 +48,13 @@ namespace Weverca.Web.Models
             RunIndicatorMetrics = true;
             RunQuantityMetrics = true;
             RunRatingMetrics = true;
+            MemoryModel = MemoryModelType.Copy;
+        }
+
+        public MemoryModels.MemoryModels GetMemoryModel()
+        {
+            if (MemoryModel == MemoryModelType.Copy) return MemoryModels.MemoryModels.CopyMM;
+            return MemoryModels.MemoryModels.VirtualReferenceMM;
         }
     }
 }

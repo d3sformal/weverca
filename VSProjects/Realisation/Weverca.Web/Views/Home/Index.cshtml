@@ -15,7 +15,7 @@
         <ul>
             <li>
                 @Html.LabelFor(m => m.Input)
-                <div class="selectHolder">@Html.DropDownListFor(m => m.Input, ValueHelperController.GetValueTypes())</div>
+                <div class="selectHolder">@Html.DropDownListFor(m => m.Input, ValueHelperController.GetInputValueTypes())</div>
             </li>
             <li>
                 @Html.LabelFor(m => m.PhpCode)
@@ -40,6 +40,16 @@
                         <li>
                             @Html.LabelFor(m => m.AnalysisModel.RunRatingMetrics)
                             @Html.CheckBoxFor(m => m.AnalysisModel.RunRatingMetrics)
+                        </li>
+                    </ul>
+                </fieldset> 
+            </li>
+            <li>
+                <fieldset class="settings">
+                    <legend>@Resources.MemoryModelType</legend>
+                    <ul>
+                        <li>
+                            <div class="selectHolder">@Html.DropDownListFor(m => m.AnalysisModel.MemoryModel, ValueHelperController.GetMemoryModelValueTypes())</div>
                         </li>
                     </ul>
                 </fieldset> 

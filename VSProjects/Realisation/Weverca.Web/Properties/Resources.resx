@@ -157,8 +157,17 @@
   <data name="EndlessLoop" xml:space="preserve">
     <value>Endless loop</value>
   </data>
+  <data name="VirtualReference" xml:space="preserve">
+    <value>Virtual reference</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
   <data name="InputCustomDescription" xml:space="preserve">
     <value>Custom Input</value>
+  </data>
+  <data name="MemoryModelType" xml:space="preserve">
+    <value>Memory model</value>
   </data>
   <data name="InputType" xml:space="preserve">
     <value>Input</value>
