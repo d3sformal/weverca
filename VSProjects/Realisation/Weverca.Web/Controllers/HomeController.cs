@@ -40,15 +40,21 @@ namespace Weverca.Web.Controllers
                 model.AssignInputType();
                 
                 ResultModel result;
-                
-                bool completed = TryExecute(() => Analyzer.Run(model.PhpCode, model.AnalysisModel), Settings.Default.AnalysisTimeout, out result);
-                if (completed)
+                try
                 {
-                    return View("Result", result);
+                    bool completed = TryExecute(() => Analyzer.Run(model.PhpCode, model.AnalysisModel), Settings.Default.AnalysisTimeout, out result);
+                    if (completed)
+                    {
+                        return View("Result", result);
+                    }
+                    else
+                    {
+                        return View("Message", new MessageModel(Resources.Error, Resources.AnalysisTimeouted));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    return View("Message", new MessageModel(Resources.Error, Resources.AnalysisTimeouted));
+                    return View("Message", new MessageModel(Resources.Error, e.Message));
                 }
 
             }
@@ -61,17 +67,20 @@ namespace Weverca.Web.Controllers
 
         bool TryExecute<T>(Func<T> func, int timeout, out T result)
         {
-            var t = default(T);
+            object t = default(T);
             //TODO: creating a new thread for each client is not really a good idea
             //The best way for solid solution would be to create a stand-alone WCF windows service (with dual-http-binding) doing the analysis and use AJAX to display the state of the queue/result here.
-            var thread = new Thread(() => t = func());
+            var thread = new Thread(() => { try { t = func(); } catch (Exception e) { t=e; } });
             thread.Start();
             var completed = thread.Join(timeout);
             if (!completed)
             {
                 thread.Abort();
             }
-            result = t;
+            if(t is Exception)
+                throw (t as Exception);
+
+            result = (T)t;
             return completed;
             
         }
