@@ -26,66 +26,37 @@ echo $_GET[1];
 //indirect function call
 //****************************************
 
-function f($message)
-{
+function f($message) {
 	global $functionResult;
+	$functionResult="f called"; }
 
-	$functionResult="f called";
-	// Emits the warning
-	echo $message;
-}
-function g($message)
-{
+function g($message){
 	global $functionResult;
-	$functionResult="g called";
-	// Emits the warning
-	echo $message;
-}
-function h($message) {
-	// Does not emit the warning - this function cannot be called
-	echo $message;
-}
+	$functionResult="g called"; }
+
 if($_POST["a"]=="some value")
-{
 	$functionName="f";
-}
 else
-{
 	$functionName="g";
-}
 $functionName($_GET[1]);
+
 
 
 //****************************************
 // more objects with same name
 //****************************************
 
-if($_POST["a"]=="some value")
-{
-	class x
-	{
+if($_POST["a"]=="some value"){
+	class x	{
 		public $ObjectField0=0;
-		function __construct()
-		{
-		  echo $_GET[1];
-
-		}
+		function __construct(){}
 	}
-}
-else
-{
-	class x
-	{
+}else{
+	class x{
 	public $ObjectField1=1;
-		function __construct()
-		{
-		  echo $_GET[1];
-
-
-		}
+		function __construct(){}
 	}
 }
-
 $object=new x();
 
 //****************************************
@@ -94,16 +65,5 @@ $object=new x();
 
 $query="select * from table where value=".$_POST["value"];
 mysql_query($query);
-
-//****************************************
-// array error
-//****************************************
-
-$array=4;
-if($_POST["a"]=="some value")
-{
-$array=array();
-}
-$array[0]=4;
 
 ?>
