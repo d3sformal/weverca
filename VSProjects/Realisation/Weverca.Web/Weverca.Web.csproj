@@ -174,7 +174,7 @@
     <None Include="Resources\metalcupStatis.php" />
     <None Include="Resources\randomize.php" />
     <None Include="Resources\simpleObject.php" />
-    <Content Include="Resources\simpleTests.php" />
+    <None Include="Resources\simpleTests.php" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
