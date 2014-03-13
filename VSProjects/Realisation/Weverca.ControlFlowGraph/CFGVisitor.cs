@@ -581,6 +581,8 @@ namespace Weverca.ControlFlowGraph
 
         private Expression CopyElement(Expression e)
         {
+            if (this.graph.globalCode == null)
+                return e;
             StringBuilder s = new StringBuilder("<? ");
             if (e.Position.FirstLine == 1)
             {
