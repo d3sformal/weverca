@@ -290,14 +290,63 @@ namespace Weverca
                         var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
                         watch.Stop();
 
-                        console.Warnings(AnalysisWarningHandler.GetWarnings());
-                        console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+                        Console.WriteLine("Analysis warnings:");
+                        PrintWarnings(AnalysisWarningHandler.GetWarnings());
+
+                        Console.WriteLine("Security warnings:");
+                        PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
                     }
                     catch (Exception e)
                     {
                         console.Error(e.Message);
                     }
                 }
+            }
+        }
+
+        private static void PrintWarnings(List <AnalysisWarning> warnings)
+        {
+            
+            if (warnings.Count == 0)
+            {
+                Console.WriteLine("No warnings");
+            }
+            string file = "/";
+            foreach (var s in warnings)
+            {
+                if (file != s.FullFileName)
+                {
+                    file = s.FullFileName;
+                    Console.WriteLine("File: " + file);
+                }
+                Console.WriteLine ("Warning at line " + s.LangElement.Position.FirstLine + 
+                                    " char " + s.LangElement.Position.FirstColumn + 
+                                    " firstoffset " + s.LangElement.Position.FirstOffset +
+                                    " lastoffset " + s.LangElement.Position.LastOffset +
+                                    " : " + s.Message.ToString());
+            }
+        }
+
+        private static void PrintSecurityWarnings(List<AnalysisSecurityWarning> warnings)
+        {
+
+            if (warnings.Count == 0)
+            {
+                Console.WriteLine("No warnings");
+            }
+            string file = "/";
+            foreach (var s in warnings)
+            {
+                if (file != s.FullFileName)
+                {
+                    file = s.FullFileName;
+                    Console.WriteLine("File: " + file);
+                }
+                Console.WriteLine("Warning at line " + s.LangElement.Position.FirstLine +
+                                    " char " + s.LangElement.Position.FirstColumn +
+                                    " firstoffset " + s.LangElement.Position.FirstOffset +
+                                    " lastoffset " + s.LangElement.Position.LastOffset +
+                                    " : " + s.Message.ToString());
             }
         }
     }
