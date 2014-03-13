@@ -12,6 +12,15 @@ namespace Weverca.AnalysisFramework.UnitTest
     [TestClass]
     public class ForwardAnalysisTest
     {
+        readonly static TestCase SelfConstant_CASE = @"
+class A {
+    const C = ""const"";
+    function f () { return self::C; }
+}
+$a = new A();
+$ret = $a->f();
+".AssertVariable("ret").HasValues("const");
+
         readonly static TestCase BranchMerge_CASE = @"
 $str='f1';
 if($unknown){
@@ -1632,7 +1641,35 @@ $result=$b->r[4][5];
 
 ".AssertVariable("result").HasValues(7).Analysis(Analyses.WevercaAnalysisTest);
 
-        
+
+
+
+        readonly static TestCase BflTest_CASE = @"
+function f() {
+while (false) { }
+}
+
+f();
+
+$result = 7;
+
+
+".AssertVariable("result").HasValues(7).Analysis(Analyses.WevercaAnalysisTest);
+
+
+
+        [TestMethod]
+        public void BflTest()
+        {
+            AnalysisTestUtils.RunTestCase(BflTest_CASE);
+        }
+
+        [TestMethod]
+        public void SelfConstant()
+        {
+            AnalysisTestUtils.RunTestCase(SelfConstant_CASE);
+        }
+
         [TestMethod]
         public void IndexingField()
         {

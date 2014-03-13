@@ -28,7 +28,7 @@ Pro stránky Pestrá škola a školka Bobinice napsal Pavel Baštecký (c) zář
   $_page = GetPageData();
   
   include_once "_php/$_page[script].php";
-  
+  //require_once "_php/article.php";
   //Zpracování formulářů
   if (!empty($_POST) and $_inf['post'])
   {
@@ -36,7 +36,7 @@ Pro stránky Pestrá škola a školka Bobinice napsal Pavel Baštecký (c) zář
   }
   
   MakeVisit($_inf['visitor'], $_page['id'], isset($_SESSION['id']) ? $_SESSION['id'] : 0);
-
+      $ttt=4;
   if($_inf['refresh']) header("Refresh: 5; $_inf[refresh]");
   Head();
   Body();
