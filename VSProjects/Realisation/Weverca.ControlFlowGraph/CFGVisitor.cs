@@ -581,6 +581,11 @@ namespace Weverca.ControlFlowGraph
 
         private Expression CopyElement(Expression e)
         {
+
+            //known bug
+            //when creating cfg from function of method, we need global code
+            //probably need lot of refacotring
+            //or getting the global code for every function or method
             if (this.graph.globalCode == null)
                 return e;
             StringBuilder s = new StringBuilder("<? ");
