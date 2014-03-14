@@ -1,0 +1,21 @@
+<?php
+// This file contains logins allowed to access to the webmail.
+//
+//
+// The format of the file is :
+// $login_allowed = array(
+//   'login_1' => '',
+//   'login_2' => ''
+// );
+//
+// Do know remove the first and last lines, but just change logins. Don't forget
+// the trailing comma for each login except for the last one.
+
+$login_allowed = array(
+// change from here
+  'login_1' => '',
+  'login_2' => ''
+// do not change after here
+);
+
+?>
