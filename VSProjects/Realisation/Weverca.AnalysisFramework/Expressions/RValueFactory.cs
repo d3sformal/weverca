@@ -238,6 +238,11 @@ namespace Weverca.AnalysisFramework.Expressions
             Result(new ClassConstPoint(x, thisObj));
         }
 
+        public override void VisitPseudoConstUse(PseudoConstUse x)
+        {
+            Result(new PseudoConstantPoint(x));
+        }
+
         #endregion
 
         #region Variable visiting

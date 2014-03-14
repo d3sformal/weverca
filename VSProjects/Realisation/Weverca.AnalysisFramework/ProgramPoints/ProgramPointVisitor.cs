@@ -333,6 +333,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             VisitValue(p);
         }
 
+        /// <summary>
+        /// Visits the pseudo constant program point.
+        /// </summary>
+        /// <param name="p">Visited point</param>
+        public virtual void VisitPseudoConstant(PseudoConstantPoint p)
+        {
+            VisitValue(p);
+        }
+
         #endregion
 
         #region Statement points

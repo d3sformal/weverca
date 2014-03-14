@@ -81,6 +81,7 @@
     <Compile Include="NativeAnalyzer.cs" />
     <Compile Include="NextPhaseAnalyzer.cs" />
     <Compile Include="ProgramPoints\ProgramPointVisitor.cs" />
+    <Compile Include="ProgramPoints\PseudoConstantPoint.cs" />
     <Compile Include="ThrowInfo.cs" />
     <Compile Include="TypeDecl.cs" />
     <Compile Include="PointsBlock.cs" />
