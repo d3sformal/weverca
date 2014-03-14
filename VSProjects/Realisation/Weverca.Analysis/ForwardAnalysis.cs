@@ -69,35 +69,34 @@ namespace Weverca.Analysis
             EntryInput.GetVariable(new VariableIdentifier(variable), true).WriteMemory(EntryInput.Snapshot , new MemoryEntry(value));        
         }
 
+        private void initTaintedVariable(string name)
+        {
+            var varName = new VariableName(name);
+            var value = EntryInput.AnyArrayValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
+            EntryInput.FetchFromGlobal(varName);
+            var variable = EntryInput.GetVariable(new VariableIdentifier(varName), true);
+            variable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(value));
+        }
+
 
         /// <summary>
         /// Initialize php variables and control variables user by static analyser
         /// </summary>
         protected void GlobalsInitializer()
         {
-            var post = new VariableName("_POST");
-            var postValue = EntryInput.AnyArrayValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
-            EntryInput.FetchFromGlobal(post);
-            var postVariable = EntryInput.GetVariable(new VariableIdentifier(post), true);
-            postVariable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(postValue));
+            initTaintedVariable("_POST");
+            initTaintedVariable("_GET");
+            initTaintedVariable("_SERVER");
+            initTaintedVariable("_COOKIE");
+            initTaintedVariable("_SESSION");
+            initTaintedVariable("_FILES");
+            initTaintedVariable("_REQUEST");
+            initTaintedVariable("GLOBALS");
 
-
-            var get = new VariableName("_GET");
-            var getValue = EntryInput.AnyArrayValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
-            EntryInput.FetchFromGlobal(get);
-            var getVariable = EntryInput.GetVariable(new VariableIdentifier(get), true);
-            getVariable.WriteMemory(EntryInput.Snapshot , new MemoryEntry(getValue));
-
-            initVariable("_SERVER",EntryInput.AnyArrayValue);
-            initVariable("_FILES",EntryInput.AnyArrayValue);
-            initVariable("_REQUEST",EntryInput.AnyArrayValue);
-            initVariable("_SESSION",EntryInput.AnyArrayValue);
             initVariable("_ENV",EntryInput.AnyArrayValue);
-            initVariable("_COOKIE",EntryInput.AnyArrayValue);
             initVariable("php_errormsg",EntryInput.AnyStringValue);
             initVariable("argc",EntryInput.AnyIntegerValue);
             initVariable("argv",EntryInput.AnyArrayValue);
-            initVariable("GLOBALS", EntryInput.AnyArrayValue); 
 
             var staticVariablesArray = EntryInput.CreateArray();
             var staticVariable = EntryInput.GetControlVariable(FunctionResolver.staticVariables);
