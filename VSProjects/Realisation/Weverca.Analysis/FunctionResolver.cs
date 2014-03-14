@@ -531,7 +531,7 @@ namespace Weverca.Analysis
                 }
                 else
                 {
-                    OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateInfo(new NumberOfCalledFunctions<FunctionValue>(thisFunction, 1))));
+                    OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateInfo(new NumberOfCalls<FunctionValue>(thisFunction, 1))));
                 }
                 OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
@@ -544,13 +544,13 @@ namespace Weverca.Analysis
             bool containsInclude = false;
             foreach (var value in files)
             {
-                InfoValue<NumberOfCalledFunctions<T>> info = value as InfoValue<NumberOfCalledFunctions<T>>;
+                InfoValue<NumberOfCalls<T>> info = value as InfoValue<NumberOfCalls<T>>;
                 if (info != null)
                 {
-                    if (info.Data.Function.Equals(thisFile))
+                    if (info.Data.Callee.Equals(thisFile))
                     {
                         containsInclude = true;
-                        result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled + 1)));
+                        result.Add(OutSet.CreateInfo(new NumberOfCalls<T>(thisFile, info.Data.TimesCalled + 1)));
                     }
                     else
                     {
@@ -564,7 +564,7 @@ namespace Weverca.Analysis
             }
             if (containsInclude == false)
             {
-                result.Add(OutSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, 1)));
+                result.Add(OutSet.CreateInfo(new NumberOfCalls<T>(thisFile, 1)));
             }
             return result;
         }
@@ -583,12 +583,12 @@ namespace Weverca.Analysis
             List<Value> result = new List<Value>();
             foreach (var value in files)
             {
-                InfoValue<NumberOfCalledFunctions<T>> info = value as InfoValue<NumberOfCalledFunctions<T>>;
+                InfoValue<NumberOfCalls<T>> info = value as InfoValue<NumberOfCalls<T>>;
                 if (info != null)
                 {
-                    if (info.Data.Function.Equals(thisFile))
+                    if (info.Data.Callee.Equals(thisFile))
                     {
-                        result.Add(outSet.CreateInfo(new NumberOfCalledFunctions<T>(thisFile, info.Data.TimesCalled - 1)));
+                        result.Add(outSet.CreateInfo(new NumberOfCalls<T>(thisFile, info.Data.TimesCalled - 1)));
                     }
                     else
                     {
@@ -893,8 +893,8 @@ namespace Weverca.Analysis
             {
                 foreach (var value in OutSet.GetLocalControlVariable(new VariableName(".calledFunctions")).ReadMemory(OutSet.Snapshot).PossibleValues)
                 {
-                    InfoValue<NumberOfCalledFunctions<FunctionValue>> info = value as InfoValue<NumberOfCalledFunctions<FunctionValue>>;
-                    if (info != null && info.Data.Function.Equals(function))
+                    InfoValue<NumberOfCalls<FunctionValue>> info = value as InfoValue<NumberOfCalls<FunctionValue>>;
+                    if (info != null && info.Data.Callee.Equals(function))
                     {
                         max = Math.Max(max, info.Data.TimesCalled);
                     }
@@ -1316,15 +1316,16 @@ namespace Weverca.Analysis
     #endregion
 
     /// <summary>
-    /// Imutable class stores iformation about number of calls of specified function or included file in one recursion
+    /// Imutable class stores iformation about number of calls of specified function or interpretations of 
+    /// included file in one recursion
     /// </summary>
     /// <typeparam name="T">Function type</typeparam>
-    public class NumberOfCalledFunctions<T>
+    public class NumberOfCalls<T>
     {
         /// <summary>
-        /// function or include information
+        /// Information about the called function or included script
         /// </summary>
-        public readonly T Function;
+        public readonly T Callee;
         /// <summary>
         /// number of calls or includes
         /// </summary>
@@ -1335,18 +1336,18 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="function">Function infomation</param>
         /// <param name="timesCalled">number of calls or includes</param>
-        public NumberOfCalledFunctions(T function, int timesCalled)
+        public NumberOfCalls(T function, int timesCalled)
         {
-            Function = function;
+            Callee = function;
             TimesCalled = timesCalled;
         }
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            if (Function != null)
+            if (Callee != null)
             {
-                return Function.GetHashCode() + TimesCalled.GetHashCode();
+                return Callee.GetHashCode() + TimesCalled.GetHashCode();
             }
             else
             {
@@ -1357,17 +1358,17 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            if (obj is NumberOfCalledFunctions<T>)
+            if (obj is NumberOfCalls<T>)
             {
-                NumberOfCalledFunctions<T> other = obj as NumberOfCalledFunctions<T>;
-                if (this.Function == null && other.Function == null)
+                NumberOfCalls<T> other = obj as NumberOfCalls<T>;
+                if (this.Callee == null && other.Callee == null)
                 {
                     return this.TimesCalled == other.TimesCalled;
 
                 }
-                else if (this.Function != null && other.Function != null)
+                else if (this.Callee != null && other.Callee != null)
                 {
-                    return this.TimesCalled == other.TimesCalled && this.Function.Equals(other.Function);
+                    return this.TimesCalled == other.TimesCalled && this.Callee.Equals(other.Callee);
                 }
                 else
                 {
@@ -1383,9 +1384,9 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override string ToString()
         {
-            if (Function != null)
+            if (Callee != null)
             {
-                return Function.ToString() + ":" + TimesCalled;
+                return Callee.ToString() + ":" + TimesCalled;
             }
             else
             {

@@ -534,6 +534,11 @@ namespace Weverca.Analysis
         FILE_TO_BE_INCLUDED_NOT_FOUND,
 
         /// <summary>
+        /// Warning, that occurs when include_once or require_once is called more times with the same file
+        /// </summary>
+        INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE,
+
+        /// <summary>
         /// Warning, that occurs when non object variable is beeing thrown 
         /// </summary>
         ONLY_OBJECT_CAM_BE_THROWN,

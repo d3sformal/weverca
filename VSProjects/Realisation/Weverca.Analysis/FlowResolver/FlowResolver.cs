@@ -88,6 +88,7 @@ namespace Weverca.Analysis.FlowResolver
             }
 
             int numberOfWarnings = 0;
+            var includedFiles = flow.OutSet.GetControlVariable(new VariableName(".includedFiles")).ReadMemory(flow.OutSet.Snapshot);
             foreach (var file in files)
             {
                 var fileInfo = findFile(flow, file);
@@ -101,22 +102,26 @@ namespace Weverca.Analysis.FlowResolver
 
                 string fileName = fileInfo.FullName;
 
-                var includedFiles = flow.OutSet.GetControlVariable(new VariableName(".includedFiles")).ReadMemory(flow.OutSet.Snapshot);
-                int numberOfIncludes = 0;
-                foreach (InfoValue<NumberOfCalledFunctions<string>> includeInfo in includedFiles.PossibleValues.Where(a => (a is InfoValue<NumberOfCalledFunctions<string>>)))
+                // the file was never included
+                int numberOfIncludes = -1;
+                // TODO: optimization - avoid iterating all included files
+                //  - make .includedFiles associative array with names of functions as indexes
+                foreach (InfoValue<NumberOfCalls<string>> includeInfo in includedFiles.PossibleValues.Where(a => (a is InfoValue<NumberOfCalls<string>>)))
                 {
-                    if (includeInfo.Data.Function == fileName)
+                    if (includeInfo.Data.Callee == fileName)
                     {
                         numberOfIncludes = Math.Max(numberOfIncludes, includeInfo.Data.TimesCalled);
                     }
                 }
-                if (numberOfIncludes > 0)
+                if (numberOfIncludes >= 0)
                 {
                     if (includeExpression.InclusionType == InclusionTypes.IncludeOnce || includeExpression.InclusionType == InclusionTypes.RequireOnce)
                     {
+                        var includeType = (includeExpression.InclusionType == InclusionTypes.IncludeOnce) ? "include_once" : "require_once";
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, includeType + " called more times with the file " + file, flow.ProgramPoint.Partial, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
                         continue;
                     }
-                    else if (numberOfIncludes > 2 || sharedFiles.Contains(fileName))
+                    if (numberOfIncludes > 2 || sharedFiles.Contains(fileName))
                     {
 
                         if (sharedFiles.Contains(fileName))

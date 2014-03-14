@@ -39,12 +39,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (objectAnalyzer.ExistClass(declaration.Type.QualifiedName))
             {
                 SetWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
-                fatalError(true);
             }
             else if (OutSet.ResolveType(declaration.Type.QualifiedName).Count() != 0)
             {
                 SetWarning("Cannot redeclare class/interface " + declaration.Type.QualifiedName, AnalysisWarningCause.CLASS_ALLREADY_EXISTS);
-                fatalError(true);
             }
             else
             {
