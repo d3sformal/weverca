@@ -16,6 +16,10 @@ namespace Weverca.Parsers
     /// </summary>
     public class SyntaxParser : IReductionsSink, ICommentsSink, IDisposable
     {
+        public static Dictionary<LangElement, GlobalCode> functions = new Dictionary<LangElement, GlobalCode>();
+
+
+
         /// <summary>
         /// PHP script compilation unit including advanced constructs (inclusions, global code, etc.)
         /// </summary>
@@ -199,6 +203,7 @@ namespace Weverca.Parsers
         /// <param name="decl">Current function declaration</param>
         public void FunctionDeclarationReduced(Parser/*!*/ parser, FunctionDecl/*!*/ decl)
         {
+            functions[decl] = this.Ast;
             compilationUnit.FunctionDeclarationReduced(parser, decl);
         }
 
@@ -209,6 +214,13 @@ namespace Weverca.Parsers
         /// <param name="decl">Current type declaration</param>
         public void TypeDeclarationReduced(Parser/*!*/ parser, TypeDecl/*!*/ decl)
         {
+            foreach (var method in decl.Members)
+            {
+                if (method is MethodDecl)
+                {
+                    functions[method] = this.Ast;   
+                }
+            }
             compilationUnit.TypeDeclarationReduced(parser, decl);
         }
 

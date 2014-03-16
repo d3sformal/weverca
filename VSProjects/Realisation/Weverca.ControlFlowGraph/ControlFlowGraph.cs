@@ -112,7 +112,7 @@ namespace Weverca.ControlFlowGraph
         /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromFunction(FunctionDecl function, FileInfo file)
         {
-            return new ControlFlowGraph(function, file);
+            return new ControlFlowGraph(SyntaxParser.functions[function], function, file);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Weverca.ControlFlowGraph
         /// <returns>new instace of ControlFlowGraph</returns>
         public static ControlFlowGraph FromMethod(MethodDecl method, FileInfo file)
         {
-            return new ControlFlowGraph(method, file);
+            return new ControlFlowGraph(SyntaxParser.functions[method], method, file);
         }
 
         /// <summary>
@@ -184,32 +184,6 @@ namespace Weverca.ControlFlowGraph
             File = file;
             this.globalCode = globalCode;
 
-            this.visitor = new CFGVisitor(this);
-            start = visitor.MakeFunctionCFG(function, function.Body);
-            PostProcess(visitor);
-        }
-
-        /// <summary>
-        /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
-        /// </summary>
-        /// <param name="function">function to construct controlflow graph</param>
-        /// <param name="file">Information about source file</param>
-        private ControlFlowGraph(MethodDecl function, FileInfo file)
-        {
-            File = file;
-            this.visitor = new CFGVisitor(this);
-            start = visitor.MakeFunctionCFG(function, function.Body);
-            PostProcess(visitor);
-        }
-
-        /// <summary>
-        /// Constructs a confrolflow graph. This method should be used for analysis. It cannot be used for testing.
-        /// </summary>
-        /// <param name="function">function to construct controlflow graph</param>
-        /// <param name="file">Information about source file</param>
-        private ControlFlowGraph(FunctionDecl function, FileInfo file)
-        {
-            File = file;
             this.visitor = new CFGVisitor(this);
             start = visitor.MakeFunctionCFG(function, function.Body);
             PostProcess(visitor);

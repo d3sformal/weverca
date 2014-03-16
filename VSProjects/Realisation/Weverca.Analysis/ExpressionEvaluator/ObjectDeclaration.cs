@@ -9,6 +9,7 @@ using Weverca.Analysis.NativeAnalyzers;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.Parsers;
 
 namespace Weverca.Analysis.ExpressionEvaluator
 {
@@ -857,6 +858,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     var newElement = new MethodDecl(element.Position, element.EntireDeclarationPosition, element.HeadingEndPosition, element.DeclarationBodyPosition, "__construct",
                         element.Signature.AliasReturn, element.Signature.FormalParams, new List<FormalTypeParam>(), element.Body, element.Modifiers, element.BaseCtorParams, element.Attributes.Attributes);
                     result.SourceCodeMethods.Add(contructIdentifier, OutSet.CreateFunction(newElement, methodValue.DeclaringScript));
+                    SyntaxParser.functions[newElement] = SyntaxParser.functions[element];
                 }
             }
             if (success == true)
