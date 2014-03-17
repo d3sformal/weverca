@@ -12,6 +12,8 @@ using Weverca.CodeMetrics;
 using Weverca.Parsers;
 using Weverca.Output;
 using Weverca.Analysis;
+using Weverca.AnalysisFramework;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca
 {
@@ -84,6 +86,7 @@ namespace Weverca
 
                 fileToRead.Close();
             }
+
             else if (metricsType == "-warnings")
             {
                 List<string> filesToAnalyze = new List<string>();
@@ -105,9 +108,33 @@ namespace Weverca
 
                 var memoryModel = MemoryModels.MemoryModels.CopyMM;
                 var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
-                RunStaticAnalysis(filesToAnalyze.ToArray(), analysis, memoryModel);
-
+                RunStaticAnalysisForWarnings(filesToAnalyze.ToArray(), analysis, memoryModel);
             }
+           
+            else if (metricsType == "-variables")
+            {
+                List<string> filesToAnalyze = new List<string>();
+
+                string fileExtension = Path.GetExtension(analyzedFile);
+                if (fileExtension == PHP_FILE_EXTENSION)
+                {
+                    filesToAnalyze.Add(analyzedFile);
+                }
+
+                for (int i = 0; i < otherArgs.Length; i++)
+                {
+                    fileExtension = Path.GetExtension(otherArgs[i]);
+                    if (fileExtension == PHP_FILE_EXTENSION)
+                    {
+                        filesToAnalyze.Add(otherArgs[i]);
+                    }
+                }
+
+                var memoryModel = MemoryModels.MemoryModels.CopyMM;
+                var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
+                RunStaticAnalysisForPPGraph(filesToAnalyze.ToArray(), analysis, memoryModel);
+            }
+
         }
 
         /// <summary>
@@ -259,7 +286,7 @@ namespace Weverca
             return new SyntaxParser(sourceFile, code);
         }
 
-        private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysisForWarnings(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
         {
             var console = new ConsoleOutput();
 
@@ -295,6 +322,56 @@ namespace Weverca
 
                         Console.WriteLine("Security warnings:");
                         PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+                    }
+                    catch (Exception e)
+                    {
+                        console.Error(e.Message);
+                    }
+                }
+            }
+        }
+
+        private static void RunStaticAnalysisForPPGraph(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
+        {
+            var console = new ConsoleOutput();
+
+            foreach (var argument in filenames)
+            {
+                var filesInfo = Analyzer.GetFileNames(argument);
+                if (filesInfo == null)
+                {
+                    Console.WriteLine("Path \"{0}\" cannot be recognized", argument);
+                    Console.WriteLine();
+                    continue;
+                }
+
+                else if (filesInfo.Length <= 0)
+                {
+                    Console.WriteLine("Path pattern \"{0}\" does not match any file", argument);
+                    Console.WriteLine();
+                }
+
+                foreach (var fileInfo in filesInfo)
+                {
+                    console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+
+                    try
+                    {
+
+                        var watch = System.Diagnostics.Stopwatch.StartNew();
+                        var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
+                        watch.Stop();
+
+            
+                        //flow(ppGraph.Start,null);
+                     
+                        writeAll(ppGraph);
+
+                        //ppGraph.Start.
+                        //FlowExtension extension = ppGraph.Start.Extension;
+                        //ExtensionPoint e 
+                        
+
                     }
                     catch (Exception e)
                     {
@@ -349,5 +426,73 @@ namespace Weverca
                                     " : " + s.Message.ToString());
             }
         }
+
+        private static void writeAll(ProgramPointGraph graph)
+        {
+            int lastFirstLine = -1;
+            int lastLastLine = -1;
+            int lastFirstOffset = -1;
+            int lastLastOffset = -1;
+            String lastRepresentation = "";
+            bool lastPointWritten = true;
+
+            foreach (ProgramPointBase p in graph.Points)
+            {
+                if (p.Partial == null || p.OutSet == null) continue;
+                if (lastFirstLine == p.Partial.Position.FirstLine && lastLastLine == p.Partial.Position.LastLine) //only first and last program point from one line is shown
+                {
+                    lastFirstOffset = p.Partial.Position.FirstOffset;
+                    lastLastOffset = p.Partial.Position.LastOffset;
+                    lastRepresentation = p.OutSet.Representation;
+                    lastPointWritten = false;
+                }
+                else
+                {
+                    if (!lastPointWritten) // show the last program point
+                    {
+                        Console.Write("Point position: ");
+                        Console.WriteLine("First line: " + lastFirstLine +
+                                            " Last line: " + lastLastLine +
+                                            " First offset: " + lastFirstOffset +
+                                            " Last offset: " + lastLastOffset);
+                        Console.WriteLine("Point information:");
+                        Console.WriteLine(lastRepresentation);
+                    }
+                    Console.Write("Point position: ");
+                    Console.WriteLine("First line: " + p.Partial.Position.FirstLine +
+                                        " Last line: " + p.Partial.Position.LastLine +
+                                        " First offset: " + p.Partial.Position.FirstOffset +
+                                        " Last offset: " + p.Partial.Position.LastOffset);
+                    Console.WriteLine("Point information:");
+                    Console.WriteLine(p.OutSet.Representation);
+                    
+                    lastPointWritten = true;
+                    lastFirstLine = p.Partial.Position.FirstLine;
+                    lastLastLine = p.Partial.Position.LastLine;
+                    lastFirstOffset = p.Partial.Position.FirstOffset;
+                    lastLastOffset = p.Partial.Position.LastOffset;
+                }
+                // for each program poind resolve extensions
+                FlowExtension ext = p.Extension;
+                foreach (ExtensionPoint extPoint in ext.Branches)
+                {
+                    writeExtension(extPoint);
+                }         
+            }
+        }
+
+        private static void writeExtension(ExtensionPoint point)
+        {
+            if (point.OwningPPGraph.OwningScript != null) Console.WriteLine("OwningScript: " + point.OwningPPGraph.OwningScript.FullName);
+            else Console.WriteLine("OwningScript: ");
+            if (point.OwningPPGraph.FunctionName != null) Console.WriteLine("FunctionName: " + point.OwningPPGraph.FunctionName);
+            else Console.WriteLine("FunctionName: ");
+            Console.WriteLine("Extension");
+            ProgramPointGraph graph = point.OwningPPGraph;
+            writeAll(graph);
+            Console.WriteLine("End extension");
+        }
+ 
     }
+
 }
