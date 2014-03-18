@@ -1,0 +1,164 @@
+/******************************************************************************
+ **************** Styl formulářů pro stránky buildingforlife.cz ***************
+ ****************  Pavel Baštecký anebril(a)seznam.cz (c) 2012  ***************
+ ******************************************************************************/
+
+div.form
+{
+  position: relative;
+  margin: 20px 10px;
+  padding: 0px 0px 3px 0px;
+  background: url('../_graphics/dashed_line.png') bottom left repeat-x;
+}
+    
+    /*Informace o chybně zadaném formuláři*/
+    div.form_error
+    {
+      text-align: center;
+      font: 14px Calibri;
+      color: red;
+    }
+
+  div.form p
+  {
+    margin: 6px 0px;
+    padding: 0px;
+    font: 14px Calibri;
+  }
+  
+  /*Nadpis formuláře*/
+  div.form h3
+  {
+    padding: 5px 0px;
+    margin-bottom: 5px;
+  }
+  
+  /*Odesílací tlačítko formuláře*/
+  div.form input.submit_button
+  {  
+    margin-left: 5px;
+    padding: 1px 15px;
+    display: block;
+    float: right;
+    border: 2px solid #dc6e1e;
+    background: #FFE07A;
+    font: 14px Calibri;
+  }
+  
+  /*Varianta odesílacího tlačítka ve spodní části formuláře*/
+  div.form input.bottom_button
+  {
+    position: absolute; bottom: 5px; right: 0px;
+  }
+  
+  /*Popisek formuláře*/
+  div.form_text
+  {
+    margin: -15px 10px 20px 10px;
+  } 
+    div.form_text p
+    {
+      margin: 0px;
+      padding: 0px;
+      font: 14px Calibri;
+    }
+  
+  /*Obalující div pro prvky formuláře*/
+  div.form_item
+  {
+    position: relative;
+    clear: both;
+    margin: 5px 10px;
+  }
+    
+    label.form_label
+    {
+      display: block;
+      width: 30%;
+      float: left;
+      text-align: right;
+      font: 16px Calibri;
+      color: #dc6e1e;
+    }
+    
+    /*Standartní vstupní pole pro text*/
+    input.text_box
+    {
+      margin: 0px 5px;
+      width: 40%;
+      border: 1px solid #202020;
+      background: white;
+    }
+      
+      /*Chybně zadaný text - přída error bude přidána obalujícímu divu*/
+      .error input.text_box
+      {
+        border: 1px solid red;
+      }
+      
+    /*Standartní vstupní pole pro text*/
+    input.file_box
+    {
+      margin: 0px 5px;
+      width: 40%;
+      border: 1px solid #202020;
+      background: white;
+    }
+    
+    /*Box s informacemi o limitech pro vstup textu*/
+    div.text_limits
+    {
+      position: relative; top: -1px;
+      display: inline;
+      text-align: left;
+      font: 14px Calibri;
+      color: #505050;
+    }
+    
+      div.text_limits span
+      {
+        cursor: help;
+      }
+      
+      .error div.text_limits
+      {
+        color: red;
+      }
+    
+    textarea.text_box
+    {
+      width: 100%;
+    }
+    
+    /*Varianta textarea pro vkládání kratších textů*/
+    div.small_textarea
+    {
+      margin: 0px 5px;
+      float: left;
+    }
+    
+    /*Obalující div pro skupinu radio buttonů*/
+    div.rb_box_area
+    {
+      margin: 0px 0px 0px 30%;
+      width: 40%;
+      text-align: right;
+    }
+    
+      label.rb_label
+      {
+        font: 14px Calibri;
+      }
+
+/*Box informující o úspěšném zpracování*/
+div.refresh
+{
+  margin: 20px;
+  text-align: center;
+  font: 16px Calibri;
+}
+
+  div.refresh a
+  {
+    color: #dc6e1e;
+  }

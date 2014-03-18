@@ -1,0 +1,24 @@
+/******************************************************************************
+ ***************** Styl galerie pro stránky buildingforlife.cz ****************
+ ****************  Pavel Baštecký anebril(a)seznam.cz (c) 2012  ***************
+ ******************************************************************************/
+ 
+div#galery
+{
+  margin: 5px 5px 20px 5px;
+}
+
+  a.galery_image
+  {
+    display:block;
+    float: left;
+    margin: 5px;
+    padding: 0px;
+    font-size: 1px;
+  }    
+  
+  a.galery_image img
+  {
+    margin: 0px;
+    border: none;
+  }

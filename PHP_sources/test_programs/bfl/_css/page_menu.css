@@ -1,0 +1,87 @@
+/******************************************************************************
+ ********* Styl položek menu na stránce pro stránky buildingforlife.cz ********
+ ****************  Pavel Baštecký anebril(a)seznam.cz (c) 2012  ***************
+ ******************************************************************************/
+
+div#rubric_menu
+{
+  margin: 0px 0px;
+}
+   
+  div.rubric_menu_item, div.rubric_image_item
+  {
+    margin: 20px 10px;
+    padding: 10px;
+  }
+  
+  div.rubric_menu_item:hover, div.rubric_image_item:hover
+  {
+    padding: 9px;
+    border: 1px solid #dc6e1e;
+    background-image: URL('../_graphics/orange_transp.png'); 
+  }
+  
+  div.rubric_menu_item h3
+  {
+    margin: 0px 0px 0px 120px;
+    padding-bottom: 2px;
+  }
+  
+  div.rubric_image_item h3
+  {
+    margin: 0px 0px 0px 0px;
+    padding: 2px;
+  }
+  
+  div.rubric_image_item img
+  {
+    margin: 10px 0px 0px 0px;
+  }
+  
+  div.rubric_image
+  {
+    margin-right: 10px;
+    float: left;
+    background: url('../_graphics/image-background.png');
+  }
+  
+    div.image_top
+    {
+      height: 5px;
+      font-size: 1px;
+      background: url('../_graphics/image_background_top.png');
+    }
+    
+    div.image_bottom
+    {
+      height: 5px;
+      font-size: 1px;
+      background: url('../_graphics/image_background_bottom.png');
+    }
+    
+    div.image_body
+    {
+      padding: 0px 5px;
+      background: url('../_graphics/image_background.png');
+      font-size: 1px;
+    }
+    
+    div.image_crop
+    {
+      width: 100px;
+      text-align: center;
+    }
+
+    div.rubric_menu_item img
+    {
+      margin: 0px;
+      border: none;
+    }
+  
+  a.rubric_link
+  {
+    display: block;
+    clear: right;
+    color: black;
+    text-decoration: none;
+  }  
