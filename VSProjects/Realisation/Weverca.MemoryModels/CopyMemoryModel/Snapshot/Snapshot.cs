@@ -198,6 +198,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Generates snapshot representation in Weverca format
         /// </summary>
         /// <returns>String version snapshot representation in Weverca format.</returns>
+        /// Do not modify the format of the output, it is used for IDE integration
         public string GetRepresentation()
         {
             var result = new StringBuilder();
@@ -216,14 +217,14 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             result.AppendLine("===LOCAL CONTROLS===");
             result.AppendLine(Structure.ContolVariables.GetGlobalRepresentation(Data, Infos));
 
-            result.AppendLine("===ALIASES===");
-            result.AppendLine(Structure.GetAliasesRepresentation());
-
             result.AppendLine("\n===ARRAYS===");
             result.AppendLine(Structure.GetArraysRepresentation(Data, Infos));
 
             result.AppendLine("\n===FIELDS===");
             result.AppendLine(Structure.GetFieldsRepresentation(Data, Infos));
+
+            result.AppendLine("===ALIASES===");
+            result.AppendLine(Structure.GetAliasesRepresentation());
 
 
             return result.ToString();
