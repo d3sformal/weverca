@@ -598,7 +598,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                 {
                     if (FlagsHandler.IsDirty(inputValues, flag))
                     {
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flag));
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, flag));
                         break;
                     }
                 }
@@ -659,7 +659,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                 {
                     if (FlagsHandler.IsDirty(inputValues, flag))
                     {
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flag));
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, flag));
                         break;
                     }
                 }

@@ -117,6 +117,12 @@ namespace Weverca.Output.Output
         {
             headline("PROGRAM POINT: " + pointCaption);
 
+            comment("Call context:");
+            line();
+            comment(point.OwningPPGraph.Context.ToString());
+
+            line();
+
             Indent();
             if (point.OutSet == null)
             {
@@ -214,6 +220,9 @@ namespace Weverca.Output.Output
                     line();
                 }
                 variableInfoLine(s.ToString());
+                line();
+                comment("Called from: ");
+                comment(s.ProgramPoint.OwningPPGraph.Context.ToString());
                 line();
             }
 

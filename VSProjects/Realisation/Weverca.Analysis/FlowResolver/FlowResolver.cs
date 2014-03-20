@@ -63,7 +63,7 @@ namespace Weverca.Analysis.FlowResolver
         {
             if (FlagsHandler.IsDirty(includeFile.PossibleValues, FlagType.FilePathDirty))
             { 
-                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentScript.FullName,flow.CurrentPartial,FlagType.FilePathDirty));
+                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentScript.FullName,flow.CurrentPartial,flow.CurrentProgramPoint, FlagType.FilePathDirty));
             }
 
             bool isAlwaysConcrete = true;
@@ -72,7 +72,7 @@ namespace Weverca.Analysis.FlowResolver
 
             if (isAlwaysConcrete == false)
             {
-                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Couldn't resolve all possible includes",flow.CurrentPartial, AnalysisWarningCause.COULDNT_RESOLVE_ALL_INCLUDES));
+                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Couldn't resolve all possible includes",flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.COULDNT_RESOLVE_ALL_INCLUDES));
             }
 
 
@@ -95,7 +95,7 @@ namespace Weverca.Analysis.FlowResolver
 
                 if (fileInfo == null)
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"The file " + file + " to be included and not found", flow.ProgramPoint.Partial, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"The file " + file + " to be included and not found", flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
                     numberOfWarnings++;
                     continue;
                 }
@@ -118,7 +118,7 @@ namespace Weverca.Analysis.FlowResolver
                     if (includeExpression.InclusionType == InclusionTypes.IncludeOnce || includeExpression.InclusionType == InclusionTypes.RequireOnce)
                     {
                         var includeType = (includeExpression.InclusionType == InclusionTypes.IncludeOnce) ? "include_once" : "require_once";
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, includeType + " called more times with the file " + file, flow.ProgramPoint.Partial, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, includeType + " called more times with the file " + file, flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
                         continue;
                     }
                     if (numberOfIncludes > 2 || sharedFiles.Contains(fileName))
@@ -137,12 +137,12 @@ namespace Weverca.Analysis.FlowResolver
                                 catch (ControlFlowGraph.ControlFlowException)
                                 {
                                     numberOfWarnings++;
-                                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
                                 }
                                 catch (Parsers.ParserException)
                                 {
                                     numberOfWarnings++;
-                                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
                                 }
                             }
 
@@ -168,12 +168,12 @@ namespace Weverca.Analysis.FlowResolver
                 catch (ControlFlowGraph.ControlFlowException)
                 {
                     numberOfWarnings++;
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
                 }
                 catch (Parsers.ParserException)
                 {
                     numberOfWarnings++;
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
                 }
             }
 
@@ -201,7 +201,7 @@ namespace Weverca.Analysis.FlowResolver
             if (fileInfo.Exists) return fileInfo;
 
             // the file has relative path and it is in current script directory
-            fileInfo = new FileInfo(flow.ProgramPoint.OwningPPGraph.OwningScript.DirectoryName + "/" + fileName);
+            fileInfo = new FileInfo(flow.CurrentProgramPoint.OwningPPGraph.OwningScript.DirectoryName + "/" + fileName);
             if (fileInfo.Exists) return fileInfo;
 
             // the file has absolute path
@@ -280,7 +280,7 @@ namespace Weverca.Analysis.FlowResolver
                     var exceptionName = new QualifiedName(new Name("Exception"));
                     if (type.Declaration.BaseClasses.Where(a => a.Equals(exceptionName)).Count() == 0 && !type.QualifiedName.Equals(exceptionName))
                     {
-                        AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName,"Only objects derived from Exception can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                        AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName, "Only objects derived from Exception can be thrown", throwStmt, flow.CurrentProgramPoint, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
                         foundMatch = false;
                     }
                     else
@@ -344,7 +344,7 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 else
                 {
-                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName,"Only objects can be thrown", throwStmt, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
+                    AnalysisWarningHandler.SetWarning(outSet, new AnalysisWarning(flow.CurrentScript.FullName, "Only objects can be thrown", throwStmt, flow.CurrentProgramPoint, AnalysisWarningCause.ONLY_OBJECT_CAM_BE_THROWN));
                     numberOfWarnings++;
                     foundMatch = false;
 
@@ -440,7 +440,7 @@ namespace Weverca.Analysis.FlowResolver
             var flags=FlagsHandler.GetFlags(code.PossibleValues);
             if (flags.isDirty(FlagType.FilePathDirty) || flags.isDirty(FlagType.SQLDirty) || flags.isDirty(FlagType.FilePathDirty))
             {
-                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(flow.CurrentScript.FullName,"Eval shoudn't contain anything from user input", flow.CurrentPartial, FlagType.HTMLDirty));
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(flow.CurrentScript.FullName, "Eval shoudn't contain anything from user input", flow.CurrentPartial, flow.CurrentProgramPoint, FlagType.HTMLDirty));
             }
 
             double evalDepth=0;
@@ -448,7 +448,7 @@ namespace Weverca.Analysis.FlowResolver
             evalDepth = maxValue.Evaluate(flow.OutSet.GetControlVariable(FunctionResolver.evalDepth).ReadMemory(flow.OutSet.Snapshot));
             if (evalDepth > 3)
             {
-                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, @"Eval cannot be called in ""eval recursion"" more than 3 times", flow.CurrentPartial, AnalysisWarningCause.TOO_DEEP_EVAL_RECURSION));
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, @"Eval cannot be called in ""eval recursion"" more than 3 times", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.TOO_DEEP_EVAL_RECURSION));
                 return;
             }
 
@@ -464,8 +464,8 @@ namespace Weverca.Analysis.FlowResolver
             }
 
             if (isAllwasConcrete == false)
-            { 
-                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Couldn't resolve all poosible evals",flow.CurrentPartial,AnalysisWarningCause.COULDNT_RESOLVE_ALL_EVALS));
+            {
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Couldn't resolve all poosible evals", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.COULDNT_RESOLVE_ALL_EVALS));
             }
 
             foreach (var branchKey in flow.ExtensionKeys)
@@ -491,12 +491,12 @@ namespace Weverca.Analysis.FlowResolver
                 catch (ControlFlowGraph.ControlFlowException)
                 {
                     numberOfWarnings++;
-                    AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Control flow graph creation error",flow.CurrentPartial,AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Control flow graph creation error", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.CFG_EXCEPTION_IN_INCLUDE_OR_EVAL));
                 }
                 catch(Parsers.ParserException)
                 {
                     numberOfWarnings++;
-                    AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisWarning(flow.CurrentScript.FullName,"Parser error",flow.CurrentPartial,AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Parser error", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
                 }
             }
             

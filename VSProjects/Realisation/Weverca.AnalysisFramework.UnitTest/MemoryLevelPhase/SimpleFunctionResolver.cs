@@ -470,7 +470,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
-            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
+            var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             for (int i = 0; i < signature.FormalParams.Count; ++i)
@@ -500,7 +500,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;
-            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
+            var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
                 var argVar = argument(index);

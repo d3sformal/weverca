@@ -36,6 +36,8 @@ namespace Weverca.AnalysisFramework
 
         #region Public fields
 
+        public readonly PPGraphContext Context;
+
         /// <summary>
         /// Object that is source for program point graph (Function declaration, GlobalCode,...)
         /// </summary>
@@ -112,6 +114,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
         private ProgramPointGraph(BasicBlock entryBlock, LangElement sourceObject)
         {
+            Context = new PPGraphContext(this);
             SourceObject = sourceObject;
 
             _context = new PPGraphBuildingContext(this);

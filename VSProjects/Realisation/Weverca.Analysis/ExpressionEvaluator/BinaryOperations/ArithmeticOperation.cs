@@ -1882,7 +1882,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private static void SetWarning(FlowController flow, string message, AnalysisWarningCause cause)
         {
             var warning = new AnalysisWarning(flow.CurrentScript.FullName, message,
-                flow.CurrentPartial, cause);
+                flow.CurrentPartial, flow.CurrentProgramPoint, cause);
             AnalysisWarningHandler.SetWarning(flow.OutSet, warning);
         }
 

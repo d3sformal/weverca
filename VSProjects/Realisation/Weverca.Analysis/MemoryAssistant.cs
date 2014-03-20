@@ -102,7 +102,7 @@ namespace Weverca.Analysis
         /// <param name="message">Text of warning</param>
         public void SetWarning(string message)
         {
-            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial));
+            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, Point));
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Weverca.Analysis
         /// <param name="cause">More specific warning type</param>
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, cause));
+            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, Point, cause));
         }
 
 

@@ -283,7 +283,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 if (FlagsHandler.IsDirty(operand.PossibleValues, FlagType.HTMLDirty))
                 {
                     var warning = new AnalysisSecurityWarning(Flow.CurrentScript.FullName,
-                        Element, FlagType.HTMLDirty);
+                        Element, Flow.CurrentProgramPoint, FlagType.HTMLDirty);
                     AnalysisWarningHandler.SetWarning(OutSet, warning);
                 }
             }
@@ -618,7 +618,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (isDirty)
             {
                 var warning = new AnalysisSecurityWarning(Flow.CurrentScript.FullName,
-                    Element, FlagType.HTMLDirty);
+                    Element, Flow.CurrentProgramPoint, FlagType.HTMLDirty);
                 AnalysisWarningHandler.SetWarning(OutSet, warning);
             }
         }
@@ -890,7 +890,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public void SetWarning(string message)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName,
-                message, Element));
+                message, Element, Flow.CurrentProgramPoint));
         }
 
         /// <summary>
@@ -901,7 +901,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName,
-                message, Element, cause));
+                message, Element, Flow.CurrentProgramPoint, cause));
         }
 
         /// <summary>
@@ -913,7 +913,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
         public void SetWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
             AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName,
-                message, element, cause));
+                message, element, Flow.CurrentProgramPoint, cause));
         }
 
         private void fatalError(bool removeFlowChildren)
@@ -1018,7 +1018,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     // TODO: This must be error
                     var warning = new AnalysisWarning(flow.CurrentScript.FullName,
-                        "Class does not exist", element, AnalysisWarningCause.CLASS_DOESNT_EXIST);
+                        "Class does not exist", element, flow.CurrentProgramPoint, AnalysisWarningCause.CLASS_DOESNT_EXIST);
                     AnalysisWarningHandler.SetWarning(outSet, warning);
                     return null;
                 }

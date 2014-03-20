@@ -44,6 +44,10 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             Value = ROperand.Value;
+            IntegerValue v = Value.ReadMemory(Flow.OutSet.Snapshot).PossibleValues.First() as IntegerValue;
+            int vInt;
+            if (v != null)
+                vInt = v.Value;
             Services.Evaluator.Assign(LOperand.LValue, Value.ReadMemory(OutSnapshot));
         }
 

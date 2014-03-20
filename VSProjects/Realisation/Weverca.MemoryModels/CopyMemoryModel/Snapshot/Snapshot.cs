@@ -211,10 +211,10 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             result.AppendLine("===GLOBALS===");
             result.AppendLine(Structure.Variables.GetGlobalRepresentation(Data, Infos));
 
-            result.AppendLine("===GLOBAL CONTROLS===");
+            result.AppendLine("===LOCAL CONTROLS===");
             result.AppendLine(Structure.ContolVariables.GetLocalRepresentation(Data, Infos));
 
-            result.AppendLine("===LOCAL CONTROLS===");
+            result.AppendLine("===GLOBAL CONTROLS===");
             result.AppendLine(Structure.ContolVariables.GetGlobalRepresentation(Data, Infos));
 
             result.AppendLine("\n===ARRAYS===");

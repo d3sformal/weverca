@@ -42,7 +42,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Currently analyzed program point
         /// </summary>
-        public readonly ProgramPointBase ProgramPoint;
+        public readonly ProgramPointBase CurrentProgramPoint;
 
         /// <summary>
         /// Info about entry file where analysis has started
@@ -57,12 +57,12 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Currently processed program point graph
         /// </summary>
-        public ProgramPointGraph CurrentPPG { get { return ProgramPoint.OwningPPGraph; } }
+        public ProgramPointGraph CurrentPPG { get { return CurrentProgramPoint.OwningPPGraph; } }
 
         /// <summary>
         /// Currently analyzed partial (elementary part of analyzed statement)
         /// </summary>
-        public LangElement CurrentPartial { get { return ProgramPoint.Partial; } }
+        public LangElement CurrentPartial { get { return CurrentProgramPoint.Partial; } }
 
         /// <summary>
         /// Log holding all subresults hashed according to AST partials
@@ -72,12 +72,12 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Input set of program analysis flow
         /// </summary>
-        public FlowInputSet InSet { get { return ProgramPoint.InSet; } }
+        public FlowInputSet InSet { get { return CurrentProgramPoint.InSet; } }
 
         /// <summary>
         /// Output set of program analysis flow
         /// </summary>
-        public FlowOutputSet OutSet { get { return ProgramPoint.OutSet; } }
+        public FlowOutputSet OutSet { get { return CurrentProgramPoint.OutSet; } }
 
         /// <summary>
         /// Get/Set arguments used for call branches
@@ -89,7 +89,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Keys associated with connected extension branches. Returns copy so it can be modified during iteration
         /// </summary>
-        public object[] ExtensionKeys { get { return  ProgramPoint.Extension.Keys.ToArray(); } }
+        public object[] ExtensionKeys { get { return  CurrentProgramPoint.Extension.Keys.ToArray(); } }
 
         /// <summary>
         /// Get/Set this object for call branches
@@ -109,7 +109,7 @@ namespace Weverca.AnalysisFramework
         internal FlowController(ForwardAnalysisServices services, ProgramPointBase programPoint)
         {
             Services = services;
-            ProgramPoint = programPoint;
+            CurrentProgramPoint = programPoint;
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="branchKey">Key of removed branch</param>
         public void RemoveExtension(object branchKey)
         {
-            ProgramPoint.Extension.Remove(branchKey);
+            CurrentProgramPoint.Extension.Remove(branchKey);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="type">Type of extension</param>
         public void AddExtension(object branchKey, ProgramPointGraph ppGraph, ExtensionType type)
         {
-            ProgramPoint.Extension.Add(branchKey, ppGraph, type);
+            CurrentProgramPoint.Extension.Add(branchKey, ppGraph, type);
         }
 
         /// <summary>
@@ -157,14 +157,14 @@ namespace Weverca.AnalysisFramework
             }
 
             //update already existing branches
-            var childrenCopy = ProgramPoint.FlowChildren.ToArray();
+            var childrenCopy = CurrentProgramPoint.FlowChildren.ToArray();
             foreach (var child in childrenCopy)
             {
                 var catchChild = child as CatchPoint;
                 if (catchChild == null)
                 {
                     if (removeFlowChildren)
-                        ProgramPoint.RemoveFlowChild(child);
+                        CurrentProgramPoint.RemoveFlowChild(child);
 
                     continue;
                 }
@@ -181,7 +181,7 @@ namespace Weverca.AnalysisFramework
                 {
                     //no more it contains branch for this catch child
                     //disconnect it from graph
-                    ProgramPoint.RemoveFlowChild(catchChild);
+                    CurrentProgramPoint.RemoveFlowChild(catchChild);
                     catchChild.RemoveFlowChild(catchChild.TargetPoint);
                 }
             }
@@ -190,13 +190,13 @@ namespace Weverca.AnalysisFramework
             foreach (var throwInfo in indexed.Values)
             {
                 //create catch point according to specified throw info
-                var catchPoint = new CatchPoint(ProgramPoint, throwInfo.Catch);
+                var catchPoint = new CatchPoint(CurrentProgramPoint, throwInfo.Catch);
                 InitializeNewPoint(catchPoint);
 
                 catchPoint.ReThrow(throwInfo);
 
                 //connect branch into graph
-                ProgramPoint.AddFlowChild(catchPoint);
+                CurrentProgramPoint.AddFlowChild(catchPoint);
                 catchPoint.AddFlowChild(catchPoint.TargetPoint);
             }
         }

@@ -165,7 +165,7 @@ namespace Weverca.Analysis
         public string Message { get; protected set; }
 
         /// <summary>
-        /// <see cref="LangElement"/> of AST, which produced the warning
+        /// <see cref="LangElement"/> of AST which produced the warning
         /// </summary>
         public LangElement LangElement { get; protected set; }
 
@@ -180,15 +180,22 @@ namespace Weverca.Analysis
         public string FullFileName { get; protected set; }
 
         /// <summary>
+        /// The program point which produced the warning.
+        /// </summary>
+        public readonly ProgramPointBase ProgramPoint;
+
+        /// <summary>
         /// Construct new instance of AnalysisWarning, without cause
         /// </summary>
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
-        public AnalysisWarning(string fullFileName, string message, LangElement element)
+        /// <param name="programPoint">The program point, where the warning was produced</param>
+        public AnalysisWarning(string fullFileName, string message, LangElement element, ProgramPointBase programPoint)
         {
             Message = message;
             LangElement = element;
+            ProgramPoint = programPoint;
             FullFileName = fullFileName;
         }
 
@@ -198,11 +205,13 @@ namespace Weverca.Analysis
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
+        /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Warning cause</param>
-        public AnalysisWarning(string fullFileName, string message, LangElement element, AnalysisWarningCause cause)
+        public AnalysisWarning(string fullFileName, string message, LangElement element, ProgramPointBase programPoint, AnalysisWarningCause cause)
         {
             Message = message;
             LangElement = element;
+            ProgramPoint = programPoint;
             Cause = cause;
             FullFileName = fullFileName;
         }
@@ -210,8 +219,9 @@ namespace Weverca.Analysis
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisWarning" /> class.
         /// </summary>
-        protected AnalysisWarning()
+        protected AnalysisWarning(ProgramPointBase programPoint)
         {
+            ProgramPoint = programPoint;
         }
 
         /// <summary>
@@ -302,7 +312,8 @@ namespace Weverca.Analysis
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(string fullFileName, string message, LangElement element, FlagType cause)
+        public AnalysisSecurityWarning(string fullFileName, string message, LangElement element, ProgramPointBase programPoint, FlagType cause):
+            base(programPoint)
         {
             FullFileName = fullFileName;
             Message = message;
@@ -316,7 +327,8 @@ namespace Weverca.Analysis
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(string fullFileName, LangElement element, FlagType cause)
+        public AnalysisSecurityWarning(string fullFileName, LangElement element, ProgramPointBase programPoint, FlagType cause):
+            base(programPoint)
         {
             FullFileName = fullFileName;
             switch (cause)

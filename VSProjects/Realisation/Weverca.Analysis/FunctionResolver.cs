@@ -379,7 +379,7 @@ namespace Weverca.Analysis
                             }
                             else
                             {
-                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces parrent:: current class has no parrent", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
+                                AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces parrent:: current class has no parrent", element, flow.CurrentProgramPoint, AnalysisWarningCause.CANNOT_ACCCES_PARENT_CURRENT_CLASS_HAS_NO_PARENT));
                             }
                         }
                     }
@@ -388,11 +388,11 @@ namespace Weverca.Analysis
                 {
                     if (typeName.Name.Value == "self")
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces self:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces self:: when not in class", element, flow.CurrentProgramPoint, AnalysisWarningCause.CANNOT_ACCCES_SELF_WHEN_NOT_IN_CLASS));
                     }
                     else
                     {
-                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces parent:: when not in class", element, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
+                        AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Cannot acces parent:: when not in class", element, flow.CurrentProgramPoint, AnalysisWarningCause.CANNOT_ACCCES_PARENT_WHEN_NOT_IN_CLASS));
                     }
 
                 }
@@ -760,19 +760,14 @@ namespace Weverca.Analysis
             }
         }
 
-        private void setWarning(string message)
-        {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element));
-        }
-
         private void setWarning(string message, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, Element, Flow.CurrentProgramPoint, cause));
         }
 
         private void setWarning(string message, LangElement element, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, element, cause));
+            AnalysisWarningHandler.SetWarning(OutSet, new AnalysisWarning(Flow.CurrentScript.FullName, message, element, Flow.CurrentProgramPoint, cause));
         }
 
         private void fatalError(bool removeFlowChildren)
@@ -904,6 +899,8 @@ namespace Weverca.Analysis
             {
                 useSharedFunctions = true;
             }
+            // TODO JUST FOR TESTING
+            useSharedFunctions = true;
 
             if (sharedFunctions.Contains(function) || useSharedFunctions)
             {
@@ -1097,7 +1094,7 @@ namespace Weverca.Analysis
         private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
         {
 
-            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
+            var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
 
             if (callPoint == null)
             {
@@ -1117,7 +1114,7 @@ namespace Weverca.Analysis
             }
             if (argMin > callPoint.Arguments.Count() || argMax < callPoint.Arguments.Count())
             {
-                AnalysisWarningHandler.SetWarning(callInput, new AnalysisWarning(Flow.CurrentScript.FullName, "Wrong number of arguments", callPoint.Partial, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
+                AnalysisWarningHandler.SetWarning(callInput, new AnalysisWarning(Flow.CurrentScript.FullName, "Wrong number of arguments", callPoint.Partial, callPoint, AnalysisWarningCause.WRONG_NUMBER_OF_ARGUMENTS));
             }
 
             for (int i = 0; i < Math.Min(signature.FormalParams.Count, arguments.Count()); ++i)
@@ -1170,7 +1167,7 @@ namespace Weverca.Analysis
             argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;
-            var callPoint = (Flow.ProgramPoint as ExtensionPoint).Caller as RCallPoint;
+            var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
                 var argVar = argument(index);

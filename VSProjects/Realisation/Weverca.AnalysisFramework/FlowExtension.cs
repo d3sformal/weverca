@@ -96,6 +96,8 @@ namespace Weverca.AnalysisFramework
                 connect();
             }
 
+            ppGraph.Context._callers.Add(Owner);
+
             Owner.Services.SetServices(ppGraph);
             var extension = new ExtensionPoint(Owner, ppGraph, type);
             Owner.Services.SetServices(extension);
