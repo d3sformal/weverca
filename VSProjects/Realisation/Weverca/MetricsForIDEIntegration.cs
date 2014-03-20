@@ -86,32 +86,7 @@ namespace Weverca
 
                 fileToRead.Close();
             }
-
-            else if (metricsType == "-warnings")
-            {
-                List<string> filesToAnalyze = new List<string>();
-                
-                string fileExtension = Path.GetExtension(analyzedFile);
-                if (fileExtension == PHP_FILE_EXTENSION)
-                {
-                    filesToAnalyze.Add(analyzedFile);
-                }
-                
-                for (int i = 0; i< otherArgs.Length; i++)
-                {
-                    fileExtension = Path.GetExtension(otherArgs[i]);
-                    if (fileExtension == PHP_FILE_EXTENSION)
-                    {
-                        filesToAnalyze.Add(otherArgs[i]);
-                    }
-                }
-
-                var memoryModel = MemoryModels.MemoryModels.CopyMM;
-                var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
-                RunStaticAnalysisForWarnings(filesToAnalyze.ToArray(), analysis, memoryModel);
-            }
-           
-            else if (metricsType == "-variables")
+            else if (metricsType == "-staticanalysis")
             {
                 List<string> filesToAnalyze = new List<string>();
 
@@ -132,7 +107,8 @@ namespace Weverca
 
                 var memoryModel = MemoryModels.MemoryModels.CopyMM;
                 var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
-                RunStaticAnalysisForPPGraph(filesToAnalyze.ToArray(), analysis, memoryModel);
+
+                RunStaticAnalysis(filesToAnalyze.ToArray(), analysis, memoryModel);
             }
 
         }
@@ -286,7 +262,7 @@ namespace Weverca
             return new SyntaxParser(sourceFile, code);
         }
 
-        private static void RunStaticAnalysisForWarnings(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
         {
             var console = new ConsoleOutput();
 
@@ -322,55 +298,9 @@ namespace Weverca
 
                         Console.WriteLine("Security warnings:");
                         PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
-                    }
-                    catch (Exception e)
-                    {
-                        console.Error(e.Message);
-                    }
-                }
-            }
-        }
 
-        private static void RunStaticAnalysisForPPGraph(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
-        {
-            var console = new ConsoleOutput();
-
-            foreach (var argument in filenames)
-            {
-                var filesInfo = Analyzer.GetFileNames(argument);
-                if (filesInfo == null)
-                {
-                    Console.WriteLine("Path \"{0}\" cannot be recognized", argument);
-                    Console.WriteLine();
-                    continue;
-                }
-
-                else if (filesInfo.Length <= 0)
-                {
-                    Console.WriteLine("Path pattern \"{0}\" does not match any file", argument);
-                    Console.WriteLine();
-                }
-
-                foreach (var fileInfo in filesInfo)
-                {
-                    console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
-
-                    try
-                    {
-
-                        var watch = System.Diagnostics.Stopwatch.StartNew();
-                        var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
-                        watch.Stop();
-
-            
-                        //flow(ppGraph.Start,null);
-                     
+                        Console.WriteLine("Variables:");
                         writeAll(ppGraph);
-
-                        //ppGraph.Start.
-                        //FlowExtension extension = ppGraph.Start.Extension;
-                        //ExtensionPoint e 
-                        
 
                     }
                     catch (Exception e)
