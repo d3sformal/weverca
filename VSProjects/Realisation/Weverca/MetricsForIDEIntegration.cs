@@ -106,9 +106,8 @@ namespace Weverca
                 }
 
                 var memoryModel = MemoryModels.MemoryModels.CopyMM;
-                var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
 
-                RunStaticAnalysis(filesToAnalyze.ToArray(), analysis, memoryModel);
+                RunStaticAnalysis(filesToAnalyze.ToArray(), memoryModel);
             }
 
         }
@@ -262,7 +261,7 @@ namespace Weverca
             return new SyntaxParser(sourceFile, code);
         }
 
-        private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
         {
             var console = new ConsoleOutput();
 
@@ -290,7 +289,7 @@ namespace Weverca
                     {
 
                         var watch = System.Diagnostics.Stopwatch.StartNew();
-                        var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
+                        var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
 
                         Console.WriteLine("Analysis warnings:");

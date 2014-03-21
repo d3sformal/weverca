@@ -900,7 +900,7 @@ namespace Weverca.Analysis
                 useSharedFunctions = true;
             }
             // TODO JUST FOR TESTING
-            useSharedFunctions = true;
+            //useSharedFunctions = true;
 
             if (sharedFunctions.Contains(function) || useSharedFunctions)
             {

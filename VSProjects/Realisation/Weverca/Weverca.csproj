@@ -78,10 +78,6 @@
       <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Weverca.AnalysisFramework.UnitTest\Weverca.AnalysisFramework.UnitTest.csproj">
-      <Project>{d6b94047-e7eb-4f27-a15f-bb3b8f8e1444}</Project>
-      <Name>Weverca.AnalysisFramework.UnitTest</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>

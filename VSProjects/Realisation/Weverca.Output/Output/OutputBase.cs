@@ -175,13 +175,13 @@ namespace Weverca.Output.Output
         /// Prints warning to output
         /// </summary>
         /// <param name="analysisWarnigs">list of analysis warning</param>
-        /// <param name="securityWarnigs">list of security warning</param>
+        /// <param name="securityWarnings">list of security warning</param>
         public void Warnings(List<AnalysisWarning> analysisWarnigs, List<AnalysisSecurityWarning> securityWarnings)
         {
             headline("Warnings");
-            headline("Total number of warnings: " + (analysisWarnigs.Count + securityWarnings.Count));
-            headline("Number of analysis warnings: " + analysisWarnigs.Count);
-            headline("Number of security warnings: " + analysisWarnigs.Count);
+            CommentLine("Total number of warnings: " + (analysisWarnigs.Count + securityWarnings.Count));
+            CommentLine("Number of analysis warnings: " + analysisWarnigs.Count);
+            CommentLine("Number of security warnings: " + securityWarnings.Count);
             warnings(analysisWarnigs, "Analysis warnings:");
             warnings(securityWarnings, "Security warnings:");
         }

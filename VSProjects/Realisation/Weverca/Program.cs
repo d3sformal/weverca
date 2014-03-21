@@ -62,7 +62,6 @@ namespace Weverca
                 case "-sa":
                     var filesIndex = 1;
                     var memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
-                    var analysis = Weverca.AnalysisFramework.UnitTest.Analyses.WevercaAnalysis;
                    
                     if (args.Length > filesIndex+1 && args[filesIndex] == "-mm")
                     {
@@ -77,7 +76,7 @@ namespace Weverca
                     }
                     var analysisFiles = new string[args.Length - filesIndex];
                     Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
-                    RunStaticAnalysis(analysisFiles, analysis, memoryModel);
+                    RunStaticAnalysis(analysisFiles, memoryModel);
                     break;
                 case "-cmide":
                     var metricsArgs = new string[args.Length - 3];
@@ -99,9 +98,8 @@ namespace Weverca
         /// Execute the static analysis and print results
         /// </summary>
         /// <param name="filenames">List of file name patterns from command line</param>
-        /// <param name="analysis">type of analysis</param>
         /// <param name="memoryModel">The memory model used for analysis</param>
-        private static void RunStaticAnalysis(string[] filenames, Weverca.AnalysisFramework.UnitTest.Analyses analysis, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
         {
             var console = new ConsoleOutput();
             console.CommentLine("Using " + memoryModel.ToString());
@@ -131,7 +129,7 @@ namespace Weverca
 #if TEST
                     // Process analysis
                     var watch = System.Diagnostics.Stopwatch.StartNew();
-                    var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
+                    var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                     watch.Stop();
                     // Build output
 
