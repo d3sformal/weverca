@@ -11,7 +11,7 @@ namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Represents a context of a program point graph.
-    /// Contains program points from which the graph is used (called or included).
+    /// Consists of program points that have this graph as an extension (that include or call this graph).
     /// </summary>
     public class PPGraphContext
     {

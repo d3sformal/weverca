@@ -36,6 +36,10 @@ namespace Weverca.AnalysisFramework
 
         #region Public fields
 
+        /// <summary>
+        /// Context of this program point graph - consists of program points that have this graph
+        /// as an extension (that include or call this graph).
+        /// </summary>
         public readonly PPGraphContext Context;
 
         /// <summary>
