@@ -142,10 +142,7 @@ namespace Weverca
 
                     graphWalker.Run(console);
 
-                    console.Warnings(AnalysisWarningHandler.GetWarnings());
-
-                    console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
-                     
+                    console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));

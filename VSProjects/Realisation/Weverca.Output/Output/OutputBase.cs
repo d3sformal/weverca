@@ -172,12 +172,18 @@ namespace Weverca.Output.Output
         }
 
         /// <summary>
-        /// Prints analysis warning to output
+        /// Prints warning to output
         /// </summary>
-        /// <param name="list">list of warning</param>
-        public void Warnings(List<AnalysisWarning> list)
+        /// <param name="analysisWarnigs">list of analysis warning</param>
+        /// <param name="securityWarnigs">list of security warning</param>
+        public void Warnings(List<AnalysisWarning> analysisWarnigs, List<AnalysisSecurityWarning> securityWarnings)
         {
-            warnings(list, "Analysis warnings:");
+            headline("Warnings");
+            headline("Total number of warnings: " + (analysisWarnigs.Count + securityWarnings.Count));
+            headline("Number of analysis warnings: " + analysisWarnigs.Count);
+            headline("Number of security warnings: " + analysisWarnigs.Count);
+            warnings(analysisWarnigs, "Analysis warnings:");
+            warnings(securityWarnings, "Security warnings:");
         }
 
         /// <summary>
@@ -188,15 +194,6 @@ namespace Weverca.Output.Output
         {
             variableInfoLine(metric);
             line();
-        }
-
-        /// <summary>
-        /// Prints security warnings to output
-        /// </summary>
-        /// <param name="list">list of security warnings</param>
-        public void SecurityWarnings(List<AnalysisSecurityWarning> list)
-        {
-            warnings(list, "Security warnings:");
         }
 
         private void warnings<T>(List<T> warnings, string headLine) where T : AnalysisWarning
