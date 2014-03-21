@@ -34,23 +34,27 @@ namespace Weverca.AnalysisFramework
             var result = new StringBuilder();
 
             //result.AppendLine(OwningPPGraph.OwningScript.FullName);
-            result.Append("->");
-            foreach (var caller in _callers)
+            
+            for (int c = 0; c < _callers.Count; c++)
             {
+                ProgramPointBase caller = _callers[c];
                 // If the program point calls itself, continue (this occurs, e.g., in case sharing graphs in recursive calls)
                 if (OwningPPGraph == caller.OwningPPGraph)
                     continue;
 
+                result.Append("->");
                 result.Append("(");
 
-                result.Append(caller.OwningPPGraph.OwningScript.FullName + " at " + caller.Partial.Position);
+                result.Append(caller.OwningPPGraph.OwningScript.FullName + " at position " + caller.Partial.Position);
                 result.Append(caller.OwningPPGraph.Context);
 
                 result.Append(")");
-                result.AppendLine("or");
+                if (c != _callers.Count - 1) result.Append("or");
 
                 //result.Append("( " + caller.ToString() + " )");
             }
+                
+
             //result.AppendLine();
 
             return result.ToString();

@@ -331,6 +331,8 @@ namespace Weverca
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
                                     " lastoffset " + s.LangElement.Position.LastOffset +
                                     " : " + s.Message.ToString());
+                Console.WriteLine("Called from: ");
+                Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
             }
         }
 
@@ -354,6 +356,8 @@ namespace Weverca
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
                                     " lastoffset " + s.LangElement.Position.LastOffset +
                                     " : " + s.Message.ToString());
+                Console.WriteLine("Called from: ");
+                Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
             }
         }
 
