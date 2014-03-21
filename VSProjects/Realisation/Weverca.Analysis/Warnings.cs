@@ -238,7 +238,7 @@ namespace Weverca.Analysis
         public override int GetHashCode()
         {
             return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
-                + Cause.GetHashCode();
+                + Cause.GetHashCode() + ProgramPoint.OwningPPGraph.GetHashCode();
         }
 
         /// <summary>
@@ -311,6 +311,7 @@ namespace Weverca.Analysis
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="element">Element, where the warning was produced</param>
+        /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(string fullFileName, string message, LangElement element, ProgramPointBase programPoint, FlagType cause):
             base(programPoint)
@@ -326,6 +327,7 @@ namespace Weverca.Analysis
         /// </summary>
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="element">Element, where the warning was produced</param>
+        /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
         public AnalysisSecurityWarning(string fullFileName, LangElement element, ProgramPointBase programPoint, FlagType cause):
             base(programPoint)
@@ -352,7 +354,7 @@ namespace Weverca.Analysis
         public override int GetHashCode()
         {
             return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
-                + Flag.GetHashCode();
+                + Flag.GetHashCode() + ProgramPoint.OwningPPGraph.GetHashCode();
         }
 
         /// <inheritdoc />
