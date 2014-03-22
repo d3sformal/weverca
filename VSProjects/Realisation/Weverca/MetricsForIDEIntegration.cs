@@ -299,7 +299,9 @@ namespace Weverca
                         PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
 
                         Console.WriteLine("Variables:");
-                        writeAll(ppGraph);
+                        List<ProgramPointGraph> processedPPGraphs = new List<ProgramPointGraph>();
+                        List<ProgramPointBase> processedPPoints = new List<ProgramPointBase>();
+                        writeAll(ppGraph, ref processedPPGraphs, ref processedPPoints);
 
                     }
                     catch (Exception e)
@@ -360,17 +362,24 @@ namespace Weverca
             }
         }
 
-        private static void writeAll(ProgramPointGraph graph)
+        private static void writeAll(ProgramPointGraph graph,ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
         {
+            processedPPGraphs.Add(graph);
             int lastFirstLine = -1;
             int lastLastLine = -1;
             int lastFirstOffset = -1;
             int lastLastOffset = -1;
             String lastRepresentation = "";
             bool lastPointWritten = true;
+            String callStack;
 
             foreach (ProgramPointBase p in graph.Points)
             {
+                foreach (ProgramPointBase processedPoint in processedPPoints)
+                {
+                    if (processedPoint == p) continue;
+                }
+                processedPPoints.Add(p);
                 if (p.Partial == null || p.OutSet == null) continue;
                 if (lastFirstLine == p.Partial.Position.FirstLine && lastLastLine == p.Partial.Position.LastLine) //only first and last program point from one line is shown
                 {
@@ -388,7 +397,14 @@ namespace Weverca
                                             " Last line: " + lastLastLine +
                                             " First offset: " + lastFirstOffset +
                                             " Last offset: " + lastLastOffset);
+                        if (graph.OwningScript != null) Console.WriteLine("OwningScript: " + graph.OwningScript.FullName);
                         Console.WriteLine("Point information:");
+                        callStack = graph.Context.ToString();
+                        if (graph.Context.ToString() != "")
+                        {
+                            Console.WriteLine("Called from: ");
+                            Console.WriteLine(graph.Context.ToString());
+                        }
                         Console.WriteLine(lastRepresentation);
                     }
                     Console.Write("Point position: ");
@@ -396,7 +412,14 @@ namespace Weverca
                                         " Last line: " + p.Partial.Position.LastLine +
                                         " First offset: " + p.Partial.Position.FirstOffset +
                                         " Last offset: " + p.Partial.Position.LastOffset);
+                    if (graph.OwningScript != null) Console.WriteLine("OwningScript: " + graph.OwningScript.FullName);
                     Console.WriteLine("Point information:");
+                    callStack = graph.Context.ToString();
+                    if (graph.Context.ToString() != "")
+                    {
+                        Console.WriteLine("Called from: ");
+                        Console.WriteLine(graph.Context.ToString());
+                    }
                     Console.WriteLine(p.OutSet.Representation);
                     
                     lastPointWritten = true;
@@ -409,20 +432,20 @@ namespace Weverca
                 FlowExtension ext = p.Extension;
                 foreach (ExtensionPoint extPoint in ext.Branches)
                 {
-                    writeExtension(extPoint);
+                    writeExtension(extPoint, ref processedPPGraphs, ref processedPPoints);
                 }         
             }
         }
 
-        private static void writeExtension(ExtensionPoint point)
+        private static void writeExtension(ExtensionPoint point, ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
         {
-            if (point.OwningPPGraph.OwningScript != null) Console.WriteLine("OwningScript: " + point.OwningPPGraph.OwningScript.FullName);
-            else Console.WriteLine("OwningScript: ");
-            if (point.OwningPPGraph.FunctionName != null) Console.WriteLine("FunctionName: " + point.OwningPPGraph.FunctionName);
-            else Console.WriteLine("FunctionName: ");
-            Console.WriteLine("Extension");
             ProgramPointGraph graph = point.OwningPPGraph;
-            writeAll(graph);
+            foreach (ProgramPointGraph processedGraph in processedPPGraphs)
+            {
+                if (graph == processedGraph) return;
+            }
+            Console.WriteLine("Extension");
+            writeAll(graph,ref processedPPGraphs, ref processedPPoints);
             Console.WriteLine("End extension");
         }
  
