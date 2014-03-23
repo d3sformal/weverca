@@ -52,7 +52,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// List of program points that should be processed
         /// </summary>
-        private readonly WorkList _workList = new WorkList();
+		private readonly WorkList _workList = WorkList.GetInstance();
 
         #endregion
 
