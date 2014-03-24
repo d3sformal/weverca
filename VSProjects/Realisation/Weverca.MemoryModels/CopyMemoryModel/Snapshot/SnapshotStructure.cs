@@ -520,6 +520,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             bool areEqual = true;
             foreach (MemoryIndex index in indexes)
             {
+                if (index is TemporaryIndex)
+                {
+                    continue;
+                }
+
                 IndexData newData = getDataOrUndefined(index, this, emptyData);
                 IndexData oldData = getDataOrUndefined(index, oldValue, emptyData);
 
@@ -752,7 +757,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             }
             else
             {
-                throw new Exception("Missing array descriptor");
+                throw new Exception("Missing array descriptor " + arrayValue.ToString());
             }
         }
 

@@ -263,10 +263,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             if (isTemporarySet(context))
             {
+                // SnapshotLogger.append(context, "read from temporary location - " + this.ToString());
                 return temporaryLocation.ReadMemory(context);
             }
             else
             {
+                // SnapshotLogger.append(context, "read just value - " + this.ToString());
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
                 switch (snapshot.CurrentMode)
                 {

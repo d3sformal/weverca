@@ -1649,27 +1649,24 @@ $result=$b->r[4][5];
 
 ".AssertVariable("result").HasValues(7).Analysis(Analyses.WevercaAnalysisTest);
 
+        readonly static TestCase ReturnArray_CASE = @"
 
-
-
-        readonly static TestCase BflTest_CASE = @"
-function f() {
-while (false) { }
+function GetLoginData($name = """", $id = -1, $adr = 'login')
+{
+  return Array(0,1);
 }
 
-f();
+$x = GetLoginData();
 
-$result = 7;
+".AssertVariable("").Analysis(Analyses.WevercaAnalysisTest);
 
-
-".AssertVariable("result").HasValues(7).Analysis(Analyses.WevercaAnalysisTest);
 
 
 
         [TestMethod]
-        public void BflTest()
+        public void ReturnArray()
         {
-            AnalysisTestUtils.RunTestCase(BflTest_CASE);
+            AnalysisTestUtils.RunTestCase(ReturnArray_CASE);
         }
 
         [TestMethod]

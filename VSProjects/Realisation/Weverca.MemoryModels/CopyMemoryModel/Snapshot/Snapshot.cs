@@ -909,6 +909,26 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </returns>
         protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
         {
+            if (entry.Count == 1)
+            {
+                Value value = entry.PossibleValues.First();
+                AssociativeArray array = value as AssociativeArray;
+                ArrayDescriptor descriptor;
+                if (array != null && Structure.TryGetDescriptor(array, out descriptor))
+                {
+                    TemporaryIndex index = descriptor.ParentVariable as TemporaryIndex;
+
+                    if (index != null)
+                    {
+                        MemoryEntry indexEntry = Data.GetMemoryEntry(index);
+                        if (indexEntry.Count == 1 && indexEntry.PossibleValues.First() == value)
+                        {
+                            return new SnapshotEntry(MemoryPath.MakePathTemporary(index));
+                        }
+                    }
+                }
+            }
+
             // SnapshotLogger.append(this, "Get entry snap - " + entry);
             return new DataSnapshotEntry(this, entry);
         }
@@ -1038,6 +1058,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="temporaryIndex">Index of the temporary variable.</param>
         internal bool IsTemporarySet(TemporaryIndex temporaryIndex)
         {
+            // SnapshotLogger.append(this, "temporary test - " + Structure.Temporary.Local.Contains(temporaryIndex));
             return Structure.Temporary.Local.Contains(temporaryIndex);
         }
 
