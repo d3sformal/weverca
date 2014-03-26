@@ -410,13 +410,13 @@ namespace Weverca
                                 " First offset: " + p.Partial.Position.FirstOffset +
                                 " Last offset: " + p.Partial.Position.LastOffset);
             if (p.OwningPPGraph.OwningScript != null) Console.WriteLine("OwningScript: " + p.OwningPPGraph.OwningScript.FullName);
-            Console.WriteLine("Point information:");
             String callStack = p.OwningPPGraph.Context.ToString();
             if (callStack != "")
             {
                 Console.WriteLine("Called from: ");
                 Console.WriteLine(p.OwningPPGraph.Context.ToString());
             }
+            Console.WriteLine("Point information:");
             if (outset && p.OutSet != null) Console.WriteLine(p.OutSet.Representation);
             if (!outset && p.InSet != null) Console.WriteLine(p.InSet.Representation);
         }
