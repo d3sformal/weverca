@@ -359,19 +359,14 @@ namespace Weverca
                                     " : " + s.Message.ToString());
                 Console.WriteLine("Called from: ");
                 Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
+               
             }
         }
 
         private static void writeAll(ProgramPointGraph graph,ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
         {
             processedPPGraphs.Add(graph);
-            int lastFirstLine = -1;
-            int lastLastLine = -1;
-            int lastFirstOffset = -1;
-            int lastLastOffset = -1;
-            String lastRepresentation = "";
-            bool lastPointWritten = true;
-            String callStack;
+            ProgramPointBase lastPPoint = null;
 
             foreach (ProgramPointBase p in graph.Points)
             {
@@ -380,61 +375,50 @@ namespace Weverca
                     if (processedPoint == p) continue;
                 }
                 processedPPoints.Add(p);
-                if (p.Partial == null || p.OutSet == null) continue;
-                if (lastFirstLine == p.Partial.Position.FirstLine && lastLastLine == p.Partial.Position.LastLine) //only first and last program point from one line is shown
+                if (p.Partial == null) continue;
+                if ( lastPPoint != null &&
+                    lastPPoint.Partial.Position.FirstLine== p.Partial.Position.FirstLine && 
+                    lastPPoint.Partial.Position.LastLine == p.Partial.Position.LastLine) //only first and last program point from one line is shown
                 {
-                    lastFirstOffset = p.Partial.Position.FirstOffset;
-                    lastLastOffset = p.Partial.Position.LastOffset;
-                    lastRepresentation = p.OutSet.Representation;
-                    lastPointWritten = false;
+                    lastPPoint = p;
                 }
                 else
                 {
-                    if (!lastPointWritten) // show the last program point
+                    if (lastPPoint != null) // show the last program point
                     {
-                        Console.Write("Point position: ");
-                        Console.WriteLine("First line: " + lastFirstLine +
-                                            " Last line: " + lastLastLine +
-                                            " First offset: " + lastFirstOffset +
-                                            " Last offset: " + lastLastOffset);
-                        if (graph.OwningScript != null) Console.WriteLine("OwningScript: " + graph.OwningScript.FullName);
-                        Console.WriteLine("Point information:");
-                        callStack = graph.Context.ToString();
-                        if (graph.Context.ToString() != "")
-                        {
-                            Console.WriteLine("Called from: ");
-                            Console.WriteLine(graph.Context.ToString());
-                        }
-                        Console.WriteLine(lastRepresentation);
+                        writeProgramPointInformation(lastPPoint, true);
                     }
-                    Console.Write("Point position: ");
-                    Console.WriteLine("First line: " + p.Partial.Position.FirstLine +
-                                        " Last line: " + p.Partial.Position.LastLine +
-                                        " First offset: " + p.Partial.Position.FirstOffset +
-                                        " Last offset: " + p.Partial.Position.LastOffset);
-                    if (graph.OwningScript != null) Console.WriteLine("OwningScript: " + graph.OwningScript.FullName);
-                    Console.WriteLine("Point information:");
-                    callStack = graph.Context.ToString();
-                    if (graph.Context.ToString() != "")
-                    {
-                        Console.WriteLine("Called from: ");
-                        Console.WriteLine(graph.Context.ToString());
-                    }
-                    Console.WriteLine(p.OutSet.Representation);
+                    writeProgramPointInformation(p, false);
                     
-                    lastPointWritten = true;
-                    lastFirstLine = p.Partial.Position.FirstLine;
-                    lastLastLine = p.Partial.Position.LastLine;
-                    lastFirstOffset = p.Partial.Position.FirstOffset;
-                    lastLastOffset = p.Partial.Position.LastOffset;
+                    lastPPoint = p;
                 }
                 // for each program poind resolve extensions
                 FlowExtension ext = p.Extension;
                 foreach (ExtensionPoint extPoint in ext.Branches)
                 {
                     writeExtension(extPoint, ref processedPPGraphs, ref processedPPoints);
-                }         
+                } 
             }
+            writeProgramPointInformation(lastPPoint, true);
+        }
+
+        private static void writeProgramPointInformation(ProgramPointBase p, bool outset)
+        {
+            Console.Write("Point position: ");
+            Console.WriteLine("First line: " + p.Partial.Position.FirstLine +
+                                " Last line: " + p.Partial.Position.LastLine +
+                                " First offset: " + p.Partial.Position.FirstOffset +
+                                " Last offset: " + p.Partial.Position.LastOffset);
+            if (p.OwningPPGraph.OwningScript != null) Console.WriteLine("OwningScript: " + p.OwningPPGraph.OwningScript.FullName);
+            Console.WriteLine("Point information:");
+            String callStack = p.OwningPPGraph.Context.ToString();
+            if (callStack != "")
+            {
+                Console.WriteLine("Called from: ");
+                Console.WriteLine(p.OwningPPGraph.Context.ToString());
+            }
+            if (outset && p.OutSet != null) Console.WriteLine(p.OutSet.Representation);
+            if (!outset && p.InSet != null) Console.WriteLine(p.InSet.Representation);
         }
 
         private static void writeExtension(ExtensionPoint point, ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
