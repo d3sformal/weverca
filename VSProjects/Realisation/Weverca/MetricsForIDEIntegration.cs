@@ -14,6 +14,7 @@ using Weverca.Output;
 using Weverca.Analysis;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.Taint;
 
 namespace Weverca
 {
@@ -327,6 +328,7 @@ namespace Weverca
                     file = s.FullFileName;
                     Console.WriteLine("File: " + file);
                 }
+
                 Console.WriteLine ("Warning at line " + s.LangElement.Position.FirstLine + 
                                     " char " + s.LangElement.Position.FirstColumn + 
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
@@ -339,7 +341,6 @@ namespace Weverca
 
         private static void PrintSecurityWarnings(List<AnalysisSecurityWarning> warnings)
         {
-
             if (warnings.Count == 0)
             {
                 Console.WriteLine("No warnings");
@@ -359,7 +360,7 @@ namespace Weverca
                                     " : " + s.Message.ToString());
                 Console.WriteLine("Called from: ");
                 Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
-               
+
             }
         }
 
@@ -417,6 +418,7 @@ namespace Weverca
                 Console.WriteLine(p.OwningPPGraph.Context.ToString());
             }
             Console.WriteLine("Point information:");
+
             if (outset && p.OutSet != null) Console.WriteLine(p.OutSet.Representation);
             if (!outset && p.InSet != null) Console.WriteLine(p.InSet.Representation);
         }

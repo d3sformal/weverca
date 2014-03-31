@@ -56,6 +56,9 @@
     <Compile Include="InfoLevelPhase\SimpleBackwardAnalysis.cs" />
     <Compile Include="InfoLevelPhase\SimpleTaintForwardAnalysis.cs" />
     <Compile Include="InfoLevelPhase\TaintAnalyzer.cs" />
+    <Compile Include="InfoLevelPhase\TaintAnalyzerV2.cs" />
+    <Compile Include="InfoLevelPhase\TaintFlow.cs" />
+    <Compile Include="InfoLevelPhase\TaintInfo.cs" />
     <Compile Include="MemoryLevelPhase\ForwardAnalysisTest.cs" />
     <Compile Include="InfoLevelPhase\NextPhaseAnalysisTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

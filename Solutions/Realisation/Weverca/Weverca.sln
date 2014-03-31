@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Parser", "..\..\..\VSProjects\Realisation\Weverca.Parser\Weverca.Parser.csproj", "{CADF9418-C0F6-4E56-B39E-33522603D0BC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj", "{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}"
