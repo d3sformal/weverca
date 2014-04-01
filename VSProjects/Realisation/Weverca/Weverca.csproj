@@ -106,6 +106,10 @@
       <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
       <Name>Weverca.Analysis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Taint\Weverca.Taint\Weverca.Taint.csproj">
+      <Project>{f6dea013-a45c-47bf-8ba5-2118179d6e73}</Project>
+      <Name>Weverca.Taint</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

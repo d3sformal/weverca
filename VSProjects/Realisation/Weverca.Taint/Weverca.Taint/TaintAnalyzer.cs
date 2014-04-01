@@ -26,6 +26,11 @@ namespace Weverca.Taint
             "$_POST"
         };
 
+        public override void VisitPoint(ProgramPointBase p)
+        {
+            //nothing to do
+        }
+
         public override void VisitNativeAnalyzer(NativeAnalyzerPoint p)
         {
             _currentPoint = p;

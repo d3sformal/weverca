@@ -37,7 +37,7 @@ namespace Weverca.Taint
         }
 
     }
-
+    
     class TaintInfo
     {
         public bool highPriority = true;

@@ -42,7 +42,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TaintAnalyzer.cs" />
     <Compile Include="TaintFlow.cs" />
-    <Compile Include="TaintInfo.cs" />
+    <Compile Include="TaintForwardAnalysis.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
+      <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
+      <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
+      <Name>Weverca.AnalysisFramework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
