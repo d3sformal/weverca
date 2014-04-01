@@ -110,6 +110,14 @@ namespace Weverca.AnalysisFramework
 			}
 		}
 
+		private class WorkQueue
+		{
+			public readonly Queue<ProgramPointBase> _queue = new Queue<ProgramPointBase>();
+			public readonly WorkQueue _parent;
+
+			public WorkQueue(WorkQueue parent) { _parent = parent; }
+		}
+
 		private class Worklist2 : WorkList
 		{
 			private WorkQueue hQueue = new WorkQueue (null);
