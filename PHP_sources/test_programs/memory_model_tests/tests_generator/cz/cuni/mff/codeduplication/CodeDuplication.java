@@ -3,13 +3,11 @@ package cz.cuni.mff.codeduplication;
 public class CodeDuplication {
 	
 	/**
-	 * 
-	 * @param args
-	 * 
-	 * 
-	 * 
+	 * Generates code for evaluation in the paper On Data-flow Analysis of Dynamic Languages
+	 * Usage: [code_n / mcode_n] n
 	 */
 	public static void main(String[] args) {
+		// The code that will be duplicated
 		String code = "$alias = array();"+"\n"+
 			"$alias2 = 0;"+"\n"+
 			"$alias3 = 1;"+"\n"+
@@ -53,12 +51,11 @@ public class CodeDuplication {
 		"$arr2[3] = 9; // updates also $arr[3] and $alias"
 		 +"\n$arr[?] = $arr2;";
 		
-		//code = "$x = $y;";
 		int numDuplications = Integer.parseInt(args[1]);
 		if (args[0].equals("code_n")) {
-			System.out.print(createFinalCode(duplicateCodeHelper(code, numDuplications)));
+			System.out.print(createFinalCode(createCode_n(code, numDuplications)));
 		} else {
-			System.out.print(createFinalCode(duplicateCode(code, numDuplications)));
+			System.out.print(createFinalCode(createMCode_n(code, numDuplications)));
 		}
 	}
 	
@@ -101,12 +98,12 @@ public class CodeDuplication {
 				"\n" + "?>";
 	}
 	
-	private static String duplicateCode(String code, int numDuplications) 
+	private static String createMCode_n(String code, int numDuplications) 
 	{
-		code = duplicateCodeHelper(code, numDuplications);
+		code = createCode_n(code, numDuplications);
 		return "if (?) {" + "\n	" + code.replace("\n", "\n"+"	") + "\n" + "}" + " else {" + "\n	" + code.replace("\n", "\n"+"	") + "\n" + "}";	}
 	
-	private static String duplicateCodeHelper(String code, int numDuplications) {
+	private static String createCode_n(String code, int numDuplications) {
 		for (int i = 1; i < numDuplications; i++) {
 			code += "\n" +
 					addPrefixToVars(code, createPrefix(i));
@@ -121,14 +118,6 @@ public class CodeDuplication {
 			str += "a";
 		}
 		return str;
-	}
-	
-	private static String duplicateCodeOld(String code, int numDuplications) {
-		if (numDuplications == 0) return code;
-		
-		code = "if (?) {" + "\n" + addPrefixToVars(code, "a") + "\n" + "}" + "else {" + "\n" + addPrefixToVars(code, "b") + "\n" + "}";   
-		
-		return duplicateCode(code, numDuplications-1);
 	}
 	
 	private static String addPrefixToVars(String code, String suffix) {
