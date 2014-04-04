@@ -1,0 +1,23 @@
+<?php
+// This file contains login and aliases links. The goal is ta replace the
+// login entered by user at login page with an alias known by the server.
+//
+//
+// The format of the file is :
+// $login_alias = array(
+//   'alias_1' => 'real_login_1',
+//   'alias_2' => 'real_login_2'
+// );
+//
+// Do know remove the first and last lines, but just change login / alias
+// couples. Don't forget the trailing comma for each couple except for the last
+// one.
+
+$login_alias = array(
+// change from here
+  'alias_1' => 'real_login_1',
+  'alias_2' => 'real_login_2'
+// do not change after here
+);
+
+?>
