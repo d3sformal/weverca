@@ -41,7 +41,7 @@ namespace Weverca.AnalysisFramework
 		/// <returns>The instance of the worklist.</returns>
 		public static WorkList GetInstance ()
 		{
-			return new WorkList1 ();
+			return new WorkList2 ();
 		}
 
 		/// <summary>
@@ -110,7 +110,7 @@ namespace Weverca.AnalysisFramework
 			}
 		}
 
-		private class WorkQueue
+		class WorkQueue
 		{
 			public readonly Queue<ProgramPointBase> _queue = new Queue<ProgramPointBase>();
 			public readonly WorkQueue _parent;
@@ -118,7 +118,7 @@ namespace Weverca.AnalysisFramework
 			public WorkQueue(WorkQueue parent) { _parent = parent; }
 		}
 
-		private class Worklist2 : WorkList
+		private class WorkList2 : WorkList
 		{
 			private WorkQueue hQueue = new WorkQueue (null);
 			private ProgramPointBase prevParent = null;
@@ -135,26 +135,7 @@ namespace Weverca.AnalysisFramework
 					hQueue = new WorkQueue (hQueue);
 				}
 
-				/*
-            if (work.FlowParentsCount > 1)
-            {
-                //close point has been found
-                _closeStack.Push(work);
-            }
-            else if (work.FlowParentsCount == 1 && work.FlowParents.First().FlowChildrenCount > 1)
-            {
-                //open point has been found
-                _openStack.Push(work);
-            }
-            else
-            {
-                //normal point
-                _workQueue.Enqueue(work);
-            }
-             * */
-
-				// close point
-				if (work.FlowParentsCount > 1) {
+				if (work.FlowParentsCount > 1 && hQueue._parent != null) { // close point
 					hQueue._parent._queue.Enqueue (work);
 				} else { 
 					//normal point

@@ -12,6 +12,8 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,11 +53,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
-      <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
+      <Project>{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
-      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Project>{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}</Project>
       <Name>Weverca.Analysis</Name>
     </ProjectReference>
   </ItemGroup>

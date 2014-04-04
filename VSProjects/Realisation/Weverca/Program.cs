@@ -163,23 +163,21 @@ namespace Weverca
 
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
 
-                        var watch = System.Diagnostics.Stopwatch.StartNew();
-                        var ppGraph = Analyzer.Run(fileInfo, analysis, memoryModel);
-                        watch.Stop();
+                    var watch = System.Diagnostics.Stopwatch.StartNew();
+                    var ppGraph = Analyzer.Run(fileInfo, memoryModel);
+                    watch.Stop();
 
-                        if (ppGraph.End.OutSet != null)
-                        {
-                            console.ProgramPointInfo("End point", ppGraph.End);
-                        }
-                        else
-                        {
-                            console.Error("End point was not reached");
-                        }
-                        console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+                    if (ppGraph.End.OutSet != null)
+                    {
+                        console.ProgramPointInfo("End point", ppGraph.End);
+                    }
+                    else
+                    {
+                        console.Error("End point was not reached");
+                    }
+                    console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
-                        console.Warnings(AnalysisWarningHandler.GetWarnings());
-
-                        console.SecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+					console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
                 
 
 #endif

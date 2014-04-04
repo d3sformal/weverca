@@ -26,6 +26,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,10 +50,6 @@
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>
-    </StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -78,20 +76,20 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
-      <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
+      <Project>{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\VSProjects\Realisation\Weverca.Parser\Weverca.Parser.csproj">
-      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+    <ProjectReference Include="..\Weverca.Common\Weverca.Common.csproj">
+      <Project>{3CEE322A-B262-453B-9A92-47D39807E166}</Project>
+      <Name>Weverca.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
+      <Project>{CADF9418-C0F6-4E56-B39E-33522603D0BC}</Project>
       <Name>Weverca.Parser</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Realisation\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
-      <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
+    <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
+      <Project>{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Weverca.Common\Weverca.Common.csproj">
-      <Project>{3cee322a-b262-453b-9a92-47d39807e166}</Project>
-      <Name>Weverca.Common</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

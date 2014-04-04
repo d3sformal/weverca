@@ -26,6 +26,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +37,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Weverca.Analysis.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -45,12 +46,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.XML" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExpressionEvaluator\ArrayIndexEvaluator.cs" />
@@ -121,27 +119,27 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\ClassLibrary\ClassLibrary.csproj">
-      <Project>{d515e8f4-357c-4caf-87c1-97d64c5f865a}</Project>
+      <Project>{D515E8F4-357C-4CAF-87C1-97D64C5F865A}</Project>
       <Name>ClassLibrary</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
-      <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
+      <Project>{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
-      <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
+      <Project>{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
-      <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
+      <Project>{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
-      <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
+      <Project>{01F0A818-EBE4-431B-9091-0E5DC99382AD}</Project>
       <Name>Weverca.MemoryModels</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
-      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+      <Project>{CADF9418-C0F6-4E56-B39E-33522603D0BC}</Project>
       <Name>Weverca.Parser</Name>
     </ProjectReference>
   </ItemGroup>

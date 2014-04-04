@@ -42,7 +42,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Output set of current program point
         /// </summary>
-        private FlowOutputSet _outSet;
+		protected FlowOutputSet _outSet;
 
         /// <summary>
         /// Flow controller available for current program point

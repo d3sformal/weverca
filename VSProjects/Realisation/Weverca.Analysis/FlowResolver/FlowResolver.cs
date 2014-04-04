@@ -95,7 +95,7 @@ namespace Weverca.Analysis.FlowResolver
 
                 if (fileInfo == null)
                 {
-                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"The file " + file + " to be included and not found", flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
+                    AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName,"The file " + file + " to be included not found", flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.FILE_TO_BE_INCLUDED_NOT_FOUND));
                     numberOfWarnings++;
                     continue;
                 }
@@ -205,6 +205,8 @@ namespace Weverca.Analysis.FlowResolver
             if (fileInfo.Exists) return fileInfo;
 
             // the file has absolute path
+			if (fileName.Length == 0)
+				return null;
             fileInfo = new FileInfo(fileName);
             if (fileInfo.Exists) return fileInfo;
 

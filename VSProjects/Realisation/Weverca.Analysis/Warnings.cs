@@ -637,6 +637,11 @@ namespace Weverca.Analysis
         /// </summary>
         FUNCTION_DOESNT_EXISTS,
 
+		/// <summary>
+		/// Warning, that occurs when it is not possible to resolve a method on current object
+		/// </summary>
+		METHOD_WAS_NOT_RESOLVED,
+
         /// <summary>
         /// Warning, that occurs when function allready exists
         /// </summary>

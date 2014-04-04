@@ -493,8 +493,21 @@ namespace Weverca.Analysis
                 else
                 {
                     // There are no names - use numbered arguments
-                    setOrderedArguments(OutSet, arguments);
+                    setOrderedArguments(OutSet, declaration, arguments);
                 }
+
+                //superglobal variables
+                OutSet.FetchFromGlobal(new VariableName("GLOBALS"));
+                OutSet.FetchFromGlobal(new VariableName("_SERVER"));
+                OutSet.FetchFromGlobal(new VariableName("_GET"));
+                OutSet.FetchFromGlobal(new VariableName("_POST"));
+                OutSet.FetchFromGlobal(new VariableName("_FILES"));
+                OutSet.FetchFromGlobal(new VariableName("_COOKIE"));
+                OutSet.FetchFromGlobal(new VariableName("_SESSION"));
+                OutSet.FetchFromGlobal(new VariableName("_REQUEST"));
+                OutSet.FetchFromGlobal(new VariableName("_ENV"));
+
+                OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
 
                 var functionDeclaration = declaration as FunctionDecl;
                 if (functionDeclaration != null)
@@ -510,18 +523,11 @@ namespace Weverca.Analysis
                         OutSet.GetLocalControlVariable(currentFunctionName).WriteMemory(OutSnapshot,
                             new MemoryEntry(OutSet.CreateFunction(methodDeclaration, Flow.CurrentScript)));
                     }
+                    else // Native analyzer
+                    { 
+                        return;  
+                    }
                 }
-
-                //superglobal variables
-                OutSet.FetchFromGlobal(new VariableName("GLOBALS"));
-                OutSet.FetchFromGlobal(new VariableName("_SERVER"));
-                OutSet.FetchFromGlobal(new VariableName("_GET"));
-                OutSet.FetchFromGlobal(new VariableName("_POST"));
-                OutSet.FetchFromGlobal(new VariableName("_FILES"));
-                OutSet.FetchFromGlobal(new VariableName("_COOKIE"));
-                OutSet.FetchFromGlobal(new VariableName("_SESSION"));
-                OutSet.FetchFromGlobal(new VariableName("_REQUEST"));
-                OutSet.FetchFromGlobal(new VariableName("_ENV"));
 
                 FunctionValue thisFunction = OutSet.GetLocalControlVariable(currentFunctionName).ReadMemory(OutSet.Snapshot).PossibleValues.First() as FunctionValue;
                 if (caller.OutSet.GetLocalControlVariable(calledFunctionsName).IsDefined(caller.OutSet.Snapshot))
@@ -533,7 +539,6 @@ namespace Weverca.Analysis
                 {
                     OutSet.GetLocalControlVariable(calledFunctionsName).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateInfo(new NumberOfCalls<FunctionValue>(thisFunction, 1))));
                 }
-                OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
             }
         }
 
@@ -1015,7 +1020,21 @@ namespace Weverca.Analysis
         {
             var result = new Dictionary<object, FunctionValue>();
 
-            var methods = thisObject.ResolveMethod(OutSnapshot, name);
+            // TODO: the following code can raise an exception because of bug in copy MM => using try catch as a quick fix
+            //var methods = thisObject.ResolveMethod(OutSnapshot, name);
+			IEnumerable<FunctionValue> methods;
+			//try
+            {
+                methods = thisObject.ResolveMethod(OutSnapshot, name);
+            }
+			/*
+            catch (Exception)
+            {
+                // TODO: fix the memory model to not emmit the exception
+                setWarning("Method " + name.Name.Value + " was not resolved on current object.", AnalysisWarningCause.METHOD_WAS_NOT_RESOLVED);
+                return result;
+            }
+            */
             foreach (var method in methods)
             {
                 if (method is NativeAnalyzerValue)
@@ -1160,7 +1179,7 @@ namespace Weverca.Analysis
 
         }
 
-        private void setOrderedArguments(FlowOutputSet callInput, MemoryEntry[] arguments)
+        private void setOrderedArguments(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
         {
             var argCount = new MemoryEntry(callInput.CreateInt(arguments.Length));
             var argCountEntry = callInput.GetVariable(new VariableIdentifier(".argument_count"));
@@ -1175,17 +1194,18 @@ namespace Weverca.Analysis
 
                 //determine that argument value is based on variable, so we can get it's alias
                 var aliasProvider = arg as LValuePoint;
-                if (aliasProvider == null)
-                {
-                    //assign value for parameter
-                    argumentEntry.WriteMemory(callInput.Snapshot, arguments[index]);
-                }
-                else
+                if (aliasProvider != null && declaration is NativeAnalyzer)
                 {
                     //join parameter with alias (for testing we join all possible arguments)
                     //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
                     argumentEntry.SetAliases(callInput.Snapshot, aliasProvider.LValue);
                 }
+                else
+                {
+                    //assign value for parameter
+                    argumentEntry.WriteMemory(callInput.Snapshot, arguments[index]);
+                }
+
                 ++index;
             }
 
