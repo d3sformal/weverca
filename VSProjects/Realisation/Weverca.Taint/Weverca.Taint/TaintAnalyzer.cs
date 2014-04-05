@@ -5,45 +5,41 @@ using System.Text;
 using System.Threading.Tasks;
 
 using PHP.Core.AST;
+using PHP.Core;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.Analysis.NativeAnalyzers;
+using Weverca.Analysis;
 
 namespace Weverca.Taint
 {
+    /// <summary>
+    /// Class for analyzing a created program point graph for taint flows
+    /// </summary>
     class TaintAnalyzer : NextPhaseAnalyzer
     {
         private ProgramPointBase _currentPoint;
-        private static readonly List<string> nativeSanitizers = new List<string>() 
-        {
-            "strlen"
-        };
+        private NativeFunctionAnalyzer functAnalyzer;
 
-        private static readonly List<string> taintedVariables = new List<string>() 
-        {
-            "$_POST"
-        };
+        public List<AnalysisTaintWarning> anaysisTaintWarnings = new List<AnalysisTaintWarning>();
 
         public override void VisitPoint(ProgramPointBase p)
         {
             //nothing to do
         }
 
+        /// <summary>
+        /// Visits a native analyzer program point. If function is a sanitizer, the output is sanitized,
+        /// if it is a reporting function, a warning is created.
+        /// </summary>
+        /// <param name="p">program point to visit</param>
         public override void VisitNativeAnalyzer(NativeAnalyzerPoint p)
         {
             _currentPoint = p;
-            string functionName = p.OwningPPGraph.FunctionName;
-            if (nativeSanitizers.Contains(p.OwningPPGraph.FunctionName))
-            {
-                TaintInfo noTaint = new TaintInfo();
-                noTaint.highPriority = false;
-                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(noTaint)));
-                return;
-            }
-
-            // If a native function is not sanitizer, propagates taint status from arguments to return value
+            string functionName = p.OwningPPGraph.FunctionName;         
 
             // 1. Get values of arguments of the function
             // TODO: code duplication: the following code, code in SimpleFunctionResolver, and NativeFunctionAnalyzer. Move the code to some API (? FlowInputSet)
@@ -53,16 +49,85 @@ namespace Weverca.Taint
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
             List<MemoryEntry> arguments = new List<MemoryEntry>();
             List<Value> argumentValues = new List<Value>();
+            bool nullValue = false;
             for (int i = 0; i < argumentCount; i++)
             {
                 arguments.Add(OutputSet.ReadVariable(Argument(i)).ReadMemory(OutputSet.Snapshot));
                 argumentValues.AddRange(arguments.Last().PossibleValues);
+                if (hasPossibleNullValue(OutputSet.ReadVariable(Argument(i)))) nullValue = true;
             }
 
+            TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+            // try to sanitize the taint info
+            sanitize(p, ref outputTaint);
+            createWarnings(p, outputTaint);
+
             // 2. Propagate arguments to the return value.
-            FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(mergeTaint(argumentValues))));
+            FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
         }
 
+        /// <summary>
+        /// If the function is a sanitizer, the sanitized taint flows are removed
+        /// </summary>
+        /// <param name="p">program point with a function</param>
+        /// <param name="taintInfo">TaintInfo that is being sanitized</param>
+        private void sanitize(NativeAnalyzerPoint p,ref TaintInfo taintInfo)
+        {
+            NativeAnalyzerMethod method = p.Analyzer.Method;
+            QualifiedName functName = getMethodName(p);
+            functAnalyzer = NativeFunctionAnalyzer.CreateInstance();
+
+            List<FlagType> flags;
+
+            if (functAnalyzer.SanitizingFunctions.TryGetValue(functName, out flags))
+            {
+                taintInfo.setSanitized(flags);  
+            }
+        }
+
+        /// <summary>
+        /// If function is a reporting function, a warning might be created.
+        /// </summary>
+        /// <param name="p">program point with a function</param>
+        /// <param name="taintInfo">TaintInfo that is being sanitized</param>
+        private void createWarnings(NativeAnalyzerPoint p,TaintInfo taintInfo)
+        {
+            NativeAnalyzerMethod method = p.Analyzer.Method;
+            QualifiedName functName = getMethodName(p);
+            functAnalyzer = NativeFunctionAnalyzer.CreateInstance();
+
+             List<FlagType> flags;
+
+            if (functAnalyzer.ReportingFunctions.TryGetValue(functName, out flags))
+            {
+                foreach (FlagType flag in flags)
+                {
+                    String taint = taintInfo.ToString(flag);
+                    String currentScript = "";
+                    if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
+                    AnalysisTaintWarning warning = new AnalysisTaintWarning(currentScript, taint,
+                            p.Partial, (ProgramPointBase)p, flag);
+                    if (!anaysisTaintWarnings.Contains(warning)) anaysisTaintWarnings.Add(warning);
+                }                
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the method name from NativeAnalyzerPoint
+        /// </summary>
+        /// <param name="p">point to get the method from</param>
+        /// <returns>a method name as a QualifiedName</returns>
+        private QualifiedName getMethodName(NativeAnalyzerPoint p)
+        {
+            String functName = p.OwningPPGraph.FunctionName;
+            return new QualifiedName(new Name(functName));
+        }
+
+        /// <summary>
+        /// Visits a binary expression point and propagates the taint from both the operands.
+        /// </summary>
+        /// <param name="p">point to visit</param>
         public override void VisitBinary(BinaryExPoint p)
         {
             _currentPoint = p;
@@ -70,9 +135,15 @@ namespace Weverca.Taint
             argumentValues.AddRange(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
             argumentValues.AddRange(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
 
-            p.SetValueContent(new MemoryEntry(Output.CreateInfo(mergeTaint(argumentValues))));
+            bool nullValue = hasPossibleNullValue(p.LeftOperand.Value) || hasPossibleNullValue(p.RightOperand.Value);
+
+            p.SetValueContent(new MemoryEntry(Output.CreateInfo(mergeTaint(argumentValues,nullValue))));
         }
 
+        /// <summary>
+        /// Visits an extension sink point
+        /// </summary>
+        /// <param name="p">point to visit</param>
         public override void VisitExtensionSink(ExtensionSinkPoint p)
         {
             _currentPoint = p;
@@ -82,6 +153,10 @@ namespace Weverca.Taint
             p.ResolveReturnValue();
         }
 
+        /// <summary>
+        /// Visits an extension point and propagates the taint
+        /// </summary>
+        /// <param name="p">point to visit</param>
         public override void VisitExtension(ExtensionPoint p)
         {
             _currentPoint = p;
@@ -117,6 +192,10 @@ namespace Weverca.Taint
             }
         }
 
+        /// <summary>
+        /// Visits an assign point and propagates the taint to the assigned operand
+        /// </summary>
+        /// <param name="p">point to visit</param>
         public override void VisitAssign(AssignPoint p)
         {
             _currentPoint = p;
@@ -134,6 +213,10 @@ namespace Weverca.Taint
             setTaint(target, finalPropagation);
         }
 
+        /// <summary>
+        /// Visits a jump statement point
+        /// </summary>
+        /// <param name="p">point to visit</param>
         public override void VisitJump(JumpStmtPoint p)
         {
             _currentPoint = p;
@@ -149,40 +232,102 @@ namespace Weverca.Taint
             }
         }
 
+        /// <summary>
+        /// Gets the complete taint information
+        /// </summary>
+        /// <param name="lValue">entry to get the taint for</param>
+        /// <returns>the taint information of given entry</returns>
         private TaintInfo getTaint(ReadSnapshotEntryBase lValue)
         {
             var info = lValue.ReadMemory(Output);
 
-            return mergeTaint(info.PossibleValues);
+            return mergeTaint(info.PossibleValues,hasPossibleNullValue(lValue));
         }
 
-        private TaintInfo mergeTaint(IEnumerable<Value> values)
+        /// <summary>
+        /// Merges multiple taint information into one.
+        /// </summary>
+        /// <param name="values">info values with taint information</param>
+        /// <param name="nullValue">indicator of null flow</param>
+        /// <returns>merged taint information</returns>
+        private TaintInfo mergeTaint(IEnumerable<Value> values, bool nullValue)
         {
             TaintInfo info = new TaintInfo();
             bool highPriority = true;
+            //if _currentPoint is a BinaryExPoint, its priority is high whenever one of the values has high priority
+            if (values.Count() == 0 || _currentPoint is BinaryExPoint) highPriority = false; 
+            
+            bool tainted = false;
+            bool existsNullFlow = false;
+            
             foreach (var infoValue in values)
-            {
-                if (infoValue is UndefinedValue) continue;
-                TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
-                if (varInfo.possibleTaintFlows.Count == 0) highPriority = false;
-                if (varInfo.highPriority == false) highPriority = false;
-                foreach (TaintFlow flow in varInfo.possibleTaintFlows)
+            {         
+                if (infoValue is UndefinedValue)
                 {
-                    TaintFlow newFlow = new TaintFlow(flow);
-                    newFlow.addPointToTaintFlow(_currentPoint);
-                    info.possibleTaintFlows.Add(newFlow);
+                    continue;
                 }
+                if (!(infoValue is InfoValue<TaintInfo>)) continue;
+                TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
+                existsNullFlow |= hasNullFlow(varInfo);
+                if (!varInfo.tainted)
+                {
+                   if (!(_currentPoint is BinaryExPoint)) highPriority = false;
+                }
+                else
+                {
+                    tainted = true;
+                    /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
+                    has a low priority. 
+                    If _currentPoint is BinaryExPoint, the priority is high whenever one of the values has
+                    a high priority */
+                    if (varInfo.highPriority == false && !(_currentPoint is BinaryExPoint)) highPriority = false;
+                    if (varInfo.highPriority && _currentPoint is BinaryExPoint) highPriority = true;
+                    foreach (TaintFlow flow in varInfo.possibleTaintFlows)
+                    {
+                        TaintFlow newFlow = new TaintFlow(flow);
+                        newFlow.addPointToTaintFlow(_currentPoint);
+                        info.possibleTaintFlows.Add(newFlow);
+                    }
+                    if (varInfo.possibleTaintFlows.Count == 0)
+                    {
+                        TaintFlow newFlow = new TaintFlow();
+                        newFlow.addPointToTaintFlow(_currentPoint);
+                        info.possibleTaintFlows.Add(newFlow);
+                    }
+                }     
             }
+
+            if (nullValue && !existsNullFlow)
+            {
+                tainted = true;
+                if (values.Count() == 0) highPriority = true;
+                TaintFlow newFlow = new TaintFlow();
+                newFlow.nullValue = true;
+                newFlow.addPointToTaintFlow(_currentPoint);
+                info.possibleTaintFlows.Add(newFlow);
+            }
+           
             info.highPriority = highPriority;
+            info.tainted = tainted;
             return info;
         }
 
+        /// <summary>
+        /// Sets the taint information to the given entry
+        /// </summary>
+        /// <param name="variable">entry to set the taint to</param>
+        /// <param name="taint">taint to be set</param>
         private void setTaint(ReadWriteSnapshotEntryBase variable, TaintInfo taint)
         {
             var infoValue = Output.CreateInfo(taint);
             variable.WriteMemory(Output, new MemoryEntry(infoValue));
         }
 
+        /// <summary>
+        /// Converts the given integer to VariableIdentifier
+        /// </summary>
+        /// <param name="index">integer to convert</param>
+        /// <returns>a function argument as a VariableIdentifier</returns>
         private static VariableIdentifier Argument(int index)
         {
             if (index < 0)
@@ -190,6 +335,43 @@ namespace Weverca.Taint
                 throw new NotSupportedException("Cannot get argument variable for negative index");
             }
             return new VariableIdentifier(".arg" + index);
+        }
+
+        /// <summary>
+        /// Determines whether variable may be undefined or null
+        /// </summary>
+        /// <param name="variable">variable to check</param>
+        /// <returns>true if variable may be undefined or null</returns>
+        private bool hasPossibleNullValue(ReadSnapshotEntryBase variable)
+        {
+            bool nullValue = false;
+            OutputSet.Snapshot.SetMode(SnapshotMode.MemoryLevel);
+            var values = variable.ReadMemory(OutputSet.Snapshot).PossibleValues;
+
+            foreach (Value value in values)
+            {
+                if (value is UndefinedValue)
+                {
+                    nullValue = true;
+                    break;
+                }
+            }
+            OutputSet.Snapshot.SetMode(SnapshotMode.InfoLevel);
+            return nullValue;     
+        }
+
+        /// <summary>
+        /// Checks whether there is any null flow in current taint information
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private static bool hasNullFlow(TaintInfo info)
+        {
+            foreach (TaintFlow flow in info.possibleTaintFlows)
+            {
+                if (flow.nullValue) return true;
+            }
+            return false;
         }
 
     }

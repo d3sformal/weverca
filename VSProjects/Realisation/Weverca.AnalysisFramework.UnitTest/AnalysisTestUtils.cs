@@ -11,6 +11,8 @@ using Weverca.AnalysisFramework.UnitTest.InfoLevelPhase;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.Parsers;
+using Weverca.Taint;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -344,7 +346,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        internal static void RunInfoLevelTaintAnalysisCase(TestCase testCase)
+        internal static void RunInfoLevelTaintAnalysisCase(TestCase testCase, bool prototype = true)
         {
             var analyses = CreateAnalyses(testCase);
 
@@ -352,10 +354,18 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 var ppg = GetAnalyzedGraph(testCase, analysis);
 
-                var nextPhase = new SimpleTaintForwardAnalysis(ppg);
+                if (prototype)
+                {
+                    var nextPhase = new SimpleTaintForwardAnalysis(ppg);
 
-                GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(nextPhase.EntryInput);
-                nextPhase.Analyse();
+                    GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(nextPhase.EntryInput);
+                    nextPhase.Analyse();
+                }
+                else
+                {
+                    var nextPhase = new TaintForwardAnalysis(ppg);
+                    nextPhase.Analyse();
+                }
 
                 testCase.Assert(ppg);
             }
@@ -522,6 +532,44 @@ namespace Weverca.AnalysisFramework.UnitTest
             Assert.IsTrue(taintStatus == computedTaintStatus, "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
 
         }
+
+        internal static void AssertHasTaintStatus(FlowOutputSet outSet, string variableName, string assertMessage, TaintStatus taintStatus)
+        {
+            var varID = new VariableIdentifier(variableName);
+            var variable = outSet.GetVariable(varID);
+            var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
+            var computedTaintStatus = new TaintStatus(false,true);
+            if (values.Count() == 0) computedTaintStatus.highPriority = false;   
+            foreach (var value in values)
+            {
+                TaintInfo valueTaintInfo = (value as InfoValue<TaintInfo>).Data;
+                TaintStatus valueTaintStatus = new TaintStatus(valueTaintInfo);
+                if (valueTaintStatus.tainted) computedTaintStatus.tainted = true;
+                if (!valueTaintStatus.highPriority) computedTaintStatus.highPriority = false;
+                computedTaintStatus.lines.AddRange(valueTaintStatus.lines);
+            }
+            Assert.IsTrue(taintStatus.EqualTo(computedTaintStatus), "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
+        }
+
+        internal static void AssertHasTaintStatus(FlowOutputSet outSet, string variableName, string assertMessage, TaintStatus taintStatus, Analysis.FlagType flag)
+        {
+            var varID = new VariableIdentifier(variableName);
+            var variable = outSet.GetVariable(varID);
+            var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
+            var computedTaintStatus = new TaintStatus(false, true);
+            if (values.Count() == 0) computedTaintStatus.highPriority = false;
+            foreach (var value in values)
+            {
+                TaintInfo valueTaintInfo = (value as InfoValue<TaintInfo>).Data;
+                TaintStatus valueTaintStatus = new TaintStatus(valueTaintInfo, flag);
+                if (valueTaintStatus.tainted) computedTaintStatus.tainted = true;
+                if (!valueTaintStatus.highPriority) computedTaintStatus.highPriority = false;
+                computedTaintStatus.lines.AddRange(valueTaintStatus.lines);
+            }
+            Assert.IsTrue(taintStatus.EqualTo(computedTaintStatus), "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
+        }
+
+        
 
         private static ControlFlowGraph.ControlFlowGraph CreateCFG(TestCase testCase)
         {
@@ -717,6 +765,26 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 var output = GetEndOutput(ppg);
                 AnalysisTestUtils.AssertHasTaintStatus(output, VariableName, AssertMessage, taintStatus);
+            });
+            return this;
+        }
+
+        internal TestCase HasTaintStatus(TaintStatus taintStatus)
+        {
+            _asserts.Add((ppg) =>
+            {
+                var output = GetEndOutput(ppg);
+                AnalysisTestUtils.AssertHasTaintStatus(output, VariableName, AssertMessage, taintStatus);
+            });
+            return this;
+        }
+
+        internal TestCase HasTaintStatus(TaintStatus taintStatus, Analysis.FlagType flag)
+        {
+            _asserts.Add((ppg) =>
+            {
+                var output = GetEndOutput(ppg);
+                AnalysisTestUtils.AssertHasTaintStatus(output, VariableName, AssertMessage, taintStatus, flag);
             });
             return this;
         }

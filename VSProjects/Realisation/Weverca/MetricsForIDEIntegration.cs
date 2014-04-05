@@ -292,12 +292,20 @@ namespace Weverca
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
+                        
+                        var nextPhase = new TaintForwardAnalysis(ppGraph);
+                        nextPhase.Analyse();
+                        
 
                         Console.WriteLine("Analysis warnings:");
                         PrintWarnings(AnalysisWarningHandler.GetWarnings());
 
                         Console.WriteLine("Security warnings:");
                         PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+
+                        Console.WriteLine("Security warnings with taint flow:");
+                        Console.WriteLine("Pocet: " + nextPhase.analysisTaintWarnings.Count);
+                        PrintTaintWarnings(nextPhase.analysisTaintWarnings);
 
                         Console.WriteLine("Variables:");
                         List<ProgramPointGraph> processedPPGraphs = new List<ProgramPointGraph>();
@@ -361,6 +369,32 @@ namespace Weverca
                 Console.WriteLine("Called from: ");
                 Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
 
+            }
+        }
+
+        private static void PrintTaintWarnings(List<AnalysisTaintWarning> warnings)
+        {
+            if (warnings.Count == 0)
+            {
+                Console.WriteLine("No warnings");
+            }
+            string file = "/";
+            foreach (var s in warnings)
+            {
+                if (file != s.FullFileName)
+                {
+                    file = s.FullFileName;
+                    Console.WriteLine("File: " + file);
+                }
+                Console.WriteLine("Warning at line " + s.LangElement.Position.FirstLine +
+                                    " char " + s.LangElement.Position.FirstColumn +
+                                    " firstoffset " + s.LangElement.Position.FirstOffset +
+                                    " lastoffset " + s.LangElement.Position.LastOffset +
+                                    " : " + s.Message.ToString());
+                Console.WriteLine("Called from: ");
+                Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
+                Console.WriteLine("Taint Flow: ");
+                Console.WriteLine(s.TaintFlow);
             }
         }
 

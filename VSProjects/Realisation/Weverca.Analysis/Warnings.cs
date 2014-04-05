@@ -27,6 +27,12 @@ namespace Weverca.Analysis
             = new VariableName(".analysisSecurityWarning");
 
         /// <summary>
+        /// Variable where tainted variable warning values are stored
+        /// </summary>
+        private static readonly VariableName TAINTED_VARIABLE_WARNING_STORAGE
+           = new VariableName(".analysisTaintWarning");
+
+        /// <summary>
         /// Stores all analysis warnings for user output
         /// </summary>
         private static HashSet<AnalysisWarning> Warnings = new HashSet<AnalysisWarning>();
@@ -36,6 +42,12 @@ namespace Weverca.Analysis
         /// </summary>
         private static HashSet<AnalysisSecurityWarning> SecurityWarnings
             = new HashSet<AnalysisSecurityWarning>();
+
+        /// <summary>
+        /// Stores all tainted variable warnings for user output
+        /// </summary>
+        private static HashSet<AnalysisTaintWarning> TaintWarnings
+            = new HashSet<AnalysisTaintWarning>();
 
         /// <summary>
         /// Returns name of variable for specified kind of warning
@@ -52,6 +64,10 @@ namespace Weverca.Analysis
             {
                 return SECUTIRTY_WARNING_STORAGE;
             }
+            else if (typeof(T) == typeof(AnalysisTaintWarning))
+            {
+                return TAINTED_VARIABLE_WARNING_STORAGE;
+            }
             else
             {
                 throw new NotSupportedException();
@@ -65,6 +81,7 @@ namespace Weverca.Analysis
         {
             SecurityWarnings.Clear();
             Warnings.Clear();
+            TaintWarnings.Clear();
         }
 
         /// <summary>
@@ -151,6 +168,17 @@ namespace Weverca.Analysis
             var arr = SecurityWarnings.ToArray();
             Array.Sort(arr);
             return new List<AnalysisSecurityWarning>(arr);
+        }
+
+        /// <summary>
+        /// Returns sorted list of tainted variable warnings
+        /// </summary>
+        /// <returns> Returns sorted list of tainted variable warnings</returns>
+        public static List<AnalysisTaintWarning> GetTaintWarnings()
+        {
+            var arr = TaintWarnings.ToArray();
+            Array.Sort(arr);
+            return new List<AnalysisTaintWarning>(arr);
         }
     }
 
@@ -375,6 +403,75 @@ namespace Weverca.Analysis
                 && other.FullFileName == this.FullFileName
                 && (other.Flag == Flag);
         }
+    }
+
+    /// <summary>
+    /// Special type of analysis warnings
+    /// </summary>
+    public class AnalysisTaintWarning : AnalysisWarning, IComparable<AnalysisTaintWarning>,
+        IEquatable<AnalysisTaintWarning>
+    {
+        /// <summary>
+        /// Type of flag which triggered the warning
+        /// </summary>
+        public FlagType Flag { get; protected set; }
+        public String TaintFlow;
+
+        /// <summary>
+        /// Construct new instance of <see cref="AnalysisTaintWarning"/>, message will be generated automatically
+        /// </summary>
+        /// <param name="fullFileName">Full name of source code file</param>
+        /// <param name="element">Element, where the warning was produced</param>
+        /// <param name="programPoint">The program point, where the warning was produced</param>
+        /// <param name="cause">Flag type</param>
+        public AnalysisTaintWarning(string fullFileName, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause):
+            base(programPoint)
+        {
+            FullFileName = fullFileName;
+            switch (cause)
+            {
+                case FlagType.HTMLDirty:
+                    Message = "Unchecked value goes into browser";
+                    break;
+                case FlagType.FilePathDirty:
+                    Message = "File name has to be checked before open";
+                    break;
+                case FlagType.SQLDirty:
+                    Message = "Unchecked value goes into database";
+                    break;
+            }
+
+            TaintFlow = taintFlow; 
+            LangElement = element;
+            Flag = cause;
+        }
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
+                + Flag.GetHashCode() + ProgramPoint.OwningPPGraph.GetHashCode();
+        }
+
+        /// <inheritdoc />
+        public int CompareTo(AnalysisTaintWarning other)
+        {
+            return compareTo(other);
+        }
+
+        /// <summary>
+        /// Compares warnings based of message, element a warning cause
+        /// </summary>
+        /// <param name="other">Other warning</param>
+        /// <returns><c>true</c>, if they are the same, <c>false</c> otherwise</returns>
+        public bool Equals(AnalysisTaintWarning other)
+        {
+            return (other.Message == Message)
+                && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
+                && other.FullFileName == this.FullFileName
+                && (other.Flag == Flag);
+        }
+
     }
 
     /// <summary>

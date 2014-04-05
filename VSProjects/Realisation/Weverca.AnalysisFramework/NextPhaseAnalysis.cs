@@ -97,12 +97,17 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Run analysis on EntryMethodGraph
         /// </summary>
-        public void Analyse()
+        public virtual void Analyse()
         {
             checkAlreadyAnalysed();
             initialize();
             analyse();
             IsAnalysed = true;
+        }
+
+        public NextPhaseAnalyzer getNextPhaseAnalyzer()
+        {
+            return _analyzer;
         }
 
         #region Analysis routines

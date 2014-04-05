@@ -55,6 +55,7 @@
     <Compile Include="InfoLevelPhase\PropagationInfo.cs" />
     <Compile Include="InfoLevelPhase\SimpleBackwardAnalysis.cs" />
     <Compile Include="InfoLevelPhase\SimpleTaintForwardAnalysis.cs" />
+    <Compile Include="InfoLevelPhase\TaintAnalysisTest.cs" />
     <Compile Include="InfoLevelPhase\TaintAnalyzer.cs" />
     <Compile Include="MemoryLevelPhase\ForwardAnalysisTest.cs" />
     <Compile Include="InfoLevelPhase\NextPhaseAnalysisTest.cs" />
@@ -91,6 +92,10 @@
     <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
       <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
       <Name>Weverca.Parser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.Taint\Weverca.Taint\Weverca.Taint.csproj">
+      <Project>{f6dea013-a45c-47bf-8ba5-2118179d6e73}</Project>
+      <Name>Weverca.Taint</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
