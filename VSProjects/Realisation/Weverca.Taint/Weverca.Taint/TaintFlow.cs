@@ -71,8 +71,10 @@ namespace Weverca.Taint
     /// </summary>
     public class TaintInfo
     {
-        public bool highPriority = false;
-        public bool tainted = false;
+        //public bool highPriority = false;
+        public TaintPriority priority = new TaintPriority(false);
+        public Taint taint = new Taint(false);
+        //public bool tainted = false;
         public List<TaintFlow> possibleTaintFlows = new List<TaintFlow>();
 
        
@@ -118,6 +120,8 @@ namespace Weverca.Taint
         /// <param name="flags">flag types to remove from the flows</param>
         public void setSanitized(List<Analysis.FlagType> flags)
         {
+            priority.clean(flags);
+            taint.clean(flags);
             List<TaintFlow> toRemove = new List<TaintFlow>();
             foreach (TaintFlow flow in possibleTaintFlows)
             {
@@ -133,11 +137,153 @@ namespace Weverca.Taint
             }
             if (possibleTaintFlows.Count == 0)
             {
-                highPriority = false;
-                tainted = false;
+                priority.setAll(false);
+                taint.setAll(false);
             }
+        }
+    }
 
+    /// <summary>
+    /// Base class for HTML, SQL and FilePath indicators. Taint and TaintPriority classes are inherited from this.
+    /// </summary>
+    public class Indicator
+    {
+        protected bool HTML = false;
+        protected bool SQL = false;
+        protected bool FilePath = false;
+
+        /// <summary>
+        /// This constructor initializes all field to the one specific value.
+        /// </summary>
+        /// <param name="initial">boolean initializer</param>
+        public Indicator(bool initial)
+        {
+            setAll(initial); 
+        }
+
+        /// <summary>
+        /// This constructor initializes each field to its value
+        /// </summary>
+        /// <param name="HTML">HTML indicator value</param>
+        /// <param name="SQL">SQL indicator value</param>
+        /// <param name="FilePath">FilePath indicator value</param>
+        public Indicator(bool HTML, bool SQL, bool FilePath)
+        {
+            this.HTML = HTML;
+            this.SQL = SQL;
+            this.FilePath = FilePath;
+        }
+
+        public bool getHTMLtaint() { return HTML; }
+        public void setHTMLtaint(bool b) { HTML = b; }
+        public bool getSQLtaint() { return SQL; }
+        public void setSQLtaint(bool b) { SQL = b; }
+        public bool getFilePathtaint() { return FilePath; }
+        public void setFilePathtaint(bool b) { FilePath = b; }
+
+        /// <summary>
+        /// Returns true if all the indicators are true
+        /// </summary>
+        /// <returns>true if all the indicators are true</returns>
+        public bool allTrue()
+        {
+            return (HTML && SQL && FilePath);
+        }
+
+        /// <summary>
+        /// Returns true if all the indicators are false
+        /// </summary>
+        /// <returns>true if all the indicators are false</returns>
+        public bool allFalse()
+        {
+            return (!HTML && !SQL && !FilePath);
+        }
+
+        /// <summary>
+        /// Sets all the indicator to the specific value
+        /// </summary>
+        /// <param name="b">value to set</param>
+        public void setAll(bool b)
+        {
+            HTML = b;
+            SQL = b;
+            FilePath = b;
+        }
+
+        /// <summary>
+        /// Copies all fields with givec value to this instance
+        /// </summary>
+        /// <param name="b">value to copy</param>
+        /// <param name="other">indicator to copy from</param>
+        public void copyTaint(bool b, Indicator other)
+        {
+            if (other.HTML == b) this.HTML = other.HTML;
+            if (other.SQL == b) this.SQL = other.SQL;
+            if (other.FilePath == b) this.FilePath = other.FilePath;
+        }
+
+        /// <summary>
+        /// Sets the fields determined by list of flag types to false
+        /// </summary>
+        /// <param name="flags">list of flag types to be set false</param>
+        public void clean(List<Analysis.FlagType> flags)
+        {
+            if (flags.Contains(Analysis.FlagType.HTMLDirty)) HTML = false;
+            if (flags.Contains(Analysis.FlagType.SQLDirty)) SQL = false;
+            if (flags.Contains(Analysis.FlagType.FilePathDirty)) FilePath = false;
+        }
+
+        /// <summary>
+        /// Gets the corresponding value to a flag type
+        /// </summary>
+        /// <param name="flag"></param>
+        /// <returns>true if flag type value is true, false otherwise</returns>
+        public bool get(Analysis.FlagType flag)
+        {
+            if (flag == Analysis.FlagType.HTMLDirty) return HTML;
+            if (flag == Analysis.FlagType.SQLDirty) return SQL;
+            return FilePath;
         }
 
     }
+
+    /// <summary>
+    /// Indicator determining the taint priority
+    /// </summary>
+    public class TaintPriority : Indicator
+    {
+        public TaintPriority(bool initial) : base(initial) { }
+
+        public TaintPriority(bool HTML, bool SQL, bool FilePath) : base(HTML, SQL, FilePath) { }
+
+        public bool equalTo(TaintPriority other)
+        {
+            return (other.HTML == HTML && other.SQL == SQL && other.FilePath == FilePath);
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return ("HTML priority " + HTML + ", SQL priority " + SQL + ", file path priority " + FilePath);
+        }
+    }
+
+    public class Taint : Indicator
+    {
+        public Taint(bool initial) : base(initial) { }
+
+        public Taint(bool HTML, bool SQL, bool FilePath) : base(HTML, SQL, FilePath) { }
+
+        public bool equalTo(Taint other)
+        {
+            return (other.HTML == HTML && other.SQL == SQL && other.FilePath == FilePath);
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return ("HTML taint " + HTML + ", SQL taint " + SQL + ", file path taint " + FilePath);
+        }
+    }
+
 }

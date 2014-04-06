@@ -205,9 +205,9 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $z = mysql_escape_string($x);
         $w = md5(y);   
             ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2 }))
-             .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true), Analysis.FlagType.HTMLDirty)
+             .AssertVariable("y").HasTaintStatus(new TaintStatus(false, false), Analysis.FlagType.HTMLDirty)
              .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3, 3 }), Analysis.FlagType.SQLDirty)
-             .AssertVariable("z").HasTaintStatus(new TaintStatus(true, true), Analysis.FlagType.SQLDirty)
+             .AssertVariable("z").HasTaintStatus(new TaintStatus(false, false), Analysis.FlagType.SQLDirty)
              .AssertVariable("z").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 4, 4 }), Analysis.FlagType.FilePathDirty)
              .AssertVariable("w").HasTaintStatus(new TaintStatus(false, false));
 
@@ -218,7 +218,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             $y = mysql_escape_string($x);
         } 
             ".AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }, new List<int>() { 2, 5, 5 }), Analysis.FlagType.HTMLDirty)
-             .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }), Analysis.FlagType.SQLDirty);
+             .AssertVariable("y").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 2, 3 }), Analysis.FlagType.SQLDirty);
 
    
         [TestMethod]
@@ -328,22 +328,40 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         }
     }
 
+    /// <summary>
+    /// Auxiliary class used for the taint status checks
+    /// </summary>
     class TaintStatus
     {
-        public bool tainted;
-        public bool highPriority;
+        public Taint.Taint tainted;
+        public TaintPriority priority;
         public List<List<int>>  lines;
+
         public TaintStatus(bool tainted, bool highPriority, params List<int>[] lines)
         {
+            this.tainted = new Taint.Taint(tainted);
+            this.priority = new TaintPriority(highPriority);
+            this.lines = new List<List<int>>(lines);
+        }
+
+        public TaintStatus(Taint.Taint tainted, TaintPriority priority, params List<int>[] lines)
+        {
             this.tainted = tainted;
-            this.highPriority = highPriority;
+            this.priority = priority;
+            this.lines = new List<List<int>>(lines);
+        }
+
+        public TaintStatus(bool tainted, TaintPriority priority, params List<int>[] lines)
+        {
+            this.tainted = new Taint.Taint(tainted);
+            this.priority = priority;
             this.lines = new List<List<int>>(lines);
         }
 
         public TaintStatus(TaintInfo taintInfo)
         {
-            this.tainted = taintInfo.tainted;
-            this.highPriority = taintInfo.highPriority;
+            this.tainted = taintInfo.taint;
+            this.priority = taintInfo.priority;
 
             lines = new List<List<int>>();
             foreach (TaintFlow flow in taintInfo.possibleTaintFlows)
@@ -359,8 +377,8 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
 
         public TaintStatus(TaintInfo taintInfo, Analysis.FlagType flag)
         {
-            this.tainted = taintInfo.tainted;
-            this.highPriority = taintInfo.highPriority;
+            this.tainted = taintInfo.taint;
+            this.priority = taintInfo.priority;
 
             lines = new List<List<int>>();
             foreach (TaintFlow flow in taintInfo.possibleTaintFlows)
@@ -380,7 +398,27 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             var result = new StringBuilder();
 
             result.AppendLine("Tainted: " + this.tainted);
-            result.AppendLine("Priority: " + this.highPriority);
+            result.AppendLine("Priority: " + this.priority);
+            foreach (List<int> flow in lines)
+            {
+                var flowString = new StringBuilder();
+                flowString.Append("Flow: ");
+                foreach (int i in flow)
+                {
+                    flowString.Append(i + " ");
+                }
+                result.AppendLine(flowString.ToString());
+            }
+
+            return result.ToString();
+        }
+
+        public string ToString(Analysis.FlagType flag)
+        {
+            var result = new StringBuilder();
+
+            result.AppendLine("Tainted: " + this.tainted.get(flag));
+            result.AppendLine("Priority: " + this.priority.get(flag));
             foreach (List<int> flow in lines)
             {
                 var flowString = new StringBuilder();
@@ -397,8 +435,17 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
 
         public bool EqualTo(TaintStatus other)
         {
-            if (this.tainted != other.tainted) return false;
-            if (this.highPriority != other.highPriority) return false;
+            if (!this.tainted.equalTo(other.tainted)) return false;
+            if (!this.priority.equalTo(other.priority)) return false;
+            if (!checkFlowEquality(other.lines)) return false;
+
+            return true;
+        }
+
+        public bool EqualTo(TaintStatus other,Analysis.FlagType flag)
+        {
+            if (this.tainted.get(flag) != other.tainted.get(flag)) return false;
+            if (this.priority.get(flag) != other.priority.get(flag)) return false;
             if (!checkFlowEquality(other.lines)) return false;
 
             return true;

@@ -102,6 +102,7 @@ namespace Weverca.Taint
             {
                 foreach (FlagType flag in flags)
                 {
+                    if (!taintInfo.taint.get(flag)) continue;
                     String taint = taintInfo.ToString(flag);
                     String currentScript = "";
                     if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
@@ -253,11 +254,11 @@ namespace Weverca.Taint
         private TaintInfo mergeTaint(IEnumerable<Value> values, bool nullValue)
         {
             TaintInfo info = new TaintInfo();
-            bool highPriority = true;
+            TaintPriority priority = new TaintPriority(true);
             //if _currentPoint is a BinaryExPoint, its priority is high whenever one of the values has high priority
-            if (values.Count() == 0 || _currentPoint is BinaryExPoint) highPriority = false; 
-            
-            bool tainted = false;
+            if (values.Count() == 0 || _currentPoint is BinaryExPoint) priority.setAll(false);
+            Taint taint = new Taint(false);
+            //bool tainted = false;
             bool existsNullFlow = false;
             
             foreach (var infoValue in values)
@@ -269,46 +270,42 @@ namespace Weverca.Taint
                 if (!(infoValue is InfoValue<TaintInfo>)) continue;
                 TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
                 existsNullFlow |= hasNullFlow(varInfo);
-                if (!varInfo.tainted)
+               
+                /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
+                has a low priority. 
+                If _currentPoint is BinaryExPoint, the priority is high whenever one of the values has
+                a high priority */
+                if (!(_currentPoint is BinaryExPoint)) priority.copyTaint(false, varInfo.priority);
+                if (_currentPoint is BinaryExPoint) priority.copyTaint(true, varInfo.priority);
+
+                taint.copyTaint(true, varInfo.taint);
+
+                foreach (TaintFlow flow in varInfo.possibleTaintFlows)
                 {
-                   if (!(_currentPoint is BinaryExPoint)) highPriority = false;
+                    TaintFlow newFlow = new TaintFlow(flow);
+                    newFlow.addPointToTaintFlow(_currentPoint);
+                    info.possibleTaintFlows.Add(newFlow);
                 }
-                else
+                if (varInfo.possibleTaintFlows.Count == 0 && !varInfo.taint.allFalse())
                 {
-                    tainted = true;
-                    /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
-                    has a low priority. 
-                    If _currentPoint is BinaryExPoint, the priority is high whenever one of the values has
-                    a high priority */
-                    if (varInfo.highPriority == false && !(_currentPoint is BinaryExPoint)) highPriority = false;
-                    if (varInfo.highPriority && _currentPoint is BinaryExPoint) highPriority = true;
-                    foreach (TaintFlow flow in varInfo.possibleTaintFlows)
-                    {
-                        TaintFlow newFlow = new TaintFlow(flow);
-                        newFlow.addPointToTaintFlow(_currentPoint);
-                        info.possibleTaintFlows.Add(newFlow);
-                    }
-                    if (varInfo.possibleTaintFlows.Count == 0)
-                    {
-                        TaintFlow newFlow = new TaintFlow();
-                        newFlow.addPointToTaintFlow(_currentPoint);
-                        info.possibleTaintFlows.Add(newFlow);
-                    }
-                }     
+                    TaintFlow newFlow = new TaintFlow();
+                    newFlow.addPointToTaintFlow(_currentPoint);
+                    info.possibleTaintFlows.Add(newFlow);
+                }            
             }
 
             if (nullValue && !existsNullFlow)
             {
-                tainted = true;
-                if (values.Count() == 0) highPriority = true;
+                taint.setAll(true);
+                if (values.Count() == 0) priority.setAll(true);
                 TaintFlow newFlow = new TaintFlow();
                 newFlow.nullValue = true;
                 newFlow.addPointToTaintFlow(_currentPoint);
                 info.possibleTaintFlows.Add(newFlow);
             }
-           
-            info.highPriority = highPriority;
-            info.tainted = tainted;
+
+            info.priority = priority;
+            info.taint = taint;
             return info;
         }
 

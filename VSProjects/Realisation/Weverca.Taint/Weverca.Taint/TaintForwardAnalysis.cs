@@ -49,8 +49,8 @@ namespace Weverca.Taint
             var TaintedVar = outSet.GetVariable(new VariableIdentifier(name), true);
 
             TaintInfo taint = new TaintInfo();
-            taint.tainted = true;
-            taint.highPriority = true;
+            taint.taint = new Taint(true);
+            taint.priority = new TaintPriority(true);
 
             var Taint = outSet.CreateInfo(taint);
 

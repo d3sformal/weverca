@@ -539,13 +539,13 @@ namespace Weverca.AnalysisFramework.UnitTest
             var variable = outSet.GetVariable(varID);
             var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
             var computedTaintStatus = new TaintStatus(false,true);
-            if (values.Count() == 0) computedTaintStatus.highPriority = false;   
+            if (values.Count() == 0) computedTaintStatus.priority.setAll(false);   
             foreach (var value in values)
             {
                 TaintInfo valueTaintInfo = (value as InfoValue<TaintInfo>).Data;
                 TaintStatus valueTaintStatus = new TaintStatus(valueTaintInfo);
-                if (valueTaintStatus.tainted) computedTaintStatus.tainted = true;
-                if (!valueTaintStatus.highPriority) computedTaintStatus.highPriority = false;
+                computedTaintStatus.tainted.copyTaint(true, valueTaintStatus.tainted);
+                computedTaintStatus.priority.copyTaint(false, valueTaintStatus.priority);
                 computedTaintStatus.lines.AddRange(valueTaintStatus.lines);
             }
             Assert.IsTrue(taintStatus.EqualTo(computedTaintStatus), "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
@@ -557,16 +557,18 @@ namespace Weverca.AnalysisFramework.UnitTest
             var variable = outSet.GetVariable(varID);
             var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
             var computedTaintStatus = new TaintStatus(false, true);
-            if (values.Count() == 0) computedTaintStatus.highPriority = false;
+            if (values.Count() == 0) computedTaintStatus.priority.setAll(false);
             foreach (var value in values)
             {
                 TaintInfo valueTaintInfo = (value as InfoValue<TaintInfo>).Data;
                 TaintStatus valueTaintStatus = new TaintStatus(valueTaintInfo, flag);
-                if (valueTaintStatus.tainted) computedTaintStatus.tainted = true;
-                if (!valueTaintStatus.highPriority) computedTaintStatus.highPriority = false;
+                computedTaintStatus.tainted.copyTaint(true, valueTaintStatus.tainted);
+                computedTaintStatus.priority.copyTaint(false, valueTaintStatus.priority);
                 computedTaintStatus.lines.AddRange(valueTaintStatus.lines);
             }
-            Assert.IsTrue(taintStatus.EqualTo(computedTaintStatus), "Taint status of the variable ${0} should be {1}, taint analysis computed {2}", variableName, taintStatus, computedTaintStatus);
+            String taintStatusString = taintStatus.ToString(flag);
+            String computedTaintStatusString = computedTaintStatus.ToString(flag);
+            Assert.IsTrue(taintStatus.EqualTo(computedTaintStatus,flag), "Taint status of the taint type {0} of variable ${1} should be {2}, taint analysis computed {3}",flag, variableName, taintStatusString, computedTaintStatusString);
         }
 
         
