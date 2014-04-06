@@ -66,6 +66,63 @@ namespace Weverca.Taint
             FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
         }
 
+        public override void VisitEcho(EchoStmtPoint p)
+        {
+            _currentPoint = p;
+            var count = p.Echo.Parameters.Count;
+            List<ValuePoint> valpoints = new List<ValuePoint>(p.Parameters);
+            List<Value> argumentValues = new List<Value>();
+            bool nullValue = false;
+
+            foreach (ValuePoint val in valpoints)
+            {
+                argumentValues.AddRange(val.Value.ReadMemory(Output).PossibleValues);
+                nullValue |= hasPossibleNullValue(val.Value);
+            }
+
+            TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+            createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty });
+        }
+
+        public override void VisitRCall(RCallPoint p)
+        {
+            _currentPoint = p;
+            if (p is EvalExPoint)
+            {
+                EvalExPoint pEval = p as EvalExPoint;
+                List<Value> argumentValues = new List<Value>(pEval.EvalCode.Value.ReadMemory(Output).PossibleValues);
+                bool nullValue = hasPossibleNullValue(pEval.EvalCode.Value);
+
+                TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+                createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty }, "Eval shoudn't contain anything from user input");
+            }
+        }
+
+        public override void VisitInclude(IncludingExPoint p)
+        {
+            _currentPoint = p;
+            List<Value> argumentValues = new List<Value>(p.IncludePath.Value.ReadMemory(Output).PossibleValues);
+            bool nullValue = hasPossibleNullValue(p.IncludePath.Value);
+
+            TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+            createWarnings(p, outputTaint, new List<FlagType>() { FlagType.FilePathDirty });           
+
+        }
+
+        public override void VisitUnary(UnaryExPoint p)
+        {
+            _currentPoint = p;
+            if (p.Expression.PublicOperation == Operations.Print)
+            {
+                List<Value> argumentValues = new List<Value>(p.Operand.Value.ReadMemory(Output).PossibleValues);
+
+                bool nullValue = hasPossibleNullValue(p.Operand.Value);
+
+                TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+                createWarnings(p, outputTaint, new List<FlagType>(){FlagType.HTMLDirty});           
+            }
+        }
+
         /// <summary>
         /// If the function is a sanitizer, the sanitized taint flows are removed
         /// </summary>
@@ -100,18 +157,25 @@ namespace Weverca.Taint
 
             if (functAnalyzer.ReportingFunctions.TryGetValue(functName, out flags))
             {
-                foreach (FlagType flag in flags)
-                {
-                    if (!taintInfo.taint.get(flag)) continue;
-                    String taint = taintInfo.ToString(flag);
-                    String currentScript = "";
-                    if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
-                    AnalysisTaintWarning warning = new AnalysisTaintWarning(currentScript, taint,
-                            p.Partial, (ProgramPointBase)p, flag);
-                    if (!anaysisTaintWarnings.Contains(warning)) anaysisTaintWarnings.Add(warning);
-                }                
+                createWarnings(p, taintInfo, flags);           
             }
+        }
 
+        private void createWarnings(ProgramPointBase p, TaintInfo taintInfo, List<FlagType> flags, String message = null )
+        {
+            foreach (FlagType flag in flags)
+            {
+                if (!taintInfo.taint.get(flag)) continue;
+                String taint = taintInfo.ToString(flag);
+                String currentScript = "";
+                if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
+                AnalysisTaintWarning warning;
+                if (message == null ) warning = new AnalysisTaintWarning(currentScript, taint,
+                        p.Partial,p, flag);
+                else warning = new AnalysisTaintWarning(currentScript, message ,taint,
+                        p.Partial, p, flag);
+                if (!anaysisTaintWarnings.Contains(warning)) anaysisTaintWarnings.Add(warning);
+            }  
         }
 
         /// <summary>

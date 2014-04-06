@@ -421,6 +421,7 @@ namespace Weverca.Analysis
         /// Construct new instance of <see cref="AnalysisTaintWarning"/>, message will be generated automatically
         /// </summary>
         /// <param name="fullFileName">Full name of source code file</param>
+        /// <param name="taintFlow">Taint flow</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
@@ -442,6 +443,24 @@ namespace Weverca.Analysis
             }
 
             TaintFlow = taintFlow; 
+            LangElement = element;
+            Flag = cause;
+        }
+
+        /// <summary>
+        /// Construct new instance of <see cref="AnalysisTaintWarning"/>
+        /// </summary>
+        /// <param name="fullFileName">Full name of source code file</param>
+        /// <param name="message">Warning message</param>
+        /// <param name="taintFlow">Taint flow</param>
+        /// <param name="element">Element, where the warning was produced</param>
+        /// <param name="programPoint">The program point, where the warning was produced</param>
+        /// <param name="cause">Flag type</param>
+        public AnalysisTaintWarning(string fullFileName, string message, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause) :
+            base(programPoint)
+        {
+            Message = message;
+            TaintFlow = taintFlow;
             LangElement = element;
             Flag = cause;
         }
