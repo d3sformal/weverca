@@ -303,9 +303,9 @@ namespace Weverca
                         Console.WriteLine("Security warnings:");
                         PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
 
-                        Console.WriteLine("Security warnings with taint flow:");
+                        /*Console.WriteLine("Security warnings with taint flow:");
                         Console.WriteLine("Pocet: " + nextPhase.analysisTaintWarnings.Count);
-                        PrintTaintWarnings(nextPhase.analysisTaintWarnings);
+                        PrintTaintWarnings(nextPhase.analysisTaintWarnings);*/
 
                         Console.WriteLine("Variables:");
                         List<ProgramPointGraph> processedPPGraphs = new List<ProgramPointGraph>();
@@ -439,6 +439,7 @@ namespace Weverca
 
         private static void writeProgramPointInformation(ProgramPointBase p, bool outset)
         {
+            if (p is FunctionDeclPoint) return;
             Console.Write("Point position: ");
             Console.WriteLine("First line: " + p.Partial.Position.FirstLine +
                                 " Last line: " + p.Partial.Position.LastLine +
