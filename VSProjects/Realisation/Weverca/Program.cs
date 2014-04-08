@@ -10,6 +10,7 @@ using Weverca.Output;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.CodeMetrics;
 using Weverca.Parsers;
+using Weverca.Taint;
 using System.IO;
 using PHP.Core;
 
@@ -128,9 +129,17 @@ namespace Weverca
                    
 #if TEST
                     // Process analysis
+					// First phase
                     var watch = System.Diagnostics.Stopwatch.StartNew();
                     var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                     watch.Stop();
+
+					// Second phase
+					var watch2 = System.Diagnostics.Stopwatch.StartNew();
+					var nextPhase = new TaintForwardAnalysis(ppGraph);
+					nextPhase.Analyse();
+					watch2.Stop();
+
                     // Build output
 
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
@@ -144,7 +153,12 @@ namespace Weverca
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));
-                    if (ppGraph.End.OutSet != null)
+                    
+
+					console.CommentLine(string.Format("Analysis in the second phase completed in: {0}ms\n", watch2.ElapsedMilliseconds));
+					console.WarningsTaint(nextPhase.analysisTaintWarnings);
+
+					if (ppGraph.End.OutSet != null)
                     {
                         console.CommentLine(string.Format("The number of memory locations is: {0}\n", ppGraph.End.OutSnapshot.NumMemoryLocations()));
                         int[] statistics = ppGraph.End.OutSnapshot.GetStatistics().GetStatisticsValues();

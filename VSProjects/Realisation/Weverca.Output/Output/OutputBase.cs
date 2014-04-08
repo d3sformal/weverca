@@ -186,6 +186,17 @@ namespace Weverca.Output.Output
             warnings(securityWarnings, "Security warnings:");
         }
 
+		/// <summary>
+		/// Prints taint warnings to output..
+		/// </summary>
+		/// <param name="taintWarnings">Taint warnings.</param>
+		public void WarningsTaint(List<AnalysisTaintWarning> taintWarnings) 
+		{
+			headline("Taint analysis warnings");
+			CommentLine("Number: " + taintWarnings.Count);
+			warnings(taintWarnings, "Taint analysis warnings:");
+		}
+
         /// <summary>
         /// Print metric to output
         /// </summary>
@@ -220,6 +231,13 @@ namespace Weverca.Output.Output
                 line();
                 comment("Called from: ");
                 comment(s.ProgramPoint.OwningPPGraph.Context.ToString());
+				if (s is AnalysisTaintWarning) 
+				{
+					line();
+					comment("Taint propagation: ");
+					comment(((AnalysisTaintWarning)(object)s).TaintFlow);
+				}
+
                 line();
             }
 

@@ -11,6 +11,8 @@
     <AssemblyName>Weverca</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Weverca.XML</DocumentationFile>
+    <Commandlineparameters>-sa -mm CopyMM index.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -75,39 +78,39 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
-      <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
+      <Project>{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
-      <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
+      <Project>{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.CodeMetrics\Weverca.CodeMetrics.csproj">
-      <Project>{880143f7-bd66-4abd-96e7-86fda5cf8161}</Project>
+      <Project>{880143F7-BD66-4ABD-96E7-86FDA5CF8161}</Project>
       <Name>Weverca.CodeMetrics</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
-      <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
+      <Project>{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
-      <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
+      <Project>{01F0A818-EBE4-431B-9091-0E5DC99382AD}</Project>
       <Name>Weverca.MemoryModels</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Output\Weverca.Output.csproj">
-      <Project>{d43d84c1-1686-48d4-8b9a-bad6860b6315}</Project>
+      <Project>{D43D84C1-1686-48D4-8B9A-BAD6860B6315}</Project>
       <Name>Weverca.Output</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
-      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+      <Project>{CADF9418-C0F6-4E56-B39E-33522603D0BC}</Project>
       <Name>Weverca.Parser</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
-      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Project>{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}</Project>
       <Name>Weverca.Analysis</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Taint\Weverca.Taint\Weverca.Taint.csproj">
-      <Project>{f6dea013-a45c-47bf-8ba5-2118179d6e73}</Project>
+      <Project>{F6DEA013-A45C-47BF-8BA5-2118179D6E73}</Project>
       <Name>Weverca.Taint</Name>
     </ProjectReference>
   </ItemGroup>

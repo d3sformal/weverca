@@ -86,7 +86,7 @@ namespace Weverca.Taint
             foreach (TaintFlow possibleFlow in possibleTaintFlows)
             {
                 result.Append("Possible flow: ");
-                result.AppendLine(possibleFlow.ToString());
+                result.Append(possibleFlow.ToString());
             }
 
             return result.ToString();
