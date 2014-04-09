@@ -8,110 +8,18 @@ using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.Taint
-{
+{    
     /// <summary>
-    /// Stores information about a taint flow.
-    /// </summary>
-    public class TaintFlow
-    {
-        public List<ProgramPointBase> flow;
-        public bool nullValue = false;
-        public List<Analysis.FlagType> flags;
-
-        /// <summary>
-        /// Creates a new, dirty flow
-        /// </summary>
-        public TaintFlow()
-        {
-            flow = new List<ProgramPointBase>();
-            flags = new List<Analysis.FlagType>() { Analysis.FlagType.SQLDirty, Analysis.FlagType.HTMLDirty, Analysis.FlagType.FilePathDirty };
-        }
-
-        /// <summary>
-        /// Copy constructor
-        /// </summary>
-        /// <param name="oldFlow">TaintFlow to copy</param>
-        public TaintFlow(TaintFlow oldFlow)
-        {
-            flow = new List<ProgramPointBase>(oldFlow.flow);
-            nullValue = oldFlow.nullValue;
-            flags = new List<Analysis.FlagType>(oldFlow.flags);
-        }
-
-        /// <summary>
-        /// Adds a new program point to this taint flow
-        /// </summary>
-        /// <param name="programPoint">ProgramPointBase to add</param>
-        public void addPointToTaintFlow(ProgramPointBase programPoint)
-        {
-            flow.Add(programPoint);
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            var result = new StringBuilder();
-
-            foreach (ProgramPointBase pPoint in flow)
-            {
-                if (pPoint.Partial == null) continue;
-                String script = "";
-                if (pPoint.OwningPPGraph.OwningScript != null) script = pPoint.OwningPPGraph.OwningScript.FullName;
-                result.Append("->");
-                result.Append("script: " + script + " at position " + pPoint.Partial.Position);
-            }
-
-            return result.ToString();
-        }
-
-    }
-    
-    /// <summary>
-    /// Class containing the taint information
+    /// Class containing the taint information - program point extending the flow, taint,
+    /// taint priority, previous flow as a list of TaintInfo and null value indicator 
     /// </summary>
     public class TaintInfo
     {
-        //public bool highPriority = false;
+        public ProgramPointBase point;
         public TaintPriority priority = new TaintPriority(false);
         public Taint taint = new Taint(false);
-        //public bool tainted = false;
-        public List<TaintFlow> possibleTaintFlows = new List<TaintFlow>();
-
-       
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            var result = new StringBuilder();
-
-            foreach (TaintFlow possibleFlow in possibleTaintFlows)
-            {
-                result.Append("Possible flow: ");
-                result.Append(possibleFlow.ToString());
-            }
-
-            return result.ToString();
-        }
-
-        /// <summary>
-        /// Converts to String only those flows that are dirty according to the flag
-        /// </summary>
-        /// <param name="flag">The taint flag determining which flows to show</param>
-        /// <returns></returns>
-        public string ToString(Analysis.FlagType flag)
-        {
-            var result = new StringBuilder();
-
-            foreach (TaintFlow possibleFlow in possibleTaintFlows)
-            {
-                if (possibleFlow.flags.Contains(flag))
-                {
-                    result.Append("Possible flow: ");
-                    result.AppendLine(possibleFlow.ToString());
-                }
-            }
-
-            return result.ToString();
-        }
+        public List<TaintInfo> possibleTaintFlows = new List<TaintInfo>();
+        public bool nullValue = false;
 
         /// <summary>
         /// Sanitizes the taint flows according to the provided flags. If all the taint flags are removed, 
@@ -122,25 +30,111 @@ namespace Weverca.Taint
         {
             priority.clean(flags);
             taint.clean(flags);
-            List<TaintFlow> toRemove = new List<TaintFlow>();
-            foreach (TaintFlow flow in possibleTaintFlows)
-            {
-                if (flow.nullValue) continue;
-                if (flags.Contains(Analysis.FlagType.HTMLDirty)) flow.flags.Remove(Analysis.FlagType.HTMLDirty);
-                if (flags.Contains(Analysis.FlagType.SQLDirty)) flow.flags.Remove(Analysis.FlagType.SQLDirty);
-                if (flags.Contains(Analysis.FlagType.FilePathDirty)) flow.flags.Remove(Analysis.FlagType.FilePathDirty);
-                if (flow.flags.Count == 0) toRemove.Add(flow);
-            }
-            foreach (TaintFlow flow in toRemove)
-            {
-                possibleTaintFlows.Remove(flow);
-            }
-            if (possibleTaintFlows.Count == 0)
-            {
-                priority.setAll(false);
-                taint.setAll(false);
-            }
         }
+
+        /// <summary>
+        /// Returns a string containing all possible taint flows
+        /// </summary>
+        /// <returns>string containing all taint flows</returns>
+        public String print()
+        {
+            List<String> flows = this.toString();
+            return print(flows);
+        }
+
+        /// <summary>
+        /// Returns a string containing taint flows of the taint specified by a flag
+        /// </summary>
+        /// <param name="flag">flag specifying the taint</param>
+        /// <returns>string containing the taint flows</returns>
+        public String print(Analysis.FlagType flag)
+        {
+            List<String> flows = this.toString(flag);
+            return print(flows);
+        }
+
+        /// <summary>
+        /// Nicely converts the given flows to a string
+        /// </summary>
+        /// <param name="flows">flows to convert to a string</param>
+        /// <returns>string containing the flows</returns>
+        private String print(List<String> flows)
+        {
+            StringBuilder result = new StringBuilder();
+
+            foreach (String flow in flows)
+            {
+                result.Append("Possible flow: ");
+                result.AppendLine(flow);
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets a list of all taint flows
+        /// </summary>
+        /// <returns>list of taint flows</returns>
+        private List<string> toString()
+        {
+            List<string> result = new List<string>();
+            var thisPP = currentPointString();
+            if (taint.allFalse()) return result;
+
+            foreach (TaintInfo flow in possibleTaintFlows)
+            {
+                List<String> flows = flow.toString();
+                foreach (String flowString in flows)
+                {
+                    result.Add(flowString + thisPP);
+                }
+            }
+
+            if (result.Count == 0) result.Add(thisPP.ToString());
+            return result;
+        }
+
+        /// <summary>
+        /// Gets a list of all taint flows determined by a flag
+        /// </summary>
+        /// <param name="flag">flag determining the taint</param>
+        /// <returnslist of taint flows></returns>
+        private List<String> toString(Analysis.FlagType flag)
+        {
+            List<String> result = new List<String>();
+            var thisPP = currentPointString();
+            if (!taint.get(flag)) return result;
+
+            foreach (TaintInfo flow in possibleTaintFlows)
+            {
+                List<String> flows = flow.toString(flag);
+                foreach (String flowString in flows)
+                {
+                    result.Add(flowString + thisPP);
+                }
+            }
+
+            if (result.Count == 0) result.Add(thisPP.ToString());
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the current program point as a string
+        /// </summary>
+        /// <returns>current program point as a string</returns>
+        private String currentPointString()
+        {
+            StringBuilder thisPP = new StringBuilder();
+            if (point != null && point.Partial != null)
+            {
+                String script = "";
+                if (point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
+                thisPP.Append("-->");
+                thisPP.Append(/*"script: " + script + */" at position " + point.Partial.Position);
+            }
+            return thisPP.ToString();
+        }
+
     }
 
     /// <summary>

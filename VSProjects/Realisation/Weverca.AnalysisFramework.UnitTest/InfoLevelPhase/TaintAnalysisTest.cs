@@ -363,16 +363,25 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             this.tainted = taintInfo.taint;
             this.priority = taintInfo.priority;
 
-            lines = new List<List<int>>();
-            foreach (TaintFlow flow in taintInfo.possibleTaintFlows)
+            lines = getLines(taintInfo);           
+        }
+
+        private List<List<int>> getLines(TaintInfo info)
+        {
+            List<List<int>> result = new List<List<int>>();
+            if (info.point == null || info.point.Partial == null || info.taint.allFalse()) return result;
+            int firstLine = info.point.Partial.Position.FirstLine;
+            foreach (TaintInfo flow in info.possibleTaintFlows)
             {
-                List<int> newFlow = new List<int>();
-                foreach (ProgramPointBase pPoint in flow.flow)
+                List<List<int>> flows = getLines(flow);
+                foreach (List<int> oneFlow in flows)
                 {
-                    newFlow.Add(pPoint.Partial.Position.FirstLine);
+                    oneFlow.Add(firstLine);
                 }
-                lines.Add(newFlow);
+                result.AddRange(flows);
             }
+            if (result.Count == 0) result.Add(new List<int>() { firstLine });
+            return result;
         }
 
         public TaintStatus(TaintInfo taintInfo, Analysis.FlagType flag)
@@ -380,17 +389,27 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             this.tainted = taintInfo.taint;
             this.priority = taintInfo.priority;
 
-            lines = new List<List<int>>();
-            foreach (TaintFlow flow in taintInfo.possibleTaintFlows)
+            lines = getLines(taintInfo, flag);
+        }
+
+        private List<List<int>> getLines(TaintInfo info, Analysis.FlagType flag)
+        {
+            List<List<int>> result = new List<List<int>>();
+            if (!info.taint.get(flag) || info.point == null || info.point.Partial == null) return result;
+            int firstLine = info.point.Partial.Position.FirstLine;
+            if (info.possibleTaintFlows.Count == 0) result.Add(new List<int>() { firstLine });
+            foreach (TaintInfo flow in info.possibleTaintFlows)
             {
-                if (!flow.flags.Contains(flag)) continue;
-                List<int> newFlow = new List<int>();
-                foreach (ProgramPointBase pPoint in flow.flow)
+                if (!flow.taint.get(flag)) continue;
+                List<List<int>> flows = getLines(flow);
+                foreach (List<int> oneFlow in flows)
                 {
-                    newFlow.Add(pPoint.Partial.Position.FirstLine);
+                    oneFlow.Add(firstLine);
                 }
-                lines.Add(newFlow);
+                result.AddRange(flows);
             }
+            if (result.Count == 0) result.Add(new List<int>() { firstLine });
+            return result;
         }
 
         public override string ToString()

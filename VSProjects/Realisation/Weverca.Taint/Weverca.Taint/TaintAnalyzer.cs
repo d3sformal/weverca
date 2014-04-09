@@ -24,7 +24,7 @@ namespace Weverca.Taint
         private ProgramPointBase _currentPoint;
         private NativeFunctionAnalyzer functAnalyzer;
 
-        public List<AnalysisTaintWarning> anaysisTaintWarnings = new List<AnalysisTaintWarning>();
+        public List<AnalysisTaintWarning> analysisTaintWarnings = new List<AnalysisTaintWarning>();
 
         public override void VisitPoint(ProgramPointBase p)
         {
@@ -66,6 +66,10 @@ namespace Weverca.Taint
             FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
         }
 
+        /// <summary>
+        /// Visits echo statement
+        /// </summary>
+        /// <param name="p">program point to visit</param>
         public override void VisitEcho(EchoStmtPoint p)
         {
             _currentPoint = p;
@@ -84,6 +88,10 @@ namespace Weverca.Taint
             createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty });
         }
 
+        /// <summary>
+        /// Visits eval point
+        /// </summary>
+        /// <param name="p">program point to visit</param>
         public override void VisitRCall(RCallPoint p)
         {
             _currentPoint = p;
@@ -98,6 +106,10 @@ namespace Weverca.Taint
             }
         }
 
+        /// <summary>
+        /// Visits including point
+        /// </summary>
+        /// <param name="p">program point to visit</param>
         public override void VisitInclude(IncludingExPoint p)
         {
             _currentPoint = p;
@@ -109,6 +121,10 @@ namespace Weverca.Taint
 
         }
 
+        /// <summary>
+        /// Visits unary expression point - if operation is print, warning might be created
+        /// </summary>
+        /// <param name="p"></param>
         public override void VisitUnary(UnaryExPoint p)
         {
             _currentPoint = p;
@@ -166,7 +182,7 @@ namespace Weverca.Taint
             foreach (FlagType flag in flags)
             {
                 if (!taintInfo.taint.get(flag)) continue;
-                String taint = taintInfo.ToString(flag);
+                String taint = taintInfo.print(flag);
                 String currentScript = "";
                 if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
                 AnalysisTaintWarning warning;
@@ -174,7 +190,12 @@ namespace Weverca.Taint
                         p.Partial,p, flag);
                 else warning = new AnalysisTaintWarning(currentScript, message ,taint,
                         p.Partial, p, flag);
-                if (!anaysisTaintWarnings.Contains(warning)) anaysisTaintWarnings.Add(warning);
+                int index = analysisTaintWarnings.IndexOf(warning);
+                if (index != -1)
+                {
+                    analysisTaintWarnings.RemoveAt(index);
+                }
+                analysisTaintWarnings.Add(warning);
             }  
         }
 
@@ -318,11 +339,11 @@ namespace Weverca.Taint
         private TaintInfo mergeTaint(IEnumerable<Value> values, bool nullValue)
         {
             TaintInfo info = new TaintInfo();
+            info.point = _currentPoint;
             TaintPriority priority = new TaintPriority(true);
             //if _currentPoint is a BinaryExPoint, its priority is high whenever one of the values has high priority
             if (values.Count() == 0 || _currentPoint is BinaryExPoint) priority.setAll(false);
             Taint taint = new Taint(false);
-            //bool tainted = false;
             bool existsNullFlow = false;
             
             foreach (var infoValue in values)
@@ -333,7 +354,7 @@ namespace Weverca.Taint
                 }
                 if (!(infoValue is InfoValue<TaintInfo>)) continue;
                 TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
-                existsNullFlow |= hasNullFlow(varInfo);
+                existsNullFlow |= varInfo.nullValue;
                
                 /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
                 has a low priority. 
@@ -344,28 +365,14 @@ namespace Weverca.Taint
 
                 taint.copyTaint(true, varInfo.taint);
 
-                foreach (TaintFlow flow in varInfo.possibleTaintFlows)
-                {
-                    TaintFlow newFlow = new TaintFlow(flow);
-                    newFlow.addPointToTaintFlow(_currentPoint);
-                    info.possibleTaintFlows.Add(newFlow);
-                }
-                if (varInfo.possibleTaintFlows.Count == 0 && !varInfo.taint.allFalse())
-                {
-                    TaintFlow newFlow = new TaintFlow();
-                    newFlow.addPointToTaintFlow(_currentPoint);
-                    info.possibleTaintFlows.Add(newFlow);
-                }            
+                if (!varInfo.taint.allFalse()) info.possibleTaintFlows.Add(varInfo);       
             }
 
             if (nullValue && !existsNullFlow)
             {
                 taint.setAll(true);
                 if (values.Count() == 0) priority.setAll(true);
-                TaintFlow newFlow = new TaintFlow();
-                newFlow.nullValue = true;
-                newFlow.addPointToTaintFlow(_currentPoint);
-                info.possibleTaintFlows.Add(newFlow);
+                info.nullValue = true;
             }
 
             info.priority = priority;
@@ -426,14 +433,14 @@ namespace Weverca.Taint
         /// </summary>
         /// <param name="info"></param>
         /// <returns></returns>
-        private static bool hasNullFlow(TaintInfo info)
+        /*private static bool hasNullFlow(TaintInfo info)
         {
             foreach (TaintFlow flow in info.possibleTaintFlows)
             {
                 if (flow.nullValue) return true;
             }
             return false;
-        }
+        }*/
 
     }
 }

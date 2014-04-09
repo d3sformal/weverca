@@ -26,7 +26,7 @@ namespace Weverca.Taint
         {
             base.Analyse();
             NextPhaseAnalyzer analyzer = getNextPhaseAnalyzer();
-            analysisTaintWarnings = (analyzer as TaintAnalyzer).anaysisTaintWarnings;
+            analysisTaintWarnings = (analyzer as TaintAnalyzer).analysisTaintWarnings;
         }
 
         private void TaintInitializer()
