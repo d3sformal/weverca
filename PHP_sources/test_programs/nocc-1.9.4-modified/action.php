@@ -57,7 +57,7 @@ if (!isset($_REQUEST['sort'])) {
 
 // Weverca
 if ($_GET[1]) $action = 'action';
-else $remember = $_GET[1];
+else $action = $_GET[1];
 // Act on 'action'
 //$action = NOCC_Request::getStringValue('action');
 
@@ -84,9 +84,6 @@ catch (Exception $ex) {
 	 */
     exit;
 }
-
-$action = "aff_mail";
-die();
 
 switch($action) {
     //--------------------------------------------------------------------------------
