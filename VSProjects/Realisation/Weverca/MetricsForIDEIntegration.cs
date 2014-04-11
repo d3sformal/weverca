@@ -304,7 +304,6 @@ namespace Weverca
                         PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
 
                         Console.WriteLine("Security warnings with taint flow:");
-                        Console.WriteLine("Pocet: " + nextPhase.analysisTaintWarnings.Count);
                         PrintTaintWarnings(nextPhase.analysisTaintWarnings);
 
                         Console.WriteLine("Variables:");

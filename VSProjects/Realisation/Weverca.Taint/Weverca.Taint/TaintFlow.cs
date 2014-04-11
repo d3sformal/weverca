@@ -38,7 +38,10 @@ namespace Weverca.Taint
         /// <returns>string containing all taint flows</returns>
         public String print()
         {
-            List<String> flows = this.toString();
+            String currentScript = "";
+            /*if (point.OwningPPGraph.OwningScript != null) currentScript = point.OwningPPGraph.OwningScript.FullName;
+            String scriptToPrint = currentScript;*/
+            List<String> flows = this.toString(ref currentScript);
             return print(flows);
         }
 
@@ -49,7 +52,10 @@ namespace Weverca.Taint
         /// <returns>string containing the taint flows</returns>
         public String print(Analysis.FlagType flag)
         {
-            List<String> flows = this.toString(flag);
+            String currentScript = "";
+            /*if (point.OwningPPGraph.OwningScript != null) currentScript = point.OwningPPGraph.OwningScript.FullName;
+            String scriptToPrint = currentScript; */
+            List<String> flows = this.toString(ref currentScript, flag);
             return print(flows);
         }
 
@@ -74,47 +80,51 @@ namespace Weverca.Taint
         /// <summary>
         /// Gets a list of all taint flows
         /// </summary>
+        /// <param name="script">last script</param>
         /// <returns>list of taint flows</returns>
-        private List<string> toString()
+        private List<string> toString(ref String script)
         {
             List<string> result = new List<string>();
-            var thisPP = currentPointString();
+            String thisPP = null;
             if (taint.allFalse()) return result;
 
             foreach (TaintInfo flow in possibleTaintFlows)
             {
-                List<String> flows = flow.toString();
+                List<String> flows = flow.toString(ref script);
+                if (thisPP == null) thisPP = currentPointString(ref script);
                 foreach (String flowString in flows)
                 {
                     result.Add(flowString + thisPP);
                 }
             }
 
-            if (result.Count == 0) result.Add(thisPP.ToString());
+            if (result.Count == 0) result.Add(thisPP);
             return result;
         }
 
         /// <summary>
         /// Gets a list of all taint flows determined by a flag
         /// </summary>
+        /// <param name="script">last script</param>
         /// <param name="flag">flag determining the taint</param>
         /// <returnslist of taint flows></returns>
-        private List<String> toString(Analysis.FlagType flag)
+        private List<String> toString(ref String script, Analysis.FlagType flag)
         {
             List<String> result = new List<String>();
-            var thisPP = currentPointString();
+            String thisPP = null;
             if (!taint.get(flag)) return result;
 
             foreach (TaintInfo flow in possibleTaintFlows)
             {
-                List<String> flows = flow.toString(flag);
+                List<String> flows = flow.toString(ref script, flag);
+                if (thisPP == null) thisPP = currentPointString(ref script);
                 foreach (String flowString in flows)
                 {
                     result.Add(flowString + thisPP);
                 }
             }
 
-            if (result.Count == 0) result.Add(thisPP.ToString());
+            if (result.Count == 0) result.Add(thisPP);
             return result;
         }
 
@@ -122,15 +132,21 @@ namespace Weverca.Taint
         /// Returns the current program point as a string
         /// </summary>
         /// <returns>current program point as a string</returns>
-        private String currentPointString()
+        private String currentPointString(ref String script)
         {
             StringBuilder thisPP = new StringBuilder();
             if (point != null && point.Partial != null)
             {
-                String script = "";
-                if (point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
+                String newScript = "";
+                if (point.OwningPPGraph.OwningScript != null) newScript = point.OwningPPGraph.OwningScript.FullName;
+                if (newScript != script)
+                {
+                    thisPP.AppendLine();
+                    thisPP.AppendLine("File: " + newScript);
+                    script = newScript;
+                }
                 thisPP.Append("-->");
-                thisPP.Append(/*"script: " + script + */" at position " + point.Partial.Position);
+                thisPP.Append(" at position " + point.Partial.Position);
             }
             return thisPP.ToString();
         }

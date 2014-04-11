@@ -428,20 +428,6 @@ namespace Weverca.Taint
             return nullValue;     
         }
 
-        /// <summary>
-        /// Checks whether there is any null flow in current taint information
-        /// </summary>
-        /// <param name="info"></param>
-        /// <returns></returns>
-        /*private static bool hasNullFlow(TaintInfo info)
-        {
-            foreach (TaintFlow flow in info.possibleTaintFlows)
-            {
-                if (flow.nullValue) return true;
-            }
-            return false;
-        }*/
-
     }
 }
 
