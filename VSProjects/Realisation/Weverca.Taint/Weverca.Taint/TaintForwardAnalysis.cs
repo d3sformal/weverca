@@ -55,11 +55,11 @@ namespace Weverca.Taint
             var Taint = outSet.CreateInfo(taint);
 
             TaintedVar.WriteMemory(outSet.Snapshot, new MemoryEntry(Taint));
-
+			/*
             TaintedVar = outSet.GetVariable(new VariableIdentifier(name), true);
             Taint = outSet.CreateInfo(taint);
 
-            TaintedVar.WriteMemory(outSet.Snapshot, new MemoryEntry(Taint));
+            TaintedVar.WriteMemory(outSet.Snapshot, new MemoryEntry(Taint));*/
         }
     }
 }

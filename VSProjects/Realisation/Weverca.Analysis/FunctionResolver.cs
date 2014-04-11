@@ -1161,6 +1161,13 @@ namespace Weverca.Analysis
 
                     var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
 
+					if (param.InitValue != null)
+					{
+						var initializer = new ObjectInitializer(Flow.ExpressionEvaluator);
+						param.InitValue.VisitMe(initializer);
+						argumentVar.WriteMemory(callInput.Snapshot, initializer.initializationValue);
+					}
+					/*
                     if (param.PassedByRef)
                     {
                         argumentVar.SetAliases(callInput.Snapshot, enumerator.Current.Value);
@@ -1174,6 +1181,7 @@ namespace Weverca.Analysis
                             argumentVar.WriteMemory(callInput.Snapshot, initializer.initializationValue);
                         }
                     }
+                    */
 
                 }
 

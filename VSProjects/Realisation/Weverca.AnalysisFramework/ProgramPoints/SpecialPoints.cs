@@ -232,7 +232,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             get
             {
-                return Graph;
+				return Caller.OwningPPGraph;
             }
         }
 
@@ -287,23 +287,6 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (Flow.Arguments == null)
                 Flow.Arguments = new MemoryEntry[0];
 
-
-            /*
-            var callerCallString = Caller.Flow.OutSet.GetLocalControlVariable(new VariableName(".callString"));
-            MemoryEntry callerCallStringME;
-            if (callerCallString.ReadMemory(Caller.Flow.OutSet.Snapshot).ContainsUndefinedValue) 
-            {
-                callerCallStringME = new MemoryEntry(Caller.Flow.OutSet.CreateString(""));
-            } else 
-            {
-                callerCallStringME = callerCallString.ReadMemory(Caller.Flow.OutSet.Snapshot);
-            }
-            var callerINfoME = new MemoryEntry(Flow.OutSet.CreateString("->" + OwningPPGraph.OwningScript.FullName + " line " + Caller.Partial.Position));
-
-            var calleeCallStringME = Flow.ExpressionEvaluator.BinaryEx(callerCallStringME, Operations.Concat, callerINfoME);
-            var calleeCallString = Flow.OutSet.GetLocalControlVariable(new VariableName(".callString"));
-            calleeCallString.WriteMemory(Flow.OutSet.Snapshot, calleeCallStringME);
-            */
             Services.FunctionResolver.InitializeCall(Caller, Graph, Flow.Arguments);
         }
 

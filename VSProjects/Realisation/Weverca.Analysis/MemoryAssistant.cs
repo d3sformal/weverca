@@ -336,56 +336,74 @@ namespace Weverca.Analysis
             return result;
         }
 
-        /// <inheritdoc />
-        public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
-        {
-            if (!(value is UndefinedValue))
-            {
-                SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
-            }
+		/// <inheritdoc />
+		public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
+		{
+			if (value is AnyArrayValue)
+			{
+				yield return Context.AnyValue;
+			} 
+			else if (value is UndefinedValue)
+			{
+				yield return Context.UndefinedValue;
+			}
+			else
+			{
+				SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
+				if (value is AnyValue)
+					yield return Context.AnyValue;
+				yield return Context.UndefinedValue;
+			}
+		}
 
-            //reading of index returns undefined value
-            yield return Context.UndefinedValue;
-        }
+		/// <inheritdoc />
+		public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
+		{
+			if (!(indexed is UndefinedValue || indexed is AnyArrayValue))
+			{
+				SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
+			}
 
-        /// <inheritdoc />
-        public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
-        {
-            if (!(indexed is UndefinedValue))
-            {
-                SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
-            }
+			//we dont want to change indexed value itself
+			yield return indexed;
+		}
 
-            //we dont want to change indexed value itself
-            yield return indexed;
-        }
+		/// <inheritdoc />
+		public override MemoryEntry Simplify(MemoryEntry entry)
+		{
+			var simplifier = new Simplifier(Context);
+			return new MemoryEntry(simplifier.Simplify(entry));
+		}
 
-        /// <inheritdoc />
-        public override MemoryEntry Simplify(MemoryEntry entry)
-        {
-            var simplifier = new Simplifier(Context);
-            return new MemoryEntry(simplifier.Simplify(entry));
-        }
+		/// <inheritdoc />
+		public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
+		{
+			if (!(fielded is UndefinedValue || fielded is AnyObjectValue))
+			{
+				SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
+			}
+			yield return fielded;
+		}
 
-        /// <inheritdoc />
-        public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
-        {
-            if (!(fielded is UndefinedValue))
-            {
-                SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
-            }
-            yield return fielded;
-        }
-
-        /// <inheritdoc />
-        public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
-        {
-            if (!(fielded is UndefinedValue))
-            {
-                SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
-            }
-            yield return Context.UndefinedValue;
-        }
+		/// <inheritdoc />
+		public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
+		{
+			if (fielded is AnyObjectValue)
+			{
+				yield return Context.AnyValue;
+			} 
+			else if (fielded is UndefinedValue)
+			{
+				yield return Context.UndefinedValue;
+			}
+			else
+			{
+				SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
+				if (fielded is AnyValue)
+					yield return Context.AnyValue;
+				yield return Context.UndefinedValue;
+			}
+		}
 
     }
 
