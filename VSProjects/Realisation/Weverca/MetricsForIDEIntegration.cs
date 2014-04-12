@@ -300,8 +300,8 @@ namespace Weverca
                         Console.WriteLine("Analysis warnings:");
                         PrintWarnings(AnalysisWarningHandler.GetWarnings());
 
-                        Console.WriteLine("Security warnings:");
-                        PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+                        /*Console.WriteLine("Security warnings:");
+                        PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());*/
 
                         Console.WriteLine("Security warnings with taint flow:");
                         PrintTaintWarnings(nextPhase.analysisTaintWarnings);
