@@ -459,6 +459,7 @@ namespace Weverca.Analysis
         public AnalysisTaintWarning(string fullFileName, string message, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause) :
             base(programPoint)
         {
+            FullFileName = fullFileName;
             Message = message;
             TaintFlow = taintFlow;
             LangElement = element;

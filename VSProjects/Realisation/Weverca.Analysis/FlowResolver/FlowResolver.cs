@@ -467,7 +467,7 @@ namespace Weverca.Analysis.FlowResolver
 
             if (isAllwasConcrete == false)
             {
-                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Couldn't resolve all poosible evals", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.COULDNT_RESOLVE_ALL_EVALS));
+                AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, "Couldn't resolve all possible evals", flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.COULDNT_RESOLVE_ALL_EVALS));
             }
 
             foreach (var branchKey in flow.ExtensionKeys)

@@ -60,7 +60,7 @@ namespace Weverca.Taint
             TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
             // try to sanitize the taint info
             sanitize(p, ref outputTaint);
-            createWarnings(p, outputTaint);
+            warningsReportingFunct(p, outputTaint);
 
             // 2. Propagate arguments to the return value.
             FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
@@ -95,6 +95,7 @@ namespace Weverca.Taint
         public override void VisitRCall(RCallPoint p)
         {
             _currentPoint = p;
+            OutputSet.Snapshot.SetMode(SnapshotMode.InfoLevel);
             if (p is EvalExPoint)
             {
                 EvalExPoint pEval = p as EvalExPoint;
@@ -102,7 +103,7 @@ namespace Weverca.Taint
                 bool nullValue = hasPossibleNullValue(pEval.EvalCode.Value);
 
                 TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
-                createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty }, "Eval shoudn't contain anything from user input");
+                createWarnings(p, outputTaint, null, "Eval shoudn't contain anything from user input");
             }
         }
 
@@ -163,7 +164,7 @@ namespace Weverca.Taint
         /// </summary>
         /// <param name="p">program point with a function</param>
         /// <param name="taintInfo">TaintInfo that is being sanitized</param>
-        private void createWarnings(NativeAnalyzerPoint p,TaintInfo taintInfo)
+        private void warningsReportingFunct(NativeAnalyzerPoint p,TaintInfo taintInfo)
         {
             NativeAnalyzerMethod method = p.Analyzer.Method;
             QualifiedName functName = getMethodName(p);
@@ -179,24 +180,34 @@ namespace Weverca.Taint
 
         private void createWarnings(ProgramPointBase p, TaintInfo taintInfo, List<FlagType> flags, String message = null )
         {
-            foreach (FlagType flag in flags)
+            if (flags == null)
+            {
+                String taint = taintInfo.print();
+                createWarning(p, FlagType.HTMLDirty, message, taint);
+            }
+            else foreach (FlagType flag in flags)
             {
                 if (!taintInfo.taint.get(flag)) continue;
                 String taint = taintInfo.print(flag);
-                String currentScript = "";
-                if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
-                AnalysisTaintWarning warning;
-                if (message == null ) warning = new AnalysisTaintWarning(currentScript, taint,
-                        p.Partial,p, flag);
-                else warning = new AnalysisTaintWarning(currentScript, message ,taint,
-                        p.Partial, p, flag);
-                int index = analysisTaintWarnings.IndexOf(warning);
-                if (index != -1)
-                {
-                    analysisTaintWarnings.RemoveAt(index);
-                }
-                analysisTaintWarnings.Add(warning);
+                createWarning(p, flag, message, taint);
             }  
+        }
+
+        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint)
+        {
+            String currentScript = "";
+            if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
+            AnalysisTaintWarning warning;
+            if (message == null) warning = new AnalysisTaintWarning(currentScript, taint,
+                   p.Partial, p, flag);
+            else warning = new AnalysisTaintWarning(currentScript, message, taint,
+                    p.Partial, p, flag);
+            int index = analysisTaintWarnings.IndexOf(warning);
+            if (index != -1)
+            {
+                analysisTaintWarnings.RemoveAt(index);
+            }
+            analysisTaintWarnings.Add(warning);
         }
 
         /// <summary>
@@ -365,7 +376,7 @@ namespace Weverca.Taint
 
                 taint.copyTaint(true, varInfo.taint);
 
-                if (!varInfo.taint.allFalse()) info.possibleTaintFlows.Add(varInfo);       
+                info.possibleTaintFlows.Add(varInfo);       
             }
 
             if (nullValue && !existsNullFlow)

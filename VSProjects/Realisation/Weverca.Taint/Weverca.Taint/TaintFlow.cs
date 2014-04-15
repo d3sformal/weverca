@@ -87,7 +87,6 @@ namespace Weverca.Taint
         {
             List<string> result = new List<string>();
             String thisPP = null;
-            if (taint.allFalse()) return result;
             String thisScript = script;
 
             foreach (TaintInfo flow in possibleTaintFlows)
@@ -108,7 +107,7 @@ namespace Weverca.Taint
                 result.Add(thisPP);
             }
             script = "";
-            if (point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
+            if (point != null && point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
             return result;
         }
 
