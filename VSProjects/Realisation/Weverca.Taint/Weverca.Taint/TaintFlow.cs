@@ -88,18 +88,27 @@ namespace Weverca.Taint
             List<string> result = new List<string>();
             String thisPP = null;
             if (taint.allFalse()) return result;
+            String thisScript = script;
 
             foreach (TaintInfo flow in possibleTaintFlows)
             {
-                List<String> flows = flow.toString(ref script);
-                if (thisPP == null) thisPP = currentPointString(ref script);
+                String refscript = thisScript;  
+                List<String> flows = flow.toString(ref refscript);
+                thisPP = currentPointString(ref refscript);
                 foreach (String flowString in flows)
                 {
                     result.Add(flowString + thisPP);
                 }
             }
 
-            if (result.Count == 0) result.Add(thisPP);
+            if (result.Count == 0)
+            {
+                String refscript = thisScript;
+                thisPP = currentPointString(ref refscript);
+                result.Add(thisPP);
+            }
+            script = "";
+            if (point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
             return result;
         }
 
@@ -111,21 +120,31 @@ namespace Weverca.Taint
         /// <returnslist of taint flows></returns>
         private List<String> toString(ref String script, Analysis.FlagType flag)
         {
-            List<String> result = new List<String>();
+            List<string> result = new List<string>();
             String thisPP = null;
             if (!taint.get(flag)) return result;
+            String thisScript = script;
 
             foreach (TaintInfo flow in possibleTaintFlows)
             {
-                List<String> flows = flow.toString(ref script, flag);
-                if (thisPP == null) thisPP = currentPointString(ref script);
+                String refscript = thisScript;
+                List<String> flows = flow.toString(ref refscript, flag);
+                thisPP = currentPointString(ref refscript);
                 foreach (String flowString in flows)
                 {
                     result.Add(flowString + thisPP);
                 }
             }
 
-            if (result.Count == 0) result.Add(thisPP);
+            if (result.Count == 0)
+            {
+                String refscript = thisScript;
+                thisPP = currentPointString(ref refscript);
+                result.Add(thisPP);
+            }
+
+            script = "";
+            if (point != null && point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;  
             return result;
         }
 
@@ -138,7 +157,7 @@ namespace Weverca.Taint
             StringBuilder thisPP = new StringBuilder();
             if (point != null && point.Partial != null)
             {
-                String newScript = "";
+                String newScript = "emptyscript";
                 if (point.OwningPPGraph.OwningScript != null) newScript = point.OwningPPGraph.OwningScript.FullName;
                 if (newScript != script)
                 {
