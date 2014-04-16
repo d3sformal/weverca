@@ -39,7 +39,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         ".AssertVariable("_POST").HasTaintStatus(new TaintStatus(true, true))
         .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 3, 4 }))
         .AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 3, 6, 7 }))
-        .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5 })) //null value
+        .AssertVariable("y").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 5 })) //null value
         .AssertVariable("z").HasTaintStatus(new TaintStatus(false, false));
 
         readonly static TestCase TaintAnalysisAliases_CASE =
@@ -60,8 +60,8 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         readonly static TestCase TaintAnalysisNullValue_CASE =
         @" $x = null;
         $y = $x;
-        ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2 }))
-        .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }));
+        ".AssertVariable("x").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2 }))
+        .AssertVariable("y").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2, 3 }));
 
         readonly static TestCase TaintAnalysisMultipleNullFlows_CASE =
        @" $x = null;
@@ -73,17 +73,17 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             $z = $y;
         }
         $w = $z;
-        ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2 }))
-       .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }))
-       .AssertVariable("w").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 5, 10 }, new List<int>() { 2, 3, 8, 10 }));
+        ".AssertVariable("x").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2 }))
+       .AssertVariable("y").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2, 3 }))
+       .AssertVariable("w").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2, 5, 10 }, new List<int>() { 2, 3, 8, 10 }));
 
 
 
         readonly static TestCase TaintAnalysisUndefinedValue_CASE =
         @" $x = $a;
         $y = $x;
-        ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2 }))
-        .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }));
+        ".AssertVariable("x").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2 }))
+        .AssertVariable("y").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2, 3 }));
 
         // Tests weak updates
         // weak because of indirect variable accesses
@@ -197,7 +197,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $y = null;
         $z = $y;
         $r = f($x,$y,$z);
-            ".AssertVariable("r").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 7, 3, 3, 3, 9 }, new List<int>() { 7, 8, 3, 3, 9 }));
+            ".AssertVariable("r").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 7, 3, 3, 3, 9 }, new List<int>() { 7, 8, 3, 3, 9 }));
 
         readonly static TestCase TaintAnalysisSanitizers_CASE =
         @" $x = $_POST;
@@ -369,7 +369,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         private List<List<int>> getLines(TaintInfo info)
         {
             List<List<int>> result = new List<List<int>>();
-            if (info.point == null || info.point.Partial == null || info.taint.allFalse()) return result;
+            if (info.point == null || info.point.Partial == null || (info.taint.allFalse() && !info.nullValue)) return result;
             int firstLine = info.point.Partial.Position.FirstLine;
             foreach (TaintInfo flow in info.possibleTaintFlows)
             {
@@ -395,7 +395,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         private List<List<int>> getLines(TaintInfo info, Analysis.FlagType flag)
         {
             List<List<int>> result = new List<List<int>>();
-            if (!info.taint.get(flag) || info.point == null || info.point.Partial == null) return result;
+            if ((!info.taint.get(flag) && !info.nullValue) || info.point == null || info.point.Partial == null) return result;
             int firstLine = info.point.Partial.Position.FirstLine;
             if (info.possibleTaintFlows.Count == 0) result.Add(new List<int>() { firstLine });
             foreach (TaintInfo flow in info.possibleTaintFlows)

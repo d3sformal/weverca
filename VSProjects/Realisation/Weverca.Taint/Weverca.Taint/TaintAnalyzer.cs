@@ -180,26 +180,36 @@ namespace Weverca.Taint
 
         private void createWarnings(ProgramPointBase p, TaintInfo taintInfo, List<FlagType> flags, String message = null )
         {
+            if (taintInfo.nullValue)
+            {
+                String taint = taintInfo.printNullFlows();
+                String nullMessage = message;
+                if (message == "Eval shoudn't contain anything from user input")
+                    nullMessage = "Eval shoudn't contain null";
+
+                createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true);
+            }
             if (flags == null)
             {
+                if (taintInfo.taint.allFalse()) return;
                 String taint = taintInfo.print();
-                createWarning(p, FlagType.HTMLDirty, message, taint);
+                createWarning(p, FlagType.HTMLDirty, message, taint, false);
             }
             else foreach (FlagType flag in flags)
             {
-                if (!taintInfo.taint.get(flag)) continue;
+                if (!(taintInfo.taint.get(flag))) continue;
                 String taint = taintInfo.print(flag);
-                createWarning(p, flag, message, taint);
+                createWarning(p, flag, message, taint, false);
             }  
         }
 
-        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint)
+        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint, Boolean nullFlow)
         {
             String currentScript = "";
             if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
             AnalysisTaintWarning warning;
             if (message == null) warning = new AnalysisTaintWarning(currentScript, taint,
-                   p.Partial, p, flag);
+                   p.Partial, p, flag, nullFlow);
             else warning = new AnalysisTaintWarning(currentScript, message, taint,
                     p.Partial, p, flag);
             int index = analysisTaintWarnings.IndexOf(warning);
@@ -379,13 +389,15 @@ namespace Weverca.Taint
                 info.possibleTaintFlows.Add(varInfo);       
             }
 
+            info.nullValue = existsNullFlow;
+
             if (nullValue && !existsNullFlow)
             {
-                taint.setAll(true);
                 if (values.Count() == 0) priority.setAll(true);
                 info.nullValue = true;
             }
 
+            
             info.priority = priority;
             info.taint = taint;
             return info;

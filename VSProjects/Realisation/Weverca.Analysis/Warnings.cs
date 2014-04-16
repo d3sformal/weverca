@@ -425,20 +425,23 @@ namespace Weverca.Analysis
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisTaintWarning(string fullFileName, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause):
+        public AnalysisTaintWarning(string fullFileName, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause, Boolean nullFlow):
             base(programPoint)
         {
             FullFileName = fullFileName;
             switch (cause)
             {
                 case FlagType.HTMLDirty:
-                    Message = "Unchecked value goes into browser";
+                    if (nullFlow) Message = "Null value goes into browser";
+                    else Message = "Unchecked value goes into browser";
                     break;
                 case FlagType.FilePathDirty:
-                    Message = "File name has to be checked before open";
+                    if (nullFlow) Message = "File name cannot contain null value";
+                    else Message = "File name has to be checked before open";
                     break;
                 case FlagType.SQLDirty:
-                    Message = "Unchecked value goes into database";
+                    if (nullFlow) Message = "Null value goes into database";
+                    else Message = "Unchecked value goes into database";
                     break;
             }
 

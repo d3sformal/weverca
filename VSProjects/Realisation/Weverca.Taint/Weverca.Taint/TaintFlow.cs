@@ -39,9 +39,7 @@ namespace Weverca.Taint
         public String print()
         {
             String currentScript = "";
-            /*if (point.OwningPPGraph.OwningScript != null) currentScript = point.OwningPPGraph.OwningScript.FullName;
-            String scriptToPrint = currentScript;*/
-            List<String> flows = this.toString(ref currentScript);
+            List<String> flows = this.toString(ref currentScript,false);
             return print(flows);
         }
 
@@ -53,9 +51,18 @@ namespace Weverca.Taint
         public String print(Analysis.FlagType flag)
         {
             String currentScript = "";
-            /*if (point.OwningPPGraph.OwningScript != null) currentScript = point.OwningPPGraph.OwningScript.FullName;
-            String scriptToPrint = currentScript; */
             List<String> flows = this.toString(ref currentScript, flag);
+            return print(flows);
+        }
+
+        /// <summary>
+        /// Returns a string containing all possible null flows
+        /// </summary>
+        /// <returns>string containing all null flows</returns>
+        public String printNullFlows()
+        {
+            String currentScript = "";
+            List<String> flows = this.toString(ref currentScript, true);
             return print(flows);
         }
 
@@ -79,20 +86,23 @@ namespace Weverca.Taint
         }
 
         /// <summary>
-        /// Gets a list of all taint flows
+        /// Gets a list of all taint flows or null flows
         /// </summary>
         /// <param name="script">last script</param>
-        /// <returns>list of taint flows</returns>
-        private List<string> toString(ref String script)
+        /// <param name="nullFlow">determines whether to show null flow</param>
+        /// <returns>list of taint or null flows</returns>
+        private List<string> toString(ref String script,Boolean nullFlow)
         {
             List<string> result = new List<string>();
             String thisPP = null;
+            if (!nullFlow && taint.allFalse()) return result;
+            if (nullFlow && !nullValue) return result;
             String thisScript = script;
 
             foreach (TaintInfo flow in possibleTaintFlows)
             {
                 String refscript = thisScript;  
-                List<String> flows = flow.toString(ref refscript);
+                List<String> flows = flow.toString(ref refscript,nullFlow);
                 thisPP = currentPointString(ref refscript);
                 foreach (String flowString in flows)
                 {
@@ -156,13 +166,15 @@ namespace Weverca.Taint
             StringBuilder thisPP = new StringBuilder();
             if (point != null && point.Partial != null)
             {
-                String newScript = "emptyscript";
-                if (point.OwningPPGraph.OwningScript != null) newScript = point.OwningPPGraph.OwningScript.FullName;
-                if (newScript != script)
+                if (point.OwningPPGraph.OwningScript != null)
                 {
-                    thisPP.AppendLine();
-                    thisPP.AppendLine("File: " + newScript);
-                    script = newScript;
+                    String newScript = point.OwningPPGraph.OwningScript.FullName;
+                    if (newScript != script)
+                    {
+                        thisPP.AppendLine();
+                        thisPP.AppendLine("File: " + newScript);
+                        script = newScript;
+                    }
                 }
                 thisPP.Append("-->");
                 thisPP.Append(" at position " + point.Partial.Position);
