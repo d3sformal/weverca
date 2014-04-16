@@ -186,8 +186,14 @@ namespace Weverca.Taint
                 String nullMessage = message;
                 if (message == "Eval shoudn't contain anything from user input")
                     nullMessage = "Eval shoudn't contain null";
-
-                createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true);
+                if (flags == null)
+                {
+                    createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true);
+                }
+                else foreach (FlagType flag in flags)
+                {
+                    createWarning(p, flag, nullMessage, taint, true);
+                }
             }
             if (flags == null)
             {
