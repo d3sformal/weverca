@@ -547,11 +547,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="index">The index.</param>
         private void addToMust(MemoryIndex index)
         {
-            if (!mayIndexesProcess.Contains(index))
+            if (!index.ContainsPrefix(mustIndexesProcess))
             {
-                mayIndexesProcess.Remove(index);
+                index.RemoveIndexesWithPrefix(mustIndexesProcess);
+                index.RemoveIndexesWithPrefix(mayIndexes);
+
+                mustIndexesProcess.Add(index);
             }
-            mustIndexesProcess.Add(index);
         }
 
         /// <summary>
@@ -561,7 +563,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <returns>True whether index in not in the collection of must indexes.</returns>
         private bool addToMay(MemoryIndex index)
         {
-            if (!mustIndexesProcess.Contains(index))
+            if (!mustIndexesProcess.Contains(index) && !index.ContainsPrefix(mustIndexesProcess))
             {
                 mayIndexesProcess.Add(index);
                 return true;

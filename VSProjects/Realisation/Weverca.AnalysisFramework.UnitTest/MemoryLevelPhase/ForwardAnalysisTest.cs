@@ -1660,8 +1660,40 @@ $x = GetLoginData();
 
 ".AssertVariable("").Analysis(Analyses.WevercaAnalysisTest);
 
+        readonly static TestCase CycledMayAliasArray_CASE = @"
+$arr[$_POST[1]] = &$alias;
+
+$arr2 = $arr;
+$arr2[1] = 1;
+$arr[$_POST[1]] = $arr2;
+
+$alias = array();
+$arr[1][1] = 1;
+
+".AssertVariable("").Analysis(Analyses.WevercaAnalysisTest);
+
+        readonly static TestCase NullReferenceErrorTest_CASE = @"
+$arr[$_POST[1]] = &$alias;
+$alias[1] = &$a[$_POST[1]];
+$alias = array();
+$arr[1][1] = 1;
+
+".AssertVariable("").Analysis(Analyses.WevercaAnalysisTest);
 
 
+
+
+        [TestMethod]
+        public void NullReferenceErrorTest()
+        {
+            AnalysisTestUtils.RunTestCase(NullReferenceErrorTest_CASE);
+        }
+
+        [TestMethod]
+        public void CycledMayAliasArray()
+        {
+            AnalysisTestUtils.RunTestCase(CycledMayAliasArray_CASE);
+        }
 
         [TestMethod]
         public void ReturnArray()

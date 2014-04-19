@@ -214,7 +214,17 @@ $str[0] = $x;
             .AssertVariable("str").HasTaintStatus(true)
             .Analysis(Analyses.WevercaAnalysisTest);
 
+        readonly static TestCase MayAliasTest_CASE = @"
+$alias = &$a[$_POST[1]];
+".AssertVariable("").Analysis(Analyses.WevercaAnalysisTest);
+
         #endregion Taint analysis
+
+        [TestMethod]
+        public void MayAliasTest()
+        {
+            AnalysisTestUtils.RunInfoLevelBackwardPropagationCase(MayAliasTest_CASE);
+        }
 
         // TODO test: get this test working
         //[TestMethod]

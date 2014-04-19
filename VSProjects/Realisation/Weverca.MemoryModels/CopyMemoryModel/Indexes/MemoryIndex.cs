@@ -277,6 +277,44 @@ namespace Weverca.MemoryModels.CopyMemoryModel
 
             return true;
         }
+
+        /// <summary>
+        /// Determines whether the specified collection of indexes contains prefix of this index.
+        /// </summary>
+        /// <param name="indexes">The collection of indexes.</param>
+        /// <returns>True if the specified collection of indexes contains the prefix; otherwise false.</returns>
+        internal bool ContainsPrefix(IEnumerable<MemoryIndex> indexes)
+        {
+            foreach (MemoryIndex index in indexes)
+            {
+                if (index.IsPrefixOf(this))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Removes the indexes from given collection with this index as prefix.
+        /// </summary>
+        /// <param name="indexes">The collection of indexes to remove from.</param>
+        internal void RemoveIndexesWithPrefix(ICollection<MemoryIndex> indexes)
+        {
+            List<MemoryIndex> toRemoveList = new List<MemoryIndex>();
+            foreach (MemoryIndex index in indexes)
+            {
+                if (this.IsPrefixOf(index))
+                {
+                    toRemoveList.Add(index);
+                }
+            }
+
+            foreach (MemoryIndex toRemove in toRemoveList)
+            {
+                indexes.Remove(toRemove);
+            }
+        }
     }
 
     /// <summary>

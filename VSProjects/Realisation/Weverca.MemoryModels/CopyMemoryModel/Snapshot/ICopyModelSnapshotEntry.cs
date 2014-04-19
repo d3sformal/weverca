@@ -133,8 +133,24 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// <param name="sourceIndex">Index of the source of data.</param>
         public AliasData(IEnumerable<MemoryIndex> mustIndexes, IEnumerable<MemoryIndex> mayIndexes, MemoryIndex sourceIndex)
         {
-            this.MayIndexes = mayIndexes;
-            this.MustIndexes = mustIndexes;
+            if (mustIndexes != null)
+            {
+                this.MustIndexes = mustIndexes;
+            }
+            else
+            {
+                this.MustIndexes = new MemoryIndex[] { };
+            }
+
+            if (mayIndexes != null)
+            {
+                this.MayIndexes = mayIndexes;
+            }
+            else
+            {
+                this.MayIndexes = new MemoryIndex[] { };
+            }
+
             this.SourceIndex = sourceIndex;
         }
 

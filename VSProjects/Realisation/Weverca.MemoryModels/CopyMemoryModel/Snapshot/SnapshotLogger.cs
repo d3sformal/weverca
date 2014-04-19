@@ -35,7 +35,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
             {
                 w.Write("\r\n\r\n");
-                w.WriteLine(snapshot.DumpSnapshotSimplified());
+                w.WriteLine(snapshot.ToString());
                 w.WriteLine("-------------------------------");
             }
 
