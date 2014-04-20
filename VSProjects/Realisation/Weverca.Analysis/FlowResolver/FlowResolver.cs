@@ -579,6 +579,9 @@ namespace Weverca.Analysis.FlowResolver
             if (other == this)
                 return true;
 
+			if (other == null)
+				return base.Equals(other);
+
             if (obj != null)
             {
                 if (this.blocks.Count != other.blocks.Count)

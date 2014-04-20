@@ -21,6 +21,17 @@ namespace Weverca.Taint
         public List<TaintInfo> possibleTaintFlows = new List<TaintInfo>();
         public bool nullValue = false;
 
+		/// <inheritdoc />
+		public override int GetHashCode ()
+		{
+			return 0;
+		}
+		
+		/// <inheritdoc />
+		public override bool Equals(Object obj) {
+			return true;
+		}
+
         /// <summary>
         /// Sanitizes the taint flows according to the provided flags. If all the taint flags are removed, 
         /// the flow is removed too. If there is no flow left, the variable is not tainted anymore

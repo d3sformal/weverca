@@ -110,5 +110,16 @@ namespace Weverca.AnalysisFramework.Memory
         {
             return new InfoValue<T>(Data);
         }
+
+		/// <inheritdoc />
+		public override int GetHashCode ()
+		{
+			return Data.GetHashCode();
+		}
+
+		/// <inheritdoc />
+		public override bool Equals(Object obj) {
+			return Data.Equals(obj);
+		}
     }
 }

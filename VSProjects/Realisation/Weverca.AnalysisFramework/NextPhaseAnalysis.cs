@@ -262,11 +262,19 @@ namespace Weverca.AnalysisFramework
 
         private void enqueue(ProgramPointBase point)
         {
-            if (!_workQueue.Contains(point))
+            if (!_workQueue.Contains(point) && !unreachable(point))
             {
                 _workQueue.Enqueue(point);
             }
         }
+
+		/// <summary>
+		/// Determine whether the specified program point is unreachable in the first phase.
+		/// </summary>
+		private bool unreachable(ProgramPointBase point) 
+		{
+			return (point.InSet == null) && (point.OutSet == null);
+		}
 
         #region Analysis direction handling
 
