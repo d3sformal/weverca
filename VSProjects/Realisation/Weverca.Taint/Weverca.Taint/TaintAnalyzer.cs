@@ -13,6 +13,7 @@ using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.Analysis.NativeAnalyzers;
 using Weverca.Analysis;
+using Weverca.MemoryModels.CopyMemoryModel;
 
 namespace Weverca.Taint
 {
@@ -47,23 +48,31 @@ namespace Weverca.Taint
             MemoryEntry argc = InputSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(Input);
             Input.SetMode(SnapshotMode.InfoLevel);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
-            List<MemoryEntry> arguments = new List<MemoryEntry>();
-            List<Value> argumentValues = new List<Value>();
+            
+            List<MemoryEntry> arguments = new List<MemoryEntry>(); 
+            List<ValueInfo> values = new List<ValueInfo>();
             bool nullValue = false;
+
             for (int i = 0; i < argumentCount; i++)
             {
                 arguments.Add(OutputSet.ReadVariable(Argument(i)).ReadMemory(OutputSet.Snapshot));
-                argumentValues.AddRange(arguments.Last().PossibleValues);
+                var varID = getVariableIdentifier(OutputSet.ReadVariable(Argument(i)));
+                List<Value> argumentValues = new List<Value>(arguments.Last().PossibleValues);
                 if (hasPossibleNullValue(OutputSet.ReadVariable(Argument(i)))) nullValue = true;
+                values.Add(new ValueInfo(argumentValues, varID));
             }
 
-            TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+            TaintInfo outputTaint = mergeTaint(values, nullValue);
             // try to sanitize the taint info
-            sanitize(p, ref outputTaint);
-            warningsReportingFunct(p, outputTaint);
+            if (outputTaint != null)
+            {
+                sanitize(p, ref outputTaint);
+                warningsReportingFunct(p, outputTaint);
+            }
 
-            // 2. Propagate arguments to the return value.
-            FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+                // 2. Propagate arguments to the return value.
+             FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+
         }
 
         /// <summary>
@@ -75,16 +84,18 @@ namespace Weverca.Taint
             _currentPoint = p;
             var count = p.Echo.Parameters.Count;
             List<ValuePoint> valpoints = new List<ValuePoint>(p.Parameters);
-            List<Value> argumentValues = new List<Value>();
+            List<ValueInfo> values = new List<ValueInfo>();
             bool nullValue = false;
 
             foreach (ValuePoint val in valpoints)
             {
-                argumentValues.AddRange(val.Value.ReadMemory(Output).PossibleValues);
-                nullValue |= hasPossibleNullValue(val.Value);
+                var varID = getVariableIdentifier(val.Value);
+                List<Value> argumentValues = new List<Value>(val.Value.ReadMemory(Output).PossibleValues);
+                values.Add(new ValueInfo(argumentValues, varID));
+;                nullValue |= hasPossibleNullValue(val.Value);
             }
 
-            TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+            TaintInfo outputTaint = mergeTaint(values, nullValue);
             createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty });
         }
 
@@ -99,10 +110,14 @@ namespace Weverca.Taint
             if (p is EvalExPoint)
             {
                 EvalExPoint pEval = p as EvalExPoint;
+
+                var varID = getVariableIdentifier(p.Value);
                 List<Value> argumentValues = new List<Value>(pEval.EvalCode.Value.ReadMemory(Output).PossibleValues);
+                List<ValueInfo> values = new List<ValueInfo>();
+                values.Add(new ValueInfo(argumentValues, varID));
                 bool nullValue = hasPossibleNullValue(pEval.EvalCode.Value);
 
-                TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+                TaintInfo outputTaint = mergeTaint(values, nullValue);
                 createWarnings(p, outputTaint, null, "Eval shoudn't contain anything from user input");
             }
         }
@@ -114,10 +129,14 @@ namespace Weverca.Taint
         public override void VisitInclude(IncludingExPoint p)
         {
             _currentPoint = p;
+
+            var varID = getVariableIdentifier(p.Value);
             List<Value> argumentValues = new List<Value>(p.IncludePath.Value.ReadMemory(Output).PossibleValues);
+            List<ValueInfo> values = new List<ValueInfo>();
+            values.Add(new ValueInfo(argumentValues, varID));
             bool nullValue = hasPossibleNullValue(p.IncludePath.Value);
 
-            TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
+            TaintInfo outputTaint = mergeTaint(values, nullValue);
             createWarnings(p, outputTaint, new List<FlagType>() { FlagType.FilePathDirty });           
 
         }
@@ -131,12 +150,14 @@ namespace Weverca.Taint
             _currentPoint = p;
             if (p.Expression.PublicOperation == Operations.Print)
             {
+                var varID = getVariableIdentifier(p.Operand.Value);
                 List<Value> argumentValues = new List<Value>(p.Operand.Value.ReadMemory(Output).PossibleValues);
-
+                List<ValueInfo> values = new List<ValueInfo>();
+                values.Add(new ValueInfo(argumentValues, varID));
                 bool nullValue = hasPossibleNullValue(p.Operand.Value);
 
-                TaintInfo outputTaint = mergeTaint(argumentValues, nullValue);
-                createWarnings(p, outputTaint, new List<FlagType>(){FlagType.HTMLDirty});           
+                TaintInfo outputTaint = mergeTaint(values, nullValue);
+                createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty });           
             }
         }
 
@@ -197,7 +218,7 @@ namespace Weverca.Taint
             }
             if (flags == null)
             {
-                if (taintInfo.taint.allFalse()) return;
+                if (!taintInfo.tainted) return;
                 String taint = taintInfo.print();
                 createWarning(p, FlagType.HTMLDirty, message, taint, false);
             }
@@ -244,13 +265,21 @@ namespace Weverca.Taint
         public override void VisitBinary(BinaryExPoint p)
         {
             _currentPoint = p;
-            List<Value> argumentValues = new List<Value>();
-            argumentValues.AddRange(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
-            argumentValues.AddRange(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
+
+            List<ValueInfo> values = new List<ValueInfo>();
+
+            var leftvarID = getVariableIdentifier(p.LeftOperand.Value);
+            List<Value> leftArgumentValues = new List<Value>(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
+            values.Add(new ValueInfo(leftArgumentValues, leftvarID));
+            
+            var rightvarID = getVariableIdentifier(p.RightOperand.Value);
+            List<Value> rightArgumentValues = new List<Value>(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
+            values.Add(new ValueInfo(rightArgumentValues, rightvarID));
 
             bool nullValue = hasPossibleNullValue(p.LeftOperand.Value) || hasPossibleNullValue(p.RightOperand.Value);
 
-            p.SetValueContent(new MemoryEntry(Output.CreateInfo(mergeTaint(argumentValues,nullValue))));
+            TaintInfo outputTaint = mergeTaint(values, nullValue);
+            p.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
         }
 
         /// <summary>
@@ -321,9 +350,12 @@ namespace Weverca.Taint
 
             var sourceTaint = getTaint(source);
 
+            var sourceVal = p.ROperand.Value.ReadMemory(Output);
+
             var finalPropagation = sourceTaint;
 
             setTaint(target, finalPropagation);
+            
         }
 
         /// <summary>
@@ -352,9 +384,13 @@ namespace Weverca.Taint
         /// <returns>the taint information of given entry</returns>
         private TaintInfo getTaint(ReadSnapshotEntryBase lValue)
         {
-            var info = lValue.ReadMemory(Output);
+            var varID = getVariableIdentifier(lValue);
+            List<Value> info = new List<Value>(lValue.ReadMemory(Output).PossibleValues);
 
-            return mergeTaint(info.PossibleValues,hasPossibleNullValue(lValue));
+            List<ValueInfo> values = new List<ValueInfo>();
+            values.Add(new ValueInfo(info, varID));
+
+            return mergeTaint(values,hasPossibleNullValue(lValue));
         }
 
         /// <summary>
@@ -363,47 +399,57 @@ namespace Weverca.Taint
         /// <param name="values">info values with taint information</param>
         /// <param name="nullValue">indicator of null flow</param>
         /// <returns>merged taint information</returns>
-        private TaintInfo mergeTaint(IEnumerable<Value> values, bool nullValue)
+        private TaintInfo mergeTaint(List<ValueInfo> values, bool nullValue)
         {
             TaintInfo info = new TaintInfo();
             info.point = _currentPoint;
             TaintPriority priority = new TaintPriority(true);
             //if _currentPoint is a BinaryExPoint, its priority is high whenever one of the values has high priority
-            if (values.Count() == 0 || _currentPoint is BinaryExPoint) priority.setAll(false);
+            if (_currentPoint is BinaryExPoint) priority.setAll(false);
             Taint taint = new Taint(false);
             bool existsNullFlow = false;
-            
-            foreach (var infoValue in values)
-            {         
-                if (infoValue is UndefinedValue)
+            bool existsFlow = false;
+            bool tainted = false;
+
+            foreach (var pair in values)
+            {
+                existsFlow |= (pair.values.Count > 0);
+                foreach (var infoValue in pair.values)
                 {
-                    continue;
+                    if (infoValue is UndefinedValue)
+                    {
+                        continue;
+                    }
+                    if (!(infoValue is InfoValue<TaintInfo>)) continue;
+                    TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
+                    existsNullFlow |= varInfo.nullValue;
+                    tainted |= varInfo.tainted;
+
+                    /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
+                    has a low priority. 
+                    If _currentPoint is BinaryExPoint, the priority is high whenever one of the values has
+                    a high priority */
+                    if (!(_currentPoint is BinaryExPoint)) priority.copyTaint(false, varInfo.priority);
+                    if (_currentPoint is BinaryExPoint) priority.copyTaint(true, varInfo.priority);
+
+                    taint.copyTaint(true, varInfo.taint);
+
+                    info.possibleTaintFlows.Add(new TaintFlow(varInfo, pair.variable));
                 }
-                if (!(infoValue is InfoValue<TaintInfo>)) continue;
-                TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
-                existsNullFlow |= varInfo.nullValue;
-               
-                /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
-                has a low priority. 
-                If _currentPoint is BinaryExPoint, the priority is high whenever one of the values has
-                a high priority */
-                if (!(_currentPoint is BinaryExPoint)) priority.copyTaint(false, varInfo.priority);
-                if (_currentPoint is BinaryExPoint) priority.copyTaint(true, varInfo.priority);
-
-                taint.copyTaint(true, varInfo.taint);
-
-                info.possibleTaintFlows.Add(varInfo);       
             }
 
             info.nullValue = existsNullFlow;
 
+            if (!existsFlow) priority.setAll(false);
+
             if (nullValue && !existsNullFlow)
             {
-                if (values.Count() == 0) priority.setAll(true);
+                if (!existsFlow) priority.setAll(true);
                 info.nullValue = true;
+                info.tainted = true;
             }
 
-            
+            info.tainted = tainted;
             info.priority = priority;
             info.taint = taint;
             return info;
@@ -457,6 +503,39 @@ namespace Weverca.Taint
             return nullValue;     
         }
 
+        /// <summary>
+        /// Returns the VariableIdentifier of given snapshot entry or null if it does not exist
+        /// </summary>
+        /// <param name="b">variable identifier or null</param>
+        /// <returns></returns>
+        private VariableIdentifier getVariableIdentifier(ReadSnapshotEntryBase b)
+        {
+            try 
+            {
+                return b.GetVariableIdentifier(Output);
+            }
+            catch (System.Exception e)
+            {
+                return null;
+            }
+
+        }
+
+    }
+
+    /// <summary>
+    /// Class for storing pairs of VariableIdentifiers and corresponding values
+    /// </summary>
+    class ValueInfo
+    {
+        public List<Value> values;
+        public VariableIdentifier variable;
+
+        public ValueInfo(List<Value> values, VariableIdentifier var)
+        {
+            this.values = values;
+            this.variable = var;
+        }
     }
 }
 

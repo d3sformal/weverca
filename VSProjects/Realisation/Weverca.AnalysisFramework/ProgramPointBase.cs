@@ -326,8 +326,8 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal void ResetInitialization()
         {
-			if (_inSet != null) _inSet.ResetInitialization();
-			if (_outSet != null) _outSet.ResetInitialization();
+            if (_inSet != null) _inSet.ResetInitialization();
+            if (_outSet != null) _outSet.ResetInitialization();
         }
 
         internal void SetServices(ForwardAnalysisServices services)

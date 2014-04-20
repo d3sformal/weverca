@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.ProgramPoints;
+using PHP.Core;
 
 namespace Weverca.Taint
 {    
@@ -18,19 +19,51 @@ namespace Weverca.Taint
         public ProgramPointBase point;
         public TaintPriority priority = new TaintPriority(false);
         public Taint taint = new Taint(false);
-        public List<TaintInfo> possibleTaintFlows = new List<TaintInfo>();
+        public bool tainted = false;
+        public List<TaintFlow> possibleTaintFlows = new List<TaintFlow>();
         public bool nullValue = false;
 
 		/// <inheritdoc />
 		public override int GetHashCode ()
 		{
-			return taint.GetHashCode();
+            int result = priority.GetHashCode() + taint.GetHashCode() +
+                tainted.GetHashCode() + possibleTaintFlows.GetHashCode() + nullValue.GetHashCode();
+            if (point != null) result += point.GetHashCode();
+            return result; 
 		}
 		
 		/// <inheritdoc />
 		public override bool Equals(Object obj) {
+            if (obj == null) return false;
+            if (!(obj is TaintInfo)) return false;
+            TaintInfo other = obj as TaintInfo;
+            if (point != null && other.point != null && point != other.point) return false;
+            if (!taint.equalTo(other.taint)) return false;
+            if (!priority.equalTo(other.priority)) return false;
+            if (nullValue != other.nullValue) return false;
+            if (tainted != other.tainted) return false;
+            return equalFlows(other.possibleTaintFlows);
 			return GetHashCode() == obj.GetHashCode();
 		}
+
+        /// <summary>
+        /// Checks whether the possible flows are equal to given list of TaintFlow
+        /// </summary>
+        /// <param name="other">list of TaintFlows to be compared</param>
+        /// <returns>true if they are equal</returns>
+        private bool equalFlows(List<TaintFlow> other)
+        {
+            if (possibleTaintFlows.Count != other.Count) return false;
+            foreach (TaintFlow flow in possibleTaintFlows)
+            {
+                if (!other.Contains(flow)) return false;
+            }
+            foreach (TaintFlow flow in other)
+            {
+                if (!possibleTaintFlows.Contains(flow)) return false;
+            }
+            return true;
+        }
 
         /// <summary>
         /// Sanitizes the taint flows according to the provided flags. If all the taint flags are removed, 
@@ -49,9 +82,37 @@ namespace Weverca.Taint
         /// <returns>string containing all taint flows</returns>
         public String print()
         {
+            return print(false);
+        }
+
+        /// <summary>
+        /// Returns a string containing all possible null flows
+        /// </summary>
+        /// <returns>string containing all null flows</returns>
+        public String printNullFlows()
+        {
+            return print(true);
+        }
+
+        private String print(bool nullFlow)
+        {
             String currentScript = "";
-            List<String> flows = this.toString(ref currentScript,false);
-            return print(flows);
+            List<String> resultFlows = new List<String>();
+
+            if (!nullFlow && !tainted) return print(resultFlows);
+            if (nullFlow && !nullValue) return print(resultFlows);
+
+            foreach (TaintFlow flow in possibleTaintFlows)
+            {
+                String refScript = currentScript;
+                List<String> flowAsStrings = flow.toString(ref refScript, nullFlow);
+                foreach (String flowAsString in flowAsStrings)
+                {
+                    String script = refScript;
+                    resultFlows.Add(flowAsString + currentPointString(ref script));
+                }
+            }
+            return print(resultFlows);
         }
 
         /// <summary>
@@ -62,19 +123,21 @@ namespace Weverca.Taint
         public String print(Analysis.FlagType flag)
         {
             String currentScript = "";
-            List<String> flows = this.toString(ref currentScript, flag);
-            return print(flows);
-        }
+            List<String> resultFlows = new List<String>();
 
-        /// <summary>
-        /// Returns a string containing all possible null flows
-        /// </summary>
-        /// <returns>string containing all null flows</returns>
-        public String printNullFlows()
-        {
-            String currentScript = "";
-            List<String> flows = this.toString(ref currentScript, true);
-            return print(flows);
+            if (!taint.get(flag)) return print(resultFlows);
+
+            foreach (TaintFlow flow in possibleTaintFlows)
+            {
+                String refScript = currentScript;
+                List<String> flowAsStrings = flow.toString(ref refScript, flag);
+                foreach (String flowAsString in flowAsStrings)
+                {
+                    String script = refScript;
+                    resultFlows.Add(flowAsString + currentPointString(ref script));
+                }
+            }
+            return print(resultFlows);
         }
 
         /// <summary>
@@ -102,15 +165,15 @@ namespace Weverca.Taint
         /// <param name="script">last script</param>
         /// <param name="nullFlow">determines whether to show null flow</param>
         /// <returns>list of taint or null flows</returns>
-        private List<string> toString(ref String script,Boolean nullFlow)
+       /* private List<string> toString(ref String script,Boolean nullFlow)
         {
             List<string> result = new List<string>();
             String thisPP = null;
-            if (!nullFlow && taint.allFalse()) return result;
+            if (!nullFlow && !tainted) return result;
             if (nullFlow && !nullValue) return result;
             String thisScript = script;
 
-            foreach (TaintInfo flow in possibleTaintFlows)
+            foreach (TaintFlow flow in possibleTaintFlows)
             {
                 String refscript = thisScript;  
                 List<String> flows = flow.toString(ref refscript,nullFlow);
@@ -130,7 +193,7 @@ namespace Weverca.Taint
             script = "";
             if (point != null && point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
             return result;
-        }
+        } */
 
         /// <summary>
         /// Gets a list of all taint flows determined by a flag
@@ -138,7 +201,7 @@ namespace Weverca.Taint
         /// <param name="script">last script</param>
         /// <param name="flag">flag determining the taint</param>
         /// <returnslist of taint flows></returns>
-        private List<String> toString(ref String script, Analysis.FlagType flag)
+        /*private List<String> toString(ref String script, Analysis.FlagType flag)
         {
             List<string> result = new List<string>();
             String thisPP = null;
@@ -166,13 +229,14 @@ namespace Weverca.Taint
             script = "";
             if (point != null && point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;  
             return result;
-        }
+        }*/
 
         /// <summary>
         /// Returns the current program point as a string
         /// </summary>
+        /// <param name="script">script from previous point</param>
         /// <returns>current program point as a string</returns>
-        private String currentPointString(ref String script)
+        public String currentPointString(ref String script)
         {
             StringBuilder thisPP = new StringBuilder();
             if (point != null && point.Partial != null)
@@ -192,8 +256,183 @@ namespace Weverca.Taint
             }
             return thisPP.ToString();
         }
+        
+        /// <summary>
+        /// Returns current point information along with variable names as a String
+        /// </summary>
+        /// <param name="script">script from previous point</param>
+        /// <param name="vars">variable names</param>
+        /// <returns>point information along with variable names as a String</returns>
+        public String printPoint(ref String script, VariableName[] vars)
+        {
+            StringBuilder thisPoint = new StringBuilder();
 
+            thisPoint.AppendLine(currentPointString(ref script));
+
+            thisPoint.Append("From: ");
+
+            int count = vars.Length;
+            for (int i = 0; i < count; i++)
+            {
+                thisPoint.Append(vars[i]);
+                if (i < count - 1) thisPoint.Append(", ");
+            }
+            thisPoint.AppendLine();
+            return thisPoint.ToString();
+        }
     }
+
+
+
+
+
+
+     public class TaintFlow
+     {
+         public TaintInfo flow;
+         public VariableIdentifier var;
+
+         public TaintFlow(TaintInfo info, VariableIdentifier varID)
+         {
+             flow = info;
+             var = varID;
+         }
+
+         /// <inheritdoc />
+         public override int GetHashCode()
+         {
+             int result = flow.GetHashCode();
+             if (var != null) result += var.GetHashCode();
+             return result;
+         }
+
+         /// <inheritdoc />
+         public override bool Equals(Object obj)
+         {
+             if (obj == null) return false;
+             if (!(obj is TaintFlow)) return false;
+             TaintFlow other = obj as TaintFlow;
+             if (var != null && other.var != null && !var.Equals(other.var)) return false;
+             if (!(flow.Equals(other.flow))) return false;
+             return true;
+         }
+
+         /// <summary>
+         /// Gets a list of all taint flows or null flows
+         /// </summary>
+         /// <param name="script">last script</param>
+         /// <param name="nullFlow">determines whether to show null flow</param>
+         /// <returns>list of taint or null flows</returns>
+         public List<string> toString(ref String script, Boolean nullFlow)
+         {
+             List<string> result = new List<string>();           
+             if (!nullFlow && !flow.tainted) return result;
+             if (nullFlow && !flow.nullValue) return result;
+
+             String thisScript = script;
+
+             foreach (TaintFlow childFlow in flow.possibleTaintFlows)
+             {
+                 String refscript = thisScript;
+                 List<String> flows = childFlow.toString(ref refscript, nullFlow);
+                 String thisPoint = getThisPoint(ref refscript);
+                 foreach (String flowString in flows)
+                 {
+                     result.Add(flowString + thisPoint);
+                 }
+             }
+
+             if (result.Count == 0)
+             {
+                 String refscript = thisScript;
+                 String thisPoint = getThisPoint(ref refscript);
+                 result.Add(thisPoint.ToString());
+             }
+
+             script = "";
+             if (flow.point != null && flow.point.OwningPPGraph.OwningScript != null) 
+                 script = flow.point.OwningPPGraph.OwningScript.FullName;
+             return result;
+         }
+
+
+         /// <summary>
+         /// Gets a list of all taint flows determined by a flag
+         /// </summary>
+         /// <param name="script">last script</param>
+         /// <param name="flag">flag determining the taint</param>
+         /// <returnslist of taint flows></returns>
+         public List<String> toString(ref String script, Analysis.FlagType flag)
+         {
+             List<string> result = new List<string>();          
+             if (!flow.taint.get(flag)) return result;
+             String thisScript = script;
+
+             foreach (TaintFlow childFlow in flow.possibleTaintFlows)
+             {
+                 String refscript = thisScript;
+                 List<String> flows = childFlow.toString(ref refscript, flag);
+                 String thisPoint = getThisPoint(ref refscript);
+                 foreach (String flowString in flows)
+                 {
+                     result.Add(flowString + thisPoint);
+                 }
+             }
+
+             if (result.Count == 0)
+             {
+                 String refscript = thisScript;
+                 String thisPoint = getThisPoint(ref refscript);
+                 result.Add(thisPoint);
+             }
+
+             script = "";
+             if (flow.point != null && flow.point.OwningPPGraph.OwningScript != null) 
+                 script = flow.point.OwningPPGraph.OwningScript.FullName;
+             return result;
+         }
+
+         /// <summary>
+         /// Returns current point as a string along with variable names
+         /// </summary>
+         /// <param name="script">script from previous point</param>
+         /// <returns>current point as a string along with variable names</returns>
+         private String getThisPoint(ref String script)
+         {
+             VariableName[] varNames;
+             if (var != null) varNames = var.PossibleNames;
+             else varNames = new VariableName[] { };
+             return flow.printPoint(ref script, varNames);    
+         }
+
+     }
+
+    /*public class OldTaintInfos
+    {
+        List<TaintInfo> infos = new List<TaintInfo>();
+
+        public bool contains(TaintInfo info)
+        {
+            foreach (TaintInfo oldInfo in infos)
+            {
+                if (oldInfo.equalTo(info)) return true;
+            }
+            return false;
+        }
+
+        public void add(TaintInfo t)
+        {
+            infos.Add(t);
+        }
+
+        public void add(OldTaintInfos other)
+        {
+            foreach (TaintInfo info in other.infos)
+            {
+                if (!contains(info)) add(info);
+            }
+        }
+    }*/
 
     /// <summary>
     /// Base class for HTML, SQL and FilePath indicators. Taint and TaintPriority classes are inherited from this.

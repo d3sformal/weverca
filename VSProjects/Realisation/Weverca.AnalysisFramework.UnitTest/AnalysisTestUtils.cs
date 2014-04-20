@@ -542,6 +542,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             if (values.Count() == 0) computedTaintStatus.priority.setAll(false);   
             foreach (var value in values)
             {
+                if (!(value is InfoValue<TaintInfo>)) continue;
                 TaintInfo valueTaintInfo = (value as InfoValue<TaintInfo>).Data;
                 TaintStatus valueTaintStatus = new TaintStatus(valueTaintInfo);
                 computedTaintStatus.tainted.copyTaint(true, valueTaintStatus.tainted);
@@ -560,6 +561,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             if (values.Count() == 0) computedTaintStatus.priority.setAll(false);
             foreach (var value in values)
             {
+                if (!(value is InfoValue<TaintInfo>)) continue;
                 TaintInfo valueTaintInfo = (value as InfoValue<TaintInfo>).Data;
                 TaintStatus valueTaintStatus = new TaintStatus(valueTaintInfo, flag);
                 computedTaintStatus.tainted.copyTaint(true, valueTaintStatus.tainted);

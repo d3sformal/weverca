@@ -63,11 +63,12 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         ".AssertVariable("x").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2 }))
         .AssertVariable("y").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 2, 3 }));
 
+        //TODO nefunguje
         readonly static TestCase TaintAnalysisMultipleNullFlows_CASE =
        @" $x = null;
         $y = $x;
         if ($_POST) {
-            $z = $x;
+           $z = $x;
         }
         else {
             $z = $y;
@@ -88,6 +89,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         // Tests weak updates
         // weak because of indirect variable accesses
         // weak because of aliasing
+        //TODO nefunguje
         readonly static TestCase TaintAnalysisArraysAliasesWeakUpdates_CASE =
         @" $any = $_POST;
         $x = $_POST;
@@ -371,8 +373,9 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             List<List<int>> result = new List<List<int>>();
             if (info.point == null || info.point.Partial == null || (info.taint.allFalse() && !info.nullValue)) return result;
             int firstLine = info.point.Partial.Position.FirstLine;
-            foreach (TaintInfo flow in info.possibleTaintFlows)
+            foreach (TaintFlow flowPair in info.possibleTaintFlows)
             {
+                var flow = flowPair.flow;
                 List<List<int>> flows = getLines(flow);
                 foreach (List<int> oneFlow in flows)
                 {
@@ -398,8 +401,9 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             if ((!info.taint.get(flag) && !info.nullValue) || info.point == null || info.point.Partial == null) return result;
             int firstLine = info.point.Partial.Position.FirstLine;
             if (info.possibleTaintFlows.Count == 0) result.Add(new List<int>() { firstLine });
-            foreach (TaintInfo flow in info.possibleTaintFlows)
+            foreach (TaintFlow flowPair in info.possibleTaintFlows)
             {
+                var flow = flowPair.flow;
                 if (!flow.taint.get(flag)) continue;
                 List<List<int>> flows = getLines(flow);
                 foreach (List<int> oneFlow in flows)

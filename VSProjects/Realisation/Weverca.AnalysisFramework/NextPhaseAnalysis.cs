@@ -125,6 +125,8 @@ namespace Weverca.AnalysisFramework
             {
                 var point = _workQueue.Dequeue();
 
+                if (point.InSet == null) continue;
+
                 extendInput(point);
 
                 flowThrough(point);

@@ -51,6 +51,7 @@ namespace Weverca.Taint
             TaintInfo taint = new TaintInfo();
             taint.taint = new Taint(true);
             taint.priority = new TaintPriority(true);
+            taint.tainted = true;
 
             var Taint = outSet.CreateInfo(taint);
 

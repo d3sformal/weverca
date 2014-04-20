@@ -288,7 +288,6 @@ namespace Weverca
 
                     try
                     {
-
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
@@ -300,8 +299,6 @@ namespace Weverca
                         Console.WriteLine("Analysis warnings:");
                         PrintWarnings(AnalysisWarningHandler.GetWarnings());
 
-                        /*Console.WriteLine("Security warnings:");
-                        PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());*/
 
                         Console.WriteLine("Security warnings with taint flow:");
                         PrintTaintWarnings(nextPhase.analysisTaintWarnings);
@@ -453,8 +450,16 @@ namespace Weverca
             }
             Console.WriteLine("Point information:");
 
-            if (outset && p.OutSet != null) Console.WriteLine(p.OutSet.Representation);
-            if (!outset && p.InSet != null) Console.WriteLine(p.InSet.Representation);
+            if (outset)
+            {
+                if (p.OutSet != null) Console.WriteLine(p.OutSet.Representation);
+                else Console.WriteLine("Dead code");
+            }
+            if (!outset)
+            {
+                if (p.InSet != null) Console.WriteLine(p.InSet.Representation);
+                else Console.WriteLine("Dead code");
+            }
         }
 
         private static void writeExtension(ExtensionPoint point, ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
