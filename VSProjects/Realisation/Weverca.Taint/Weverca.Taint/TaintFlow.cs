@@ -24,12 +24,12 @@ namespace Weverca.Taint
 		/// <inheritdoc />
 		public override int GetHashCode ()
 		{
-			return 0;
+			return taint.GetHashCode();
 		}
 		
 		/// <inheritdoc />
 		public override bool Equals(Object obj) {
-			return true;
+			return GetHashCode() == obj.GetHashCode();
 		}
 
         /// <summary>
@@ -204,12 +204,16 @@ namespace Weverca.Taint
         protected bool SQL = false;
         protected bool FilePath = false;
 
+		private int hashCode;
+
         /// <summary>
         /// This constructor initializes all field to the one specific value.
         /// </summary>
         /// <param name="initial">boolean initializer</param>
         public Indicator(bool initial)
         {
+			if (initial) hashCode = 3;
+			else hashCode = 0;
             setAll(initial); 
         }
 
@@ -224,6 +228,11 @@ namespace Weverca.Taint
             this.HTML = HTML;
             this.SQL = SQL;
             this.FilePath = FilePath;
+
+			hashCode = 0;
+			if (HTML) hashCode++;
+			if (SQL) hashCode++;
+			if (FilePath) hashCode++;
         }
 
         public bool getHTMLtaint() { return HTML; }
@@ -232,6 +241,23 @@ namespace Weverca.Taint
         public void setSQLtaint(bool b) { SQL = b; }
         public bool getFilePathtaint() { return FilePath; }
         public void setFilePathtaint(bool b) { FilePath = b; }
+
+		/// <inheritdoc />
+		public override bool Equals (object obj)
+		{
+			return GetHashCode() == obj.GetHashCode();
+		}
+
+		/// <inheritdoc />
+		public override int GetHashCode ()
+		{
+			//return hashCode;
+			int code = 0;
+			if (HTML) code++;
+			if (SQL) code++;
+			if (FilePath) code++;
+			return code;
+		}
 
         /// <summary>
         /// Returns true if all the indicators are true
