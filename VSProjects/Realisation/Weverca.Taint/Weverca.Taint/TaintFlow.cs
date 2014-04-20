@@ -26,15 +26,16 @@ namespace Weverca.Taint
 		/// <inheritdoc />
 		public override int GetHashCode ()
 		{
-            int result = priority.GetHashCode() + taint.GetHashCode() +
-                tainted.GetHashCode() + possibleTaintFlows.GetHashCode() + nullValue.GetHashCode();
+            /*int result = priority.GetHashCode() + taint.GetHashCode() +
+                tainted.GetHashCode() /*+ possibleTaintFlows.GetHashCode()*/ /*+ nullValue.GetHashCode();
             if (point != null) result += point.GetHashCode();
-            return result; 
+            return result; */
+            return taint.GetHashCode();
 		}
 		
 		/// <inheritdoc />
 		public override bool Equals(Object obj) {
-            if (obj == null) return false;
+            /*if (obj == null) return false;
             if (!(obj is TaintInfo)) return false;
             TaintInfo other = obj as TaintInfo;
             if (point != null && other.point != null && point != other.point) return false;
@@ -42,7 +43,8 @@ namespace Weverca.Taint
             if (!priority.equalTo(other.priority)) return false;
             if (nullValue != other.nullValue) return false;
             if (tainted != other.tainted) return false;
-            return equalFlows(other.possibleTaintFlows);
+            return true;*/
+            //return equalFlows(other.possibleTaintFlows);
 			return GetHashCode() == obj.GetHashCode();
 		}
 
