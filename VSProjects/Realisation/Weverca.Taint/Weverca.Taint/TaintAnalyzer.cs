@@ -439,6 +439,7 @@ namespace Weverca.Taint
             }
 
             info.nullValue = existsNullFlow;
+            info.tainted = tainted;
 
             if (!existsFlow) priority.setAll(false);
 
@@ -449,7 +450,6 @@ namespace Weverca.Taint
                 info.tainted = true;
             }
 
-            info.tainted = tainted;
             info.priority = priority;
             info.taint = taint;
             return info;

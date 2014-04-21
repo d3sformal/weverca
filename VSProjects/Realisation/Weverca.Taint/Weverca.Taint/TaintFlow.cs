@@ -25,47 +25,21 @@ namespace Weverca.Taint
 
 		/// <inheritdoc />
 		public override int GetHashCode ()
-		{
-            /*int result = priority.GetHashCode() + taint.GetHashCode() +
-                tainted.GetHashCode() /*+ possibleTaintFlows.GetHashCode()*/ /*+ nullValue.GetHashCode();
-            if (point != null) result += point.GetHashCode();
-            return result; */
-            return taint.GetHashCode();
+		{         
+            if (!tainted) return tainted.GetHashCode();
+            int flowHashCode = 0;
+            foreach (TaintFlow flow in possibleTaintFlows)
+            {
+                flowHashCode += flow.GetHashCode();
+            }
+            return priority.GetHashCode() + taint.GetHashCode() + tainted.GetHashCode() + nullValue.GetHashCode() + flowHashCode;
 		}
 		
 		/// <inheritdoc />
 		public override bool Equals(Object obj) {
-            /*if (obj == null) return false;
-            if (!(obj is TaintInfo)) return false;
-            TaintInfo other = obj as TaintInfo;
-            if (point != null && other.point != null && point != other.point) return false;
-            if (!taint.equalTo(other.taint)) return false;
-            if (!priority.equalTo(other.priority)) return false;
-            if (nullValue != other.nullValue) return false;
-            if (tainted != other.tainted) return false;
-            return true;*/
-            //return equalFlows(other.possibleTaintFlows);
-			return GetHashCode() == obj.GetHashCode();
+            bool result = GetHashCode() == obj.GetHashCode();
+            return result;
 		}
-
-        /// <summary>
-        /// Checks whether the possible flows are equal to given list of TaintFlow
-        /// </summary>
-        /// <param name="other">list of TaintFlows to be compared</param>
-        /// <returns>true if they are equal</returns>
-        private bool equalFlows(List<TaintFlow> other)
-        {
-            if (possibleTaintFlows.Count != other.Count) return false;
-            foreach (TaintFlow flow in possibleTaintFlows)
-            {
-                if (!other.Contains(flow)) return false;
-            }
-            foreach (TaintFlow flow in other)
-            {
-                if (!possibleTaintFlows.Contains(flow)) return false;
-            }
-            return true;
-        }
 
         /// <summary>
         /// Sanitizes the taint flows according to the provided flags. If all the taint flags are removed, 
@@ -162,78 +136,6 @@ namespace Weverca.Taint
         }
 
         /// <summary>
-        /// Gets a list of all taint flows or null flows
-        /// </summary>
-        /// <param name="script">last script</param>
-        /// <param name="nullFlow">determines whether to show null flow</param>
-        /// <returns>list of taint or null flows</returns>
-       /* private List<string> toString(ref String script,Boolean nullFlow)
-        {
-            List<string> result = new List<string>();
-            String thisPP = null;
-            if (!nullFlow && !tainted) return result;
-            if (nullFlow && !nullValue) return result;
-            String thisScript = script;
-
-            foreach (TaintFlow flow in possibleTaintFlows)
-            {
-                String refscript = thisScript;  
-                List<String> flows = flow.toString(ref refscript,nullFlow);
-                thisPP = currentPointString(ref refscript);
-                foreach (String flowString in flows)
-                {
-                    result.Add(flowString + thisPP);
-                }
-            }
-
-            if (result.Count == 0)
-            {
-                String refscript = thisScript;
-                thisPP = currentPointString(ref refscript);
-                result.Add(thisPP);
-            }
-            script = "";
-            if (point != null && point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;
-            return result;
-        } */
-
-        /// <summary>
-        /// Gets a list of all taint flows determined by a flag
-        /// </summary>
-        /// <param name="script">last script</param>
-        /// <param name="flag">flag determining the taint</param>
-        /// <returnslist of taint flows></returns>
-        /*private List<String> toString(ref String script, Analysis.FlagType flag)
-        {
-            List<string> result = new List<string>();
-            String thisPP = null;
-            if (!taint.get(flag)) return result;
-            String thisScript = script;
-
-            foreach (TaintInfo flow in possibleTaintFlows)
-            {
-                String refscript = thisScript;
-                List<String> flows = flow.toString(ref refscript, flag);
-                thisPP = currentPointString(ref refscript);
-                foreach (String flowString in flows)
-                {
-                    result.Add(flowString + thisPP);
-                }
-            }
-
-            if (result.Count == 0)
-            {
-                String refscript = thisScript;
-                thisPP = currentPointString(ref refscript);
-                result.Add(thisPP);
-            }
-
-            script = "";
-            if (point != null && point.OwningPPGraph.OwningScript != null) script = point.OwningPPGraph.OwningScript.FullName;  
-            return result;
-        }*/
-
-        /// <summary>
         /// Returns the current program point as a string
         /// </summary>
         /// <param name="script">script from previous point</param>
@@ -304,19 +206,18 @@ namespace Weverca.Taint
          public override int GetHashCode()
          {
              int result = flow.GetHashCode();
-             if (var != null) result += var.GetHashCode();
              return result;
          }
 
          /// <inheritdoc />
          public override bool Equals(Object obj)
          {
-             if (obj == null) return false;
+             /*if (obj == null) return false;
              if (!(obj is TaintFlow)) return false;
              TaintFlow other = obj as TaintFlow;
              if (var != null && other.var != null && !var.Equals(other.var)) return false;
-             if (!(flow.Equals(other.flow))) return false;
-             return true;
+             if (!(flow.Equals(other.flow))) return false;*/
+             return GetHashCode() == obj.GetHashCode();
          }
 
          /// <summary>
@@ -408,33 +309,6 @@ namespace Weverca.Taint
          }
 
      }
-
-    /*public class OldTaintInfos
-    {
-        List<TaintInfo> infos = new List<TaintInfo>();
-
-        public bool contains(TaintInfo info)
-        {
-            foreach (TaintInfo oldInfo in infos)
-            {
-                if (oldInfo.equalTo(info)) return true;
-            }
-            return false;
-        }
-
-        public void add(TaintInfo t)
-        {
-            infos.Add(t);
-        }
-
-        public void add(OldTaintInfos other)
-        {
-            foreach (TaintInfo info in other.infos)
-            {
-                if (!contains(info)) add(info);
-            }
-        }
-    }*/
 
     /// <summary>
     /// Base class for HTML, SQL and FilePath indicators. Taint and TaintPriority classes are inherited from this.
