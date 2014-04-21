@@ -17,15 +17,6 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         @" $b = $_POST;
         ".AssertVariable("b").HasTaintStatus(new TaintStatus(true, true, new List<int> { 2 }));
 
-        /* NOT WORKING - arrays
-         * readonly static TestCase TaintAnalysisArraysAliases_CASE =
-         @" $b[1] = 1;
-        $a = &$b[1];
-        $b[1] = $_POST;
-        ".AssertVariable("_POST").HasTaintStatus(new TaintStatus(true, true))
-          .AssertVariable("b[1]").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 4 }))
-          .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 3, 4 }));*/
-
 
         readonly static TestCase TaintAnalysisArraysAliases2_CASE =
         @" $c[1] = &$b;
@@ -126,7 +117,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         .AssertVariable("x").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3 }))
         .AssertVariable("v").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 25 }))
         .AssertVariable("w").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 25 }))
-        .AssertVariable("p").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 7 }, new List<int>() { 3, 8 }))
+        .AssertVariable("p").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 7 }))
         .AssertVariable("q").HasTaintStatus(new TaintStatus(false, false))
         .AssertVariable("s").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 31 }))
         .AssertVariable("r").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 31 }));
@@ -222,21 +213,57 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             ".AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }, new List<int>() { 2, 5, 5 }), Analysis.FlagType.HTMLDirty)
              .AssertVariable("y").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 2, 3 }), Analysis.FlagType.SQLDirty);
 
+        readonly static TestCase TaintAnalysisSimpleCycle_CASE =
+        @" $a = $_POST;
+        $i = 1;
+        while ($i <= 2) {
+            $c = $b;
+            $b = $a;
+            $i++;
+        }
+            ".AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 6, 5 }))
+            .AssertVariable("b").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 6 }));
+
+        readonly static TestCase TaintAnalysisCycle_CASE =
+        @" $a = $_POST;
+        $i = 1;
+        while ($i <= 4) {
+            if ($_POST){
+                $x = $d;
+            }
+            else{
+                $x = $c;
+            }
+            $d = $c;
+            $c = $b;
+            $b = $a;
+            $i++;
+        }
+            ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12, 11, 6 }, new List<int>() { 2, 13, 12, 9 }))
+            .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12 }))
+            .AssertVariable("d").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12, 11 }));
+
+        //TODO not working - exception: "Snapshot structure is locked in this mode. Mode: InfoLevel" 
+        readonly static TestCase TaintAnalysisFunctionCallInCycle_CASE =
+        @" function f($x) {          
+            return $x;
+        }
+        $x = $_POST;
+        $i = 1;
+        while ($i <= 4) {
+            $a = f($x);
+            $i++;
+        }
+            ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8}));
    
+
+
         [TestMethod]
         public void TaintAnalysisBasic()
         {
             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisBasic_CASE, false);
         }
-
-        
-        /*[TestMethod]
-        public void TaintAnalysisArraysAliases()
-        {
-            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisArraysAliases_CASE, false);
-        }*/
       
-
         [TestMethod]
         public void TaintAnalysisArraysAliases2()
         {
@@ -328,6 +355,26 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         {
             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisWeakSanitizers_CASE, false);
         }
+
+         [TestMethod]
+        public void TaintAnalysisSimpleCycle()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisSimpleCycle_CASE, false);
+        }
+
+         [TestMethod]
+         public void TaintAnalysisCycle()
+         {
+             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisCycle_CASE, false);
+         }
+
+         [TestMethod]
+         public void TaintAnalysisFunctionCallInCycle()
+         {
+             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisFunctionCallInCycle_CASE, false);
+         }
+        
+        
     }
 
     /// <summary>
