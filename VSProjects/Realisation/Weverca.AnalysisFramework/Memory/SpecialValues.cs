@@ -114,12 +114,17 @@ namespace Weverca.AnalysisFramework.Memory
 		/// <inheritdoc />
 		public override int GetHashCode ()
 		{
-			return Data.GetHashCode();
+			return base.getHashCode();
+			//return Data.GetHashCode();
 		}
 
 		/// <inheritdoc />
 		public override bool Equals(Object obj) {
-			return Data.Equals(obj);
+			if (this == obj) return true;
+			var info = obj as InfoValue;
+			return equals(info);
+			//return base.Equals(obj);
+			//return Data.Equals(obj);
 		}
     }
 }
