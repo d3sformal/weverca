@@ -117,7 +117,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         .AssertVariable("x").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3 }))
         .AssertVariable("v").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 25 }))
         .AssertVariable("w").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 25 }))
-        .AssertVariable("p").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 7 }))
+        .AssertVariable("p").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 7 }, new List<int>() { 3, 8 }))
         .AssertVariable("q").HasTaintStatus(new TaintStatus(false, false))
         .AssertVariable("s").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 31 }))
         .AssertVariable("r").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 31 }));
@@ -243,7 +243,6 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12 }))
             .AssertVariable("d").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12, 11 }));
 
-        //TODO not working - exception: "Snapshot structure is locked in this mode. Mode: InfoLevel" 
         readonly static TestCase TaintAnalysisFunctionCallInCycle_CASE =
         @" function f($x) {          
             return $x;
@@ -255,6 +254,13 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             $i++;
         }
             ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8}));
+
+        readonly static TestCase TaintAnalysisConditionalAssign_CASE =
+        @" $a = $_POST;
+        $b = $a;
+        $x = ($_POST) ? $a : $b;
+            ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 4, 4 }, new List<int>() { 2, 3, 4, 4 }));
+
    
 
 
@@ -373,6 +379,13 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
          {
              AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisFunctionCallInCycle_CASE, false);
          }
+
+        [TestMethod]
+         public void TaintAnalysisConditionalAssign()
+         {
+             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisConditionalAssign_CASE, false);
+         }
+        
         
         
     }

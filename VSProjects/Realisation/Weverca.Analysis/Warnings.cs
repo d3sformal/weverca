@@ -473,7 +473,7 @@ namespace Weverca.Analysis
         public override int GetHashCode()
         {
             return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
-                + Flag.GetHashCode() + ProgramPoint.OwningPPGraph.GetHashCode();
+                + Flag.GetHashCode() + ProgramPoint.OwningPPGraph.GetHashCode() + TaintFlow.GetHashCode();
         }
 
         /// <inheritdoc />
@@ -492,7 +492,8 @@ namespace Weverca.Analysis
             return (other.Message == Message)
                 && (other.LangElement.Position.FirstOffset == LangElement.Position.FirstOffset)
                 && other.FullFileName == this.FullFileName
-                && (other.Flag == Flag);
+                && (other.Flag == Flag)
+                && (other.TaintFlow == TaintFlow);
         }
 
     }

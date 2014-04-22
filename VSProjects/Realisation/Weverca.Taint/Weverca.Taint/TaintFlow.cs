@@ -23,6 +23,16 @@ namespace Weverca.Taint
         public List<TaintFlow> possibleTaintFlows = new List<TaintFlow>();
         public bool nullValue = false;
 
+        public override string ToString()
+        {
+            StringBuilder result = new StringBuilder();
+            if (taint.getHTMLtaint()) result.Append("HTML dirty,");
+            if (taint.getSQLtaint()) result.Append("SQL dirty,");
+            if (taint.getFilePathtaint()) result.Append("File path dirty,");
+            if (nullValue) result.Append("Possible null value,");
+            return result.ToString();
+        }
+
 		/// <inheritdoc />
 		public override int GetHashCode ()
 		{         
@@ -32,7 +42,9 @@ namespace Weverca.Taint
             {
                 flowHashCode += flow.GetHashCode();
             }
-            return priority.GetHashCode() + taint.GetHashCode() + tainted.GetHashCode() + nullValue.GetHashCode() + flowHashCode;
+            int pointHashCode = 0;
+            if (point != null) pointHashCode = point.GetHashCode();
+            return priority.GetHashCode() + taint.GetHashCode() + tainted.GetHashCode() + nullValue.GetHashCode() + flowHashCode + pointHashCode;
 		}
 		
 		/// <inheritdoc />

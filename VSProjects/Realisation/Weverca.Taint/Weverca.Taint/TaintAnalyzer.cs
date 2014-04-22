@@ -335,6 +335,60 @@ namespace Weverca.Taint
         }
 
         /// <summary>
+        /// Visits a ConditionalExPoint point and propagates the taint
+        /// </summary>
+        /// <param name="p">point to visit</param>
+        public override void VisitValue(ValuePoint p)
+        {
+            _currentPoint = p;
+            if (p is ConditionalExPoint)
+            {
+                
+                var pEx = p as ConditionalExPoint;
+                var possibleValues = pEx.Condition.Value.ReadMemory(Output).PossibleValues;
+
+                var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
+                List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
+                    
+
+                var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
+                List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
+                    
+                if (pEx.TrueAssume.Assumed && pEx.FalseAssume.Assumed)
+                {
+                    //merge taint info from both branches
+                    List<ValueInfo> values = new List<ValueInfo>();  
+                    values.Add(new ValueInfo(trueValues, truevarID));
+                    values.Add(new ValueInfo(falseValues, falsevarID));
+                    bool nullValue = hasPossibleNullValue(pEx.TrueOperand.Value) || hasPossibleNullValue(pEx.FalseOperand.Value);
+
+                    TaintInfo outputTaint = mergeTaint(values, nullValue);
+                    pEx.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
+                }
+                else if (pEx.TrueAssume.Assumed)
+                {
+                    //only true value is used
+                    List<ValueInfo> values = new List<ValueInfo>();  
+                    values.Add(new ValueInfo(trueValues, truevarID));
+                    bool nullValue = hasPossibleNullValue(pEx.TrueOperand.Value);
+
+                    TaintInfo outputTaint = mergeTaint(values, nullValue);
+                    pEx.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
+                }
+                else
+                {
+                    //only false value is used
+                    List<ValueInfo> values = new List<ValueInfo>();  
+                    values.Add(new ValueInfo(falseValues, falsevarID));
+                    bool nullValue = hasPossibleNullValue(pEx.FalseOperand.Value);
+
+                    TaintInfo outputTaint = mergeTaint(values, nullValue);
+                    pEx.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
+                }
+            }
+        }
+
+        /// <summary>
         /// Visits an assign point and propagates the taint to the assigned operand
         /// </summary>
         /// <param name="p">point to visit</param>

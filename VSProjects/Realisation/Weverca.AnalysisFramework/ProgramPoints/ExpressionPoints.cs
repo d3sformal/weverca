@@ -323,6 +323,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             visitor.VisitConditional(this);
         }
+
+        /// <summary>
+        /// Set content of Value
+        /// </summary>
+        /// <param name="valueContent">Content of value</param>
+        public void SetValueContent(MemoryEntry valueContent)
+        {
+            Value = OutSet.CreateSnapshotEntry(valueContent);
+        }
     }
 
     /// <summary>
