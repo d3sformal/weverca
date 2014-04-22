@@ -219,7 +219,8 @@ namespace Weverca.AnalysisFramework
             foreach (var input in inputs)
             {
                 var outSet = GetOutSet(input);
-                inputSets.Add(outSet);
+				if (outSet != null)
+                	inputSets.Add(outSet);
             }
 
             inSet.StartTransaction();
