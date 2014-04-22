@@ -264,12 +264,12 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Assume point for true operand
         /// </summary>
-        private readonly AssumePoint _trueAssume;
+		public readonly AssumePoint TrueAssume;
 
         /// <summary>
         /// Assume point for false operand
         /// </summary>
-        private readonly AssumePoint _falseAssume;
+		public readonly AssumePoint FalseAssume;
 
         /// <inheritdoc />
         public override LangElement Partial { get { return Expression; } }
@@ -287,8 +287,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             Expression = expression;
             Condition = condition;
-            _trueAssume = trueAssume;
-            _falseAssume = falseAssume;
+            TrueAssume = trueAssume;
+            FalseAssume = falseAssume;
 
             TrueOperand = trueOperand;
             FalseOperand = falseOperand;
@@ -297,7 +297,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            if (_trueAssume.Assumed && _falseAssume.Assumed)
+            if (TrueAssume.Assumed && FalseAssume.Assumed)
             {
                 //merge result from both branches
                 var trueVal = TrueOperand.Value.ReadMemory(OutSnapshot);
@@ -306,7 +306,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
                 var merged = MemoryEntry.Merge(trueVal, falseVal);
                 Value = OutSnapshot.CreateSnapshotEntry(merged);
             }
-            else if (_trueAssume.Assumed)
+            else if (TrueAssume.Assumed)
             {
                 //only true value is used
                 Value = TrueOperand.Value;
