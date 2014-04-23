@@ -24,7 +24,7 @@ namespace Weverca.AnalysisFramework
         public readonly VariableIdentifier CatchVariable;
 
         /// <summary>
-        /// Program point where
+		/// Program point where to jump
         /// </summary>
         public readonly ProgramPointBase TargetPoint;
 

@@ -227,6 +227,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public readonly ProgramPointBase Caller;
 
+		/// <summary>
+		/// Gets arguments used for this call branch.
+		/// NOTE:
+		///     Default arguments are set by framework (you can override them)
+		/// </summary>
+		public IEnumerable<ValuePoint> Arguments { get {
+				var caller = Caller as RCallPoint;
+				if (caller != null)
+					return caller.Arguments;
+				else
+					return null;
+					} }
+
         /// <inheritdoc />
         public override ProgramPointGraph OwningPPGraph
         {

@@ -474,10 +474,9 @@ namespace Weverca.Analysis
                 //function
                 IncreaseStackSize(caller.OutSet);
 
-                var declaration = extensionGraph.SourceObject;
-                var signature = getSignature(declaration);
-                var hasNamedSignature = signature.HasValue;
+				var declaration = extensionGraph.SourceObject;
 
+				// if this is method, write the name of its class to control variable
                 if (declaration != null && methodToClass.ContainsKey(declaration))
                 {
                     QualifiedName calledClass = methodToClass[declaration];
@@ -485,16 +484,19 @@ namespace Weverca.Analysis
                     OutSet.GetLocalControlVariable(calledObjectTypeName).WriteMemory(OutSet.Snapshot, types);
                 }
 
-                if (hasNamedSignature)
-                {
-                    // We have names for passed arguments
-                    setNamedArguments(OutSet, arguments, signature.Value);
-                }
-                else
-                {
-                    // There are no names - use numbered arguments
-                    setOrderedArguments(OutSet, declaration, arguments);
-                }
+				var signature = getSignature(declaration);
+				var hasNamedSignature = signature.HasValue;
+				var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
+				if (callPoint != null) 
+				{
+					if (hasNamedSignature) {
+						// We have names for passed arguments
+						setNamedArguments (OutSet, callPoint, arguments, signature.Value);
+					} else {
+						// There are no names - use numbered arguments
+						setOrderedArguments (OutSet, callPoint, declaration, arguments);
+					}
+				}
 
                 //superglobal variables
                 OutSet.FetchFromGlobal(new VariableName("GLOBALS"));
@@ -1110,15 +1112,8 @@ namespace Weverca.Analysis
             return objectValues;
         }
 
-        private void setNamedArguments(FlowOutputSet callInput, MemoryEntry[] arguments, Signature signature)
+		private void setNamedArguments(FlowOutputSet callInput, RCallPoint callPoint, MemoryEntry[] arguments, Signature signature)
         {
-
-            var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
-
-            if (callPoint == null)
-            {
-                return;
-            }
             var callSignature = callPoint.CallSignature;
             var enumerator = callPoint.Arguments.GetEnumerator();
             int argMin = signature.FormalParams.Count;
@@ -1187,14 +1182,13 @@ namespace Weverca.Analysis
 
         }
 
-        private void setOrderedArguments(FlowOutputSet callInput, LangElement declaration, MemoryEntry[] arguments)
+		private void setOrderedArguments(FlowOutputSet callInput, RCallPoint callPoint, LangElement declaration, MemoryEntry[] arguments)
         {
             var argCount = new MemoryEntry(callInput.CreateInt(arguments.Length));
             var argCountEntry = callInput.GetVariable(new VariableIdentifier(".argument_count"));
             argCountEntry.WriteMemory(callInput.Snapshot, argCount);
 
             var index = 0;
-            var callPoint = (Flow.CurrentProgramPoint as ExtensionPoint).Caller as RCallPoint;
             foreach (var arg in callPoint.Arguments)
             {
                 var argVar = argument(index);

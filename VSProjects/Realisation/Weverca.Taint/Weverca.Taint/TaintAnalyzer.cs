@@ -284,58 +284,6 @@ namespace Weverca.Taint
         }
 
         /// <summary>
-        /// Visits an extension sink point
-        /// </summary>
-        /// <param name="p">point to visit</param>
-        public override void VisitExtensionSink(ExtensionSinkPoint p)
-        {
-            _currentPoint = p;
-            var ends = p.OwningExtension.Branches.Select(c => c.Graph.End.OutSet).ToArray();
-            OutputSet.MergeWithCallLevel(ends);
-
-            p.ResolveReturnValue();
-        }
-
-        /// <summary>
-        /// Visits an extension point and propagates the taint
-        /// </summary>
-        /// <param name="p">point to visit</param>
-        public override void VisitExtension(ExtensionPoint p)
-        {
-            _currentPoint = p;
-            //TODO resolve caller properly
-            var callPoint = p.Caller as FunctionCallPoint;
-            var decl = p.Graph.SourceObject as FunctionDecl;
-            if (decl == null)
-                return;
-
-            var signature = decl.Signature;
-            var callSignature = callPoint.CallSignature;
-            var enumerator = callPoint.Arguments.GetEnumerator();
-            for (int i = 0; i < signature.FormalParams.Count; ++i)
-            {
-                enumerator.MoveNext();
-
-                //determine that argument is passed by reference or not
-                var param = signature.FormalParams[i];
-                var callParam = callSignature.Value.Parameters[i];
-
-                var argumentVar = Output.GetVariable(new VariableIdentifier(param.Name));
-                var argument = enumerator.Current.Value;
-
-                if (callParam.PublicAmpersand || param.PassedByRef)
-                {
-                    argumentVar.SetAliases(Output, argument);
-                }
-                else
-                {
-                    var argumentValue = argument.ReadMemory(Output);
-                    argumentVar.WriteMemory(Output, argumentValue);
-                }
-            }
-        }
-
-        /// <summary>
         /// Visits a ConditionalExPoint point and propagates the taint
         /// </summary>
         /// <param name="p">point to visit</param>
@@ -447,6 +395,7 @@ namespace Weverca.Taint
 
             return mergeTaint(values,hasPossibleNullValue(lValue));
         }
+
 
         /// <summary>
         /// Merges multiple taint information into one.

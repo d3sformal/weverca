@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using PHP.Core.AST;
+using PHP.Core;
 
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
@@ -78,5 +79,118 @@ namespace Weverca.AnalysisFramework
         }
 
         #endregion
+
+		#region Function handling
+
+		/// <summary>
+		/// Visits an extension sink point
+		/// </summary>
+		/// <param name="p">point to visit</param>
+		public override void VisitExtensionSink(ExtensionSinkPoint p)
+		{
+			_currentPoint = p;
+			var ends = p.OwningExtension.Branches.Select(c => c.Graph.End.OutSet).ToArray();
+			OutputSet.MergeWithCallLevel(ends);
+
+			p.ResolveReturnValue();
+		}
+
+		/// <summary>
+		/// Visits an extension point and propagates the taint
+		/// </summary>
+		/// <param name="p">point to visit</param>
+		public override void VisitExtension(ExtensionPoint p)
+		{
+			_currentPoint = p;
+
+			if (p.Graph.FunctionName == null) 
+			{
+				return;
+			}
+
+			var declaration = p.Graph.SourceObject;
+			var signature = getSignature(declaration);
+			var callPoint = p.Caller as RCallPoint;
+			if (callPoint != null) 
+			{
+				if (signature.HasValue) 
+				{
+					// We have names for passed arguments
+					setNamedArguments (OutputSet, callPoint.CallSignature, signature.Value, p.Arguments);
+				} else 
+				{
+					// There are no names - use numbered arguments
+					setOrderedArguments (OutputSet, p.Arguments, declaration);
+				}
+			}
+
+		}
+			
+		private void setNamedArguments(FlowOutputSet callInput, CallSignature? callSignature, Signature signature, IEnumerable<ValuePoint> arguments)
+		{
+			int i = 0;
+			foreach (var arg in arguments)
+			{
+				if (i >= signature.FormalParams.Count)
+					break;
+				var param = signature.FormalParams[i];
+				var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+
+				var argumentValue = arg.Value.ReadMemory(Output);
+				argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
+
+				++i;
+			}
+			// TODO: if (arguments.Count() < signature.FormalParams.Count) and exists i > arguments.Count() signature.FormalParams[i].InitValue != null
+
+		}
+
+		private void setOrderedArguments(FlowOutputSet callInput, IEnumerable<ValuePoint> arguments, LangElement declaration)
+		{
+			var index = 0;
+			foreach (var arg in arguments)
+			{
+				var argVar = argument(index);
+				var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
+
+				//assign value for parameter
+				var argumentValue = arg.Value.ReadMemory(Output);
+				argumentEntry.WriteMemory(callInput.Snapshot, argumentValue);
+
+				++index;
+			}
+		}
+
+		private static VariableName argument(int index)
+		{
+			if (index < 0)
+			{
+				throw new NotSupportedException("Cannot get argument variable for negative index");
+			}
+
+			return new VariableName(".arg" + index);
+		}
+
+		private Signature? getSignature(LangElement declaration)
+		{
+			// TODO: Resolving via visitor might be better
+			var methodDeclaration = declaration as MethodDecl;
+			if (methodDeclaration != null)
+			{
+				return methodDeclaration.Signature;
+			}
+			else
+			{
+				var functionDeclaration = declaration as FunctionDecl;
+				if (functionDeclaration != null)
+				{
+					return functionDeclaration.Signature;
+				}
+			}
+
+			return null;
+		}
+
+		#endregion
     }
 }

@@ -41,10 +41,10 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         private readonly NextPhaseAnalyzer _analyzer;
 
-        /// <summary>
-        /// Queue of program points that should be processed
-        /// </summary>
-        private Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
+		/// <summary>
+		/// List of program points that should be processed
+		/// </summary>
+		private readonly WorkList _workList = WorkList.GetInstance();
 
         #endregion
 
@@ -121,9 +121,9 @@ namespace Weverca.AnalysisFramework
             enqueue(entryPoint);
 
             //fix point computation
-            while (_workQueue.Count > 0)
+			while (_workList.HasWork)
             {
-                var point = _workQueue.Dequeue();
+				var point = _workList.GetWork();
 
                 if (point.InSet == null) continue;
 
@@ -265,9 +265,9 @@ namespace Weverca.AnalysisFramework
 
         private void enqueue(ProgramPointBase point)
         {
-            if (!_workQueue.Contains(point) && !unreachable(point))
+            if (!unreachable(point))
             {
-                _workQueue.Enqueue(point);
+				_workList.AddWork(point);
             }
         }
 
@@ -369,16 +369,23 @@ namespace Weverca.AnalysisFramework
         {
             _analyzer.Initialize(this);
 
-            resetPoints(AnalyzedProgramPointGraph);
+			resetPoints(new HashSet<ProgramPointGraph>(), AnalyzedProgramPointGraph);
         }
 
-        private void resetPoints(ProgramPointGraph ppg)
+		private void resetPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
         {
-            //TODO traverse all subgraphs
-
+			processedGraphs.Add(ppg);
             foreach (var point in ppg.Points)
             {
                 point.ResetInitialization();
+				foreach (var branch in point.Extension.Branches) 
+				{
+					branch.ResetInitialization();
+					point.Extension.Sink.ResetInitialization();
+					if (!processedGraphs.Contains (branch.Graph)) {
+						resetPoints(processedGraphs, branch.Graph);
+					}
+				}
             }
         }
 
