@@ -459,6 +459,7 @@ namespace Weverca.Taint
             TaintInfo info = new TaintInfo();
             info.point = _currentPoint;
             TaintPriority priority = new TaintPriority(true);
+            List<TaintInfo> processedTaintInfos = new List<TaintInfo>();
             //if _currentPoint is a BinaryExPoint, its priority is high whenever one of the values has high priority
             if (_currentPoint is BinaryExPoint) priority.setAll(false);
             Taint taint = new Taint(false);
@@ -477,6 +478,8 @@ namespace Weverca.Taint
                     }
                     if (!(infoValue is InfoValue<TaintInfo>)) continue;
                     TaintInfo varInfo = (((InfoValue<TaintInfo>)infoValue).Data);
+                    if (processedTaintInfos.Contains(varInfo)) continue;
+                    processedTaintInfos.Add(varInfo);
                     existsNullFlow |= varInfo.nullValue;
                     tainted |= varInfo.tainted;
 

@@ -44,8 +44,9 @@ namespace Weverca.Taint
             }
             int pointHashCode = 0;
             if (point != null) pointHashCode = point.GetHashCode();
-            return priority.GetHashCode() + taint.GetHashCode() + tainted.GetHashCode() + nullValue.GetHashCode() + flowHashCode + pointHashCode;
-		}
+            int result = priority.GetHashCode() + taint.GetHashCode() + tainted.GetHashCode() + nullValue.GetHashCode() + flowHashCode + pointHashCode;
+            return result;
+        }
 		
 		/// <inheritdoc />
 		public override bool Equals(Object obj) {
@@ -339,8 +340,6 @@ namespace Weverca.Taint
         /// <param name="initial">boolean initializer</param>
         public Indicator(bool initial)
         {
-			if (initial) hashCode = 3;
-			else hashCode = 0;
             setAll(initial); 
         }
 
@@ -355,11 +354,6 @@ namespace Weverca.Taint
             this.HTML = HTML;
             this.SQL = SQL;
             this.FilePath = FilePath;
-
-			hashCode = 0;
-			if (HTML) hashCode++;
-			if (SQL) hashCode++;
-			if (FilePath) hashCode++;
         }
 
         public bool getHTMLtaint() { return HTML; }
@@ -378,12 +372,7 @@ namespace Weverca.Taint
 		/// <inheritdoc />
 		public override int GetHashCode ()
 		{
-			//return hashCode;
-			int code = 0;
-			if (HTML) code++;
-			if (SQL) code++;
-			if (FilePath) code++;
-			return code;
+            return HTML.GetHashCode() + FilePath.GetHashCode() + SQL.GetHashCode();
 		}
 
         /// <summary>
