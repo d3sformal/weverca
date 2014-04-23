@@ -243,17 +243,33 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12 }))
             .AssertVariable("d").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 13, 12, 11 }));
 
+        //OK
         readonly static TestCase TaintAnalysisFunctionCallInCycle_CASE =
         @" function f($x) {          
             return $x;
         }
         $x = $_POST;
         $i = 1;
-        while ($i <= 4) {
+        while ($i < 10) {
             $a = f($x);
             $i++;
         }
             ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8}));
+
+        //vynimka
+        readonly static TestCase TaintAnalysisFunctionCallInCycle2_CASE =
+        @" function f($x) {          
+            return $x;
+        }
+        $x = $_POST;
+        $i = 1;
+        while ($i < 11) {
+            $a = f($x);
+            $i++;
+        }
+            ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8 }));
+
+
 
         readonly static TestCase TaintAnalysisConditionalAssign_CASE =
         @" $a = $_POST;
@@ -378,6 +394,12 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
          public void TaintAnalysisFunctionCallInCycle()
          {
              AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisFunctionCallInCycle_CASE, false);
+         }
+
+         [TestMethod]
+         public void TaintAnalysisFunctionCallInCycle2()
+         {
+             AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisFunctionCallInCycle2_CASE, false);
          }
 
         [TestMethod]
