@@ -247,6 +247,7 @@ namespace Weverca.Taint
             analysisTaintWarnings.Add(warning);
         }
 
+
         /// <summary>
         /// Gets the method name from NativeAnalyzerPoint
         /// </summary>
