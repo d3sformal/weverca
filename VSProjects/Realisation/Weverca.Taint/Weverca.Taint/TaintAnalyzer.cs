@@ -56,9 +56,19 @@ namespace Weverca.Taint
             for (int i = 0; i < argumentCount; i++)
             {
                 arguments.Add(OutputSet.ReadVariable(Argument(i)).ReadMemory(OutputSet.Snapshot));
-                var varID = getVariableIdentifier(OutputSet.ReadVariable(Argument(i)));
                 List<Value> argumentValues = new List<Value>(arguments.Last().PossibleValues);
                 if (hasPossibleNullValue(OutputSet.ReadVariable(Argument(i)))) nullValue = true;
+                VariableIdentifier varID = null;
+                Value toRemove = null;
+                foreach (Value val in argumentValues)
+                {
+                    if (val is InfoValue<VariableIdentifier>)
+                    {
+                        varID = (val as InfoValue<VariableIdentifier>).Data;
+                        toRemove = val;
+                    }
+                }
+                if (toRemove != null) argumentValues.Remove(toRemove);
                 values.Add(new ValueInfo(argumentValues, varID));
             }
 
@@ -380,6 +390,97 @@ namespace Weverca.Taint
             }
         }
 
+
+        /// <summary>
+        /// Visits an extension point and sets the parameters
+        /// </summary>
+        /// <param name="p">point to visit</param>
+        public override void VisitExtension(ExtensionPoint p)
+        {
+            _currentPoint = p;
+
+            if (p.Graph.FunctionName == null)
+            {
+                return;
+            }
+
+            var declaration = p.Graph.SourceObject;
+            var signature = getSignature(declaration);
+            var callPoint = p.Caller as RCallPoint;
+            if (callPoint != null)
+            {
+                if (signature.HasValue)
+                {
+                    // We have names for passed arguments
+                    setNamedArguments(OutputSet, callPoint.CallSignature, signature.Value, p.Arguments);
+                }
+                else
+                {
+                    // There are no names - use numbered arguments
+                    setOrderedArguments(OutputSet, p.Arguments, declaration);
+                }
+            }
+
+        }
+
+        private void setNamedArguments(FlowOutputSet callInput, CallSignature? callSignature, Signature signature, IEnumerable<ValuePoint> arguments)
+        {
+            int i = 0;
+            foreach (var arg in arguments)
+            {
+                if (i >= signature.FormalParams.Count)
+                    break;
+                var param = signature.FormalParams[i];
+                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+
+                var argumentValue = arg.Value.ReadMemory(Output);
+                argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
+
+                ++i;
+            }
+            // TODO: if (arguments.Count() < signature.FormalParams.Count) and exists i > arguments.Count() signature.FormalParams[i].InitValue != null
+
+        }
+
+        private Signature? getSignature(LangElement declaration)
+        {
+            var methodDeclaration = declaration as MethodDecl;
+            if (methodDeclaration != null)
+            {
+                return methodDeclaration.Signature;
+            }
+            else
+            {
+                var functionDeclaration = declaration as FunctionDecl;
+                if (functionDeclaration != null)
+                {
+                    return functionDeclaration.Signature;
+                }
+            }
+
+            return null;
+        }
+
+        private void setOrderedArguments(FlowOutputSet callInput, IEnumerable<ValuePoint> arguments, LangElement declaration)
+        {
+            var index = 0;
+            foreach (var arg in arguments)
+            {
+                var argID = getVariableIdentifier(arg.Value);
+                var argVar = argumentString(index);
+                var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
+                
+                var argumentValue = arg.Value.ReadMemory(Output);
+                List<Value> values = new List<Value>(argumentValue.PossibleValues);
+                if (argID != null) values.Add(Output.CreateInfo(argID));
+                
+                MemoryEntry mem = new MemoryEntry(values);
+                argumentEntry.WriteMemory(callInput.Snapshot, mem);
+
+                ++index;
+            }
+        }
+
         /// <summary>
         /// Gets the complete taint information
         /// </summary>
@@ -485,6 +586,16 @@ namespace Weverca.Taint
                 throw new NotSupportedException("Cannot get argument variable for negative index");
             }
             return new VariableIdentifier(".arg" + index);
+        }
+
+        private static VariableName argumentString(int index)
+        {
+            if (index < 0)
+            {
+                throw new NotSupportedException("Cannot get argument variable for negative index");
+            }
+
+            return new VariableName(".arg" + index);
         }
 
         /// <summary>

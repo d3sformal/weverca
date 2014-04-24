@@ -407,9 +407,9 @@ namespace Weverca
                 }
                 processedPPoints.Add(p);
                 if (p.Partial == null) continue;
+                //only first and last program point from one line is shown
                 if ( lastPPoint != null &&
-                    lastPPoint.Partial.Position.FirstLine== p.Partial.Position.FirstLine && 
-                    lastPPoint.Partial.Position.LastLine == p.Partial.Position.LastLine) //only first and last program point from one line is shown
+                    lastPPoint.Partial.Position.FirstLine== p.Partial.Position.FirstLine) 
                 {
                     lastPPoint = p;
                 }
@@ -464,7 +464,7 @@ namespace Weverca
 
         private static void writeExtension(ExtensionPoint point, ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
         {
-            ProgramPointGraph graph = point.OwningPPGraph;
+            ProgramPointGraph graph = point.Graph;
             foreach (ProgramPointGraph processedGraph in processedPPGraphs)
             {
                 if (graph == processedGraph) return;

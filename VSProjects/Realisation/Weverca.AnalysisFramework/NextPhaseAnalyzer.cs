@@ -96,7 +96,7 @@ namespace Weverca.AnalysisFramework
 		}
 
 		/// <summary>
-		/// Visits an extension point and propagates the taint
+		/// Visits an extension point
 		/// </summary>
 		/// <param name="p">point to visit</param>
 		public override void VisitExtension(ExtensionPoint p)

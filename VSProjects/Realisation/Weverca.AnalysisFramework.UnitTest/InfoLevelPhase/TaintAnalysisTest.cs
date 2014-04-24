@@ -149,7 +149,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         ".AssertVariable("_POST").HasTaintStatus(new TaintStatus(true, true))
          .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 8 }))
          .AssertVariable("b").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 9 }))
-         .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 10 }, new List<int>() { 6, 3, 9 }))
+         .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 10 }))
          .AssertVariable("d").HasTaintStatus(new TaintStatus(false, false));
 
           
