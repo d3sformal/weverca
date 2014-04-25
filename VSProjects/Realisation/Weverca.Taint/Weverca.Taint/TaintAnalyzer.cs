@@ -172,104 +172,6 @@ namespace Weverca.Taint
         }
 
         /// <summary>
-        /// If the function is a sanitizer, the sanitized taint flows are removed
-        /// </summary>
-        /// <param name="p">program point with a function</param>
-        /// <param name="taintInfo">TaintInfo that is being sanitized</param>
-        private void sanitize(NativeAnalyzerPoint p,ref TaintInfo taintInfo)
-        {
-            NativeAnalyzerMethod method = p.Analyzer.Method;
-            QualifiedName functName = getMethodName(p);
-            functAnalyzer = NativeFunctionAnalyzer.CreateInstance();
-
-            List<FlagType> flags;
-
-            if (functAnalyzer.SanitizingFunctions.TryGetValue(functName, out flags))
-            {
-                taintInfo.setSanitized(flags);  
-            }
-        }
-
-        /// <summary>
-        /// If function is a reporting function, a warning might be created.
-        /// </summary>
-        /// <param name="p">program point with a function</param>
-        /// <param name="taintInfo">TaintInfo that is being sanitized</param>
-        private void warningsReportingFunct(NativeAnalyzerPoint p,TaintInfo taintInfo)
-        {
-            NativeAnalyzerMethod method = p.Analyzer.Method;
-            QualifiedName functName = getMethodName(p);
-            functAnalyzer = NativeFunctionAnalyzer.CreateInstance();
-
-             List<FlagType> flags;
-
-            if (functAnalyzer.ReportingFunctions.TryGetValue(functName, out flags))
-            {
-                createWarnings(p, taintInfo, flags);           
-            }
-        }
-
-        private void createWarnings(ProgramPointBase p, TaintInfo taintInfo, List<FlagType> flags, String message = null )
-        {
-            if (taintInfo.nullValue)
-            {
-                String taint = taintInfo.printNullFlows();
-                String nullMessage = message;
-                if (message == "Eval shoudn't contain anything from user input")
-                    nullMessage = "Eval shoudn't contain null";
-                if (flags == null)
-                {
-                    createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true);
-                }
-                else foreach (FlagType flag in flags)
-                {
-                    createWarning(p, flag, nullMessage, taint, true);
-                }
-            }
-            if (flags == null)
-            {
-                if (!taintInfo.tainted) return;
-                String taint = taintInfo.print();
-                createWarning(p, FlagType.HTMLDirty, message, taint, false);
-            }
-            else foreach (FlagType flag in flags)
-            {
-                if (!(taintInfo.taint.get(flag))) continue;
-                String taint = taintInfo.print(flag);
-                createWarning(p, flag, message, taint, false);
-            }  
-        }
-
-        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint, Boolean nullFlow)
-        {
-            String currentScript = "";
-            if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
-            AnalysisTaintWarning warning;
-            if (message == null) warning = new AnalysisTaintWarning(currentScript, taint,
-                   p.Partial, p, flag, nullFlow);
-            else warning = new AnalysisTaintWarning(currentScript, message, taint,
-                    p.Partial, p, flag);
-            int index = analysisTaintWarnings.IndexOf(warning);
-            if (index != -1)
-            {
-                analysisTaintWarnings.RemoveAt(index);
-            }
-            analysisTaintWarnings.Add(warning);
-        }
-
-
-        /// <summary>
-        /// Gets the method name from NativeAnalyzerPoint
-        /// </summary>
-        /// <param name="p">point to get the method from</param>
-        /// <returns>a method name as a QualifiedName</returns>
-        private QualifiedName getMethodName(NativeAnalyzerPoint p)
-        {
-            String functName = p.OwningPPGraph.FunctionName;
-            return new QualifiedName(new Name(functName));
-        }
-
-        /// <summary>
         /// Visits a binary expression point and propagates the taint from both the operands.
         /// </summary>
         /// <param name="p">point to visit</param>
@@ -278,16 +180,23 @@ namespace Weverca.Taint
             _currentPoint = p;
 
             List<ValueInfo> values = new List<ValueInfo>();
+            bool nullValue = false;
 
-            var leftvarID = getVariableIdentifier(p.LeftOperand.Value);
-            List<Value> leftArgumentValues = new List<Value>(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
-            values.Add(new ValueInfo(leftArgumentValues, leftvarID));
+            if (p.LeftOperand.Value != null)
+            {
+                var leftvarID = getVariableIdentifier(p.LeftOperand.Value);
+                List<Value> leftArgumentValues = new List<Value>(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
+                values.Add(new ValueInfo(leftArgumentValues, leftvarID));
+                nullValue |= hasPossibleNullValue(p.LeftOperand.Value);
+            }
             
-            var rightvarID = getVariableIdentifier(p.RightOperand.Value);
-            List<Value> rightArgumentValues = new List<Value>(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
-            values.Add(new ValueInfo(rightArgumentValues, rightvarID));
-
-            bool nullValue = hasPossibleNullValue(p.LeftOperand.Value) || hasPossibleNullValue(p.RightOperand.Value);
+            if (p.RightOperand.Value != null)
+            {
+                var rightvarID = getVariableIdentifier(p.RightOperand.Value);
+                List<Value> rightArgumentValues = new List<Value>(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
+                values.Add(new ValueInfo(rightArgumentValues, rightvarID));
+                nullValue |= hasPossibleNullValue(p.RightOperand.Value);
+            }
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
             p.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
@@ -423,79 +332,96 @@ namespace Weverca.Taint
 
         }
 
-        private void setNamedArguments(FlowOutputSet callInput, CallSignature? callSignature, Signature signature, IEnumerable<ValuePoint> arguments)
+
+
+        /// <summary>
+        /// If the function is a sanitizer, the sanitized taint flows are removed
+        /// </summary>
+        /// <param name="p">program point with a function</param>
+        /// <param name="taintInfo">TaintInfo that is being sanitized</param>
+        private void sanitize(NativeAnalyzerPoint p, ref TaintInfo taintInfo)
         {
-            int i = 0;
-            foreach (var arg in arguments)
+            NativeAnalyzerMethod method = p.Analyzer.Method;
+            QualifiedName functName = getMethodName(p);
+            functAnalyzer = NativeFunctionAnalyzer.CreateInstance();
+
+            List<FlagType> flags;
+
+            if (functAnalyzer.SanitizingFunctions.TryGetValue(functName, out flags))
             {
-                if (i >= signature.FormalParams.Count)
-                    break;
-                var param = signature.FormalParams[i];
-                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
-
-                var argumentValue = arg.Value.ReadMemory(Output);
-                argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
-
-                ++i;
-            }
-            // TODO: if (arguments.Count() < signature.FormalParams.Count) and exists i > arguments.Count() signature.FormalParams[i].InitValue != null
-
-        }
-
-        private Signature? getSignature(LangElement declaration)
-        {
-            var methodDeclaration = declaration as MethodDecl;
-            if (methodDeclaration != null)
-            {
-                return methodDeclaration.Signature;
-            }
-            else
-            {
-                var functionDeclaration = declaration as FunctionDecl;
-                if (functionDeclaration != null)
-                {
-                    return functionDeclaration.Signature;
-                }
-            }
-
-            return null;
-        }
-
-        private void setOrderedArguments(FlowOutputSet callInput, IEnumerable<ValuePoint> arguments, LangElement declaration)
-        {
-            var index = 0;
-            foreach (var arg in arguments)
-            {
-                var argID = getVariableIdentifier(arg.Value);
-                var argVar = argumentString(index);
-                var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
-                
-                var argumentValue = arg.Value.ReadMemory(Output);
-                List<Value> values = new List<Value>(argumentValue.PossibleValues);
-                if (argID != null) values.Add(Output.CreateInfo(argID));
-                
-                MemoryEntry mem = new MemoryEntry(values);
-                argumentEntry.WriteMemory(callInput.Snapshot, mem);
-
-                ++index;
+                taintInfo.setSanitized(flags);
             }
         }
 
         /// <summary>
-        /// Gets the complete taint information
+        /// If function is a reporting function, a warning might be created.
         /// </summary>
-        /// <param name="lValue">entry to get the taint for</param>
-        /// <returns>the taint information of given entry</returns>
-        private TaintInfo getTaint(ReadSnapshotEntryBase lValue)
+        /// <param name="p">program point with a function</param>
+        /// <param name="taintInfo">TaintInfo that is being sanitized</param>
+        private void warningsReportingFunct(NativeAnalyzerPoint p, TaintInfo taintInfo)
         {
-            var varID = getVariableIdentifier(lValue);
-            List<Value> info = new List<Value>(lValue.ReadMemory(Output).PossibleValues);
+            NativeAnalyzerMethod method = p.Analyzer.Method;
+            QualifiedName functName = getMethodName(p);
+            functAnalyzer = NativeFunctionAnalyzer.CreateInstance();
 
-            List<ValueInfo> values = new List<ValueInfo>();
-            values.Add(new ValueInfo(info, varID));
+            List<FlagType> flags;
 
-            return mergeTaint(values,hasPossibleNullValue(lValue));
+            if (functAnalyzer.ReportingFunctions.TryGetValue(functName, out flags))
+            {
+                createWarnings(p, taintInfo, flags);
+            }
         }
+
+        private void createWarnings(ProgramPointBase p, TaintInfo taintInfo, List<FlagType> flags, String message = null)
+        {
+            if (taintInfo.nullValue)
+            {
+                String taint = taintInfo.printNullFlows();
+                String nullMessage = message;
+                if (message == "Eval shoudn't contain anything from user input")
+                    nullMessage = "Eval shoudn't contain null";
+                if (flags == null)
+                {
+                    createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true);
+                }
+                else foreach (FlagType flag in flags)
+                    {
+                        createWarning(p, flag, nullMessage, taint, true);
+                    }
+            }
+            if (flags == null)
+            {
+                if (!taintInfo.tainted) return;
+                String taint = taintInfo.print();
+                createWarning(p, FlagType.HTMLDirty, message, taint, false);
+            }
+            else foreach (FlagType flag in flags)
+                {
+                    if (!(taintInfo.taint.get(flag))) continue;
+                    String taint = taintInfo.print(flag);
+                    createWarning(p, flag, message, taint, false);
+                }
+        }
+
+        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint, Boolean nullFlow)
+        {
+            String currentScript = "";
+            if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
+            AnalysisTaintWarning warning;
+            if (message == null) warning = new AnalysisTaintWarning(currentScript, taint,
+                   p.Partial, p, flag, nullFlow);
+            else warning = new AnalysisTaintWarning(currentScript, message, taint,
+                    p.Partial, p, flag);
+            int index = analysisTaintWarnings.IndexOf(warning);
+            if (index != -1)
+            {
+                analysisTaintWarnings.RemoveAt(index);
+            }
+            analysisTaintWarnings.Add(warning);
+        }
+
+
+
 
 
         /// <summary>
@@ -564,6 +490,22 @@ namespace Weverca.Taint
         }
 
         /// <summary>
+        /// Gets the complete taint information
+        /// </summary>
+        /// <param name="lValue">entry to get the taint for</param>
+        /// <returns>the taint information of given entry</returns>
+        private TaintInfo getTaint(ReadSnapshotEntryBase lValue)
+        {
+            var varID = getVariableIdentifier(lValue);
+            List<Value> info = new List<Value>(lValue.ReadMemory(Output).PossibleValues);
+
+            List<ValueInfo> values = new List<ValueInfo>();
+            values.Add(new ValueInfo(info, varID));
+
+            return mergeTaint(values, hasPossibleNullValue(lValue));
+        }
+
+        /// <summary>
         /// Sets the taint information to the given entry
         /// </summary>
         /// <param name="variable">entry to set the taint to</param>
@@ -573,6 +515,19 @@ namespace Weverca.Taint
             var infoValue = Output.CreateInfo(taint);
             variable.WriteMemory(Output, new MemoryEntry(infoValue));
         }
+
+
+        /// <summary>
+        /// Gets the method name from NativeAnalyzerPoint
+        /// </summary>
+        /// <param name="p">point to get the method from</param>
+        /// <returns>a method name as a QualifiedName</returns>
+        private QualifiedName getMethodName(NativeAnalyzerPoint p)
+        {
+            String functName = p.OwningPPGraph.FunctionName;
+            return new QualifiedName(new Name(functName));
+        }
+
 
         /// <summary>
         /// Converts the given integer to VariableIdentifier
@@ -637,6 +592,64 @@ namespace Weverca.Taint
                 return null;
             }
 
+        }
+
+        private Signature? getSignature(LangElement declaration)
+        {
+            var methodDeclaration = declaration as MethodDecl;
+            if (methodDeclaration != null)
+            {
+                return methodDeclaration.Signature;
+            }
+            else
+            {
+                var functionDeclaration = declaration as FunctionDecl;
+                if (functionDeclaration != null)
+                {
+                    return functionDeclaration.Signature;
+                }
+            }
+
+            return null;
+        }
+
+        private void setNamedArguments(FlowOutputSet callInput, CallSignature? callSignature, Signature signature, IEnumerable<ValuePoint> arguments)
+        {
+            int i = 0;
+            foreach (var arg in arguments)
+            {
+                if (i >= signature.FormalParams.Count)
+                    break;
+                var param = signature.FormalParams[i];
+                var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+
+                var argumentValue = arg.Value.ReadMemory(Output);
+                argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
+
+                ++i;
+            }
+            // TODO: if (arguments.Count() < signature.FormalParams.Count) and exists i > arguments.Count() signature.FormalParams[i].InitValue != null
+
+        }
+
+        private void setOrderedArguments(FlowOutputSet callInput, IEnumerable<ValuePoint> arguments, LangElement declaration)
+        {
+            var index = 0;
+            foreach (var arg in arguments)
+            {
+                var argID = getVariableIdentifier(arg.Value);
+                var argVar = argumentString(index);
+                var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
+
+                var argumentValue = arg.Value.ReadMemory(Output);
+                List<Value> values = new List<Value>(argumentValue.PossibleValues);
+                if (argID != null) values.Add(Output.CreateInfo(argID));
+
+                MemoryEntry mem = new MemoryEntry(values);
+                argumentEntry.WriteMemory(callInput.Snapshot, mem);
+
+                ++index;
+            }
         }
 
     }
