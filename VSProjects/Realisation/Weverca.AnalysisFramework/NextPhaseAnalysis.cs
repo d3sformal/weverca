@@ -121,9 +121,9 @@ namespace Weverca.AnalysisFramework
             enqueue(entryPoint);
 
             //fix point computation
-			while (_workList.HasWork)
+            while (_workList.HasWork)
             {
-				var point = _workList.GetWork();
+                var point = _workList.GetWork();
 
                 if (point.InSet == null) continue;
 
@@ -219,8 +219,8 @@ namespace Weverca.AnalysisFramework
             foreach (var input in inputs)
             {
                 var outSet = GetOutSet(input);
-				if (outSet != null)
-                	inputSets.Add(outSet);
+                if (outSet != null)
+                    inputSets.Add(outSet);
             }
 
             inSet.StartTransaction();
@@ -267,17 +267,17 @@ namespace Weverca.AnalysisFramework
         {
             if (!unreachable(point))
             {
-				_workList.AddWork(point);
+                _workList.AddWork(point);
             }
         }
 
-		/// <summary>
+        /// <summary>
 		/// Determine whether the specified program point is unreachable in the first phase.
 		/// </summary>
-		private bool unreachable(ProgramPointBase point) 
-		{
-			return (point.InSet == null) && (point.OutSet == null);
-		}
+        /// private bool unreachable(ProgramPointBase point) 
+        {
+            return (point.InSet == null) && (point.OutSet == null);
+        }
 
         #region Analysis direction handling
 
@@ -368,24 +368,25 @@ namespace Weverca.AnalysisFramework
         private void initialize()
         {
             _analyzer.Initialize(this);
-
-			resetPoints(new HashSet<ProgramPointGraph>(), AnalyzedProgramPointGraph);
+            resetPoints(new HashSet<ProgramPointGraph>(), AnalyzedProgramPointGraph);
         }
 
-		private void resetPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
+        private void resetPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
         {
-			processedGraphs.Add(ppg);
+            processedGraphs.Add(ppg);
             foreach (var point in ppg.Points)
             {
+
                 point.ResetInitialization();
-				foreach (var branch in point.Extension.Branches) 
-				{
-					branch.ResetInitialization();
-					point.Extension.Sink.ResetInitialization();
-					if (!processedGraphs.Contains (branch.Graph)) {
-						resetPoints(processedGraphs, branch.Graph);
-					}
-				}
+
+                foreach (var branch in point.Extension.Branches) 
+                {
+                    branch.ResetInitialization();
+                    point.Extension.Sink.ResetInitialization();
+                    if (!processedGraphs.Contains (branch.Graph)) {
+                        resetPoints(processedGraphs, branch.Graph);
+                    }
+                }
             }
         }
 

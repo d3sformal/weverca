@@ -57,7 +57,6 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     HashSetTools.AddAll(values, entry.PossibleValues);
                 }
 
-                InfoLocationVisitor visitor = new InfoLocationVisitor(snapshot);
                 foreach (ValueLocation location in collector.MustLocation)
                 {
                     if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
@@ -66,6 +65,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                     }
                     else
                     {
+                        InfoLocationVisitor visitor = new InfoLocationVisitor(snapshot);
                         location.Accept(visitor);
                         HashSetTools.AddAll(values, visitor.Value);
                     }
@@ -150,6 +150,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             /// <param name="location">The location.</param>
             public void VisitArrayUndefinedValueLocation(ArrayUndefinedValueLocation location)
             {
+                Value = new Value[] { };
             }
 
             /// <summary>
@@ -158,6 +159,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             /// <param name="location">The location.</param>
             public void VisitObjectUndefinedValueLocation(ObjectUndefinedValueLocation location)
             {
+                Value = new Value[] { };
             }
 
             /// <summary>
@@ -166,6 +168,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             /// <param name="location">The location.</param>
             public void VisitInfoValueLocation(InfoValueLocation location)
             {
+                read(location.ContainingIndex);
             }
 
             /// <summary>
