@@ -172,31 +172,46 @@ namespace Weverca.Taint
         }
 
         /// <summary>
+        /// Visits a concatenation expression point and propagates the taint from all operands.
+        /// </summary>
+        /// <param name="p">point to visit</param>
+        public override void VisitConcat (ConcatExPoint p)
+        {
+            List<ValueInfo> values = new List<ValueInfo>();
+            bool nullValue = false;
+            foreach (var operand in p.Parts) 
+            {
+                nullValue = addOperandValues(values, operand, nullValue);
+            }
+
+            TaintInfo outputTaint = mergeTaint(values, nullValue);
+            p.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
+        }
+
+        private bool addOperandValues(List<ValueInfo> values, ValuePoint operand, bool nullValue) 
+        {
+            if (operand.Value != null) 
+            {
+                var operandID = getVariableIdentifier(operand.Value);
+                List<Value> operandValues = new List<Value>(operand.Value.ReadMemory(Output).PossibleValues);
+                values.Add(new ValueInfo(operandValues, operandID));
+                nullValue |= hasPossibleNullValue(operand.Value);
+            }
+            return nullValue;
+
+        }
+
+        /// <summary>
         /// Visits a binary expression point and propagates the taint from both the operands.
         /// </summary>
         /// <param name="p">point to visit</param>
         public override void VisitBinary(BinaryExPoint p)
         {
-            _currentPoint = p;
-
             List<ValueInfo> values = new List<ValueInfo>();
             bool nullValue = false;
 
-            if (p.LeftOperand.Value != null)
-            {
-                var leftvarID = getVariableIdentifier(p.LeftOperand.Value);
-                List<Value> leftArgumentValues = new List<Value>(p.LeftOperand.Value.ReadMemory(Output).PossibleValues);
-                values.Add(new ValueInfo(leftArgumentValues, leftvarID));
-                nullValue |= hasPossibleNullValue(p.LeftOperand.Value);
-            }
-            
-            if (p.RightOperand.Value != null)
-            {
-                var rightvarID = getVariableIdentifier(p.RightOperand.Value);
-                List<Value> rightArgumentValues = new List<Value>(p.RightOperand.Value.ReadMemory(Output).PossibleValues);
-                values.Add(new ValueInfo(rightArgumentValues, rightvarID));
-                nullValue |= hasPossibleNullValue(p.RightOperand.Value);
-            }
+            nullValue = addOperandValues(values, p.LeftOperand, nullValue);
+            nullValue = addOperandValues(values, p.RightOperand, nullValue);
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
             p.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));

@@ -122,6 +122,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             visitor.VisitConcat(this);
         }
+
+        /// <summary>
+        /// Set content of Value - result of concatenation.
+        /// </summary>
+        /// <param name="valueContent">Content of value</param>
+        public void SetValueContent(MemoryEntry valueContent)
+        {
+            Value = OutSet.CreateSnapshotEntry(valueContent);
+        }
     }
 
     /// <summary>
