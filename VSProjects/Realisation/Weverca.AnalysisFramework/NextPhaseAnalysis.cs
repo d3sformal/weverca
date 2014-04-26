@@ -274,7 +274,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
 		/// Determine whether the specified program point is unreachable in the first phase.
 		/// </summary>
-        /// private bool unreachable(ProgramPointBase point) 
+        private bool unreachable(ProgramPointBase point) 
         {
             return (point.InSet == null) && (point.OutSet == null);
         }
