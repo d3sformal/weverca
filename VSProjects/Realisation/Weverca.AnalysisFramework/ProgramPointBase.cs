@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 using PHP.Core.AST;
 using Weverca.ControlFlowGraph;
@@ -116,6 +117,21 @@ namespace Weverca.AnalysisFramework
         /// Program point graph that owns this program point
         /// </summary>
         public virtual ProgramPointGraph OwningPPGraph { get; private set; }
+
+        /// <summary>
+        /// The script in that this program point is defined.
+        /// Note: can return null.
+        /// </summary>
+        public virtual FileInfo OwningScript { get {return OwningPPGraph.OwningScript;} }
+
+        /// <summary>
+        /// The name of the script in that this program point is defined.
+        /// Note: can return "".
+        /// </summary>
+        public string OwningScriptFullName { get {
+                FileInfo script = OwningScript; 
+                if (script != null) return OwningScript.FullName;
+                else return "";} }
 
         /// <summary>
         /// Analysis services available for subclasses to handle flow through method

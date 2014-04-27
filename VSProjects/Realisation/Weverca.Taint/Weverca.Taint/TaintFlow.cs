@@ -177,9 +177,9 @@ namespace Weverca.Taint
             StringBuilder thisPP = new StringBuilder();
             if (point != null && point.Partial != null)
             {
-                if (point.OwningPPGraph.OwningScript != null)
+                if (point.OwningScript != null)
                 {
-                    String newScript = point.OwningPPGraph.OwningScript.FullName;
+                    String newScript = point.OwningScript.FullName;
                     if (newScript != script)
                     {
                         thisPP.AppendLine();
@@ -285,8 +285,8 @@ namespace Weverca.Taint
              }
 
              script = "";
-             if (flow.point != null && flow.point.OwningPPGraph.OwningScript != null) 
-                 script = flow.point.OwningPPGraph.OwningScript.FullName;
+             if (flow.point != null && flow.point.OwningScript != null) 
+                 script = flow.point.OwningScript.FullName;
              return result;
          }
 
@@ -322,8 +322,8 @@ namespace Weverca.Taint
              }
 
              script = "";
-             if (flow.point != null && flow.point.OwningPPGraph.OwningScript != null) 
-                 script = flow.point.OwningPPGraph.OwningScript.FullName;
+             if (flow.point != null && flow.point.OwningScript != null) 
+                 script = flow.point.OwningScript.FullName;
              return result;
          }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -388,6 +389,19 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// Native analyzer contained in this point
         /// </summary>
         public readonly NativeAnalyzer Analyzer;
+
+        /// <inheritdoc />
+        public override FileInfo OwningScript { get {
+                // TODO: not nice, refactor setting of OwningScript in OwningGraph of NativeAnalyzerPoint
+                ProgramPointBase currentPoint = this;
+                while (currentPoint.OwningPPGraph.OwningScript == null) 
+                {
+                    currentPoint = currentPoint.FlowParents.First();
+                    if (currentPoint == null) break;
+                }
+                if (currentPoint.OwningPPGraph.OwningScript != null) return currentPoint.OwningPPGraph.OwningScript;
+                return null;
+            } }
 
         /// <inheritdoc />
         public override LangElement Partial { get { return Analyzer; } }

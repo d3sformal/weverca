@@ -417,11 +417,11 @@ namespace Weverca.Taint
                     createWarning(p, flag, message, taint, false);
                 }
         }
+              
 
         private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint, Boolean nullFlow)
         {
-            String currentScript = "";
-            if (p.OwningPPGraph.OwningScript != null) currentScript = p.OwningPPGraph.OwningScript.FullName;
+            var currentScript = p.OwningScriptFullName;
             AnalysisTaintWarning warning;
             if (message == null) warning = new AnalysisTaintWarning(currentScript, taint,
                    p.Partial, p, flag, nullFlow);
