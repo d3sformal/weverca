@@ -177,6 +177,7 @@ namespace Weverca.Taint
         /// <param name="p">point to visit</param>
         public override void VisitConcat (ConcatExPoint p)
         {
+            _currentPoint = p;
             List<ValueInfo> values = new List<ValueInfo>();
             bool nullValue = false;
             foreach (var operand in p.Parts) 
@@ -207,6 +208,7 @@ namespace Weverca.Taint
         /// <param name="p">point to visit</param>
         public override void VisitBinary(BinaryExPoint p)
         {
+            _currentPoint = p;
             List<ValueInfo> values = new List<ValueInfo>();
             bool nullValue = false;
 
@@ -214,6 +216,7 @@ namespace Weverca.Taint
             nullValue = addOperandValues(values, p.RightOperand, nullValue);
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
+
             p.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
         }
 
