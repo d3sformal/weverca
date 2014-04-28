@@ -219,8 +219,12 @@ namespace Weverca.AnalysisFramework
             foreach (var input in inputs)
             {
                 var outSet = GetOutSet(input);
-                if (outSet != null)
-                    inputSets.Add(outSet);
+				var assumeParent = input as AssumePoint;
+
+				if (outSet == null || (assumeParent != null && !assumeParent.Assumed))
+					continue;
+
+                inputSets.Add(outSet);
             }
 
             inSet.StartTransaction();
