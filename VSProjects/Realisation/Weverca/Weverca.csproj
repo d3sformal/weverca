@@ -34,6 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Commandlineparameters>-sa -mm CopyMM ../../../../../PHP_sources/test_programs/nocc-1.9.4-modified/action.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>8EED937F9C2F8FF33A55BC964E00312E7C15033F</ManifestCertificateThumbprint>
