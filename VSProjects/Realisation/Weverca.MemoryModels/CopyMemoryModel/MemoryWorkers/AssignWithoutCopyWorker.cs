@@ -87,7 +87,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             if (composedValues.Objects.Count > 0)
             {
                 snapshot.Structure.SetObjects(mustIndex, new ObjectValueContainer(composedValues.Objects));
-                HashSetTools.AddAll(values, data.Objects);
+				if (data.Objects != null) HashSetTools.AddAll(values, data.Objects); 
             }
 
             snapshot.Structure.SetMemoryEntry(mustIndex, new MemoryEntry(values));
@@ -109,7 +109,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 HashSetTools.AddAll(objects, composedValues.Objects);
                 snapshot.Structure.SetObjects(mayIndex, new ObjectValueContainer(objects));
 
-                HashSetTools.AddAll(values, data.Objects);
+				if (data.Objects != null) HashSetTools.AddAll(values, data.Objects); 
             }
 
             HashSetTools.AddAll(values, snapshot.Structure.GetMemoryEntry(mayIndex).PossibleValues);
