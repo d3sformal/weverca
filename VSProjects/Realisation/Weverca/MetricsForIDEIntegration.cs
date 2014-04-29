@@ -435,6 +435,7 @@ namespace Weverca
 
         private static void writeProgramPointInformation(ProgramPointBase p, bool outset)
         {
+            if (p == null || p.Partial == null) return;
             if (p is FunctionDeclPoint) return;
             Console.Write("Point position: ");
             Console.WriteLine("First line: " + p.Partial.Position.FirstLine +
