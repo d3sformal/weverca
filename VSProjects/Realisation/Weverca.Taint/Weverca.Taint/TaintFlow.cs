@@ -37,11 +37,6 @@ namespace Weverca.Taint
 		public override int GetHashCode ()
 		{         
             if (!tainted) return tainted.GetHashCode();
-            /*int flowHashCode = 0;
-            foreach (TaintFlow flow in possibleTaintFlows)
-            {
-                flowHashCode += flow.GetHashCode();
-            }*/
             int pointHashCode = 0;
             if (point != null) pointHashCode = point.GetHashCode();
             int result = priority.GetHashCode() + taint.GetHashCode() + tainted.GetHashCode() + nullValue.GetHashCode() + getFlowHashCode() + pointHashCode;

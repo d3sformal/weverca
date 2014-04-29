@@ -406,7 +406,7 @@ namespace Weverca
                     if (processedPoint == p) continue;
                 }
                 processedPPoints.Add(p);
-                if (p.Partial == null) continue;
+                if (p.Partial == null || !p.Partial.Position.IsValid) continue;
                 //only first and last program point from one line is shown
                 if ( lastPPoint != null &&
                     lastPPoint.Partial.Position.FirstLine== p.Partial.Position.FirstLine) 
