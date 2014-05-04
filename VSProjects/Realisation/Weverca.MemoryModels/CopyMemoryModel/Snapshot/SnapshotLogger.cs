@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define COPY_SNAPSHOT_LOG
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
