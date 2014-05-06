@@ -168,12 +168,12 @@ namespace Weverca
             }
 
             var info = MetricInfo.FromParsers(true, parser);
-            Console.WriteLine(fileName + "," + info.GetQuantity(Quantity.NumberOfLines) + ","
-                + info.GetQuantity(Quantity.NumberOfSources) + ","
-                + info.GetQuantity(Quantity.MaxInheritanceDepth) + ","
-                + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + "," +
+            Console.WriteLine(fileName + ";" + info.GetQuantity(Quantity.NumberOfLines) + ";"
+                + info.GetQuantity(Quantity.NumberOfSources) + ";"
+                + info.GetQuantity(Quantity.MaxInheritanceDepth) + ";"
+                + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + ";" +
                 // info.GetRating(Rating.Cyclomacity + "," +  NOT IMPLEMENTED
-                info.GetRating(Rating.ClassCoupling) + "," + info.GetRating(Rating.PhpFunctionsCoupling));
+                info.GetRating(Rating.ClassCoupling) + ";" + info.GetRating(Rating.PhpFunctionsCoupling));
         }
 
         private static void ProcessFile(string fileName, string[] constructs)
