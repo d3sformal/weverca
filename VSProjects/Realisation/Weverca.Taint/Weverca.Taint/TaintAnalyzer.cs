@@ -217,6 +217,8 @@ namespace Weverca.Taint
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
 
+            outputTaint.setSanitized(new List<FlagType>() { FlagType.FilePathDirty, FlagType.HTMLDirty, FlagType.SQLDirty });
+
             p.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
         }
 
@@ -454,8 +456,8 @@ namespace Weverca.Taint
             info.point = _currentPoint;
             TaintPriority priority = new TaintPriority(true);
             List<TaintInfo> processedTaintInfos = new List<TaintInfo>();
-            //if _currentPoint is a BinaryExPoint, its priority is high whenever one of the values has high priority
-            if (_currentPoint is BinaryExPoint) priority.setAll(false);
+            //if _currentPoint is a ConcatExPoint, its priority is high whenever one of the values has high priority
+            if (_currentPoint is ConcatExPoint) priority.setAll(false);
             Taint taint = new Taint(false);
             bool existsNullFlow = false;
             bool existsFlow = false;
@@ -477,12 +479,12 @@ namespace Weverca.Taint
                     existsNullFlow |= varInfo.nullValue;
                     tainted |= varInfo.tainted;
 
-                    /* If _currentPoint is not BinaryExPoint, the priority is low whenever one of the values
+                    /* If _currentPoint is not ConcatExPoint, the priority is low whenever one of the values
                     has a low priority. 
-                    If _currentPoint is BinaryExPoint, the priority is high whenever one of the values has
+                    If _currentPoint is ConcatExPoint, the priority is high whenever one of the values has
                     a high priority */
-                    if (!(_currentPoint is BinaryExPoint)) priority.copyTaint(false, varInfo.priority);
-                    if (_currentPoint is BinaryExPoint) priority.copyTaint(true, varInfo.priority);
+                    if (!(_currentPoint is ConcatExPoint)) priority.copyTaint(false, varInfo.priority);
+                    if (_currentPoint is ConcatExPoint) priority.copyTaint(true, varInfo.priority);
 
                     taint.copyTaint(true, varInfo.taint);
 

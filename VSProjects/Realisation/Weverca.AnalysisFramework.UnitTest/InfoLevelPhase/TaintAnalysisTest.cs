@@ -137,7 +137,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
 
         readonly static TestCase TaintAnalysisFunctionsTwoArguments_CASE =
         @" function f($arg1, $arg2) {
-            return $arg1 + $arg2;
+            return $arg1.$arg2;
         } 
 
         $x = $_POST;
@@ -157,7 +157,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         @" $x = $_POST;
         $y = '1';
         $z = $x + $y;
-        ".AssertVariable("z").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 4, 4 }));
+        ".AssertVariable("z").HasTaintStatus(new TaintStatus(false, false));
 
         readonly static TestCase TaintAnalysisParameterByAlias_CASE =
         @" function f($arg) {
@@ -172,25 +172,25 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
 
         readonly static TestCase TaintAnalysisFunctionTaintedParams_CASE =
         @" function f($a,$b,$c) {
-            $x = $a + $b + $c;           
+            $x = $a.$b.$c;           
             return $x;
         }
         $x = 'str';
         $y = $_POST;
         $z = $_POST;
         $r = f($x,$y,$z);
-            ".AssertVariable("r").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 7, 3, 3, 3, 9 }, new List<int>() { 8, 3, 3, 9 }));
+            ".AssertVariable("r").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 7, 3, 3, 9 }, new List<int>() { 8, 3, 3, 9 }));
 
         readonly static TestCase TaintAnalysisFunctionNullParams_CASE =
         @" function f($a,$b,$c) {
-            $x = $a + $b + $c;           
+            $x = $a.$b.$c;           
             return $x;
         }
         $x = 'str';
         $y = null;
         $z = $y;
         $r = f($x,$y,$z);
-            ".AssertVariable("r").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 7, 3, 3, 3, 9 }, new List<int>() { 7, 8, 3, 3, 9 }));
+            ".AssertVariable("r").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 7, 3, 3, 9 }, new List<int>() { 7, 8, 3, 3, 9 }));
 
         readonly static TestCase TaintAnalysisSanitizers_CASE =
         @" $x = $_POST;
