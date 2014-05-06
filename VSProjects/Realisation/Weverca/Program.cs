@@ -204,7 +204,7 @@ namespace Weverca
         }
 
         /// <summary>
-        /// Numbers of the program points in program point graph, including program points that are its extensions.
+        /// Number of program points in program point graph, including program points that are its extensions.
         /// </summary>
         private static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
         {
