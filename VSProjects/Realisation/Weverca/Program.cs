@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.Analysis;
 using Weverca.Output;
+using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.CodeMetrics;
 using Weverca.Parsers;
@@ -152,7 +153,7 @@ namespace Weverca
                     console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
-                    console.CommentLine(string.Format("The number of nodes in the pp graph is: {0}\n", ppGraph.Points.Cast<object>().Count()));
+                    console.CommentLine(string.Format("The number of nodes in the application is: {0}\n", numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph)));
                     
 
 					console.CommentLine(string.Format("Analysis in the second phase completed in: {0}ms\n", watch2.ElapsedMilliseconds));
@@ -200,6 +201,26 @@ namespace Weverca
                 Console.ReadKey();
                 Console.WriteLine();
             }
+        }
+
+        /// <summary>
+        /// Numbers of the program points in program point graph, including program points that are its extensions.
+        /// </summary>
+        private static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
+        {
+            int num = ppg.Points.Cast<object>().Count();
+            processedGraphs.Add(ppg);
+            foreach (var point in ppg.Points)
+            {
+                foreach (var branch in point.Extension.Branches) 
+                {
+                    if (!processedGraphs.Contains (branch.Graph)) {
+                        num += numProgramPoints(processedGraphs, branch.Graph);
+                    }
+                }
+            }
+
+            return num;
         }
 
         private static void RunMetrics(string[] files)
