@@ -291,10 +291,12 @@ namespace Weverca
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
-                        
+
+                        var watch2 = System.Diagnostics.Stopwatch.StartNew();
                         var nextPhase = new TaintForwardAnalysis(ppGraph);
                         nextPhase.Analyse();
-                        
+                        watch2.Stop();
+
 
                         Console.WriteLine("Analysis warnings:");
                         PrintWarnings(AnalysisWarningHandler.GetWarnings());
@@ -308,9 +310,13 @@ namespace Weverca
                         List<ProgramPointBase> processedPPoints = new List<ProgramPointBase>();
                         writeAll(ppGraph, ref processedPPGraphs, ref processedPPoints);
 
+                        Console.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
+                        Console.WriteLine("Second phase time consumption: " + watch2.ElapsedMilliseconds);
+                        Console.WriteLine("The number of nodes in the application is: " + Program.numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph));
                     }
                     catch (Exception e)
                     {
+                        Console.WriteLine("error");
                         console.Error(e.Message);
                     }
                 }

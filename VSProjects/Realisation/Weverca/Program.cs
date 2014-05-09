@@ -206,7 +206,7 @@ namespace Weverca
         /// <summary>
         /// Number of program points in program point graph, including program points that are its extensions.
         /// </summary>
-        private static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
+        public static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
         {
             int num = ppg.Points.Cast<object>().Count();
             processedGraphs.Add(ppg);
