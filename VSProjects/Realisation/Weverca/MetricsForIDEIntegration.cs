@@ -37,16 +37,24 @@ namespace Weverca
             // The first argument determines an action
             if (metricsType == "-quantity")
             {
+                List<String> nonProcessedFiles = new List<String>();
                 if (Directory.Exists(analyzedFile))
                 {
-                    ProcessDirectory(analyzedFile);
+                    ProcessDirectory(analyzedFile, ref nonProcessedFiles);
                 }
                 else if (File.Exists(analyzedFile))
                 {
                     string fileExtension = Path.GetExtension(analyzedFile);
                     if (fileExtension == PHP_FILE_EXTENSION)
                     {
-                        ProcessFile(analyzedFile);
+                        ProcessFile(analyzedFile, ref nonProcessedFiles);
+                    }
+                }
+                if (nonProcessedFiles.Count > 0)
+                {
+                    foreach (String file in nonProcessedFiles)
+                    {
+                        Console.WriteLine("Not processed: " + file);
                     }
                 }
             }
@@ -113,24 +121,31 @@ namespace Weverca
 
         }
 
+       
         /// <summary>
         /// For each PHP sources in the given directory calls ProcessFile method.
         /// </summary>
-        /// <param name="directoryName">Name of the directory.</param>
-        private static void ProcessDirectory(string directoryName)
+        /// <param name="directoryName"></param>
+        /// <param name="nonProcessedFiles"></param>
+        private static void ProcessDirectory(string directoryName, ref List<String> nonProcessedFiles)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             Console.WriteLine("Processing directory: {0}", directoryName);
             Debug.Assert(Directory.Exists(directoryName));
 
             foreach (var fileName in Directory.EnumerateFiles(directoryName, "*.php",
                 SearchOption.AllDirectories))
             {
+                List<String> nonProcessed = new List<String>();
                 var fileExtension = Path.GetExtension(fileName);
                 if (fileExtension == PHP_FILE_EXTENSION)
                 {
-                    ProcessFile(fileName);
+                    ProcessFile(fileName, ref nonProcessed);
+                    nonProcessedFiles.AddRange(nonProcessed);
                 }
             }
+            watch.Stop();
+            Console.WriteLine("Time: {0}", watch.ElapsedMilliseconds);
         }
 
         private static void ProcessDirectory(string directoryName, string[] constructs)
@@ -152,8 +167,9 @@ namespace Weverca
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fileName">Name of the file.</param>
-        private static void ProcessFile(string fileName)
+        /// <param name="fileName"></param>
+        /// <param name="nonProcessedFiles"></param>
+        private static void ProcessFile(string fileName, ref List<String> nonProcessedFiles)
         {
             Console.WriteLine("Process file: {0}", fileName);
 
@@ -161,19 +177,29 @@ namespace Weverca
 
             Console.WriteLine("Processing file: {0}", fileName);
             var parser = GenerateParser(fileName);
-            parser.Parse();
-            if (parser.Errors.AnyError)
+            try
             {
+                parser.Parse();
+                if (parser.Errors.AnyError)
+                {
+                    nonProcessedFiles.Add(fileName);
+                    return;
+                }
+
+                var info = MetricInfo.FromParsers(true, parser);
+                Console.WriteLine(fileName + ";" + info.GetQuantity(Quantity.NumberOfLines) + ";"
+                    + info.GetQuantity(Quantity.NumberOfSources) + ";"
+                    + info.GetQuantity(Quantity.MaxInheritanceDepth) + ";"
+                    + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + ";" +
+                    // info.GetRating(Rating.Cyclomacity + "," +  NOT IMPLEMENTED
+                    info.GetRating(Rating.ClassCoupling) + ";" + info.GetRating(Rating.PhpFunctionsCoupling));
+            }
+            catch
+            {
+                nonProcessedFiles.Add(fileName);
                 return;
             }
-
-            var info = MetricInfo.FromParsers(true, parser);
-            Console.WriteLine(fileName + ";" + info.GetQuantity(Quantity.NumberOfLines) + ";"
-                + info.GetQuantity(Quantity.NumberOfSources) + ";"
-                + info.GetQuantity(Quantity.MaxInheritanceDepth) + ";"
-                + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + ";" +
-                // info.GetRating(Rating.Cyclomacity + "," +  NOT IMPLEMENTED
-                info.GetRating(Rating.ClassCoupling) + ";" + info.GetRating(Rating.PhpFunctionsCoupling));
+        
         }
 
         private static void ProcessFile(string fileName, string[] constructs)
@@ -187,33 +213,33 @@ namespace Weverca
             try
             {
                 parser.Parse();
+                if (parser.Errors.AnyError)
+                {
+                    Console.WriteLine("error");
+                    return;
+                }
+
+                var info = MetricInfo.FromParsers(true, parser);
+                foreach (var construct in constructs)
+                {
+                    if (info.HasIndicator(StringToIndicator(construct)))
+                    {
+                        foreach (var node in info.GetOccurrences(StringToIndicator(construct)))
+                        {
+                            Console.WriteLine("File *" + fileName + "* contains indicator *" + construct
+                                + "*" + ((LangElement)node).Position.FirstLine.ToString()
+                                + "," + ((LangElement)node).Position.FirstOffset.ToString()
+                                + "," + ((LangElement)node).Position.LastLine.ToString()
+                                + "," + ((LangElement)node).Position.LastOffset.ToString());
+                        }
+                    }
+                }
             }
             catch
             {
                 return;
             }
-
-            if (parser.Errors.AnyError)
-            {
-                Console.WriteLine("error");
-                return;
-            }
-
-            var info = MetricInfo.FromParsers(true, parser);
-            foreach (var construct in constructs)
-            {
-                if (info.HasIndicator(StringToIndicator(construct)))
-                {
-                    foreach (var node in info.GetOccurrences(StringToIndicator(construct)))
-                    {
-                        Console.WriteLine("File *" + fileName + "* contains indicator *" + construct
-                            + "*" + ((LangElement)node).Position.FirstLine.ToString()
-                            + "," + ((LangElement)node).Position.FirstOffset.ToString()
-                            + "," + ((LangElement)node).Position.LastLine.ToString()
-                            + "," + ((LangElement)node).Position.LastOffset.ToString());
-                    }
-                }
-            }
+           
         }
 
         private static ConstructIndicator StringToIndicator(string construct)
