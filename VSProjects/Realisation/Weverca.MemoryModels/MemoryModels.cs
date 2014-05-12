@@ -20,6 +20,10 @@ namespace Weverca.MemoryModels
         /// Copy memory model (Weverca.MemoryModels.VirtualReferenceModel)
         /// </summary>
         public static readonly MemoryModels CopyMM = new CopyMMCl();
+        /// <summary>
+        /// Modular copy memory model (Weverca.MemoryModels.ModularCopyMemoryModel)
+        /// </summary>
+        public static readonly MemoryModels ModularCopyMM = new ModularCopyMMCl();
 
         /// <summary>
         /// Creates a snapshot of given memory model.
@@ -48,10 +52,22 @@ namespace Weverca.MemoryModels
             {
                 return new Weverca.MemoryModels.CopyMemoryModel.Snapshot();
             }
-            
+
             public override string ToString()
             {
                 return "Copy memory model";
+            }
+        }
+        private class ModularCopyMMCl : MemoryModels
+        {
+            public override SnapshotBase CreateSnapshot()
+            {
+                return new Weverca.MemoryModels.ModularCopyMemoryModel.Snapshot();
+            }
+
+            public override string ToString()
+            {
+                return "Modular copy memory model";
             }
         }
     }

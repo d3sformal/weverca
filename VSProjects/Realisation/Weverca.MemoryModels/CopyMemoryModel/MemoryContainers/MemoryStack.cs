@@ -13,15 +13,13 @@ namespace Weverca.MemoryModels.CopyMemoryModel
     /// then can alasyly acces global and local level of memory stack. Once the stack is created the number
     /// of levels can not be changed. However class also provides deep copy functionality or allows 
     /// to add new stack level after copying.
-    /// 
-    /// This class is not imutable.
     /// </summary>
     /// <typeparam name="T">Type of collection in the stack. Has to implement cloneable interface.</typeparam>
     public class MemoryStack<T> : IEnumerable<T> where T : IGenericCloneable<T>
     {
         /// <summary>
         /// The collection of object stored in stack.
-        /// Each index is one level of memory stack - yero is global and the last is local level.
+        /// Each index is one level of memory stack - zero is global and the last is local level.
         /// </summary>
         protected readonly T[] stack;
 

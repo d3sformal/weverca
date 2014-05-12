@@ -86,6 +86,30 @@
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyArrayVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\Algorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotData.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\AliasData.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\ArrayDescriptor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\IndexContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\IndexDefinition.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\MemoryAlias.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\MemoryStack.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\ObjectDescriptor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\ObjectValueContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\Set.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructure.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\Benchmark.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\Logger.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\Cloneable.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\SnapshotLogger.cs" />
+    <Compile Include="ModularCopyMemoryModel\Memory\IReferenceHolder.cs" />
+    <Compile Include="ModularCopyMemoryModel\Memory\MemoryIndex.cs" />
+    <Compile Include="ModularCopyMemoryModel\Memory\MemoryPath.cs" />
+    <Compile Include="ModularCopyMemoryModel\Snapshot.cs" />
+    <Compile Include="ModularCopyMemoryModel\SnapshotEntries\ICopyModelSnapshotEntry.cs" />
+    <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotDataEntry.cs" />
+    <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotEntry.cs" />
+    <Compile Include="ModularCopyMemoryModel\Tools\HashSetTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModel\Containers\DataContainer.cs" />
     <Compile Include="VirtualReferenceModel\Memory\CallbackReference.cs" />
@@ -123,7 +147,9 @@
       <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ModularCopyMemoryModel\Implementation\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
