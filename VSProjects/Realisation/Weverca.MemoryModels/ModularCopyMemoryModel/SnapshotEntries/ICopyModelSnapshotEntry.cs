@@ -19,7 +19,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>Alias data fro the newly created aliases.</returns>
-        AliasData CreateAliasToEntry(Snapshot snapshot);
+        IMemoryAlias CreateAliasToEntry(Snapshot snapshot);
 
         /// <summary>
         /// Reads the memory.

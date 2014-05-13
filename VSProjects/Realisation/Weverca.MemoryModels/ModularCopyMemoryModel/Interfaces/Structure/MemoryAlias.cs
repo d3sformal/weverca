@@ -9,53 +9,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
     public interface IMemoryAlias
     {
-        IEnumerable<MemoryIndex> MayAliasses { get; }
+        MemoryIndex SourceIndex { get; }
 
-        IEnumerable<MemoryIndex> MustAliasses { get; }
+        IReadonlySet<MemoryIndex> MayAliases { get; }
+
+        IReadonlySet<MemoryIndex> MustAliases { get; }
 
         IMemoryAliasBuilder Builder();
-
-        int MustAliassesCount { get; set; }
-
-        int MayAliassesCount { get; set; }
-
-        bool ContainsMustAlias(MemoryIndex mayAlias);
-
-        bool ContainsMayAlias(MemoryIndex mustIndex);
-
-        MemoryIndex SourceIndex { get; set; }
     }
 
     public interface IMemoryAliasBuilder
     {
+        MemoryIndex SourceIndex { get; }
+
+        IWriteableSet<MemoryIndex> MayAliases { get; }
+
+        IWriteableSet<MemoryIndex> MustAliases { get; }
+
+        void SetSourceIndex(MemoryIndex index);
+
         IMemoryAlias Build();
-
-        IEnumerable<MemoryIndex> MayAliasses { get; }
-
-        IEnumerable<MemoryIndex> MustAliasses { get; }
-
-        int MustAliassesCount { get; set; }
-
-        int MayAliassesCount { get; set; }
-
-        bool ContainsMustAlias(MemoryIndex mayAlias);
-
-        bool ContainsMayAlias(MemoryIndex mustIndex);
-
-        void AddMustAlias(IEnumerable<MemoryIndex> mustAliases);
-
-        void AddMayAlias(IEnumerable<MemoryIndex> mayAliases);
-
-        void AddMustAlias(MemoryIndex mustAlias);
-
-        void AddMayAlias(MemoryIndex mayAlias);
-
-        void RemoveMustAlias(MemoryIndex index);
-
-        void RemoveMayAlias(MemoryIndex mustIndex);
-
-        void ClearMustAliases();
-
-        void ClearMayAliases();
     }
 }

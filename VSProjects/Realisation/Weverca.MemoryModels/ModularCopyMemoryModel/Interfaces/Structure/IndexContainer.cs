@@ -22,15 +22,47 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The indexes.
         /// </value>
-        IReadOnlyDictionary<string, MemoryIndex> Indexes { get; }
+        IEnumerable<KeyValuePair<string, MemoryIndex>> Indexes { get; }
+
+        /// <summary>
+        /// Gets the numer of indexes in collection.
+        /// </summary>
+        /// <value>
+        /// The count of indexes.
+        /// </value>
+        int Count { get; }
 
         /// <summary>
         /// Gets the speacial index which is used when the target location is unknown (ANY index)
+        /// 
+        /// All indexes which are not defined should read values from this location.
         /// </summary>
         /// <value>
-        /// The index of the unknown.
+        /// The index of the unknown location.
         /// </value>
         MemoryIndex UnknownIndex { get; }
+
+        /// <summary>
+        /// Gets the memory index which points to memory location defined by given name.
+        /// </summary>
+        /// <param name="indexName">Name of the index.</param>
+        /// <returns>Memory index which points to memory location defined by given name.</returns>
+        MemoryIndex GetIndex(String indexName);
+
+        /// <summary>
+        /// Tries to get the memory index which points to memory location defined by given name.
+        /// </summary>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="index">The memory index.</param>
+        /// <returns>True whether container contains memory index for the given name.</returns>
+        bool TryGetIndex(string indexName, out MemoryIndex index);
+
+        /// <summary>
+        /// Determines whether the container contains the memory index specified index name.
+        /// </summary>
+        /// <param name="indexName">Name of the index.</param>
+        /// <returns>True whether the container contains the memory index specified index name.</returns>
+        bool ContainsIndex(string indexName);
     }
 
     /// <summary>
@@ -42,26 +74,27 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
     /// Each instance of this interface represents inner node of memory tree (array with indexes, object with fields,
     /// variable container).
     /// </summary>
-    public interface IWriteableIndexContainer
+    public interface IWriteableIndexContainer : IReadonlyIndexContainer
     {
         /// <summary>
-        /// Gets the speacial index which is used when the target location is unknown (ANY index)
+        /// Adds the the memory index which points to memory location defined by given name.
         /// </summary>
-        /// <value>
-        /// The index of the unknown.
-        /// </value>
-        MemoryIndex UnknownIndex { get; }
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="memoryIndex">The memory index.</param>
+        void AddIndex(string indexName, MemoryIndex memoryIndex);
 
         /// <summary>
-        /// Gets the collection of indexes.
+        /// Removes the the memory index which points to memory location defined by given name.
         /// </summary>
-        /// <value>
-        /// The indexes.
-        /// </value>
-        Dictionary<string, MemoryIndex> Indexes { get; }
+        /// <param name="indexName">Name of the index.</param>
+        void RemoveIndex(string indexName);
 
-        void AddIndex(string variableName, MemoryIndex variableIndex);
-
-
+        /// <summary>
+        /// Sets the the memory index for unknown location of this container.
+        /// 
+        /// All indexes which are not defined should read values from this location.
+        /// </summary>
+        /// <param name="unknownIndex">Index of the unknown location.</param>
+        void SetUnknownIndex(MemoryIndex unknownIndex);
     }
 }

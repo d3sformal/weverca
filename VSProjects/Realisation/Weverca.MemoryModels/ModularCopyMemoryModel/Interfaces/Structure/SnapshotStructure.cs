@@ -140,7 +140,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The index definitions.
         /// </value>
-        IEnumerable<KeyValuePair<MemoryIndex, IndexDefinition>> IndexDefinitions { get; }
+        IEnumerable<KeyValuePair<MemoryIndex, IIndexDefinition>> IndexDefinitions { get; }
 
         /// <summary>
         /// Determines whether the specified index is defined.
@@ -154,7 +154,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="index">The index.</param>
         /// <param name="data">The data.</param>
         /// <returns><c>true</c> if the index is defined; otherwise, <c>false</c>.</returns>
-        bool TryGetIndexDefinition(MemoryIndex index, out IndexDefinition data);
+        bool TryGetIndexDefinition(MemoryIndex index, out IIndexDefinition data);
 
         /// <summary>
         /// Gets the definition of specified index.
@@ -162,7 +162,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="index">The index.</param>
         /// <returns>Definition of specified index.</returns>
         /// <exception cref="System.Exception">Missing alias value for given index</exception>
-        IndexDefinition GetIndexDefinition(MemoryIndex index);
+        IIndexDefinition GetIndexDefinition(MemoryIndex index);
 
         #endregion
 
@@ -174,7 +174,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The object descriptors.
         /// </value>
-        IEnumerable<KeyValuePair<IObjectDescriptor, IndexDefinition>> ObjectDescriptors { get; }
+        IEnumerable<KeyValuePair<ObjectValue, IObjectDescriptor>> ObjectDescriptors { get; }
 
         /// <summary>
         /// Gets the PHP object descriptor which contains defined fields and informations about object.
@@ -216,7 +216,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The array descriptors.
         /// </value>
-        IEnumerable<KeyValuePair<IArrayDescriptor, IndexDefinition>> ArrayDescriptors { get; }
+        IEnumerable<KeyValuePair<AssociativeArray, IArrayDescriptor>> ArrayDescriptors { get; }
 
         /// <summary>
         /// Tries to get array descriptor which contains information about defined indexes in the specified array.
@@ -487,7 +487,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
     /// 
     /// Implements unique identifiers and snapshot storing.
     /// </summary>
-    public abstract class AbstractSnapshotStructure : IReadOnlySnapshotStructure, IWriteableSnapshotStructure
+    /*public abstract class AbstractSnapshotStructure : IReadOnlySnapshotStructure, IWriteableSnapshotStructure
     {
         /// <summary>
         /// Incremental counter for structure unique identifier.
@@ -589,7 +589,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             throw new NotImplementedException();
         }
 
-        public void AddCreatedAlias(AliasData aliasData)
+        public void AddCreatedAlias(IMemoryAlias aliasData)
         {
             throw new NotImplementedException();
         }
@@ -756,12 +756,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             throw new NotImplementedException();
         }
 
-
-        public void AddCreatedAlias(IMemoryAlias aliasData)
-        {
-            throw new NotImplementedException();
-        }
-
         public void AddLocalLevel()
         {
             throw new NotImplementedException();
@@ -773,4 +767,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             get { throw new NotImplementedException(); }
         }
     }
+     */
 }

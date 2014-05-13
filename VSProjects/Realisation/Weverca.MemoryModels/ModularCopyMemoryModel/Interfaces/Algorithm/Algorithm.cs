@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 
@@ -25,13 +27,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     
     public interface IAssignAlgorithm
     {
-        void Assign(Snapshot snapshot, MemoryEntry value, bool forceStrongWrite);
-
         void Assign(Snapshot snapshot, MemoryPath path, MemoryEntry value, bool forceStrongWrite);
 
-        void WriteWithoutCopy(Snapshot snapshot, MemoryPath path, MemoryEntry value);
-
         void AssignAlias(Snapshot snapshot, MemoryPath path, ICopyModelSnapshotEntry entry);
+
+        void WriteWithoutCopy(Snapshot snapshot, MemoryPath path, MemoryEntry value);
     }
 
     public interface IReadAlgorithm
@@ -51,28 +51,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         IEnumerable<TypeValue> GetObjectType();
     }
 
-    public interface ITypeAlgorithm
-    {
-
-    }
-
-    public interface IFunctionAlgorithm
-    {
-
-    }
-
     public interface ICommitAlgorithm
     {
-
         void SetStructure(Structure.ISnapshotStructureProxy SnapshotStructure, Structure.ISnapshotStructureProxy oldStructure);
 
         void SetData(Data.ISnapshotDataProxy currentData, Data.ISnapshotDataProxy oldData);
 
         void CommitAndSimplify(Snapshot snapshot, int simplifyLimit);
 
-        bool IsDifferent();
-
         void CommitAndWiden(Snapshot snapshot, int simplifyLimit, MemoryAssistantBase MemoryAssistant);
+
+        bool IsDifferent();
     }
 
     public interface ICopyAlgorithm
@@ -98,10 +87,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
 
         void Merge(Snapshot snapshot, List<Snapshot> snapshots);
 
-        Structure.ISnapshotStructureProxy GetMergedStructure();
-
-        Data.ISnapshotDataProxy GetMergedData();
-
         void MergeWithCall(Snapshot snapshot, List<Snapshot> snapshots);
+
+        ISnapshotStructureProxy GetMergedStructure();
+
+        ISnapshotDataProxy GetMergedData();
+
+
+        void MergeMemoryEntry(Snapshot snapshot, TemporaryIndex temporaryIndex, MemoryEntry dataEntry);
     }
 }

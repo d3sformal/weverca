@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
@@ -88,20 +89,35 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <param name="context">The context.</param>
         private SnapshotEntry getTemporary(SnapshotBase context)
         {
-            throw new NotImplementedException();
-
-            /*Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
 
             if (temporaryLocation == null)
             {
-                temporaryIndex = snapshot.CreateTemporary();
-                MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
-                mergeWorker.MergeMemoryEntry(temporaryIndex, dataEntry);
+                IMergeAlgorithm algorithm = null;
+                switch (snapshot.CurrentMode)
+                {
+                    case SnapshotMode.MemoryLevel:
+                        algorithm = Snapshot.MergeMemoryAlgorithmFactory.CreateInstance();
+                        break;
 
+                    case SnapshotMode.InfoLevel:
+                        algorithm = Snapshot.MergeInfoAlgorithmFactory.CreateInstance();
+                        break;
+
+                    default:
+                        throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
+                }
+
+                temporaryIndex = snapshot.CreateTemporary();
                 temporaryLocation = new SnapshotEntry(MemoryPath.MakePathTemporary(temporaryIndex));
+
+                if (algorithm != null)
+                {
+                    algorithm.MergeMemoryEntry(snapshot, temporaryIndex, dataEntry);
+                }
             }
 
-            return temporaryLocation;*/
+            return temporaryLocation;
         }
 
         /// <summary>
@@ -298,8 +314,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
-            throw new NotImplementedException();
-            /*SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
+            SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
 
             if (isTemporarySet(context))
             {
@@ -309,7 +324,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
                 return snapshot.resolveMethod(dataEntry, methodName);
-            }*/
+            }
         }
 
         /// <summary>
@@ -334,7 +349,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>Alias data fro the newly created aliases.</returns>
-        public AliasData CreateAliasToEntry(Snapshot snapshot)
+        public IMemoryAlias CreateAliasToEntry(Snapshot snapshot)
         {
             return getTemporary(snapshot).CreateAliasToEntry(snapshot);
         }

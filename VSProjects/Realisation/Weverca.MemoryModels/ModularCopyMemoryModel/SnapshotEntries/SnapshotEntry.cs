@@ -586,7 +586,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <returns>
         /// Alias data fro the newly created aliases.
         /// </returns>
-        public AliasData CreateAliasToEntry(Snapshot snapshot)
+        public IMemoryAlias CreateAliasToEntry(Snapshot snapshot)
         {
             throw new NotImplementedException();
         }
