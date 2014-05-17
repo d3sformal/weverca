@@ -86,6 +86,18 @@
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyArrayVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Data\CopySnapshotData.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Data\SnapshotDataContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopySnapshotStructure.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyArrayDescriptor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyIndexContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyMemoryAlias.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyObjectDescriptor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopySet.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyStackContext.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyIndexDefinition.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyObjectValueContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\SnapshotStructureContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\Algorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotData.cs" />
@@ -148,7 +160,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="ModularCopyMemoryModel\Implementation\" />
+    <Folder Include="ModularCopyMemoryModel\Implementation\Algorithm\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

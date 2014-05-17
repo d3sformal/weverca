@@ -43,7 +43,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <value>
         /// The snapshot data factory.
         /// </value>
-        public static ISnapshotDataFactory SnapshotDataFactory = null;
+        public static ISnapshotDataFactory SnapshotDataFactory 
+            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data.CopySnapshotDataFactory();
 
         /// <summary>
         /// Gets the snapshot structure factory.
@@ -51,7 +52,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <value>
         /// The snapshot structure factory.
         /// </value>
-        public static ISnapshotStructureFactory SnapshotStructureFactory = null;
+        public static ISnapshotStructureFactory SnapshotStructureFactory
+            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopySnapshotStructureFactory();
 
         #region Algorithm Factories
 
@@ -82,6 +84,30 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
                     case SnapshotMode.InfoLevel:
                         return InfoAlgorithmFactories;
+
+                    default:
+                        throw new NotSupportedException("Current mode: " + CurrentMode);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the memory entry for undefined memory indexes.
+        /// </summary>
+        /// <value>
+        /// The memory entry for undefined memory indexes.
+        /// </value>
+        /// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
+        public MemoryEntry EmptyEntry {
+            get
+            {
+                switch (CurrentMode)
+                {
+                    case SnapshotMode.MemoryLevel:
+                        return new MemoryEntry(this.UndefinedValue);
+
+                    case SnapshotMode.InfoLevel:
+                        return new MemoryEntry();
 
                     default:
                         throw new NotSupportedException("Current mode: " + CurrentMode);
@@ -1793,6 +1819,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         #endregion
 
         #endregion
-
     }
 }

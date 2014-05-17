@@ -84,9 +84,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// Creates the new instance of array descriptor to store array definition in structure.
         /// </summary>
         /// <param name="createdArray">The created array.</param>
-        /// <param name="arrayIndex">The memory location of array.</param>
+        /// <param name="memoryIndex">The memory location of array.</param>
         /// <returns>Created array descriptor instance.</returns>
-        IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, TemporaryIndex arrayIndex);
+        IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, MemoryIndex memoryIndex);
 
         /// <summary>
         /// Creates the new instance of memory alias object to store alias definition in this structure.
@@ -181,6 +181,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <returns>Definition of specified index.</returns>
         /// <exception cref="System.Exception">Missing alias value for given index</exception>
         IIndexDefinition GetIndexDefinition(MemoryIndex index);
+
+        /// <summary>
+        /// Gets the number of indexes in structure.
+        /// </summary>
+        /// <returns>The number of indexes in structure.</returns>
+        int GetNumberOfIndexes();
 
         #endregion
 
@@ -348,12 +354,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         IMemoryAlias GetAliases(MemoryIndex index);
 
         #endregion
-
-        /// <summary>
-        /// Gets the number of indexes in structure.
-        /// </summary>
-        /// <returns>The number of indexes in structure.</returns>
-        int GetNumberOfIndexes();
     }
 
     /// <summary>
@@ -393,6 +393,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="level">The level.</param>
         /// <returns>The writeable stack context on specified level of memory stack</returns>
         IWriteableStackContext GetWriteableStackContext(int level);
+
+        /// <summary>
+        /// Adds the local level to memory stack.
+        /// </summary>
+        void AddLocalLevel();
 
         #endregion
         
@@ -506,13 +511,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         void RemoveAlias(MemoryIndex index);
 
         #endregion
-
-        /// <summary>
-        /// Adds the local level to memory stack.
-        /// </summary>
-        void AddLocalLevel();
     }
-    /*
+    
     /// <summary>
     /// Basic abstract implementation of snapshot structure container.
     /// 
@@ -550,253 +550,373 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             private set;
         }
 
-        public IWriteableStackContext WriteableLocalContext
-        {
-            get { throw new NotImplementedException(); }
-        }
+        #region MemoryStack
 
-        public IWriteableStackContext WriteableGlobalContext
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Gets the readonly local context of memory stack.
+        /// </summary>
+        /// <value>
+        /// The readonly local context of memory stack.
+        /// </value>
+        public abstract IReadonlyStackContext ReadonlyLocalContext { get; }
 
-        public IEnumerable<IWriteableStackContext> WriteableStackContexts
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Gets the readonly global context of memory stack.
+        /// </summary>
+        /// <value>
+        /// The readonly global context of memory stack.
+        /// </value>
+        public abstract IReadonlyStackContext ReadonlyGlobalContext { get; }
 
-        public IWriteableStackContext GetWriteableStackContext(int level)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the list of all readonly stack contexts.
+        /// </summary>
+        /// <value>
+        /// The list of all readonly stack contexts.
+        /// </value>
+        public abstract IEnumerable<IReadonlyStackContext> ReadonlyStackContexts { get; }
 
-        public void NewIndex(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the readonly stack context on specified level of memory stack.
+        /// </summary>
+        /// <param name="level">The level.</param>
+        /// <returns>The readonly stack context on specified level of memory stack</returns>
+        public abstract IReadonlyStackContext GetReadonlyStackContext(int level);
 
-        public void RemoveIndex(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the writeable local context of memory stack.
+        /// </summary>
+        /// <value>
+        /// The writeable local context of memory stack.
+        /// </value>
+        public abstract IWriteableStackContext WriteableLocalContext { get; }
 
-        public void SetDescriptor(ObjectValue objectValue, IObjectDescriptor descriptor)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the writeable global context of memory stack.
+        /// </summary>
+        /// <value>
+        /// The writeable global context of memory stack.
+        /// </value>
+        public abstract IWriteableStackContext WriteableGlobalContext { get; }
 
-        public void SetObjects(MemoryIndex index, IObjectValueContainer objects)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the list of all writeable stack contexts.
+        /// </summary>
+        /// <value>
+        /// The list of all writeable stack contexts.
+        /// </value>
+        public abstract IEnumerable<IWriteableStackContext> WriteableStackContexts { get; }
 
-        public void SetDescriptor(AssociativeArray arrayvalue, IArrayDescriptor descriptor)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the writeable stack context on specified level of memory stack.
+        /// </summary>
+        /// <param name="level">The level.</param>
+        /// <returns>The writeable stack context on specified level of memory stack</returns>
+        public abstract IWriteableStackContext GetWriteableStackContext(int level);
 
-        public void AddCallArray(AssociativeArray array, CopyMemoryModel.Snapshot snapshot)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Adds the local level to memory stack.
+        /// </summary>
+        public abstract void AddLocalLevel();
 
-        public void SetArray(MemoryIndex index, AssociativeArray arrayValue)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public void RemoveArray(MemoryIndex index, AssociativeArray arrayValue)
-        {
-            throw new NotImplementedException();
-        }
+        #region Indexes
 
-        public void SetFunction(QualifiedName name, FunctionValue declaration)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the defined indexes in structure indexes.
+        /// </summary>
+        /// <returns>Stucture indexes.</returns>
+        public abstract IEnumerable<MemoryIndex> Indexes { get; }
 
-        public void SetClass(QualifiedName name, TypeValue declaration)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets set of the index definitions.
+        /// </summary>
+        /// <value>
+        /// The index definitions.
+        /// </value>
+        public abstract IEnumerable<KeyValuePair<MemoryIndex, IIndexDefinition>> IndexDefinitions { get; }
 
-        public void AddCreatedAlias(IMemoryAlias aliasData)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Determines whether the specified index is defined.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public abstract bool IsDefined(MemoryIndex index);
 
-        public void SetAlias(MemoryIndex index, IMemoryAlias alias)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Tries to get definition of given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="data">The data.</param>
+        /// <returns><c>true</c> if the index is defined; otherwise, <c>false</c>.</returns>
+        public abstract bool TryGetIndexDefinition(MemoryIndex index, out IIndexDefinition data);
 
-        public void RemoveAlias(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the definition of specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>Definition of specified index.</returns>
+        /// <exception cref="System.Exception">Missing alias value for given index</exception>
+        public abstract IIndexDefinition GetIndexDefinition(MemoryIndex index);
 
+        /// <summary>
+        /// Gets the number of indexes in structure.
+        /// </summary>
+        /// <returns>The number of indexes in structure.</returns>
+        public abstract int GetNumberOfIndexes();
 
-        public IReadonlyStackContext ReadonlyLocalContext
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Insert newly created index into structure and data collection.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public abstract void NewIndex(MemoryIndex index);
 
-        public IReadonlyStackContext ReadonlyGlobalContext
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Removes the index from structure and data.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public abstract void RemoveIndex(MemoryIndex index);
 
-        public IEnumerable<IReadonlyStackContext> ReadonlyStackContexts
-        {
-            get { throw new NotImplementedException(); }
-        }
+        #endregion
 
-        public IReadonlyStackContext GetReadonlyStackContext(int level)
-        {
-            throw new NotImplementedException();
-        }
+        #region Objects
 
-        public IEnumerable<MemoryIndex> Indexes
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Gets the set of object descriptors.
+        /// </summary>
+        /// <value>
+        /// The object descriptors.
+        /// </value>
+        public abstract IEnumerable<KeyValuePair<ObjectValue, IObjectDescriptor>> ObjectDescriptors { get; }
 
-        public IEnumerable<KeyValuePair<MemoryIndex, IndexDefinition>> IndexDefinitions
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Gets the PHP object descriptor which contains defined fields and informations about object.
+        /// </summary>
+        /// <param name="objectValue">The object value.</param>
+        /// <returns>PHP object descriptor which contains defined fields and informations about object.</returns>
+        /// <exception cref="System.Exception">Missing object descriptor</exception>
+        public abstract IObjectDescriptor GetDescriptor(ObjectValue objectValue);
 
-        public bool IsDefined(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Tries to get the PHP object descriptor which contains defined fields and informations about object.
+        /// </summary>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <returns>True whether structure contains PHP object descriptor which contains defined fields and informations about object.</returns>
+        public abstract bool TryGetDescriptor(ObjectValue objectValue, out IObjectDescriptor descriptor);
 
-        public bool TryGetIndexDefinition(MemoryIndex index, out IndexDefinition data)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Determines whether the specified index has some PHP objects.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        ///   <c>true</c> if specified index has some PHP objects; otherwise, <c>false</c>.
+        public abstract bool HasObjects(MemoryIndex index);
 
-        public IndexDefinition GetIndexDefinition(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the objects for given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>Collection of objects for given index.</returns>
+        public abstract IObjectValueContainer GetObjects(MemoryIndex index);
 
-        public IEnumerable<KeyValuePair<IObjectDescriptor, IndexDefinition>> ObjectDescriptors
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Sets the PHP object descriptor which contains defined fields and informations about object.
+        /// </summary>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        public abstract void SetDescriptor(ObjectValue objectValue, IObjectDescriptor descriptor);
 
-        public IObjectDescriptor GetDescriptor(ObjectValue objectValue)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Sets objects for given index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="objects">The objects.</param>
+        public abstract void SetObjects(MemoryIndex index, IObjectValueContainer objects);
 
-        public bool TryGetDescriptor(ObjectValue objectValue, out IObjectDescriptor descriptor)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public bool HasObjects(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        #region Arrays
 
-        public IObjectValueContainer GetObjects(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the set of array descriptors.
+        /// </summary>
+        /// <value>
+        /// The array descriptors.
+        /// </value>
+        public abstract IEnumerable<KeyValuePair<AssociativeArray, IArrayDescriptor>> ArrayDescriptors { get; }
 
-        public IEnumerable<KeyValuePair<IArrayDescriptor, IndexDefinition>> ArrayDescriptors
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Tries to get array descriptor which contains information about defined indexes in the specified array.
+        /// </summary>
+        /// <param name="arrayValue">The array value.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        /// <returns>Array descriptor which contains information about defined indexes in the specified array.</returns>
+        public abstract bool TryGetDescriptor(AssociativeArray arrayValue, out IArrayDescriptor descriptor);
 
-        public bool TryGetDescriptor(AssociativeArray arrayValue, out IArrayDescriptor descriptor)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the array descriptor which contains information about defined indexes in the specified array.
+        /// </summary>
+        /// <param name="arrayValue">The array value.</param>
+        /// <returns>True whether structure contains array descriptor which contains information about defined indexes in the specified array.</returns>
+        /// <exception cref="System.Exception">Missing array descriptor</exception>
+        public abstract IArrayDescriptor GetDescriptor(AssociativeArray arrayValue);
 
-        public IArrayDescriptor GetDescriptor(AssociativeArray arrayValue)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the array descriptor which contains information about defined indexes in the specified array.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>Array descriptor which contains information about defined indexes in the specified array.</returns>
+        /// <exception cref="System.Exception">Missing array for index  + index</exception>
+        public abstract AssociativeArray GetArray(MemoryIndex index);
 
-        public AssociativeArray GetArray(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Determines whether the specified index has array.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>True whether the specified index has array.</returns>
+        public abstract bool HasArray(MemoryIndex index);
 
-        public bool HasArray(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Tries to get array for specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="arrayValue">The array value.</param>
+        /// <returns>True whether the specified index has array.</returns>
+        public abstract bool TryGetArray(MemoryIndex index, out AssociativeArray arrayValue);
 
-        public bool TryGetArray(MemoryIndex index, out AssociativeArray arrayValue)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Tries to get list of spashots which contains specified array.
+        /// </summary>
+        /// <param name="array">The array.</param>
+        /// <param name="snapshots">The snapshots.</param>
+        /// <returns>List of spashots which contains specified array.</returns>
+        public abstract bool TryGetCallArraySnapshot(AssociativeArray array, out IEnumerable<Snapshot> snapshots);
 
-        public bool TryGetCallArraySnapshot(AssociativeArray array, out IEnumerable<Snapshot> snapshots)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Sets the array descriptor which contains information about defined indexes in the specified array.
+        /// </summary>
+        /// <param name="arrayvalue">The arrayvalue.</param>
+        /// <param name="descriptor">The descriptor.</param>
+        public abstract void SetDescriptor(AssociativeArray arrayvalue, IArrayDescriptor descriptor);
 
-        public bool IsFunctionDefined(QualifiedName functionName)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Adds the combination of array and snapshot into call arrays set.
+        /// </summary>
+        /// <param name="array">The array.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        public abstract void AddCallArray(AssociativeArray array, CopyMemoryModel.Snapshot snapshot);
 
-        public IEnumerable<FunctionValue> GetFunction(QualifiedName functionName)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Sets the array for specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="arrayValue">The array value.</param>
+        public abstract void SetArray(MemoryIndex index, AssociativeArray arrayValue);
 
-        public bool IsClassDefined(QualifiedName name)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Removes the array from specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="arrayValue">The array value.</param>
+        public abstract void RemoveArray(MemoryIndex index, AssociativeArray arrayValue);
 
-        public IEnumerable<TypeValue> GetClass(QualifiedName className)
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
 
-        public bool TryGetAliases(MemoryIndex index, out IMemoryAlias aliases)
-        {
-            throw new NotImplementedException();
-        }
+        #region Functions
 
-        public IMemoryAlias GetAliases(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Determines whether function with given name is defined.
+        /// </summary>
+        /// <param name="functionName">Name of the function.</param>
+        /// <returns>True whether function with given name is defined..</returns>
+        public abstract bool IsFunctionDefined(PHP.Core.QualifiedName functionName);
 
-        public MemoryEntry GetMemoryEntry(MemoryIndex index)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Gets the function.
+        /// </summary>
+        /// <param name="functionName">Name of the function.</param>
+        /// <returns>List of functions with given name.</returns>
+        public abstract IEnumerable<FunctionValue> GetFunction(QualifiedName functionName);
 
-        public bool TryGetMemoryEntry(MemoryIndex index, out MemoryEntry entry)
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Sets the function.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="declaration">The declaration.</param>
+        public abstract void SetFunction(QualifiedName name, FunctionValue declaration);
 
+        #endregion
 
-        public int GetNumberOfIndexes()
-        {
-            throw new NotImplementedException();
-        }
+        #region Classes
 
-        public void AddLocalLevel()
-        {
-            throw new NotImplementedException();
-        }
+        /// <summary>
+        /// Determines whether class with specified name is defined.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <returns>True whether class with specified name is defined.</returns>
+        public abstract bool IsClassDefined(PHP.Core.QualifiedName name);
 
+        /// <summary>
+        /// Gets the class.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <returns>Class with the specified name.</returns>
+        public abstract IEnumerable<TypeValue> GetClass(QualifiedName className);
 
-        public IEnumerable<IMemoryAlias> CreatedAliases
-        {
-            get { throw new NotImplementedException(); }
-        }
+        /// <summary>
+        /// Sets the class.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="declaration">The declaration.</param>
+        public abstract void SetClass(QualifiedName name, TypeValue declaration);
+
+        #endregion
+
+        #region Aliasses
+
+        /// <summary>
+        /// Gets the collection of created aliases in this snapshot.
+        /// </summary>
+        /// <value>
+        /// The created aliases.
+        /// </value>
+        public abstract IEnumerable<IMemoryAlias> CreatedAliases { get; }
+
+        /// <summary>
+        /// Tries the get aliases for specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="aliases">The aliases.</param>
+        /// <returns>True whether specified index has aliases.</returns>
+        public abstract bool TryGetAliases(MemoryIndex index, out IMemoryAlias aliases);
+
+        /// <summary>
+        /// Gets the aliases for specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>Aliases for the specified index.</returns>
+        /// <exception cref="System.Exception">Missing alias value for  + index</exception>
+        public abstract IMemoryAlias GetAliases(MemoryIndex index);
+
+        /// <summary>
+        /// Adds the created alias.
+        /// </summary>
+        /// <param name="aliasData">The alias data.</param>
+        public abstract void AddCreatedAlias(IMemoryAlias aliasData);
+
+        /// <summary>
+        /// Sets the alias to specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="alias">The alias.</param>
+        public abstract void SetAlias(MemoryIndex index, IMemoryAlias alias);
+
+        /// <summary>
+        /// Removes the alias from specified index.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        public abstract void RemoveAlias(MemoryIndex index);
+
+        #endregion
     }
-     */
 }
