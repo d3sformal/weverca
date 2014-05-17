@@ -15,11 +15,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
     public interface ICopyModelSnapshotEntry
     {
         /// <summary>
-        /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
+        /// Gets the path of this snapshot entry.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        /// <returns>Alias data fro the newly created aliases.</returns>
-        IMemoryAlias CreateAliasToEntry(Snapshot snapshot);
+        /// <returns>The path of this snapshot entry.</returns>
+        MemoryPath GetPath(Snapshot snapshot);
 
         /// <summary>
         /// Reads the memory.

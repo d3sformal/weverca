@@ -43,7 +43,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <value>
         /// The snapshot data factory.
         /// </value>
-        public static readonly ISnapshotDataFactory SnapshotDataFactory = null;
+        public static ISnapshotDataFactory SnapshotDataFactory = null;
 
         /// <summary>
         /// Gets the snapshot structure factory.
@@ -51,25 +51,43 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <value>
         /// The snapshot structure factory.
         /// </value>
-        public static readonly ISnapshotStructureFactory SnapshotStructureFactory = null;
+        public static ISnapshotStructureFactory SnapshotStructureFactory = null;
 
         #region Algorithm Factories
 
-        public static readonly IAlgorithmFactory<IAssignAlgorithm> AssignMemoryAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IReadAlgorithm> ReadMemoryAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<ICommitAlgorithm> CommitMemoryAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<ICopyAlgorithm> CopyMemoryAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IDeleteAlgorithm> DeleteMemoryAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IExtendAlgorithm> ExtendMemoryAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IMergeAlgorithm> MergeMemoryAlgorithmFactory = null;
+        /// <summary>
+        /// The algorithm factories for the memory phase.
+        /// </summary>
+        public static AlgorithmFactories MemoryAlgorithmFactories = null;
 
-        public static readonly IAlgorithmFactory<IAssignAlgorithm> AssignInfoAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IReadAlgorithm> ReadInfoAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<ICommitAlgorithm> CommitInfoAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<ICopyAlgorithm> CopyInfoAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IDeleteAlgorithm> DeleteInfoAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IExtendAlgorithm> ExtendInfoAlgorithmFactory = null;
-        public static readonly IAlgorithmFactory<IMergeAlgorithm> MergeInfoAlgorithmFactory = null;
+        /// <summary>
+        /// The algorithm factories for the info phase.
+        /// </summary>
+        public static AlgorithmFactories InfoAlgorithmFactories = null;
+
+        /// <summary>
+        /// Gets the algorithm factories for the current memory mode.
+        /// </summary>
+        /// <value>
+        /// The algorithm factories.
+        /// </value>
+        public AlgorithmFactories AlgorithmFactories
+        {
+            get
+            {
+                switch (CurrentMode)
+                {
+                    case SnapshotMode.MemoryLevel:
+                        return MemoryAlgorithmFactories;
+
+                    case SnapshotMode.InfoLevel:
+                        return InfoAlgorithmFactories;
+
+                    default:
+                        throw new NotSupportedException("Current mode: " + CurrentMode);
+                }
+            }
+        }
         
         #endregion
 
@@ -172,6 +190,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The assistant.
         /// </value>
         public MemoryAssistantBase MemoryAssistant { get { return base.Assistant; } }
+
+        /// <summary>
+        /// Assistant helping memory models resolving memory operations
+        /// </summary>
         public new MemoryAssistantBase Assistant { get { return base.Assistant; } }
 
         /// <summary>
@@ -281,25 +303,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             SnapshotLogger.append(this, "Commit");
 
-            ICommitAlgorithm algorithm;
+            ICommitAlgorithm algorithm = AlgorithmFactories.CommitAlgorithmFactory.CreateInstance();
             ISnapshotDataProxy currentData;
             ISnapshotDataProxy oldData;
 
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    algorithm = CommitMemoryAlgorithmFactory.CreateInstance();
                     currentData = Data;
                     oldData = oldMemory;
                     break;
-                //return !Structure.DataEqualsAndSimplify(oldStructure, simplifyLimit, MemoryAssistant);
 
                 case SnapshotMode.InfoLevel:
-                    algorithm = CommitInfoAlgorithmFactory.CreateInstance();
                     currentData = Infos;
                     oldData = oldInfos;
                     break;
-                //return !Infos.DataEqualsAndSimplify(oldInfos, simplifyLimit, MemoryAssistant);
 
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
@@ -331,25 +349,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             SnapshotLogger.append(this, "Commit and widen");
 
-            ICommitAlgorithm algorithm;
+            ICommitAlgorithm algorithm = AlgorithmFactories.CommitAlgorithmFactory.CreateInstance();
             ISnapshotDataProxy currentData;
             ISnapshotDataProxy oldData;
 
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    algorithm = CommitMemoryAlgorithmFactory.CreateInstance();
                     currentData = Data;
                     oldData = oldMemory;
                     break;
-                //return !Structure.DataEqualsAndSimplify(oldStructure, simplifyLimit, MemoryAssistant);
 
                 case SnapshotMode.InfoLevel:
-                    algorithm = CommitInfoAlgorithmFactory.CreateInstance();
                     currentData = Infos;
                     oldData = oldInfos;
                     break;
-                //return !Infos.DataEqualsAndSimplify(oldInfos, simplifyLimit, MemoryAssistant);
 
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
@@ -357,7 +371,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             algorithm.SetStructure(SnapshotStructure, oldStructure);
             algorithm.SetData(currentData, oldData);
-            algorithm.CommitAndWiden(this, simplifyLimit, MemoryAssistant);
+            algorithm.CommitAndWiden(this, simplifyLimit);
             bool differs = algorithm.IsDifferent();
 
             SnapshotLogger.appendToSameLine(" " + differs);
@@ -458,7 +472,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             HashSet<FunctionValue> functions = new HashSet<FunctionValue>();
             foreach (Value value in entry.PossibleValues)
             {
-                HashSetTools.AddAll(functions, resolveMethod(value, methodName));
+                CollectionTools.AddAll(functions, resolveMethod(value, methodName));
             }
 
             return functions;
@@ -609,7 +623,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    algorithm = MergeMemoryAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     algorithm.MergeWithCall(this, snapshots);
 
                     SnapshotStructure = algorithm.GetMergedStructure();
@@ -617,7 +631,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    algorithm = MergeMemoryAlgorithmFactory.CreateInstance();
+                    algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     algorithm.MergeWithCall(this, snapshots);
 
                     Infos = algorithm.GetMergedData();
@@ -1410,25 +1424,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <param name="isMust">if set to <c>true</c> copy is must othervise undefined value is added into the whole memory tree.</param>
         private void CopyMemory(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
         {
-            ICopyAlgorithm algorithm = null;
-            switch (CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.CopyMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.CopyInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.CopyMemory(this, sourceIndex, targetIndex, isMust);
-            }
+            IMemoryAlgorithm algorithm = AlgorithmFactories.MemoryAlgorithmFactory.CreateInstance();
+            algorithm.CopyMemory(this, sourceIndex, targetIndex, isMust);
         }
 
         /// <summary>
@@ -1437,25 +1434,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <param name="index">The index.</param>
         public void DestroyMemory(MemoryIndex index)
         {
-            IDeleteAlgorithm algorithm = null;
-            switch (CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.DeleteMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.DeleteInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.DestroyMemory(this, index);
-            }
+            IMemoryAlgorithm algorithm = AlgorithmFactories.MemoryAlgorithmFactory.CreateInstance();
+            algorithm.DestroyMemory(this, index);
         }
 
         /// <summary>
@@ -1517,7 +1497,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     {
                         MemoryEntry aliasEntry = CurrentData.ReadOnlySnapshotData.GetMemoryEntry(mayAlias);
                         HashSet<Value> values = new HashSet<Value>(aliasEntry.PossibleValues);
-                        HashSetTools.AddAll(values, entry.PossibleValues);
+                        CollectionTools.AddAll(values, entry.PossibleValues);
                         CurrentData.WriteableSnapshotData.SetMemoryEntry(mayAlias, new MemoryEntry(values));
                     }
                 }
@@ -1557,7 +1537,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    algorithm = MergeMemoryAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     algorithm.Merge(this, snapshots);
 
                     SnapshotStructure = algorithm.GetMergedStructure();
@@ -1565,7 +1545,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    algorithm = MergeMemoryAlgorithmFactory.CreateInstance();
+                    algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     algorithm.Merge(this, snapshots);
 
                     Infos = algorithm.GetMergedData();

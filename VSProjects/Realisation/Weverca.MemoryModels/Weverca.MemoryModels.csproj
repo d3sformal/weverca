@@ -87,8 +87,8 @@
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\Algorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotData.cs" />
-    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\AliasData.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\ArrayDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\IndexContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\IndexDefinition.cs" />
@@ -109,7 +109,7 @@
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\ICopyModelSnapshotEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotDataEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotEntry.cs" />
-    <Compile Include="ModularCopyMemoryModel\Tools\HashSetTools.cs" />
+    <Compile Include="ModularCopyMemoryModel\Tools\CollectionTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VirtualReferenceModel\Containers\DataContainer.cs" />
     <Compile Include="VirtualReferenceModel\Memory\CallbackReference.cs" />

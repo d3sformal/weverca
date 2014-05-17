@@ -45,7 +45,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
     /// <summary>
     /// Mutable variant of ObjectDescriptor - use for creating new structure
     /// </summary>
-    public interface IObjectDescriptorBuilder : IObjectDescriptor, IWriteableIndexContainer
+    public interface IObjectDescriptorBuilder : IWriteableIndexContainer
     {
         /// <summary>
         /// Gets the type.

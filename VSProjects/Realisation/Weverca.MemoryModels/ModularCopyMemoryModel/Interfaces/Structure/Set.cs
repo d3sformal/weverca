@@ -49,7 +49,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Adds all values into set.
         /// </summary>
-        /// <param name="mustAliases">Collection of values.</param>
+        /// <param name="values">Collection of values.</param>
         void AddAll(IEnumerable<T> values);
 
         /// <summary>

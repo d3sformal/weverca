@@ -41,7 +41,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         TemporaryIndex temporaryIndex = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DataSnapshotEntry"/> class.
+        /// Initializes a new instance of the <see cref="SnapshotDataEntry"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="entry">The entry.</param>
@@ -93,28 +93,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
 
             if (temporaryLocation == null)
             {
-                IMergeAlgorithm algorithm = null;
-                switch (snapshot.CurrentMode)
-                {
-                    case SnapshotMode.MemoryLevel:
-                        algorithm = Snapshot.MergeMemoryAlgorithmFactory.CreateInstance();
-                        break;
-
-                    case SnapshotMode.InfoLevel:
-                        algorithm = Snapshot.MergeInfoAlgorithmFactory.CreateInstance();
-                        break;
-
-                    default:
-                        throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-                }
-
                 temporaryIndex = snapshot.CreateTemporary();
                 temporaryLocation = new SnapshotEntry(MemoryPath.MakePathTemporary(temporaryIndex));
 
-                if (algorithm != null)
-                {
-                    algorithm.MergeMemoryEntry(snapshot, temporaryIndex, dataEntry);
-                }
+                IMergeAlgorithm algorithm = snapshot.AlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                algorithm.MergeMemoryEntry(snapshot, temporaryIndex, dataEntry);
             }
 
             return temporaryLocation;
@@ -315,15 +298,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
             SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
-
             if (isTemporarySet(context))
             {
-                return temporaryLocation.ResolveMethod(context, methodName);
+                return getTemporary(context).ResolveMethod(context, methodName);
             }
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                return snapshot.resolveMethod(dataEntry, methodName);
+                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+
+                MemoryEntry values = readMemory(snapshot);
+                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                algorithm.Read(snapshot, values);
+                return algorithm.GetMethod(methodName);
             }
         }
 
@@ -345,22 +332,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         #endregion
 
         /// <summary>
-        /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
-        /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>Alias data fro the newly created aliases.</returns>
-        public IMemoryAlias CreateAliasToEntry(Snapshot snapshot)
-        {
-            return getTemporary(snapshot).CreateAliasToEntry(snapshot);
-        }
-
-        /// <summary>
         /// Write given value at memory represented by snapshot entry and doesn't process any
         /// array copy. Is needed for correct increment/decrement semantic.
         /// </summary>
         /// <param name="context">Context snapshot where operation is proceeded</param>
         /// <param name="value">Written value</param>
-        /// <exception cref="System.NotImplementedException"></exception>
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             if (isTemporarySet(context))
@@ -395,8 +371,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
-            throw new NotImplementedException();
-            // return SnapshotEntryHelper.IterateFields(context, this);
+            if (isTemporarySet(context))
+            {
+                return getTemporary(context).IterateFields(context);
+            }
+            else
+            {
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+
+                MemoryEntry values = readMemory(snapshot);
+                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                algorithm.Read(snapshot, values);
+                return algorithm.GetFields();
+            }
         }
 
         /// <summary>
@@ -408,8 +396,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
-            throw new NotImplementedException();
-            // return SnapshotEntryHelper.IterateIndexes(context, this);
+            if (isTemporarySet(context))
+            {
+                return getTemporary(context).IterateIndexes(context);
+            }
+            else
+            {
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+
+                MemoryEntry values = readMemory(snapshot);
+                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                algorithm.Read(snapshot, values);
+                return algorithm.GetIndexes();
+            }
         }
 
         /// <summary>
@@ -421,8 +421,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
-            throw new NotImplementedException();
-            // return SnapshotEntryHelper.ResolveType(context, this);
+            if (isTemporarySet(context))
+            {
+                return getTemporary(context).ResolveType(context);
+            }
+            else
+            {
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+
+                MemoryEntry values = readMemory(snapshot);
+                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                algorithm.Read(snapshot, values);
+                return algorithm.GetObjectType();
+            }
         }
 
         /// <summary>
@@ -435,6 +447,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         public MemoryEntry ReadMemory(Snapshot snapshot)
         {
             return this.readMemory(snapshot);
+        }
+
+        /// <summary>
+        /// Gets the path of this snapshot entry.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>
+        /// The path of this snapshot entry.
+        /// </returns>
+        public MemoryPath GetPath(Snapshot snapshot)
+        {
+            return getTemporary(snapshot).GetPath(snapshot);
         }
     }
 }

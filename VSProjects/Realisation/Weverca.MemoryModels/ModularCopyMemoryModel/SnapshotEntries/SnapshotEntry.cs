@@ -181,25 +181,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             Snapshot snapshot = ToSnapshot(context);
             SnapshotLogger.append(context, "write: " + this.ToString() + " value: " + value.ToString());
 
-            IAssignAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.AssignInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.AssignInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Assign(snapshot, path, value, forceStrongWrite);
-            }
+            IAssignAlgorithm algorithm = snapshot.AlgorithmFactories.AssignAlgorithmFactory.CreateInstance();
+            algorithm.Assign(snapshot, path, value, forceStrongWrite);
         }
 
         /// <summary>
@@ -213,25 +196,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             Snapshot snapshot = ToSnapshot(context);
             SnapshotLogger.append(context, "write without copy:" + this.ToString());
 
-            IAssignAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.AssignMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.AssignInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.WriteWithoutCopy(snapshot, path, value);
-            }
+            IAssignAlgorithm algorithm = snapshot.AlgorithmFactories.AssignAlgorithmFactory.CreateInstance();
+            algorithm.WriteWithoutCopy(snapshot, path, value);
         }
 
         /// <summary>
@@ -247,25 +213,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
 
             ICopyModelSnapshotEntry entry = ToEntry(aliasedEntry);
 
-            IAssignAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.AssignMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = null;
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.AssignAlias(snapshot, path, entry);
-            }
+            IAssignAlgorithm algorithm = snapshot.AlgorithmFactories.AssignAlgorithmFactory.CreateInstance();
+            algorithm.AssignAlias(snapshot, path, entry.GetPath(snapshot));
         }
 
         #endregion
@@ -285,28 +234,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             Snapshot snapshot = ToSnapshot(context);
             SnapshotLogger.append(context, "is defined:" + this.ToString());
 
-            IReadAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.ReadMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.ReadInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Read(snapshot, path);
-                return algorithm.IsDefined();
-            }
-
-            return false;
+            IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+            algorithm.Read(snapshot, path);
+            return algorithm.IsDefined();
         }
 
         /// <summary>
@@ -335,28 +265,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             Snapshot snapshot = ToSnapshot(context);
             SnapshotLogger.append(context, "read: " + this.ToString());
 
-            IReadAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.ReadMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.ReadInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Read(snapshot, path);
-                return algorithm.GetValue();
-            }
-
-            return null;
+            IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+            algorithm.Read(snapshot, path);
+            return algorithm.GetValue();
         }
 
         /// <summary>
@@ -371,28 +282,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             Snapshot snapshot = ToSnapshot(context);
             SnapshotLogger.append(context, "iterate fields: " + this.ToString());
 
-            IReadAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.ReadMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.ReadInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Read(snapshot, path);
-                return algorithm.GetFields();
-            }
-
-            return null;
+            IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+            algorithm.Read(snapshot, path);
+            return algorithm.GetFields();
         }
 
         /// <summary>
@@ -405,30 +297,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "iterate filds: " + this.ToString());
+            SnapshotLogger.append(context, "iterate fields: " + this.ToString());
 
-            IReadAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.ReadMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.ReadInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Read(snapshot, path);
-                return algorithm.GetIndexes();
-            }
-
-            return null;
+            IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+            algorithm.Read(snapshot, path);
+            return algorithm.GetIndexes();
         }
 
         /// <summary>
@@ -441,30 +314,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            SnapshotLogger.append(context, "iterate filds: " + this.ToString());
+            SnapshotLogger.append(context, "iterate fields: " + this.ToString());
 
-            IReadAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.ReadMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.ReadInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Read(snapshot, path);
-                return algorithm.GetObjectType();
-            }
-
-            return null;
+            IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+            algorithm.Read(snapshot, path);
+            return algorithm.GetObjectType();
         }
 
         /// <summary>
@@ -480,28 +334,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             Snapshot snapshot = ToSnapshot(context);
             SnapshotLogger.append(context, "iterate filds: " + this.ToString());
 
-            IReadAlgorithm algorithm = null;
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    algorithm = Snapshot.ReadMemoryAlgorithmFactory.CreateInstance();
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    algorithm = Snapshot.ReadInfoAlgorithmFactory.CreateInstance();
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-
-            if (algorithm != null)
-            {
-                algorithm.Read(snapshot, path);
-                return algorithm.GetMethod(methodName);
-            }
-
-            return null;
+            IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+            algorithm.Read(snapshot, path);
+            return algorithm.GetMethod(methodName);
         }
 
         /// <summary>
@@ -580,18 +415,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         }
 
         /// <summary>
-        /// Creates the alias to this entry and returnes data which can be used to aliasing the target.
-        /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>
-        /// Alias data fro the newly created aliases.
-        /// </returns>
-        public IMemoryAlias CreateAliasToEntry(Snapshot snapshot)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Reads the memory.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
@@ -601,6 +424,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         public MemoryEntry ReadMemory(Snapshot snapshot)
         {
             return this.readMemory(snapshot);
+        }
+
+        /// <summary>
+        /// Gets the path of this snapshot entry.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>
+        /// The path of this snapshot entry.
+        /// </returns>
+        public MemoryPath GetPath(Snapshot snapshot)
+        {
+            return path;
         }
     }
 }

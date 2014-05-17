@@ -71,10 +71,28 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </value>
         IWriteableSnapshotStructure WriteableSnapshotStructure { get; }
 
+        /// <summary>
+        /// Creates the new instance of object descriptor to store object definition in structure.
+        /// </summary>
+        /// <param name="createdObject">The created object.</param>
+        /// <param name="type">The type of object.</param>
+        /// <param name="memoryIndex">The memory location of object.</param>
+        /// <returns>Created object descriptor instance.</returns>
         IObjectDescriptor CreateObjectDescriptor(ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex);
 
+        /// <summary>
+        /// Creates the new instance of array descriptor to store array definition in structure.
+        /// </summary>
+        /// <param name="createdArray">The created array.</param>
+        /// <param name="arrayIndex">The memory location of array.</param>
+        /// <returns>Created array descriptor instance.</returns>
         IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, TemporaryIndex arrayIndex);
-        
+
+        /// <summary>
+        /// Creates the new instance of memory alias object to store alias definition in this structure.
+        /// </summary>
+        /// <param name="index">The memory index collection is created for.</param>
+        /// <returns>Created alias collection.</returns>
         IMemoryAlias CreateMemoryAlias(MemoryIndex index);
     }
 
@@ -305,6 +323,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 
         #region Aliasses
 
+        /// <summary>
+        /// Gets the collection of created aliases in this snapshot.
+        /// </summary>
+        /// <value>
+        /// The created aliases.
+        /// </value>
         IEnumerable<IMemoryAlias> CreatedAliases { get; }
 
         /// <summary>
@@ -325,6 +349,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 
         #endregion
 
+        /// <summary>
+        /// Gets the number of indexes in structure.
+        /// </summary>
+        /// <returns>The number of indexes in structure.</returns>
         int GetNumberOfIndexes();
     }
 
@@ -479,15 +507,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 
         #endregion
 
+        /// <summary>
+        /// Adds the local level to memory stack.
+        /// </summary>
         void AddLocalLevel();
     }
-
+    /*
     /// <summary>
     /// Basic abstract implementation of snapshot structure container.
     /// 
     /// Implements unique identifiers and snapshot storing.
     /// </summary>
-    /*public abstract class AbstractSnapshotStructure : IReadOnlySnapshotStructure, IWriteableSnapshotStructure
+    public abstract class AbstractSnapshotStructure : IReadOnlySnapshotStructure, IWriteableSnapshotStructure
     {
         /// <summary>
         /// Incremental counter for structure unique identifier.
