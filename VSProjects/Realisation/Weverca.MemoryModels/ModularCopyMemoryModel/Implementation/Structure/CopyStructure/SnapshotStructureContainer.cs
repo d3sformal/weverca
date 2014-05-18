@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
+using PHP.Core;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
@@ -40,14 +41,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
     {
         #region Structure Data
 
+        private int localLevel = 0;
         private List<CopyStackContext> memoryStack;
         private Dictionary<AssociativeArray, IArrayDescriptor> arrayDescriptors;
         private Dictionary<ObjectValue, IObjectDescriptor> objectDescriptors;
         private Dictionary<MemoryIndex, IIndexDefinition> indexDefinitions;
         private Dictionary<AssociativeArray, CopySet<Snapshot>> callArrays;
         private List<IMemoryAlias> createdAliases;
-        private CopySet<FunctionValue> functionDecl;
-        private CopySet<TypeValue> classDecl;
+        private CopyDeclarationContainer<FunctionValue> functionDecl;
+        private CopyDeclarationContainer<TypeValue> classDecl;
 
         #endregion
 
@@ -73,8 +75,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
             data.indexDefinitions = new Dictionary<MemoryIndex, IIndexDefinition>();
-            data.functionDecl = new CopySet<FunctionValue>();
-            data.classDecl = new CopySet<TypeValue>();
+            data.functionDecl = new CopyDeclarationContainer<FunctionValue>();
+            data.classDecl = new CopyDeclarationContainer<TypeValue>();
             data.callArrays = new Dictionary<AssociativeArray, CopySet<Snapshot>>();
 
             return data;
@@ -92,8 +94,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
             data.indexDefinitions = new Dictionary<MemoryIndex, IIndexDefinition>();
-            data.functionDecl = new CopySet<FunctionValue>();
-            data.classDecl = new CopySet<TypeValue>();
+            data.functionDecl = new CopyDeclarationContainer<FunctionValue>();
+            data.classDecl = new CopyDeclarationContainer<TypeValue>();
             data.callArrays = new Dictionary<AssociativeArray, CopySet<Snapshot>>();
 
             data.AddLocalLevel();
@@ -118,8 +120,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>(this.arrayDescriptors);
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>(this.objectDescriptors);
             data.indexDefinitions = new Dictionary<MemoryIndex, IIndexDefinition>(this.indexDefinitions);
-            data.functionDecl = new CopySet<FunctionValue>(this.functionDecl);
-            data.classDecl = new CopySet<TypeValue>(this.classDecl);
+            data.functionDecl = new CopyDeclarationContainer<FunctionValue>(this.functionDecl);
+            data.classDecl = new CopyDeclarationContainer<TypeValue>(this.classDecl);
             data.callArrays = new Dictionary<AssociativeArray, CopySet<Snapshot>>(this.callArrays);
 
             return data;
@@ -130,55 +132,114 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override IReadonlyStackContext ReadonlyLocalContext
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (memoryStack.Count > 0)
+                {
+                    return memoryStack[localLevel];
+                }
+                else
+                {
+                    throw new IndexOutOfRangeException("Memory stack is empty");
+                }
+            }
         }
 
         /// <inheritdoc />
         public override IReadonlyStackContext ReadonlyGlobalContext
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (memoryStack.Count > 0)
+                {
+                    return memoryStack[Snapshot.GLOBAL_CALL_LEVEL];
+                }
+                else
+                {
+                    throw new IndexOutOfRangeException("Memory stack is empty");
+                }
+            }
         }
 
         /// <inheritdoc />
         public override IEnumerable<IReadonlyStackContext> ReadonlyStackContexts
         {
-            get { throw new NotImplementedException(); }
+            get { return memoryStack; }
         }
 
         /// <inheritdoc />
         public override IReadonlyStackContext GetReadonlyStackContext(int level)
         {
-            throw new NotImplementedException();
+            if (memoryStack.Count > level)
+            {
+                return memoryStack[level];
+            }
+            else
+            {
+                throw new IndexOutOfRangeException("Given level of memory stack is out of memory stack size.");
+            }
         }
 
         /// <inheritdoc />
         public override IWriteableStackContext WriteableLocalContext
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (memoryStack.Count > 0)
+                {
+                    return memoryStack[localLevel];
+                }
+                else
+                {
+                    throw new IndexOutOfRangeException("Memory stack is empty");
+                }
+            }
         }
 
         /// <inheritdoc />
         public override IWriteableStackContext WriteableGlobalContext
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                if (memoryStack.Count > 0)
+                {
+                    return memoryStack[Snapshot.GLOBAL_CALL_LEVEL];
+                }
+                else
+                {
+                    throw new IndexOutOfRangeException("Memory stack is empty");
+                }
+            }
         }
 
         /// <inheritdoc />
         public override IEnumerable<IWriteableStackContext> WriteableStackContexts
         {
-            get { throw new NotImplementedException(); }
+            get { return memoryStack; }
         }
 
         /// <inheritdoc />
         public override IWriteableStackContext GetWriteableStackContext(int level)
         {
-            throw new NotImplementedException();
+            if (memoryStack.Count > level)
+            {
+                return memoryStack[level];
+            }
+            else
+            {
+                throw new IndexOutOfRangeException("Given level of memory stack is out of memory stack size.");
+            }
         }
 
         /// <inheritdoc />
         public override void AddLocalLevel()
         {
-            throw new NotImplementedException();
+            CopyStackContext context = new CopyStackContext();
+            context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(localLevel));
+            context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(localLevel));
+
+            memoryStack.Add(context);
+            localLevel++;
         }
 
         #endregion
@@ -188,49 +249,55 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override IEnumerable<MemoryIndex> Indexes
         {
-            get { throw new NotImplementedException(); }
+            get { return indexDefinitions.Keys; }
         }
 
         /// <inheritdoc />
         public override IEnumerable<KeyValuePair<MemoryIndex, IIndexDefinition>> IndexDefinitions
         {
-            get { throw new NotImplementedException(); }
+            get { return indexDefinitions; }
         }
 
         /// <inheritdoc />
         public override bool IsDefined(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            return indexDefinitions.ContainsKey(index);
         }
 
         /// <inheritdoc />
         public override bool TryGetIndexDefinition(MemoryIndex index, out IIndexDefinition data)
         {
-            throw new NotImplementedException();
+            return indexDefinitions.TryGetValue(index, out data);
         }
 
         /// <inheritdoc />
         public override IIndexDefinition GetIndexDefinition(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                return data;
+            }
+            throw new Exception("Missing definition for " + index);
         }
 
         /// <inheritdoc />
         public override int GetNumberOfIndexes()
         {
-            throw new NotImplementedException();
+            return indexDefinitions.Count();
         }
 
         /// <inheritdoc />
         public override void NewIndex(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            CopyIndexDefinition data = new CopyIndexDefinition();
+            indexDefinitions.Add(index, data);
         }
 
         /// <inheritdoc />
         public override void RemoveIndex(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            indexDefinitions.Remove(index);
         }
 
         #endregion
@@ -240,43 +307,77 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override IEnumerable<KeyValuePair<ObjectValue, IObjectDescriptor>> ObjectDescriptors
         {
-            get { throw new NotImplementedException(); }
+            get { return objectDescriptors; }
         }
 
         /// <inheritdoc />
         public override IObjectDescriptor GetDescriptor(ObjectValue objectValue)
         {
-            throw new NotImplementedException();
+            IObjectDescriptor descriptor;
+            if (objectDescriptors.TryGetValue(objectValue, out descriptor))
+            {
+                return descriptor;
+            }
+            else
+            {
+                throw new Exception("Missing object descriptor");
+            }
         }
 
         /// <inheritdoc />
         public override bool TryGetDescriptor(ObjectValue objectValue, out IObjectDescriptor descriptor)
         {
-            throw new NotImplementedException();
+            return objectDescriptors.TryGetValue(objectValue, out descriptor);
         }
 
         /// <inheritdoc />
         public override bool HasObjects(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                return data.Objects != null && data.Objects.Count > 0;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <inheritdoc />
         public override IObjectValueContainer GetObjects(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                if (data.Objects != null)
+                {
+                    return data.Objects;
+                }
+            }
+
+            return new CopyObjectValueContainer();
         }
 
         /// <inheritdoc />
         public override void SetDescriptor(ObjectValue objectValue, IObjectDescriptor descriptor)
         {
-            throw new NotImplementedException();
+            objectDescriptors[objectValue] = descriptor;
         }
 
         /// <inheritdoc />
         public override void SetObjects(MemoryIndex index, IObjectValueContainer objects)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (!indexDefinitions.TryGetValue(index, out data))
+            {
+                data = new CopyIndexDefinition();
+            }
+
+            IIndexDefinitionBuilder builder = data.Builder();
+            builder.SetObjects(objects);
+
+            indexDefinitions[index] = builder.Build();
         }
 
         #endregion
@@ -286,67 +387,152 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override IEnumerable<KeyValuePair<AssociativeArray, IArrayDescriptor>> ArrayDescriptors
         {
-            get { throw new NotImplementedException(); }
+            get { return arrayDescriptors; }
         }
 
         /// <inheritdoc />
         public override bool TryGetDescriptor(AssociativeArray arrayValue, out IArrayDescriptor descriptor)
         {
-            throw new NotImplementedException();
+            return arrayDescriptors.TryGetValue(arrayValue, out descriptor);
         }
 
         /// <inheritdoc />
         public override IArrayDescriptor GetDescriptor(AssociativeArray arrayValue)
         {
-            throw new NotImplementedException();
+            IArrayDescriptor descriptor;
+            if (arrayDescriptors.TryGetValue(arrayValue, out descriptor))
+            {
+                return descriptor;
+            }
+            else
+            {
+                throw new Exception("Missing array descriptor " + arrayValue.ToString());
+            }
         }
 
         /// <inheritdoc />
         public override AssociativeArray GetArray(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                if (data.Array != null)
+                {
+                    return data.Array;
+                }
+            }
+
+            throw new Exception("Missing array for index " + index);
         }
 
         /// <inheritdoc />
         public override bool HasArray(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                if (data.Array != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
         public override bool TryGetArray(MemoryIndex index, out AssociativeArray arrayValue)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                if (data.Array != null)
+                {
+                    arrayValue = data.Array;
+                    return true;
+                }
+            }
+
+            arrayValue = null;
+            return false;
         }
 
         /// <inheritdoc />
         public override bool TryGetCallArraySnapshot(AssociativeArray array, out IEnumerable<Snapshot> snapshots)
         {
-            throw new NotImplementedException();
+            CopySet<Snapshot> snapshotSet = null;
+            if (callArrays.TryGetValue(array, out snapshotSet))
+            {
+                snapshots = snapshotSet;
+                return true;
+            }
+            else
+            {
+                snapshots = null;
+                return false;
+            }
         }
 
         /// <inheritdoc />
         public override void SetDescriptor(AssociativeArray arrayvalue, IArrayDescriptor descriptor)
         {
-            throw new NotImplementedException();
+            arrayDescriptors[arrayvalue] = descriptor;
         }
 
         /// <inheritdoc />
-        public override void AddCallArray(AssociativeArray array, CopyMemoryModel.Snapshot snapshot)
+        public override void AddCallArray(AssociativeArray array, Snapshot snapshot)
         {
-            throw new NotImplementedException();
+            CopySet<Snapshot> snapshots;
+            if (!callArrays.TryGetValue(array, out snapshots))
+            {
+                snapshots = new CopySet<Snapshot>();
+                callArrays[array] = snapshots;
+            }
+
+            snapshots.Add(snapshot);
         }
 
         /// <inheritdoc />
         public override void SetArray(MemoryIndex index, AssociativeArray arrayValue)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (!indexDefinitions.TryGetValue(index, out data))
+            {
+                data = new CopyIndexDefinition();
+            }
+
+            IIndexDefinitionBuilder builder = data.Builder();
+            builder.SetArray(arrayValue);
+
+            indexDefinitions[index] = builder.Build();
+
+            IArrayDescriptor descriptor;
+            if (TryGetDescriptor(arrayValue, out descriptor))
+            {
+                if (descriptor.ParentIndex != null)
+                {
+                    GetWriteableStackContext(descriptor.ParentIndex.CallLevel).WriteableArrays.Remove(arrayValue);
+                }
+            }
+            GetWriteableStackContext(index.CallLevel).WriteableArrays.Add(arrayValue);
         }
 
         /// <inheritdoc />
         public override void RemoveArray(MemoryIndex index, AssociativeArray arrayValue)
         {
-            throw new NotImplementedException();
+            arrayDescriptors.Remove(arrayValue);
+
+            IIndexDefinition data;
+            if (!indexDefinitions.TryGetValue(index, out data))
+            {
+                data = new CopyIndexDefinition();
+            }
+
+            IIndexDefinitionBuilder builder = data.Builder();
+            builder.SetArray(null);
+
+            indexDefinitions[index] = builder.Build();
+            GetWriteableStackContext(index.CallLevel).WriteableArrays.Remove(arrayValue);
         }
 
         #endregion
@@ -354,43 +540,67 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         #region Functions
 
         /// <inheritdoc />
-        public override bool IsFunctionDefined(PHP.Core.QualifiedName functionName)
+        public override IEnumerable<QualifiedName> GetFunctions()
+        {
+            return functionDecl.GetNames();
+        }
+
+        /// <inheritdoc />
+        public override bool IsFunctionDefined(QualifiedName functionName)
+        {
+            return functionDecl.Contains(functionName);
+        }
+
+        /// <inheritdoc />
+        public override bool TryGetFunction(QualifiedName functionName, out IEnumerable<FunctionValue> functionValues)
         {
             throw new NotImplementedException();
         }
 
         /// <inheritdoc />
-        public override IEnumerable<FunctionValue> GetFunction(PHP.Core.QualifiedName functionName)
+        public override IEnumerable<FunctionValue> GetFunction(QualifiedName functionName)
         {
-            throw new NotImplementedException();
+            return functionDecl.GetValue(functionName);
         }
 
         /// <inheritdoc />
-        public override void SetFunction(PHP.Core.QualifiedName name, FunctionValue declaration)
+        public override void SetFunction(QualifiedName name, FunctionValue declaration)
         {
-            throw new NotImplementedException();
+            functionDecl.Add(name, declaration);
         }
 
         #endregion
 
         #region Classes
-        
+
         /// <inheritdoc />
-        public override bool IsClassDefined(PHP.Core.QualifiedName name)
+        public override IEnumerable<QualifiedName> GetClasses()
         {
-            throw new NotImplementedException();
+            return classDecl.GetNames();
+        }
+
+        /// <inheritdoc />
+        public override bool IsClassDefined(PHP.Core.QualifiedName className)
+        {
+            return classDecl.Contains(className);
+        }
+
+        /// <inheritdoc />
+        public override bool TryGetClass(QualifiedName className, out IEnumerable<TypeValue> classValues)
+        {
+            return classDecl.TryGetValue(className, out classValues);
         }
 
         /// <inheritdoc />
         public override IEnumerable<TypeValue> GetClass(PHP.Core.QualifiedName className)
         {
-            throw new NotImplementedException();
+            return classDecl.GetValue(className);
         }
 
         /// <inheritdoc />
         public override void SetClass(PHP.Core.QualifiedName name, TypeValue declaration)
         {
-            throw new NotImplementedException();
+            classDecl.Add(name, declaration);
         }
 
         #endregion
@@ -400,37 +610,64 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override IEnumerable<IMemoryAlias> CreatedAliases
         {
-            get { throw new NotImplementedException(); }
+            get { return createdAliases; }
         }
 
         /// <inheritdoc />
         public override bool TryGetAliases(MemoryIndex index, out IMemoryAlias aliases)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                aliases = data.Aliases;
+                return data.Aliases != null;
+            }
+            else
+            {
+                aliases = null;
+                return false;
+            }
         }
 
         /// <inheritdoc />
         public override IMemoryAlias GetAliases(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (indexDefinitions.TryGetValue(index, out data))
+            {
+                if (data.Aliases != null)
+                {
+                    return data.Aliases;
+                }
+            }
+            throw new Exception("Missing alias value for " + index);
         }
 
         /// <inheritdoc />
         public override void AddCreatedAlias(IMemoryAlias aliasData)
         {
-            throw new NotImplementedException();
+            createdAliases.Add(aliasData);
         }
 
         /// <inheritdoc />
         public override void SetAlias(MemoryIndex index, IMemoryAlias alias)
         {
-            throw new NotImplementedException();
+            IIndexDefinition data;
+            if (!indexDefinitions.TryGetValue(index, out data))
+            {
+                data = new CopyIndexDefinition();
+            }
+
+            IIndexDefinitionBuilder builder = data.Builder();
+            builder.SetAliases(alias);
+
+            indexDefinitions[index] = builder.Build();
         }
 
         /// <inheritdoc />
         public override void RemoveAlias(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            SetAlias(index, null);
         }
 
         #endregion

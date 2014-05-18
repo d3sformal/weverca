@@ -294,29 +294,61 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Functions
 
         /// <summary>
+        /// Gets the collection of defined functions.
+        /// </summary>
+        /// <returns>The collection of defined functions.</returns>
+        IEnumerable<QualifiedName> GetFunctions();
+
+        /// <summary>
         /// Determines whether function with given name is defined.
         /// </summary>
         /// <param name="functionName">Name of the function.</param>
         /// <returns>True whether function with given name is defined..</returns>
-        bool IsFunctionDefined(PHP.Core.QualifiedName functionName);
+        bool IsFunctionDefined(QualifiedName functionName);
+
+        /// <summary>
+        /// Tries the get functions with specified class name.
+        /// </summary>
+        /// <param name="functionName">Name of the function.</param>
+        /// <param name="functionValues">The function values.</param>
+        /// <returns>
+        /// True whether specified function is defined.
+        /// </returns>
+        bool TryGetFunction(QualifiedName functionName, out IEnumerable<FunctionValue> functionValues);
 
         /// <summary>
         /// Gets the function.
         /// </summary>
         /// <param name="functionName">Name of the function.</param>
         /// <returns>List of functions with given name.</returns>
-        IEnumerable<FunctionValue> GetFunction(PHP.Core.QualifiedName functionName);
+        IEnumerable<FunctionValue> GetFunction(QualifiedName functionName);
 
         #endregion
 
         #region Classes
 
         /// <summary>
+        /// Gets the collection of defined classes.
+        /// </summary>
+        /// <returns>The collection of defined classes.</returns>
+        IEnumerable<QualifiedName> GetClasses();
+
+        /// <summary>
         /// Determines whether class with specified name is defined.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="className">The name.</param>
         /// <returns>True whether class with specified name is defined.</returns>
-        bool IsClassDefined(PHP.Core.QualifiedName name);
+        bool IsClassDefined(QualifiedName className);
+
+        /// <summary>
+        /// Tries the get classes with specified class name.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="classValues">The class values.</param>
+        /// <returns>
+        /// True whether specified class is defined.
+        /// </returns>
+        bool TryGetClass(QualifiedName className, out IEnumerable<TypeValue> classValues);
 
         /// <summary>
         /// Gets the class.
@@ -449,7 +481,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </summary>
         /// <param name="array">The array.</param>
         /// <param name="snapshot">The snapshot.</param>
-        void AddCallArray(AssociativeArray array, CopyMemoryModel.Snapshot snapshot);
+        void AddCallArray(AssociativeArray array, Snapshot snapshot);
 
         /// <summary>
         /// Sets the array for specified index.
@@ -804,7 +836,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </summary>
         /// <param name="array">The array.</param>
         /// <param name="snapshot">The snapshot.</param>
-        public abstract void AddCallArray(AssociativeArray array, CopyMemoryModel.Snapshot snapshot);
+        public abstract void AddCallArray(AssociativeArray array, Snapshot snapshot);
 
         /// <summary>
         /// Sets the array for specified index.
@@ -825,11 +857,29 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Functions
 
         /// <summary>
+        /// Gets the collection of defined functions.
+        /// </summary>
+        /// <returns>
+        /// The collection of defined functions.
+        /// </returns>
+        public abstract IEnumerable<QualifiedName> GetFunctions();
+
+        /// <summary>
         /// Determines whether function with given name is defined.
         /// </summary>
         /// <param name="functionName">Name of the function.</param>
         /// <returns>True whether function with given name is defined..</returns>
         public abstract bool IsFunctionDefined(PHP.Core.QualifiedName functionName);
+
+        /// <summary>
+        /// Tries the get functions with specified class name.
+        /// </summary>
+        /// <param name="functionName">Name of the function.</param>
+        /// <param name="functionValues">The function values.</param>
+        /// <returns>
+        /// True whether specified function is defined.
+        /// </returns>
+        public abstract bool TryGetFunction(QualifiedName functionName, out IEnumerable<FunctionValue> functionValues);
 
         /// <summary>
         /// Gets the function.
@@ -850,11 +900,29 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Classes
 
         /// <summary>
+        /// Gets the collection of defined classes.
+        /// </summary>
+        /// <returns>
+        /// The collection of defined classes.
+        /// </returns>
+        public abstract IEnumerable<QualifiedName> GetClasses();
+
+        /// <summary>
         /// Determines whether class with specified name is defined.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns>True whether class with specified name is defined.</returns>
         public abstract bool IsClassDefined(PHP.Core.QualifiedName name);
+
+        /// <summary>
+        /// Tries the get classes with specified class name.
+        /// </summary>
+        /// <param name="className">Name of the class.</param>
+        /// <param name="classValues">The class values.</param>
+        /// <returns>
+        /// True whether specified class is defined.
+        /// </returns>
+        public abstract bool TryGetClass(QualifiedName className, out IEnumerable<TypeValue> classValues);
 
         /// <summary>
         /// Gets the class.
@@ -918,5 +986,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public abstract void RemoveAlias(MemoryIndex index);
 
         #endregion
+
+
     }
 }
