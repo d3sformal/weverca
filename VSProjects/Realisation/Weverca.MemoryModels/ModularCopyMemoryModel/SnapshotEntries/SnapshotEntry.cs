@@ -267,7 +267,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
 
             IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
             algorithm.Read(snapshot, path);
-            return algorithm.GetValue();
+            MemoryEntry entry = algorithm.GetValue();
+
+            SnapshotLogger.appendToSameLine(" value: " + entry.ToString());
+            return entry;
         }
 
         /// <summary>

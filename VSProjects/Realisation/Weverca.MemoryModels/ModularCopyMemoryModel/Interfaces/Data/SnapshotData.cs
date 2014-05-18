@@ -45,7 +45,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <value>
         /// The read only snapshot data.
         /// </value>
-        IReadOnlySnapshotData ReadOnlySnapshotData { get; }
+        IReadOnlySnapshotData Readonly { get; }
 
         /// <summary>
         /// Gets the snapshot data container for access which allows modifications.
@@ -53,7 +53,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <value>
         /// The writeable snapshot data.
         /// </value>
-        IWriteableSnapshotData WriteableSnapshotData { get; }
+        IWriteableSnapshotData Writeable { get; }
     }
 
     /// <summary>

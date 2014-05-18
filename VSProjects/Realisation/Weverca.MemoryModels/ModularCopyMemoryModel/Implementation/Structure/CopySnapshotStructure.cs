@@ -101,13 +101,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public bool Locked { get; set; }
 
         /// <inheritdoc />
-        public IReadOnlySnapshotStructure ReadOnlySnapshotStructure
+        public IReadOnlySnapshotStructure Readonly
         {
             get { return snapshotStructure; }
         }
 
         /// <inheritdoc />
-        public IWriteableSnapshotStructure WriteableSnapshotStructure
+        public IWriteableSnapshotStructure Writeable
         {
             get 
             {
@@ -125,19 +125,37 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <inheritdoc />
         public IObjectDescriptor CreateObjectDescriptor(ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex)
         {
-            return new CopyObjectDescriptor();
+            CopyObjectDescriptor descriptor = new CopyObjectDescriptor();
+            descriptor.SetObjectValue(createdObject);
+            descriptor.SetType(type);
+            descriptor.SetUnknownIndex(memoryIndex);
+            return descriptor;
         }
 
         /// <inheritdoc />
         public IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, MemoryIndex memoryIndex)
         {
-            return new CopyArrayDescriptor();
+            CopyArrayDescriptor descriptor = new CopyArrayDescriptor();
+            descriptor.SetArrayValue(createdArray);
+            descriptor.SetParentIndex(memoryIndex);
+            descriptor.SetUnknownIndex(memoryIndex.CreateUnknownIndex());
+            return descriptor;
         }
 
         /// <inheritdoc />
         public IMemoryAlias CreateMemoryAlias(Memory.MemoryIndex index)
         {
-            return new CopyMemoryAlias();
+            CopyMemoryAlias aliases = new CopyMemoryAlias();
+            aliases.SetSourceIndex(index);
+            return aliases;
+        }
+
+        /// <inheritdoc />
+        public IObjectValueContainer CreateObjectValueContainer(IEnumerable<ObjectValue> objects)
+        {
+            CopyObjectValueContainer container = new CopyObjectValueContainer();
+            container.AddAll(objects);
+            return container;
         }
     }
 }

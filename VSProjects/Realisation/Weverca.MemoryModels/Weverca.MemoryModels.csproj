@@ -86,10 +86,33 @@
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyArrayVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyAlgorithmFactories.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyAssignAlgorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyCommitAlgorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyMemoryAlgorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyMergeAlgorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyReadAlgorithm.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\AssignCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\IIndexCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ProcessValueAsLocationVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ReadCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ValueLocation.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignAliasWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignWithoutCopyWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\CopyWithinSnapshotWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\MergeOperation.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\MergeWithinSnapshotWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ReadWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ReferenceCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\CollectComposedValuesVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\DestroyMemoryVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\ReadValuesVisitors.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Data\CopySnapshotData.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Data\SnapshotDataContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopySnapshotStructure.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyArrayDescriptor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyDeclarationContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyIndexContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyMemoryAlias.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyObjectDescriptor.cs" />
@@ -159,9 +182,7 @@
       <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ModularCopyMemoryModel\Implementation\Algorithm\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

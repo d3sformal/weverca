@@ -114,7 +114,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             data.memoryStack = new List<CopyStackContext>();
             foreach (CopyStackContext context in this.memoryStack)
             {
-                memoryStack.Add(new CopyStackContext(context));
+                data.memoryStack.Add(new CopyStackContext(context));
             }
 
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>(this.arrayDescriptors);

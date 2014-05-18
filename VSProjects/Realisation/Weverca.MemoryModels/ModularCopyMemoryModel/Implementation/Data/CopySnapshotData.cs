@@ -79,13 +79,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <inheritdoc />
-        public IReadOnlySnapshotData ReadOnlySnapshotData
+        public IReadOnlySnapshotData Readonly
         {
             get { return snapshotData; }
         }
 
         /// <inheritdoc />
-        public IWriteableSnapshotData WriteableSnapshotData
+        public IWriteableSnapshotData Writeable
         {
             get { return snapshotData; }
         }

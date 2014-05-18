@@ -61,7 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The read only snapshot structure.
         /// </value>
-        IReadOnlySnapshotStructure ReadOnlySnapshotStructure { get; }
+        IReadOnlySnapshotStructure Readonly { get; }
 
         /// <summary>
         /// Gets the snapshot structure container for access which allows modifications.
@@ -69,7 +69,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The writeable snapshot structure.
         /// </value>
-        IWriteableSnapshotStructure WriteableSnapshotStructure { get; }
+        IWriteableSnapshotStructure Writeable { get; }
 
         /// <summary>
         /// Creates the new instance of object descriptor to store object definition in structure.
@@ -94,6 +94,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="index">The memory index collection is created for.</param>
         /// <returns>Created alias collection.</returns>
         IMemoryAlias CreateMemoryAlias(MemoryIndex index);
+
+        /// <summary>
+        /// Creates the new instance of object container to store object values for memory location in this structure.
+        /// </summary>
+        /// <param name="objects">The objects to store in collection.</param>
+        /// <returns>Created object container.</returns>
+        IObjectValueContainer CreateObjectValueContainer(IEnumerable<ObjectValue> objects);
     }
 
     /// <summary>

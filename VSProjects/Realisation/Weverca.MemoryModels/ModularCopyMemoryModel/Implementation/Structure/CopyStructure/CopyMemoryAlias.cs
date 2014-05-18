@@ -20,7 +20,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         public CopyMemoryAlias()
         {
-
+            mayAliases = new CopySet<MemoryIndex>();
+            mustAliases = new CopySet<MemoryIndex>();
         }
 
         /// <summary>

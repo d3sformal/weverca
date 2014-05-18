@@ -115,7 +115,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// </value>
         public IAlgorithmFactory<IMergeAlgorithm> MergeAlgorithmFactory { get; set; }
 
-        AlgorithmFactories Build()
+        /// <summary>
+        /// Creates new AlgorithmFactories collection.
+        /// </summary>
+        /// <returns>New AlgorithmFactories collection.</returns>
+        public AlgorithmFactories Build()
         {
             return new AlgorithmFactories(this);
         }
