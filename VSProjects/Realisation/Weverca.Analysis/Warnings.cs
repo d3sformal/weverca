@@ -416,16 +416,20 @@ namespace Weverca.Analysis
         /// </summary>
         public FlagType Flag { get; protected set; }
         public String TaintFlow;
+        public bool HighPriority;
+
 
         /// <summary>
         /// Construct new instance of <see cref="AnalysisTaintWarning"/>, message will be generated automatically
         /// </summary>
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="taintFlow">Taint flow</param>
+        /// <param name="priority">Indicator of high taint flow priority</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisTaintWarning(string fullFileName, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause, Boolean nullFlow):
+        /// <param name="nullFlow">Null flow indicator</param>
+        public AnalysisTaintWarning(string fullFileName, string taintFlow, bool priority, LangElement element, ProgramPointBase programPoint, FlagType cause, Boolean nullFlow):
             base(programPoint)
         {
             FullFileName = fullFileName;
@@ -445,7 +449,8 @@ namespace Weverca.Analysis
                     break;
             }
 
-            TaintFlow = taintFlow; 
+            TaintFlow = taintFlow;
+            HighPriority = priority;
             LangElement = element;
             Flag = cause;
         }
@@ -456,15 +461,17 @@ namespace Weverca.Analysis
         /// <param name="fullFileName">Full name of source code file</param>
         /// <param name="message">Warning message</param>
         /// <param name="taintFlow">Taint flow</param>
+        /// <param name="priority">Indicator of high taint flow priority</param>
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisTaintWarning(string fullFileName, string message, string taintFlow, LangElement element, ProgramPointBase programPoint, FlagType cause) :
+        public AnalysisTaintWarning(string fullFileName, string message, string taintFlow, bool priority, LangElement element, ProgramPointBase programPoint, FlagType cause) :
             base(programPoint)
         {
             FullFileName = fullFileName;
             Message = message;
             TaintFlow = taintFlow;
+            HighPriority = priority;
             LangElement = element;
             Flag = cause;
         }

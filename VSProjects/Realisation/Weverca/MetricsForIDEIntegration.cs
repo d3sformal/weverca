@@ -421,6 +421,7 @@ namespace Weverca
                                     " : " + s.Message.ToString());
                 Console.WriteLine("Called from: ");
                 Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
+                if (s.HighPriority) Console.WriteLine("High priority");
                 Console.WriteLine("Taint Flow: ");
                 Console.WriteLine(s.TaintFlow);
             }

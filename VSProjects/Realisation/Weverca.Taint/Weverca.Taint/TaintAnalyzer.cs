@@ -121,7 +121,7 @@ namespace Weverca.Taint
             {
                 EvalExPoint pEval = p as EvalExPoint;
 
-                var varID = getVariableIdentifier(p.Value);
+                var varID = getVariableIdentifier(pEval.EvalCode.Value);
                 List<Value> argumentValues = new List<Value>(pEval.EvalCode.Value.ReadMemory(Output).PossibleValues);
                 List<ValueInfo> values = new List<ValueInfo>();
                 values.Add(new ValueInfo(argumentValues, varID));
@@ -130,6 +130,27 @@ namespace Weverca.Taint
                 TaintInfo outputTaint = mergeTaint(values, nullValue);
                 createWarnings(p, outputTaint, null, "Eval shoudn't contain anything from user input");
             }
+           /* if (p is FunctionCallPoint)
+            {
+                FunctionCallPoint pCall = p as FunctionCallPoint;
+               
+                List<ValueInfo> values = new List<ValueInfo>();
+
+                List<ValuePoint> args = new List<ValuePoint>(pCall.Arguments);
+                bool nullValue = false;
+
+                foreach (ValuePoint arg in args)
+                {
+                    var varID = getVariableIdentifier(arg.Value);
+                    List<Value> argumentValues = new List<Value>(arg.Value.ReadMemory(Output).PossibleValues);
+                    values.Add(new ValueInfo(argumentValues, varID));
+                    nullValue |= hasPossibleNullValue(arg.Value);
+                } 
+
+                TaintInfo outputTaint = mergeTaint(values, nullValue);
+
+                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+            }*/
         }
 
         /// <summary>
@@ -311,8 +332,20 @@ namespace Weverca.Taint
             {
                 case JumpStmt.Types.Return:
                     var returnVar = Output.GetLocalControlVariable(SnapshotBase.ReturnValue);
-                    var returnValue = p.Expression.Value.ReadMemory(Input);
-                    returnVar.WriteMemory(Output, returnValue);
+                    /*var returnValue = p.Expression.Value.ReadMemory(Input);
+                    returnVar.WriteMemory(Output, returnValue);*/
+
+                    var varID = getVariableIdentifier(p.Expression.Value);
+                    List<Value> possibleValues = new List<Value>(p.Expression.Value.ReadMemory(Output).PossibleValues);
+                    List<ValueInfo> values = new List<ValueInfo>();
+                    values.Add(new ValueInfo(possibleValues, varID));
+
+                    bool nullValue = hasPossibleNullValue(p.Expression.Value) || hasPossibleNullValue(p.Expression.Value);
+
+                    TaintInfo outputTaint = mergeTaint(values, nullValue);
+                    returnVar.WriteMemory(Output, new MemoryEntry(Output.CreateInfo(outputTaint)));
+
+
                     break;
                 default:
                     throw new NotImplementedException();
@@ -351,7 +384,6 @@ namespace Weverca.Taint
             }
 
         }
-
 
 
         /// <summary>
@@ -402,35 +434,36 @@ namespace Weverca.Taint
                     nullMessage = "Eval shoudn't contain null";
                 if (flags == null)
                 {
-                    createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true);
+                    createWarning(p, FlagType.HTMLDirty, nullMessage, taint, true, false);
                 }
                 else foreach (FlagType flag in flags)
                     {
-                        createWarning(p, flag, nullMessage, taint, true);
+                        createWarning(p, flag, nullMessage, taint, true, false);
                     }
             }
             if (flags == null)
             {
                 if (!taintInfo.tainted) return;
                 String taint = taintInfo.print();
-                createWarning(p, FlagType.HTMLDirty, message, taint, false);
+                Boolean priority = !taintInfo.priority.allFalse();
+                createWarning(p, FlagType.HTMLDirty, message, taint, false, priority);
             }
             else foreach (FlagType flag in flags)
                 {
                     if (!(taintInfo.taint.get(flag))) continue;
                     String taint = taintInfo.print(flag);
-                    createWarning(p, flag, message, taint, false);
+                    createWarning(p, flag, message, taint, false, taintInfo.priority.get(flag));
                 }
         }
               
 
-        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint, Boolean nullFlow)
+        private void createWarning(ProgramPointBase p, FlagType flag, String message, String taint, Boolean nullFlow, Boolean priority)
         {
             var currentScript = p.OwningScriptFullName;
             AnalysisTaintWarning warning;
-            if (message == null) warning = new AnalysisTaintWarning(currentScript, taint,
+            if (message == null) warning = new AnalysisTaintWarning(currentScript, taint, priority,
                    p.Partial, p, flag, nullFlow);
-            else warning = new AnalysisTaintWarning(currentScript, message, taint,
+            else warning = new AnalysisTaintWarning(currentScript, message, taint, priority,
                     p.Partial, p, flag);
             int index = analysisTaintWarnings.IndexOf(warning);
             if (index != -1)

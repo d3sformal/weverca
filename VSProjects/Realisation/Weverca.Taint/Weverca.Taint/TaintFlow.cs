@@ -26,10 +26,13 @@ namespace Weverca.Taint
         public override string ToString()
         {
             StringBuilder result = new StringBuilder();
-            if (taint.getHTMLtaint()) result.Append("HTML dirty,");
-            if (taint.getSQLtaint()) result.Append("SQL dirty,");
-            if (taint.getFilePathtaint()) result.Append("File path dirty,");
-            if (nullValue) result.Append("Possible null value,");
+            String HTMLpriority = (priority.getHTML()) ? "H" : "L";
+            String SQLpriority = (priority.getSQL()) ? "H" : "L";
+            String FilePathPriority = (priority.getFilePath()) ? "H" : "L";
+            if (taint.getHTML()) result.Append("HTML dirty " + HTMLpriority + ",");
+            if (taint.getSQL()) result.Append("SQL dirty " + SQLpriority + ",");
+            if (taint.getFilePath()) result.Append("File path dirty " + FilePathPriority + ",");
+            if (nullValue) result.Append("Possible null value N,");
             return result.ToString();
         }
 
@@ -370,12 +373,12 @@ namespace Weverca.Taint
             this.FilePath = FilePath;
         }
 
-        public bool getHTMLtaint() { return HTML; }
-        public void setHTMLtaint(bool b) { HTML = b; }
-        public bool getSQLtaint() { return SQL; }
-        public void setSQLtaint(bool b) { SQL = b; }
-        public bool getFilePathtaint() { return FilePath; }
-        public void setFilePathtaint(bool b) { FilePath = b; }
+        public bool getHTML() { return HTML; }
+        public void setHTML(bool b) { HTML = b; }
+        public bool getSQL() { return SQL; }
+        public void setSQL(bool b) { SQL = b; }
+        public bool getFilePath() { return FilePath; }
+        public void setFilePath(bool b) { FilePath = b; }
 
 		/// <inheritdoc />
 		public override bool Equals (object obj)
