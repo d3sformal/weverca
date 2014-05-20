@@ -37,7 +37,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         @" $x = $_POST;
         $y = &$x;
         ".AssertVariable("_POST").HasTaintStatus(new TaintStatus(true, true))
-        .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2 }));
+        .AssertVariable("y").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 3 }));
 
 
         readonly static TestCase TaintAnalysisAliases2_CASE =
@@ -117,12 +117,12 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         .AssertVariable("x").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3 }))
         .AssertVariable("v").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 25 }))
         .AssertVariable("w").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 25 }))
-        .AssertVariable("p").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 7 }, new List<int>() { 3, 8 }))
+        .AssertVariable("p").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 7 }, new List<int>() { 3, 8 }, new List<int>() { 3, 8, 14 }))
         .AssertVariable("q").HasTaintStatus(new TaintStatus(false, false))
         .AssertVariable("s").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 31 }))
         .AssertVariable("r").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 3, 31 }));
 
-        readonly static TestCase TaintAnalysisFunctions_CASE = 
+        readonly static TestCase TaintAnalysisFunctions_CASE =
         @" function f($arg) {
             return $arg;
         } 
@@ -132,7 +132,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $a = f($x);
         $b = f($y);
         ".AssertVariable("_POST").HasTaintStatus(new TaintStatus(true, true))
-         .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 8 }))
+         .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 8, 3, 8 }))
          .AssertVariable("b").HasTaintStatus(new TaintStatus(false, false));
 
         readonly static TestCase TaintAnalysisFunctionsTwoArguments_CASE =
@@ -147,12 +147,12 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $c = f($x, $x);
         $d = f($y, $y);
         ".AssertVariable("_POST").HasTaintStatus(new TaintStatus(true, true))
-         .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 3, 8 }))
-         .AssertVariable("b").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 3, 9 }))
-         .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 3, 3, 10 }))
+         .AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 8, 3, 3, 8 }))
+         .AssertVariable("b").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 9, 3, 3, 9 }))
+         .AssertVariable("c").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 6, 10, 3, 3, 10 }))
          .AssertVariable("d").HasTaintStatus(new TaintStatus(false, false));
 
-          
+
         readonly static TestCase TaintAnalysisBinaryOperation_CASE =
         @" $x = $_POST;
         $y = '1';
@@ -179,7 +179,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $y = $_POST;
         $z = $_POST;
         $r = f($x,$y,$z);
-            ".AssertVariable("r").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 7, 3, 3, 4, 9 }, new List<int>() { 8, 3, 3, 4, 9 }));
+            ".AssertVariable("r").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 7, 9, 3, 3, 4, 9 }, new List<int>() { 8, 9, 3, 3, 4, 9 }));
 
         readonly static TestCase TaintAnalysisFunctionNullParams_CASE =
         @" function f($a,$b,$c) {
@@ -190,7 +190,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $y = null;
         $z = $y;
         $r = f($x,$y,$z);
-            ".AssertVariable("r").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 7, 3, 3, 4, 9 }, new List<int>() { 7, 8, 3, 3, 4, 9 }));
+            ".AssertVariable("r").HasTaintStatus(new TaintStatus(false, true, new List<int>() { 7, 9, 3, 3, 4, 9 }, new List<int>() { 7, 8, 9, 3, 3, 4, 9 }));
 
         readonly static TestCase TaintAnalysisSanitizers_CASE =
         @" $x = $_POST;
@@ -254,7 +254,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             $a = f($x);
             $i++;
         }
-            ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 3, 8 }));
+            ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8, 3, 8 }));
 
         readonly static TestCase TaintAnalysisFunctionCallInCycle2_CASE =
         @" function f($x) {          
@@ -266,7 +266,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
             $a = f($x);
             $i++;
         }
-            ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 3, 8 }));
+            ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8, 3, 8 }));
 
 
 
@@ -276,7 +276,6 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         $x = ($_POST) ? $a : $b;
             ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 4, 4 }, new List<int>() { 2, 3, 4, 4 }));
 
-   
 
 
         [TestMethod]

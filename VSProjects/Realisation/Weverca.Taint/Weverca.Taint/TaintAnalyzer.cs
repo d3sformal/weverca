@@ -324,6 +324,25 @@ namespace Weverca.Taint
             
         }
 
+        public override void VisitRefAssign(RefAssignPoint p)
+        {
+            _currentPoint = p;
+            var source = p.ROperand.Value;
+            var target = p.LOperand.LValue;
+
+            if (target == null || source == null)
+                //Variable has to be LValue
+                return;
+
+            var sourceTaint = getTaint(source);
+
+            var sourceVal = p.ROperand.Value.ReadMemory(Output);
+
+            var finalPropagation = sourceTaint;
+
+            setTaint(target, finalPropagation);
+        }
+
         /// <summary>
         /// Visits a jump statement point
         /// </summary>
@@ -681,14 +700,22 @@ namespace Weverca.Taint
                 var param = signature.FormalParams[i];
                 var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
 
-                var argumentValue = arg.Value.ReadMemory(Output);
+               // var argumentValue = arg.Value.ReadMemory(Output);
 
 
-				var argTaint = getTaint(arg.Value);
+                List<ValueInfo> values = new List<ValueInfo>();
+                var varID = getVariableIdentifier(arg.Value);
+                List<Value> argumentValues = new List<Value>(arg.Value.ReadMemory(Output).PossibleValues);
+                values.Add(new ValueInfo(argumentValues, varID));
+                bool nullValue = hasPossibleNullValue(arg.Value);
+  
+                TaintInfo argTaint = mergeTaint(values, nullValue);
+                setTaint(argumentVar, argTaint);
+
+				/*var argTaint = getTaint(arg.Value);
+
 				setTaint(argumentVar, argTaint);
-
-
-				//argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
+				//argumentVar.WriteMemory(callInput.Snapshot, argumentValue);*/
 
                 ++i;
             }
@@ -701,22 +728,19 @@ namespace Weverca.Taint
             var index = 0;
             foreach (var arg in arguments)
             {
-                var argID = getVariableIdentifier(arg.Value);
+               // var argID = getVariableIdentifier(arg.Value);
                 var argVar = argumentString(index);
                 var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
 
                 var argumentValue = arg.Value.ReadMemory(Output);
-                List<Value> values = new List<Value>(argumentValue.PossibleValues);
-                if (argID != null) values.Add(Output.CreateInfo(argID));
-
-                MemoryEntry mem = new MemoryEntry(values);
-                argumentEntry.WriteMemory(callInput.Snapshot, mem);
+                argumentEntry.WriteMemory(callInput.Snapshot, argumentValue);
 
                 ++index;
             }
         }
 
     }
+
 
     /// <summary>
     /// Class for storing pairs of VariableIdentifiers and corresponding values
