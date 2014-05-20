@@ -81,7 +81,9 @@ namespace Weverca.Taint
             }
 
                 // 2. Propagate arguments to the return value.
-             FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+			// TODO: quick fix
+			if (outputTaint.tainted || outputTaint.nullValue)
+            	FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
 
         }
 
