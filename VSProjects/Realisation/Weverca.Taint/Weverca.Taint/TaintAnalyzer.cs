@@ -364,27 +364,6 @@ namespace Weverca.Taint
         {
             _currentPoint = p;
 
-            //extend and propagate taint information
-            List<ValueInfo> values = new List<ValueInfo>();
-
-            List<ValuePoint> args = new List<ValuePoint>(p.Arguments);
-            bool nullValue = false;
-
-            foreach (ValuePoint arg in args)
-            {
-                var varID = getVariableIdentifier(arg.Value);
-                List<Value> argumentValues = new List<Value>(arg.Value.ReadMemory(Output).PossibleValues);
-                values.Add(new ValueInfo(argumentValues, varID));
-                nullValue |= hasPossibleNullValue(arg.Value);
-            }
-
-            TaintInfo outputTaint = mergeTaint(values, nullValue);
-
-            //throws exception
-            if (outputTaint.tainted || outputTaint.nullValue)
-                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
-            
-
             // set the arguments
             if (p.Graph.FunctionName == null)
             {
@@ -396,6 +375,7 @@ namespace Weverca.Taint
             var callPoint = p.Caller as RCallPoint;
             if (callPoint != null)
             {
+				_currentPoint = callPoint;
                 if (signature.HasValue)
                 {
                     // We have names for passed arguments
@@ -702,7 +682,13 @@ namespace Weverca.Taint
                 var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
 
                 var argumentValue = arg.Value.ReadMemory(Output);
-                argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
+
+
+				var argTaint = getTaint(arg.Value);
+				setTaint(argumentVar, argTaint);
+
+
+				//argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
 
                 ++i;
             }
