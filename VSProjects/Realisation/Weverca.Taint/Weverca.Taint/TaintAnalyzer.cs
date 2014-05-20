@@ -151,7 +151,8 @@ namespace Weverca.Taint
 
                 TaintInfo outputTaint = mergeTaint(values, nullValue);
 
-                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+                if (outputTaint.tainted || outputTaint.nullValue)
+                    FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
             }*/
         }
 
@@ -363,6 +364,28 @@ namespace Weverca.Taint
         {
             _currentPoint = p;
 
+            //extend and propagate taint information
+            List<ValueInfo> values = new List<ValueInfo>();
+
+            List<ValuePoint> args = new List<ValuePoint>(p.Arguments);
+            bool nullValue = false;
+
+            foreach (ValuePoint arg in args)
+            {
+                var varID = getVariableIdentifier(arg.Value);
+                List<Value> argumentValues = new List<Value>(arg.Value.ReadMemory(Output).PossibleValues);
+                values.Add(new ValueInfo(argumentValues, varID));
+                nullValue |= hasPossibleNullValue(arg.Value);
+            }
+
+            TaintInfo outputTaint = mergeTaint(values, nullValue);
+
+            //throws exception
+            if (outputTaint.tainted || outputTaint.nullValue)
+                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+            
+
+            // set the arguments
             if (p.Graph.FunctionName == null)
             {
                 return;

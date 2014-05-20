@@ -290,6 +290,7 @@ namespace Weverca
 
         private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
         {
+            var bigWatch = System.Diagnostics.Stopwatch.StartNew();
             var console = new ConsoleOutput();
 
             foreach (var argument in filenames)
@@ -336,6 +337,9 @@ namespace Weverca
                         List<ProgramPointBase> processedPPoints = new List<ProgramPointBase>();
                         writeAll(ppGraph, ref processedPPGraphs, ref processedPPoints);
 
+                        bigWatch.Stop();
+
+                        Console.WriteLine("Weverca analyzer time consumption: " + bigWatch.ElapsedMilliseconds);
                         Console.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
                         Console.WriteLine("Second phase time consumption: " + watch2.ElapsedMilliseconds);
                         Console.WriteLine("The number of nodes in the application is: " + Program.numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph));
