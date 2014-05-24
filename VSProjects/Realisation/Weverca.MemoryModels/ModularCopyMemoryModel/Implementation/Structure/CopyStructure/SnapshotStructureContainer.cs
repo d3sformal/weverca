@@ -115,6 +115,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             foreach (CopyStackContext context in this.memoryStack)
             {
                 data.memoryStack.Add(new CopyStackContext(context));
+                data.localLevel++;
             }
 
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>(this.arrayDescriptors);
@@ -136,7 +137,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             {
                 if (memoryStack.Count > 0)
                 {
-                    return memoryStack[localLevel];
+                    return memoryStack[localLevel - 1];
                 }
                 else
                 {
@@ -187,7 +188,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             {
                 if (memoryStack.Count > 0)
                 {
-                    return memoryStack[localLevel];
+                    return memoryStack[localLevel - 1];
                 }
                 else
                 {

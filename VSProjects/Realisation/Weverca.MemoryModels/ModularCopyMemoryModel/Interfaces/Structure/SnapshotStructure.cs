@@ -101,6 +101,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="objects">The objects to store in collection.</param>
         /// <returns>Created object container.</returns>
         IObjectValueContainer CreateObjectValueContainer(IEnumerable<ObjectValue> objects);
+
+        /// <summary>
+        /// Creates the new instance of object container to store alias, array and object data for memory indexes.
+        /// </summary>
+        /// <returns>New instance of index definition object.</returns>
+        IIndexDefinition CreateIndexDefinition();
     }
 
     /// <summary>

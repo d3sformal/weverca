@@ -54,6 +54,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         public IAlgorithmFactory<IMergeAlgorithm> MergeAlgorithmFactory { get; private set; }
 
         /// <summary>
+        /// Gets the print algorithm factory.
+        /// </summary>
+        /// <value>
+        /// The print algorithm factory.
+        /// </value>
+        public IAlgorithmFactory<IPrintAlgorithm> PrintAlgorithmFactory { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="AlgorithmFactories"/> class.
         /// </summary>
         /// <param name="builder">The builder.</param>
@@ -64,6 +72,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
             this.CommitAlgorithmFactory = builder.CommitAlgorithmFactory;
             this.MemoryAlgorithmFactory = builder.MemoryAlgorithmFactory;
             this.MergeAlgorithmFactory = builder.MergeAlgorithmFactory;
+            this.PrintAlgorithmFactory = builder.PrintAlgorithmFactory;
         }
     }
 
@@ -114,6 +123,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// The merge algorithm factory.
         /// </value>
         public IAlgorithmFactory<IMergeAlgorithm> MergeAlgorithmFactory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the print algorithm factory.
+        /// </summary>
+        /// <value>
+        /// The print algorithm factory.
+        /// </value>
+        public IAlgorithmFactory<IPrintAlgorithm> PrintAlgorithmFactory { get; set; }
 
         /// <summary>
         /// Creates new AlgorithmFactories collection.

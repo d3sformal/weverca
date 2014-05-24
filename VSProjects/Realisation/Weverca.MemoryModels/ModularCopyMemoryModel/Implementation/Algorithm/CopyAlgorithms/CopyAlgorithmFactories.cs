@@ -15,7 +15,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             CommitAlgorithmFactory = new CopyCommitAlgorithm(),
             MemoryAlgorithmFactory = new CopyMemoryAlgorithm(),
             MergeAlgorithmFactory = new CopyMergeAlgorithm(),
-            ReadAlgorithmFactory = new CopyReadAlgorithm()
+            ReadAlgorithmFactory = new CopyReadAlgorithm(),
+            PrintAlgorithmFactory = new PrintAlgorithm()
         }.Build();
 
         public static AlgorithmFactories Factories { get { return copyAlgorithmFactories; } }

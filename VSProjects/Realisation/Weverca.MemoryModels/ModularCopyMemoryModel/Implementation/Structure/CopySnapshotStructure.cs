@@ -157,5 +157,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
             container.AddAll(objects);
             return container;
         }
+
+        /// <inheritdoc />
+        public IIndexDefinition CreateIndexDefinition()
+        {
+            return new CopyIndexDefinition();
+        }
     }
 }

@@ -261,6 +261,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             return CallLevel + "." + SnapshotId.ToString() + "::" + Structure.Readonly.StructureId.ToString();
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            IPrintAlgorithm algorithm = AlgorithmFactories.PrintAlgorithmFactory.CreateInstance();
+            return algorithm.SnapshotToString(this);
+        }
+
         #region AbstractSnapshot Implementation
 
         #region Transaction
@@ -658,6 +670,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
                     Structure = algorithm.GetMergedStructure();
                     Data = algorithm.GetMergedData();
+                    CurrentData = Data;
                     break;
 
                 case SnapshotMode.InfoLevel:
@@ -665,6 +678,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     algorithm.MergeWithCall(this, snapshots);
 
                     Infos = algorithm.GetMergedData();
+                    CurrentData = Infos;
                     break;
 
                 default:
@@ -1491,16 +1505,24 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             SnapshotLogger.append(this, snapshot.getSnapshotIdentification() + " extend");
 
             CallLevel = snapshot.CallLevel;
-
+            IMergeAlgorithm algorithm;
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    Structure = SnapshotStructureFactory.CopyInstance(this, snapshot.Structure);
-                    Data = SnapshotDataFactory.CopyInstance(this, snapshot.Data);
+                    algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm.Extend(this, snapshot);
+
+                    Structure = algorithm.GetMergedStructure();
+                    Data = algorithm.GetMergedData();
+                    CurrentData = Data;
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    Infos = SnapshotDataFactory.CopyInstance(this, snapshot.Infos);
+                    algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm.Extend(this, snapshot);
+
+                    Infos = algorithm.GetMergedData();
+                    CurrentData = Infos;
                     break;
 
                 default:
@@ -1572,6 +1594,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
                     Structure = algorithm.GetMergedStructure();
                     Data = algorithm.GetMergedData();
+                    CurrentData = Data;
                     break;
 
                 case SnapshotMode.InfoLevel:
@@ -1579,6 +1602,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     algorithm.Merge(this, snapshots);
 
                     Infos = algorithm.GetMergedData();
+                    CurrentData = Infos;
                     break;
 
                 default:

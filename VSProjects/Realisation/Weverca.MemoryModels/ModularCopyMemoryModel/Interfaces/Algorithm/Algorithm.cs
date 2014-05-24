@@ -260,4 +260,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// <param name="index">The index.</param>
         void DestroyMemory(Snapshot snapshot, MemoryIndex index);
     }
+
+    /// <summary>
+    /// Defines set of printing algorithms for Modular copy Memory Model.
+    /// 
+    /// These algorithms does not modify data and structure.
+    /// </summary>
+    public interface IPrintAlgorithm
+    {
+        /// <summary>
+        /// Converts given snapshot to string representation.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>String representation of givensnapshot.</returns>
+        string SnapshotToString(Snapshot snapshot);
+    }
 }

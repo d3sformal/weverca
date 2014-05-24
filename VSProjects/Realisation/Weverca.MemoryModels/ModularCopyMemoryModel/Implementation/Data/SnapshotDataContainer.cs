@@ -46,6 +46,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <inheritdoc />
+        public override IEnumerable<MemoryIndex> Indexes
+        {
+            get { return IndexData.Keys; }
+        }
+
+        /// <inheritdoc />
         public override IEnumerable<KeyValuePair<MemoryIndex, MemoryEntry>> Data
         {
             get { return IndexData; }

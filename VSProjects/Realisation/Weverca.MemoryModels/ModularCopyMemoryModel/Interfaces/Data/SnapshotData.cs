@@ -70,6 +70,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         int DataId { get; }
 
         /// <summary>
+        /// Gets the list of indexes for which are defined data in this container.
+        /// </summary>
+        /// <value>
+        /// The indexes.
+        /// </value>
+        IEnumerable<MemoryIndex> Indexes { get; }
+
+        /// <summary>
         /// Gets the set of stored values for indexes.
         /// </summary>
         /// <value>
@@ -149,6 +157,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
             private set;
         }
 
+        public abstract IEnumerable<MemoryIndex> Indexes
+        {
+            get;
+        }
+
         /// <inheritdoc />
         public abstract IEnumerable<KeyValuePair<MemoryIndex, MemoryEntry>> Data
         {
@@ -166,5 +179,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
 
         /// <inheritdoc />
         public abstract void RemoveMemoryEntry(MemoryIndex index);
+
+
     }
 }

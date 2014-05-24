@@ -1,4 +1,4 @@
-﻿//#define COPY_SNAPSHOT_LOG
+﻿#define COPY_SNAPSHOT_LOG
 
 using System;
 using System.Collections.Generic;
@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
