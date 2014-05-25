@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
@@ -75,10 +76,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             for (int x = 0; x <= targetSnapshot.CallLevel; x++)
             {
-                IWriteableIndexContainer variables = Structure.Writeable.GetWriteableStackContext(x).WriteableVariables;
+                IReadonlyIndexContainer variables = Structure.Readonly.GetReadonlyStackContext(x).ReadonlyVariables;
                 collectVariables[x] = new ContainerOperations(this, variables, variables.UnknownIndex, variables.UnknownIndex);
 
-                IWriteableIndexContainer control = Structure.Writeable.GetWriteableStackContext(x).WriteableControllVariables;
+                IReadonlyIndexContainer control = Structure.Readonly.GetReadonlyStackContext(x).ReadonlyControllVariables;
                 collectControl[x] = new ContainerOperations(this, control, control.UnknownIndex, control.UnknownIndex);
             }
 

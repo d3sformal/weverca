@@ -635,11 +635,34 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 CallLevel = oldCallLevel;
             }
 
-            Structure.Writeable.AddLocalLevel();
+            IMergeAlgorithm algorithm;
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm.ExtendAsCall(this, snapshot, thisObject);
+
+                    Structure = algorithm.GetMergedStructure();
+                    Data = algorithm.GetMergedData();
+                    CurrentData = Data;
+                    break;
+
+                case SnapshotMode.InfoLevel:
+                    algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm.ExtendAsCall(this, snapshot, thisObject);
+
+                    Infos = algorithm.GetMergedData();
+                    CurrentData = Infos;
+                    break;
+
+                default:
+                    throw new NotSupportedException("Current mode: " + CurrentMode);
+            }
 
             if (thisObject != null)
             {
-                ReadWriteSnapshotEntryBase snapshotEntry = SnapshotEntry.CreateVariableEntry(new VariableIdentifier(THIS_VARIABLE_IDENTIFIER), GlobalContext.LocalOnly, CallLevel);
+                ReadWriteSnapshotEntryBase snapshotEntry = 
+                    SnapshotEntry.CreateVariableEntry(new VariableIdentifier(Snapshot.THIS_VARIABLE_IDENTIFIER), GlobalContext.LocalOnly, this.CallLevel);
                 snapshotEntry.WriteMemory(this, thisObject);
             }
         }
@@ -1527,32 +1550,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
-            }
-        }
-
-        private void assignCreatedAliases()
-        {
-            foreach (IMemoryAlias aliasData in Structure.Readonly.CreatedAliases)
-            {
-                MemoryEntry entry = CurrentData.Readonly.GetMemoryEntry(aliasData.SourceIndex);
-                foreach (MemoryIndex mustAlias in aliasData.MustAliases)
-                {
-                    if (mustAlias != null)
-                    {
-                        CurrentData.Writeable.SetMemoryEntry(mustAlias, entry);
-                    }
-                }
-
-                foreach (MemoryIndex mayAlias in aliasData.MayAliases)
-                {
-                    if (mayAlias != null)
-                    {
-                        MemoryEntry aliasEntry = CurrentData.Readonly.GetMemoryEntry(mayAlias);
-                        HashSet<Value> values = new HashSet<Value>(aliasEntry.PossibleValues);
-                        CollectionTools.AddAll(values, entry.PossibleValues);
-                        CurrentData.Writeable.SetMemoryEntry(mayAlias, new MemoryEntry(values));
-                    }
-                }
             }
         }
 

@@ -81,10 +81,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 Structure.Writeable.AddLocalLevel();
 
-                IWriteableIndexContainer variables = Structure.Writeable.WriteableLocalContext.WriteableVariables;
+                IWriteableIndexContainer variables = Structure.Writeable.GetWriteableStackContext(x).WriteableVariables;
                 collectVariables[x] = new ContainerOperations(this, variables, variables.UnknownIndex, variables.UnknownIndex);
 
-                IWriteableIndexContainer control = Structure.Writeable.WriteableLocalContext.WriteableControllVariables;
+                IWriteableIndexContainer control = Structure.Writeable.GetWriteableStackContext(x).WriteableControllVariables;
                 collectControl[x] = new ContainerOperations(this, control, control.UnknownIndex, control.UnknownIndex);
             }
 
@@ -115,7 +115,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                     collectVariables[targetLevel].CollectIndexes(snapshot, targetVariables.UnknownIndex, sourceVariables);
 
                     IWriteableIndexContainer targetControlls = Structure.Writeable.GetWriteableStackContext(targetLevel).WriteableControllVariables;
-                    IReadonlyIndexContainer sourceControlls = snapshot.Structure.Readonly.GetReadonlyStackContext(sourceLevel).ReadonlyVariables;
+                    IReadonlyIndexContainer sourceControlls = snapshot.Structure.Readonly.GetReadonlyStackContext(sourceLevel).ReadonlyControllVariables;
                     collectControl[targetLevel].CollectIndexes(snapshot, targetControlls.UnknownIndex, sourceControlls);
                     collectTemporary(snapshot, sourceLevel, targetLevel);
                 }

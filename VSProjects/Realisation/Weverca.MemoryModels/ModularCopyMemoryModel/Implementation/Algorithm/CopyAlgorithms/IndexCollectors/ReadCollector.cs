@@ -242,7 +242,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private void processField(MemoryIndex parentIndex, FieldPathSegment fieldSegment, ProcessValueAsLocationVisitor visitor)
         {
             MemoryEntry entry;
-            if (snapshot.CurrentData.Readonly.TryGetMemoryEntry(parentIndex, out entry))
+            if (snapshot.Data.Readonly.TryGetMemoryEntry(parentIndex, out entry))
             {
                 bool processOtherValues = false;
                 IObjectValueContainer objectValues = snapshot.Structure.Readonly.GetObjects(parentIndex);
@@ -285,7 +285,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private void processIndex(MemoryIndex parentIndex, IndexPathSegment indexSegment, ProcessValueAsLocationVisitor visitor)
         {
             MemoryEntry entry;
-            if (snapshot.CurrentData.Readonly.TryGetMemoryEntry(parentIndex, out entry))
+            if (snapshot.Data.Readonly.TryGetMemoryEntry(parentIndex, out entry))
             {
                 bool processOtherValues = false;
                 AssociativeArray arrayValue;

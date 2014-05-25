@@ -11,6 +11,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
@@ -37,11 +38,33 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 case SnapshotMode.InfoLevel:
                     data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    assignCreatedAliases(extendedSnapshot);
                     break;
 
                 default:
                     throw new NotSupportedException("Current mode: " + extendedSnapshot.CurrentMode);
             }
+        }
+
+        /// <inheritdoc />
+        public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, MemoryEntry thisObject)
+        {
+            switch (extendedSnapshot.CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    structure = Snapshot.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
+                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
+
+                    structure.Writeable.AddLocalLevel();
+                    break;
+
+                case SnapshotMode.InfoLevel:
+                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    break;
+
+                default:
+                    throw new NotSupportedException("Current mode: " + extendedSnapshot.CurrentMode);
+            } 
         }
 
         /// <inheritdoc />
@@ -121,6 +144,32 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public ISnapshotDataProxy GetMergedData()
         {
             return data;
+        }
+
+        private void assignCreatedAliases(Snapshot snapshot)
+        {
+            foreach (IMemoryAlias aliasData in snapshot.Structure.Readonly.CreatedAliases)
+            {
+                MemoryEntry entry = data.Readonly.GetMemoryEntry(aliasData.SourceIndex);
+                foreach (MemoryIndex mustAlias in aliasData.MustAliases)
+                {
+                    if (mustAlias != null)
+                    {
+                        data.Writeable.SetMemoryEntry(mustAlias, entry);
+                    }
+                }
+
+                foreach (MemoryIndex mayAlias in aliasData.MayAliases)
+                {
+                    if (mayAlias != null)
+                    {
+                        MemoryEntry aliasEntry = data.Readonly.GetMemoryEntry(mayAlias);
+                        HashSet<Value> values = new HashSet<Value>(aliasEntry.PossibleValues);
+                        CollectionTools.AddAll(values, entry.PossibleValues);
+                        data.Writeable.SetMemoryEntry(mayAlias, new MemoryEntry(values));
+                    }
+                }
+            }
         }
     }
 }

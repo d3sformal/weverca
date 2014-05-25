@@ -12,6 +12,12 @@ namespace Weverca.AnalysisFramework.UnitTest
     [TestClass]
     public class ForwardAnalysisTest
     {
+        readonly static TestCase SimpleAssign_CASE = @"
+$a = 's';
+$x = $a;
+".AssertVariable("a").HasValues("s")
+ .AssertVariable("x").HasValues("s");
+
         readonly static TestCase SelfConstant_CASE = @"
 class A {
     const C = ""const"";
@@ -181,7 +187,7 @@ $VarA='Assigned';
 ".AssertVariable("VarA").HasValues("Assigned")
  .AssertVariable("VarB").HasValues("ValueB", "Assigned")
  .AssertVariable("VarC").HasValues("ValueC", "Assigned").
- MemoryModel(MemoryModels.MemoryModels.CopyMM);
+ MemoryModel(MemoryModels.MemoryModels.ModularCopyMM);
 
         readonly static TestCase EqualsAssumption_CASE = @"
 $Var='init';
@@ -1391,7 +1397,7 @@ $res2 = $a[1];
 "
             .AssertVariable("res1").HasValues(1)
             .AssertVariable("res2").HasUndefinedValue()
-            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            .MemoryModel(MemoryModels.MemoryModels.ModularCopyMM)
             ;
 
         readonly static TestCase ArrayScalar2ArrayMay_CASE = @"
@@ -1406,7 +1412,7 @@ $res2 = $a[1];
             // TODO: res1 should have also array value
             .AssertVariable("res1").HasValues(1)
             .AssertVariable("res2").HasUndefinedAndValues(2)
-            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            .MemoryModel(MemoryModels.MemoryModels.ModularCopyMM)
             ;
 
         readonly static TestCase ArrayArray2ScalarMust_CASE = @"
@@ -1419,7 +1425,7 @@ $res2 = $a[1];
 "
             .AssertVariable("res1").HasValues(2)
             .AssertVariable("res2").HasUndefinedValue()
-            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            .MemoryModel(MemoryModels.MemoryModels.ModularCopyMM)
             ;
 
         readonly static TestCase ArrayArray2ScalarMay_CASE = @"
@@ -1431,7 +1437,7 @@ $res2 = $a[1];
             // TODO: test whether r1 has also array value
             .AssertVariable("res1").HasValues(2)
             .AssertVariable("res2").HasUndefinedAndValues(1)
-            .MemoryModel(MemoryModels.MemoryModels.CopyMM)
+            .MemoryModel(MemoryModels.MemoryModels.ModularCopyMM)
             ;
 
 
@@ -1493,7 +1499,7 @@ $alias = 3;
 $resA = $a;
 ".AssertVariable("resAlias").HasValues(2)
  .AssertVariable("resA").HasValues(3)
- .MemoryModel(MemoryModels.MemoryModels.CopyMM);
+ .MemoryModel(MemoryModels.MemoryModels.ModularCopyMM);
 
         readonly static TestCase UndefinedAliasMay_CASE = @"
 if ($unknown) $alias = 1;
@@ -1509,7 +1515,7 @@ $resA = $a;
             // line 3 either does not affect $alias (it stays undefined) or set $alias to 2. It thus never has value 1 at line 4.
  .AssertVariable("resAlias").HasValues(2)
  .AssertVariable("resA").HasValues(3)
- .MemoryModel(MemoryModels.MemoryModels.CopyMM);
+ .MemoryModel(MemoryModels.MemoryModels.ModularCopyMM);
 
 
         readonly static TestCase TernaryOperator_CASE = @"
@@ -1682,6 +1688,12 @@ $arr[1][1] = 1;
 
 
 
+
+        [TestMethod]
+        public void SimpleAssignTest()
+        {
+            AnalysisTestUtils.RunTestCase(SimpleAssign_CASE);
+        }
 
         [TestMethod]
         public void NullReferenceErrorTest()

@@ -201,6 +201,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot);
 
         /// <summary>
+        /// Extends the specified snapshot by copying data and structure of the source snapshot
+        /// to extended snapshot ad adds new local level to memory stack.
+        /// </summary>
+        /// <param name="extendedSnapshot">The extended snapshot.</param>
+        /// <param name="sourceSnapshot">The source snapshot.</param>
+        /// <param name="thisObject">Memory entry which contains references to this object for method calls.</param>
+        void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, MemoryEntry thisObject);
+
+        /// <summary>
         /// Data of the specified snapshot are merged together and inserted to the specified
         /// snapshot.
         /// </summary>

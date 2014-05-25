@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
@@ -28,7 +29,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <summary>
         /// The target container
         /// </summary>
-        private IWriteableIndexContainer targetContainer;
+        private IReadonlyIndexContainer targetContainer;
+
+        private IWriteableIndexContainer writeableTargetContainer;
 
         /// <summary>
         /// The target index when the merge is applied to array
@@ -68,6 +71,29 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             MemoryIndex unknownIndex)
         {
             this.targetContainer = targetContainer;
+            this.writeableTargetContainer = targetContainer;
+            this.worker = worker;
+            this.targetIndex = targetIndex;
+
+            unknownOperation = new MergeOperation(unknownIndex);
+            worker.addOperation(unknownOperation);
+        }        
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContainerOperations"/> class.
+        /// </summary>
+        /// <param name="worker">The worker.</param>
+        /// <param name="targetContainer">The target container.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="unknownIndex">Index of the unknown.</param>
+        public ContainerOperations(
+            IMergeWorker worker,
+            IReadonlyIndexContainer targetContainer,
+            MemoryIndex targetIndex,
+            MemoryIndex unknownIndex)
+        {
+            this.targetContainer = targetContainer;
+            this.writeableTargetContainer = new CopyIndexContainer();
             this.worker = worker;
             this.targetIndex = targetIndex;
 
@@ -102,17 +128,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     if (containerIndex == null && indexEquals)
                     {
-                        targetContainer.AddIndex(index.Key, index.Value);
+                        writeableTargetContainer.AddIndex(index.Key, index.Value);
                         undefinedIndexes.Remove(index.Key);
                     }
                 }
                 else if (indexEquals)
                 {
-                    targetContainer.AddIndex(index.Key, index.Value);
+                    writeableTargetContainer.AddIndex(index.Key, index.Value);
                 }
                 else
                 {
-                    targetContainer.AddIndex(index.Key, null);
+                    writeableTargetContainer.AddIndex(index.Key, null);
                     undefinedIndexes.Add(index.Key);
                 }
             }
@@ -145,7 +171,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             // Process all names which has unassociated index and creates one
             foreach (string indexName in undefinedIndexes)
             {
-                targetContainer.AddIndex(indexName, targetIndex.CreateIndex(indexName));
+                writeableTargetContainer.AddIndex(indexName, targetIndex.CreateIndex(indexName));
             }
 
             foreach (var index in targetContainer.Indexes)
