@@ -90,7 +90,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public void AddIndex(string indexName, MemoryIndex memoryIndex)
         {
-            indexes.Add(indexName, memoryIndex);
+            indexes[indexName] = memoryIndex;
         }
 
         /// <inheritdoc />

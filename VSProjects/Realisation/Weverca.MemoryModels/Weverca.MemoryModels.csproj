@@ -131,7 +131,6 @@
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotData.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\ArrayDescriptor.cs" />
-    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\DeclarationContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\IndexContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\IndexDefinition.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\MemoryAlias.cs" />

@@ -157,6 +157,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
             private set;
         }
 
+        /// <inheritdoc />
         public abstract IEnumerable<MemoryIndex> Indexes
         {
             get;

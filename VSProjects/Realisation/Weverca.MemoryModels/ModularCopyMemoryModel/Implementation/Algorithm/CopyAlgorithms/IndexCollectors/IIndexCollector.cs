@@ -116,6 +116,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 Next(segment);
             }
+
+            FinishPath();
         }
 
         /// <summary>
@@ -179,5 +181,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// </summary>
         /// <param name="segment">The segment.</param>
         public abstract void Next(PathSegment segment);
+
+        /// <summary>
+        /// Finishes the path.
+        /// </summary>
+        protected abstract void FinishPath();
     }
 }

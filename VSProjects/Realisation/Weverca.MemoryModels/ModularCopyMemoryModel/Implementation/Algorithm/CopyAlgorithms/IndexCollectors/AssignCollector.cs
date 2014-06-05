@@ -161,6 +161,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             if (AliasesProcessing == AliasesProcessing.BeforeCollecting)
             {
                 addAliasesToIndexes();
+                swapCollections();
             }
 
             segment.Accept(this);
@@ -168,8 +169,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             if (AliasesProcessing == AliasesProcessing.AfterCollecting)
             {
                 addAliasesToIndexes();
+                swapCollections();
             }
+        }
 
+        protected override void FinishPath()
+        {
+            if (AliasesProcessing == AliasesProcessing.BeforeCollecting)
+            {
+                swapCollections();
+            }
+        }
+
+        private void swapCollections()
+        {
             //To prevent creation of collection on each iteration only the two collection are used and swapped here.
             //swaps collections of must indexes
             HashSet<MemoryIndex> indexSwap = mustIndexes;
@@ -217,11 +230,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 }
             }
 
-            foreach (MemoryIndex index in mustAliases)
-            {
-                addToMust(index);
-            }
-
             foreach (MemoryIndex index in mayIndexesProcess)
             {
                 IMemoryAlias alias;
@@ -231,6 +239,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                     CollectionTools.AddAll(mayAliases, alias.MayAliases);
                 }
             }
+
+            foreach (MemoryIndex index in mustAliases)
+            {
+                addToMust(index);
+            }
+
             foreach (MemoryIndex index in mayAliases)
             {
                 addToMay(index);

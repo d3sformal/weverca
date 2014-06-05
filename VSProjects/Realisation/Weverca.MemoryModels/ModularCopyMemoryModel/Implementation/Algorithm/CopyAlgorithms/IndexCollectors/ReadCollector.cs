@@ -420,5 +420,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 visitor.VisitValues(values);
             }
         }
+
+        protected override void FinishPath()
+        {
+        }
     }
 }
