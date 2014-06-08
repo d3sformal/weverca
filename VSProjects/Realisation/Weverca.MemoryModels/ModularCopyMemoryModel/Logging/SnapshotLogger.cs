@@ -1,4 +1,4 @@
-﻿//#define COPY_SNAPSHOT_LOG
+﻿#define COPY_SNAPSHOT_LOG
 
 using System;
 using System.Collections.Generic;

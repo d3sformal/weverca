@@ -84,16 +84,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             IIndexDefinition data = snapshot.Structure.Readonly.GetIndexDefinition(mustIndex);
             HashSet<Value> values = new HashSet<Value>(composedValues.Values);
 
-            if (data.Array != null)
+            if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
             {
-                values.Add(data.Array);
-            }
+                if (data.Array != null)
+                {
+                    values.Add(data.Array);
+                }
 
-            if (composedValues.Objects.Count > 0)
-            {
-                IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(composedValues.Objects);
-                snapshot.Structure.Writeable.SetObjects(mustIndex, objects);
-                if (data.Objects != null) CollectionTools.AddAll(values, data.Objects);
+                if (composedValues.Objects.Count > 0)
+                {
+                    IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(composedValues.Objects);
+                    snapshot.Structure.Writeable.SetObjects(mustIndex, objects);
+                    if (data.Objects != null) CollectionTools.AddAll(values, data.Objects);
+                }
             }
 
             snapshot.CurrentData.Writeable.SetMemoryEntry(mustIndex, new MemoryEntry(values));

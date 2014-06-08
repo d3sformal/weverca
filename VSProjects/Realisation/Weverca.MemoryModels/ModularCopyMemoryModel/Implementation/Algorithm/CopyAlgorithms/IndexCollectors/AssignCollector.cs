@@ -393,7 +393,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 processOtherValues = true;
             }
 
-            if (processOtherValues)
+            if (!snapshot.Structure.Locked && processOtherValues)
             {
                 if (entry.Count > 1)
                 {
@@ -469,7 +469,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 snapshot.Structure.Readonly.TryGetArray(parentIndex, out arrayValue);
             }
 
-            if (processOtherValues)
+            if (!snapshot.Structure.Locked && processOtherValues)
             {
                 visitor.ProcessValues(parentIndex, entry.PossibleValues, isMust);
                 ReadIndexVisitor valueVisitor = visitor.LastValueVisitor;
@@ -522,7 +522,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             else if (segment.Names.Count == 1)
             {
                 MemoryIndex processIndex;
-                if (!container.TryGetIndex(segment.Names[0], out processIndex))
+                if (!container.TryGetIndex(segment.Names[0], out processIndex) && !snapshot.Structure.Locked)
                 {
                     creatorVisitor.Name = segment.Names[0];
                     creatorVisitor.IsMust = isMust;
@@ -530,13 +530,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                     processIndex = creatorVisitor.CreatedIndex;
                 }
 
-                if (isMust)
+                if (processIndex != null)
                 {
-                    addToMust(processIndex);
-                }
-                else
-                {
-                    addToMay(processIndex);
+                    if (isMust)
+                    {
+                        addToMust(processIndex);
+                    }
+                    else
+                    {
+                        addToMay(processIndex);
+                    }
                 }
             }
             else
@@ -546,13 +549,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 foreach (String name in segment.Names)
                 {
                     MemoryIndex processIndex;
-                    if (!container.TryGetIndex(name, out processIndex))
+                    if (!container.TryGetIndex(name, out processIndex) && !snapshot.Structure.Locked)
                     {
                         creatorVisitor.Name = name;
                         segment.Accept(creatorVisitor);
                         processIndex = creatorVisitor.CreatedIndex;
                     }
-                    addToMay(processIndex);
+
+                    if (processIndex != null)
+                    {
+                        addToMay(processIndex);
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-﻿//#define TEST
+﻿#define TEST
 
 using System;
 using System.Collections.Generic;
@@ -67,7 +67,8 @@ namespace Weverca
                    
                     if (args.Length > filesIndex+1 && args[filesIndex] == "-mm")
                     {
-                        if (args[filesIndex+1].ToLower() == "copymm") memoryModel = MemoryModels.MemoryModels.CopyMM;
+                        if (args[filesIndex + 1].ToLower() == "copymm") memoryModel = MemoryModels.MemoryModels.CopyMM;
+                        else if (args[filesIndex + 1].ToLower() == "modularcopymm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
                         filesIndex += 2;
                     }
 

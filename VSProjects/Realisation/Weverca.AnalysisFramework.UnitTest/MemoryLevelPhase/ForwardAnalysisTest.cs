@@ -1685,14 +1685,33 @@ $alias = array();
 $arr[1][1] = 1;
 
 ".AssertVariable("").Analysis(Analyses.WevercaAnalysisTest);
+        
+        readonly static TestCase UnknownIndexAlias_CASE = @"
+$alias = array();
+$alias2 = 0;
+if ($_POST) {
+	$arr[$_POST] = &$alias;
+} else {
+	$arr[1][$_POST] = 7;
+}
+$arr[2][1] = &$alias2;
 
+$a1 = $alias[1];
 
+".AssertVariable("a1").HasUndefinedAndValues(0)
+ .Analysis(Analyses.WevercaAnalysisTest);
 
 
         [TestMethod]
         public void SimpleAssignTest()
         {
             AnalysisTestUtils.RunTestCase(SimpleAssign_CASE);
+        }
+
+        [TestMethod]
+        public void UnknownIndexAliasTest()
+        {
+            AnalysisTestUtils.RunTestCase(UnknownIndexAlias_CASE);
         }
 
         [TestMethod]

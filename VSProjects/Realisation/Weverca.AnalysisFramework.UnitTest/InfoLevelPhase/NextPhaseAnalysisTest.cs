@@ -254,7 +254,21 @@ $Mary->set_name('Mary');
             .Analysis(Analyses.WevercaAnalysisTest);
 
 
+        readonly static TestCase AliasCycle_CASE = @"
+$x[$_POST[1]][$_POST[1]] = & $x[$_POST[1]];
+$x[1][1] = 1;
+$t = $x[1];
+
+".AssertVariable("t")
+ .Analysis(Analyses.WevercaAnalysisTest);
+ 
         #endregion Taint analysis
+
+        [TestMethod]
+        public void AliasCycle()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(AliasCycle_CASE, false);
+        }
 
         [TestMethod]
         public void IntoMethod()
