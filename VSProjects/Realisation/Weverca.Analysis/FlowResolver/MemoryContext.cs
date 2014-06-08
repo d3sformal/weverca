@@ -116,21 +116,43 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="value">The value which will be assigned to the variable.</param>
         public void IntersectionAssign(VariableName variableName, LangElement element, Value value)
         {
-            if (!variableValues.ContainsKey(variableName))
-            {
-                variableValues.Add(variableName, new List<Value>());
-                var variableInfo = log.ReadSnapshotEntry(element);
-                if (variableInfo != null)
-                {
-                    MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
-                    if (memoryEntry != null && memoryEntry.PossibleValues != null)
-                    {
-                        variableValues[variableName].AddRange(memoryEntry.PossibleValues);
-                    }
-                }
-            }
+            AddValuesFromSnapshot(variableName, element);
 
             IntersectValues(variableValues[variableName], value);
+        }
+        /// <summary>
+        /// Removes the undefined value from the list of possible values of the variable variableName.
+        /// </summary>
+        /// <param name='variableName'>
+        /// The name of the variable which name will is removed.
+        /// </param>
+        /// <param name='element'>
+        /// Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.
+        /// </param>
+        public void RemoveUndefinedValue(VariableName variableName, LangElement element) 
+        {
+            AddValuesFromSnapshot(variableName, element);
+
+            variableValues[variableName].RemoveAll(a => a is UndefinedValue);
+        }
+
+        /// <summary>
+        /// Assigns the undefined value to the variable variableName.
+        /// </summary>
+        /// <param name='variableName'>
+        /// The name of the variable which is assigned.
+        /// </param>
+        public void AssignUndefinedValue(VariableName variableName) 
+        {
+            var undefList = new List<Value>();
+            undefList.Add(valueFactory.UndefinedValue);
+            if (!variableValues.ContainsKey(variableName))
+            {
+                variableValues.Add(variableName, undefList);
+            } else 
+            {
+                variableValues[variableName] = undefList;
+            }
         }
 
         /// <summary>
@@ -204,6 +226,23 @@ namespace Weverca.Analysis.FlowResolver
         #endregion
 
         #region private methods
+
+        private void AddValuesFromSnapshot(VariableName variableName, LangElement element)
+        {
+            if (!variableValues.ContainsKey(variableName))
+            {
+                variableValues.Add(variableName, new List<Value>());
+                var variableInfo = log.ReadSnapshotEntry(element);
+                if (variableInfo != null)
+                {
+                    MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
+                    if (memoryEntry != null && memoryEntry.PossibleValues != null)
+                    {
+                        variableValues[variableName].AddRange(memoryEntry.PossibleValues);
+                    }
+                }
+            }
+        }
 
         bool ToBoolean(SnapshotBase snapshot, Value value, bool defaultValue)
         {

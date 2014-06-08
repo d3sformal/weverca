@@ -14,9 +14,22 @@ using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.Analysis.NativeAnalyzers;
 using Weverca.Analysis;
 using Weverca.MemoryModels.CopyMemoryModel;
+using Weverca.Analysis.FlowResolver;
 
 namespace Weverca.Taint
 {
+    /// <summary>
+    /// Collects all variables that should not be undefined in the AST node corresponding to assumption.
+    /// Variables that are in isset expression can be undefined, other variables used in the assumptions should not be undefined.
+    /// </summary>
+    class UndefVarsInAssumptionVisitor:VariableVisitor
+    {
+        /// </inheritdoc>
+        public override void VisitIssetEx (IssetEx x)
+        {
+        }
+    }
+
     /// <summary>
     /// Class for analyzing a created program point graph for taint flows
     /// </summary>
@@ -30,6 +43,44 @@ namespace Weverca.Taint
         public override void VisitPoint(ProgramPointBase p)
         {
             //nothing to do
+        }
+
+        /// <inheritdoc />
+        public override void VisitAssume (AssumePoint p)
+        {
+            checkUndefinedVariablesInAssumption(p);
+        }
+
+        private void checkUndefinedVariablesInAssumption(AssumePoint p) 
+        {
+            foreach (var conditionPart in p.Condition.Parts)
+            {
+                var visitor = new UndefVarsInAssumptionVisitor();
+                conditionPart.SourceElement.VisitMe(visitor);
+                var variables = visitor.Variables;
+                foreach (var variable in variables)
+                {
+                    checkUndefinedVariableInAssumption(variable, p);
+                }
+            }
+        }
+
+        private void checkUndefinedVariableInAssumption(VariableUse variable, AssumePoint p)
+        {
+            var variableInfo = p.Log.ReadSnapshotEntry(variable);
+            if (variableInfo != null) 
+            {
+                Input.SetMode(SnapshotMode.MemoryLevel);
+                MemoryEntry memoryEntry = variableInfo.ReadMemory(Input);
+                Input.SetMode(SnapshotMode.InfoLevel);
+                if (memoryEntry != null && memoryEntry.PossibleValues != null)
+                {
+                    if (memoryEntry.PossibleValues.Contains(OutputSet.UndefinedValue))
+                    {
+                        AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, "Uninitialized variable used in the assumption.", variable, p, AnalysisWarningCause.PARSER_EXCEPTION_IN_INCLUDE_OR_EVAL));
+                    }
+                }
+            }
         }
 
         /// <summary>

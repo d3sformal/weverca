@@ -371,6 +371,8 @@ namespace Weverca.Analysis.NativeAnalyzers
 
             SanitizingFunctions.Add(getQualifiedName("md5"), getList(FlagType.FilePathDirty,FlagType.HTMLDirty,FlagType.SQLDirty));
             SanitizingFunctions.Add(getQualifiedName("sha1"), getList(FlagType.FilePathDirty, FlagType.HTMLDirty, FlagType.SQLDirty));
+
+            SanitizingFunctions.Add(getQualifiedName("intval"), getList(FlagType.FilePathDirty, FlagType.HTMLDirty, FlagType.SQLDirty));
         }
 
         private void initReportingFunctions()

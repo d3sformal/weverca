@@ -22,8 +22,7 @@ switch ($_GET['mode']) {
     default :
         exit();
 }
-
-
+ 
 // 1. Definition of the variable
 if ($mode == "viewid") {
     if (isset($_GET['post_id'])) {
@@ -37,6 +36,8 @@ if ($mode == "viewid") {
         'COMMENT_ACTION' => $_SERVER['PHP_SELF'] . "?mode=viewid&amp;post_id=" . $post_id,
             )
     );
+    $comment_id = "";
+    $user_ip = "";
 }
 
 
@@ -91,6 +92,8 @@ if ($mode == "editcom") {
             );
         }
     }
+    $comment_id = "";
+    $user_ip = "";
 }
 
 $user_ip = $HTTP_SERVER_VARS['REMOTE_ADDR'];
@@ -110,20 +113,27 @@ if ($commenthtmlsafe=="no") {
 }
 
 else {
+	/*
     $commentname = preg_replace($html_entities_match, $html_entities_replace,$commentname); 
     $commentsubject = preg_replace($html_entities_match, $html_entities_replace,$commentsubject); 
     $commenttext = preg_replace($html_entities_match, $html_entities_replace,$commenttext); 
     $commentemail = preg_replace($html_entities_match, $html_entities_replace,$commentemail); 
-    $commenthome = preg_replace($html_entities_match, $html_entities_replace,$commenthome); 
+    $commenthome = preg_replace($html_entities_match, $html_entities_replace,$commenthome);
+    */ 
+	$commentname = mysql_real_escape_string($commentname);
+	$commentsubject = mysql_real_escape_string($commentsubject);
+	$commenttext = mysql_real_escape_string($commenttext);
+	$commentemail = mysql_real_escape_string($commentemail);
+	$commenthome = mysql_real_escape_string($commenthome);
 }
 $timestamp = time();
 
 
 // some code (see view.php in original sources of mybloggie)
 
-
 if ($mode == "viewid") {
-    // FALSE POSITIVE ($post_id is initialized, $commentsubject is sanitized, ...) due to the path-insensitiveness
+    // FALSE POSITIVE ($post_id is initialized, $commentsubject is sanitized, ...), $post_id is not null 
+    // due to the path-insensitiveness
     $sqladd = "INSERT INTO " . COMMENT_TBL . " SET post_id='$post_id', comment_subject='$commentsubject', comments='$commenttext', com_tstamp='$timestamp' ,
           poster = '$commentname', email='$commentemail' , home='$commenthome', ip='$user_ip'";
     $result = $db->sql_query($sqladd);

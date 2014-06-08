@@ -8,7 +8,7 @@ namespace Weverca.Analysis.FlowResolver
     /// <summary>
     /// This visitor will find all variable uses in an AST.
     /// </summary>
-    class VariableVisitor : TreeVisitor
+    public class VariableVisitor : TreeVisitor
     {
         /// <summary>
         /// Gets the variable uses.

@@ -160,7 +160,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Evaluated parts of assumed expression parts
         /// </summary>
-        public readonly IEnumerable<ValuePoint> ExpressionParts;
+        //public readonly IEnumerable<ValuePoint> ExpressionParts;
 
         /// <summary>
         /// Evaluation log provide access to partial expression results

@@ -242,6 +242,10 @@ namespace Weverca.Analysis.FlowResolver
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
                 AssumeTrueDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
+            } else if (langElement is IssetEx) 
+            {
+                IssetEx issetEx = (IssetEx)langElement;
+                AssumeIsset(issetEx, memoryContext, flowOutputSet.Snapshot, true);
             }
         }
 
@@ -312,6 +316,10 @@ namespace Weverca.Analysis.FlowResolver
             {
                 DirectVarUse directVarUse = (DirectVarUse)langElement;
                 AssumeFalseDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
+            } else if (langElement is IssetEx) 
+            {
+                IssetEx issetEx = (IssetEx)langElement;
+                AssumeIsset(issetEx, memoryContext, flowOutputSet.Snapshot, false);
             }
         }
 
@@ -580,6 +588,21 @@ namespace Weverca.Analysis.FlowResolver
                             memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
                         }
                     }
+                }
+            }
+        }
+
+        void AssumeIsset(IssetEx issetEx, MemoryContext memoryContext, SnapshotBase flowOutputSet, bool assumeTrue)
+        {
+            foreach (var variable in issetEx.VarList)
+            {
+                if (variable is DirectVarUse) 
+                {
+                    var dirVariable = (DirectVarUse) variable;
+                    if (assumeTrue)
+                        memoryContext.RemoveUndefinedValue(dirVariable.VarName, dirVariable);
+                    else
+                        memoryContext.AssignUndefinedValue(dirVariable.VarName);
                 }
             }
         }
