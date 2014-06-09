@@ -21,12 +21,12 @@ else {
 
 if ($month < 1 || $month > 12) die();
 
-$montht = date('F', mktime(0, 0, 0, $month, 1, $year));
+$monthIndx = date('F', mktime(0, 0, 0, $month, 1, $year));
 
 // Pixy reports false positive here
 // Pixy is not able to detect that it is accessed only defined element of the
 // $lang array.
-echo $lang["$montht"];
+echo $lang[$monthIndx];
 // Error: access to the uninitialized element of the array
-echo $lang["$montht"."a"];
+echo $lang[$monthIndx."a"];
 ?>

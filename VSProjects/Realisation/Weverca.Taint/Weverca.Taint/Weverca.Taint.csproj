@@ -11,11 +11,13 @@
     <AssemblyName>Weverca.Taint</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -23,7 +25,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -46,19 +48,19 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
-      <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
+      <Project>{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
-      <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
+      <Project>{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Weverca.Analysis\Weverca.Analysis.csproj">
-      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Project>{40CAC1FE-2E53-4F41-ABEA-1A2BB0A4E782}</Project>
       <Name>Weverca.Analysis</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
-      <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
+      <Project>{01F0A818-EBE4-431B-9091-0E5DC99382AD}</Project>
       <Name>Weverca.MemoryModels</Name>
     </ProjectReference>
   </ItemGroup>

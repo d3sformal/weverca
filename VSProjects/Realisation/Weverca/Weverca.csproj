@@ -16,25 +16,25 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
+    <DebugSymbols>True</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>False</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;TEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Weverca.XML</DocumentationFile>
-    <Commandlineparameters>-sa -mm CopyMM index.php</Commandlineparameters>
+    <Commandlineparameters>-sa -mm CopyMM /home/david/Dokumenty/temp/index.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>True</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Commandlineparameters>-sa -mm CopyMM ../../../../../PHP_sources/test_programs/nocc-1.9.4-modified/action.php</Commandlineparameters>
+    <Commandlineparameters>-sa -mm CopyMM /home/david/Dokumenty/temp/index.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>8EED937F9C2F8FF33A55BC964E00312E7C15033F</ManifestCertificateThumbprint>
