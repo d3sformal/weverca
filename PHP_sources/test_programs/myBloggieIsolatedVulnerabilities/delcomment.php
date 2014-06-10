@@ -22,7 +22,7 @@ message($lang['Confirm']," <form action=\"".$_SERVER['PHP_SELF']."?mode=delcom\"
                            <input type=\"hidden\" name=\"comment_id\" value=\"".$comment_id."\" />
                            <input type=\"submit\" name=\"confirm\" value=\"yes\" />&nbsp;&nbsp;<input type=\"submit\" name=\"confirm\" value=\"no\" /></form>");
 }
-elseif ($confirm=="yes"){
+else if ($confirm=="yes"){
 if (isset($_POST['comment_id'])) {intval($comment_id = $_POST['comment_id']); }
 if (isset($_POST['post_id'])) {$post_id = intval($_POST['post_id']); }
 // Data Base Connection  //

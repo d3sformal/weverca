@@ -804,5 +804,7 @@ namespace Weverca.Analysis
         /// Warning, that occurs when 3 or more evals are called recursively
         /// </summary>
         TOO_DEEP_EVAL_RECURSION,
+
+        OTHER,
     }
 }
