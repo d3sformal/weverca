@@ -89,7 +89,7 @@ namespace Weverca.Analysis.FlowResolver
 
             int numberOfWarnings = 0;
             var includedFiles = flow.OutSet.GetControlVariable(new VariableName(".includedFiles")).ReadMemory(flow.OutSet.Snapshot);
-            foreach (var file in files)
+			foreach (var file in files)
             {
                 var fileInfo = findFile(flow, file);
 
@@ -102,6 +102,34 @@ namespace Weverca.Analysis.FlowResolver
 
                 string fileName = fileInfo.FullName;
 
+				// Handling include_once, require_once
+				var varIncluded = flow.OutSet.GetControlVariable(new VariableName(fileName));
+				if (includeExpression.InclusionType == InclusionTypes.IncludeOnce || includeExpression.InclusionType == InclusionTypes.RequireOnce)
+				{
+					var includedInfo = varIncluded.ReadMemory (flow.OutSet.Snapshot);
+					if (includedInfo != null) 
+					{
+						var includeType = (includeExpression.InclusionType == InclusionTypes.IncludeOnce) ? "include_once" : "require_once";
+						if (includedInfo.PossibleValues.Count () > 1) {
+							AnalysisWarningHandler.SetWarning (flow.OutSet, new AnalysisWarning (flow.CurrentScript.FullName, includeType + " is called more times in some program paths with the file " + fileName, flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
+							// TODO: include the file or not??
+							continue;
+						} else 
+						{
+							if (!(includedInfo.PossibleValues.First () is UndefinedValue)) 
+							{
+								//TODO: report or not?
+								//AnalysisWarningHandler.SetWarning (flow.OutSet, new AnalysisWarning (flow.CurrentScript.FullName, includeType + " is called more times with the file " + fileName, flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
+								continue;
+							}
+						}
+
+
+					}
+				}
+
+
+				// Avoid recursive includes
                 // the file was never included
                 int numberOfIncludes = -1;
                 // TODO: optimization - avoid iterating all included files
@@ -115,12 +143,6 @@ namespace Weverca.Analysis.FlowResolver
                 }
                 if (numberOfIncludes >= 0)
                 {
-                    if (includeExpression.InclusionType == InclusionTypes.IncludeOnce || includeExpression.InclusionType == InclusionTypes.RequireOnce)
-                    {
-                        var includeType = (includeExpression.InclusionType == InclusionTypes.IncludeOnce) ? "include_once" : "require_once";
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisWarning(flow.CurrentScript.FullName, includeType + " called more times with the file " + file, flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
-                        continue;
-                    }
                     if (numberOfIncludes > 2 || sharedFiles.Contains(fileName))
                     {
 
@@ -147,7 +169,7 @@ namespace Weverca.Analysis.FlowResolver
                             }
 
                             //get shared instance of program point graph
-                            flow.AddExtension(file, sharedProgramPoints[fileName], ExtensionType.ParallelInclude);
+							flow.AddExtension(fileName, sharedProgramPoints[fileName], ExtensionType.ParallelInclude);
                             continue;
                         }
                         else
@@ -160,10 +182,13 @@ namespace Weverca.Analysis.FlowResolver
 
                 try
                 {
+					// Write information about inclusion of the file
+					varIncluded.WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.Snapshot.CreateBool(true)));
+
                     //Create graph for every include - NOTE: we can share pp graphs
                     var cfg = ControlFlowGraph.ControlFlowGraph.FromFile(fileInfo);
                     var ppGraph = ProgramPointGraph.FromSource(cfg);
-                    flow.AddExtension(file, ppGraph, ExtensionType.ParallelInclude);
+					flow.AddExtension(fileName, ppGraph, ExtensionType.ParallelInclude);
                 }
                 catch (ControlFlowGraph.ControlFlowException)
                 {

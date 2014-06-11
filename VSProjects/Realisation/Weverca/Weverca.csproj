@@ -34,7 +34,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Commandlineparameters>-sa -mm CopyMM /home/david/Dokumenty/temp/index.php</Commandlineparameters>
+    <Commandlineparameters>-sa -mm CopyMM /home/david/Documents/temp/index.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>8EED937F9C2F8FF33A55BC964E00312E7C15033F</ManifestCertificateThumbprint>

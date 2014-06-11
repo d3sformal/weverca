@@ -85,6 +85,8 @@ catch (Exception $ex) {
     exit;
 }
 
+$action = 'aff_mail';
+
 switch($action) {
     //--------------------------------------------------------------------------------
     // Display a mail...
@@ -115,6 +117,7 @@ switch($action) {
 
         // Here we display the message
 	// Weverca
+	die();
         require './html/header.php';
         require './html/menu_mail.php';
         require './html/submenu_mail.php';

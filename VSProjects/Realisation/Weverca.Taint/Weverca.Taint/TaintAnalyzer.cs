@@ -13,7 +13,6 @@ using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.Analysis.NativeAnalyzers;
 using Weverca.Analysis;
-using Weverca.MemoryModels.CopyMemoryModel;
 using Weverca.Analysis.FlowResolver;
 
 namespace Weverca.Taint
@@ -65,11 +64,11 @@ namespace Weverca.Taint
                 {
                     if (memoryEntry.PossibleValues.Count()   == 1 && !(memoryEntry.PossibleValues.First() is AnyValue))
                     {
-                        AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, String.Format("Variable has just single possible value ({0}) and it is used in the assumption.", memoryEntry.PossibleValues.First().ToString()), variable, p, AnalysisWarningCause.OTHER));
+						//AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, String.Format("Variable has just single possible value ({0}) and it is used in the assumption.", memoryEntry.PossibleValues.First().ToString()), variable, p, AnalysisWarningCause.OTHER));
                     }
                 } else
                 {
-                    AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, "Variable is not defined and it is used in the assumption.", variable, p, AnalysisWarningCause.OTHER));
+					//AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, "Variable is not defined and it is used in the assumption.", variable, p, AnalysisWarningCause.OTHER));
                 }
             }
         }

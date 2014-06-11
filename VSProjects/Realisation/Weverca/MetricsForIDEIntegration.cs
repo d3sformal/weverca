@@ -326,7 +326,8 @@ namespace Weverca
 
 
                         Console.WriteLine("Analysis warnings:");
-                        PrintWarnings(AnalysisWarningHandler.GetWarnings());
+						var firstPhaseWarnings = AnalysisWarningHandler.GetWarnings();
+						PrintWarnings(firstPhaseWarnings);
 
 
                         Console.WriteLine("Security warnings with taint flow:");
@@ -339,6 +340,9 @@ namespace Weverca
 
                         bigWatch.Stop();
 
+						Console.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + nextPhase.analysisTaintWarnings.Count));
+						Console.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count);
+						Console.WriteLine("Number of warnings in the second phase: " + nextPhase.analysisTaintWarnings.Count);
                         Console.WriteLine("Weverca analyzer time consumption: " + bigWatch.ElapsedMilliseconds);
                         Console.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
                         Console.WriteLine("Second phase time consumption: " + watch2.ElapsedMilliseconds);

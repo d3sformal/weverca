@@ -12,6 +12,7 @@ using Weverca.AnalysisFramework.Memory;
 using Weverca.CodeMetrics;
 using Weverca.Parsers;
 using Weverca.Taint;
+using Weverca.AnalysisFramework.ProgramPoints;
 using System.IO;
 using PHP.Core;
 
@@ -69,6 +70,7 @@ namespace Weverca
                     {
                         if (args[filesIndex + 1].ToLower() == "copymm") memoryModel = MemoryModels.MemoryModels.CopyMM;
                         else if (args[filesIndex + 1].ToLower() == "modularcopymm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
+						if (args[filesIndex+1].ToLower() == "modularmm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
                         filesIndex += 2;
                     }
 
@@ -139,26 +141,36 @@ namespace Weverca
 					// Second phase
 					var watch2 = System.Diagnostics.Stopwatch.StartNew();
 					var nextPhase = new TaintForwardAnalysis(ppGraph);
-					nextPhase.Analyse();
+					//nextPhase.Analyse();
 					watch2.Stop();
 
                     // Build output
 
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
                     
-                    var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
+					//var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
-                    graphWalker.Run(console);
+					//graphWalker.Run(console);
 
-                    console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
+					console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     console.CommentLine(string.Format("The number of nodes in the application is: {0}\n", numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph)));
+
+					Console.WriteLine();
+					var includes = new HashSet<String>();
+					getIncludes(includes, new HashSet<ProgramPointGraph>(), ppGraph);
+					console.CommentLine(string.Format("Included files: {0}\n", includes.Count));
+					foreach (var incl in includes)
+					{
+						console.CommentLine(incl);
+					}
+					Console.WriteLine();
                     
 
 					console.CommentLine(string.Format("Analysis in the second phase completed in: {0}ms\n", watch2.ElapsedMilliseconds));
-					console.WarningsTaint(nextPhase.analysisTaintWarnings);
+					//console.WarningsTaint(nextPhase.analysisTaintWarnings);
 
 					if (ppGraph.End.OutSet != null)
                     {
@@ -199,7 +211,7 @@ namespace Weverca
 #endif
                    
                 }
-                Console.ReadKey();
+				//Console.ReadKey();
                 Console.WriteLine();
             }
         }
@@ -223,6 +235,26 @@ namespace Weverca
 
             return num;
         }
+
+		/// <summary>
+		/// Gets all includes in the program point graph and program point graphs that are its transitive extensions.
+		/// TODO: numProgramPoints, includes, NextPhaseAnalysis.resetPoints - code duplication of 
+		/// traversing program point graph - implement this using visitors.
+		/// </summary>
+		public static void getIncludes(HashSet<String> includes, HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
+		{
+			processedGraphs.Add(ppg);
+			foreach (var point in ppg.Points)
+			{
+				includes.UnionWith (point.Extension.KeysIncludes.Select (i => (String)i));
+				foreach (var branch in point.Extension.Branches) 
+				{
+					if (!processedGraphs.Contains (branch.Graph)) {
+						getIncludes(includes, processedGraphs, branch.Graph);
+					}
+				}
+			}
+		}
 
         private static void RunMetrics(string[] files)
         {

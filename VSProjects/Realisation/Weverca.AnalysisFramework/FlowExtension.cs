@@ -55,6 +55,12 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         public IEnumerable<ExtensionPoint> Branches { get { return _extensions.Values; } }
 
+		/// <summary>
+		/// Gets the keys of extension branches which are parallel includes.
+		/// </summary>
+		/// <value>The keys includes.</value>
+		public IEnumerable<object> KeysIncludes { get { return _extensions.Where (i => i.Value.Type == ExtensionType.ParallelInclude).Select (i => i.Key); } }
+
         /// <summary>
         /// Determine that extension is connected
         /// </summary>
