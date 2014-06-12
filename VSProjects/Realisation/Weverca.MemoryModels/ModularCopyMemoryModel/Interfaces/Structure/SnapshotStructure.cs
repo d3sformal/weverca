@@ -72,6 +72,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         IWriteableSnapshotStructure Writeable { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance was used only in readonly mode or not.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance was used only in readonly mode; otherwise, <c>false</c>.
+        /// </value>
+        bool IsReadonly { get; }
+
+        /// <summary>
         /// Creates the new instance of object descriptor to store object definition in structure.
         /// </summary>
         /// <param name="createdObject">The created object.</param>

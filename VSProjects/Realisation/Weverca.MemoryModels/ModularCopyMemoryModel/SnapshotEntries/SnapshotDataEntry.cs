@@ -97,7 +97,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
                 temporaryLocation = new SnapshotEntry(MemoryPath.MakePathTemporary(temporaryIndex));
 
                 IMergeAlgorithm algorithm = snapshot.AlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.MERGE_TO_TEMPORARY);
                 algorithm.MergeMemoryEntry(snapshot, temporaryIndex, dataEntry);
+                Snapshot.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.MERGE_TO_TEMPORARY);
             }
 
             return temporaryLocation;
@@ -131,7 +133,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
-            SnapshotLogger.append(context, "read index - " + this.ToString());
+            Snapshot.Logger.Log(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadIndex(context, index);
         }
@@ -148,7 +150,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
         {
-            SnapshotLogger.append(context, "read index - " + this.ToString());
+            Snapshot.Logger.Log(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadField(context, field);
         }
@@ -166,7 +168,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            SnapshotLogger.append(context, "write memory - " + this.ToString());
+            Snapshot.Logger.Log(context, "write memory - " + this.ToString());
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
 
             switch (snapshot.CurrentMode)
@@ -199,7 +201,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <param name="aliasedEntry">Snapshot entry which will be aliased from current entry</param>
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            SnapshotLogger.append(context, "set aliases - " + this.ToString());
+            Snapshot.Logger.Log(context, "set aliases - " + this.ToString());
 
             getTemporary(context).SetAliases(context, aliasedEntry);
         }
@@ -218,7 +220,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <returns>True whether that memory represented by current snapshot entry Is already defined.</returns>
         protected override bool isDefined(SnapshotBase context)
         {
-            SnapshotLogger.append(context, "is defined - " + this.ToString());
+            Snapshot.Logger.Log(context, "is defined - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -240,7 +242,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            SnapshotLogger.append(context, "aliases - " + this.ToString());
+            Snapshot.Logger.Log(context, "aliases - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -262,16 +264,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            SnapshotLogger.append(context, "read memory - " + this.ToString());
+            Snapshot.Logger.Log(context, "read memory - " + this.ToString());
 
             if (isTemporarySet(context))
             {
-                SnapshotLogger.append(context, "read from temporary location - " + this.ToString());
+                Snapshot.Logger.Log(context, "read from temporary location - " + this.ToString());
                 return temporaryLocation.ReadMemory(context);
             }
             else
             {
-                SnapshotLogger.append(context, "read just value - " + this.ToString());
+                Snapshot.Logger.Log(context, "read just value - " + this.ToString());
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
                 switch (snapshot.CurrentMode)
                 {
@@ -297,7 +299,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
-            SnapshotLogger.append(context, "resolve method - " + this.ToString() + " method: " + methodName);
+            Snapshot.Logger.Log(context, "resolve method - " + this.ToString() + " method: " + methodName);
             if (isTemporarySet(context))
             {
                 return getTemporary(context).ResolveMethod(context, methodName);
@@ -305,12 +307,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
                 IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_METHOD);
                 algorithm.Read(snapshot, values);
-                return algorithm.GetMethod(methodName);
+                var methods = algorithm.GetMethod(methodName);
+                Snapshot.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_METHOD);
+                return methods;
             }
         }
 
@@ -378,12 +383,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
                 IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_FIELDS);
                 algorithm.Read(snapshot, values);
-                return algorithm.GetFields();
+                var fields = algorithm.GetFields();
+                Snapshot.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_FIELDS);
+                return fields;
             }
         }
 
@@ -403,12 +411,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
                 IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_INDEXES);
                 algorithm.Read(snapshot, values);
-                return algorithm.GetIndexes();
+                var indexes = algorithm.GetIndexes();
+                Snapshot.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_INDEXES);
+                return indexes;
             }
         }
 
@@ -428,12 +439,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                SnapshotLogger.append(context, "iterate fields: " + this.ToString());
+                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
                 IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_TYPE);
                 algorithm.Read(snapshot, values);
-                return algorithm.GetObjectType();
+                var types = algorithm.GetObjectType();
+                Snapshot.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_TYPE);
+                return types;
             }
         }
 

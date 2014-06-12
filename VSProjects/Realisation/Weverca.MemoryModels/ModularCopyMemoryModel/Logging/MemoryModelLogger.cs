@@ -10,50 +10,22 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
-    /// <summary>
-    /// Provides logging functionality for snapshots - appends log info into copy_memory_model.log file.
-    /// Log file is cleared at the start of application.
-    /// </summary>
-    [Obsolete("Use ILog interface instead", false)]
-    class SnapshotLogger
+    class MemoryModelLogger : ILogger
     {
+
 #if COPY_SNAPSHOT_LOG
         static readonly string logFile = @"copy_memory_model.log";
         static Snapshot oldOne = null;
 #endif
 
-        static SnapshotLogger()
-        {
 #if COPY_SNAPSHOT_LOG
+        static MemoryModelLogger()
+        {
             System.IO.File.Delete(logFile);
-#endif
         }
-
-        public static void append(string message)
-        {
-#if COPY_SNAPSHOT_LOG
-            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
-            {
-                w.Write("\r\n" + message);
-            }
 #endif
-        }
 
-        public static void append(Snapshot snapshot)
-        {
-#if COPY_SNAPSHOT_LOG
-            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
-            {
-                w.Write("\r\n\r\n");
-                w.WriteLine(snapshot.ToString());
-                w.WriteLine("-------------------------------");
-            }
-
-            oldOne = snapshot;
-#endif
-        }
-
-        public static void append(Snapshot snapshot, String message)
+        public void Log(Snapshot snapshot, string message)
         {
 #if COPY_SNAPSHOT_LOG
             using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
@@ -63,15 +35,46 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 #endif
         }
 
-        public static void append(SnapshotBase snapshotBase, String message)
+        public void Log(Snapshot snapshot, string format, params object[] values)
         {
 #if COPY_SNAPSHOT_LOG
-            Snapshot snapshot = SnapshotEntry.ToSnapshot(snapshotBase);
-            append(snapshot, message);
+            Log(snapshot, String.Format(format, values));
 #endif
         }
 
-        public static void appendToSameLine(String message)
+        public void Log(SnapshotBase snapshot, string message)
+        {
+#if COPY_SNAPSHOT_LOG
+            Snapshot s = SnapshotEntry.ToSnapshot(snapshot);
+            Log(s, message);
+#endif
+        }
+
+        public void Log(SnapshotBase snapshot, string format, params object[] values)
+        {
+#if COPY_SNAPSHOT_LOG
+            Log(snapshot, String.Format(format, values));
+#endif
+        }
+
+        public void Log(string message)
+        {
+#if COPY_SNAPSHOT_LOG
+            using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))
+            {
+                w.Write("\r\n" + message);
+            }
+#endif
+        }
+
+        public void Log(string format, params object[] values)
+        {
+#if COPY_SNAPSHOT_LOG
+            Log(String.Format(format, values));
+#endif
+        }
+
+        public void LogToSameLine(string message)
         {
 #if COPY_SNAPSHOT_LOG
             using (System.IO.StreamWriter w = System.IO.File.AppendText(logFile))

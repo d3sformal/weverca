@@ -115,6 +115,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\ReadValuesVisitors.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\PrintAlgorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Data\CopySnapshotData.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Data\LazyCopySnapshotDataFactory.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Data\SnapshotDataContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopySnapshotStructure.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyArrayDescriptor.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyIndexDefinition.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\CopyObjectValueContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\SnapshotStructureContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopySnapshotStructure.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\Algorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotData.cs" />
@@ -139,10 +141,15 @@
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\ObjectValueContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\Set.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructure.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmEntry.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmKey.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Benchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Logger.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\Cloneable.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelBenchmark.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\SnapshotLogger.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\TransactionEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\IReferenceHolder.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MemoryIndex.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MemoryPath.cs" />

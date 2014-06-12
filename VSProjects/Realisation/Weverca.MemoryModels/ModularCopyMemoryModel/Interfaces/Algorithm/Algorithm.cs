@@ -30,12 +30,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         T CreateInstance();
     }
 
+
+    /// <summary>
+    /// Common ancestor for memory model algorithms.
+    /// </summary>
+    public interface IAlgorithm
+    {
+
+    }
+
     /// <summary>
     /// Defines set of assign algorithms for Modular copy Memory Model.
     /// 
     /// All of these algorithms updates the structure or data.
     /// </summary>
-    public interface IAssignAlgorithm
+    public interface IAssignAlgorithm : IAlgorithm
     {
         /// <summary>
         /// Assigns specified value to memory locations on specified path within the specified
@@ -73,7 +82,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// 
     /// All of these algorithms do not update structure or data.
     /// </summary>
-    public interface IReadAlgorithm
+    public interface IReadAlgorithm : IAlgorithm
     {
         /// <summary>
         /// Reads the values from indexes on specified path within the specified snapshot.
@@ -143,7 +152,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// 
     /// These algorithms can modify data or structure.
     /// </summary>
-    public interface ICommitAlgorithm
+    public interface ICommitAlgorithm : IAlgorithm
     {
         /// <summary>
         /// Sets the structures to compare.
@@ -190,7 +199,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// 
     /// These algorithms creates new data and structure.
     /// </summary>
-    public interface IMergeAlgorithm
+    public interface IMergeAlgorithm : IAlgorithm
     {
         /// <summary>
         /// Extends the specified snapshot by copying data and structure of the source snapshot
@@ -251,7 +260,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// 
     /// These algorithms modifies data and structure.
     /// </summary>
-    public interface IMemoryAlgorithm
+    public interface IMemoryAlgorithm : IAlgorithm
     {
         /// <summary>
         /// Copies the memory values between specified locations.
@@ -275,7 +284,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// 
     /// These algorithms does not modify data and structure.
     /// </summary>
-    public interface IPrintAlgorithm
+    public interface IPrintAlgorithm : IAlgorithm
     {
         /// <summary>
         /// Converts given snapshot to string representation.

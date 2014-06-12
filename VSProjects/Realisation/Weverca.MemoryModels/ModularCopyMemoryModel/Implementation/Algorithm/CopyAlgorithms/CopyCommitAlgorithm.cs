@@ -90,6 +90,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         private bool compareStructureAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
         {
+            if (newStructure.IsReadonly && newData.IsReadonly)
+            {
+                return true;
+            }
+
             HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
             CollectionTools.AddAll(usedIndexes, newStructure.Readonly.Indexes);
             CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.Indexes);
@@ -132,6 +137,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         private bool compareDataAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
         {
+            if (newData.IsReadonly)
+            {
+                return true;
+            }
+
             bool areEquals = true;
 
             HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
