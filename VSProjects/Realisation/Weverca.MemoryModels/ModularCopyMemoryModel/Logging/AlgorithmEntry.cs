@@ -12,12 +12,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         public int Starts { get; set; }
         public int Stops { get; set; }
-        public long Time { get; set; }
+        public double Time { get; set; }
+        public double MemoryStart { get; set; }
+        public double MemoryStop { get; set; }
+        public double Memory { get; set; }
 
         public AlgorithmEntry(AlgorithmType algorithmType)
         {
             this.algorithmType = algorithmType;
         }
+
 
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿//#define MEMORY_BENCHMARK
+#define BENCHMARK
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,48 +14,61 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
     class MemoryModelBenchmark : IBenchmark
     {
 
-        Dictionary<Snapshot, Stopwatch> transactions = new Dictionary<Snapshot, Stopwatch>();
-        Dictionary<AlgorithmKey, Stopwatch> runningAlgorithms = new Dictionary<AlgorithmKey, Stopwatch>();
+        Dictionary<Snapshot, Measuring> transactions = new Dictionary<Snapshot, Measuring>();
+        Dictionary<AlgorithmKey, Measuring> runningAlgorithms = new Dictionary<AlgorithmKey, Measuring>();
         Dictionary<AlgorithmType, AlgorithmEntry> algorithms = new Dictionary<AlgorithmType, AlgorithmEntry>();
 
         private int transactionStarts;
         private int transactionStops;
-        private long transactionTime;
+        private double transactionTime;
         private int algorithmStarts;
         private int algorithmStops;
-        private long algorithmTime;
+        private double algorithmTime;
         private int initializations;
+        private double transactionMemory;
+        private double algorithmMemory;
 
         public void InitializeSnapshot(Snapshot snapshot)
         {
+#if BENCHMARK
             initializations++;
+#endif
         }
 
         public void StartTransaction(Snapshot snapshot)
         {
-            Stopwatch transaction  = new Stopwatch();
+#if BENCHMARK
+            Measuring transaction = new Measuring();
             transactions.Add(snapshot, transaction);
-            transaction.Start();
+            transaction.MemoryStart = getMemoryUssage();
+            transaction.Stopwatch.Start();
             transactionStarts++;
+#endif
         }
 
         public void FinishTransaction(Snapshot snapshot)
         {
-            Stopwatch transaction;
+#if BENCHMARK
+            double usedMemory = getMemoryUssage();
+
+            Measuring transaction;
             if (transactions.TryGetValue(snapshot, out transaction))
             {
-                transaction.Stop();
+                transaction.Stopwatch.Stop();
                 transactionStops++;
-                transactionTime += transaction.ElapsedMilliseconds;
+                transactionTime += transaction.Stopwatch.Elapsed.TotalMilliseconds;
+                transactionMemory += usedMemory - transaction.MemoryStart;
 
                 transactions.Remove(snapshot);
             }
+#endif
         }
 
         public void StartAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType)
         {
+#if BENCHMARK
             AlgorithmKey key = new AlgorithmKey(algorithmType, algorithmInstance);
-            Stopwatch algorithm = new Stopwatch();
+            Measuring algorithm = new Measuring();
             runningAlgorithms.Add(key, algorithm);
 
             AlgorithmEntry entry;
@@ -65,16 +81,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             entry.Starts = entry.Starts + 1;
             algorithmStarts++;
 
-            algorithm.Start();
+            algorithm.MemoryStart = getMemoryUssage();
+            algorithm.Stopwatch.Start();
+#endif
         }
 
         public void FinishAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType)
         {
+#if BENCHMARK
+            double usedMemory = getMemoryUssage();
+
             AlgorithmKey key = new AlgorithmKey(algorithmType, algorithmInstance);
-            Stopwatch algorithm;
+            Measuring algorithm;
             if (runningAlgorithms.TryGetValue(key, out algorithm))
             {
-                algorithm.Stop();
+                algorithm.Stopwatch.Stop();
                 runningAlgorithms.Remove(key);
 
                 AlgorithmEntry entry;
@@ -85,11 +106,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                 }
 
                 algorithmStops++;
-                algorithmTime += algorithm.ElapsedMilliseconds;
+                algorithmTime += algorithm.Stopwatch.Elapsed.TotalMilliseconds;
+                algorithmMemory += (usedMemory - algorithm.MemoryStart);
 
                 entry.Stops = entry.Stops + 1;
-                entry.Time = entry.Time + algorithm.ElapsedMilliseconds;
+                entry.Time = entry.Time + algorithm.Stopwatch.Elapsed.TotalMilliseconds;
+                entry.Memory = entry.Memory + (usedMemory - algorithm.MemoryStart);
             }
+#endif
         }
 
 
@@ -98,23 +122,48 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             System.IO.File.Delete(benchmarkFile);
             using (System.IO.StreamWriter w = System.IO.File.AppendText(benchmarkFile))
             {
-                string caption = "algorithm;runs;time;avg;percentil";
+#if MEMORY_BENCHMARK
+                string caption = "algorithm ;\t runs;\t time;\t time_avg;\t time_percentil;\t memory;\t memory_avg;\t memory_percentil";
+#else
+                string caption = "algorithm ;\t runs;\t time;\t time_avg;\t time_percentil";
+#endif
                 w.WriteLine(caption);
 
                 foreach (var algorithm in algorithms)
                 {
                     AlgorithmType type = algorithm.Key;
                     int runs = algorithm.Value.Stops;
-                    long total = algorithm.Value.Time;
-                    double avg = (double)(total) / runs;
-                    double percentil = (double) total / algorithmTime;
+                    double time = algorithm.Value.Time;
+                    double timeAvg = time / runs;
+                    double timePercentil = time / algorithmTime;
+                    
+#if MEMORY_BENCHMARK
+                    double memory = algorithm.Value.Memory;
+                    double memoryAvg = memory / runs;
+                    double memoryPercentil = memory / Math.Abs(algorithmMemory);                    
+                    
+                    string line = string.Format("{0};\t {1};\t {2};\t {3};\t {4};\t {5};\t {6};\t {7}",
+                        type, runs, time, timeAvg, timePercentil, memory, memoryAvg, memoryPercentil);
+#else
+                    string line = string.Format("{0};\t {1};\t {2};\t {3};\t {4}",
+                        type, runs, time, timeAvg, timePercentil);
+#endif
 
-                    string line = string.Format("{0};{1};{2};{3};{4}",
-                        type, runs, total, avg, percentil);
+
 
                     w.WriteLine(line);
                 }
             }
+        }
+
+        private double getMemoryUssage()
+        {
+#if MEMORY_BENCHMARK
+            double memory = GC.GetTotalMemory(true);
+            return memory / 1024;
+#else
+            return 0;
+#endif
         }
     }
 }

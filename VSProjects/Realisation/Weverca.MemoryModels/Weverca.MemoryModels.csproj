@@ -146,6 +146,7 @@
     <Compile Include="ModularCopyMemoryModel\Logging\Benchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Logger.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\Cloneable.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\Measuring.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelBenchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\SnapshotLogger.cs" />

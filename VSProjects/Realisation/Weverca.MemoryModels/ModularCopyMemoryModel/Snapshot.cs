@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The snapshot data factory.
         /// </value>
         public static ISnapshotDataFactory SnapshotDataFactory
-            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data.LazyCopySnapshotDataFactory();
+            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data.CopySnapshotDataFactory();
 
         /// <summary>
         /// Gets the snapshot structure factory.
@@ -63,7 +63,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The snapshot structure factory.
         /// </value>
         public static ISnapshotStructureFactory SnapshotStructureFactory
-            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopySnapshotStructureFactory();
+            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopySnapshotStructureFactory();
 
         #region Algorithm Factories
 
