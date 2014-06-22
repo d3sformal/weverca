@@ -78,6 +78,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         int DataId { get; }
 
         /// <summary>
+        /// Gets a value indicating whether data were changed on commit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if data were changed on commit; otherwise, <c>false</c>.
+        /// </value>
+        bool DiffersOnCommit { get; }
+
+        /// <summary>
         /// Gets the list of indexes for which are defined data in this container.
         /// </summary>
         /// <value>
@@ -113,7 +121,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
     /// Definition of operations for snapshot data object which modifies inner structure.
     /// </summary>
     public interface IWriteableSnapshotData : IReadOnlySnapshotData
-    {
+    {        
+        /// <summary>
+        /// Sets the value indicating whether data were changed on commit.
+        /// </summary>
+        /// <param name="isDifferent">if set to <c>true</c> this data were changed on commit.</param>
+        void SetDiffersOnCommit(bool isDifferent);
+
         /// <summary>
         /// Sets the memory entry.
         /// </summary>
@@ -163,6 +177,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         {
             get;
             private set;
+        }
+
+        /// <inheritdoc />
+        public bool DiffersOnCommit
+        {
+            get;
+            private set;
+        }
+
+        /// <inheritdoc />
+        public void SetDiffersOnCommit(bool isDifferent)
+        {
+            DiffersOnCommit = isDifferent;
         }
 
         /// <inheritdoc />

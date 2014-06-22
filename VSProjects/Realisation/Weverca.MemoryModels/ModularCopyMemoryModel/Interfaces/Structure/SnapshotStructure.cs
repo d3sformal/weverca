@@ -130,6 +130,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </value>
         int StructureId { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether structure was changed on commit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if was changed on commit; otherwise, <c>false</c>.
+        /// </value>
+        bool DiffersOnCommit { get; }
+
         #region MemoryStack
 
         /// <summary>
@@ -383,14 +391,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Aliasses
 
         /// <summary>
-        /// Gets the collection of created aliases in this snapshot.
-        /// </summary>
-        /// <value>
-        /// The created aliases.
-        /// </value>
-        IEnumerable<IMemoryAlias> CreatedAliases { get; }
-
-        /// <summary>
         /// Tries the get aliases for specified index.
         /// </summary>
         /// <param name="index">The index.</param>
@@ -414,6 +414,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
     /// </summary>
     public interface IWriteableSnapshotStructure : IReadOnlySnapshotStructure
     {
+        /// <summary>
+        /// Sets the value indicating whether structure was changed on commit.
+        /// </summary>
+        /// <param name="isDifferent">if set to <c>true</c> this structure was changed on commit.</param>
+        void SetDiffersOnCommit(bool isDifferent);
+
         #region MemoryStack
 
         /// <summary>
@@ -545,12 +551,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Aliasses
 
         /// <summary>
-        /// Adds the created alias.
-        /// </summary>
-        /// <param name="aliasData">The alias data.</param>
-        void AddCreatedAlias(IMemoryAlias aliasData);
-
-        /// <summary>
         /// Sets the alias to specified index.
         /// </summary>
         /// <param name="index">The index.</param>
@@ -585,6 +585,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// The snapshot.
         /// </value>
         protected Snapshot Snapshot { get; private set; }
+
+        /// <inheritdoc />
+        public bool DiffersOnCommit
+        {
+            get;
+            private set;
+        }
+
+        /// <inheritdoc />
+        public void SetDiffersOnCommit(bool isDifferent)
+        {
+            DiffersOnCommit = isDifferent;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractSnapshotStructure" /> class.
@@ -964,14 +977,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Aliasses
 
         /// <summary>
-        /// Gets the collection of created aliases in this snapshot.
-        /// </summary>
-        /// <value>
-        /// The created aliases.
-        /// </value>
-        public abstract IEnumerable<IMemoryAlias> CreatedAliases { get; }
-
-        /// <summary>
         /// Tries the get aliases for specified index.
         /// </summary>
         /// <param name="index">The index.</param>
@@ -988,12 +993,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public abstract IMemoryAlias GetAliases(MemoryIndex index);
 
         /// <summary>
-        /// Adds the created alias.
-        /// </summary>
-        /// <param name="aliasData">The alias data.</param>
-        public abstract void AddCreatedAlias(IMemoryAlias aliasData);
-
-        /// <summary>
         /// Sets the alias to specified index.
         /// </summary>
         /// <param name="index">The index.</param>
@@ -1007,7 +1006,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public abstract void RemoveAlias(MemoryIndex index);
 
         #endregion
-
 
     }
 }

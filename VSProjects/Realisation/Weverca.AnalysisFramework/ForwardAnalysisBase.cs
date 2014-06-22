@@ -232,6 +232,7 @@ namespace Weverca.AnalysisFramework
             var snapshot = createSnapshot();
             var assistant = createAssistant();
 
+            snapshot.SetSimplifyLimit(SimplifyLimit);
             snapshot.InitAssistant(assistant);
             assistant.InitContext(snapshot);
 

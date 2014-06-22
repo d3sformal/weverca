@@ -97,6 +97,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ProcessValueAsLocationVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ReadCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ValueLocation.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\LazyCommitAlgorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignAliasWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignWithoutCopyWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignWorker.cs" />

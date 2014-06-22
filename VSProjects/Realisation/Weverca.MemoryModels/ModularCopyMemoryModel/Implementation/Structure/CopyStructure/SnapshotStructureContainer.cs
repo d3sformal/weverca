@@ -47,7 +47,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         private Dictionary<ObjectValue, IObjectDescriptor> objectDescriptors;
         private Dictionary<MemoryIndex, IIndexDefinition> indexDefinitions;
         private Dictionary<AssociativeArray, CopySet<Snapshot>> callArrays;
-        private List<IMemoryAlias> createdAliases;
         private CopyDeclarationContainer<FunctionValue> functionDecl;
         private CopyDeclarationContainer<TypeValue> classDecl;
 
@@ -60,7 +59,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         private SnapshotStructureContainer(Snapshot snapshot)
             : base(snapshot)
         {
-            createdAliases = new List<IMemoryAlias>();
         }
 
         /// <summary>
@@ -609,12 +607,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         #region Aliasses
 
         /// <inheritdoc />
-        public override IEnumerable<IMemoryAlias> CreatedAliases
-        {
-            get { return createdAliases; }
-        }
-
-        /// <inheritdoc />
         public override bool TryGetAliases(MemoryIndex index, out IMemoryAlias aliases)
         {
             IIndexDefinition data;
@@ -642,12 +634,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 }
             }
             throw new Exception("Missing alias value for " + index);
-        }
-
-        /// <inheritdoc />
-        public override void AddCreatedAlias(IMemoryAlias aliasData)
-        {
-            createdAliases.Add(aliasData);
         }
 
         /// <inheritdoc />

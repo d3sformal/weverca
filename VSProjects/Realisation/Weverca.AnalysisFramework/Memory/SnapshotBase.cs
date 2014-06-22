@@ -81,6 +81,11 @@ namespace Weverca.AnalysisFramework.Memory
         public virtual SnapshotMode CurrentMode { get; protected set; }
 
         /// <summary>
+        /// Limit number of memory entry possible values count when does simplifying MemoryEntries start
+        /// </summary>
+        public virtual int SimplifyLimit { get; protected set; }
+
+        /// <summary>
         /// Determine that transaction of this snapshot is started - updates can be written
         /// </summary>
         public bool IsTransactionStarted { get; private set; }
@@ -463,6 +468,21 @@ namespace Weverca.AnalysisFramework.Memory
 
             CurrentMode = mode;
             setMode(mode);
+        }
+
+        /// <summary>
+        /// Set the limit number of memory entry possible values count when does simplifying MemoryEntries start
+        /// </summary>
+        /// <param name="simplifyLimit">Limit number of memory entry possible values count when does simplifying MemoryEntries start</param>
+        public void SetSimplifyLimit(int simplifyLimit)
+        {
+            checkFrozenState();
+
+            if (SimplifyLimit == simplifyLimit)
+                //there is nothing to change
+                return;
+
+            SimplifyLimit = simplifyLimit;
         }
 
         /// <summary>

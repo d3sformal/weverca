@@ -164,7 +164,7 @@ namespace Weverca
 					// Second phase
 					var watch2 = System.Diagnostics.Stopwatch.StartNew();
 					var nextPhase = new TaintForwardAnalysis(ppGraph);
-					//nextPhase.Analyse();
+					nextPhase.Analyse();
 					watch2.Stop();
 
                     // Build output

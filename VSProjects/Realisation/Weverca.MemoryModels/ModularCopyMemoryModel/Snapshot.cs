@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The snapshot data factory.
         /// </value>
         public static ISnapshotDataFactory SnapshotDataFactory
-            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data.CopySnapshotDataFactory();
+            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data.LazyCopySnapshotDataFactory();
 
         /// <summary>
         /// Gets the snapshot structure factory.
@@ -63,7 +63,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The snapshot structure factory.
         /// </value>
         public static ISnapshotStructureFactory SnapshotStructureFactory
-            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopySnapshotStructureFactory();
+            = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopySnapshotStructureFactory();
 
         #region Algorithm Factories
 
@@ -242,6 +242,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         ISnapshotDataProxy oldInfos = null;
         int oldCallLevel;
 
+        /// <summary>
+        /// Gets the collection of created aliases in this snapshot.
+        /// </summary>
+        /// <value>
+        /// The created aliases.
+        /// </value>
+        public IEnumerable<IMemoryAlias> CreatedAliases
+        {
+            get { return createdAliases; }
+        }
+        private List<IMemoryAlias> createdAliases;
+        
         #endregion
 
         /// <summary>
@@ -258,6 +270,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Data = SnapshotDataFactory.CreateEmptyInstance(this);
             Infos = SnapshotDataFactory.CreateEmptyInstance(this);
             Structure = SnapshotStructureFactory.CreateGlobalContextInstance(this);
+            createdAliases = new List<IMemoryAlias>();
 
             Benchmark.InitializeSnapshot(this);
             Logger.Log(this, "Constructed snapshot");
@@ -322,6 +335,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             oldStructure = Structure;
             oldMemory = Data;
+            createdAliases.Clear();
 
             Data = SnapshotDataFactory.CopyInstance(this, oldMemory);
             Structure = SnapshotStructureFactory.CopyInstance(this, oldStructure);
@@ -1676,6 +1690,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         #region Aliases
 
         /// <summary>
+        /// Adds the created alias.
+        /// </summary>
+        /// <param name="aliasData">The alias data.</param>
+        public void AddCreatedAlias(IMemoryAlias aliasData)
+        {
+            createdAliases.Add(aliasData);
+        }
+
+        /// <summary>
         /// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
         /// If given memory index contains no aliases new alias entry is created.
         /// </summary>
@@ -1714,7 +1737,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMemoryAlias memoryAlias = alias.Build();
             Structure.Writeable.SetAlias(index, memoryAlias);
-            Structure.Writeable.AddCreatedAlias(memoryAlias);
+            AddCreatedAlias(memoryAlias);
         }
 
         /// <summary>
@@ -1754,7 +1777,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMemoryAlias memoryAlias = alias.Build();
             Structure.Writeable.SetAlias(index, memoryAlias);
-            Structure.Writeable.AddCreatedAlias(memoryAlias);
+            AddCreatedAlias(memoryAlias);
         }
 
         /// <summary>

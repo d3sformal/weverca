@@ -148,7 +148,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         private void assignCreatedAliases(Snapshot snapshot)
         {
-            foreach (IMemoryAlias aliasData in snapshot.Structure.Readonly.CreatedAliases)
+            foreach (IMemoryAlias aliasData in snapshot.CreatedAliases)
             {
                 MemoryEntry entry = data.Readonly.GetMemoryEntry(aliasData.SourceIndex);
                 foreach (MemoryIndex mustAlias in aliasData.MustAliases)
