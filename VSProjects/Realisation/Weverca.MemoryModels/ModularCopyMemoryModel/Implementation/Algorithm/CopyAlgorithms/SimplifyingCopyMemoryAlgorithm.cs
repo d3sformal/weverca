@@ -15,7 +15,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyA
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
-    class CopyMemoryAlgorithm : IMemoryAlgorithm, IAlgorithmFactory<IMemoryAlgorithm>
+    class SimplifyingCopyMemoryAlgorithm : IMemoryAlgorithm, IAlgorithmFactory<IMemoryAlgorithm>
     {
         /// <inheritdoc />
         public IMemoryAlgorithm CreateInstance()
@@ -46,7 +46,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <inheritdoc />
         public MemoryEntry CreateMemoryEntry(Snapshot snapshot, IEnumerable<Value> values)
         {
-            return new MemoryEntry(values);
+            MemoryEntry entry = new MemoryEntry(values);
+            if (entry.Count > snapshot.SimplifyLimit)
+            {
+                return snapshot.MemoryAssistant.Simplify(entry);
+            }
+            else
+            {
+                return new MemoryEntry(values);
+            }
         }
     }
 }

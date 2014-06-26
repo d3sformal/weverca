@@ -74,7 +74,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(sourceIndex);
 
-                CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(this, targetIndex);
+                CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(snapshot, this, targetIndex);
                 visitor.VisitMemoryEntry(entry);
 
                 if (isMust && visitor.GetValuesCount() == 1 && objectValues.Count == 1)
@@ -153,17 +153,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
     /// </summary>
     class CopyWithinSnapshotVisitor : AbstractValueVisitor
     {
+        private Snapshot snapshot;
         private CopyWithinSnapshotWorker worker;
         private MemoryIndex index;
         private HashSet<Value> values = new HashSet<Value>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyWithinSnapshotVisitor"/> class.
+        /// Initializes a new instance of the <see cref="CopyWithinSnapshotVisitor" /> class.
         /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
         /// <param name="worker">The worker.</param>
         /// <param name="index">The index.</param>
-        public CopyWithinSnapshotVisitor(CopyWithinSnapshotWorker worker, MemoryIndex index)
+        public CopyWithinSnapshotVisitor(Snapshot snapshot, CopyWithinSnapshotWorker worker, MemoryIndex index)
         {
+            this.snapshot = snapshot;
             this.worker = worker;
             this.index = index;
         }
@@ -209,7 +212,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <returns>Memory entry which contains copied values.</returns>
         internal MemoryEntry GetCopiedEntry()
         {
-            return new MemoryEntry(values);
+            return snapshot.CreateMemoryEntry(values);
         }
     }
 }

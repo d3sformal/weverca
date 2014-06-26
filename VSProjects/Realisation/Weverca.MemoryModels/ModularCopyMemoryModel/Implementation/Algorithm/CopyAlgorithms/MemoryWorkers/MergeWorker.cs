@@ -221,7 +221,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 values.Add(targetSnapshot.UndefinedValue);
             }
 
-            Data.Writeable.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            Data.Writeable.SetMemoryEntry(operation.TargetIndex, targetSnapshot.CreateMemoryEntry(values));
             Structure.Writeable.SetObjects(operation.TargetIndex, Structure.CreateObjectValueContainer(visitor.Objects));
         }
 

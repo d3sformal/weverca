@@ -45,18 +45,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
             this.snapshot = snapshot;
 
-            switch (snapshot.CurrentMode)
+            if (snapshot.NumberOfTransactions > 1)
             {
-                case SnapshotMode.MemoryLevel:
-                    areSame = compareStructureAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
-                    break;
+                switch (snapshot.CurrentMode)
+                {
+                    case SnapshotMode.MemoryLevel:
+                        areSame = compareStructureAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
+                        break;
 
-                case SnapshotMode.InfoLevel:
-                    areSame = compareDataAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
-                    break;
+                    case SnapshotMode.InfoLevel:
+                        areSame = compareDataAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
+                        break;
 
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
+                    default:
+                        throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
+                }
+            }
+            else
+            {
+                areSame = false;
             }
         }
 

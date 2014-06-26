@@ -13,7 +13,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
             AssignAlgorithmFactory = new CopyAssignAlgorithm(),
             CommitAlgorithmFactory = new LazyCommitAlgorithm(),
-            MemoryAlgorithmFactory = new CopyMemoryAlgorithm(),
+            MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithm(),
             MergeAlgorithmFactory = new CopyMergeAlgorithm(),
             ReadAlgorithmFactory = new CopyReadAlgorithm(),
             PrintAlgorithmFactory = new PrintAlgorithm()

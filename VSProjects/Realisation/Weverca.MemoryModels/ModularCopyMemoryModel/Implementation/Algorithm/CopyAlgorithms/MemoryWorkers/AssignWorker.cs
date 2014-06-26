@@ -144,7 +144,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 IEnumerable<Value> values = location.WriteValues(snapshot.MemoryAssistant, entry);
                 CollectionTools.AddAll(newValues, values);
 
-                snapshot.CurrentData.Writeable.SetMemoryEntry(location.ContainingIndex, new MemoryEntry(newValues));
+                snapshot.CurrentData.Writeable.SetMemoryEntry(location.ContainingIndex, snapshot.CreateMemoryEntry(newValues));
             }
 
             /// <summary>
@@ -180,7 +180,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 IEnumerable<Value> values = location.WriteValues(snapshot.MemoryAssistant, entry);
                 newValues.Add(location.Value);
 
-                snapshot.CurrentData.Writeable.SetMemoryEntry(location.ContainingIndex, new MemoryEntry(newValues));
+                snapshot.CurrentData.Writeable.SetMemoryEntry(location.ContainingIndex, snapshot.CreateMemoryEntry(newValues));
             }
 
 

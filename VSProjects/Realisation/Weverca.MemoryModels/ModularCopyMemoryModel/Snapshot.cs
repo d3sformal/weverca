@@ -253,6 +253,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             get { return createdAliases; }
         }
         private List<IMemoryAlias> createdAliases;
+
+        /// <summary>
+        /// Gets the number of transactions.
+        /// </summary>
+        /// <value>
+        /// The number of transactions.
+        /// </value>
+        public int NumberOfTransactions { get; private set; }
         
         #endregion
 
@@ -271,6 +279,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Infos = SnapshotDataFactory.CreateEmptyInstance(this);
             Structure = SnapshotStructureFactory.CreateGlobalContextInstance(this);
             createdAliases = new List<IMemoryAlias>();
+            NumberOfTransactions = 0;
 
             Benchmark.InitializeSnapshot(this);
             Logger.Log(this, "Constructed snapshot");
@@ -311,6 +320,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Logger.Log(this, "Start mode: {0}", CurrentMode);
 
             oldCallLevel = CallLevel;
+            NumberOfTransactions++;
 
             switch (CurrentMode)
             {
@@ -1279,7 +1289,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 }
 
                 values.Add(value);
-                CurrentData.Writeable.SetMemoryEntry(parentIndex, new MemoryEntry(values));
+                CurrentData.Writeable.SetMemoryEntry(parentIndex, this.CreateMemoryEntry(values));
             }
 
             IObjectValueContainerBuilder objectValues = Structure.Readonly.GetObjects(parentIndex).Builder();
@@ -1441,7 +1451,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 }
 
                 values.Add(value);
-                CurrentData.Writeable.SetMemoryEntry(parentIndex, new MemoryEntry(values));
+                CurrentData.Writeable.SetMemoryEntry(parentIndex, this.CreateMemoryEntry(values));
             }
 
             return value;
@@ -1555,6 +1565,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
             algorithm.DestroyMemory(this, index);
             Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
+        }
+
+        /// <summary>
+        /// Creates the memory entry which contains set of given values.
+        /// </summary>
+        /// <param name="values">The values.</param>
+        /// <returns>New memory entry which contains set of given values.</returns>
+        public MemoryEntry CreateMemoryEntry(IEnumerable<Value> values)
+        {
+            IMemoryAlgorithm algorithm = AlgorithmFactories.MemoryAlgorithmFactory.CreateInstance();
+            return algorithm.CreateMemoryEntry(this, values);
         }
 
         /// <summary>

@@ -99,7 +99,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 }
             }
 
-            snapshot.CurrentData.Writeable.SetMemoryEntry(mustIndex, new MemoryEntry(values));
+            snapshot.CurrentData.Writeable.SetMemoryEntry(mustIndex, snapshot.CreateMemoryEntry(values));
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             }
 
             CollectionTools.AddAll(values, snapshot.CurrentData.Readonly.GetMemoryEntry(mayIndex).PossibleValues);
-            snapshot.CurrentData.Writeable.SetMemoryEntry(mayIndex, new MemoryEntry(values));
+            snapshot.CurrentData.Writeable.SetMemoryEntry(mayIndex, snapshot.CreateMemoryEntry(values));
         }
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 CollectionTools.AddAll(newValues, entry.PossibleValues);
 
-                snapshot.CurrentData.Writeable.SetMemoryEntry(index, entry);
+                snapshot.CurrentData.Writeable.SetMemoryEntry(index, snapshot.CreateMemoryEntry(newValues));
             }
         }
     }

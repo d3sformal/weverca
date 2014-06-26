@@ -86,6 +86,7 @@
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyArrayVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyMemoryVisitor.cs" />
     <Compile Include="CopyMemoryModel\ValueVisitor\DestroyObjectsVisitor.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\SimplifyingCopyMemoryAlgorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyAlgorithmFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyAssignAlgorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyCommitAlgorithm.cs" />

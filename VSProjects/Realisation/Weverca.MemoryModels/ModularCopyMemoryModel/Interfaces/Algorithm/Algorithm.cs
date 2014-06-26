@@ -263,6 +263,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     public interface IMemoryAlgorithm : IAlgorithm
     {
         /// <summary>
+        /// Creates the memory entry which contains set of given values.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="values">The values.</param>
+        /// <returns>New memory entry which contains set of given values.</returns>
+        MemoryEntry CreateMemoryEntry(Snapshot snapshot, IEnumerable<Value> values);
+
+        /// <summary>
         /// Copies the memory values between specified locations.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>

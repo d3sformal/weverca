@@ -166,7 +166,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                         MemoryEntry aliasEntry = data.Readonly.GetMemoryEntry(mayAlias);
                         HashSet<Value> values = new HashSet<Value>(aliasEntry.PossibleValues);
                         CollectionTools.AddAll(values, entry.PossibleValues);
-                        data.Writeable.SetMemoryEntry(mayAlias, new MemoryEntry(values));
+                        data.Writeable.SetMemoryEntry(mayAlias, snapshot.CreateMemoryEntry(values));
                     }
                 }
             }

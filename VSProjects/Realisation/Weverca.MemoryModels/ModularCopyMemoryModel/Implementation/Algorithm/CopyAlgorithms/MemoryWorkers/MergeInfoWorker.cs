@@ -160,7 +160,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 values.Add(targetSnapshot.UndefinedValue);
             }
 
-            Infos.Writeable.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            Infos.Writeable.SetMemoryEntry(operation.TargetIndex, targetSnapshot.CreateMemoryEntry(values));
         }
 
         /// <summary>

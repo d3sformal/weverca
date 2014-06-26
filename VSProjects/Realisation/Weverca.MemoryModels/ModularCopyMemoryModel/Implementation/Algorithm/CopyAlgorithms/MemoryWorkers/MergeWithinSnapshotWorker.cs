@@ -33,7 +33,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             processMerge();
 
-            targetSnapshot.CurrentData.Writeable.SetMemoryEntry(targetIndex, new MemoryEntry(values));
+            targetSnapshot.CurrentData.Writeable.SetMemoryEntry(targetIndex, targetSnapshot.CreateMemoryEntry(values));
         }
 
         public void MergeIndexes(MemoryIndex targetIndex, MemoryIndex sourceIndex)
@@ -122,7 +122,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 values.Add(targetSnapshot.UndefinedValue);
             }
 
-            targetSnapshot.CurrentData.Writeable.SetMemoryEntry(operation.TargetIndex, new MemoryEntry(values));
+            targetSnapshot.CurrentData.Writeable.SetMemoryEntry(operation.TargetIndex, targetSnapshot.CreateMemoryEntry(values));
         }
 
         private HashSet<Value> getValues(MemoryIndex targetIndex, CollectComposedValuesVisitor visitor, bool includeUndefined)
