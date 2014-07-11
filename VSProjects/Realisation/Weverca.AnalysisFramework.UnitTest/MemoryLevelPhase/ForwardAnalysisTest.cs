@@ -1701,6 +1701,27 @@ $a1 = $alias[1];
 ".AssertVariable("a1").HasUndefinedAndValues(0)
  .Analysis(Analyses.WevercaAnalysisTest);
 
+        // TODO: This test fails, because the analyzer treats assignment to $arr[] the same way as $arr[0].
+        // Instead, it should assigne to $arr[maxIntegerIndex].
+        readonly static TestCase ArrayWithoutSpecifiedIndexAccess_CASE = @"
+$arr[] = 0;
+$arr[] = 1;
+$arr[5] = 5;
+$arr[] = 6;
+$arr['a'] = 'a';
+$arr[] = 7;
+$a = $arr[0];
+$b = $arr[1];
+$c = $arr[5];
+$d = $arr[6];
+$e = $arr[7];
+"
+            .AssertVariable("a").HasValues(0)
+            .AssertVariable("b").HasValues(1)
+            .AssertVariable("c").HasValues(5)
+            .AssertVariable("d").HasValues(6)
+            .AssertVariable("e").HasValues(7);
+
 
         [TestMethod]
         public void SimpleAssignTest()
@@ -2413,6 +2434,12 @@ $a1 = $alias[1];
         public void TransitiveAliasResolving()
         {
             AnalysisTestUtils.RunTestCase(TransitiveAliasResolving_CASE);
+        }
+
+        [TestMethod]
+        public void ArrayWithoutSpecifiedIndexAccess()
+        {
+            AnalysisTestUtils.RunTestCase(ArrayWithoutSpecifiedIndexAccess_CASE);
         }
 
     }
