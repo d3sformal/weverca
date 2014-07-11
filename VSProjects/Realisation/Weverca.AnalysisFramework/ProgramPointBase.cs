@@ -222,27 +222,8 @@ namespace Weverca.AnalysisFramework
                     inputs.Add(outset);
                 }
                 _inSet.StartTransaction();
-				//Stopwatch watch = null;
-				/*
-				if (inputs.Count > 1) 
-				{
-					//watch = System.Diagnostics.Stopwatch.StartNew();
-
-				}
-				*/
                 _inSet.Extend(inputs.ToArray());
                 _inSet.CommitTransaction();
-
-				/*
-				if (inputs.Count > 1) 
-				{
-					watch.Stop ();
-					System.Console.Out.WriteLine ("Number of variables = " + _inSet.Snapshot.NumMemoryLocations());
-					System.Console.Out.WriteLine ("Time = " + watch.ElapsedMilliseconds);
-					System.Console.Out.WriteLine ();
-				}
-				*/
-
             }
         }
 
