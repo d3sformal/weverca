@@ -362,6 +362,7 @@ namespace Weverca.Analysis.NativeAnalyzers
 
             SanitizingFunctions.Add(getQualifiedName("htmlentities"), getList(FlagType.HTMLDirty));
             SanitizingFunctions.Add(getQualifiedName("htmlspecialchars"), getList(FlagType.HTMLDirty));
+			SanitizingFunctions.Add(getQualifiedName("strip_tags"), getList(FlagType.HTMLDirty));
 
             SanitizingFunctions.Add(getQualifiedName("mysql_escape_string"), getList(FlagType.SQLDirty));
             SanitizingFunctions.Add(getQualifiedName("mysql_real_escape_string"), getList(FlagType.SQLDirty));

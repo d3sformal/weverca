@@ -71,7 +71,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The algorithm factories for the memory phase.
         /// </summary>
         public static AlgorithmFactories MemoryAlgorithmFactories
-            = Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.CopyAlgorithmFactories.Factories;
+			= Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.CopyAlgorithmFactories.Factories;
 
         /// <summary>
         /// The algorithm factories for the info phase.

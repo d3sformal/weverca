@@ -265,8 +265,9 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode() + LangElement.Position.FirstOffset.GetHashCode() + FullFileName.GetHashCode()
-                + Cause.GetHashCode() + ProgramPoint.OwningPPGraph.GetHashCode();
+			return Message.GetHashCode () + LangElement.Position.FirstOffset.GetHashCode () + FullFileName.GetHashCode ()
+			+ Cause.GetHashCode ()
+			+ ProgramPoint.OwningPPGraph.GetHashCode();
         }
 
         /// <summary>

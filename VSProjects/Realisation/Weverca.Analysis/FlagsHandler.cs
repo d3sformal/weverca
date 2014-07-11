@@ -178,7 +178,7 @@ namespace Weverca.Analysis
         /// <returns>true if value contains Dirty flag</returns>
         public static bool IsDirty(Value value,FlagType dirty)
         {
-            if (value is UndefinedValue) return true; // TODO: should be undefined value dirty or not?
+			//if (value is UndefinedValue) return true; // TODO: should be undefined value dirty or not?
             if (value.GetInfo<Flags>() == null)
             {
                 return false;

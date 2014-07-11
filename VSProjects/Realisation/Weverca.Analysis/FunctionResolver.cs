@@ -637,7 +637,7 @@ namespace Weverca.Analysis
 
             var constructorName = new QualifiedName(new Name("__construct"));
 
-            var constructors = resolveMethod(newObject, constructorName, arguments);
+			var constructors = resolveMethod(newObject, constructorName, arguments, true);
             if (constructors.Count > 0)
             {
                 setCallBranching(constructors);
@@ -1011,14 +1011,14 @@ namespace Weverca.Analysis
 
             if (result.Count == 0)
             {
-                setWarning("Function " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
+                setWarning("Function " + name.Name.Value + " doesn't exist", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
             }
 
             return result;
         }
 
         private Dictionary<object, FunctionValue> resolveMethod(ReadSnapshotEntryBase thisObject,
-            QualifiedName name, MemoryEntry[] arguments)
+			QualifiedName name, MemoryEntry[] arguments, bool constructor = false)
         {
             var result = new Dictionary<object, FunctionValue>();
 
@@ -1052,7 +1052,8 @@ namespace Weverca.Analysis
 
             if (result.Count == 0)
             {
-                setWarning("Method " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
+				if (!constructor || arguments.Count() > 0)
+                	setWarning("Method " + name.Name.Value + " doesn't exist", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
             }
 
             return result;
@@ -1077,7 +1078,7 @@ namespace Weverca.Analysis
 
             if (result.Count == 0)
             {
-                setWarning("Method " + name.Name.Value + " doesn't exists", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
+                setWarning("Method " + name.Name.Value + " doesn't exist", AnalysisWarningCause.FUNCTION_DOESNT_EXISTS);
             }
 
             return result;

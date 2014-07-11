@@ -171,7 +171,7 @@ namespace Weverca
 
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
                     
-					//var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
+					var graphWalker = new GraphWalking.CallGraphPrinter(ppGraph);
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
 					//graphWalker.Run(console);
@@ -181,15 +181,8 @@ namespace Weverca
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
                     console.CommentLine(string.Format("The number of nodes in the application is: {0}\n", numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph)));
 
-					Console.WriteLine();
-					var includes = new HashSet<String>();
-					getIncludes(includes, new HashSet<ProgramPointGraph>(), ppGraph);
-					console.CommentLine(string.Format("Included files: {0}\n", includes.Count));
-					foreach (var incl in includes)
-					{
-						console.CommentLine(incl);
-					}
-					Console.WriteLine();
+
+					//printIncludes(console, ppGraph);
                     
 
 					console.CommentLine(string.Format("Analysis in the second phase completed in: {0}ms\n", watch2.ElapsedMilliseconds));
@@ -238,6 +231,20 @@ namespace Weverca
                 Console.WriteLine();
             }
         }
+
+		private static void printIncludes(ConsoleOutput console, ProgramPointGraph ppGraph)
+		{
+			Console.WriteLine();
+			var includes = new HashSet<String>();
+			getIncludes(includes, new HashSet<ProgramPointGraph>(), ppGraph);
+
+			console.CommentLine(string.Format("Included files: {0}\n", includes.Count));
+			foreach (var incl in includes)
+			{
+				console.CommentLine(incl);
+			}
+			Console.WriteLine();
+		}
 
         /// <summary>
         /// Number of program points in program point graph, including program points that are its extensions.

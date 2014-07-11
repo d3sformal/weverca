@@ -50,7 +50,17 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-            IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(OutSnapshot));
+			if (Index == null) 
+			{
+				// TODO: workaround, not correct!!
+				// converts the expression $a[] to $a[0]
+				// this is not correct, $a[] should be converted to $a[largest index of $a]
+				IndexIdentifier = Services.Evaluator.MemberIdentifier(new MemoryEntry(OutSnapshot.CreateInt(0)));
+			}
+			else 
+			{
+            	IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(OutSnapshot));
+			}
             LValue = Services.Evaluator.ResolveIndex(UsedItem.Value, IndexIdentifier);
         }
 

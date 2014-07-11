@@ -86,7 +86,7 @@ namespace Weverca.Taint
             // 1. Get values of arguments of the function
             // TODO: code duplication: the following code, code in SimpleFunctionResolver, and NativeFunctionAnalyzer. Move the code to some API (? FlowInputSet)
             Input.SetMode(SnapshotMode.MemoryLevel);
-            MemoryEntry argc = InputSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(Input);
+			MemoryEntry argc = InputSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(Input);
             Input.SetMode(SnapshotMode.InfoLevel);
             int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
             
@@ -301,14 +301,14 @@ namespace Weverca.Taint
                 var possibleValues = pEx.Condition.Value.ReadMemory(Output).PossibleValues;
 
                 var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
-                List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
-                    
-
                 var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
-                List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
+                
                     
                 if (pEx.TrueAssume.Assumed && pEx.FalseAssume.Assumed)
                 {
+					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
+					List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
+
                     //merge taint info from both branches
                     List<ValueInfo> values = new List<ValueInfo>();  
                     values.Add(new ValueInfo(trueValues, truevarID));
@@ -320,6 +320,8 @@ namespace Weverca.Taint
                 }
                 else if (pEx.TrueAssume.Assumed)
                 {
+					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
+
                     //only true value is used
                     List<ValueInfo> values = new List<ValueInfo>();  
                     values.Add(new ValueInfo(trueValues, truevarID));
@@ -330,6 +332,8 @@ namespace Weverca.Taint
                 }
                 else
                 {
+					List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
+
                     //only false value is used
                     List<ValueInfo> values = new List<ValueInfo>();  
                     values.Add(new ValueInfo(falseValues, falsevarID));

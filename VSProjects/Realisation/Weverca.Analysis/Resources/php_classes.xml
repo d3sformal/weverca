@@ -2,6 +2,8 @@
 <classes>
   <class name="stdClass" isFinal="false">
     <field name="scalar" type="mixed" visibility="public" isStatic="false" isConst="false" />
+    <method static="false" final="false" visibility="public" name="__construct" returnType="none">
+    </method>
   </class>
   <class name="AMQPChannel" isFinal="false">
     <method static="false" final="false" visibility="public" name="commitTransaction" returnType="void"/>

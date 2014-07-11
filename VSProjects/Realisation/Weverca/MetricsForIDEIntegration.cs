@@ -114,7 +114,7 @@ namespace Weverca
                     }
                 }
 
-                var memoryModel = MemoryModels.MemoryModels.CopyMM;
+				var memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
 
                 RunStaticAnalysis(filesToAnalyze.ToArray(), memoryModel);
             }
@@ -321,13 +321,16 @@ namespace Weverca
 
                         var watch2 = System.Diagnostics.Stopwatch.StartNew();
                         var nextPhase = new TaintForwardAnalysis(ppGraph);
-                        nextPhase.Analyse();
+						nextPhase.analysisTaintWarnings = new List<AnalysisTaintWarning>();
+						nextPhase.Analyse();
                         watch2.Stop();
 
 
                         Console.WriteLine("Analysis warnings:");
 						var firstPhaseWarnings = AnalysisWarningHandler.GetWarnings();
+						//PrintWarnings(new List<AnalysisWarning>());
 						PrintWarnings(firstPhaseWarnings);
+						//PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
 
 
                         Console.WriteLine("Security warnings with taint flow:");
@@ -339,6 +342,8 @@ namespace Weverca
                         writeAll(ppGraph, ref processedPPGraphs, ref processedPPoints);
 
                         bigWatch.Stop();
+
+						Console.WriteLine("Overview:");
 
 						Console.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + nextPhase.analysisTaintWarnings.Count));
 						Console.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count);

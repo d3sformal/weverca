@@ -297,7 +297,10 @@ namespace Weverca.Analysis.NativeAnalyzers
                         break;
                     case "int":
                     case "integer":
-                        if (!(ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value)))
+						//TODO: workaround: type declarations in .xml files specifies the arguments that should be of type number by type int 
+						// fix declarations in xml files!!
+					//if (!(ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value)))
+					if (!(ValueTypeResolver.IsInt(value) || ValueTypeResolver.IsLong(value) || ValueTypeResolver.IsFloat(value)))
                         {
                             argumentMatches = false;
                         }
