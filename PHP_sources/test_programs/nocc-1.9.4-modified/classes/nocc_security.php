@@ -13,7 +13,8 @@
  * @version    SVN: $Id: nocc_security.php 2580 2013-08-19 21:57:33Z gerundt $
  */
 
-require_once dirname(__FILE__).'/../utils/htmLawed.php';
+// Weverca
+//require_once dirname(__FILE__).'/../utils/htmLawed.php';
 
 /**
  * Security functions
@@ -85,8 +86,9 @@ class NOCC_Security {
         $config = array('keep_bad' => 0,
                         'schemes' => 'href:aim,feed,file,ftp,gopher,http,https,irc,mailto,news,nntp,sftp,ssh,telnet; src:cid,http,https; style:!; *:file,http,https',
                         'valid_xhtml' => 1);
-        
-        return htmLawed($body, $config);
+        //Weverca 
+        //return htmLawed($body, $config);
+        return $body;
     }
 
     /**

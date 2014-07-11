@@ -27,6 +27,8 @@ class NOCC_Session {
      * @static
      */
     public static function start() {
+    // Weverca
+    $_SESSION = array();
 	NOCC_Session::remove_old_sessions();
 	if( ! isset($_GET['sname']) || ( strlen($_GET['sname'])>0 && preg_match("/^NOCC_/",$_GET['sname']) ) ) {
 		foreach( $_COOKIE as $cookie_key => $cookie_value ) {

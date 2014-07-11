@@ -56,7 +56,7 @@ $conf->nocc_version = '1.9.4-dev';
 $conf->nocc_url = 'http://nocc.sourceforge.net/';
 
 $pwd_to_encrypt = false;
-if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'login') {
+if (isset($_REQUEST['actioSn']) && $_REQUEST['action'] == 'login') {
     $pwd_to_encrypt = true;
 }
 
@@ -70,17 +70,16 @@ if ($from_rss == false) {
 //echo "</pre>";
 
 // Set defaults
-if (isset($_REQUEST['folder'])) {
+// Weverca: remove tests for isset for cases that the tested variable is set in the if branch. Multiple occurences!!!!
+//if (isset($_REQUEST['folder']))
     $_SESSION['nocc_folder'] = $_REQUEST['folder'];
-}
-if (!isset($_SESSION['nocc_folder'])) {
+//if (!isset($_SESSION['nocc_folder']))
     $_SESSION['nocc_folder'] = $conf->default_folder;
-}
 
 // Have we changed sort order?
-if (!isset($_SESSION['nocc_sort']))
+//if (!isset($_SESSION['nocc_sort']))
     $_SESSION['nocc_sort'] = $conf->default_sort;
-if (!isset($_SESSION['nocc_sortdir']))
+//if (!isset($_SESSION['nocc_sortdir']))
     $_SESSION['nocc_sortdir'] = $conf->default_sortdir;
 
 // Override session variables from request, if supplied
@@ -96,7 +95,8 @@ if (isset($_REQUEST['passwd'])) {
 if ($pwd_to_encrypt == true) {
     /* encrypt session password */
     /* store into session encrypted password */
-    $_SESSION['nocc_passwd'] = encpass($_SESSION['nocc_passwd'], $conf->master_key);
+	// Weverca
+	//$_SESSION['nocc_passwd'] = encpass($_SESSION['nocc_passwd'], $conf->master_key);
 }
 
 if (isset($_REQUEST['sort']))
@@ -154,9 +154,9 @@ if (!isset($_SESSION['nocc_theme'])) { //if session theme NOT already set...
 //--------------------------------------------------------------------------------
 
 // Start with default smtp server/port, override later
-if (empty($_SESSION['nocc_smtp_server']))
+//if (empty($_SESSION['nocc_smtp_server']))
     $_SESSION['nocc_smtp_server'] = $conf->default_smtp_server;
-if (empty($_SESSION['nocc_smtp_port']))
+//if (empty($_SESSION['nocc_smtp_port']))
     $_SESSION['nocc_smtp_port'] = $conf->default_smtp_port;
 
 // Default login to just the username

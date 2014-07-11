@@ -96,7 +96,8 @@ if (isset($_REQUEST['passwd'])) {
 if ($pwd_to_encrypt == true) {
     /* encrypt session password */
     /* store into session encrypted password */
-    $_SESSION['nocc_passwd'] = encpass($_SESSION['nocc_passwd'], $conf->master_key);
+	// Weverca
+    //$_SESSION['nocc_passwd'] = encpass($_SESSION['nocc_passwd'], $conf->master_key);
 }
 
 if (isset($_REQUEST['sort']))
@@ -151,6 +152,7 @@ if (isset($_REQUEST['theme'])) { //if a theme is requested...
 if (!isset($_SESSION['nocc_theme'])) { //if session theme NOT already set...
     $_SESSION['nocc_theme'] = $themes->getDefaultThemeName();
 }
+
 //--------------------------------------------------------------------------------
 
 // Start with default smtp server/port, override later

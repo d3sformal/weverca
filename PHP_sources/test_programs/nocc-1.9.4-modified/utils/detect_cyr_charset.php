@@ -154,6 +154,8 @@ function detect_charset($Data,$dbg_fl = 0) {
 }
 
 function max_from_ratio($ar) {
+	// weverca
+	/*
     $max=0;
     $max_key="";
     while (list($key,$val)=each($ar)) {
@@ -164,9 +166,12 @@ function max_from_ratio($ar) {
     }
     reset($ar);
     return array($max,$max_key);
+    */
+	return array();
 }
 
 function GetCodeScoreAll($Data,$beg_charset) {
+	/* Weverca
     global $cad_StatsTableWin, $cad_StatsTableKoi;
     $PairSize = 2;
 
@@ -182,7 +187,7 @@ function GetCodeScoreAll($Data,$beg_charset) {
 
     $sp = preg_split('/[\.\,\-\s\:\;\?\!\'\"\(\)\d<>]+/', $Data);
     while ( list($key2, $val2) = each($sp) ) {
-        /* for many small pices of text -  words in mesaage body */
+        // for many small pices of text -  words in mesaage body
         $rc = preg_match("/(.*)([\x7F-\xFF]+)/x", $val2);
         if ($rc == 0) {
             continue;
@@ -225,4 +230,7 @@ function GetCodeScoreAll($Data,$beg_charset) {
     $Mark_list=array($Mark_koi,$Mark_win);
     //setlocale(LC_CTYPE,$old_locale);
     return $Mark_list;
+    */
+    
+    return array();
 }

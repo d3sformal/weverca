@@ -791,7 +791,9 @@ class nocc_imap
 
     public static function mime_header_decode($header) {
         $source = imap_mime_header_decode($header);
-        $result[] = new result;
+        // Weverca
+        //$result[] = new result;
+        $result[0] = new result;
         $result[0]->text='';
         $result[0]->charset='ISO-8859-1';
         for ($j = 0; $j < count($source); $j++ ) {

@@ -85,7 +85,21 @@ catch (Exception $ex) {
     exit;
 }
 
-$action = 'aff_mail';
+//$action = 'forward'; // finds xss!!
+// if ($_GET[1])
+ 	$action = 'aff_mail';
+// if ($_GET[1])
+// 	$action = 'write';
+// if ($_GET[1])
+// 	$action = 'reply';
+// if ($_GET[1])
+// 	$action = 'managefolders'; // fails to analyze
+// if ($_GET[1])
+//  	$action = 'managefilters'; // finds security problems!!
+// if ($_GET[1])
+//  	$action = 'setprefs';
+// if ($_GET[1])
+//  	$action = 'login';
 
 switch($action) {
     //--------------------------------------------------------------------------------
@@ -116,8 +130,6 @@ switch($action) {
         }
 
         // Here we display the message
-	// Weverca
-	die();
         require './html/header.php';
         require './html/menu_mail.php';
         require './html/submenu_mail.php';
@@ -129,8 +141,6 @@ switch($action) {
 
         $pop->close();
         break;
-	die();
-
     //--------------------------------------------------------------------------------
     // Write a mail...
     //--------------------------------------------------------------------------------
