@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
@@ -13,7 +14,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
-    class LazyCommitAlgorithm : ICommitAlgorithm, IAlgorithmFactory<ICommitAlgorithm>
+    class TrackingLazyCommitAlgorithm : ICommitAlgorithm, IAlgorithmFactory<ICommitAlgorithm>
     {
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
@@ -23,7 +24,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <inheritdoc />
         public ICommitAlgorithm CreateInstance()
         {
-            return new LazyCommitAlgorithm();
+            return new TrackingLazyCommitAlgorithm();
         }
 
         /// <inheritdoc />
@@ -93,6 +94,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return !areSame;
         }
 
+        private HashSet<T> getChanges<T, C>(IReadonlyChangeTracker<T, C> trackerA, IReadonlyChangeTracker<T, C> trackerB)
+        {
+            HashSet<T> values = new HashSet<T>();
+            while (trackerA != trackerB)
+            {
+                if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
+                {
+                    var swap = trackerA;
+                    trackerA = trackerB;
+                    trackerB = swap;
+                }
+
+                CollectionTools.AddAll(values, trackerA.ChangedValues);
+                trackerA = trackerA.PreviousTracker;
+            }
+
+            return values;
+        }
+
         private bool compareStructureAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
         {
             if (snapshot.NumberOfTransactions == 1)
@@ -106,40 +126,57 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 return !differs;
             }
 
-            HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
-            CollectionTools.AddAll(usedIndexes, newStructure.Readonly.Indexes);
-            CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.Indexes);
-
-            IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
 
             bool areEqual = true;
 
-            foreach (MemoryIndex index in usedIndexes)
+            var previousStructure = newStructure.Readonly.IndexChangeTracker.PreviousTracker;
+            if (previousStructure != null)
             {
-                if (index is TemporaryIndex)
-                {
-                    continue;
-                }
+                areEqual = areEqual && !previousStructure.Container.DiffersOnCommit;
+            }
 
-                IIndexDefinition newDefinition = getIndexDefinitionOrUndefined(index, newStructure, emptyDefinition);
-                IIndexDefinition oldDefinition = getIndexDefinitionOrUndefined(index, oldStructure, emptyDefinition);
+            var previousData = newData.Readonly.IndexChangeTracker.PreviousTracker;
+            if (previousData != null)
+            {
+                areEqual = areEqual && !previousData.Container.DiffersOnCommit;
+            }
 
-                if (widen)
+            if (areEqual || widen)
+            {
+                HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
+
+                CollectionTools.AddAll(usedIndexes, newStructure.Readonly.IndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.IndexChangeTracker.ChangedValues);
+
+                IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
+
+                foreach (MemoryIndex index in usedIndexes)
                 {
-                    if (!compareData(index, simplifyLimit, assistant))
+                    if (index is TemporaryIndex)
                     {
-                        widenData(index, simplifyLimit, assistant);
+                        continue;
                     }
-                }
 
-                if (!compareIndexDefinitions(newDefinition, oldDefinition))
-                {
-                    areEqual = false;
-                }
+                    IIndexDefinition newDefinition = getIndexDefinitionOrUndefined(index, newStructure, emptyDefinition);
+                    IIndexDefinition oldDefinition = getIndexDefinitionOrUndefined(index, oldStructure, emptyDefinition);
 
-                if (!compareData(index, simplifyLimit, assistant))
-                {
-                    areEqual = false;
+                    if (widen)
+                    {
+                        if (!compareData(index, simplifyLimit, assistant))
+                        {
+                            widenData(index, simplifyLimit, assistant);
+                        }
+                    }
+
+                    if (!compareIndexDefinitions(newDefinition, oldDefinition)
+                        || !compareData(index, simplifyLimit, assistant))
+                    {
+                        areEqual = false;
+                        if (!widen)
+                        {
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -147,10 +184,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 newStructure.Writeable.SetDiffersOnCommit(!areEqual);
             }
+
             if (!newData.IsReadonly)
             {
                 newData.Writeable.SetDiffersOnCommit(!areEqual);
             }
+
             return areEqual;
         }
 
@@ -169,23 +208,36 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             bool areEqual = true;
 
-            HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
-            CollectionTools.AddAll(indexes, newData.Readonly.Indexes);
-            CollectionTools.AddAll(indexes, oldData.Readonly.Indexes);
-
-            foreach (MemoryIndex index in indexes)
+            var previousData = newData.Readonly.IndexChangeTracker.PreviousTracker;
+            if (previousData != null)
             {
-                if (widen)
+                areEqual = areEqual && !previousData.Container.DiffersOnCommit;
+            }
+
+            if (areEqual || widen)
+            {
+                HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
+
+                CollectionTools.AddAll(usedIndexes, newData.Readonly.IndexChangeTracker.ChangedValues);
+
+                foreach (MemoryIndex index in usedIndexes)
                 {
+                    if (widen)
+                    {
+                        if (!compareData(index, simplifyLimit, assistant))
+                        {
+                            widenData(index, simplifyLimit, assistant);
+                        }
+                    }
+
                     if (!compareData(index, simplifyLimit, assistant))
                     {
-                        widenData(index, simplifyLimit, assistant);
+                        areEqual = false;
+                        if (!widen)
+                        {
+                            break;
+                        }
                     }
-                }
-
-                if (!compareData(index, simplifyLimit, assistant))
-                {
-                    areEqual = false;
                 }
             }
 
@@ -193,6 +245,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 newData.Writeable.SetDiffersOnCommit(!areEqual);
             }
+
             return areEqual;
         }
 
@@ -366,3 +419,4 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 }
+

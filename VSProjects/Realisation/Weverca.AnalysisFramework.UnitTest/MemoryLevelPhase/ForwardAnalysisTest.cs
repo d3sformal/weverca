@@ -1728,7 +1728,7 @@ $e = $arr[7];
         {
             AnalysisTestUtils.RunTestCase(SimpleAssign_CASE);
         }
-
+        
         [TestMethod]
         public void UnknownIndexAliasTest()
         {
@@ -1765,7 +1765,7 @@ $e = $arr[7];
             AnalysisTestUtils.RunTestCase(IndexingField_CASE);
         }
 
-
+        
         [TestMethod]
         public void ArrayMayConditionalExpressionResult()
         {
@@ -1789,13 +1789,13 @@ $e = $arr[7];
         {
             AnalysisTestUtils.RunTestCase(ConditionalExpressionResult_CASE);
         }
-
+        
         [TestMethod]
         public void WhileCycleComputation()
         {
             AnalysisTestUtils.RunTestCase(WhileCycleComputation_CASE);
         }
-
+        
         [TestMethod]
         public void StaticCallOnObjectInArray()
         {
@@ -2435,7 +2435,7 @@ $e = $arr[7];
         {
             AnalysisTestUtils.RunTestCase(TransitiveAliasResolving_CASE);
         }
-
+        
         [TestMethod]
         public void ArrayWithoutSpecifiedIndexAccess()
         {

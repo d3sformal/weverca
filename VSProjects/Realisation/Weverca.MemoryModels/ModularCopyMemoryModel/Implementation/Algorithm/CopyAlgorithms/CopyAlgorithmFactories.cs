@@ -12,7 +12,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private static readonly AlgorithmFactories copyAlgorithmFactories = new AlgorithmFactoriesBuilder()
         {
             AssignAlgorithmFactory = new CopyAssignAlgorithm(),
-            CommitAlgorithmFactory = new LazyCommitAlgorithm(),
+            CommitAlgorithmFactory = new TrackingLazyCommitAlgorithm(),
             MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithm(),
             MergeAlgorithmFactory = new CopyMergeAlgorithm(),
             ReadAlgorithmFactory = new CopyReadAlgorithm(),

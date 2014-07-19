@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
@@ -84,6 +85,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         ///   <c>true</c> if data were changed on commit; otherwise, <c>false</c>.
         /// </value>
         bool DiffersOnCommit { get; }
+
+        /// <summary>
+        /// Gets the index change tracker.
+        /// </summary>
+        /// <value>
+        /// The index change tracker.
+        /// </value>
+        IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> IndexChangeTracker { get; }
 
         /// <summary>
         /// Gets the list of indexes for which are defined data in this container.
@@ -216,6 +225,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <inheritdoc />
         public abstract void RemoveMemoryEntry(MemoryIndex index);
 
-
+        /// <inheritdoc />
+        public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> IndexChangeTracker
+        {
+            get { return null; }
+        }
     }
 }

@@ -8,6 +8,7 @@ using PHP.Core;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.Analysis.Properties;
+using System.Globalization;
 
 namespace Weverca.Analysis.NativeAnalyzers
 {
@@ -45,6 +46,15 @@ namespace Weverca.Analysis.NativeAnalyzers
     /// </summary>
     class NativeConstantAnalyzer
     {
+        /// <summary>
+        /// Defines number format for parsing floating numeric values in source code
+        /// Overrides standart culture settings to force '.' as decimal separator
+        /// </summary>
+        private static NumberFormatInfo __numberFormat = new NumberFormatInfo()
+        {
+            NumberDecimalSeparator = "."
+        };
+
         #region properties
 
         /// <summary>
@@ -164,7 +174,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                                                     constantValue = outset.CreateDouble(double.PositiveInfinity);
                                                     break;
                                                 default:
-                                                    constantValue = outset.CreateDouble(double.Parse(value));
+                                                    constantValue = outset.CreateDouble(double.Parse(value, __numberFormat));
                                                     break;
                                             }
                                         }

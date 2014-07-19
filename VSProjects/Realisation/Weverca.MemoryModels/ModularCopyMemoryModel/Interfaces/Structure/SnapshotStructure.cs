@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
@@ -137,6 +138,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         ///   <c>true</c> if was changed on commit; otherwise, <c>false</c>.
         /// </value>
         bool DiffersOnCommit { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether function or class definition was added into structure.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if function or class definition was added into structure; otherwise, <c>false</c>.
+        /// </value>
+        bool DefinitionAdded { get; }
+
+        /// <summary>
+        /// Gets the index change tracker.
+        /// </summary>
+        /// <value>
+        /// The index change tracker.
+        /// </value>
+        IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> IndexChangeTracker { get; }
 
         #region MemoryStack
 
@@ -599,6 +616,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             DiffersOnCommit = isDifferent;
         }
 
+        /// <inheritdoc />
+        public virtual bool DefinitionAdded
+        {
+            get { return true; }
+        }
+
+        /// <inheritdoc />
+        public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> IndexChangeTracker
+        {
+            get { return null; }
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractSnapshotStructure" /> class.
         /// </summary>
@@ -1006,6 +1035,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public abstract void RemoveAlias(MemoryIndex index);
 
         #endregion
-
     }
 }

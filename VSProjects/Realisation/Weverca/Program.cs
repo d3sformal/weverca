@@ -162,10 +162,10 @@ namespace Weverca
                     watch.Stop();
 
 					// Second phase
-					var watch2 = System.Diagnostics.Stopwatch.StartNew();
+					/*var watch2 = System.Diagnostics.Stopwatch.StartNew();
 					var nextPhase = new TaintForwardAnalysis(ppGraph);
 					nextPhase.Analyse();
-					watch2.Stop();
+					watch2.Stop();*/
 
                     // Build output
 
@@ -185,7 +185,7 @@ namespace Weverca
 					//printIncludes(console, ppGraph);
                     
 
-					console.CommentLine(string.Format("Analysis in the second phase completed in: {0}ms\n", watch2.ElapsedMilliseconds));
+					//console.CommentLine(string.Format("Analysis in the second phase completed in: {0}ms\n", watch2.ElapsedMilliseconds));
 					//console.WarningsTaint(nextPhase.analysisTaintWarnings);
 
 					if (ppGraph.End.OutSet != null)
