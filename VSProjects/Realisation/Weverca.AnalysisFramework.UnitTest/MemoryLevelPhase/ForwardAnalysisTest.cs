@@ -248,17 +248,6 @@ if(abs($unknown)==5){
 ".AssertVariable("Output").HasUndefinedOrValues(5, -5)
  .Analysis(Analyses.SimpleAnalysisTest);
 
-        /// <summary>
-        /// Comes from BUG report on improved queue processing
-        /// </summary>
-        readonly static TestCase SwitchBranchProcessing_CASE = @"
-switch($unknown){
-    case 1: $result='a'; break;
-    case 2: $result='b'; break; 
-}
-
-".AssertVariable("result").HasUndefinedAndValues("a", "b");
-
 
         readonly static TestCase IndirectVarAssign_CASE = @"
 $Indirect='x';
@@ -614,9 +603,13 @@ $x='sanitized';
         readonly static TestCase XSSPossibleDirty_CASE = @"
 $x=$_POST['dirty'];
 if($unknown){
+    $i = 1;
     $x='sanitized';
+} else {
+    $i = 2;
 }
-".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysisTest);
+".AssertVariable("i").HasValues(1, 2).Analysis(Analyses.SimpleAnalysisTest);
+//".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysisTest);
 
 
         readonly static TestCase ConstantDeclaring_CASE = @"
@@ -1722,6 +1715,229 @@ $e = $arr[7];
             .AssertVariable("d").HasValues(6)
             .AssertVariable("e").HasValues(7);
 
+        #region Switch tests
+
+        /// <summary>
+        /// Comes from BUG report on improved queue processing
+        /// </summary>
+        readonly static TestCase SwitchBranchProcessing_CASE = @"
+switch($unknown){
+    case 1: $result='a'; break;
+    case 2: $result='b'; break; 
+}
+
+".AssertVariable("result").HasUndefinedAndValues("a", "b");
+
+        readonly static TestCase SwitchUnreachable_CASE = @"
+$a = 1;
+switch($a){
+    case 1: die();
+    case 2: $result='b'; 
+}
+// this should be unreachable
+$a = 0;
+
+".AssertVariable("a").HasValues(1);
+
+        [TestMethod]
+        public void SwitchUnreachable()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchUnreachable_CASE);
+        }
+
+        readonly static TestCase SwitchUnreachable2_CASE = @"
+$a = ($unknown) ? 1 : 2;
+switch($a){
+    case 1: die();
+    case 2: die();
+    default: die(); 
+}
+// this should be unreachable
+$a = 0;
+
+".AssertVariable("a").HasValues(1, 2);
+
+        // TODO: this test fails because the assumption in the else branch does not eliminate value 1 from the range of $a
+        [TestMethod]
+        public void SwitchUnreachable2()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchUnreachable2_CASE);
+        }
+
+        readonly static TestCase SwitchUnreachable3_CASE = @"
+$a = ($unknown) ? 1 : 2;
+switch($a){
+    case 1: $result='a'; die();
+    case 2: $result='b'; die(); 
+}
+// this should be unreachable
+$a = 0;
+
+".AssertVariable("a").HasValues(1, 2);
+
+        // TODO: this test fails because the assumption in the else branch does not eliminate value 1 from the range of $a
+        [TestMethod]
+        public void SwitchUnreachable3()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchUnreachable3_CASE);
+        }
+
+        readonly static TestCase SwitchWithoutBreak_CASE = @"
+$a = 1;
+switch($a){
+    case 1: $b = 1;
+    default: $c = 1;
+    case 2: $d = 1;
+    default: $e = 1;
+}
+$f = 1;
+
+".AssertVariable("a").HasValues(1)
+.AssertVariable("b").HasValues(1)
+.AssertVariable("c").HasValues(1)
+.AssertVariable("d").HasValues(1)
+.AssertVariable("e").HasValues(1)
+.AssertVariable("f").HasValues(1);
+
+        [TestMethod]
+        public void SwitchWithoutBreak()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWithoutBreak_CASE);
+        }
+
+        readonly static TestCase SwitchWithoutBreak2_CASE = @"
+$a = 4;
+switch ($a) {
+	case 1:
+		$b = 1;
+        echo 'smt';
+	default:
+        $c = 1;
+        echo 'smt';
+	case 2:
+        $d = 1;
+	default:
+        $e = 1;
+	case 3:
+        $f = 1;
+}
+$g = 1;
+
+".AssertVariable("a").HasValues(4)
+.AssertVariable("b").HasUndefinedValue()
+.AssertVariable("c").HasUndefinedValue()
+.AssertVariable("d").HasUndefinedValue()
+.AssertVariable("e").HasValues(1)
+.AssertVariable("f").HasValues(1)
+.AssertVariable("g").HasValues(1);
+
+        [TestMethod]
+        public void SwitchWithoutBreak2()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWithoutBreak2_CASE);
+        }
+
+
+        readonly static TestCase SwitchWithOneBreak_CASE = @"
+$a = 4;
+switch ($a) {
+	case 1:
+		$b = 1;
+	default:
+        $c = 1;
+        echo 'smt';
+	case 2:
+        $d = 1;
+        echo 'smt';
+	default:
+        $e = 1;
+        echo 'smt';
+        break;
+	case 3:
+        $f = 1;
+}
+$g = 1;
+
+".AssertVariable("a").HasValues(4)
+.AssertVariable("b").HasUndefinedValue()
+.AssertVariable("c").HasUndefinedValue()
+.AssertVariable("d").HasUndefinedValue()
+.AssertVariable("e").HasValues(1)
+.AssertVariable("f").HasUndefinedValue()
+.AssertVariable("g").HasValues(1);
+
+        [TestMethod]
+        public void SwitchWithOneBreak()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWithOneBreak_CASE);
+        }
+
+        readonly static TestCase SwitchWithOneBreak2_CASE = @"
+$a = 1;
+switch ($a) {
+	case 1:
+		$b = 1;
+	default:
+        $c = 1;
+        echo 'smt';
+    break;
+	case 2:
+        $d = 1;
+	default:
+        $e = 1;
+	case 3:
+        $f = 1;
+}
+$g = 1;
+
+".AssertVariable("a").HasValues(1)
+.AssertVariable("b").HasValues(1)
+.AssertVariable("c").HasValues(1)
+.AssertVariable("d").HasUndefinedValue()
+.AssertVariable("e").HasUndefinedValue()
+.AssertVariable("f").HasUndefinedValue()
+.AssertVariable("g").HasValues(1);
+
+        [TestMethod]
+        public void SwitchWithOneBreak2()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWithOneBreak2_CASE);
+        }
+
+        readonly static TestCase SwitchWithOneBreak3_CASE = @"
+$a = 1;
+switch ($a) {
+	case 1:
+		$b = 1;
+        echo 'smt';
+    break;
+	default:
+        $c = 1;
+	case 2:
+        $d = 1;
+	default:
+        $e = 1;
+	case 3:
+        $f = 1;
+}
+$g = 1;
+
+".AssertVariable("a").HasValues(1)
+.AssertVariable("b").HasValues(1)
+.AssertVariable("c").HasUndefinedValue()
+.AssertVariable("d").HasUndefinedValue()
+.AssertVariable("e").HasUndefinedValue()
+.AssertVariable("f").HasUndefinedValue()
+.AssertVariable("g").HasValues(1);
+
+        [TestMethod]
+        public void SwitchWithOneBreak3()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWithOneBreak3_CASE);
+        }
+
+        #endregion
+
 
         [TestMethod]
         public void SimpleAssignTest()
@@ -2436,6 +2652,7 @@ $e = $arr[7];
             AnalysisTestUtils.RunTestCase(TransitiveAliasResolving_CASE);
         }
         
+        // TODO: this test fails, fix it
         [TestMethod]
         public void ArrayWithoutSpecifiedIndexAccess()
         {

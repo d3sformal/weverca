@@ -626,17 +626,14 @@ namespace Weverca.ControlFlowGraph
 
         #region switch
 
-        /// <summary>
-        /// Visits switch statement and builds controlflow graf for switch construct.
-        /// </summary>
-        /// <param name="x">SwitchStmt</param>
-        public override void VisitSwitchStmt(SwitchStmt x)
+        
+        public void VisitSwitchStmtOld(SwitchStmt x)
         {
             BasicBlock above = currentBasicBlock;
             BasicBlock last;
             bool containsDefault = false;
             currentBasicBlock = new BasicBlock();
-            //in case of switch statement, continue and break means the same so we make the egde allways to the block under the switch
+            //in case of switch statement, continue and break means the same so we make the edge always to the block under the switch
             BasicBlock underLoop = new BasicBlock();
             loopData.Push(new LoopData(underLoop, underLoop));
 
@@ -647,10 +644,9 @@ namespace Weverca.ControlFlowGraph
 
                 var switchItem = x.SwitchItems[j];
 
-                Expression right = null;
                 if (switchItem.GetType() == typeof(CaseItem))
                 {
-                    right = ((CaseItem)switchItem).CaseVal;
+                    var right = ((CaseItem)switchItem).CaseVal;
                     BinaryEx condition = new BinaryEx(right.Position, Operations.Equal, x.SwitchValue, right);
                     graph.cfgAddedElements.Add(condition);
                     ConditionalEdge.MakeNewAndConnect(above, currentBasicBlock, condition);
@@ -689,6 +685,114 @@ namespace Weverca.ControlFlowGraph
             {
                 DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
             }
+        }
+
+        /// <summary>
+        /// Visits switch statement and builds controlflow graf for switch construct.
+        /// </summary>
+        /// <param name="x">SwitchStmt</param>
+        public override void VisitSwitchStmt(SwitchStmt x)
+        {
+            var aboveCurrentCaseBlock = currentBasicBlock;
+            BasicBlock lastDefaultStartBlock = null;
+            BasicBlock lastDefaultEndBlock = null;
+            currentBasicBlock = new BasicBlock();
+            //in case of switch statement, continue and break means the same so we make the edge always to the block under the switch
+            BasicBlock underLoop = new BasicBlock();
+            loopData.Push(new LoopData(underLoop, underLoop));
+
+
+
+            for (int j = 0; j < x.SwitchItems.Count; j++)
+            {
+
+                var switchItem = x.SwitchItems[j];
+                var caseItem = switchItem as CaseItem;
+
+                if (j > 0)
+                {
+                    // Connect to previous case block
+                    aboveCurrentCaseBlock = connectCurrentCaseToPreviousCase(aboveCurrentCaseBlock, caseItem == null);
+                }
+
+                if ((caseItem = switchItem as CaseItem) != null)
+                {
+                    // Create condition of the current case branch
+                    var right = caseItem.CaseVal;
+                    BinaryEx condition = new BinaryEx(right.Position, Operations.Equal, x.SwitchValue, right);
+                    graph.cfgAddedElements.Add(condition);
+
+                    // Connect the current case branch to the basic block above it
+                    ConditionalEdge.MakeNewAndConnect(aboveCurrentCaseBlock, currentBasicBlock, condition);
+
+                    // Process the current case branch
+                    switchItem.VisitMe(this);
+                }
+                else
+                {
+                    lastDefaultStartBlock = currentBasicBlock;
+
+                    // Process the current default branch
+                    switchItem.VisitMe(this);
+
+                    lastDefaultEndBlock = currentBasicBlock;
+                }
+
+                
+
+            }
+            loopData.Pop();
+
+            if (lastDefaultStartBlock == null) // No default branch
+            {
+                // Connect the last case with the code under the switch
+                DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
+                // Connect the else of the last case with the code under the switch
+                DirectEdge.MakeNewAndConnect(aboveCurrentCaseBlock, underLoop);
+            }
+            else // There is default branch
+            {
+                // The last default branch is the else of the last case
+                DirectEdge.MakeNewAndConnect(aboveCurrentCaseBlock, lastDefaultStartBlock);
+                if (lastDefaultEndBlock.DefaultBranch == null) // break/continue in the default branch
+                    // Connect it with the code under the swithch
+                    DirectEdge.MakeNewAndConnect(lastDefaultEndBlock, underLoop);
+                else // no break/continue in the default branch
+                    // Connect the last case with the code under the switch
+                    DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
+            }
+
+            currentBasicBlock = underLoop;
+        }
+
+        private BasicBlock connectCurrentCaseToPreviousCase(BasicBlock aboveCurrentCaseBlock, bool defaultBranch)
+        {
+            if (defaultBranch)
+            {
+                var newBasicBlock = new BasicBlock();
+                DirectEdge.MakeNewAndConnect(currentBasicBlock, newBasicBlock);
+                currentBasicBlock = newBasicBlock;
+            }
+            else
+            {
+                // Create empty basic block corresponding to the else branch of the previus case statement
+                var elseBasicBlock = new BasicBlock();
+                DirectEdge.MakeNewAndConnect(aboveCurrentCaseBlock, elseBasicBlock);
+                aboveCurrentCaseBlock = elseBasicBlock;
+
+                // Create block corresponding to the current case branch 
+                var currentCaseBasicBlock = new BasicBlock();
+
+                // Connect the current case branch to the previous branch
+                // currentBasicBlock contains the last basic block in the previous case or 
+                // empty basic block if the previous case ends with break or continue
+                DirectEdge.MakeNewAndConnect(currentBasicBlock, currentCaseBasicBlock);
+
+                // The statements of the current case will be processed
+                currentBasicBlock = currentCaseBasicBlock;
+            }
+
+            return aboveCurrentCaseBlock;
         }
 
         /// <summary>
