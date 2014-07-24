@@ -29,7 +29,7 @@ namespace Weverca.AnalysisFramework
         {
             get
             {
-                return Snapshot.ToString();
+				return Snapshot.ToString();
             }
         }
 

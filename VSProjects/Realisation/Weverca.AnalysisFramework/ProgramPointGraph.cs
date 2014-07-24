@@ -364,7 +364,7 @@ namespace Weverca.AnalysisFramework
                 {
                     //there has to be assumption condition on default branch
                     var values = expressionValues.ToArray();
-                    var condition = new AssumptionCondition(ConditionForm.SomeNot, expressionParts.ToArray());
+					var condition = new AssumptionCondition(ConditionForm.SomeNot, expressionParts.ToArray());
                     var defaultAssumeBlock = _context.CreateAssumeBlock(condition, parentBlock.Default, values);
 
                     //default Assume has to be added as child of all expression blocks

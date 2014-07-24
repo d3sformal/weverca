@@ -297,6 +297,8 @@ namespace Weverca.AnalysisFramework
 
         #region Snapshot output API
 
+
+
         /// <inheritdoc />
         public ReadWriteSnapshotEntryBase GetVariable(VariableIdentifier variable, bool forceGlobalContext = false)
         {
@@ -320,6 +322,12 @@ namespace Weverca.AnalysisFramework
         {
             return Snapshot.GetLocalControlVariable(variable);
         }
+
+		/// <summary>
+		/// Gets the number of commits (the number of fixpoint iterations).
+		/// </summary>
+		/// <value>The number of commits (fixpoint iterations).</value>
+		public int CommitCount { get { return _commitCount; }}
 
         #endregion
 

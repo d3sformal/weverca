@@ -53,6 +53,11 @@ namespace Weverca.AnalysisFramework
         internal protected FlowController Flow;
 
         #endregion
+		/// <summary>
+		/// Gets the number of fixpoint iterations.
+		/// </summary>
+		/// <value>The number of fixpoint iterations.</value>
+		public int FixpointIterationsCount { get { return (_outSet != null) ? _outSet.CommitCount : 0; }}
 
         /// <summary>
         /// Extension of this program point

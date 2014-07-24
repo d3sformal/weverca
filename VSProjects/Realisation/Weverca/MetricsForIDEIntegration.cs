@@ -23,6 +23,8 @@ namespace Weverca
     /// </summary>
     internal class MetricsForIDEIntegration
     {
+		// Indicates whether second phase is enabled
+		public static readonly bool SECOND_PHASE = false;
         public static readonly string PHP_FILE_EXTENSION = ".php";
 
         /// <summary>
@@ -320,9 +322,12 @@ namespace Weverca
                         watch.Stop();
 
                         var watch2 = System.Diagnostics.Stopwatch.StartNew();
-                        var nextPhase = new TaintForwardAnalysis(ppGraph);
+						var nextPhase = new TaintForwardAnalysis(ppGraph);
 						nextPhase.analysisTaintWarnings = new List<AnalysisTaintWarning>();
-						nextPhase.Analyse();
+						if (SECOND_PHASE) 
+						{
+							nextPhase.Analyse();
+						}
                         watch2.Stop();
 
 
@@ -330,11 +335,16 @@ namespace Weverca
 						var firstPhaseWarnings = AnalysisWarningHandler.GetWarnings();
 						//PrintWarnings(new List<AnalysisWarning>());
 						PrintWarnings(firstPhaseWarnings);
-						//PrintSecurityWarnings(AnalysisWarningHandler.GetSecurityWarnings());
+						var firstPhaseSecurityWarnings = new List<AnalysisSecurityWarning>();
+						if (!SECOND_PHASE) {
+							firstPhaseSecurityWarnings = AnalysisWarningHandler.GetSecurityWarnings();
+							PrintSecurityWarnings(firstPhaseSecurityWarnings);
+						}
 
 
-                        Console.WriteLine("Security warnings with taint flow:");
-                        PrintTaintWarnings(nextPhase.analysisTaintWarnings);
+						//Console.WriteLine("Security warnings with taint flow:");
+						if (SECOND_PHASE)
+							PrintTaintWarnings(nextPhase.analysisTaintWarnings);
 
                         Console.WriteLine("Variables:");
                         List<ProgramPointGraph> processedPPGraphs = new List<ProgramPointGraph>();
@@ -345,8 +355,8 @@ namespace Weverca
 
 						Console.WriteLine("Overview:");
 
-						Console.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + nextPhase.analysisTaintWarnings.Count));
-						Console.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count);
+						Console.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count + nextPhase.analysisTaintWarnings.Count));
+						Console.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count);
 						Console.WriteLine("Number of warnings in the second phase: " + nextPhase.analysisTaintWarnings.Count);
                         Console.WriteLine("Weverca analyzer time consumption: " + bigWatch.ElapsedMilliseconds);
                         Console.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
@@ -495,7 +505,12 @@ namespace Weverca
                 Console.WriteLine("Called from: ");
                 Console.WriteLine(p.OwningPPGraph.Context.ToString());
             }
+				
+
             Console.WriteLine("Point information:");
+
+			Console.Write("Fixpoint iterations=");
+			Console.WriteLine(p.FixpointIterationsCount);
 
             if (outset)
             {
