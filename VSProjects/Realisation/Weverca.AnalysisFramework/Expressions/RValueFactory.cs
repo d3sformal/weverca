@@ -319,6 +319,7 @@ namespace Weverca.AnalysisFramework.Expressions
              */
 
             //1.
+            // starts branching
             var conditionExpr = CreateRValue(x.CondExpr);
 
 
@@ -339,7 +340,7 @@ namespace Weverca.AnalysisFramework.Expressions
             //5.
             var falseExpr = CreateRValue(x.FalseExpr);
 
-            //connect condition - true assume will be connect via chaining            
+            //connect condition - true assume will be connected via chaining            
             conditionExpr.AddFlowChild(falseAssume);
 
             //create result
@@ -348,6 +349,9 @@ namespace Weverca.AnalysisFramework.Expressions
             //false expr is added when processing substitution
             PreventChainEdge(trueExpr);
             trueExpr.AddFlowChild(expression);
+
+            // Both branches must be processed before the expression
+            conditionExpr.CreateWorklistSegment(expression);
 
             Result(expression);
         }

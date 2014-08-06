@@ -648,6 +648,51 @@ foreach($arr as $value){
     }
 }
 ".AssertVariable("test").HasValues("init", "val1", "val2", "val3");
+        [TestMethod]
+        public void ForeachIteration()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachIteration_CASE);
+        }
+
+        // This test fails because the analysis is not able to assume that the cycle 
+        // must be evaluated at least once.
+        readonly static TestCase ForeachIteration2_CASE = @"
+$arr[0]='val1';
+$arr[1]='val2';
+$arr[2]='val3';
+
+$test='init';
+$b = 0;
+
+foreach($arr as $value){
+    $test=$value;
+    $b = 1;
+}
+".AssertVariable("test").HasValues("val1", "val2", "val3")
+ .AssertVariable("b").HasValues(1);
+        [TestMethod]
+        public void ForeachIteration2Failing()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachIteration2_CASE);
+        }
+
+        // This test fails because all values stored in indices of $arr are assigned
+        // to $value in the beginning of the cycle. However, the cycle is evaluated
+        // just once and just the first value is assigned.
+        readonly static TestCase ForeachWithBreak_CASE = @"
+$arr[1] = 1;
+$arr[2] = 2;
+foreach ($arr as $value) {
+    $a = $value;
+    break;    
+}
+".AssertVariable("a").HasValues(1);
+        [TestMethod]
+        public void ForeachWithBreakFailing()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachWithBreak_CASE);
+        }
+
 
         readonly static TestCase NativeObjectUsage_CASE = @"
     $obj=new NativeType('TestValue');
@@ -1738,7 +1783,6 @@ switch($a){
 $a = 0;
 
 ".AssertVariable("a").HasValues(1);
-
         [TestMethod]
         public void SwitchUnreachable()
         {
@@ -1756,8 +1800,6 @@ switch($a){
 $a = 0;
 
 ".AssertVariable("a").HasValues(1, 2);
-
-        // TODO: this test fails because the assumption in the else branch does not eliminate value 1 from the range of $a
         [TestMethod]
         public void SwitchUnreachable2()
         {
@@ -1777,7 +1819,7 @@ $a = 0;
 
         // TODO: this test fails because the assumption in the else branch does not eliminate value 1 from the range of $a
         [TestMethod]
-        public void SwitchUnreachable3()
+        public void SwitchUnreachable3Failing()
         {
             AnalysisTestUtils.RunTestCase(SwitchUnreachable3_CASE);
         }
@@ -1935,6 +1977,313 @@ $g = 1;
         {
             AnalysisTestUtils.RunTestCase(SwitchWithOneBreak3_CASE);
         }
+
+        #endregion
+
+        #region Worklist tests
+
+        #region If worklist tests
+
+        readonly static TestCase IfWorklist_CASE = @"
+$a = $unknown;
+if ($a) {
+    $b = 1;
+} else {
+    $b = 2;
+}
+
+".AssertVariable("b").HasValues(1, 2)
+ .AssertIterationCount();
+        [TestMethod]
+        public void IfWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(IfWorklist_CASE);
+        }
+
+        readonly static TestCase IfWorklist2_CASE = @"
+$a = $unknown;
+if ($a) {
+    $b = 1;
+} else {
+    $b = 2;
+}
+$c = 3;
+
+".AssertVariable("b").HasValues(1, 2)
+ .AssertVariable("c").HasValues(3)
+ .AssertIterationCount();
+        [TestMethod]
+        public void IfWorklist2()
+        {
+            AnalysisTestUtils.RunTestCase(IfWorklist2_CASE);
+        }
+
+        readonly static TestCase IfShortCircuit1Worklist_CASE = @"
+$a = $unknown;
+if ($unknown && $a) {
+    $b = 1;
+} else {
+    $b = 2;
+}
+
+".AssertVariable("b").HasValues(1, 2)
+ .AssertIterationCount();
+        [TestMethod]
+        public void IfShortCircuitWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(IfShortCircuit1Worklist_CASE);
+        }
+
+        readonly static TestCase IfShortCircuit2Worklist_CASE = @"
+$a = $unknown;
+if (false && $a) {
+    $b = 1;
+} else {
+    $b = 2;
+}
+
+".AssertVariable("b").HasValues(2)
+ .AssertIterationCount();
+        [TestMethod]
+        public void IfShortCircuit2Worklist()
+        {
+            AnalysisTestUtils.RunTestCase(IfShortCircuit2Worklist_CASE);
+        }
+
+        #endregion
+
+        #region Switch worklist tests
+        readonly static TestCase SwitchWorklist_CASE = @"
+$a = $unknown;
+switch ($a) {
+    case 1:
+        $b = 1;
+        break;
+    case 2:
+        $b = 2;
+        break;
+}
+$c = 1;    
+".AssertVariable("b").HasUndefinedAndValues(1, 2)
+ .AssertVariable("c").HasValues(1)
+ .AssertIterationCount();
+        [TestMethod]
+        public void SwitchWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWorklist_CASE);
+        }
+
+        readonly static TestCase SwitchWithDefaultWorklist_CASE = @"
+$a = $unknown;
+switch ($a) {
+    case 1:
+        $b = 1;
+    case 2:
+        $b = 2;
+        break;
+    case 3:
+        $b = 3;
+    default:
+        $b = 4;
+}
+$c = 1;
+    
+".AssertVariable("b").HasValues(2, 4)
+ .AssertVariable("c").HasValues(1)
+ .AssertIterationCount();
+        [TestMethod]
+        public void SwitchWithDefaultWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchWithDefaultWorklist_CASE);
+        }
+
+        readonly static TestCase SwitchDefaultNotLastWorklist_CASE = @"
+$a = $unknown;
+switch ($a) {
+    case 1:
+        $b = 1;
+    default:
+        $b = 4;
+    case 2:
+        $b = 2;
+        break;
+    case 3:
+        $b = 3;
+}
+$c = 1;
+    
+".AssertVariable("b").HasValues(2, 3)
+ .AssertVariable("c").HasValues(1)
+ .AssertIterationCount();
+        [TestMethod]
+        public void SwitchDefaultNotLastWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchDefaultNotLastWorklist_CASE);
+        }
+
+        readonly static TestCase SwitchCertainWorklist_CASE = @"
+$a = 1;
+switch ($a) {
+    case 1:
+        $b = 1;
+    default:
+        $b = 4;
+    case 2:
+        $b = 2;
+        break;
+    case 3:
+        $b = 3;
+}
+    
+".AssertVariable("b").HasValues(2)
+ .AssertIterationCount();
+        [TestMethod]
+        public void SwitchCertainWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(SwitchCertainWorklist_CASE);
+        }
+
+
+
+        #endregion
+
+
+        #region Foreach worklist tests
+
+        readonly static TestCase ForeachWorklist_CASE = @"
+$arr[1] = 1;
+$arr[2] = 2;
+foreach ($arr as $value) {
+    if ($unknown == $value) $a = $value;
+}
+".AssertVariable("a").HasUndefinedAndValues(1, 2)
+ .AssertIterationCount();
+        [TestMethod]
+        public void ForeachWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachWorklist_CASE);
+        }
+
+        readonly static TestCase ForeachWithBreakWorklist_CASE = @"
+$arr[1] = 1;
+$arr[2] = 2;
+foreach ($arr as $value) {
+    if ($unknown == $value) $a = $value;
+    break;    
+}
+".AssertIterationCount();
+        [TestMethod]
+        public void ForeachWithBreakWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachWithBreakWorklist_CASE);
+        }
+
+        readonly static TestCase ForeachWithBreak2Worklist_CASE = @"
+$arr[1] = 1;
+$arr[2] = 2;
+foreach ($arr as $value) {
+    if ($unknown == $value) {
+        $a = $value;
+        break;
+    }
+}
+".AssertIterationCount();
+        [TestMethod]
+        public void ForeachWithBreak2Worklist()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachWithBreak2Worklist_CASE);
+        }
+
+        readonly static TestCase ForeachNestedWorklist_CASE = @"
+$arr[1] = 1;
+$arr[2] = 2;
+$arr2[1] = 0;
+$arr2[2] = 1;
+foreach ($arr as $value) {
+    if ($unknown == $value) $a = $value;
+    foreach ($arr2 as $value2) {
+        $b = 1;
+        break;
+    }
+    break;
+}
+".AssertIterationCount();
+        [TestMethod]
+        public void ForeachNestedWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(ForeachNestedWorklist_CASE);
+        }
+
+        #endregion
+
+        #region For worklist tests
+        readonly static TestCase ForWorklist_CASE = @"
+
+for ($i = 0; $i <= $unknown; $i++) {
+    $a = $i;
+}
+".AssertIterationCount();
+        [TestMethod]
+        public void ForWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(ForWorklist_CASE);
+        }
+        #endregion
+
+        #region While worklist tests
+        readonly static TestCase WhileWorklist_CASE = @"
+$i = 0;
+while ($i <= $unknown) {
+    $a = $i;
+    $i++;
+}
+".AssertVariable("a")
+ .AssertIterationCount();
+        [TestMethod]
+        public void WhileWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(WhileWorklist_CASE);
+        }
+        #endregion
+
+
+        #region Functions worklist tests
+
+        readonly static TestCase FunctionWorklist_CASE = @"
+function f() {
+    if ($unknown) return;
+    $a = 1;
+    $b = 2;
+}
+
+f();
+".AssertIterationCount();
+        [TestMethod]
+        public void FunctionWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(FunctionWorklist_CASE);
+        }
+
+        readonly static TestCase IndirectFunctionsWorklist_CASE = @"
+function f() {
+    if ($unknown) return;
+    $a = 1;
+    $b = 2;
+}
+function g() {
+    $a = 1;
+}
+
+$name = ($unknown) ? 'f' : 'g';
+$name();
+".AssertIterationCount();
+        [TestMethod]
+        public void IndirectFunctionsWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(IndirectFunctionsWorklist_CASE);
+        }
+
+        #endregion
 
         #endregion
 
@@ -2392,13 +2741,7 @@ $g = 1;
         public void BoolResolving()
         {
             AnalysisTestUtils.RunTestCase(BoolResolving_CASE);
-        }
-
-        [TestMethod]
-        public void ForeachIteration()
-        {
-            AnalysisTestUtils.RunTestCase(ForeachIteration_CASE);
-        }
+        }        
 
         [TestMethod]
         public void NativeObjectUsage()
@@ -2497,7 +2840,7 @@ $g = 1;
         }
 
         [TestMethod]
-        public void SharedFunctionAliasingMayTwoArguments()
+        public void SharedFunctionAliasingMayTwoArgumentsFailing()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingMayTwoArguments_CASE);
         }
@@ -2654,7 +2997,7 @@ $g = 1;
         
         // TODO: this test fails, fix it
         [TestMethod]
-        public void ArrayWithoutSpecifiedIndexAccess()
+        public void ArrayWithoutSpecifiedIndexAccessFailing()
         {
             AnalysisTestUtils.RunTestCase(ArrayWithoutSpecifiedIndexAccess_CASE);
         }

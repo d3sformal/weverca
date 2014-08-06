@@ -252,10 +252,7 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         protected virtual void enqueueChildren()
         {
-            foreach (var child in _flowChildren)
-            {
-                Services.Enqueue(child);
-            }
+            Services.EnqueueChildren(this);
         }
 
         private void prepareExtension()
@@ -391,7 +388,39 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
+        private ProgramPointBase _afterWorklistSegment = null;
 
+        /// <summary>
+        /// The program point after the worklist segment which starts in this block (null elsewhere).
+        /// 
+        /// If worklist segment starts in this program point, it is constituted by program points between this block and AfterWorklistSegment.
+        /// Worklist segment has no semantic meaning, it just serves for more optimal ordering of program 
+        /// points in the worklist. 
+        /// Fixpoint of program points in worklist segment should be computed before afterWorklistSegment is processed.
+        /// </summary>
+        internal ProgramPointBase AfterWorklistSegment { get { return _afterWorklistSegment;} }
+
+        /// <summary>
+        /// Creates worklist segment constituted by program points between the current program point and afterWorklistSegment.
+        /// 
+        /// <seealso cref="ProgramPoint.AfterWorklistSegment"/>
+        /// </summary>
+        /// <param name="afterWorklistSegment">the block after the worklist segement</param>
+        public void CreateWorklistSegment(ProgramPointBase afterWorklistSegment)
+        {
+            _afterWorklistSegment = afterWorklistSegment;
+        }
+
+        /// <summary>
+        /// Indicates whether in this block starts worklist segment.
+        /// 
+        /// <seealso cref="ProgramPoint.AfterWorklistSegment"/>
+        /// </summary>
+        /// <returns>true if in this block starts worklist segment, false elsewhere.</returns>
+        public bool WorklistSegmentStart()
+        {
+            return (_afterWorklistSegment != null) ? true : false;
+        }
 
         #region Debugging helpers
 

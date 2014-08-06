@@ -259,6 +259,7 @@ namespace Weverca.ControlFlowGraph
             {
                 statement.VisitMe(this);
             }
+            var peek = functionSinkStack.Peek();
             DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
             /*   foreach (var block in throwBlocks.ElementAt(0)) {
                    block.Statements.RemoveLast();
@@ -333,6 +334,8 @@ namespace Weverca.ControlFlowGraph
         {
             //Merge destination for if and else branch
             BasicBlock bottomBox = new BasicBlock();
+
+            currentBasicBlock.CreateWorklistSegment(bottomBox);
 
             foreach (var condition in x.Conditions)
             {
@@ -477,6 +480,8 @@ namespace Weverca.ControlFlowGraph
             BasicBlock foreachBody = new BasicBlock();
             BasicBlock foreachSink = new BasicBlock();
 
+            foreachHead.CreateWorklistSegment(foreachSink);
+
             //Input edge to the foreach statement
             DirectEdge.MakeNewAndConnect(currentBasicBlock, foreachHead);
             foreachHead.AddElement(x);
@@ -488,6 +493,7 @@ namespace Weverca.ControlFlowGraph
             loopData.Push(new LoopData(foreachHead, foreachSink));
             currentBasicBlock = foreachBody;
             x.Body.VisitMe(this);
+            loopData.Pop();
 
             //Connect end of foreach with foreach head
             DirectEdge.MakeNewAndConnect(currentBasicBlock, foreachHead);
@@ -507,6 +513,9 @@ namespace Weverca.ControlFlowGraph
             BasicBlock forBody = new BasicBlock();
             BasicBlock forEnd = new BasicBlock();
             BasicBlock forIncrement = new BasicBlock();
+
+            currentBasicBlock.CreateWorklistSegment(forEnd);
+
             //Adds initial connection from previos to the test block
             DirectEdge.MakeNewAndConnect(currentBasicBlock, forTest);
 
@@ -575,6 +584,8 @@ namespace Weverca.ControlFlowGraph
             ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
             
             currentBasicBlock = underLoop;
+
+            aboveLoop.CreateWorklistSegment(underLoop);
         }
 
         #endregion
@@ -701,7 +712,7 @@ namespace Weverca.ControlFlowGraph
             BasicBlock underLoop = new BasicBlock();
             loopData.Push(new LoopData(underLoop, underLoop));
 
-
+            aboveCurrentCaseBlock.CreateWorklistSegment(underLoop);
 
             for (int j = 0; j < x.SwitchItems.Count; j++)
             {

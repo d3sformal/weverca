@@ -44,7 +44,7 @@ namespace Weverca.AnalysisFramework
 		/// <summary>
 		/// List of program points that should be processed
 		/// </summary>
-		private readonly WorkList _workList = WorkList.GetInstance();
+		private readonly WorkList _workList = WorkList.GetInstance(true);
 
         #endregion
 
@@ -118,7 +118,8 @@ namespace Weverca.AnalysisFramework
         private void analyse()
         {
             var entryPoint = GetEntryPoint(AnalyzedProgramPointGraph);
-            enqueue(entryPoint);
+
+            _workList.AddEntryPoint(entryPoint);
 
             //fix point computation
             while (_workList.HasWork)
@@ -133,7 +134,7 @@ namespace Weverca.AnalysisFramework
 
                 if (hasChanges(point))
                 {
-                    enqueueChildren(point);
+                    _workList.AddChildren(point);
                 }
             }
         }
@@ -258,31 +259,6 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
-        private void enqueueChildren(ProgramPointBase point)
-        {
-            var children = GetOutputPoints(point);
-            foreach (var child in children)
-            {
-                enqueue(child);
-            }
-        }
-
-        private void enqueue(ProgramPointBase point)
-        {
-            if (!unreachable(point))
-            {
-                _workList.AddWork(point);
-            }
-        }
-
-        /// <summary>
-		/// Determine whether the specified program point is unreachable in the first phase.
-		/// </summary>
-        private bool unreachable(ProgramPointBase point) 
-        {
-            return (point.InSet == null) && (point.OutSet == null);
-        }
-
         #region Analysis direction handling
 
         internal ProgramPointBase GetEntryPoint(ProgramPointGraph ppg)
@@ -321,20 +297,6 @@ namespace Weverca.AnalysisFramework
                     return point.OutSet;
                 case AnalysisDirection.Backward:
                     return point.InSet as FlowOutputSet;
-                default:
-                    throwUnknownDirection();
-                    return null;
-            }
-        }
-
-        internal IEnumerable<ProgramPointBase> GetOutputPoints(ProgramPointBase point)
-        {
-            switch (Direction)
-            {
-                case AnalysisDirection.Forward:
-                    return point.FlowChildren;
-                case AnalysisDirection.Backward:
-                    return point.FlowParents;
                 default:
                     throwUnknownDirection();
                     return null;

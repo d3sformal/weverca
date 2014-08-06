@@ -198,7 +198,10 @@ namespace Weverca.ControlFlowGraph
         private void PostProcess(CFGVisitor visitor)
         {
             visitor.CheckLabels();
-            start.SimplifyGraph();
+            // TODO: simplifying control flow graph currently does not work with worklist segments (see BasicBlock.AfterWorklistSegment)
+            // when CFG is simplifyed, basic blocks corresponding to ends of some segments can be removed => modify SimplifyGraph in order 
+            // to not remove empty basic blocks if they end worklist segemnts.
+            //start.SimplifyGraph();
         }
 
         /// <summary>

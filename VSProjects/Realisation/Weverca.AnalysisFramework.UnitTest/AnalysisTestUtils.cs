@@ -371,6 +371,11 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
+        internal static void AssertIterationCount(this FlowOutputSet outSet, int iterationCount, string message)
+        {
+            Assert.AreEqual(iterationCount, outSet.CommitCount, message);
+        }
+
         internal static void AssertVariable<T>(this FlowOutputSet outset, string variableName, string message, params T[] expectedValues)
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
@@ -439,12 +444,30 @@ namespace Weverca.AnalysisFramework.UnitTest
             if (!hasUndefValue) Assert.Fail("The variable ${0} does not contain undefined value.", variableName);
         }
 
+
+        /// <summary>
+        /// Extension method of class string.
+        /// For constructing TestCases from strings.
+        /// </summary>
         internal static TestCase AssertVariable(this string test_CODE, string variableName, string assertMessage = null, string nonDeterministic = "unknown")
         {
             var testCase = new TestCase(test_CODE, variableName, assertMessage);
             testCase.SetNonDeterministic(nonDeterministic);
             return testCase;
         }
+
+        /// <summary>
+        /// Extension method of class string.
+        /// For constructing TestCases from strings.
+        /// </summary>
+        internal static TestCase AssertIterationCount(this string test_CODE, int iterationCount = 1, string assertMessage = null, string nonDeterministic = "unknown")
+        {
+            var testCase = new TestCase(test_CODE, iterationCount, assertMessage);
+            testCase.SetNonDeterministic(nonDeterministic);
+            return testCase;
+        }
+
+
 
         internal static T GetSingle<T>(this MemoryEntry entry)
         {
@@ -620,9 +643,28 @@ namespace Weverca.AnalysisFramework.UnitTest
             PreviousTest = previousTest;
         }
 
+        internal TestCase(string phpCode, int iterationCount, string assertMessage, TestCase previousTest = null)
+        {
+            PhpCode = phpCode;
+            AssertMessage = assertMessage;
+            VariableName = null;
+            PreviousTest = previousTest;
+
+            _asserts.Add((ppg) =>
+            {
+                var output = GetEndOutput(ppg);
+                output.AssertIterationCount(iterationCount, AssertMessage);
+            });
+        }
+
         internal TestCase AssertVariable(string variableName, string assertMessage = null)
         {
             return new TestCase(PhpCode, variableName, assertMessage, this);
+        }
+
+        internal TestCase AssertIterationCount(int iterationCount = 1, string assertMessage = null)
+        {
+            return new TestCase(PhpCode, iterationCount, assertMessage, this);
         }
 
         internal TestCase SetNonDeterministic(params string[] variables)

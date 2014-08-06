@@ -310,6 +310,8 @@ namespace Weverca.AnalysisFramework
             var expressionBlocks = new List<PointsBlock>();
 
             //process all outgoing conditional edges
+            // For each conditional edge, create block and append it as a child of parrent block
+            // TODO: in current CFG, there should be always at most one conditional edge
             foreach (var edge in parentBlock.ConditionalEdges)
             {
 
@@ -350,12 +352,13 @@ namespace Weverca.AnalysisFramework
                 pendingBlocks.Enqueue(assumeBlock);
             }
 
-            //if there is default branch, connect it to parent
+            //if there is default branch
             if (parentBlock.Default != null)
             {
                 if (expressionValues.Count == 0)
                 {
                     //there is default branch without any condition - connect without assume block
+                    // connect default branch to parent
                     var defaultBlock = getChildBlock(parentBlock.Default, pendingBlocks);
                     //default block needs processing of its children
                     parentBlock.AddChild(defaultBlock);
@@ -363,6 +366,7 @@ namespace Weverca.AnalysisFramework
                 else
                 {
                     //there has to be assumption condition on default branch
+                    // connect default branch to conditional blocks
                     var values = expressionValues.ToArray();
 					var condition = new AssumptionCondition(ConditionForm.SomeNot, expressionParts.ToArray());
                     var defaultAssumeBlock = _context.CreateAssumeBlock(condition, parentBlock.Default, values);
@@ -416,7 +420,7 @@ namespace Weverca.AnalysisFramework
             var tryBlock = block as TryBasicBlock;
             if (tryBlock != null)
             {
-                //block is try block, we has to start scope of its catch blocks
+                //block is try block, we have to start scope of its catch blocks
                 var catchBlocks = new List<CatchBlockDescription>();
                 foreach (var catchBB in tryBlock.catchBlocks)
                 {
@@ -452,6 +456,13 @@ namespace Weverca.AnalysisFramework
             {
                 var scopeEnd = _context.CreateCatchScopeEnd(endingCatchBlocks);
                 childBlock.AppendFlow(scopeEnd);
+            }
+
+            if (block.WorklistSegmentStart())
+            {
+                // get program point that corresponds to the end of the segment
+                var afterBlock = getChildBlock(block.AfterWorklistSegment, pendingBlocks);
+                childBlock.LastPoint.CreateWorklistSegment(afterBlock.FirstPoint);
             }
 
             return childBlock;

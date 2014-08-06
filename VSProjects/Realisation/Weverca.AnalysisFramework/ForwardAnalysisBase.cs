@@ -176,7 +176,7 @@ namespace Weverca.AnalysisFramework
             var output = _services.CreateEmptySet();
             ProgramPointGraph.Start.Initialize(EntryInput, output);
 
-            _services.Enqueue(ProgramPointGraph.Start);
+            _services.EnqueueEntryPoint(ProgramPointGraph.Start);
 
 
             //fix point computation

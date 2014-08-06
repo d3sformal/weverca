@@ -36,6 +36,19 @@ namespace Weverca.ControlFlowGraph
         /// </summary>
         public DirectEdge DefaultBranch;
 
+        private BasicBlock _afterWorklistSegment;
+
+        /// <summary>
+        /// The block after the worklist segment which starts in this block (null elsewhere).
+        /// 
+        /// If worklist segment starts in this block, it is constituted by blocks between this block and AfterWorklistSegment.
+        /// Worklist segment has no semantic meaning, it just serves for more optimal ordering of program 
+        /// points in the worklist. 
+        /// Fixpoint of blocks in worklist segment should be computed before afterWorklistSegment (more precisely 
+        /// its first program point) is processed.
+        /// </summary>
+        public BasicBlock AfterWorklistSegment { get { return _afterWorklistSegment;  } }
+
         /// <summary>
         /// Hold the references of the basic block which ends with this basic block
         /// </summary>
@@ -50,7 +63,30 @@ namespace Weverca.ControlFlowGraph
             OutgoingEdges = new List<IBasicBlockEdge>();
             IncommingEdges = new List<IBasicBlockEdge>();
             DefaultBranch = null;
+            _afterWorklistSegment = null;
             EndIngTryBlocks = new List<TryBasicBlock>();
+        }
+
+        /// <summary>
+        /// Creates worklist segment constituted by blocks between the current block and afterWorklistSegment.
+        /// 
+        /// <seealso cref="BasicBlock.AfterWorklistSegment"/>
+        /// </summary>
+        /// <param name="afterWorklistSegment">the block after the worklist segement</param>
+        public void CreateWorklistSegment(BasicBlock afterWorklistSegment)
+        {
+            _afterWorklistSegment = afterWorklistSegment;
+        }
+
+        /// <summary>
+        /// Indicates whether in this block starts worklist segment.
+        /// 
+        /// <seealso cref="BasicBlock.AfterWorklistSegment"/>
+        /// </summary>
+        /// <returns>true if in this block starts worklist segment, false elsewhere.</returns>
+        public bool WorklistSegmentStart()
+        {
+            return (_afterWorklistSegment != null) ? true : false;
         }
 
 

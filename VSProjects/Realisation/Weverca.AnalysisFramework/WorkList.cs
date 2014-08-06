@@ -17,7 +17,7 @@ namespace Weverca.AnalysisFramework
 		/// Add work into list
 		/// </summary>
 		/// <param name="work">Added work</param>
-		public abstract void AddWork (ProgramPointBase work);
+		public abstract void AddChildren (ProgramPointBase work);
 
 		/// <summary>
 		/// Get work from list
@@ -25,24 +25,108 @@ namespace Weverca.AnalysisFramework
 		/// <returns>Work that should be processed</returns>
 		internal abstract ProgramPointBase GetWork ();
 
+        /// <summary>
+        /// Adds entry point to the worklist.
+        /// </summary>
+        /// <param name="entryPoint">entry point of the analysis.</param>
+        public abstract void AddEntryPoint(ProgramPointBase entryPoint);
+
 		/// <summary>
 		/// Determine that any work
 		/// </summary>
-		public bool HasWork { get { return _containedPoints.Count > 0; } }
+		public virtual bool HasWork { get { return _containedPoints.Count > 0; } }
 
 		/// <summary>
 		/// Set of all points that are cotained within work list
 		/// </summary>
 		protected readonly HashSet<ProgramPointBase> _containedPoints = new HashSet<ProgramPointBase> ();
 
+        /// <summary>
+        /// Direction of the analysis.
+        /// </summary>
+        protected readonly AnalysisDirection Direction;
+
+        protected WorkList(AnalysisDirection Direction) { this.Direction = Direction; }
+
+        protected IEnumerable<ProgramPointBase> GetOutputPoints(ProgramPointBase point)
+        {
+            switch (Direction)
+            {
+                case AnalysisDirection.Forward:
+                    return point.FlowChildren;
+                case AnalysisDirection.Backward:
+                    return point.FlowParents;
+                default:
+                    throwUnknownDirection();
+                    return null;
+            }
+        }
+
+        private void throwUnknownDirection()
+        {
+            throw new NotSupportedException("Analysis doesn't support: " + Direction);
+        }
+
 		/// <summary>
 		/// Gets the instance of Worklist that should be used for the analysis.
 		/// </summary>
+        /// <param name="nextPhase">Indicates whether the worklist will be used for the next phase.</param>
 		/// <returns>The instance of the worklist.</returns>
-		public static WorkList GetInstance ()
+		public static WorkList GetInstance (bool nextPhase = false, AnalysisDirection Direction = AnalysisDirection.Forward)
 		{
-			return new WorkList2 ();
+            //return new WorkList0(Direction);
+            //return new WorkList1(Direction);
+			return new WorkList2 (nextPhase, Direction);
 		}
+
+        /// <summary>
+        /// Implements naive ordering of program points in the worklist.
+        /// </summary>
+        private class WorkList0 : WorkList
+        {
+            /// <summary>
+            /// Work queu of points that can be currently processed
+            /// </summary>
+            private readonly Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
+
+            public WorkList0(AnalysisDirection Direction)
+                : base(Direction) { }
+
+            public override void AddEntryPoint(ProgramPointBase entryPoint)
+            {
+                AddWork(entryPoint);
+            }
+
+            /// <summary>
+            /// Add work into list
+            /// </summary>
+            /// <param name="work">Added work</param>
+            private void AddWork(ProgramPointBase work)
+            {
+                if (!_containedPoints.Add(work))
+                    //don't need to add same work twice
+                    return;
+
+                _workQueue.Enqueue(work);
+            }
+
+            public override void AddChildren(ProgramPointBase work)
+            {
+                foreach (var child in GetOutputPoints(work))
+                {
+                    AddWork(child);
+                }
+            }
+
+            /// <inheritdoc/>
+            internal override ProgramPointBase GetWork()
+            {
+                var work = _workQueue.Dequeue();
+                _containedPoints.Remove(work);
+
+                return work;
+            }
+        }
 
 		/// <summary>
 		/// Work points are classified as open/close/normal according to number of inputs and outputs.
@@ -64,12 +148,19 @@ namespace Weverca.AnalysisFramework
 			/// </summary>
 			private readonly Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase> ();
 
-			public WorkList1 ()
-			{
-			}
+            public WorkList1(AnalysisDirection Direction)
+                : base(Direction) {}
 
-			/// <inheritdoc />
-			public override void AddWork (ProgramPointBase work)
+            public override void AddEntryPoint(ProgramPointBase entryPoint)
+            {
+                AddWork(entryPoint);
+            }
+
+            /// <summary>
+            /// Add work into list
+            /// </summary>
+            /// <param name="work">Added work</param>
+			private void AddWork (ProgramPointBase work)
 			{
 				if (!_containedPoints.Add (work))
 					//don't need to add same work twice
@@ -88,6 +179,14 @@ namespace Weverca.AnalysisFramework
 					_workQueue.Enqueue (work);
 				}
 			}
+
+            public override void AddChildren(ProgramPointBase work)
+            {
+                foreach (var child in GetOutputPoints(work))
+                {
+                    AddWork(child);
+                }
+            }
 
 			/// <inheritdoc/>
 			internal override ProgramPointBase GetWork ()
@@ -118,13 +217,30 @@ namespace Weverca.AnalysisFramework
 			public WorkQueue(WorkQueue parent) { _parent = parent; }
 		}
 
+        /// <summary>
+        /// Implements more optimal ordering of program points in the worklist.
+        /// TODO: ordering for backward analysis!
+        /// </summary>
 		private class WorkList2 : WorkList
 		{
+            private readonly bool nextPhase;
 			private WorkQueue hQueue = new WorkQueue (null);
 			private ProgramPointBase prevParent = null;
+            private readonly HashSet<ProgramPointBase> unreachablePoints = new HashSet<ProgramPointBase>();
 
-			/// <inheritdoc/>
-			public override void AddWork (ProgramPointBase work)
+            internal WorkList2(bool nextPhase, AnalysisDirection Direction) : base(Direction) { this.nextPhase = nextPhase; }
+
+            public override void AddEntryPoint(ProgramPointBase entryPoint)
+            {
+                if (!_containedPoints.Add(entryPoint))
+                    //don't need to add same work twice
+                    return;
+                hQueue._queue.Enqueue(entryPoint);
+            }
+
+
+
+			private void AddWorkOld (ProgramPointBase work)
 			{
 				if (!_containedPoints.Add (work))
                 //don't need to add same work twice
@@ -147,12 +263,61 @@ namespace Weverca.AnalysisFramework
 					prevParent = work.FlowParents.First ();
 			}
 
+            public void AddChildrenOld(ProgramPointBase work)
+            {
+                foreach (var child in GetOutputPoints(work))
+                {
+                    if (!nextPhase || !unreachable(child))
+                        AddWorkOld(child);
+                }
+            }
+
+            private void AddPoint(ProgramPointBase work)
+            {
+                unreachablePoints.Remove(work);
+                if ((!nextPhase || !unreachable(work)) && _containedPoints.Add(work))
+                {
+                    hQueue._queue.Enqueue(work);
+                }
+            }
+
+            public override void AddChildren(ProgramPointBase work)
+            {
+                if (work.AfterWorklistSegment != null) 
+                { 
+                    // add point after branching
+                    AddPoint(work.AfterWorklistSegment);
+                    unreachablePoints.Add(work.AfterWorklistSegment);
+
+                    // create queue for the branching
+                    hQueue = new WorkQueue(hQueue);
+                }
+
+                foreach (var child in GetOutputPoints(work))
+                {
+                        AddPoint(child);
+                }
+            }
+
+            /// <summary>
+            /// Determine whether the specified program point is unreachable in the first phase.
+            /// </summary>
+            private bool unreachable(ProgramPointBase point)
+            {
+                return (point.InSet == null) && (point.OutSet == null);
+            }
+
+            public override bool HasWork { get { return _containedPoints.Except(unreachablePoints).Count() > 0; } }
+
+            
+
 			/// <inheritdoc/>
 			internal override ProgramPointBase GetWork ()
 			{
 				while (hQueue._queue.Count == 0 && hQueue._parent != null) {
 					hQueue = hQueue._parent;
 				}
+
 				var result = hQueue._queue.Dequeue ();
                 
 				/*if (_openStack.Count > 0)
@@ -167,6 +332,11 @@ namespace Weverca.AnalysisFramework
             }*/
 
 				_containedPoints.Remove (result);
+                if (unreachablePoints.Contains(result))
+                {
+                    unreachablePoints.Remove(result);
+                    return GetWork();
+                }
 
 				return result;
 			}
