@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework
 {
@@ -29,7 +30,7 @@ namespace Weverca.AnalysisFramework
         /// Adds entry point to the worklist.
         /// </summary>
         /// <param name="entryPoint">entry point of the analysis.</param>
-        public abstract void AddEntryPoint(ProgramPointBase entryPoint);
+		public abstract void AddEntryPoint(ProgramPointBase entryPoint, ProgramPointBase exitPoint);
 
 		/// <summary>
 		/// Determine that any work
@@ -74,25 +75,26 @@ namespace Weverca.AnalysisFramework
 		/// <returns>The instance of the worklist.</returns>
 		public static WorkList GetInstance (bool nextPhase = false, AnalysisDirection Direction = AnalysisDirection.Forward)
 		{
-            //return new WorkList0(Direction);
-            //return new WorkList1(Direction);
-			return new WorkList2 (nextPhase, Direction);
+			//return new WorklistNaive(Direction);
+			//return new WorkListReordering1(Direction);
+			//return new WorkListReordering2(Direction);
+			return new WorkListReorderingSegments (nextPhase, Direction);
 		}
 
         /// <summary>
-        /// Implements naive ordering of program points in the worklist.
+		/// Implements naive ordering of program points in the worklist (no reordering).
         /// </summary>
-        private class WorkList0 : WorkList
+        private class WorklistNaive : WorkList
         {
             /// <summary>
             /// Work queu of points that can be currently processed
             /// </summary>
             private readonly Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase>();
 
-            public WorkList0(AnalysisDirection Direction)
+            public WorklistNaive(AnalysisDirection Direction)
                 : base(Direction) { }
 
-            public override void AddEntryPoint(ProgramPointBase entryPoint)
+			public override void AddEntryPoint(ProgramPointBase entryPoint, ProgramPointBase exitPoint)
             {
                 AddWork(entryPoint);
             }
@@ -129,11 +131,18 @@ namespace Weverca.AnalysisFramework
         }
 
 		/// <summary>
+		/// Worklist algorithm that tries to reorder program points in the worklist in order to not process program point
+		/// if it is reachable from other program points in the worklist - if the output of these program points is
+		/// changed, the program point must be recomputed.
+		/// 
 		/// Work points are classified as open/close/normal according to number of inputs and outputs.
 		/// Every point with more than one input is close point - is needed to have processed all possible open points before.
 		/// Open points has parents with more than one output - at a time only single opened branch is processed within queue.
+		/// 
+		/// Note that this worklist is in practise often not optimal. This happens especially
+		/// in present of if branching.
 		/// </summary>
-		private class WorkList1 : WorkList
+		private class WorkListReordering1 : WorkList
 		{
 			/// <summary>
 			/// Points which parents has more than one output
@@ -148,10 +157,10 @@ namespace Weverca.AnalysisFramework
 			/// </summary>
 			private readonly Queue<ProgramPointBase> _workQueue = new Queue<ProgramPointBase> ();
 
-            public WorkList1(AnalysisDirection Direction)
+            public WorkListReordering1(AnalysisDirection Direction)
                 : base(Direction) {}
 
-            public override void AddEntryPoint(ProgramPointBase entryPoint)
+			public override void AddEntryPoint(ProgramPointBase entryPoint, ProgramPointBase exitPoint)
             {
                 AddWork(entryPoint);
             }
@@ -217,35 +226,38 @@ namespace Weverca.AnalysisFramework
 			public WorkQueue(WorkQueue parent) { _parent = parent; }
 		}
 
-        /// <summary>
-        /// Implements more optimal ordering of program points in the worklist.
-        /// TODO: ordering for backward analysis!
-        /// </summary>
-		private class WorkList2 : WorkList
+		/// <summary>
+		/// Worklist algorithm that tries to reorder program points in the worklist in order to not process program point
+		/// if it is reachable from other program points in the worklist - if the output of these program points is
+		/// changed, the program point must be recomputed.
+		/// 
+		/// Note that this worklist is in practise often not optimal. This happens especially
+		/// in present of cycles.
+		/// </summary>
+		private class WorklistReordering2 : WorkList
 		{
-            private readonly bool nextPhase;
+			private readonly bool nextPhase;
 			private WorkQueue hQueue = new WorkQueue (null);
 			private ProgramPointBase prevParent = null;
-            private readonly HashSet<ProgramPointBase> unreachablePoints = new HashSet<ProgramPointBase>();
 
-            internal WorkList2(bool nextPhase, AnalysisDirection Direction) : base(Direction) { this.nextPhase = nextPhase; }
+			internal WorklistReordering2(bool nextPhase, AnalysisDirection Direction) : base(Direction) { this.nextPhase = nextPhase; }
 
-            public override void AddEntryPoint(ProgramPointBase entryPoint)
-            {
-                if (!_containedPoints.Add(entryPoint))
-                    //don't need to add same work twice
-                    return;
-                hQueue._queue.Enqueue(entryPoint);
-            }
-
+			public override void AddEntryPoint(ProgramPointBase entryPoint, ProgramPointBase exitPoint)
+			{
+				if (!_containedPoints.Add(entryPoint))
+					//don't need to add same work twice
+					return;
+				hQueue._queue.Enqueue(entryPoint);
+			}
 
 
-			private void AddWorkOld (ProgramPointBase work)
+
+			private void AddWork (ProgramPointBase work)
 			{
 				if (!_containedPoints.Add (work))
-                //don't need to add same work twice
+					//don't need to add same work twice
 					return;
-            
+
 				// open point
 				if (work.FlowParents.Count () > 0 && work.FlowParents.First ().FlowChildrenCount > 1 && work.FlowParents.First () != prevParent) {
 					hQueue = new WorkQueue (hQueue);
@@ -263,17 +275,76 @@ namespace Weverca.AnalysisFramework
 					prevParent = work.FlowParents.First ();
 			}
 
-            public void AddChildrenOld(ProgramPointBase work)
+			public override void AddChildren(ProgramPointBase work)
+			{
+				foreach (var child in GetOutputPoints(work))
+				{
+					if (!nextPhase || !unreachable(child))
+						AddWork(child);
+				}
+			}
+
+		
+
+			/// <summary>
+			/// Determine whether the specified program point is unreachable in the first phase.
+			/// </summary>
+			private bool unreachable(ProgramPointBase point)
+			{
+				return (point.InSet == null) && (point.OutSet == null);
+			}
+
+
+			/// <inheritdoc/>
+			internal override ProgramPointBase GetWork ()
+			{
+				while (hQueue._queue.Count == 0 && hQueue._parent != null) {
+					hQueue = hQueue._parent;
+				}
+				var result = hQueue._queue.Dequeue ();
+
+				_containedPoints.Remove (result);
+
+				return result;
+			}
+		}
+
+        /// <summary>
+		/// Worklist algorithm that tries to reorder program points in the worklist in order to not process program point
+		/// if it is reachable from other program points in the worklist - if the output of these program points is
+		/// changed, the program point must be recomputed.
+		/// 
+		/// To reorder program points, it uses the concept of worklist segments. Fixpoint of all program points in the segment
+		/// must be reached before the program point after the segment is processed.
+		/// Segments are created during creating of control-flow graph, e.g., for if, while, for, and foreach statemetns.
+		/// 
+        /// TODO: ordering for backward analysis!
+        /// </summary>
+		private class WorkListReorderingSegments : WorkList
+		{
+            private readonly bool nextPhase;
+			private WorkQueue hQueue = new WorkQueue (null);
+            private readonly HashSet<ProgramPointBase> unreachablePoints = new HashSet<ProgramPointBase>();
+			private ProgramPointBase exitPoint;
+
+            internal WorkListReorderingSegments(bool nextPhase, AnalysisDirection Direction) : base(Direction) { this.nextPhase = nextPhase; }
+
+			public override void AddEntryPoint(ProgramPointBase entryPoint, ProgramPointBase exitPoint)
             {
-                foreach (var child in GetOutputPoints(work))
-                {
-                    if (!nextPhase || !unreachable(child))
-                        AddWorkOld(child);
-                }
+				this.exitPoint = exitPoint;
+				_containedPoints.Add (exitPoint);
+                if (!_containedPoints.Add(entryPoint))
+                    //don't need to add same work twice
+                    return;
+                hQueue._queue.Enqueue(entryPoint);
             }
+
+
 
             private void AddPoint(ProgramPointBase work)
             {
+				if (work == exitPoint)
+					return;
                 unreachablePoints.Remove(work);
                 if ((!nextPhase || !unreachable(work)) && _containedPoints.Add(work))
                 {
@@ -283,6 +354,15 @@ namespace Weverca.AnalysisFramework
 
             public override void AddChildren(ProgramPointBase work)
             {
+				if (work is RCallPoint) 
+				{
+					AddPoint(work.Extension.Sink);
+					unreachablePoints.Add(work.Extension.Sink);
+
+					// create queue for the branching
+					hQueue = new WorkQueue(hQueue);
+				}
+
                 if (work.AfterWorklistSegment != null) 
                 { 
                     // add point after branching
@@ -317,19 +397,12 @@ namespace Weverca.AnalysisFramework
 				while (hQueue._queue.Count == 0 && hQueue._parent != null) {
 					hQueue = hQueue._parent;
 				}
-
-				var result = hQueue._queue.Dequeue ();
-                
-				/*if (_openStack.Count > 0)
-            {
-                //all open points has to be processed before close points
-                result = _openStack.Pop();
-            }
-            else
-            {
-                //close points are processed at last
-                result = _closeStack.Pop();
-            }*/
+					
+				ProgramPointBase result;
+				if (hQueue._queue.Count == 0)
+					result = exitPoint;
+				else
+					result = hQueue._queue.Dequeue ();
 
 				_containedPoints.Remove (result);
                 if (unreachablePoints.Contains(result))

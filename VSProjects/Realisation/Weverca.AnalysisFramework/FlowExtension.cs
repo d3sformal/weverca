@@ -69,7 +69,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Sink of current extension - stores merged information from extension branches
         /// </summary>
-        internal readonly ExtensionSinkPoint Sink;
+		public readonly ExtensionSinkPoint Sink;
 
 
 

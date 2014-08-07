@@ -71,9 +71,9 @@ namespace Weverca.AnalysisFramework
             FlowResolver.FlowThrough(programPoint);
         }
 
-        internal void EnqueueEntryPoint(ProgramPointBase entryPoint)
+		internal void EnqueueEntryPoint(ProgramPointBase entryPoint, ProgramPointBase exitPoint)
         {
-            _workList.AddEntryPoint(entryPoint);
+			_workList.AddEntryPoint(entryPoint, exitPoint);
         }
 
         internal void EnqueueChildren(ProgramPointBase programPoint) 

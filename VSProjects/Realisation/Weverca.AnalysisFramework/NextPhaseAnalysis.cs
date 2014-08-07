@@ -119,7 +119,7 @@ namespace Weverca.AnalysisFramework
         {
             var entryPoint = GetEntryPoint(AnalyzedProgramPointGraph);
 
-            _workList.AddEntryPoint(entryPoint);
+			_workList.AddEntryPoint(entryPoint, GetExitPoint(AnalyzedProgramPointGraph));
 
             //fix point computation
             while (_workList.HasWork)
@@ -274,6 +274,20 @@ namespace Weverca.AnalysisFramework
                     return null;
             }
         }
+
+		internal ProgramPointBase GetExitPoint(ProgramPointGraph ppg)
+		{
+			switch (Direction)
+			{
+			case AnalysisDirection.Forward:
+				return ppg.End;
+			case AnalysisDirection.Backward:
+				return ppg.Start;
+			default:
+				throwUnknownDirection();
+				return null;
+			}
+		}
 
         internal FlowOutputSet GetInSet(ProgramPointBase point)
         {

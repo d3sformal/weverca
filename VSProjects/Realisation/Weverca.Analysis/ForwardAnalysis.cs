@@ -26,11 +26,12 @@ namespace Weverca.Analysis
         /// <param name="entryMethodGraph">ControlFlowGraph to analyze</param>
         /// <param name="memoryModel">Memory model used by analyser</param>
         /// <param name="simplifyLimit">Limit for calling simplificaion in memory model. It is different for tests</param>
-        public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, int simplifyLimit=15)
+		public ForwardAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, int simplifyLimit=5)
             : base(entryMethodGraph, memoryModel.CreateSnapshot)
         {
             GlobalsInitializer();
             this.SimplifyLimit = simplifyLimit;
+			this.WideningLimit = 3;
         }
 
         #region ForwardAnalysis override
@@ -124,8 +125,6 @@ namespace Weverca.Analysis
             EntryInput.GetControlVariable(FunctionResolver.evalDepth).WriteMemory(EntryInput.Snapshot, new MemoryEntry(EntryInput.CreateInt(0)));
 
             nativeObjectAnalyzer = NativeObjectAnalyzer.GetInstance(EntryInput);
-
-            this.WideningLimit = 10;
         }
     }
 }
