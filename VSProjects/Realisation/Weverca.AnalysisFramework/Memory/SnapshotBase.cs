@@ -70,6 +70,13 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         private SnapshotStatistics _statistics = new SnapshotStatistics();
 
+		/// <summary>
+		/// Represents all objects allocated in this program point.
+		/// If this program point is processed more times (in a loop), this object represents more objects.
+		/// For implementation of allocation-site abstraction. 
+		/// </summary>
+		private ObjectValue _allocatedObject = null;
+
         /// <summary>
         /// Assistant helping memory models resolving memory operations
         /// </summary>
@@ -699,7 +706,20 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            var createdObject = new ObjectValue();
+			if (_allocatedObject != null) {
+				// must be called for a case that the object was created in this snapshot but was not propagated there
+				// this can happen, e.g., if this program point is processed twice and it is not in the loop
+				// this can lead to redundant initialization of objects. For this reason, method initializeObject must
+				// detect the case that the object is initialized second time and in this case do not initialize it
+				initializeObject(_allocatedObject, type);
+				return _allocatedObject;
+			}
+
+
+
+			var createdObject = new ObjectValue ();
+			_allocatedObject = createdObject;
+
             _statistics.Report(Statistic.CreatedObjectValues);
 
             initializeObject(createdObject, type);

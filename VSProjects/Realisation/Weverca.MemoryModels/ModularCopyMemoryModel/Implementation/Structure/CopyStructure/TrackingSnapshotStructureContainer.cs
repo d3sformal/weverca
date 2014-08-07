@@ -317,6 +317,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override void NewIndex(MemoryIndex index)
         {
+			// TODO: allocation-abstraction hack
+			// see SnapshotBase.CreateObject
+			if (indexDefinitions.ContainsKey(index))
+				return;
+
             CopyIndexDefinition data = new CopyIndexDefinition();
             indexDefinitions.Add(index, data);
             indexTracker.Inserted(index);
