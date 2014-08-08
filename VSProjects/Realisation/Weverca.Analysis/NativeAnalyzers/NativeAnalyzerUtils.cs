@@ -421,6 +421,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                     break;
                 case "resource":
                     res.Add(outset.AnyResourceValue);
+                    res.Add (outset.UndefinedValue);
                     break;
                 case "callable":
                     res.Add(outset.AnyStringValue);
