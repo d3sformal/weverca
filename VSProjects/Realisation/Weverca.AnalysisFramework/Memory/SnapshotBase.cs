@@ -70,13 +70,6 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         private SnapshotStatistics _statistics = new SnapshotStatistics();
 
-		/// <summary>
-		/// Represents all objects allocated in this program point.
-		/// If this program point is processed more times (in a loop), this object represents more objects.
-		/// For implementation of allocation-site abstraction. 
-		/// </summary>
-		private ObjectValue _allocatedObject = null;
-
         /// <summary>
         /// Assistant helping memory models resolving memory operations
         /// </summary>
@@ -108,7 +101,45 @@ namespace Weverca.AnalysisFramework.Memory
         /// </summary>
         public bool HasChanged { get; private set; }
 
+        #region Allocation-site abstraction
+        /// <summary>
+        /// Represents allocation sites for representing objects and arrays allocated in this program point.
+        /// Note that there can be more allocation sites in a single program point: there can be created more
+        /// objects or arrays at a single program point: 
+        ///     $a = null; 
+        ///     $a->b->c->d = 1; // first object is created in position $a->b, second in position $a->b->c
+        /// 
+        /// Allocation site for given position represents all objects/arrays in this progrma point at this
+        /// position.
+        /// If this program point is processed more times (in a loop), allocation site represents more objects/arrays.
+        /// </summary>
+        private class AllocatedSites<T> 
+        {
+            private LinkedList<T> sites = new LinkedList<T>();
+            private LinkedListNode<T> site = null;
 
+            public void StartTransaction() 
+            {
+                site = sites.First;
+            }
+            public bool IsAllocated() { return site != null; }
+            public T GetSite() { return site.Value; }
+            public void NextPosition() { site = site.Next; }
+            public void AddSite(T site) { sites.AddLast(site); }
+        }
+
+        /// <summary>
+        /// Allocation sites for objects.
+        /// </summary>
+        private AllocatedSites<ObjectValue> _allocatedObjects = new AllocatedSites<ObjectValue>();
+
+        /// <summary>
+        /// Allocation sites for arrays.
+        /// </summary>
+        private AllocatedSites<AssociativeArray> _allocatedArrays = new AllocatedSites<AssociativeArray>();
+
+
+        #endregion
 
         #region Implementation of SnapshotEntry based API
 
@@ -390,6 +421,9 @@ namespace Weverca.AnalysisFramework.Memory
                 throw new NotSupportedException("Cannot start transaction multiple times");
             }
             IsTransactionStarted = true;
+
+            _allocatedObjects.StartTransaction();
+            _allocatedArrays.StartTransaction();
 
             HasChanged = false;
             startTransaction();
@@ -706,19 +740,22 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-			if (_allocatedObject != null) {
-				// must be called for a case that the object was created in this snapshot but was not propagated there
-				// this can happen, e.g., if this program point is processed twice and it is not in the loop
-				// this can lead to redundant initialization of objects. For this reason, method initializeObject must
-				// detect the case that the object is initialized second time and in this case do not initialize it
-				initializeObject(_allocatedObject, type);
-				return _allocatedObject;
-			}
+            ObjectValue createdObject;
 
+            if (_allocatedObjects.IsAllocated()) 
+            {
+                createdObject =_allocatedObjects.GetSite();
+                _allocatedObjects.NextPosition();
+                // must be called for a case that the object was created in this snapshot but was not propagated there
+                // this can happen, e.g., if this program point is processed twice and it is not in the loop
+                // this can lead to redundant initialization of objects. For this reason, method initializeObject must
+                // detect the case that the object is initialized second time and in this case do not initialize it
+                initializeObject(createdObject, type);
+                return createdObject;
+            }
 
-
-			var createdObject = new ObjectValue ();
-			_allocatedObject = createdObject;
+            createdObject = new ObjectValue ();
+            _allocatedObjects.AddSite(createdObject);
 
             _statistics.Report(Statistic.CreatedObjectValues);
 
@@ -735,7 +772,19 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
 
-            var createdArray = new AssociativeArray();
+            AssociativeArray createdArray;
+
+            if (_allocatedArrays.IsAllocated()) 
+            {
+                createdArray = _allocatedArrays.GetSite();
+                _allocatedArrays.NextPosition();
+                initializeArray(createdArray);
+                return createdArray;
+            }
+
+            createdArray = new AssociativeArray();
+            _allocatedArrays.AddSite(createdArray);
+
             _statistics.Report(Statistic.CreatedArrayValues);
 
             initializeArray(createdArray);
