@@ -2285,6 +2285,32 @@ $name();
 
         #endregion
 
+        #region Exit statements and exceptions
+        readonly static TestCase ExitWorklist_CASE = @"
+function f() {
+if ($unknown) {
+    switch ($unknown) {
+        case 'editcom':
+        case 'viewid':
+            $mode = 1;
+            break;
+        default :
+            exit();
+    }   
+} else {
+    exit();
+}
+}
+
+f();
+".AssertIterationCount();
+        [TestMethod]
+        public void ExitWorklist()
+        {
+            AnalysisTestUtils.RunTestCase(ExitWorklist_CASE);
+        }
+        #endregion
+
         #endregion
 
 
@@ -2779,26 +2805,30 @@ $name();
             AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateLocalUndef_CASE);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void SharedFunctionStrongUpdateGlobal()
+        public void SharedFunctionStrongUpdateGlobalFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateGlobal_CASE);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void SharedFunctionStrongUpdateGlobaUndef()
+        public void SharedFunctionStrongUpdateGlobaUndefFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionStrongUpdateGlobalUndef_CASE);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void SharedFunctionGlobalVariable()
+        public void SharedFunctionGlobalVariableFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionGlobalVariable_CASE);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void SharedFunctionAliasing()
+        public void SharedFunctionAliasinFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasing_CASE);
         }
@@ -2809,8 +2839,9 @@ $name();
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingGlobal_CASE);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void SharedFunctionAliasingGlobalUndef()
+        public void SharedFunctionAliasingGlobalUndefFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingGlobalUndef_CASE);
         }
@@ -2822,25 +2853,25 @@ $name();
         }
 
         [TestMethod]
-        public void SharedFunctionAliasing2()
+        public void SharedFunctionAliasing2FailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasing2_CASE);
         }
 
         [TestMethod]
-        public void SharedFunctionAliasingTwoArguments()
+        public void SharedFunctionAliasingTwoArgumentsFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingTwoArguments_CASE);
         }
 
         [TestMethod]
-        public void SharedFunctionAliasingTwoArgumentsUndef()
+        public void SharedFunctionAliasingTwoArgumentsUndefFailingAllocationsite969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingTwoArgumentsUndef_CASE);
         }
 
         [TestMethod]
-        public void SharedFunctionAliasingMayTwoArgumentsFailing()
+        public void SharedFunctionAliasingMayTwoArgumentsFailing969()
         {
             AnalysisTestUtils.RunTestCase(SharedFunctionAliasingMayTwoArguments_CASE);
         }

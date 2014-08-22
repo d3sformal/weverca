@@ -77,7 +77,7 @@ namespace Weverca.AnalysisFramework
 		{
 			//return new WorklistNaive(Direction);
 			//return new WorkListReordering1(Direction);
-			//return new WorkListReordering2(Direction);
+            //return new WorklistReordering2(nextPhase, Direction);
 			return new WorkListReorderingSegments (nextPhase, Direction);
 		}
 

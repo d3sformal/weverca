@@ -94,8 +94,9 @@ namespace Weverca.MemoryModels.UnitTest
             testEquality(indexA, indexA2);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void indexUnEqualityTest()
+        public void indexUnEqualityTestFailingAllocationsite969()
         {
             testUnEquality(variableA, variableB);
 
@@ -111,8 +112,9 @@ namespace Weverca.MemoryModels.UnitTest
             testUnEquality(indexA, variableB);
         }
 
+        // Started failing after commit of prototype allocation-site abstraction in commit 969.
         [TestMethod]
-        public void hashSetTest()
+        public void hashSetTestFailingAllocationsite969()
         {
             HashSet<MemoryIndex> hashSet = new HashSet<MemoryIndex>();
 
