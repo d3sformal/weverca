@@ -20,9 +20,14 @@ namespace Weverca.AnalysisFramework.Memory
         private readonly string[] _possibleNames;
 
         /// <summary>
-        /// Determine that member identifier name is not known
+        /// Determine that member identifier represents any member
         /// </summary>
-        public bool IsUnknown { get { return NamesCount == 0; } }
+        public readonly bool IsAny;
+
+        /// <summary>
+        /// Determine that member identifier represents statically unknown identifiers
+        /// </summary>
+        public readonly bool IsUnknown;
 
         /// <summary>
         /// Determine that member identifier has direct name
@@ -72,10 +77,42 @@ namespace Weverca.AnalysisFramework.Memory
         /// Names has to be distinct.
         /// </summary>
         /// <param name="possibleNames">Possible names of member</param>
-        public MemberIdentifier(params string[] possibleNames)
+        private MemberIdentifier(params string[] possibleNames)
             : this((IEnumerable<string>)possibleNames)
         {
         }
+
+        /// <summary>
+        /// Creates member identifier for name.
+        /// </summary>
+        /// <param name="possibleNames">Names of member</param>
+        public MemberIdentifier(string possibleNames)
+        {
+            IsUnknown = false;
+            IsAny = false;
+
+            _possibleNames = new string[1];
+            _possibleNames[0] = possibleNames;
+        }
+
+        public static MemberIdentifier getAnyMemberIdentifier() 
+        {
+            return new MemberIdentifier (false, true);
+        }
+
+        public static MemberIdentifier getUnknownMemberIdentifier()
+        {
+            return new MemberIdentifier (true, false);
+        }
+
+        private MemberIdentifier(bool isUnknown, bool isAny) 
+        {
+            this.IsUnknown = isUnknown;
+            this.IsAny = isAny;
+            _possibleNames = new string[0];
+        }
+
+
 
         /// <summary>
         /// Creates member identifier for given names.
@@ -84,6 +121,9 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="possibleNames">Possible names of member</param>
         public MemberIdentifier(IEnumerable<string> possibleNames)
         {
+            IsUnknown = false;
+            IsAny = false;
+
             //copy input, because of avoiding further changes
             _possibleNames = possibleNames.ToArray();
         }

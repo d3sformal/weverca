@@ -183,7 +183,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             }
             else
             {
-                return new MemberIdentifier();
+                return MemberIdentifier.getAnyMemberIdentifier();
             }
         }
 

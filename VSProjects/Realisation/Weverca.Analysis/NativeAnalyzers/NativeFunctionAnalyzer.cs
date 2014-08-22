@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Globalization;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -149,8 +150,6 @@ namespace Weverca.Analysis.NativeAnalyzers
 
         private HashSet<string> types = new HashSet<string>();
 
-        private HashSet<string> returnTypes = new HashSet<string>();
-
         /// <summary>
         /// Singleton instance
         /// </summary>
@@ -192,7 +191,6 @@ namespace Weverca.Analysis.NativeAnalyzers
                                 {
                                     typeModeledFunctions[functionName] = typeModeledFunctions[new QualifiedName(new Name(functionAlias))];
                                 }
-                                returnTypes.Add(reader.GetAttribute("returnType"));
                             }
                             else if (reader.Name == "arg")
                             {
@@ -279,6 +277,24 @@ namespace Weverca.Analysis.NativeAnalyzers
             QualifiedName constantName = new QualifiedName(new Name("constant"));
             SpecialFunctionsImplementations constantAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[constantName]);
             specialFunctions.Add(constantName, new NativeAnalyzerMethod(constantAnalyzer._constant));
+
+            QualifiedName arrayPushName = new QualifiedName(new Name("array_push"));
+            SpecialFunctionsImplementations arrayPushAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[arrayPushName]);
+            specialFunctions.Add(arrayPushName, new NativeAnalyzerMethod(arrayPushAnalyzer._array_push));
+
+            QualifiedName arrayPopName = new QualifiedName(new Name("array_pop"));
+            SpecialFunctionsImplementations arrayPopAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[arrayPopName]);
+            specialFunctions.Add(arrayPopName, new NativeAnalyzerMethod(arrayPopAnalyzer._array_pop));
+
+            // TODO: just temporary model array_unshift using array_push
+            QualifiedName arrayUnshiftName = new QualifiedName(new Name("array_unshift"));
+            SpecialFunctionsImplementations arrayUnshiftAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[arrayUnshiftName]);
+            specialFunctions.Add(arrayUnshiftName, new NativeAnalyzerMethod(arrayUnshiftAnalyzer._array_push));
+
+            // TODO: just temporary model array_shift using array_pop
+            QualifiedName arrayShiftName = new QualifiedName(new Name("array_shift"));
+            SpecialFunctionsImplementations arrayShiftAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[arrayShiftName]);
+            specialFunctions.Add(arrayShiftName, new NativeAnalyzerMethod(arrayShiftAnalyzer._array_pop));
 
             QualifiedName is_arrayName = new QualifiedName(new Name("is_array"));
             SpecialFunctionsImplementations is_arrayAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_arrayName]);
@@ -643,7 +659,9 @@ namespace Weverca.Analysis.NativeAnalyzers
                     }
                 }
             }
-            flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, functionResult);
+            var returnValue = flow.OutSet.GetLocalControlVariable (SnapshotBase.ReturnValue);
+            returnValue.WriteMemory(flow.OutSet.Snapshot, functionResult);
+            //returnValue.WriteMemoryWithoutCopy(flow.OutSet.Snapshot, functionResult);
             List<Value> assigned_aliases = NativeAnalyzerUtils.ResolveAliasArguments(flow, argumentValues, nativeFunctions);
 
         }
@@ -792,11 +810,13 @@ namespace Weverca.Analysis.NativeAnalyzers
 
         #region implementation of native php functions
 
+
+
         /// <summary>
         /// Implementation of define function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _define(FlowController flow)
+        internal void _define(FlowController flow)
         {
 
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))
@@ -893,7 +913,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of constant function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _constant(FlowController flow)
+        internal void _constant(FlowController flow)
         {
             if (NativeAnalyzerUtils.checkArgumentsCount(flow, nativeFunctions))
             {
@@ -925,6 +945,171 @@ namespace Weverca.Analysis.NativeAnalyzers
         }
 
         /// <summary>
+        /// Pushes values just to unknown field.
+        /// Not precise, but has no problems with termination.
+        /// </summary>
+        /// <param name="flow">Flow.</param>
+        internal void _array_push(FlowController flow) 
+        {
+            if (NativeAnalyzerUtils.checkArgumentsCount (flow, nativeFunctions)) {
+                NativeAnalyzerUtils.checkArgumentTypes (flow, nativeFunctions);
+
+                MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
+                int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+
+                var arrayEntry = flow.OutSet.ReadVariable (NativeAnalyzerUtils.Argument (0));
+
+                if (!arrayEntry.isAssociativeArrray(flow.OutSet.Snapshot)) 
+                {
+                    // array_push does not create array if it does not exist
+                    return;
+                }
+
+                var values = new List<Value> ();
+                for (var argNum = 1; argNum < argumentCount; argNum++) 
+                {
+                    var arg = flow.OutSet.ReadVariable (NativeAnalyzerUtils.Argument (argNum)).ReadMemory (flow.OutSet.Snapshot);
+                    values.AddRange (arg.PossibleValues);
+                }
+                var index = 
+                    arrayEntry.ReadIndex (flow.OutSet.Snapshot, MemberIdentifier.getUnknownMemberIdentifier());
+                //values.AddRange(index.ReadMemory(flow.OutSet.Snapshot).PossibleValues);
+                    index.WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(values));
+
+                // Return the new number of elements in the array. 
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.AnyIntegerValue));
+            }
+        }
+
+        internal void _array_pop(FlowController flow) 
+        {
+            if (NativeAnalyzerUtils.checkArgumentsCount (flow, nativeFunctions)) {
+                NativeAnalyzerUtils.checkArgumentTypes (flow, nativeFunctions);
+
+                var arrayEntry = flow.OutSet.GetVariable (NativeAnalyzerUtils.Argument (0));
+
+                if (!arrayEntry.isAssociativeArrray (flow.OutSet.Snapshot)) return;
+
+                List<Value> popValues = new List<Value> ();
+                popValues.Add (flow.OutSet.UndefinedValue);
+                if (arrayEntry.IterateIndexes (flow.OutSet.Snapshot).Count() > 0) 
+                {
+                    var popIndex = arrayEntry.IterateIndexes (flow.OutSet.Snapshot).Last();
+                    popValues.AddRange (arrayEntry.ReadIndex (flow.OutSet.Snapshot, popIndex).ReadMemory (flow.OutSet.Snapshot).PossibleValues);
+                }
+
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(popValues));
+            }
+        }
+
+
+        /// <summary>
+        /// This can cause non-termination. Can be used only for non-widened arrays. 
+        /// </summary>
+        /// <param name="flow">Flow.</param>
+        private void _array_push_concrete(FlowController flow) 
+        {
+            if (NativeAnalyzerUtils.checkArgumentsCount (flow, nativeFunctions)) {
+                NativeAnalyzerUtils.checkArgumentTypes (flow, nativeFunctions);
+
+                MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
+                int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+
+                var arrayEntry = flow.OutSet.ReadVariable (NativeAnalyzerUtils.Argument (0));
+
+                if (!arrayEntry.isAssociativeArrray(flow.OutSet.Snapshot)) 
+                {
+                    // array_push does not create array if it does not exist
+                    return;
+                }
+
+                var biggestIndex = arrayEntry.BiggestIntegerIndex (flow.OutSet.Snapshot, flow.ExpressionEvaluator);
+
+                for (var argNum = 1; argNum < argumentCount; argNum++) 
+                {
+                    var arg = flow.OutSet.ReadVariable (NativeAnalyzerUtils.Argument (argNum)).ReadMemory (flow.OutSet.Snapshot);
+
+                    var index = 
+                        arrayEntry.ReadIndex (flow.OutSet.Snapshot, new MemberIdentifier (System.Convert.ToString (
+                            ++biggestIndex, 
+                            CultureInfo.InvariantCulture)));
+                    index.WriteMemory(flow.OutSet.Snapshot, arg);
+                }
+
+                // Return the new number of elements in the array. 
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(flow.OutSet.CreateInt(arrayEntry.IterateIndexes(flow.OutSet.Snapshot).Count())));
+            }
+        }
+
+        /// <summary>
+        /// Implementation of _array_pop. Does not work because there is no method in SnapshotBase that would remove element.
+        /// TODO: add the method and replace _array_pop_concrete with this implementation.
+        /// 
+        /// Can be used only for non-widened arrays.
+        /// </summary>
+        private void _array_pop_concrete_tofix(FlowController flow) 
+        {
+            if (NativeAnalyzerUtils.checkArgumentsCount (flow, nativeFunctions)) {
+                NativeAnalyzerUtils.checkArgumentTypes (flow, nativeFunctions);
+
+                var arrayEntry = flow.OutSet.ReadVariable (NativeAnalyzerUtils.Argument (0));
+
+                var popIndex = arrayEntry.IterateIndexes (flow.OutSet.Snapshot).Last ();
+
+                if (!arrayEntry.isAssociativeArrray (flow.OutSet.Snapshot)) return;
+                    
+                // Return the element added to the array last time
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, arrayEntry.ReadIndex(flow.OutSet.Snapshot, popIndex).ReadMemory(flow.OutSet.Snapshot));
+
+                // Remove the element from the array
+                // TODO: this does not really remove the element!!!
+                // add method in memory model that would remove elements
+                arrayEntry.ReadIndex (flow.OutSet.Snapshot, popIndex).WriteMemory (flow.OutSet.Snapshot, new MemoryEntry (flow.OutSet.UndefinedValue), true);
+            }
+        }
+
+        /// <summary>
+        /// Implementation of _array_pop. Inefficient!!!
+        /// 
+        /// Can be used only for non-widened arrays.
+        /// </summary>
+        private void _array_pop_concrete(FlowController flow) 
+        {
+            if (NativeAnalyzerUtils.checkArgumentsCount (flow, nativeFunctions)) {
+                NativeAnalyzerUtils.checkArgumentTypes (flow, nativeFunctions);
+
+                var arrayEntry = flow.OutSet.GetVariable (NativeAnalyzerUtils.Argument (0));
+
+                if (arrayEntry.IterateIndexes (flow.OutSet.Snapshot).Count () == 0) 
+                {
+                    // No indices.
+                    // TODO: something can be in unknown field
+                    return;
+                }
+
+                var popIndex = arrayEntry.IterateIndexes (flow.OutSet.Snapshot).Last ();
+
+                var newArray = flow.OutSet.CreateArray ();
+                var newArrayEntry = flow.OutSet.CreateSnapshotEntry(new MemoryEntry(newArray));
+
+                for (var i = 0; i < arrayEntry.IterateIndexes (flow.OutSet.Snapshot).Count () - 1; ++i) 
+                {
+                    var index = arrayEntry.IterateIndexes (flow.OutSet.Snapshot).ElementAt (i);
+                    newArrayEntry.ReadIndex (flow.OutSet.Snapshot, index).WriteMemory (flow.OutSet.Snapshot, arrayEntry.ReadIndex(flow.OutSet.Snapshot, index).ReadMemory(flow.OutSet.Snapshot), true);
+                }
+
+                // Return the element added to the array last time
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, arrayEntry.ReadIndex(flow.OutSet.Snapshot, popIndex).ReadMemory(flow.OutSet.Snapshot));
+
+
+                // Remove the element from the array (write new array to the entry)
+                arrayEntry.WriteMemory (flow.OutSet.Snapshot, newArrayEntry.ReadMemory (flow.OutSet.Snapshot), true);
+            }
+        }
+
+
+
+        /// <summary>
         /// Delegate for implemetation of is_"something" native functions
         /// </summary>
         /// <param name="value"></param>
@@ -935,7 +1120,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_array function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_array(FlowController flow)
+        internal void _is_array(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -947,7 +1132,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_bool function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_bool(FlowController flow)
+        internal void _is_bool(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -959,7 +1144,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_double function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_double(FlowController flow)
+        internal void _is_double(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -971,7 +1156,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_int function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_int(FlowController flow)
+        internal void _is_int(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -983,7 +1168,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_null function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_null(FlowController flow)
+        internal void _is_null(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -995,7 +1180,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_numeric function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_numeric(FlowController flow)
+        internal void _is_numeric(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -1007,7 +1192,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_object function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_object(FlowController flow)
+        internal void _is_object(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -1019,7 +1204,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_resource function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_resource(FlowController flow)
+        internal void _is_resource(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -1031,7 +1216,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_scalar function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_scalar(FlowController flow)
+        internal void _is_scalar(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {
@@ -1043,7 +1228,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         /// Implementation of is_string function
         /// </summary>
         /// <param name="flow">FlowController</param>
-        public void _is_string(FlowController flow)
+        internal void _is_string(FlowController flow)
         {
             processIsFunctions(flow, new Typedelegate(value =>
             {

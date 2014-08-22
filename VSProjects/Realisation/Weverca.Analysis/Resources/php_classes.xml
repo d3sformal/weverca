@@ -13522,4 +13522,52 @@
     <method static="false" final="false" visibility="public" name="__wakeup" returnType="none">
     </method>
   </interface>
+
+
+
+  <class name="imap_mime_header_decode object" isFinal="false">
+    <field name="charset" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="text" type="string" visibility="public" isStatic="false" isConst="false" />
+  </class>
+
+  <class name="imap_fetchstructure object" isFinal="false">
+    <field name="type" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="encoding" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifsubtype" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="subtype" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifdescription" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="description" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifid" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="id" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="lines" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="bytes" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifdisposition" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="disposition" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifdparameters" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="dparameters" type="array" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifparameters" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="parameters" type="array" visibility="public" isStatic="false" isConst="false" />
+    <field name="parts" type="array-imap_fetchstructure_without_parts" visibility="public" isStatic="false" isConst="false" />
+  </class>
+
+  <class name="imap_fetchstructure_without_parts" isFinal="false">
+    <field name="type" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="encoding" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifsubtype" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="subtype" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifdescription" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="description" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifid" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="id" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="lines" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="bytes" type="int" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifdisposition" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="disposition" type="string" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifdparameters" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="dparameters" type="array" visibility="public" isStatic="false" isConst="false" />
+    <field name="ifparameters" type="bool" visibility="public" isStatic="false" isConst="false" />
+    <field name="parameters" type="array" visibility="public" isStatic="false" isConst="false" />
+    <field name="parts" type="array" visibility="public" isStatic="false" isConst="false" />
+  </class>
+
 </classes>

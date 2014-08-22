@@ -125,13 +125,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
             MemoryEntry dataEntry, infoEntry;
             if (snapshot.Data.Readonly.TryGetMemoryEntry(index, out dataEntry))
             {
-                result.Append(dataEntry.ToString());
+				result.Append(dataEntry.ToString(snapshot));
             }
 
             if (snapshot.Infos.Readonly.TryGetMemoryEntry(index, out infoEntry))
             {
                 result.Append(" INFO: ");
-                result.Append(infoEntry.ToString());
+				result.Append(infoEntry.ToString(snapshot));
             }
             result.AppendLine(" }");
         }

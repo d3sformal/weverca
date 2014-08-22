@@ -330,6 +330,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     mustIndexesProcess.Add(index.Value);
                 }
+            } else if (segment.IsUnknown) 
+            {
+                mustIndexesProcess.Add(container.UnknownIndex);
             }
             else
             {

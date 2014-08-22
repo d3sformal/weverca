@@ -89,9 +89,9 @@ namespace Weverca.Analysis
             var visitor = new WidenningVisitor();
 
             //todo maybe make more precise
-            List<Value> allValues = new List<Value>(old.PossibleValues);
-            allValues.AddRange(current.PossibleValues);
-            return visitor.Widen(allValues,Context);          
+            //List<Value> allValues = new List<Value>(old.PossibleValues);
+            //allValues.AddRange(current.PossibleValues);
+            return visitor.Widen(old.PossibleValues, current.PossibleValues,Context);          
         }
 
         #endregion
@@ -336,74 +336,74 @@ namespace Weverca.Analysis
             return result;
         }
 
-		/// <inheritdoc />
-		public override IEnumerable<Value> ReadValueIndex(Value value, MemberIdentifier index)
-		{
-			if (value is AnyArrayValue)
-			{
-				yield return Context.AnyValue;
-			} 
-			else if (value is UndefinedValue)
-			{
-				yield return Context.UndefinedValue;
-			}
-			else
-			{
-				SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
-				if (value is AnyValue)
-					yield return Context.AnyValue;
-				yield return Context.UndefinedValue;
-			}
-		}
+        /// <inheritdoc />
+        public override IEnumerable<Value> ReadValueIndex (Value value, MemberIdentifier index)
+        {
+            if (value is AnyArrayValue) 
+            {
+                yield return Context.AnyValue;
+            } 
+            else if (value is UndefinedValue) 
+            {
+                yield return Context.UndefinedValue;
+            } 
+            else 
+            {
+                SetWarning ("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
+                if (value is AnyValue)
+                    yield return Context.AnyValue;
+                yield return Context.UndefinedValue;
+            }
+        }
 
-		/// <inheritdoc />
-		public override IEnumerable<Value> WriteValueIndex(Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
-		{
-			if (!(indexed is UndefinedValue || indexed is AnyArrayValue))
-			{
-				SetWarning("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
-			}
+        /// <inheritdoc />
+        public override IEnumerable<Value> WriteValueIndex (Value indexed, MemberIdentifier index, MemoryEntry writtenValue)
+        {
+            if (!(indexed is UndefinedValue || indexed is AnyArrayValue)) 
+            {
+                SetWarning ("Cannot use operator [] on variable other than string or array", AnalysisWarningCause.CANNOT_ACCESS_FIELD_OPERATOR_ON_NON_ARRAY);
+            }
 
-			//we dont want to change indexed value itself
-			yield return indexed;
-		}
+            //we dont want to change indexed value itself
+            yield return indexed;
+        }
 
-		/// <inheritdoc />
-		public override MemoryEntry Simplify(MemoryEntry entry)
-		{
-			var simplifier = new Simplifier(Context);
-			return new MemoryEntry(simplifier.Simplify(entry));
-		}
+        /// <inheritdoc />
+        public override MemoryEntry Simplify (MemoryEntry entry)
+        {
+            var simplifier = new Simplifier (Context);
+            return new MemoryEntry (simplifier.Simplify (entry));
+        }
 
-		/// <inheritdoc />
-		public override IEnumerable<Value> WriteValueField(Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
-		{
-			if (!(fielded is UndefinedValue || fielded is AnyObjectValue))
-			{
-				SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
-			}
-			yield return fielded;
-		}
+        /// <inheritdoc />
+        public override IEnumerable<Value> WriteValueField (Value fielded, VariableIdentifier field, MemoryEntry writtenValue)
+        {
+            if (!(fielded is UndefinedValue || fielded is AnyObjectValue)) 
+            {
+                SetWarning ("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
+            }
+            yield return fielded;
+        }
 
-		/// <inheritdoc />
-		public override IEnumerable<Value> ReadValueField(Value fielded, VariableIdentifier field)
-		{
-			if (fielded is AnyObjectValue)
-			{
-				yield return Context.AnyValue;
-			} 
-			else if (fielded is UndefinedValue)
-			{
-				yield return Context.UndefinedValue;
-			}
-			else
-			{
-				SetWarning("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
-				if (fielded is AnyValue)
-					yield return Context.AnyValue;
-				yield return Context.UndefinedValue;
-			}
-		}
+        /// <inheritdoc />
+        public override IEnumerable<Value> ReadValueField (Value fielded, VariableIdentifier field)
+        {
+            if (fielded is AnyObjectValue) 
+            {
+                yield return Context.AnyValue;
+            } 
+            else if (fielded is UndefinedValue) 
+            {
+                yield return Context.UndefinedValue;
+            } 
+            else 
+            {
+                SetWarning ("Cannot use operator -> on variable other than object", AnalysisWarningCause.CANNOT_ACCESS_OBJECT_OPERATOR_ON_NON_OBJECT);
+                if (fielded is AnyValue)
+                    yield return Context.AnyValue;
+                yield return Context.UndefinedValue;
+            }
+        }
 
     }
 
@@ -431,29 +431,63 @@ namespace Weverca.Analysis
         private Flags flags=new Flags();
 
         /// <summary>
+        /// Values that should be preserved by widening (object and array values are not widened)
+        /// </summary>
+        private List<Value> preservedValues;
+        /// <summary>
+        /// Values from current iteration that are not preserved by widening.
+        /// </summary>
+        private List<Value> notPreservedValuesBeforeWidening;
+
+        /// <summary>
         /// Widens given values
         /// </summary>
-        /// <param name="values">input values</param>
+        /// <param name="previousIterationValues">original values from the previous iteration</param>
+        /// <param name="currentIterationValues">values to widen</param>
         /// <param name="Context">Snapshot</param>
         /// <returns>Memory entry with widen values</returns>
-        public MemoryEntry Widen(IEnumerable<Value> values,SnapshotBase Context)
+        public MemoryEntry Widen(IEnumerable<Value> previousIterationValues, IEnumerable<Value> currentIterationValues,SnapshotBase Context)
         {
-            flags = FlagsHandler.GetFlags(values);
-            foreach (var value in values)
+            flags = FlagsHandler.GetFlags(currentIterationValues);
+            preservedValues = new List<Value> (currentIterationValues.Count());
+            notPreservedValuesBeforeWidening = new List<Value> (currentIterationValues);
+            foreach (var value in currentIterationValues)
             {
                 value.Accept(this);
             }
-            return GetResult(Context);
+            return GetResult(previousIterationValues, Context);
         }
 
         /// <summary>
         /// Return Widen memory entry for all visited values
         /// </summary>
+        /// <param name="previousIterationValues">original values from the previous iteration</param>
         /// <param name="Context">Output set</param>
         /// <returns>Widen memory entry for all visited values</returns>
-        private MemoryEntry GetResult(SnapshotBase Context)
+        private MemoryEntry GetResult(IEnumerable<Value> previousIterationValues, SnapshotBase Context)
         {
-            List<Value> result = new List<Value>();
+            foreach (var val in preservedValues) 
+            {
+                notPreservedValuesBeforeWidening.Remove (val);
+            }
+            // are all values that are not preserved in the original values
+            // in this case only values that should be preserved were added and nothing should be widened
+            var allNotPreservedInOriginal = true;
+            foreach (var val in notPreservedValuesBeforeWidening) 
+            {
+                if (!previousIterationValues.Contains (val)) 
+                {
+                    allNotPreservedInOriginal = false;
+                    break;
+                }
+            }
+
+            List<Value> result = new List<Value> (preservedValues);
+
+            if (allNotPreservedInOriginal) {
+                return new MemoryEntry (result);
+            }
+
             if (containsOnlyBool)
             {
                 result.Add(Context.AnyBooleanValue);
@@ -586,6 +620,26 @@ namespace Weverca.Analysis
         {
             numberFound();
         }
+
+        /// <inheritdoc />
+        public override void VisitUndefinedValue (UndefinedValue value)
+        {
+            preservedValues.Add (value);
+        }
+
+        /// <inheritdoc />
+        public override void VisitCompoundValue (CompoundValue value)
+        {
+            preservedValues.Add (value);
+        }
+
+
+        /// <inheritdoc />
+        public override void VisitAnyCompoundValue (AnyCompoundValue value)
+        {
+            preservedValues.Add (value);
+        }
+
         
     }
 

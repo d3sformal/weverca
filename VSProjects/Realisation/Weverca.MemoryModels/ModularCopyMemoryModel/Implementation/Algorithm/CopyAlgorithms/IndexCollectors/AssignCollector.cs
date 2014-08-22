@@ -509,15 +509,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <param name="isMust">if set to <c>true</c> [is must].</param>
         private void processSegment(PathSegment segment, IReadonlyIndexContainer container, bool isMust = true)
         {
-            if (segment.IsAny)
-            {
-                mayIndexesProcess.Add(container.UnknownIndex);
-                addToMay(container.UnknownIndex);
+            if (segment.IsAny) {
+                mayIndexesProcess.Add (container.UnknownIndex);
+                addToMay (container.UnknownIndex);
 
-                foreach (var index in container.Indexes)
-                {
-                    addToMay(index.Value);
+                foreach (var index in container.Indexes) {
+                    addToMay (index.Value);
                 }
+            } else if (segment.IsUnknown) 
+            {
+                addToMay (container.UnknownIndex);
             }
             else if (segment.Names.Count == 1)
             {

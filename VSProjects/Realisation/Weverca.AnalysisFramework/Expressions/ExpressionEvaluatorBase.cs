@@ -417,6 +417,21 @@ namespace Weverca.AnalysisFramework.Expressions
         /// <param name="declaration">Declared type</param>
         public abstract void DeclareGlobal(TypeDecl declaration);
 
+        #region Type Conversions
+        /// <summary>
+        /// Tries to convert the native string value only if it represents a integer value.
+        /// </summary>
+        /// <remarks>
+        /// Conversion of string to integer value is always defined, but in certain cases, we want to know
+        /// if the conversion is successful (e.g. explicit type-casting or when creating a new array using
+        /// index of string) In these cases, hexadecimal numbers are not recognized.
+        /// </remarks>
+        /// <param name="value">Native string to convert.</param>
+        /// <param name="convertedValue">New integer value if conversion is successful, otherwise 0.</param>
+        /// <returns><c>true</c> if value is converted successfully, otherwise <c>false</c>.</returns>
+        public abstract bool TryIdentifyInteger(string value, out int convertedValue);
+        #endregion
+
         #endregion
 
         /// <summary>

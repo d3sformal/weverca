@@ -10,7 +10,10 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.Analysis.NativeAnalyzers
 {
     /// <summary>
-    /// Contains concrete implementations of native functions.
+	/// Contains concrete implementations of native functions.
+    /// Can be used for these functions that compute result using return values. For implementation of native 
+	/// functions that compute result using output arguments, use NativeFunctionAnalyzer.specialFunctions.
+	/// 
     /// 
     /// Note that all functions that have concrete implementation have to be also type-modeled.
     /// </summary>

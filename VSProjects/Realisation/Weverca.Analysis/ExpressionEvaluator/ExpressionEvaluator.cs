@@ -412,8 +412,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    // There are some values that cannot be store to exact index, so unknown index is used
-                    indexIdentifier = new MemberIdentifier();
+                    // There are some values that cannot be store to exact index, so any index is used
+                    indexIdentifier = Weverca.AnalysisFramework.Memory.MemberIdentifier.getAnyMemberIdentifier();
                 }
 
                 var indexEntry = arrayEntry.ReadIndex(OutSnapshot, indexIdentifier);
@@ -522,7 +522,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 foreach (var index in indices)
                 {
                     int convertedInteger;
-                    if (TypeConversion.TryIdentifyInteger(index.DirectName, out convertedInteger))
+                    if (index.DirectName == null) // unknown field
+                    {
+                        keys.Add(OutSnapshot.AnyStringValue);
+                    }
+                    else if (TypeConversion.TryIdentifyInteger(index.DirectName, out convertedInteger))
                     {
                         keys.Add(OutSnapshot.CreateInt(convertedInteger));
                     }
@@ -880,6 +884,13 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 return new MemoryEntry(OutSet.AnyBooleanValue);
             }
         }
+
+        #region Type Conversions overrides
+        public override bool TryIdentifyInteger(string value, out int convertedValue) 
+        {
+            return TypeConversion.TryIdentifyInteger (value, out convertedValue);
+        }
+        #endregion Type Conversions overrides
 
         #endregion ExpressionEvaluatorBase overrides
 

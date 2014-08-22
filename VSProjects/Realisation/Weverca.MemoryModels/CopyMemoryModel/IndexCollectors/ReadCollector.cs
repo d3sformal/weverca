@@ -325,6 +325,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
                 {
                     mustIndexesProcess.Add(index.Value);
                 }
+            } else if (segment.IsUnknown) 
+            {
+                mustIndexesProcess.Add (container.UnknownIndex);
             }
             else
             {

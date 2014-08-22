@@ -1,5 +1,5 @@
 ﻿//#define MEMORY_BENCHMARK
-#define BENCHMARK
+//#define BENCHMARK
 
 using System;
 using System.Collections.Generic;

@@ -439,8 +439,25 @@ namespace Weverca.Analysis.NativeAnalyzers
                     res.Add(outset.AnyArrayValue);
                     break;
                 default:
+                if ( type.StartsWith("array-") )
+                {
+                    // array of objects of the type given by type.Substring(6)
+
+                    // create array
+                    var array = flow.OutSet.CreateArray ();
+                    var arrayEntry = flow.OutSet.CreateSnapshotEntry (new MemoryEntry (array));
+
+                    // write object to the unknown field of the array
+                    var obj = CreateObject (flow, type.Substring(6));
+                    var index = arrayEntry.ReadIndex (flow.OutSet.Snapshot, MemberIdentifier.getUnknownMemberIdentifier ());
+                    index.WriteMemory (flow.OutSet.Snapshot, new MemoryEntry (obj));
+
+                    res.Add (array);
+                } else {
+                
                     res.Add(CreateObject(flow, type));
-                    break;
+                }
+                break;
             }
 
             return new MemoryEntry(res);
@@ -463,11 +480,10 @@ namespace Weverca.Analysis.NativeAnalyzers
                 ClassDecl decl = objectAnalyzer.GetClass(typeName);
                 var fields = objectAnalyzer.GetClass(typeName).Fields;
                 ObjectValue value = flow.OutSet.CreateObject(flow.OutSet.CreateType(decl));
-                var newObject=flow.OutSet.GetLocalControlVariable(new VariableName(".tmpObject"));
+                var newObject=flow.OutSet.GetLocalControlVariable(new VariableName(".tmpObject"+type));
                 newObject.WriteMemory(flow.OutSet.Snapshot, new MemoryEntry(value));
                 if (value is ObjectValue)
                 {
-                    var obj = (value as ObjectValue);
                     foreach (FieldInfo field in fields.Values)
                     {
                         if (field.IsStatic == false)

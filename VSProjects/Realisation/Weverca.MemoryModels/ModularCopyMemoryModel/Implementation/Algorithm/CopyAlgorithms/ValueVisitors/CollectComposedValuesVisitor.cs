@@ -92,6 +92,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 }
             }
 
+            indexes.Add (MemberIdentifier.getUnknownMemberIdentifier());
             return indexes;
         }
 

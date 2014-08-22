@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,17 +51,38 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <inheritdoc />
         protected override void flowThrough()
         {
-			if (Index == null) 
-			{
-				// TODO: workaround, not correct!!
-				// converts the expression $a[] to $a[0]
-				// this is not correct, $a[] should be converted to $a[largest index of $a]
-				IndexIdentifier = Services.Evaluator.MemberIdentifier(new MemoryEntry(OutSnapshot.CreateInt(0)));
-			}
-			else 
-			{
-            	IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(OutSnapshot));
-			}
+            if (Index == null) 
+            {
+                // $a[] = value;
+                // Creates new index that is biggest integer index in $a + 1 and writes the value to this index
+
+                // TODO: 
+                // What is should do
+                // Iterate through all arrays in UsedItem
+                    // for each array iterate through all indices and find the biggest integer index
+                    // for each array resolve the index
+                // LValue should represent all these indices
+
+                // What it does
+                // Iterate through all indices of all arrays in UsedItem and find the biggest integer index
+                // Resolve this index in all arrays
+
+                // TODO: causes non-termination: while() $a[] = 1;
+                // Do this only for non-widened arrays. Then write to unknown index
+                // Now arrays are not widened => we use just unknown index
+                /*
+                IndexIdentifier = new MemberIdentifier (System.Convert.ToString(
+                    UsedItem.Value.BiggestIntegerIndex(OutSnapshot, Services.Evaluator) + 1, 
+                    CultureInfo.InvariantCulture));
+                    */
+
+                // use the unknown index
+                IndexIdentifier = MemberIdentifier.getUnknownMemberIdentifier();
+            }
+            else 
+            {
+                IndexIdentifier = Services.Evaluator.MemberIdentifier(Index.Value.ReadMemory(OutSnapshot));
+            }
             LValue = Services.Evaluator.ResolveIndex(UsedItem.Value, IndexIdentifier);
         }
 

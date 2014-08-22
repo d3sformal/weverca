@@ -23,8 +23,8 @@ namespace Weverca
     /// </summary>
     internal class MetricsForIDEIntegration
     {
-		// Indicates whether second phase is enabled
-		public static readonly bool SECOND_PHASE = false;
+        // Indicates whether second phase is enabled
+        public static readonly bool SECOND_PHASE = false;
         public static readonly string PHP_FILE_EXTENSION = ".php";
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Weverca
                     }
                 }
 
-				var memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
+                var memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
 
                 RunStaticAnalysis(filesToAnalyze.ToArray(), memoryModel);
             }

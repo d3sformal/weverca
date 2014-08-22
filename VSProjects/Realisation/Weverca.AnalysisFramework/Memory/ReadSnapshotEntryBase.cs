@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using PHP.Core;
 
+using Weverca.AnalysisFramework.Expressions;
+
 namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
@@ -205,7 +207,63 @@ namespace Weverca.AnalysisFramework.Memory
         public IEnumerable<MemberIdentifier> IterateIndexes(SnapshotBase context)
         {
             //TODO statistics reporting
-            return iterateIndexes(context);
+
+            var allIndices = iterateIndexes(context);
+
+            // filter out unknown field that has just undefined value
+            var returnedIndices = new List<MemberIdentifier> (allIndices.Count());
+            foreach (var index in allIndices) 
+            {
+                if (index.DirectName == null) 
+                {
+                    var tmp = readIndex (context, index).readMemory (context);
+                    if (readIndex (context, index).readMemory (context).PossibleValues.Count() <= 1)
+                        // unknown field that has just undefined value
+                        continue;
+                }
+
+                returnedIndices.Add (index);
+            }
+            return returnedIndices;
+        }
+
+        /// <summary>
+        /// Returns biggest integer index in arrays represented by this entry.
+        /// </summary>
+        /// <returns>The biggest integer index.</returns>
+        /// <param name="context">Context where the index is searched.</param>
+        /// <param name="evaluator">Expression evaluator.</param>
+        public int BiggestIntegerIndex(SnapshotBase context, ExpressionEvaluatorBase evaluator)
+        {
+            int biggestIndex = -1;
+            foreach (var index in iterateIndexes(context)) 
+            {
+                int currentIndex;
+                if (evaluator.TryIdentifyInteger (index.DirectName, out currentIndex)) 
+                {
+                    if (currentIndex > biggestIndex)
+                        biggestIndex = currentIndex;
+                }
+
+            }
+            return biggestIndex;
+        }
+
+        /// <summary>
+        /// Returns true if it is stored an associative array in this entry in given context.
+        /// </summary>
+        /// <returns><c>true</c>, if associative arrray is stored in this entry, <c>false</c> otherwise.</returns>
+        /// <param name="context">Context where the array is searched.</param>
+        public bool isAssociativeArrray(SnapshotBase context) 
+        {
+            foreach (var val in this.ReadMemory (context).PossibleValues)
+            {
+                if (val is AssociativeArray) 
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>

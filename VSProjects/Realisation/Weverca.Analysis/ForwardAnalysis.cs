@@ -31,7 +31,7 @@ namespace Weverca.Analysis
         {
             GlobalsInitializer();
             this.SimplifyLimit = simplifyLimit;
-			this.WideningLimit = 3;
+			this.WideningLimit = 5;
         }
 
         #region ForwardAnalysis override

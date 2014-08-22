@@ -127,11 +127,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
             MemoryPath newPath;
-            if (index.IsUnknown)
+            if (index.IsAny) {
+                newPath = MemoryPath.MakePathAnyIndex (path);
+            } else if (index.IsUnknown) 
             {
-                newPath = MemoryPath.MakePathAnyIndex(path);
-            }
-            else
+                newPath = MemoryPath.MakePathUnknownIndex (path);
+            } else
             {
                 newPath = MemoryPath.MakePathIndex(path, index.PossibleNames);
             }

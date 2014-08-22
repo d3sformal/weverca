@@ -172,12 +172,27 @@ namespace Weverca.AnalysisFramework.Memory
         /// <returns>A string that represents the current memory entry</returns>
         public override string ToString()
         {
+            var result = new StringBuilder ();
+
+            result.Append ("Values: ");
+            foreach (var value in PossibleValues) 
+            {
+                result.AppendFormat ("({0}),", value.ToString ());
+            }
+
+            result.Length--;
+
+            return result.ToString ();
+        }
+
+        public virtual string ToString(ISnapshotReadonly snapshot)
+        {
             var result = new StringBuilder();
 
             result.Append("Values: ");
             foreach (var value in PossibleValues)
             {
-                result.AppendFormat("({0}),", value.ToString());
+                result.AppendFormat("({0}),", value.ToString(snapshot));
             }
 
             result.Length--;

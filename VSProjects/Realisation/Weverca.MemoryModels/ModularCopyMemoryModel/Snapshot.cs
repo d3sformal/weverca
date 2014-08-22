@@ -416,6 +416,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             Benchmark.FinishTransaction(this);
 
+            oldStructure = null;
+            oldMemory = null;
+            oldInfos = null;
+
             return differs;
         }
 
@@ -468,6 +472,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);
+
+            oldStructure = null;
+            oldMemory = null;
+            oldInfos = null;
 
             return differs;
         }

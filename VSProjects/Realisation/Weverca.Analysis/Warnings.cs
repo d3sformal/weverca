@@ -144,7 +144,8 @@ namespace Weverca.Analysis
             where T : AnalysisWarning
         {
             var snapshotEntry = flowOutSet.ReadControlVariable(getStorage<T>());
-            var result = snapshotEntry.ReadMemory(flowOutSet).PossibleValues;
+            var resultEntry = snapshotEntry.ReadMemory(flowOutSet);
+            var result = resultEntry.PossibleValues;
             return from value in result where !(value is UndefinedValue) select value;
         }
 
@@ -805,6 +806,11 @@ namespace Weverca.Analysis
         /// Warning, that occurs when 3 or more evals are called recursively
         /// </summary>
         TOO_DEEP_EVAL_RECURSION,
+
+        /// <summary>
+        /// Call of method on undefined object.
+        /// </summary>
+        CALL_METHOD_ON_UNDEFINED_OBJECT,
 
         OTHER,
     }

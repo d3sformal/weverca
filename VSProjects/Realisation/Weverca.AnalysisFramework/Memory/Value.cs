@@ -158,6 +158,11 @@ namespace Weverca.AnalysisFramework.Memory
         {
             return this.GetType().Name;
         }
+
+		public virtual string ToString(ISnapshotReadonly snapshot)
+		{
+			return ToString();
+		}
       
         #endregion
     }

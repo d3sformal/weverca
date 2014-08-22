@@ -6652,7 +6652,7 @@
 <arg type="string" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false" value="0"  />
 </function>
-<function name="imap_fetchstructure" returnType="object">
+<function name="imap_fetchstructure" returnType="imap_fetchstructure object">
 <arg type="resource" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="false" byReference="false" dots="false"  />
 <arg type="int" optional="true" byReference="false" dots="false" value="0"  />
@@ -6739,7 +6739,7 @@
 <function name="imap_mailboxmsginfo" returnType="object">
 <arg type="resource" optional="false" byReference="false" dots="false"  />
 </function>
-<function name="imap_mime_header_decode" returnType="array">
+<function name="imap_mime_header_decode" returnType="array-imap_mime_header_decode object">
 <arg type="string" optional="false" byReference="false" dots="false"  />
 </function>
 <function name="imap_msgno" returnType="int">

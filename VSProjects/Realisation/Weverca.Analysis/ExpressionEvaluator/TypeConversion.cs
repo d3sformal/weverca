@@ -223,8 +223,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var entry = snapshot.CreateSnapshotEntry(new MemoryEntry(value));
 
             var indices = entry.IterateIndexes(snapshot);
-            var enumerator = indices.GetEnumerator();
-            return enumerator.MoveNext();
+            return indices.GetEnumerator ().MoveNext ();
         }
 
         /// <summary>
@@ -1802,7 +1801,9 @@ namespace Weverca.Analysis.ExpressionEvaluator
             return !(ValueTypeResolver.IsBool(value)
                 || ValueTypeResolver.IsInt(value)
                 || ValueTypeResolver.IsLong(value)
-                || ValueTypeResolver.IsFloat(value));
+                || ValueTypeResolver.IsFloat(value)
+                || ValueTypeResolver.IsObject(value)
+                || ValueTypeResolver.IsArray(value));
         }
 
         /// <summary>

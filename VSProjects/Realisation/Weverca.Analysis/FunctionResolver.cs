@@ -437,6 +437,18 @@ namespace Weverca.Analysis
                 }
             }
 
+            if (calledObject == null)
+                return calledObject;
+                
+            var calledObjectWithoutUndefined = calledObject.PossibleValues.Where (item => !(item is UndefinedValue));
+            if (calledObject.PossibleValues.Count () != calledObjectWithoutUndefined.Count ()) 
+            {
+                // Warning
+                // Why this does not work??
+                //setWarning ("Call of a method on undefined object.", caller.Partial, AnalysisWarningCause.CALL_METHOD_ON_UNDEFINED_OBJECT);
+                return new MemoryEntry (calledObjectWithoutUndefined);
+            }
+
             return calledObject;
         }
 
@@ -1201,7 +1213,7 @@ namespace Weverca.Analysis
                 {
                     //join parameter with alias (for testing we join all possible arguments)
                     //be carefull here - Flow.OutSet belongs to call context already - so we has to read variable from InSet
-                    argumentEntry.SetAliases(callInput.Snapshot, aliasProvider.LValue);
+                    argumentEntry.SetAliases(callInput.Snapshot, arg.Value);
                 }
                 else
                 {

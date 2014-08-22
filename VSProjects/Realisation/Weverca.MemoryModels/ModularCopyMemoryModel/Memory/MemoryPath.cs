@@ -91,7 +91,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <returns>New path which points to single any variable</returns>
         public static MemoryPath MakePathAnyVariable(GlobalContext global, int callLevel)
         {
-            return new MemoryPath(new VariablePathSegment(), global, callLevel);
+            return new MemoryPath(new VariablePathSegment(true), global, callLevel);
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <returns>New path which extends given path by any field</returns>
         public static MemoryPath MakePathAnyField(MemoryPath parentPath)
         {
-            return new MemoryPath(parentPath, new FieldPathSegment());
+            return new MemoryPath(parentPath, new FieldPathSegment(true));
         }
 
         /// <summary>
@@ -157,7 +157,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <returns>New path which extends given path by any index</returns>
         public static MemoryPath MakePathAnyIndex(MemoryPath parentPath)
         {
-            return new MemoryPath(parentPath, new IndexPathSegment());
+            return new MemoryPath(parentPath, new IndexPathSegment(true));
+        }
+
+        public static MemoryPath MakePathUnknownIndex(MemoryPath parentPath)
+        {
+            return new MemoryPath(parentPath, new IndexPathSegment(false));
         }
 
         /// <summary>
@@ -314,6 +319,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// </value>
         public bool IsAny { get; private set; }
 
+        public bool IsUnknown { get { return !IsAny && Names.Count == 0 ; } }
+
 
         /// <summary>
         /// Gets a value indicating whether is direct.
@@ -343,10 +350,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <summary>
         /// Initializes a new instance of the <see cref="PathSegment"/> class.
         /// </summary>
-        public PathSegment()
+        public PathSegment(bool isAny)
         {
             Names = new ReadOnlyCollection<string>(new List<String>());
-            IsAny = true;
+            IsAny = isAny;
             IsDirect = false;
         }
 
@@ -405,8 +412,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <summary>
         /// Initializes a new instance of the <see cref="VariablePathSegment"/> class.
         /// </summary>
-        public VariablePathSegment()
-            : base()
+        public VariablePathSegment(bool isAny)
+            : base(isAny)
         {
 
         }
@@ -451,7 +458,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// Initializes a new instance of the <see cref="ControlPathSegment"/> class.
         /// </summary>
         public ControlPathSegment()
-            : base()
+            : base(true)
         {
 
         }
@@ -505,6 +512,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// </summary>
         /// <param name="temporaryIndex">Index of the temporary.</param>
         public TemporaryPathSegment(TemporaryIndex temporaryIndex)
+            :base(true)
         {
             this.TemporaryIndex = temporaryIndex;
         }
@@ -538,8 +546,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldPathSegment"/> class.
         /// </summary>
-        public FieldPathSegment()
-            : base()
+        public FieldPathSegment(bool isAny)
+            : base(isAny)
         {
 
         }
@@ -583,8 +591,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexPathSegment"/> class.
         /// </summary>
-        public IndexPathSegment()
-            : base()
+        public IndexPathSegment(bool isAny)
+            : base(isAny)
         {
 
         }
