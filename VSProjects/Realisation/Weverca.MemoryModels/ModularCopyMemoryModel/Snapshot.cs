@@ -411,7 +411,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COMMIT);
 
             Logger.LogToSameLine(" " + differs);
-            Logger.Log(this.ToString());
+            Logger.Log(this);
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);
@@ -468,7 +468,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
 
             Logger.LogToSameLine(" " + differs);
-            Logger.Log(this.ToString());
+            Logger.Log(this);
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);

@@ -50,6 +50,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 #endif
         }
 
+        public void Log(Snapshot snapshot) 
+        {
+#if COPY_SNAPSHOT_LOG
+            snapshot.ToString();
+#endif
+        }
+
         public void Log(SnapshotBase snapshot, string format, params object[] values)
         {
 #if COPY_SNAPSHOT_LOG

@@ -21,6 +21,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         void Log(Snapshot snapshot, string message);
 
         /// <summary>
+        /// Logs the content of specified snapshot.
+        /// </summary>
+        /// <param name="snapshot"></param>
+        void Log(Snapshot snapshot);
+
+        /// <summary>
         /// Logs the message using given format string with given values for specified snapshot.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>

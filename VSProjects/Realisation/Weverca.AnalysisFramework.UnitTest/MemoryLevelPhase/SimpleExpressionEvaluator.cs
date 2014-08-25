@@ -34,6 +34,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             return OutSet.GetVariable(new VariableIdentifier(varName));
         }
 
+        public override bool TryIdentifyInteger(string value, out int convertedValue)
+        {
+            return int.TryParse(value, out convertedValue);
+        }
 
         public override ReadWriteSnapshotEntryBase ResolveIndirectStaticField(MemoryEntry typeNames, VariableIdentifier field)
         {
