@@ -24,21 +24,25 @@ $formacie.="<tr><td width=\"100%\" align=\"center\">".$g."</td></tr></table>";
 $text=$_POST["text"];
 $text=str_replace(chr(13),"<br>",$text);
 $text=$text."<br><br>".$formacie;
-$poradie="<table><th>Poradie tipujúcich</th>";
+$poradie="<table><th>Poradie tipujÃºcich</th>";
 $a=mysql_query("select * from uzivatelia where suma>1000 order by suma desc")or die (mysql_error());
-while($vypis=mysql_fetch_array($a))
+$vypis=mysql_fetch_array($a);
+while($vypis)
 {
-$poradie=$poradie."<tr><td>".$vypis["meno"]."</td><td>".$vypis["suma"]." €</td></tr>";
+$poradie=$poradie."<tr><td>".$vypis["meno"]."</td><td>".$vypis["suma"]." â‚¬</td></tr>";
+$vypis=mysql_fetch_array($a);
 }
 $poradie=$poradie."</table>";
 $text=$text."<br><br><table width=\"600\"><tr><td align=\"left\">".$poradie."</td><td align=\"center\">";
 $_plus=0;
 $minus=0;
 $t=mysql_query("select * from uzivatelia")or die (mysql_error());
-while($vypis=mysql_fetch_array($t))
+$vypis=mysql_fetch_array($t);
+while($vypis)
 {
 $_plus+=$vypis["plus"];
 $minus+=$vypis["minus"];
+$vypis=mysql_fetch_array($t);
 }
 $zisk=$_plus-$minus;
 if($zisk>0)
@@ -57,18 +61,20 @@ else
 $farba="gainsboro";
 $plus="";
 }
-$tipovanie="<b>Štatistka tipovania</b><table><tr class=\"green\"><td>Celkové výhry:</td><td>+</td><td> ".$_plus."</td><td>€</td></tr>
-<tr class=\"red\"><td>Celkové vklady:</td><td>-</td><td>".$minus."</td><td>€</td></tr>
-<tr class=\"".$farba."\"><td>Celkový zisk:</td><td>".$plus."</td><td>".$zisk."</td><td>€</td></tr>
+$tipovanie="<b>Å tatistka tipovania</b><table><tr class=\"green\"><td>CelkovÃ© vÃ½hry:</td><td>+</td><td> ".$_plus."</td><td>â‚¬</td></tr>
+<tr class=\"red\"><td>CelkovÃ© vklady:</td><td>-</td><td>".$minus."</td><td>â‚¬</td></tr>
+<tr class=\"".$farba."\"><td>CelkovÃ½ zisk:</td><td>".$plus."</td><td>".$zisk."</td><td>â‚¬</td></tr>
 </table>";
 $text=$text.$tipovanie."</td><td align=\"right\">";
 
 $text=$text."<table><th>Top 10 kurz</th>";
 
 $dd=mysql_query("select * from vyherne_tikety order by kurz desc limit 0,10")or die (mysql_error());
-while($vypis=mysql_fetch_array($dd))
+$vypis=mysql_fetch_array($dd);
+while($vypis)
 {
 $text=$text."<tr><td>".$vypis["meno"]."</td><td>".$vypis["kurz"]."</td></tr>";
+$vypis=mysql_fetch_array($dd);
 }
 $text=$text."</table></td></tr></table>";
 

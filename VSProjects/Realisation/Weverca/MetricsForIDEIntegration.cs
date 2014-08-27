@@ -320,6 +320,7 @@ namespace Weverca
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
+                        return;
 
                         var watch2 = System.Diagnostics.Stopwatch.StartNew();
 						var nextPhase = new TaintForwardAnalysis(ppGraph);
