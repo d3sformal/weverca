@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            category="Common.PHPanalysisCategory"
+            class="views.VariablesView"
+            icon="platform:/plugin/Common/icons/view_icon.png "
+            id="StaticAnalysisVariables.view1"
+            name="Variables"
+            restorable="false">
+      </view>
+      <view
+            allowMultiple="false"
+            category="Common.PHPanalysisCategory"
+            class="views.DeadCodeView"
+            icon="platform:/plugin/Common/icons/cross_icon.png "
+            id="StaticAnalysisVariables.view2"
+            name="Unreachable code"
+            restorable="false">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.php.perspective">
+         <view
+               closeable="true"
+               id="StaticAnalysisVariables.view1"
+               minimized="false"
+               moveable="true"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ContentOutline"
+               visible="true">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:StaticAnalysisVariables.view1">
+         <command
+               commandId="StaticAnalysisVariables.setBefore"
+               icon="IMG_TOOL_UNDO"
+               label="Before"
+               style="toggle"
+               tooltip="Show variables before the line is processed">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:StaticAnalysisVariables.view2">
+         <command
+               commandId="StaticAnalysisVariables.highlightDeadLines"
+               icon="IMG_OBJ_ELEMENT"
+               label="Highlight Dead Code"
+               style="push"
+               tooltip="Highlight all dead lines in editor">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="handlers.SetBeforeAfter"
+            id="StaticAnalysisVariables.setBefore"
+            name="Set Before">
+      </command>
+      <command
+            defaultHandler="handlers.HighlightDeadLines"
+            id="StaticAnalysisVariables.highlightDeadLines"
+            name="Highlight Dead Lines">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="StaticAnalysisVariables.deadCodeMarker"
+            name="StaticAnalysisVariables.specification_deadCode">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="StaticAnalysisVariables.specification_deadCode"
+            colorPreferenceKey="deadCode_color"
+            colorPreferenceValue="192,192,192"
+            highlightPreferenceKey="deadCode_highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="unreachable code"
+            overviewRulerPreferenceKey="deadCode_overview"
+            overviewRulerPreferenceValue="true"
+            showInNextPrevDropdownToolbarAction="true"
+            textPreferenceKey="deadCode_text"
+            textPreferenceValue="true"
+            verticalRulerPreferenceValue="false">
+      </specification>
+   </extension>
+   <extension
+         id="StaticAnalysisVariables.deadCodeMarker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+   </extension>
+
+</plugin>

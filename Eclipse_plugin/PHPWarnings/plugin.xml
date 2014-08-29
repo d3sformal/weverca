@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="warnings.Startup">
+      </startup>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="preferences.PHPconstructsPreferencePage"
+            id="PHP_warnings.page1"
+            name="PHP Warnings">
+      </page>
+   </extension>
+   <extension
+         id="PHP_warnings_constructMarker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="PHP_warnings.constructSpecification"
+            colorPreferenceKey="construct_color"
+            colorPreferenceValue="88,133,150"
+            contributesToHeader="true"
+            highlightPreferenceKey="construct_highlight"
+            highlightPreferenceValue="false"
+            includeOnPreferencePage="true"
+            isGoToNextNavigationTarget="false"
+            isGoToPreviousNavigationTarget="false"
+            label="PHP Construct Warning"
+            overviewRulerPreferenceKey="construct_overview"
+            overviewRulerPreferenceValue="true"
+            showInNextPrevDropdownToolbarAction="false"
+            symbolicIcon="warning"
+            textPreferenceKey="construct_text"
+            textPreferenceValue="true"
+            textStylePreferenceKey="construct_textstyle"
+            textStylePreferenceValue="UNDERLINE"
+            verticalRulerPreferenceKey="construct_vertical"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerSeverity="1"
+            markerType="PHPconstructMarker"
+            name="PHP_warnings.constructSpecification">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerUpdaters">
+      <updater
+            class="warnings.MarkerUpdater"
+            id="PHP_warnings.warningMarkerUpdater"
+            markerType="PHP_warnings_constructMarker">
+      </updater>
+   </extension>
+
+</plugin>

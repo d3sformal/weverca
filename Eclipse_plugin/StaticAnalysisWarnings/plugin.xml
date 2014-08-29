@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <view
+            allowMultiple="false"
+            category="Common.PHPanalysisCategory"
+            class="views.WarningsView"
+            icon="IMG_OBJS_WARN_TSK"
+            id="StaticAnalysisWarnings.view1"
+            name="Static Analysis Warnings"
+            restorable="false">
+      </view>
+      <view
+            allowMultiple="false"
+            category="Common.PHPanalysisCategory"
+            class="views.TaintFlowView"
+            icon="platform:/plugin/Common/icons/view_icon.png "
+            id="StaticAnalysisWarnings.view2"
+            name="Taint Flow"
+            restorable="false">
+      </view>
+   </extension>
+   <extension
+         id="StaticAnalysisWarnings.warningsMarker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.annotationTypes">
+      <type
+            markerType="StaticAnalysisWarnings.warningsMarker"
+            name="StaticAnalysisWarnings.specification_warning">
+      </type>
+      <type
+            markerType="StaticAnalysisWarnings.warningsMarker"
+            name="StaticAnalysisWarnings.specification_securitywarning">
+      </type>
+      <type
+            markerType="StaticAnalysisWarnings.warningsMarker"
+            name="StaticAnalysisWarnings.specification_flow">
+      </type>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="StaticAnalysisWarnings.specification_warning"
+            colorPreferenceKey="warning_color"
+            colorPreferenceValue="255,236,139"
+            contributesToHeader="false"
+            highlightPreferenceKey="warning_highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="warning"
+            overviewRulerPreferenceKey="warning_overview"
+            overviewRulerPreferenceValue="true"
+            symbolicIcon="warning"
+            textPreferenceKey="warning_text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="warning_vertical"
+            verticalRulerPreferenceValue="true">
+      </specification>
+      <specification
+            annotationType="StaticAnalysisWarnings.specification_securitywarning"
+            colorPreferenceKey="securitywarning_color"
+            colorPreferenceValue="255,236,139"
+            contributesToHeader="false"
+            highlightPreferenceKey="securitywarning_highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="security warning"
+            overviewRulerPreferenceKey="securitywarning_overview"
+            overviewRulerPreferenceValue="true"
+            symbolicIcon="warning"
+            textPreferenceKey="securitywarning_text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="NONE"
+            verticalRulerPreferenceKey="securitywarning_vertical"
+            verticalRulerPreferenceValue="true">
+      </specification>
+      <specification
+            annotationType="StaticAnalysisWarnings.specification_flow"
+            colorPreferenceKey="flow_color"
+            colorPreferenceValue="204,255,204"
+            contributesToHeader="false"
+            highlightPreferenceKey="flow_highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="false"
+            label="taint flow"
+            overviewRulerPreferenceKey="flow_overview"
+            overviewRulerPreferenceValue="true"
+            showInNextPrevDropdownToolbarAction="true"
+            textPreferenceKey="flow_text"
+            textPreferenceValue="true"
+            verticalRulerPreferenceValue="false">
+      </specification>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="handlers.FlowRepresentation"
+            id="StaticAnalysisWarnings.command_flows"
+            name="FlowRepresentation">
+      </command>
+      <command
+            defaultHandler="handlers.FlowRepresentation"
+            id="StaticAnalysisWarnings.flow"
+            name="Flow Type Command">
+         <commandParameter
+               id="org.eclipse.ui.commands.radioStateParameter"
+               name="State"
+               optional="false">
+         </commandParameter>
+         <state
+               id="org.eclipse.ui.commands.radioState">
+            <class
+                  class="org.eclipse.ui.handlers.RadioState">
+               <parameter
+                     name="default"
+                     value="separate">
+               </parameter>
+               <parameter
+                     name="persisted"
+                     value="false">
+               </parameter>
+            </class>
+         </state>
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:StaticAnalysisWarnings.view1">
+         <command
+               commandId="StaticAnalysisWarnings.command_flows"
+               icon="IMG_TOOL_FORWARD"
+               label="Flow Representation"
+               style="pulldown"
+               tooltip="Choose flow representation">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:StaticAnalysisWarnings.command_flows">
+         <command
+               commandId="StaticAnalysisWarnings.flow"
+               label="Separate Flows"
+               style="radio"
+               tooltip="Show separate flows">
+            <parameter
+                  name="org.eclipse.ui.commands.radioStateParameter"
+                  value="separate">
+            </parameter>
+         </command>
+         <command
+               commandId="StaticAnalysisWarnings.flow"
+               label="Flows Merged by Source"
+               style="radio"
+               tooltip="Show flows merged by their source">
+            <parameter
+                  name="org.eclipse.ui.commands.radioStateParameter"
+                  value="merged">
+            </parameter>
+         </command>
+         <command
+               commandId="StaticAnalysisWarnings.flow"
+               label="Separate Reversed Flows"
+               style="radio"
+               tooltip="Show separate and reversed flows">
+            <parameter
+                  name="org.eclipse.ui.commands.radioStateParameter"
+                  value="reversed">
+            </parameter>
+         </command>
+         <command
+               commandId="StaticAnalysisWarnings.flow"
+               label="Flows Merged by Sink"
+               style="radio"
+               tooltip="Show flows merged by their sink">
+            <parameter
+                  name="org.eclipse.ui.commands.radioStateParameter"
+                  value="mergedReversed">
+            </parameter>
+         </command>
+      </menuContribution>
+   </extension>
+
+</plugin>
