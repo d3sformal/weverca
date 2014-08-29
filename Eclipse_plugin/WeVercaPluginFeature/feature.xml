@@ -39,13 +39,6 @@
          unpack="false"/>
 
    <plugin
-         id="PHP_warnings"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="StaticAnalysis"
          download-size="0"
          install-size="0"
@@ -61,6 +54,13 @@
 
    <plugin
          id="StaticAnalysisWarnings"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="PHPWarnings"
          download-size="0"
          install-size="0"
          version="0.0.0"
