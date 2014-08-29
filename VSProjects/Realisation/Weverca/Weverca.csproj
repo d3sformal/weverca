@@ -11,8 +11,6 @@
     <AssemblyName>Weverca</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -24,7 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Weverca.XML</DocumentationFile>
-    <Commandlineparameters>-sa -mm CopyMM /home/david/Dokumenty/temp/index.php</Commandlineparameters>
+    <Commandlineparameters>-cmide -staticanalysis  /home/david/runtime-EclipseApplication/PHPTest/testfolder/testfolder2/temptest2.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,7 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Commandlineparameters>-sa -mm CopyMM /home/david/Documents/temp/index.php</Commandlineparameters>
+    <Commandlineparameters>-cmide -staticanalysis /home/david/runtime-EclipseApplication/PHPTest/testfolder/testfolder2/temptest2.php</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>8EED937F9C2F8FF33A55BC964E00312E7C15033F</ManifestCertificateThumbprint>

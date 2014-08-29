@@ -10,8 +10,6 @@
     <RootNamespace>Weverca.ControlFlowGraph</RootNamespace>
     <AssemblyName>Weverca.ControlFlowGraph</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
