@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (c) 2012-2014 Pavel Bastecky.
 
 This file is part of WeVerca.
@@ -117,7 +117,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
         {
             foreach (var item in snapshot.Structure.Readonly.ArrayDescriptors)
             {
-                createRepresentation(item.Value);
+                IArrayDescriptor descriptor = item.Value;
+                AssociativeArray associativeArray = item.Key;
+
+                createIndexRepresentation(descriptor.UnknownIndex, String.Format("${0}[?]", associativeArray.UID));
+
+                foreach (var indexItem in descriptor.Indexes)
+                {
+                    MemoryIndex index = indexItem.Value;
+                    string indexName = indexItem.Key;
+                    createIndexRepresentation(index, String.Format("${0}[{1}]", associativeArray.UID, indexName));
+                }
+
                 appendLine("");
             }
         }
@@ -129,29 +140,29 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
 
         private void createRepresentation(IReadonlyIndexContainer indexContainer)
         {
-            createIndexRepresentation(indexContainer.UnknownIndex);
+            createIndexRepresentation(indexContainer.UnknownIndex, indexContainer.UnknownIndex.ToString());
 
             foreach (var item in indexContainer.Indexes)
             {
                 MemoryIndex index = item.Value;
-                createIndexRepresentation(index);
+                createIndexRepresentation(index, index.ToString());
             }
         }
 
-        private void createIndexRepresentation(MemoryIndex index)
+        private void createIndexRepresentation(MemoryIndex index, string name)
         {
-            result.AppendFormat("{0}: {{ ", index);
+            result.AppendFormat("{0}: {{ ", name);
 
             MemoryEntry dataEntry, infoEntry;
             if (snapshot.Data.Readonly.TryGetMemoryEntry(index, out dataEntry))
             {
-				result.Append(dataEntry.ToString(snapshot));
+				result.Append(dataEntry.ToString());
             }
 
             if (snapshot.Infos.Readonly.TryGetMemoryEntry(index, out infoEntry))
             {
                 result.Append(" INFO: ");
-				result.Append(infoEntry.ToString(snapshot));
+				result.Append(infoEntry.ToString());
             }
             result.AppendLine(" }");
         }
