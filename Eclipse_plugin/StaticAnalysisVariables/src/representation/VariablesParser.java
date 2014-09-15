@@ -409,6 +409,20 @@ public class VariablesParser implements StaticAnalysisParser {
         return false;
     }
 
+    private static boolean tryInsertArray(Context c, Variable field, boolean before){
+    	int index = field.name.indexOf('[');
+		if (index != -1){
+			int uid = Integer.parseInt(field.name.substring(0,index));
+			Iterable<Variable> variables = c.getVariablesContainingUID(uid);
+            if (! variables.iterator().hasNext()) return false;
+            for (Variable v : c.getVariablesContainingUID(uid)) {
+                v.fields.addVariable(field);
+            }
+			return true;
+		}
+		
+		return false;
+    }
 	
 	/**
 	 * Tries to find a corresponding parent variable for an array field
@@ -418,15 +432,15 @@ public class VariablesParser implements StaticAnalysisParser {
 	 * @param before	which variables to search in
 	 * @return			true if parent has been found, false otherwise
 	 */
-	private static boolean tryInsertArray(Context c, Variable field, boolean before){
+	private static boolean tryInsertArrayOld(Context c, Variable field, boolean before){
 		if (before){
 			for (VariableType vt : c.before){
-				if (tryInsertArray(vt,field)) return true;
+				if (tryInsertArrayOld(vt,field)) return true;
 			}
 		}
 		if (!before){
 			for (VariableType vt : c.after){
-				if (tryInsertArray(vt,field)) return true;
+				if (tryInsertArrayOld(vt,field)) return true;
 			}
 		}
 		return false;	
@@ -440,7 +454,7 @@ public class VariablesParser implements StaticAnalysisParser {
 	 * @param field	field that is being processed
 	 * @return	true if parent has been found, false otherwise
 	 */
-	private static boolean tryInsertArray(VariableType type, Variable field){
+	private static boolean tryInsertArrayOld(VariableType type, Variable field){
 		int index = field.name.lastIndexOf('[');
 		if (index != -1){
 			String parent = field.name.substring(0,index);
@@ -449,7 +463,7 @@ public class VariablesParser implements StaticAnalysisParser {
 					v.fields.addVariable(field);
 					return true;
 				}
-				if (tryInsertArray(v.fields, field)) return true;
+				if (tryInsertArrayOld(v.fields, field)) return true;
 			}
 		}
 		return false;	
@@ -560,7 +574,7 @@ public class VariablesParser implements StaticAnalysisParser {
 			it = c.before[3].variables.iterator();
 			while (it.hasNext()){
 				Variable array = it.next();
-				if (tryInsertArray(c.before[2],array)) it.remove();
+				//if (tryInsertArray(c.before[2],array)) it.remove();
 			}
 		}
 		else{
@@ -572,7 +586,7 @@ public class VariablesParser implements StaticAnalysisParser {
 			it = c.after[3].variables.iterator();
 			while (it.hasNext()){
 				Variable array = it.next();
-				if (tryInsertArray(c.after[2],array)) it.remove();
+				//if (tryInsertArray(c.after[2],array)) it.remove();
 			}
 		}
 	}

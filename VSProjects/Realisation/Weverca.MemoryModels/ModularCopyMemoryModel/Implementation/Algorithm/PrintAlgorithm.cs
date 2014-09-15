@@ -120,13 +120,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
                 IArrayDescriptor descriptor = item.Value;
                 AssociativeArray associativeArray = item.Key;
 
-                createIndexRepresentation(descriptor.UnknownIndex, String.Format("${0}[?]", associativeArray.UID));
+                createIndexRepresentation(descriptor.UnknownIndex, String.Format("{0}[?]", associativeArray.UID));
 
                 foreach (var indexItem in descriptor.Indexes)
                 {
                     MemoryIndex index = indexItem.Value;
                     string indexName = indexItem.Key;
-                    createIndexRepresentation(index, String.Format("${0}[{1}]", associativeArray.UID, indexName));
+                    createIndexRepresentation(index, String.Format("{0}[{1}]", associativeArray.UID, indexName));
                 }
 
                 appendLine("");

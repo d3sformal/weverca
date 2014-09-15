@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2014 David Hauzar, Miroslav Vodolan, Marcel Kikta, Pavel Bastecky, David Skorvaga, and Matyas Brenner
+Copyright (c) 2012-2014 Natalia Tyrpakova and David Hauzar
 
 This file is part of WeVerca.
 
@@ -16,7 +16,6 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 
 using System;
 using System.Collections.Generic;
@@ -187,7 +186,7 @@ namespace Weverca
         }
 
         /// <summary>
-        /// 
+        /// Processes a single file.
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="nonProcessedFiles"></param>
@@ -340,7 +339,6 @@ namespace Weverca
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
-                        return;
 
                         var watch2 = System.Diagnostics.Stopwatch.StartNew();
 						var nextPhase = new TaintForwardAnalysis(ppGraph);
