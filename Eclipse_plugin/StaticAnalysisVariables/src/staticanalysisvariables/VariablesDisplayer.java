@@ -61,8 +61,8 @@ public class VariablesDisplayer {
 			if (existingView2 != null) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().hideView(existingView2);
 			//if there is any dead code, show it in DeadCodeView
 			if (!deadCode.isEmpty()){
-				IViewPart resultView2 = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("StaticAnalysisVariables.view2");
-				((DeadCodeView)resultView2).setInput(deadCode);
+				//IViewPart resultView2 = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView("StaticAnalysisVariables.view2");
+				//((DeadCodeView)resultView2).setInput(deadCode);
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();

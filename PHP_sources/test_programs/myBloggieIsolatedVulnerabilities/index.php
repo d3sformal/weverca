@@ -1,11 +1,4 @@
 <?php
-
-// Security
-$htmlsafe                     = "yes";               // disable & enable html posting
-$commenthtmlsafe              = "yes";              // Disable all HTML Tags for comment section prevent exploit
-$searchstriptagsenable        = "yes";              // Strip all HTML Tags before search to prevent exploit
-$searchhtmlsafe               = "yes";              // Disable all HTML Tags before search to prevent exploit
-
 include 'constants.php';
 include 'template.php';
 include 'settings.php';

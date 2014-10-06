@@ -43,7 +43,7 @@ namespace Weverca
     internal class MetricsForIDEIntegration
     {
         // Indicates whether second phase is enabled
-        public static readonly bool SECOND_PHASE = false;
+        public static readonly bool SECOND_PHASE = true;
         public static readonly string PHP_FILE_EXTENSION = ".php";
 
         /// <summary>

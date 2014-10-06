@@ -74,12 +74,6 @@ function message( $alert, $message )
 {
     global $db, $template;
 
-    //if (!empty($db)) { $db->sql_close(); }
-    //$url = preg_replace('#^\/?(.*?)\/?$#', '/\1', trim($url));
-    //echo $url;
-//    $template->assign_vars(array(
-//            'META' => "<meta http-equiv=\"refresh\" content=\"".$sec.";url='.$url. '\"/>")
-//          );
-   echo "<meta http-equiv=\"refresh\" content=\"".$sec.";url=".$url."\" />" ;
+    echo "<meta http-equiv=\"refresh\" content=\"".$sec.";url=".$url."\" />" ;
 }
 ?>

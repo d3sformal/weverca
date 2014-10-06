@@ -153,6 +153,6 @@ if ($mode == "viewid") {
         error($lang['Error'], 'SQL Query Error : ' . $sql_error['message'] . ' !'); //214
     }
     metaredirect(self_url() . "/index.php?mode=viewid&post_id=" . $post_id, 0);
-//      $result = $db->sql_query($sqledit) or die("Cannot query the database.<br>" . mysql_error());
+    $result = $db->sql_query($sqledit) or die("Cannot query the database.<br>" . mysql_error());
 }
 ?>

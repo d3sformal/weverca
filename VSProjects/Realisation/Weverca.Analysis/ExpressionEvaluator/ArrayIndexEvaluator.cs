@@ -64,6 +64,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
         private bool isCompoundValue;
 
         /// <summary>
+        /// Indicates that the given value is concrete value.
+        /// </summary>
+        private bool isConcrete;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ArrayIndexEvaluator" /> class.
         /// </summary>
         public ArrayIndexEvaluator()
@@ -106,6 +111,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var value in entry.PossibleValues)
             {
+                isConcrete = true;
                 value.Accept(this);
 
                 Debug.Assert(!isCompoundValue || (isNotConvertibleToInteger && (stringIndex == null)),
@@ -114,6 +120,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     "Value cannot be converted both to a number and a string.");
                 Debug.Assert((integerIndex == null) || !isNotConvertibleToInteger,
                     "Value that is converted to concrete integer index is always convertible to integer");
+
+                if (isAlwaysConcrete) isAlwaysConcrete = isConcrete;
 
                 if (isCompoundValue)
                 {
@@ -150,11 +158,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 }
                 else
                 {
-                    if (isAlwaysConcrete)
-                    {
-                        isAlwaysConcrete = false;
-                    }
-
                     if (isNotConvertibleToInteger)
                     {
                         if (isAlwaysInteger)
@@ -345,6 +348,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyValue(AnyValue value)
         {
+            isConcrete = false;
+
             integerIndex = null;
             stringIndex = null;
 
@@ -360,6 +365,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyScalarValue(AnyScalarValue value)
         {
+            isConcrete = false;
+
             integerIndex = null;
             stringIndex = null;
             isCompoundValue = false;
@@ -378,6 +385,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyNumericValue(AnyNumericValue value)
         {
+            isConcrete = false;
+
             isNotConvertibleToInteger = false;
 
             base.VisitAnyNumericValue(value);
@@ -388,6 +397,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyStringValue(AnyStringValue value)
         {
+            isConcrete = false;
+
             isNotConvertibleToInteger = true;
 
             base.VisitAnyStringValue(value);
@@ -400,6 +411,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyCompoundValue(AnyCompoundValue value)
         {
+            isConcrete = false;
+
             integerIndex = null;
             stringIndex = null;
             isNotConvertibleToInteger = true;
@@ -411,6 +424,8 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// <inheritdoc />
         public override void VisitAnyResourceValue(AnyResourceValue value)
         {
+            isConcrete = false;
+
             integerIndex = null;
             stringIndex = null;
             isNotConvertibleToInteger = true;
