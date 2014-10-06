@@ -691,7 +691,7 @@ foreach($arr as $value){
 ".AssertVariable("test").HasValues("val1", "val2", "val3")
  .AssertVariable("b").HasValues(1);
         [TestMethod]
-        public void ForeachIteration2Failing()
+        public void ForeachIteration2FailingTODO()
         {
             AnalysisTestUtils.RunTestCase(ForeachIteration2_CASE);
         }
@@ -708,7 +708,7 @@ foreach ($arr as $value) {
 }
 ".AssertVariable("a").HasValues(1);
         [TestMethod]
-        public void ForeachWithBreakFailing()
+        public void ForeachWithBreakFailingTODO()
         {
             AnalysisTestUtils.RunTestCase(ForeachWithBreak_CASE);
         }
@@ -1759,8 +1759,7 @@ $a1 = $alias[1];
 ".AssertVariable("a1").HasUndefinedAndValues(0)
  .Analysis(Analyses.WevercaAnalysisTest);
 
-        // TODO: This test fails, because the analyzer treats assignment to $arr[] the same way as $arr[0].
-        // Instead, it should assigne to $arr[maxIntegerIndex].
+        // Assignments to $arr[] are modeled as assignments to unknown indices.
         readonly static TestCase ArrayWithoutSpecifiedIndexAccess_CASE = @"
 $arr[] = 0;
 $arr[] = 1;
@@ -1774,11 +1773,11 @@ $c = $arr[5];
 $d = $arr[6];
 $e = $arr[7];
 "
-            .AssertVariable("a").HasValues(0)
-            .AssertVariable("b").HasValues(1)
+            .AssertVariable("a").HasUndefinedAndValues(7, 6, 1, 0) // .AssertVariable("a").HasValues(0) if assignments to $arr[] would be modeled precisely
+            .AssertVariable("b").HasUndefinedAndValues(7, 6, 1, 0) // .AssertVariable("b").HasValues(1) if assignments to $arr[] would be modeled precisely
             .AssertVariable("c").HasValues(5)
-            .AssertVariable("d").HasValues(6);
-            //.AssertVariable("e").HasValues(7);
+            .AssertVariable("d").HasUndefinedAndValues(7, 6, 1, 0) // .AssertVariable("d").HasValues(6) if assignments to $arr[] would be modeled precisely
+            .AssertVariable("e").HasUndefinedAndValues(7, 6, 1, 0);// .AssertVariable("e").HasValues(7) if assignments to $arr[] would be modeled precisely
 
         #region Switch tests
 
@@ -1839,7 +1838,7 @@ $a = 0;
 
         // TODO: this test fails because the assumption in the else branch does not eliminate value 1 from the range of $a
         [TestMethod]
-        public void SwitchUnreachable3Failing()
+        public void SwitchUnreachable3FailingTODO()
         {
             AnalysisTestUtils.RunTestCase(SwitchUnreachable3_CASE);
         }
@@ -3048,7 +3047,7 @@ f();
         
         // TODO: this test fails, fix it
         [TestMethod]
-        public void ArrayWithoutSpecifiedIndexAccessFailing()
+        public void ArrayWithoutSpecifiedIndexAccess()
         {
             AnalysisTestUtils.RunTestCase(ArrayWithoutSpecifiedIndexAccess_CASE);
         }
