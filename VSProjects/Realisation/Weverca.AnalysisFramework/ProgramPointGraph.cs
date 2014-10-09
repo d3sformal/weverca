@@ -75,11 +75,11 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Input program point into program point graph
         /// </summary>
-        public readonly EmptyProgramPoint Start;
+        public readonly ProgramPointBase Start;
         /// <summary>
         /// Output program point from program point graph
         /// </summary>
-        public readonly EmptyProgramPoint End;
+        public readonly ProgramPointBase End;
 
         /// <summary>
         /// The script in which program points in this program point graph are defined
@@ -143,8 +143,8 @@ namespace Weverca.AnalysisFramework
 
             _context = new PPGraphBuildingContext(this);
 
-            var startBlock = _context.CreateEmptyPoint(out Start, entryBlock);
-            var endBlock = _context.CreateEmptyPoint(out End);
+            var startBlock = _context.CreateSubprogramEntryBlock(out Start, entryBlock);
+            var endBlock = _context.CreateEmptyBlock(out End);
 
             buildGraph(startBlock);
             //connecting end points has to be done before contracting (because of loosing child less points)

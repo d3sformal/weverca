@@ -91,7 +91,7 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         public override void VisitExtensionSink(ExtensionSinkPoint p)
         {
             var ends = p.OwningExtension.Branches.Select(c => c.Graph.End.OutSet).ToArray();
-            OutputSet.MergeWithCallLevel(ends);
+            OutputSet.MergeWithCallLevel(p.OwningExtension.Owner, ends);
 
             p.ResolveReturnValue();
         }

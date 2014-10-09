@@ -374,7 +374,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             _inSet.StartTransaction();
             _inSet.Extend(OwningExtension.Owner.OutSet);
-            Services.FlowResolver.CallDispatchMerge(_inSet, OwningExtension.Branches);
+            Services.FlowResolver.CallDispatchMerge(OwningExtension.Owner, _inSet, OwningExtension.Branches);
             _inSet.CommitTransaction();
         }
 
@@ -397,6 +397,44 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitExtensionSink(this);
+        }
+    }
+
+    /// <summary>
+    /// The program point in the entry of the subprogram (method, function, new included file).
+    /// </summary>
+    public class SubprogramEntryPoint : ProgramPointBase 
+    {
+        /// <inheritdoc />
+        public override LangElement Partial { get { return null; } }
+
+        /// <inheritdoc />
+        protected override void flowThrough()
+        {
+            //no action is needed
+        }
+
+        /// <inheritdoc />
+        protected override void extendInput()
+        {
+            var inputs = FlowParents.Select(c => c.OutSet).ToArray();
+            if (inputs.Length > 0)
+            {
+                _inSet.StartTransaction();
+
+                var callers = FlowParents.Select(c => ((ExtensionPoint)c).Caller).ToArray();
+
+                Debug.Assert(inputs.Length == callers.Length);
+
+                _inSet.ExtendAtSubprogramEntry(inputs, callers);
+                _inSet.CommitTransaction();
+            }
+        }
+
+        /// <inheritdoc />
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitSubprogramEntry(this);
         }
     }
 

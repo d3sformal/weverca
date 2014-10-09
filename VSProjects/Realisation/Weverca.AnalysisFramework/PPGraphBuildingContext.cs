@@ -167,18 +167,43 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <summary>
-        /// Creates points block containing empty program point
+        /// Creates points block containing just empty program point and returns this point.
         /// <remarks>Created points block is not contractable</remarks>
         /// </summary>
         /// <param name="createdPoint">Created program point</param>
         /// <param name="outgoingBlocks">Blocks used as outcomming edges</param>
         /// <returns>Created points block</returns>
-        internal PointsBlock CreateEmptyPoint(out EmptyProgramPoint createdPoint, params BasicBlock[] outgoingBlocks)
+        internal PointsBlock CreateEmptyBlock(out ProgramPointBase createdPoint, params BasicBlock[] outgoingBlocks)
         {
             createdPoint = new EmptyProgramPoint();
-            reportCreation(createdPoint);
+            return CreateBlockFromProgramPoint(createdPoint, outgoingBlocks);
+        }
 
-            var createdBlock= PointsBlock.ForPoint(createdPoint, outgoingBlocks);
+        /// <summary>
+        /// Creates points block containing just subprogram entry program point and returns this point.
+        /// <remarks>Created points block is not contractable</remarks>
+        /// </summary>
+        /// <param name="createdPoint">Created program point</param>
+        /// <param name="outgoingBlocks">Blocks used as outcomming edges</param>
+        /// <returns>Created points block</returns>
+        internal PointsBlock CreateSubprogramEntryBlock(out ProgramPointBase createdPoint, params BasicBlock[] outgoingBlocks)
+        {
+            createdPoint = new SubprogramEntryPoint();
+            return CreateBlockFromProgramPoint(createdPoint, outgoingBlocks);
+        }
+
+        /// <summary>
+        /// Creates points block containing just given program point.
+        /// <remarks>Created points block is not contractable</remarks>
+        /// </summary>
+        /// <param name="createdPoint">Program point that will be contained in created block.</param>
+        /// <param name="outgoingBlocks">Blocks used as outcomming edges</param>
+        /// <returns>Created points block</returns>
+        private PointsBlock CreateBlockFromProgramPoint(ProgramPointBase newPoint, params BasicBlock[] outgoingBlocks)
+        {
+            reportCreation(newPoint);
+
+            var createdBlock = PointsBlock.ForPoint(newPoint, outgoingBlocks);
             _createdBlocks.Add(createdBlock);
 
             return createdBlock;

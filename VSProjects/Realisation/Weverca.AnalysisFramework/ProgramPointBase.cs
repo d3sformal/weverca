@@ -229,27 +229,41 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         protected virtual void extendInput()
         {
-            if (_flowParents.Count > 0)
+            var inputs = getInputsForExtension();
+
+            if (inputs.Length > 0)
             {
-                var inputs = new List<FlowInputSet>();
-
-                for (int i = 0; i < _flowParents.Count; ++i)
-                {
-                    var flowParent = _flowParents[i];
-                    var assumeParent = flowParent as AssumePoint;
-
-                    var outset = flowParent.OutSet;
-                    if (outset == null || (assumeParent != null && !assumeParent.Assumed))
-                    {
-                        //given parent is not computed yet or is unreachable
-                        continue;
-                    }
-                    inputs.Add(outset);
-                }
                 _inSet.StartTransaction();
                 _inSet.Extend(inputs.ToArray());
                 _inSet.CommitTransaction();
             }
+        }
+
+        /// <summary>
+        /// Get inputs that should be used for extending the input of this program point.
+        /// </summary>
+        /// <returns>the inputs that should be used for extending the input of this program point; empty array if the input should not be extended</returns>
+        protected ISnapshotReadonly[] getInputsForExtension() 
+        {
+            if (_flowParents.Count < 0) return new ISnapshotReadonly[0];
+
+            var inputs = new List<FlowInputSet>();
+
+            for (int i = 0; i < _flowParents.Count; ++i)
+            {
+                var flowParent = _flowParents[i];
+                var assumeParent = flowParent as AssumePoint;
+
+                var outset = flowParent.OutSet;
+                if (outset == null || (assumeParent != null && !assumeParent.Assumed))
+                {
+                    //given parent is not computed yet or is unreachable
+                    continue;
+                }
+                inputs.Add(outset);
+            }
+
+            return inputs.ToArray();
         }
 
         /// <summary>

@@ -63,15 +63,30 @@ namespace Weverca.Analysis.FlowResolver
             return conditionParts.MakeAssumption(null);
         }
 
-        /// <summary>
-        /// Is called after each invoked call - has to merge data from dispatched calls into callerOutput
-        /// </summary>
-        /// <param name="callerOutput">Output of caller, which dispatch calls</param>
-        /// <param name="dispatchedExtensions">Program point graphs obtained during analysis</param>
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
+        /// <inheritdoc />
+        public override void CallDispatchMerge(ProgramPointBase beforeCall, FlowOutputSet afterCall, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
             var ends = dispatchedExtensions.Select(c => c.Graph.End.OutSet).Where(a => a != null).ToArray();
-            callerOutput.MergeWithCallLevel(ends);
+
+            var callType = dispatchedExtensions.First().Type;
+
+            switch (callType)
+            {
+                case ExtensionType.ParallelEval:
+                case ExtensionType.ParallelInclude:
+                    //merging from includes behaves like usual 
+                    //program points extend
+                    afterCall.Extend(ends);
+                    break;
+                case ExtensionType.ParallelCall:
+                    //merging from calls needs special behaviour
+                    //from memory model (there are no propagation of locales e.g)
+                    afterCall.MergeWithCallLevel(beforeCall, ends);
+                    break;
+
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         /// <summary>

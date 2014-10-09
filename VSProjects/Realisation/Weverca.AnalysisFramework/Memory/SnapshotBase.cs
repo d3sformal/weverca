@@ -26,6 +26,8 @@ using System.IO;
 using PHP.Core;
 using PHP.Core.AST;
 
+using Weverca.AnalysisFramework.ProgramPoints;
+
 namespace Weverca.AnalysisFramework.Memory
 {
     /// <summary>
@@ -273,6 +275,31 @@ namespace Weverca.AnalysisFramework.Memory
         protected abstract void extend(ISnapshotReadonly[] inputs);
 
         /// <summary>
+        /// Merges information at the entry to the subprogram (function, method, or included file).
+        /// 
+        /// Note that if inputs.Length > 1 than the subprogram is shared between more extended points (e.g., callers).
+        /// 
+        /// Note that it holds that inputs.Lenght == extendedPoints.Length and for each inputs[i], extendedPoints[i]
+        /// is extended point (e.g., caller) correspoinding to the input.
+        /// After the subprogram is processed, method MergeWithCallLevel(extendedPoints[i]) will be called for every
+        /// input. Snapshot can, e.g., keep inputs or their parts separated (not merge them) and identify these separated
+        /// parts using extendedPoints[i] and than when the subprogram is processed and MergeWithCallLevel(extendedPoints[i])
+        /// is called use extendedPoints[i] to identify these parts that belong to the extended point (caller) and drop others.
+        /// See <see cref="MergeWithCallLevel"/> for more information.
+        /// 
+        /// Snapshot has to contain merged info present in inputs (no matter what snapshots contain till now)
+        /// This merged info can be than changed with snapshot updatable operations
+        /// NOTE: Further changes of inputs can't change extended snapshot
+        /// </summary>
+        /// <param name="inputs">Input snapshots that should be merged</param>
+        /// <param name="extendedPoints">The points that are extended (e.g, callers).</param>
+        /// <seealso cref="MergeWithCallLevel"/>
+        protected void extendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
+        {
+            extend(inputs);
+        }
+
+        /// <summary>
         /// Extend snapshot as call from given callerContext
         /// </summary>
         /// <param name="callerContext">The caller context.</param>
@@ -280,11 +307,19 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="arguments">The arguments.</param>
         protected abstract void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
-        /// Merge given call output with current context.
-        /// WARNING: Call can change many objects via references (they don't has to be in global context)
+        /// Merges the result of the extension (call or include) performed by extendedPoint into this snapshot.
+        /// 
+        /// There can be multiple callees for a single call (extension) - callOutputs.Length can be more than 1.
+        /// Callees can be shared by multiple callers (extensions) - they can contain parts of the stack and global
+        /// state that do not belong to this particular caller.
+        /// See <see cref="ExtendAtSubprogramEntry"/> for more information.
+        /// 
+        /// WARNING: Call can change many objects via references (they don't have to be in global context)
         /// </summary>
-        /// <param name="callOutputs">Output snapshots of call level</param>        
-        protected abstract void mergeWithCallLevel(ISnapshotReadonly[] callOutputs);
+        /// <param name="extendedPoint">The program point that was extended (e.g., caller)</param>    
+        /// <param name="extensionsOutputs">Output snapshots of callees belonging to the call</param>  
+        /// <seealso cref="ExtendAtSubprogramEntry"/>            
+        protected abstract void mergeWithCallLevel(ProgramPointBase extendedPoint, ISnapshotReadonly[] extensionsOutputs);
 
         /// <summary>
         /// Set given info for value
@@ -887,10 +922,18 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <inheritdoc />
-        public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
+        public void ExtendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
         {
             checkCanUpdate();
-            mergeWithCallLevel(callOutputs);
+            extendAtSubprogramEntry(inputs, extendedPoints);
+            _statistics.Report(Statistic.SnapshotExtendings);
+        }
+
+        /// <inheritdoc />
+        public void MergeWithCallLevel(ProgramPointBase extendedPoint, ISnapshotReadonly[] extensionsOutputs)
+        {
+            checkCanUpdate();
+            mergeWithCallLevel(extendedPoint, extensionsOutputs);
             _statistics.Report(Statistic.CallLevelMerges);
         }
 

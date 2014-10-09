@@ -80,7 +80,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return willAssume;
         }
 
-        public override void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions)
+        public override void CallDispatchMerge(ProgramPointBase beforeCall, FlowOutputSet afterCall, IEnumerable<ExtensionPoint> dispatchedExtensions)
         {
             var ends = (from callOutput in dispatchedExtensions where callOutput.Graph.End.OutSet != null select callOutput.Graph.End.OutSet as ISnapshotReadonly).ToArray();
 
@@ -93,13 +93,13 @@ namespace Weverca.AnalysisFramework.UnitTest
                 case ExtensionType.ParallelInclude:
                     //merging from includes behaves like usual 
                     //program points extend
-                    callerOutput.Extend(ends);
+                    afterCall.Extend(ends);
                     break;
 
                 case ExtensionType.ParallelCall:
                     //merging from calls needs special behaviour
                     //from memory model (there are no propagation of locales e.g)
-                    callerOutput.MergeWithCallLevel(ends);
+                    afterCall.MergeWithCallLevel(beforeCall, ends);
                     break;
 
                 default:

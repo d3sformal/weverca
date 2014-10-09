@@ -110,7 +110,7 @@ namespace Weverca.AnalysisFramework
 		{
 			_currentPoint = p;
 			var ends = p.OwningExtension.Branches.Select(c => c.Graph.End.OutSet).ToArray();
-			OutputSet.MergeWithCallLevel(ends);
+			OutputSet.MergeWithCallLevel(p.Extension.Owner, ends);
 
 			p.ResolveReturnValue();
 		}

@@ -48,12 +48,14 @@ namespace Weverca.AnalysisFramework.Expressions
         public abstract bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log);
 
         /// <summary>
-        /// Is called after each invoked call - has to merge data from dispatched calls into callerOutput
+        /// Is called after each call invoked in beforeCall is completed. Has to merge data from 
+        /// dispatched calls into the afterCall.
         /// </summary>
-        /// <param name="callerOutput">Output of caller, which dispatch calls</param>
-        /// <param name="dispatchedExtensions">Program points connecting dispatched extensions</param>
-        public abstract void CallDispatchMerge(FlowOutputSet callerOutput, IEnumerable<ExtensionPoint> dispatchedExtensions);
-
+        /// <param name="beforeCall">The program point that dispatch calls</param>
+        /// <param name="afterCall">The output set of the program point after the call (ExtensionSinkPoint)</param>
+        /// <param name="dispatchedExtensions">Program point graphs obtained during analysis</param>
+        public abstract void CallDispatchMerge(ProgramPointBase beforeCall, FlowOutputSet afterCall, IEnumerable<ExtensionPoint> dispatchedExtensions);
+        
         /// <summary>
         /// Reports about try block scope start
         /// </summary>

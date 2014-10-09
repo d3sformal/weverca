@@ -296,6 +296,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         /// <summary>
+        /// Visits the subprogram entry program point.
+        /// </summary>
+        /// <param name="p">Visited point</param>
+        public virtual void VisitSubprogramEntry(SubprogramEntryPoint p)
+        {
+            VisitPoint(p);
+        }
+
+        /// <summary>
         /// Visits the native analyzer program point.
         /// </summary>
         /// <param name="p">Visited point</param>

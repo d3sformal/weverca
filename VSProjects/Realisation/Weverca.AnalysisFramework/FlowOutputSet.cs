@@ -29,6 +29,7 @@ using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework
 {
@@ -262,15 +263,27 @@ namespace Weverca.AnalysisFramework
         {
             var snapshots = getSnapshots(inputs);
 
+            // TODO: Snapshot.Extend should accept just SnapshotBase?
             Snapshot.Extend(snapshots);
         }
 
+        /// <inheritdoc />
+        public void ExtendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
+        {
+            var snapshots = getSnapshots(inputs);
+
+            // TODO: Snapshot.Extend should accept just SnapshotBase?
+            Snapshot.ExtendAtSubprogramEntry(snapshots, extendedPoints);
+        }
+
+
+
 
         /// <inheritdoc />
-        public void MergeWithCallLevel(ISnapshotReadonly[] callOutputs)
+        public void MergeWithCallLevel(ProgramPointBase extendedPoint, ISnapshotReadonly[] extensionsOutputs)
         {
-            var snapshots = getSnapshots(callOutputs);
-            Snapshot.MergeWithCallLevel(snapshots);
+            var snapshots = getSnapshots(extensionsOutputs);
+            Snapshot.MergeWithCallLevel(extendedPoint, snapshots);
         }
 
 

@@ -660,7 +660,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </summary>
         /// <param name="callOutputs">Output snapshots of call level</param>
         /// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
-        protected override void mergeWithCallLevel(ISnapshotReadonly[] callOutputs)
+        protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
         {
             SnapshotLogger.append(this, "call merge");
             List<Snapshot> snapshots = new List<Snapshot>(callOutputs.Length);
