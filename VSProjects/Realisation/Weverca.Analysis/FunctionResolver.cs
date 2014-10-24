@@ -863,11 +863,6 @@ namespace Weverca.Analysis
 
         private void setCallBranching(Dictionary<object, FunctionValue> functions)
         {
-            if (functions.Count == 0)
-            {
-                fatalError(true);
-            }
-
             Dictionary<object, FunctionValue> newFunctions = new Dictionary<object, FunctionValue>();
             foreach (var entry in functions)
             {
