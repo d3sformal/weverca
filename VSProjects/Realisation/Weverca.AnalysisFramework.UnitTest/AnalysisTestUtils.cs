@@ -257,6 +257,26 @@ namespace Weverca.AnalysisFramework.UnitTest
     }
     #endregion
 
+
+    /// <summary>
+    /// Enumeration class with special values. This special values can be used for testing whether
+    /// corresponding special values have been computed.
+    /// </summary>
+    internal abstract class SpecialValues 
+    {
+        internal readonly static SpecialValues ANY_BOOLEAN = new AnyBoolean();
+
+        internal abstract Value getValue(FlowOutputSet outputSet);
+
+        private class AnyBoolean : SpecialValues 
+        {
+            internal override Value getValue(FlowOutputSet outputSet) 
+            {
+                return outputSet.AnyBooleanValue;
+            }
+        }
+    }
+
     internal static class AnalysisTestUtils
     {
         /// <summary>
@@ -790,6 +810,53 @@ namespace Weverca.AnalysisFramework.UnitTest
             where T : IComparable, IComparable<T>, IEquatable<T>
         {
             return HasUndefinedValue().HasUndefinedOrValues(expectedValues);
+        }
+
+        internal TestCase HasUndefinedAndSpecialValues(params SpecialValues[] assertedValues)
+        {
+            return HasUndefinedValue().HasSpecialValues(assertedValues);
+        }
+
+        internal TestCase HasSpecialValues(params SpecialValues[] assertedValues) 
+        {
+            _asserts.Add((ppg) =>
+            {
+                var output = GetEndOutput(ppg);
+
+                var variable = output.ReadVariable(new VariableIdentifier(VariableName));
+                var entry = variable.ReadMemory(output.Snapshot);
+
+                var computedValues = entry.PossibleValues.Where(a => !(a is UndefinedValue)).ToArray();
+                var expectedValues = assertedValues.Select(a => a.getValue(output)).ToArray();
+
+                // Check if asserted and computed values are equivalent
+                areAllValuesPresent(computedValues, expectedValues, true);
+                areAllValuesPresent(expectedValues, computedValues, false);
+            });
+
+            return this;
+        }
+
+        private void areAllValuesPresent(Value[] values1, Value[] values2, bool expectedInComputed)
+        {
+            foreach (var value1 in values1)
+            {
+                bool isPresent = false;
+                foreach (var value2 in values2)
+                {
+                    if (value1.GetType() == value2.GetType())
+                    {
+                        isPresent = true;
+                        continue;
+                    }
+                }
+
+                if (!isPresent)
+                    if (expectedInComputed)
+                        Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Variable ${1} has a value {0} that is not asserted. {2}", value1, VariableName, AssertMessage);
+                    else
+                        Microsoft.VisualStudio.TestTools.UnitTesting.Assert.Fail("Variable ${1} has not a value {0} that is asserted. {2}", value1, VariableName, AssertMessage);
+            }
         }
 
         internal TestCase IsXSSDirty()

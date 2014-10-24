@@ -337,11 +337,11 @@ namespace Weverca.AnalysisFramework
 
                 Expression expression;
 
-                if (edge is ConditionalEdge)
+                if (edge.EdgeType == BasicBlockEdgeTypes.CONDITIONAL)
                 {
-                    expression = (edge as ConditionalEdge).Condition;
+                    expression = edge.Condition;
                 }
-                else if (edge is ForEachSpecialEdge)
+                else if (edge.EdgeType == BasicBlockEdgeTypes.FOREACH)
                 {
                     //now is foreach handled without condition processing (edge is added as non conditional)
                     connectConditionLessEdge(parentBlock, edge.To, pendingBlocks);
@@ -388,7 +388,7 @@ namespace Weverca.AnalysisFramework
                     //there has to be assumption condition on default branch
                     // connect default branch to conditional blocks
                     var values = expressionValues.ToArray();
-					var condition = new AssumptionCondition(ConditionForm.SomeNot, expressionParts.ToArray());
+					var condition = new AssumptionCondition(ConditionForm.None, expressionParts.ToArray());
                     var defaultAssumeBlock = _context.CreateAssumeBlock(condition, parentBlock.Default, values);
 
                     //default Assume has to be added as child of all expression blocks

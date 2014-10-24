@@ -197,6 +197,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
         internal AssumePoint(AssumptionCondition condition, IEnumerable<ValuePoint> expressionParts)
         {
+            Assumed = false;
             Condition = condition;
         }
 

@@ -58,9 +58,27 @@ namespace Weverca.Analysis.FlowResolver
         /// </returns>
         public override bool ConfirmAssumption(FlowOutputSet outSet, AssumptionCondition condition, EvaluationLog log)
         {
-            ConditionParts conditionParts = new ConditionParts(condition.Form, outSet, log, condition.Parts);
-
+            // Deprecated code that supported assumptions that are not decomposed using logical operators (&&, ||, xor)
+            // But it had very limited abstract state refinemend
+            /*
+            AssumptionConditionExecuterDepr conditionParts = new AssumptionConditionExecuterDepr(condition.Form, outSet, log, condition.Parts);
             return conditionParts.MakeAssumption(null);
+             */
+
+            // Non-primitive conditions in assumptions are now resolved on the level of control-flow graph
+            PHP.Core.Debug.Assert(condition.Parts.Count() == 1);
+            PHP.Core.Debug.Assert(condition.Form == ConditionForm.All || condition.Form == ConditionForm.None);
+
+            var assumptionExecuter = new AssumptionExecuter(condition.Form, condition.Parts.First().SourceElement, log, outSet);
+            AssumptionExecuter.PossibleValues enterAssumption = assumptionExecuter.IsSatisfied();
+
+            if (enterAssumption == AssumptionExecuter.PossibleValues.OnlyFalse) return false;
+            if (enterAssumption == AssumptionExecuter.PossibleValues.Unknown) 
+            { 
+                 assumptionExecuter.RefineState();
+            }
+
+            return true;
         }
 
         /// <inheritdoc />

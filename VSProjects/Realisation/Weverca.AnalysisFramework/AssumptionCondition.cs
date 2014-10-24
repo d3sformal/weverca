@@ -29,13 +29,12 @@ namespace Weverca.AnalysisFramework
 {
     /// <summary>
     /// Form of condition parts conjunction.
+    /// 
+    /// Note that now the condition is decomposed on the level of CFG => the condition
+    /// has now always just one part and the only admissible forms of the condition are All and None.
     /// </summary>
     public enum ConditionForm
     {
-        /// <summary>
-        /// Any true part is enough.
-        /// </summary>
-        Some,
         /// <summary>
         /// All parts has to be true.
         /// </summary>
@@ -44,6 +43,13 @@ namespace Weverca.AnalysisFramework
         /// None part can be true.
         /// </summary>
         None,
+
+        // The other forms of condition are not admissible now.
+
+        /// <summary>
+        /// Any true part is enough.
+        /// </summary>
+        Some,
         /// <summary>
         /// Some part has to be false.
         /// </summary>

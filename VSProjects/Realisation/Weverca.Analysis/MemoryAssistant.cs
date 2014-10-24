@@ -66,7 +66,7 @@ namespace Weverca.Analysis
                 // If value is AnyValue, it can be any object too, so it can cause an error.
                 Value newValue = Context.AnyValue;
                 newValue = FlagsHandler.CopyFlags(value, newValue);
-                return new MemoryEntry(newValue);
+                return new MemoryEntry(newValue, Context.UndefinedValue);
             }
         }
 
@@ -77,7 +77,7 @@ namespace Weverca.Analysis
             if (value is AnyObjectValue)
             {
                 SetWarning("Possibly undefined property");
-                return new MemoryEntry(Context.AnyValue);
+                return new MemoryEntry(Context.AnyValue, Context.UndefinedValue);
             }
             else if ((value is AnyScalarValue) || (value is AnyArrayValue) || (value is AnyResourceValue))
             {

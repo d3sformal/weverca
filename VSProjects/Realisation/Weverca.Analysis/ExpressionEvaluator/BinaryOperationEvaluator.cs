@@ -183,39 +183,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Evaluates binary operation on the given left and right operands.
-        /// </summary>
-        /// <param name="leftOperand">The left operand of binary operation.</param>
-        /// <param name="binaryOperation">Binary operation to be performed.</param>
-        /// <param name="rightOperand">The right operand of binary operation.</param>
-        /// <returns>Result of performing the binary operation on the operands.</returns>
-        public Value Evaluate(Value leftOperand, Operations binaryOperation, Value rightOperand)
-        {
-            if (binaryOperation == Operations.Concat)
-            {
-                stringConverter.SetContext(flow);
-                return stringConverter.EvaluateConcatenation(leftOperand, rightOperand);
-            }
-
-            /* TODO: Replace logical operations in binary operation visitors with boolean converter
-            booleanConverter.SetContext(OutSet);
-            var booleanValue = booleanConverter.EvaluateLogicalOperation(leftOperand,
-                binaryOperation, rightOperand);
-            if (booleanValue != null)
-            {
-                return booleanValue;
-            }
-             */
-
-            // Gets visitor of left operand
-            leftOperand.Accept(this);
-            Debug.Assert(visitor != null, "Visiting of left operand must return its visitor");
-
-            visitor.SetContext(flow);
-            return visitor.Evaluate(binaryOperation, rightOperand);
-        }
-
-        /// <summary>
         /// Evaluates binary operation on all value combinations of the left and right operands.
         /// </summary>
         /// <param name="leftOperand">Entry with all possible left operands of binary operation.</param>
@@ -254,7 +221,68 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 values.UnionWith(entry.PossibleValues);
             }
 
+            postprocessValues(values);
+
             return new MemoryEntry(values);
+        }
+
+        private void postprocessValues(HashSet<Value> values)
+        {
+            // If the result contains AnyValue, remove all other values except of UndefinedValue
+            var isUndefined = postprocessAnyValues(values);
+
+            // If the result contains both true and false, replace it with AnyBoolean value
+            if ((!isUndefined && values.Count == 2) || (isUndefined && values.Count == 3))
+            {
+                bool isTrue = false;
+                bool isFalse = false;
+                foreach (var value in values)
+                {
+                    var booleanValue = value as ScalarValue<Boolean>;
+                    if (booleanValue == null) continue;
+                    if (!isTrue) isTrue = booleanValue.Value;
+                    if (!isFalse) isFalse = !booleanValue.Value;
+
+                }
+                if (isTrue && isFalse)
+                {
+                    values.Clear();
+                    values.Add(OutSet.AnyBooleanValue);
+                    if (isUndefined)
+                    {
+                        values.Add(OutSet.UndefinedValue);
+                    }
+                }
+            }
+        }
+
+        private bool postprocessAnyValues(HashSet<Value> values)
+        {
+            bool isUndefinedValue = false;
+            var anyValues = new List<AnyValue>();
+            foreach (var value in values)
+            {
+                if (value is AnyValue)
+                {
+                    anyValues.Add((AnyValue)value);
+                }
+                else
+                {
+                    if (!isUndefinedValue)
+                    {
+                        isUndefinedValue = value is UndefinedValue;
+                    }
+                }
+            }
+
+            if (anyValues.Count > 0)
+            {
+                values.Clear();
+                values.UnionWith(anyValues);
+                if (isUndefinedValue) values.Add(OutSet.UndefinedValue);
+            }
+
+            return isUndefinedValue;
         }
 
         #region AbstractValueVisitor Members

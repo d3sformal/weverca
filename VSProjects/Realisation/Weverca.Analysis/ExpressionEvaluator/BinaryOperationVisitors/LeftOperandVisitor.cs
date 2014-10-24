@@ -90,26 +90,6 @@ namespace Weverca.Analysis.ExpressionEvaluator
         }
 
         /// <summary>
-        /// Evaluates binary operation with left operand of this visitor and the given right operand.
-        /// </summary>
-        /// <param name="binaryOperation">Binary operation to be performed.</param>
-        /// <param name="rightOperand">The right operand of binary operation.</param>
-        /// <returns>Result of performing the binary operation on the operands.</returns>
-        public Value Evaluate(Operations binaryOperation, Value rightOperand)
-        {
-            // Sets current operation
-            operation = binaryOperation;
-
-            // Gets type of right operand and evaluate expression for given operation
-            result = null;
-            rightOperand.Accept(this);
-
-            // Returns result of binary operation
-            Debug.Assert(result != null, "The result must be assigned after visiting the value");
-            return result;
-        }
-
-        /// <summary>
         /// Evaluates binary operation with one left operand and all possible values of right operand.
         /// </summary>
         /// <param name="binaryOperation">Binary operation to be performed.</param>

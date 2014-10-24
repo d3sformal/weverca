@@ -75,7 +75,7 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Outgoing conditional edges (their points will be connected as childs via assume blocks)
         /// </summary>
-        internal readonly IEnumerable<IBasicBlockEdge> ConditionalEdges;
+        internal readonly IEnumerable<BasicBlockEdge> ConditionalEdges;
 
         /// <summary>
         /// Outgoing block used as default branch for conditional edges
@@ -100,7 +100,7 @@ namespace Weverca.AnalysisFramework
         /// <param name="outgoingBlocks">Outgoing basic blocks (their points will be connected as current block flow children)</param>
         /// <param name="conditionalEdges">Outgoing conditional edges (their points will be connected as childs via assume blocks)</param>
         /// <param name="defaultBlock">Outgoing block used as default branch for conditional edges</param>
-        private PointsBlock(IEnumerable<BasicBlock> outgoingBlocks, IEnumerable<IBasicBlockEdge> conditionalEdges, BasicBlock defaultBlock)
+        private PointsBlock(IEnumerable<BasicBlock> outgoingBlocks, IEnumerable<BasicBlockEdge> conditionalEdges, BasicBlock defaultBlock)
         {
             OutgoingBlocks = outgoingBlocks;
             ConditionalEdges = conditionalEdges;
@@ -117,7 +117,7 @@ namespace Weverca.AnalysisFramework
         /// <returns>Created block</returns>
         internal static PointsBlock ForPoint(ProgramPointBase createdPoint, IEnumerable<BasicBlock> outgoingBlocks)
         {
-            var pointsBlock = new PointsBlock(outgoingBlocks, new ConditionalEdge[0], null);
+            var pointsBlock = new PointsBlock(outgoingBlocks, new BasicBlockEdge[0], null);
             pointsBlock._containedPoints.Add(createdPoint);
             pointsBlock._needsContraction = false;
             return pointsBlock;
@@ -150,7 +150,7 @@ namespace Weverca.AnalysisFramework
         internal static PointsBlock ForExpression(IEnumerable<ProgramPointBase> expressionPoints)
         {
             //for expression there are no outgoing edges 
-            var pointsBlock = new PointsBlock(new BasicBlock[0], new ConditionalEdge[0], null);
+            var pointsBlock = new PointsBlock(new BasicBlock[0], new BasicBlockEdge[0], null);
             pointsBlock._containedPoints.AddRange(expressionPoints);
 
             return pointsBlock;

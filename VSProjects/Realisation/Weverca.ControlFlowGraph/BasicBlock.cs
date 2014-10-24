@@ -44,17 +44,17 @@ namespace Weverca.ControlFlowGraph
         /// <summary>
         /// The outgoing edges
         /// </summary>
-        public List<IBasicBlockEdge> OutgoingEdges;
+        public List<BasicBlockEdge> OutgoingEdges;
 
         /// <summary>
         /// The incomming edges
         /// </summary>
-        public List<IBasicBlockEdge> IncommingEdges;
+        public List<BasicBlockEdge> IncommingEdges;
 
         /// <summary>
         /// The default branch for the direct unconditional connection between basic blocks
         /// </summary>
-        public DirectEdge DefaultBranch;
+        public BasicBlockEdge DefaultBranch;
 
         private BasicBlock _afterWorklistSegment;
 
@@ -80,8 +80,8 @@ namespace Weverca.ControlFlowGraph
         public BasicBlock()
         {
             Statements = new List<LangElement>();
-            OutgoingEdges = new List<IBasicBlockEdge>();
-            IncommingEdges = new List<IBasicBlockEdge>();
+            OutgoingEdges = new List<BasicBlockEdge>();
+            IncommingEdges = new List<BasicBlockEdge>();
             DefaultBranch = null;
             _afterWorklistSegment = null;
             EndIngTryBlocks = new List<TryBasicBlock>();
@@ -123,7 +123,7 @@ namespace Weverca.ControlFlowGraph
         /// Adds the incomming edge.
         /// </summary>
         /// <param name="edge">The edge.</param>
-        public void AddIncommingEdge(IBasicBlockEdge edge)
+        public void AddIncommingEdge(BasicBlockEdge edge)
         {
             IncommingEdges.Add(edge);
         }
@@ -132,7 +132,7 @@ namespace Weverca.ControlFlowGraph
         /// Adds the outgoing edge.
         /// </summary>
         /// <param name="edge">The edge.</param>
-        public void AddOutgoingEdge(IBasicBlockEdge edge)
+        public void AddOutgoingEdge(BasicBlockEdge edge)
         {
             OutgoingEdges.Add(edge);
         }
@@ -141,7 +141,7 @@ namespace Weverca.ControlFlowGraph
         /// Sets the default branch.
         /// </summary>
         /// <param name="edge">The edge.</param>
-        public void SetDefaultBranch(DirectEdge edge)
+        public void SetDefaultBranch(BasicBlockEdge edge)
         {
             DefaultBranch = edge;
         }
@@ -170,7 +170,7 @@ namespace Weverca.ControlFlowGraph
                 {
                     //For all incoming edges set new location and skip this block
                     BasicBlock newDestination = accBlock.DefaultBranch.To;
-                    foreach (IBasicBlockEdge edge in accBlock.IncommingEdges)
+                    foreach (BasicBlockEdge edge in accBlock.IncommingEdges)
                     {
                         edge.ChangeDestination(newDestination);
                     }
@@ -186,7 +186,7 @@ namespace Weverca.ControlFlowGraph
                 {
                     if (accBlock.OutgoingEdges.Count > 0)
                     {
-                        foreach (IBasicBlockEdge edge in accBlock.OutgoingEdges)
+                        foreach (BasicBlockEdge edge in accBlock.OutgoingEdges)
                         {
                             if (!processed.Contains(edge.To))
                             {
@@ -198,7 +198,7 @@ namespace Weverca.ControlFlowGraph
 
                     if (accBlock.IncommingEdges.Count > 0)
                     {
-                        foreach (IBasicBlockEdge edge in accBlock.IncommingEdges)
+                        foreach (BasicBlockEdge edge in accBlock.IncommingEdges)
                         {
                             if (!processed.Contains(edge.From))
                             {

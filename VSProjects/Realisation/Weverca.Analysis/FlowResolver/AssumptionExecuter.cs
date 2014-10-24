@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2014 Matyas Brenner and David Hauzar
+Copyright (c) 2012-2014 David Hauzar and Matyas Brenner
 
 This file is part of WeVerca.
 
@@ -32,7 +32,7 @@ namespace Weverca.Analysis.FlowResolver
     /// <summary>
     /// Class which holds a context of a part of a condition.
     /// </summary>
-    class ConditionPart
+    class AssumptionExecuter
     {
         #region Enums
 
@@ -60,46 +60,49 @@ namespace Weverca.Analysis.FlowResolver
         #endregion
 
         #region Members
-
-        LangElement conditionPart;
-
-        EvaluationLog log;
-
-        #endregion
-
-        #region Properties
+        /// <summary>
+        /// The AST element corresponding to the condition.
+        /// Note that astElement can be n-ary expression with n > 1. 
+        /// However, it cannot be logical expression (and, or, xor). Logical expressions are eliminated
+        /// in the stage of control-flow graph generation.
+        /// </summary>
+        private readonly LangElement astElement;
 
         /// <summary>
-        /// Gets the condition result.
+        /// The log of evaluation the astElement and its sub-expressions.
         /// </summary>
-        /// <seealso cref="PossibleValues"/>
-        public PossibleValues ConditionResult { get; private set; }
+        private readonly EvaluationLog log;
+
+        private readonly FlowOutputSet flowOutputSet;
+
+        /// <summary>
+        /// The condition form. See <see cref="ConditionForm"/> for more details.
+        /// Note that it can only be ConditionForm.All (the condition is assumed) 
+        /// and ConditionForm.None (the negation of the condition is assumed).
+        /// </summary>
+        private readonly ConditionForm conditionForm;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConditionPart" /> class.
+        /// Initializes a new instance of the <see cref="AssumptionExecuter" /> class.
+        /// 
+        /// Note that astElement can be n-ary expression with n > 1. 
+        /// However, it cannot be logical expression (and, or, xor). Logical expressions are eliminated
+        /// in the stage of control-flow graph generation.
         /// </summary>
-        /// <param name="conditionPart">The definition of the part of the condition.</param>
-        /// <param name="log">The log of evaluation of the conditions' parts.</param>
+        /// <param name="conditionForm">The condition form. See <see cref="ConditionForm"/> for more details.</param>
+        /// <param name="astElement">The AST element corresponding to the condition.</param>
+        /// <param name="log">The log of evaluation the astElement and its sub-expressions.</param>
         /// <param name="flowOutputSet">The Output set of a program point.</param>
-        public ConditionPart(LangElement conditionPart, EvaluationLog log, FlowOutputSet flowOutputSet)
+        public AssumptionExecuter(ConditionForm conditionForm, LangElement astElement, EvaluationLog log, FlowOutputSet flowOutputSet)
         {
-            this.conditionPart = conditionPart;
+            this.flowOutputSet = flowOutputSet;
+            this.astElement = astElement;
+            this.conditionForm = conditionForm;
             this.log = log;
-
-            var snapshotEntry = log.ReadSnapshotEntry(conditionPart);
-            if (snapshotEntry != null)
-            {
-                MemoryEntry evaluatedPart = snapshotEntry.ReadMemory(flowOutputSet.Snapshot);
-                ConditionResult = GetConditionResult(flowOutputSet, evaluatedPart);
-            }
-            else
-            {
-                ConditionResult = PossibleValues.Unknown;
-            }
         }
 
         #endregion
@@ -107,52 +110,40 @@ namespace Weverca.Analysis.FlowResolver
         #region Methods
 
         /// <summary>
-        /// Assumes the condition according to the possible results of the condition. The state of the inner block will be set up.
+        /// Determines whether the assumption can be satisfied.
         /// </summary>
-        /// <param name="conditionForm">The condition form. See <see cref="ConditionForm"/> for more details.</param>
-        /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
-        /// <param name="flowOutputSet">The Output set of a program point.</param>
-        /// <exception cref="System.NotSupportedException"></exception>
-        public void AssumeCondition(ConditionForm conditionForm, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
+        /// <returns></returns>
+        public PossibleValues IsSatisfied()
         {
-            var variables = GetVariables();
-            if (variables.Count() == 0)
+            var snapshotEntry = log.ReadSnapshotEntry(astElement);
+            if (snapshotEntry != null)
             {
-                //There is nothing to assume because there is no variable used in the expression.
-                return;
-            }
-
-            if (ConditionResult == PossibleValues.OnlyTrue)
-            {
-                AssumeTrue(conditionPart, memoryContext, flowOutputSet);
-            }
-            else if (ConditionResult == PossibleValues.OnlyFalse)
-            {
-                AssumeFalse(conditionPart, memoryContext, flowOutputSet);
-            }
-            else if (ConditionResult == PossibleValues.Unknown)
-            {
-                if (conditionForm == ConditionForm.All)
-                {
-                    AssumeTrue(conditionPart, memoryContext, flowOutputSet);
-                }
-                else if (conditionForm == ConditionForm.None)
-                {
-                    AssumeFalse(conditionPart, memoryContext, flowOutputSet);
-                }
-                else
-                {
-                    //run both assumptions and merge results
-                    MemoryContext memoryContextTrue = new MemoryContext(log, flowOutputSet);
-                    AssumeTrue(conditionPart, memoryContextTrue, flowOutputSet);
-
-                    AssumeFalse(conditionPart, memoryContext, flowOutputSet);
-                    memoryContext.UnionMerge(memoryContextTrue);
-                }
+                MemoryEntry evaluatedPart = snapshotEntry.ReadMemory(flowOutputSet.Snapshot);
+                return GetConditionResult(conditionForm, flowOutputSet, evaluatedPart);
             }
             else
             {
-                throw new NotSupportedException(string.Format("Condition result \"{0}\" is not supported.", ConditionResult));
+                return PossibleValues.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Refines the state according Assumes the condition according to the possible results of the condition. The state of the inner block will be set up.
+        /// </summary>
+        /// <exception cref="System.NotSupportedException"></exception>
+        public void RefineState()
+        {
+            if (conditionForm == ConditionForm.All)
+            {
+                AssumeTrue(astElement, new MemoryContext(log, flowOutputSet), flowOutputSet);
+            }
+            else if (conditionForm == ConditionForm.None)
+            {
+                AssumeFalse(astElement, new MemoryContext(log, flowOutputSet), flowOutputSet);
+            }
+            else
+            {
+                throw new NotSupportedException(string.Format("Condition form \"{0}\" is not supported.", conditionForm));
             }
         }
 
@@ -161,22 +152,10 @@ namespace Weverca.Analysis.FlowResolver
         #region Private Methods
 
         /// <summary>
-        /// Gets the variables used in the condition.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerable<VariableUse> GetVariables()
-        {
-            VariableVisitor visitor = new VariableVisitor();
-            conditionPart.VisitMe(visitor);
-
-            return visitor.Variables;
-        }
-
-        /// <summary>
         /// Gets the condition result.
         /// </summary>
         /// <returns>see <see cref="PossibleValues"/> for details of possible result.</returns>
-        PossibleValues GetConditionResult(FlowOutputSet flowOutputSet, MemoryEntry evaluatedPart)
+        private PossibleValues GetConditionResult(ConditionForm conditionForm, FlowOutputSet flowOutputSet, MemoryEntry evaluatedPart)
         {
             var converter = new BooleanConverter(flowOutputSet.Snapshot);
             var value = converter.EvaluateToBoolean(evaluatedPart);
@@ -185,7 +164,10 @@ namespace Weverca.Analysis.FlowResolver
             {
                 return PossibleValues.Unknown;
             }
-            else if (value.Value)
+
+            var flipResult = (conditionForm == ConditionForm.None) ? true : false;
+
+            if (value.Value ^ flipResult)
             {
                 return PossibleValues.OnlyTrue;
             }
@@ -201,7 +183,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="langElement">The language element to assume.</param>
         /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
         /// <param name="flowOutputSet">The Output set of a program point.</param>
-        void AssumeTrue(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
+        private void AssumeTrue(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
@@ -230,25 +212,6 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     AssumeLesserThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, true, memoryContext, flowOutputSet.Snapshot);
                 }
-                else if (binaryExpression.PublicOperation == Operations.And ||
-                    binaryExpression.PublicOperation == Operations.Or ||
-                    binaryExpression.PublicOperation == Operations.Xor)
-                {
-                    ConditionForm conditionForm = ConditionForm.All;
-                    if (binaryExpression.PublicOperation == Operations.Or)
-                    {
-                        conditionForm = ConditionForm.Some;
-                    }
-                    else if (binaryExpression.PublicOperation == Operations.Xor)
-                    {
-                        conditionForm = ConditionForm.ExactlyOne;
-                    }
-
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
-                    ConditionParts condition = new ConditionParts(conditionForm, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
-                    condition.MakeAssumption(currentMemoryContext);
-                    memoryContext.UnionMerge(currentMemoryContext);
-                }
             }
             else if (langElement is UnaryEx)
             {
@@ -258,10 +221,10 @@ namespace Weverca.Analysis.FlowResolver
                     AssumeFalse(unaryExpression.Expr, memoryContext, flowOutputSet);
                 }
             }
-            else if (langElement is DirectVarUse)
+            else if (langElement is VarLikeConstructUse)
             {
-                DirectVarUse directVarUse = (DirectVarUse)langElement;
-                AssumeTrueDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
+                var directVarUse = (VarLikeConstructUse)langElement;
+                AssumeTrueElementUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
             } else if (langElement is IssetEx) 
             {
                 IssetEx issetEx = (IssetEx)langElement;
@@ -275,7 +238,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="langElement">The language element to assume.</param>
         /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
         /// <param name="flowOutputSet">The Output set of a program point.</param>
-        void AssumeFalse(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
+        private void AssumeFalse(LangElement langElement, MemoryContext memoryContext, FlowOutputSet flowOutputSet)
         {
             if (langElement is BinaryEx)
             {
@@ -304,25 +267,6 @@ namespace Weverca.Analysis.FlowResolver
                 {
                     AssumeGreaterThan(binaryExpression.LeftExpr, binaryExpression.RightExpr, false, memoryContext, flowOutputSet.Snapshot);
                 }
-                else if (binaryExpression.PublicOperation == Operations.And ||
-                    binaryExpression.PublicOperation == Operations.Or ||
-                    binaryExpression.PublicOperation == Operations.Xor)
-                {
-                    ConditionForm conditionForm = ConditionForm.SomeNot; // !(a AND b) --> !a OR !b
-                    if (binaryExpression.PublicOperation == Operations.Or)
-                    {
-                        conditionForm = ConditionForm.None; // !(a OR b) --> !a AND !b
-                    }
-                    else if (binaryExpression.PublicOperation == Operations.Xor)
-                    {
-                        conditionForm = ConditionForm.NotExactlyOne; //!(a XOR b) --> !((a OR b) AND !(a AND b)) --> (!a AND !b) OR (a AND b)
-                    }
-
-                    MemoryContext currentMemoryContext = new MemoryContext(log, flowOutputSet);
-                    ConditionParts condition = new ConditionParts(conditionForm, flowOutputSet, log, binaryExpression.LeftExpr, binaryExpression.RightExpr);
-                    condition.MakeAssumption(currentMemoryContext);
-                    memoryContext.UnionMerge(currentMemoryContext);
-                }
             }
             else if (langElement is UnaryEx)
             {
@@ -332,10 +276,10 @@ namespace Weverca.Analysis.FlowResolver
                     AssumeTrue(unaryExpression.Expr, memoryContext, flowOutputSet);
                 }
             }
-            else if (langElement is DirectVarUse)
+            else if (langElement is VarLikeConstructUse)
             {
-                DirectVarUse directVarUse = (DirectVarUse)langElement;
-                AssumeFalseDirectVarUse(directVarUse, memoryContext, flowOutputSet.Snapshot);
+                var variableLikeUse = (VarLikeConstructUse)langElement;
+                AssumeFalseElementUse(variableLikeUse, memoryContext, flowOutputSet.Snapshot);
             } else if (langElement is IssetEx) 
             {
                 IssetEx issetEx = (IssetEx)langElement;
@@ -349,7 +293,7 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="left">The left side of the expression.</param>
         /// <param name="right">The right side of the expression.</param>
         /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
-        void AssumeNotEquals(LangElement left, LangElement right, MemoryContext memoryContext)
+        private void AssumeNotEquals(LangElement left, LangElement right, MemoryContext memoryContext)
         {
             //There is nothing to do.
             //if (right is DirectVarUse && !(left is DirectVarUse))
@@ -367,54 +311,57 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="right">The right side of the expression.</param>
         /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
         /// <param name="flowOutputSet">The Output set of a program point.</param>
-        void AssumeEquals(LangElement left, LangElement right, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        private void AssumeEquals(LangElement left, LangElement right, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            if (right is DirectVarUse && !(left is DirectVarUse))
+            if (right is VarLikeConstructUse && !(left is VarLikeConstructUse))
             {
                 AssumeEquals(right, left, memoryContext, flowOutputSet);
             }
-            else if (left is DirectVarUse)
+            else if (left is VarLikeConstructUse)
             {
-                var leftVar = (DirectVarUse)left;
+                var leftVar = (VarLikeConstructUse)left;
                 // this is probably not neceserry {{
                 if (right is StringLiteral)
                 {
                     var rigthValue = (StringLiteral)right;
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateString((string)rigthValue.Value));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateString((string)rigthValue.Value));
                 }
                 else if (right is BoolLiteral)
                 {
                     var rigthValue = (BoolLiteral)right;
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateBool((bool)rigthValue.Value));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateBool((bool)rigthValue.Value));
                 }
                 else if (right is DoubleLiteral)
                 {
                     var rigthValue = (DoubleLiteral)right;
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateDouble((double)rigthValue.Value));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateDouble((double)rigthValue.Value));
                 }
                 else if (right is IntLiteral)
                 {
                     var rigthValue = (IntLiteral)right;
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateInt((int)rigthValue.Value));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateInt((int)rigthValue.Value));
                 }
                 else if (right is LongIntLiteral)
                 {
                     var rigthValue = (LongIntLiteral)right;
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLong((long)rigthValue.Value));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateLong((long)rigthValue.Value));
                 }
                 else if (right is NullLiteral)
                 {
                     //TODO: Is that proper null?
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.UndefinedValue);
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.UndefinedValue);
                 }
                 //}}
                 else
                 {
+                    memoryContext.IntersectionAssign(leftVar, right);
+                    /*
                     var snapshotEntry = log.ReadSnapshotEntry(right);
                     if (snapshotEntry != null)
                     {
-                        memoryContext.IntersectionAssign(leftVar.VarName, leftVar, snapshotEntry.ReadMemory(flowOutputSet).PossibleValues);
+                        memoryContext.IntersectionAssign(leftVar, snapshotEntry.ReadMemory(flowOutputSet).PossibleValues);
                     }
+                     * */
                 }
             }
         }
@@ -427,19 +374,19 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
         /// <param name="flowOutputSet">The Output set of a program point.</param>
         /// <param name="equal">if set to <c>true</c> greater or equals is assumed.</param>
-        void AssumeGreaterThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        private void AssumeGreaterThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            if (right is DirectVarUse && !(left is DirectVarUse))
+            if (right is VarLikeConstructUse && !(left is VarLikeConstructUse))
             {
                 AssumeLesserThan(right, left, equal, memoryContext, flowOutputSet);
             }
-            else if (left is DirectVarUse)
+            else if (left is VarLikeConstructUse)
             {
-                var leftVar = (DirectVarUse)left;
+                var leftVar = (VarLikeConstructUse)left;
                 //this is probably not necessary{
                 if (right is StringLiteral)
                 {
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.AnyStringValue);
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.AnyStringValue);
                 }
                 else if (right is DoubleLiteral)
                 {
@@ -449,7 +396,7 @@ namespace Weverca.Analysis.FlowResolver
                     {
                         bound += double.Epsilon;
                     }
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(bound, double.MaxValue));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateFloatInterval(bound, double.MaxValue));
                 }
                 else if (right is IntLiteral)
                 {
@@ -459,7 +406,7 @@ namespace Weverca.Analysis.FlowResolver
                     {
                         bound++;
                     }
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(bound, int.MaxValue));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateIntegerInterval(bound, int.MaxValue));
                 }
                 else if (right is LongIntLiteral)
                 {
@@ -469,7 +416,7 @@ namespace Weverca.Analysis.FlowResolver
                     {
                         bound++;
                     }
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(bound, long.MaxValue));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateLongintInterval(bound, long.MaxValue));
                 }
                 //}
                 else
@@ -491,7 +438,7 @@ namespace Weverca.Analysis.FlowResolver
                                 minInt++;
                             }
 
-                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(minInt.Value, int.MaxValue));
+                            memoryContext.IntersectionAssign(leftVar, memoryContext.CreateIntegerInterval(minInt.Value, int.MaxValue));
                         }
                         else if (minLong.HasValue)
                         {
@@ -500,7 +447,7 @@ namespace Weverca.Analysis.FlowResolver
                                 minLong++;
                             }
 
-                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(minLong.Value, long.MaxValue));
+                            memoryContext.IntersectionAssign(leftVar, memoryContext.CreateLongintInterval(minLong.Value, long.MaxValue));
                         }
                         else if (minDouble.HasValue)
                         {
@@ -509,7 +456,7 @@ namespace Weverca.Analysis.FlowResolver
                                 minDouble += double.Epsilon;
                             }
 
-                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(minDouble.Value, double.MaxValue));
+                            memoryContext.IntersectionAssign(leftVar, memoryContext.CreateFloatInterval(minDouble.Value, double.MaxValue));
                         }
                     }
                 }
@@ -524,19 +471,19 @@ namespace Weverca.Analysis.FlowResolver
         /// <param name="equal">if set to <c>true</c> lesser or equals is assumed.</param>
         /// <param name="memoryContext">The memory context of the code block and it's variables.</param>
         /// <param name="flowOutputSet">The Output set of a program point.</param>
-        void AssumeLesserThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        private void AssumeLesserThan(LangElement left, LangElement right, bool equal, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            if (right is DirectVarUse && !(left is DirectVarUse))
+            if (right is VarLikeConstructUse && !(left is VarLikeConstructUse))
             {
                 AssumeGreaterThan(right, left, equal, memoryContext, flowOutputSet);
             }
-            else if (left is DirectVarUse)
+            else if (left is VarLikeConstructUse)
             {
-                var leftVar = (DirectVarUse)left;
+                var leftVar = (VarLikeConstructUse)left;
                 //this is probably not necessary{
                 if (right is StringLiteral)
                 {
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.AnyStringValue);
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.AnyStringValue);
                 }
                 else if (right is DoubleLiteral)
                 {
@@ -546,7 +493,7 @@ namespace Weverca.Analysis.FlowResolver
                     {
                         bound -= double.Epsilon;
                     }
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, bound));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateFloatInterval(double.MinValue, bound));
                 }
                 else if (right is IntLiteral)
                 {
@@ -556,7 +503,7 @@ namespace Weverca.Analysis.FlowResolver
                     {
                         bound--;
                     }
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(int.MinValue, bound));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateIntegerInterval(int.MinValue, bound));
                 }
                 else if (right is LongIntLiteral)
                 {
@@ -566,7 +513,7 @@ namespace Weverca.Analysis.FlowResolver
                     {
                         bound--;
                     }
-                    memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
+                    memoryContext.IntersectionAssign(leftVar, memoryContext.CreateLongintInterval(long.MinValue, bound));
                 }
                 //}
                 else
@@ -587,7 +534,7 @@ namespace Weverca.Analysis.FlowResolver
                                 maxInt--;
                             }
 
-                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateIntegerInterval(int.MinValue, maxInt.Value));
+                            memoryContext.IntersectionAssign(leftVar, memoryContext.CreateIntegerInterval(int.MinValue, maxInt.Value));
                         }
                         else if (maxLong.HasValue)
                         {
@@ -596,7 +543,7 @@ namespace Weverca.Analysis.FlowResolver
                                 maxLong--;
                             }
 
-                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateLongintInterval(long.MinValue, maxLong.Value));
+                            memoryContext.IntersectionAssign(leftVar, memoryContext.CreateLongintInterval(long.MinValue, maxLong.Value));
                         }
                         else if (maxDouble.HasValue)
                         {
@@ -605,36 +552,36 @@ namespace Weverca.Analysis.FlowResolver
                                 maxDouble -= double.Epsilon;
                             }
 
-                            memoryContext.IntersectionAssign(leftVar.VarName, leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
+                            memoryContext.IntersectionAssign(leftVar, memoryContext.CreateFloatInterval(double.MinValue, maxDouble.Value));
                         }
                     }
                 }
             }
         }
 
-        void AssumeIsset(IssetEx issetEx, MemoryContext memoryContext, SnapshotBase flowOutputSet, bool assumeTrue)
+        private void AssumeIsset(IssetEx issetEx, MemoryContext memoryContext, SnapshotBase flowOutputSet, bool assumeTrue)
         {
             foreach (var variable in issetEx.VarList)
             {
-                if (variable is DirectVarUse) 
+                if (variable is VarLikeConstructUse)
                 {
-                    var dirVariable = (DirectVarUse) variable;
+                    var varUse = (VarLikeConstructUse)variable;
                     if (assumeTrue)
-                        memoryContext.RemoveUndefinedValue(dirVariable.VarName, dirVariable);
+                        memoryContext.RemoveUndefinedValue(varUse);
                     else
-                        memoryContext.AssignUndefinedValue(dirVariable.VarName);
+                        memoryContext.AssignUndefinedValue(varUse);
                 }
             }
         }
 
-        void AssumeTrueDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        private void AssumeTrueElementUse(VarLikeConstructUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            memoryContext.AssignTrueEvaluable(directVarUse.VarName, directVarUse);
+            memoryContext.AssignTrueEvaluable(directVarUse);
         }
 
-        void AssumeFalseDirectVarUse(DirectVarUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
+        private void AssumeFalseElementUse(VarLikeConstructUse directVarUse, MemoryContext memoryContext, SnapshotBase flowOutputSet)
         {
-            memoryContext.AssignFalseEvaluable(directVarUse.VarName, directVarUse);
+            memoryContext.AssignFalseEvaluable(directVarUse);
         }
 
         #endregion

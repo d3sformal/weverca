@@ -88,13 +88,24 @@ namespace Weverca.Analysis
             EntryInput.GetVariable(new VariableIdentifier(variable), true).WriteMemory(EntryInput.Snapshot , new MemoryEntry(value));        
         }
 
-        private void initTaintedVariable(string name)
+        private void initTaintedArray(string name)
         {
+            // Get the variable
             var varName = new VariableName(name);
-            var value = EntryInput.AnyArrayValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
             EntryInput.FetchFromGlobal(varName);
             var variable = EntryInput.GetVariable(new VariableIdentifier(varName), true);
-            variable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(value));
+
+            // Create array and write it into the variable
+            var array = EntryInput.CreateArray();
+            array.SetInfo(new Flags(Flags.CreateDirtyFlags()));
+            variable.WriteMemory(EntryInput.Snapshot, new MemoryEntry(array));
+
+            // Create tainted any value
+            var anyValue = EntryInput.AnyValue.SetInfo(new Flags(Flags.CreateDirtyFlags()));
+
+            // Write tainted anyvalue to unknown field of the array (now stored in the variable)
+            var entry = variable.ReadIndex(EntryInput.Snapshot, MemberIdentifier.getAnyMemberIdentifier());
+            entry.WriteMemory(EntryInput.Snapshot, new MemoryEntry(anyValue));
         }
 
 
@@ -103,14 +114,14 @@ namespace Weverca.Analysis
         /// </summary>
         protected void GlobalsInitializer()
         {
-            initTaintedVariable("_POST");
-            initTaintedVariable("_GET");
-            initTaintedVariable("_SERVER");
-            initTaintedVariable("_COOKIE");
-            initTaintedVariable("_SESSION");
-            initTaintedVariable("_FILES");
-            initTaintedVariable("_REQUEST");
-            initTaintedVariable("GLOBALS");
+            initTaintedArray("_POST");
+            initTaintedArray("_GET");
+            initTaintedArray("_SERVER");
+            initTaintedArray("_COOKIE");
+            initTaintedArray("_SESSION");
+            initTaintedArray("_FILES");
+            initTaintedArray("_REQUEST");
+            initTaintedArray("GLOBALS");
 
             initVariable("_ENV",EntryInput.AnyArrayValue);
             initVariable("php_errormsg",EntryInput.AnyStringValue);

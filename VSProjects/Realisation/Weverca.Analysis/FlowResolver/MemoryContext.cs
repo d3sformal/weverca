@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2014 Matyas Brenner and David Hauzar
+Copyright (c) 2012-2014 David Hauzar and Matyas Brenner
 
 This file is part of WeVerca.
 
@@ -62,137 +62,124 @@ namespace Weverca.Analysis.FlowResolver
 
         #region Methods
 
-        /// <summary>
-        /// Assigns the variable values held in this class to the flowOutputSet.
-        /// </summary>
-        /// <param name="flowOutputSet">The flow output set where the values will be assigned.</param>
-        public void AssignToSnapshot(SnapshotBase flowOutputSet)
-        {
-            foreach (var variableValue in variableValues)
-            {
-                var variableInfo = flowOutputSet.GetVariable(new VariableIdentifier(variableValue.Key));
-                MemoryEntry values = new MemoryEntry(variableValue.Value.ToArray());
-                variableInfo.WriteMemory(flowOutputSet, values);
-            }
-        }
-
-        /// <summary>
-        /// Merges other instance into this one.
-        /// Values for the variables are being united.
-        /// </summary>
-        /// <param name="other">The memory context to merged.</param>
-        public void UnionMerge(MemoryContext other)
-        {
-            foreach (var variable in other.variableValues)
-            {
-                if (!variableValues.ContainsKey(variable.Key))
-                {
-                    variableValues.Add(variable.Key, variable.Value);
-                }
-                else
-                {
-                    variableValues[variable.Key].AddRange(variable.Value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Merges other instance into this one.
-        /// Values for the variables are being intersected.
-        /// </summary>
-        /// <param name="other">The memory context to merge.</param>
-        public void IntersectionMerge(MemoryContext other)
-        {
-            foreach (var variable in other.variableValues)
-            {
-                if (!variableValues.ContainsKey(variable.Key))
-                {
-                    variableValues.Add(variable.Key, variable.Value);
-                }
-                else
-                {
-                    foreach (var newValue in variable.Value)
-                    {
-                        IntersectValues(variableValues[variable.Key], newValue);
-                    }
-                }
-            }
-        }
-
-        public void IntersectionAssign(VariableName variableName, LangElement element, IEnumerable<Value> values)
+        public void IntersectionAssign(LangElement element, IEnumerable<Value> values)
         {
             foreach (var value in values)
             {
-                IntersectionAssign(variableName, element, value);
+                IntersectionAssign(element, value);
             }
+        }
+
+        public void IntersectionAssign(LangElement first, LangElement second)
+        {
+            var variableInfoFirst = log.GetSnapshotEntry(first);
+            if (variableInfoFirst == null) return;
+            var memoryEntryFirst = variableInfoFirst.ReadMemory(valueFactory.Snapshot);
+            if (memoryEntryFirst == null) return;
+
+            var variableInfoSecond = log.ReadSnapshotEntry(second);
+            if (variableInfoSecond == null) return;
+            var memoryEntrySecond= variableInfoSecond.ReadMemory(valueFactory.Snapshot);
+            if (memoryEntrySecond == null) return;
+            
+            var elementValues = new List<Value>(memoryEntryFirst.PossibleValues);
+
+            elementValues = IntersectValues(elementValues, memoryEntrySecond.PossibleValues);
+
+            variableInfoFirst.WriteMemory(valueFactory.Snapshot, new MemoryEntry(elementValues.ToArray()));
+            var variableInfoSecondWrite = log.GetSnapshotEntry(second);
+            if (variableInfoSecondWrite != null)
+                variableInfoSecondWrite.WriteMemory(valueFactory.Snapshot, new MemoryEntry(elementValues.ToArray()));
+
         }
 
         /// <summary>
         /// Assign a new value for a variable.
         /// New value will be intersected with values already registered.
         /// </summary>
-        /// <param name="variableName">The name of the variable.</param>
+        /// <param name="variable">The name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
         /// <param name="value">The value which will be assigned to the variable.</param>
-        public void IntersectionAssign(VariableName variableName, LangElement element, Value value)
+        public void IntersectionAssign(LangElement element, Value value)
         {
-            AddValuesFromSnapshot(variableName, element);
+            var variableInfo = log.GetSnapshotEntry(element);
+            if (variableInfo == null) return;
+            var memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
+            if (memoryEntry == null || memoryEntry.PossibleValues == null) return;
+            var elementValues = new List<Value>(memoryEntry.PossibleValues);
 
-            IntersectValues(variableValues[variableName], value);
+            IntersectValues(elementValues, value);
+            //write to memory entry new values
+            variableInfo.WriteMemory(valueFactory.Snapshot, new MemoryEntry(elementValues.ToArray()));
         }
+
         /// <summary>
-        /// Removes the undefined value from the list of possible values of the variable variableName.
+        /// Removes the undefined value from the list of possible values of the element.
         /// </summary>
-        /// <param name='variableName'>
-        /// The name of the variable which name will is removed.
-        /// </param>
         /// <param name='element'>
-        /// Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.
+        /// The AST element which values are restricted - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.
         /// </param>
-        public void RemoveUndefinedValue(VariableName variableName, LangElement element) 
+        public void RemoveUndefinedValue(LangElement element)
         {
-            AddValuesFromSnapshot(variableName, element);
+            var variableInfo = log.GetSnapshotEntry(element);
 
-            variableValues[variableName].RemoveAll(a => a is UndefinedValue);
+            if (variableInfo != null)
+            {
+                var values = GetValues(variableInfo);
+                if (values != null)
+                {
+                    values.RemoveAll(a => a is UndefinedValue);
+                    variableInfo.WriteMemory(valueFactory.Snapshot, new MemoryEntry(values.ToArray()));
+                }
+            }
         }
 
         /// <summary>
-        /// Assigns the undefined value to the variable variableName.
+        /// Assigns the undefined value to the AST element element.
         /// </summary>
-        /// <param name='variableName'>
-        /// The name of the variable which is assigned.
+        /// <param name='element'>
+        /// The AST element which values are restricted - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.
         /// </param>
-        public void AssignUndefinedValue(VariableName variableName) 
+        public void AssignUndefinedValue(LangElement element)
         {
-            var undefList = new List<Value>();
-            undefList.Add(valueFactory.UndefinedValue);
-            if (!variableValues.ContainsKey(variableName))
+            var variableInfo = log.GetSnapshotEntry(element);
+
+            if (variableInfo != null)
             {
-                variableValues.Add(variableName, undefList);
-            } else 
-            {
-                variableValues[variableName] = undefList;
+                variableInfo.WriteMemory(valueFactory.Snapshot, new MemoryEntry(valueFactory.UndefinedValue));
             }
+        }
+
+
+        private List<Value> GetValues(ReadSnapshotEntryBase variable)
+        {
+            MemoryEntry memoryEntry = variable.ReadMemory(valueFactory.Snapshot);
+            if (memoryEntry != null && memoryEntry.PossibleValues != null)
+            {
+                var values = new List<Value>(memoryEntry.PossibleValues.Count());
+                values.AddRange(memoryEntry.PossibleValues);
+                return values;
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Assigns the values which are evaluable as <c>true</c> to the variable.
         /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
-        public void AssignTrueEvaluable(VariableName variableName, LangElement element)
+        public void AssignTrueEvaluable(LangElement element)
         {
-            AssignEvaluable(variableName, element, true);
+            AssignEvaluable(element, true);
         }
 
         /// <summary>
-        /// Assigns the values which are evaluable as <c>false</c> to the variable.
+        /// Assigns the values which are evaluable as <c>true</c> to the variable.
         /// </summary>
-        /// <param name="variableName">Name of the variable.</param>
         /// <param name="element">Language element from which is the variable being accessed - Used for gaining original evaluation of the variable via <see cref="EvaluationLog"/>.</param>
-        public void AssignFalseEvaluable(VariableName variableName, LangElement element)
+        public void AssignFalseEvaluable(LangElement element)
         {
-            AssignEvaluable(variableName, element, false);
+            AssignEvaluable(element, false);
         }
 
         #endregion
@@ -247,23 +234,6 @@ namespace Weverca.Analysis.FlowResolver
 
         #region private methods
 
-        private void AddValuesFromSnapshot(VariableName variableName, LangElement element)
-        {
-            if (!variableValues.ContainsKey(variableName))
-            {
-                variableValues.Add(variableName, new List<Value>());
-                var variableInfo = log.ReadSnapshotEntry(element);
-                if (variableInfo != null)
-                {
-                    MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
-                    if (memoryEntry != null && memoryEntry.PossibleValues != null)
-                    {
-                        variableValues[variableName].AddRange(memoryEntry.PossibleValues);
-                    }
-                }
-            }
-        }
-
         bool ToBoolean(SnapshotBase snapshot, Value value, bool defaultValue)
         {
             var converter = new BooleanConverter(snapshot);
@@ -278,26 +248,134 @@ namespace Weverca.Analysis.FlowResolver
             }
         }
 
-        void AssignEvaluable(VariableName variableName, LangElement element, bool desiredEvaluation)
+        void AssignEvaluable(LangElement element, bool desiredEvaluation)
         {
-            var variableInfo = log.ReadSnapshotEntry(element);
+            var variableInfo = log.GetSnapshotEntry(element);
             if (variableInfo != null)
             {
                 MemoryEntry memoryEntry = variableInfo.ReadMemory(valueFactory.Snapshot);
                 if (memoryEntry != null && memoryEntry.PossibleValues != null)
                 {
                     var possibleValues = memoryEntry.PossibleValues.Where(a => ToBoolean(valueFactory.Snapshot, a, desiredEvaluation) == desiredEvaluation);
-
-                    if (!variableValues.ContainsKey(variableName))
+                    var possibleValuesUnique = new HashSet<Value>(possibleValues);
+                    var isAnyBooleanValue = memoryEntry.PossibleValues.Any(a => a is AnyBooleanValue);
+                    if (isAnyBooleanValue)
                     {
-                        variableValues.Add(variableName, possibleValues.ToList());
+                        possibleValuesUnique.Add(valueFactory.CreateBool(desiredEvaluation));
                     }
-                    else
+
+                    variableInfo.WriteMemory(valueFactory.Snapshot, new MemoryEntry(possibleValuesUnique));
+                    var temp = variableInfo.ReadMemory(valueFactory.Snapshot);
+                }
+            }
+        }
+
+        List<Value> IntersectValues(IEnumerable<Value> leftValues, IEnumerable<Value> rightValues)
+        {
+            var result = new List<Value>();
+
+            // AnyValue on left or right side
+            var leftAny = leftValues.Any(a => a.GetType() == typeof(AnyValue));
+            var rightAny = rightValues.Any(a => a.GetType() == typeof(AnyValue));
+
+            if (leftAny && rightAny)
+            {
+                result.Add(valueFactory.Snapshot.AnyValue);
+                return result;
+            }
+
+            if (leftAny)
+            {
+                result.AddRange(rightValues);
+                return result;
+            }
+
+            if (rightAny)
+            {
+                result.AddRange(leftValues);
+                return result;
+            }
+
+
+            var leftAnyValues = leftValues.Where(a => a is AnyValue);
+            var rightAnyValues = leftValues.Where(a => a is AnyValue);
+            
+
+            // Intersect boolean values in case of AnyBoolean
+            var leftAnyBoolean = leftAnyValues.Any(a => a is AnyBooleanValue);
+            var rightAnyBoolean = rightAnyValues.Any(a => a is AnyBooleanValue);
+            if (leftAnyBoolean && rightAnyBoolean)
+            {
+                result.Add(valueFactory.Snapshot.AnyBooleanValue);
+            }
+            else if (leftAnyBoolean)
+            {
+                result.AddRange(rightValues.Where(a => a is ScalarValue<bool>));
+            }
+            else if (rightAnyBoolean)
+            {
+                result.AddRange(leftValues.Where(a => a is ScalarValue<bool>));
+            }
+
+            // Intersect string values in case of AnyString
+            var leftAnyString = leftAnyValues.Any(a => a is AnyStringValue);
+            var rightAnyString = rightAnyValues.Any(a => a is AnyStringValue);
+            if (leftAnyString && rightAnyString)
+            {
+                result.Add(valueFactory.Snapshot.AnyStringValue);
+            }
+            else if (leftAnyString)
+            {
+                result.AddRange(rightValues.Where(a => a is StringValue));
+            }
+            else if (rightAnyString)
+            {
+                result.AddRange(leftValues.Where(a => a is StringValue));
+            }
+            
+
+            // Intersect numeric values in case of AnyBoolean and numeric interval values
+            var leftAnyNumeric = leftAnyValues.Where(a => a is AnyNumericValue);
+            var rightAnyNumeric = rightAnyValues.Where(a => a is AnyNumericValue);
+            if (leftAnyNumeric.Count() > 0 && rightAnyNumeric.Count() > 0)
+            {
+                result.AddRange(leftAnyNumeric);
+                result.AddRange(rightAnyNumeric);
+            }
+            else if (leftAnyNumeric.Count() > 0)
+            {
+                result.AddRange(rightValues.Where(a => a is NumericValue));
+            }
+            else if (rightAnyNumeric.Count() > 0)
+            {
+                result.AddRange(leftValues.Where(a => a is NumericValue));
+            }
+            else
+            {
+                // intersect interval values
+                var leftIntervalValues = leftValues.Where(a => a is IntervalValue).Select(a => (IntervalValue)a);
+                var rightIntervalValues = rightValues.Where(a => a is IntervalValue).Select(a => (IntervalValue)a);
+                foreach (var leftInterval in leftIntervalValues)
+                {
+                    foreach (var rightInterval in rightIntervalValues)
                     {
-                        variableValues[variableName] = possibleValues.ToList();
+                        // intersect two intervals
+                        var rightIntervalList = new List<IntervalValue>(1);
+                        rightIntervalList.Add(rightInterval);
+                        var intersected = IntersectIntervals(leftInterval, rightIntervalList);
+                        // if the intersection is not empty interval, add to the result
+                        if (!(intersected is UndefinedValue))
+                            result.Add(intersected);
                     }
                 }
             }
+
+            // Intersect non-interval values
+            result.AddRange(leftValues.Intersect(rightValues));
+
+            
+
+            return result;
         }
 
         void IntersectValues(List<Value> values, Value newValue)
@@ -308,8 +386,12 @@ namespace Weverca.Analysis.FlowResolver
                 //If there is a precise value already present, the newValue should be one of them.
                 values.Clear();
                 values.Add(newValue);
+                return;
             }
-            else if (newValue is IntervalValue)
+
+
+
+            if (newValue is IntervalValue)
             {
                 FloatIntervalValue interval = TypeConversion.ToFloatInterval(valueFactory, (IntervalValue)newValue);
                 if (interval != null)
@@ -347,6 +429,8 @@ namespace Weverca.Analysis.FlowResolver
 
         bool ToRemove(Value value, FloatIntervalValue interval)
         {
+            if (value is UndefinedValue) return true;
+
             var visitor = new ToFloatConversionVisitor(valueFactory);
             value.Accept(visitor);
             var floatValue = visitor.Result;
@@ -448,6 +532,7 @@ namespace Weverca.Analysis.FlowResolver
             }
             else
             {
+                // Empty interval
                 return valueFactory.UndefinedValue;
             }
         }

@@ -658,52 +658,33 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
             foreach (var snapshotEntry in entries)
             {
-                if (snapshotEntry.IsDefined(OutSnapshot))
-                {
-                    var entry = snapshotEntry.ReadMemory(OutSnapshot);
-                    Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
-                        "Memory entry must always have at least one value");
+                var entry = snapshotEntry.ReadMemory(OutSnapshot);
+                Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
+                    "Memory entry must always have at least one value");
 
-                    foreach (var value in entry.PossibleValues)
+                foreach (var value in entry.PossibleValues)
+                {
+                    var undefinedValue = value as UndefinedValue;
+                    if (undefinedValue != null)
                     {
-                        var undefinedValue = value as UndefinedValue;
-                        if (undefinedValue != null)
+                        if (isAlwaysSet)
                         {
-                            if (isAlwaysSet)
+                            isAlwaysSet = false;
+                            if (!isAlwaysUnset)
                             {
-                                isAlwaysSet = false;
-                                if (!isAlwaysUnset)
-                                {
-                                    return new[] { OutSet.AnyBooleanValue };
-                                }
-                            }
-                        }
-                        else if (value is AnyValue)
-                        {
-                            // Value can be null ot not null too.
-                            return new[] { OutSet.AnyBooleanValue };
-                        }
-                        else
-                        {
-                            if (isAlwaysUnset)
-                            {
-                                isAlwaysUnset = false;
-                                if (!isAlwaysSet)
-                                {
-                                    return new[] { OutSet.AnyBooleanValue };
-                                }
+                                return new[] { OutSet.AnyBooleanValue };
                             }
                         }
                     }
-                }
-                else
-                {
-                    if (isAlwaysSet)
+                    else
                     {
-                        isAlwaysSet = false;
-                        if (!isAlwaysUnset)
+                        if (isAlwaysUnset)
                         {
-                            return new[] { OutSet.AnyBooleanValue };
+                            isAlwaysUnset = false;
+                            if (!isAlwaysSet)
+                            {
+                                return new[] { OutSet.AnyBooleanValue };
+                            }
                         }
                     }
                 }

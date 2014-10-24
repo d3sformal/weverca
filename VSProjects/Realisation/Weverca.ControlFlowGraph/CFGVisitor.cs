@@ -22,7 +22,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Diagnostics;
 
 using PHP.Core;
 using PHP.Core.AST;
@@ -171,9 +170,9 @@ namespace Weverca.ControlFlowGraph
         /// <param name="gotoBlock">The goto block.</param>
         void _asociateGoto(BasicBlock gotoBlock)
         {
-            System.Diagnostics.Debug.Assert(labelBlock != null);
+            PHP.Core.Debug.Assert(labelBlock != null);
 
-            DirectEdge.MakeNewAndConnect(gotoBlock, labelBlock);
+            BasicBlockEdge.ConnectDirectEdge(gotoBlock, labelBlock);
         }
     }
 
@@ -280,7 +279,7 @@ namespace Weverca.ControlFlowGraph
                 statement.VisitMe(this);
             }
             var peek = functionSinkStack.Peek();
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, functionSinkStack.Peek());
             /*   foreach (var block in throwBlocks.ElementAt(0)) {
                    block.Statements.RemoveLast();
                    DirectEdge.MakeNewAndConnect(block, functionSinkStack.Peek());
@@ -319,7 +318,7 @@ namespace Weverca.ControlFlowGraph
             labelDictionary.GetOrCreateLabelData(x.Name, x.Position)
                 .AsociateLabel(labelBlock, x.Position);
 
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, labelBlock);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, labelBlock);
             currentBasicBlock = labelBlock;
 
             //Next line could be used for label visualization, label statement shouldnt be in resulting cgf
@@ -348,9 +347,14 @@ namespace Weverca.ControlFlowGraph
 
         /// <summary>
         /// Visits IfStmt and constructs if branch basic block.
+        /// 
+        /// Does not decompose the condition expression using logical operations (&&, ||, and xor).
+        /// Note that this is no longer supported - analyzer now expects that the expression is decomposed
+        /// on the level of CFG and it does not deal with logical operations explicitly.
+        /// See <see cref="VisitIfStmt"/>.
         /// </summary>
         /// <param name="x">IfStmt</param>
-        public override void VisitIfStmt(IfStmt x)
+        public void VisitIfStmtOld(IfStmt x)
         {
             //Merge destination for if and else branch
             BasicBlock bottomBox = new BasicBlock();
@@ -373,7 +377,54 @@ namespace Weverca.ControlFlowGraph
 
             //Connect else branch to bottomBox
             //Must be here becouse in the construc phase we dont know whether the else block would split in the future
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, bottomBox);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, bottomBox);
+            currentBasicBlock = bottomBox;
+        }
+
+        /// <summary>
+        /// Visits IfStmt and constructs if branch basic block.
+        /// 
+        /// Decomposes the condition expression using logical operations with respect to shortcircuit evaluation.
+        /// </summary>
+        /// <param name="x">IfStmt</param>
+        //public override void VisitIfStmt(IfStmt x)
+        public override void VisitIfStmt(IfStmt x)
+        {
+            //Merge destination for if and else branch
+            BasicBlock bottomBox = new BasicBlock();
+
+            currentBasicBlock.CreateWorklistSegment(bottomBox);
+
+            foreach (var cond in x.Conditions)
+            {
+                if (cond.Condition != null)
+                {
+                    //IF or ELSEIF branch (then branch)
+                    var thenBranchBlock = new BasicBlock();
+                    var elseBranchBlock = new BasicBlock();
+
+                    // Decompose the condition
+                    BasicBlockEdge.ConnectConditionalBranching(cond.Condition, currentBasicBlock, thenBranchBlock, elseBranchBlock);
+
+                    // Create CFG for then branch
+                    currentBasicBlock = thenBranchBlock;
+                    cond.Statement.VisitMe(this);
+
+                    // Connect the end of then branch to the bottom box
+                    BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, bottomBox);
+                    
+                    currentBasicBlock = elseBranchBlock;
+                }
+                else
+                {
+                    //ELSE branch
+                    cond.Statement.VisitMe(this);
+                }
+            }
+
+            //Connect then end of else branch to bottomBox
+            //Must be here becouse in the construc phase we dont know whether the else block would split in the future
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, bottomBox);
             currentBasicBlock = bottomBox;
         }
 
@@ -386,14 +437,13 @@ namespace Weverca.ControlFlowGraph
         private BasicBlock constructIfBranch(BasicBlock bottomBox, ConditionalStmt condition)
         {
             BasicBlock thenBranchBlock = new BasicBlock();
-            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, thenBranchBlock, condition.Condition);
-
             BasicBlock elseBranchBlock = new BasicBlock();
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, elseBranchBlock);
+            BasicBlockEdge.ConnectConditionalBranching(condition.Condition, currentBasicBlock, thenBranchBlock, elseBranchBlock, false);
+
 
             currentBasicBlock = thenBranchBlock;
             condition.Statement.VisitMe(this);
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, bottomBox);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, bottomBox);
 
             return elseBranchBlock;
         }
@@ -478,7 +528,7 @@ namespace Weverca.ControlFlowGraph
 
             //Connects return destination
             functionSinkStack.Pop();
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSink);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, functionSink);
 
             //Loads previous labels
             currentBasicBlock = current;
@@ -503,11 +553,11 @@ namespace Weverca.ControlFlowGraph
             foreachHead.CreateWorklistSegment(foreachSink);
 
             //Input edge to the foreach statement
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, foreachHead);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, foreachHead);
             foreachHead.AddElement(x);
 
             //Conditional edge to the foreach body
-            ForEachSpecialEdge.MakeNewAndConnect(foreachHead, foreachBody);
+            BasicBlockEdge.ConnectForeachEdge(foreachHead, foreachBody);
 
             //Visits foreach body
             loopData.Push(new LoopData(foreachHead, foreachSink));
@@ -516,10 +566,10 @@ namespace Weverca.ControlFlowGraph
             loopData.Pop();
 
             //Connect end of foreach with foreach head
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, foreachHead);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, foreachHead);
 
             //Output edge to the sink
-            DirectEdge.MakeNewAndConnect(foreachHead, foreachSink);
+            BasicBlockEdge.ConnectDirectEdge(foreachHead, foreachSink);
             currentBasicBlock = foreachSink;
         }
 
@@ -536,36 +586,32 @@ namespace Weverca.ControlFlowGraph
 
             currentBasicBlock.CreateWorklistSegment(forEnd);
 
-            //Adds initial connection from previos to the test block
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, forTest);
-
-            if (x.CondExList.Count > 0)
-            {
-                //Adds connection into the loop body
-                Expression forCondition = constructSimpleCondition(x.CondExList);
-                ConditionalEdge.MakeNewAndConnect(forTest, forBody, forCondition);
-            }
-            else
-            {
-                //if there is no condition
-                ConditionalEdge.MakeNewAndConnect(forTest, forBody, new BoolLiteral(Position.Invalid, true));
-            }
-            //Adds connection behind the cycle
-            DirectEdge.MakeNewAndConnect(forTest, forEnd);
-
-            //Loop body
+            // Create CFG for initialization of the for cycle
             VisitExpressionList(x.InitExList);
-            currentBasicBlock = forBody;
+
+            //Adds initial connection from initialization to the test block
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, forTest);
+
+            // Connects test block with body of the for cycle and end of the for cycle
+            var forCondition = (x.CondExList.Count > 0) ? constructSimpleCondition(x.CondExList) : new BoolLiteral(Position.Invalid, true);
+            var currBl = currentBasicBlock;
+            BasicBlockEdge.ConnectConditionalBranching(forCondition, forTest, forBody, forEnd);
+
+            // Create CFG for Loop body
             loopData.Push(new LoopData(forIncrement, forEnd));
+            currentBasicBlock = forBody;
             x.Body.VisitMe(this);
             loopData.Pop();
-            BasicBlock forBodyEnd = currentBasicBlock;
+
+            // Connect end of the loop body to the increment
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, forIncrement);
+
+            // Generate CFG for the loop increment
             currentBasicBlock = forIncrement;
-            DirectEdge.MakeNewAndConnect(forBodyEnd, currentBasicBlock);
             VisitExpressionList(x.ActionExList);
 
-            //Adds loop connection to test block
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, forTest);
+            // Connect for increment to the test block
+            BasicBlockEdge.ConnectDirectEdge(forIncrement, forTest);
 
             currentBasicBlock = forEnd;
         }
@@ -578,148 +624,41 @@ namespace Weverca.ControlFlowGraph
         {
             BasicBlock aboveLoop = currentBasicBlock;
             BasicBlock startLoop = new BasicBlock();
+            BasicBlock underLoop = new BasicBlock();
+
+            aboveLoop.CreateWorklistSegment(underLoop);
+            
+            // Connect above loop to start of the loop and under loop
             if (x.LoopType == WhileStmt.Type.While)
             {
-                ConditionalEdge.MakeNewAndConnect(aboveLoop, startLoop, CopyElement(x.CondExpr));
+                // while => above loop is connected conditionally to start of the loop and under loop
+                BasicBlockEdge.ConnectConditionalBranching(DeepCopyAstExpressionCopyVisitor(x.CondExpr), currentBasicBlock, startLoop, underLoop);
             }
             else
             {
-                DirectEdge.MakeNewAndConnect(aboveLoop, startLoop);
+                // do ... while => above loop is connected just to the start of the loop
+                BasicBlockEdge.ConnectDirectEdge(aboveLoop, startLoop);
             }
-            currentBasicBlock = startLoop;
-            BasicBlock underLoop = new BasicBlock();
+
+            // Generate CFG for loop body
             loopData.Push(new LoopData(startLoop, underLoop));
+            currentBasicBlock = startLoop;
             x.Body.VisitMe(this);
             loopData.Pop();
 
-            BasicBlock endLoop = currentBasicBlock;
-
-
-            DirectEdge.MakeNewAndConnect(endLoop, underLoop);
-
-            if (x.LoopType == WhileStmt.Type.While)
-            {
-                DirectEdge.MakeNewAndConnect(aboveLoop, underLoop);
-            }
-            ConditionalEdge.MakeNewAndConnect(endLoop, startLoop, x.CondExpr);
+            // Connect the end of loop body to start of the loop and under the loop
+            BasicBlockEdge.ConnectConditionalBranching(x.CondExpr, currentBasicBlock, startLoop, underLoop);
             
             currentBasicBlock = underLoop;
-
-            aboveLoop.CreateWorklistSegment(underLoop);
         }
 
         #endregion
 
-        private Expression CopyElement(Expression e)
-        {
-
-            //known bug
-            //when creating cfg from function of method, we need global code
-            //probably need lot of refacotring
-            //or getting the global code for every function or method
-            if (this.graph.globalCode == null)
-                return e;
-            StringBuilder s = new StringBuilder("<? ");
-            if (e.Position.FirstLine == 1)
-            {
-                for (int i = 3; i < e.Position.FirstOffset; i++)
-                {
-                    s.Append(" ");
-                }
-            }
-            else
-            {
-                for (int i = 3 + e.Position.FirstLine-1 + e.Position.FirstColumn-1; i < e.Position.FirstOffset; i++)
-                {
-                    s.Append(" ");
-                }
-            
-                for (int i = 1; i < e.Position.FirstLine; i++)
-                {
-                    s.Append("\n");
-                }
-            
-                for (int i = 1; i < e.Position.FirstColumn; i++)
-                {
-                    s.Append(" ");
-                }
-            }
-            s.Append(this.graph.globalCode.SourceUnit.GetSourceCode(e.Position));
-            s.Append(" ?>");
-
-            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(graph.File.FullName)),
-                new FullPath(graph.File.FullName));
-            SyntaxParser parser = new SyntaxParser(sourceFile, s.ToString());
-            parser.Parse();
-            return (parser.Ast.Statements[0] as ExpressionStmt).Expression;
-            
-        }
-
         #region switch
-
-        
-        public void VisitSwitchStmtOld(SwitchStmt x)
-        {
-            BasicBlock above = currentBasicBlock;
-            BasicBlock last;
-            bool containsDefault = false;
-            currentBasicBlock = new BasicBlock();
-            //in case of switch statement, continue and break means the same so we make the edge always to the block under the switch
-            BasicBlock underLoop = new BasicBlock();
-            loopData.Push(new LoopData(underLoop, underLoop));
-
-
-
-            for (int j = 0; j < x.SwitchItems.Count; j++)
-            {
-
-                var switchItem = x.SwitchItems[j];
-
-                if (switchItem.GetType() == typeof(CaseItem))
-                {
-                    var right = ((CaseItem)switchItem).CaseVal;
-                    BinaryEx condition = new BinaryEx(right.Position, Operations.Equal, x.SwitchValue, right);
-                    graph.cfgAddedElements.Add(condition);
-                    ConditionalEdge.MakeNewAndConnect(above, currentBasicBlock, condition);
-                }
-                else
-                {
-                    bool hasMoreDefaults = false;
-                    for (int i = j + 1; i < x.SwitchItems.Count; i++)
-                    {
-                        if (x.SwitchItems[i].GetType() == typeof(DefaultItem))
-                        {
-                            hasMoreDefaults = true;
-                        }
-                    }
-
-                    if (hasMoreDefaults == false)
-                    {
-                        //conecting only to last default
-                        DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
-                    }
-                    containsDefault = true;
-
-                }
-
-
-                switchItem.VisitMe(this);
-                last = currentBasicBlock;
-                currentBasicBlock = new BasicBlock();
-                DirectEdge.MakeNewAndConnect(last, currentBasicBlock);
-
-            }
-            loopData.Pop();
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
-            currentBasicBlock = underLoop;
-            if (containsDefault == false)
-            {
-                DirectEdge.MakeNewAndConnect(above, currentBasicBlock);
-            }
-        }
 
         /// <summary>
         /// Visits switch statement and builds controlflow graf for switch construct.
+        /// 
         /// </summary>
         /// <param name="x">SwitchStmt</param>
         public override void VisitSwitchStmt(SwitchStmt x)
@@ -740,90 +679,67 @@ namespace Weverca.ControlFlowGraph
                 var switchItem = x.SwitchItems[j];
                 var caseItem = switchItem as CaseItem;
 
+                // The basic block corresponding to current switch item
+                var switchBlock = new BasicBlock();
+
+                // Connect previous switch item (implicitly, subsequent switch items are connected - break must 
+                // be there to force the flow to not go to subsequent switch item)
                 if (j > 0)
+                    BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, switchBlock);
+
+                if (caseItem == null) 
                 {
-                    // Connect to previous case block
-                    aboveCurrentCaseBlock = connectCurrentCaseToPreviousCase(aboveCurrentCaseBlock, caseItem == null);
-                }
+                    // Default branch
 
-                if ((caseItem = switchItem as CaseItem) != null)
-                {
-                    // Create condition of the current case branch
-                    var right = caseItem.CaseVal;
-                    BinaryEx condition = new BinaryEx(right.Position, Operations.Equal, x.SwitchValue, right);
-                    graph.cfgAddedElements.Add(condition);
-
-                    // Connect the current case branch to the basic block above it
-                    ConditionalEdge.MakeNewAndConnect(aboveCurrentCaseBlock, currentBasicBlock, condition);
-
-                    // Process the current case branch
-                    switchItem.VisitMe(this);
-                }
+                    // Just mark the last default branch
+                    lastDefaultStartBlock = switchBlock;
+                } 
                 else
                 {
-                    lastDefaultStartBlock = currentBasicBlock;
+                    // Case branch
 
-                    // Process the current default branch
-                    switchItem.VisitMe(this);
+                    // Create condition of the current case branch
+                    BinaryEx condition = new BinaryEx(caseItem.CaseVal.Position, Operations.Equal, x.SwitchValue, caseItem.CaseVal);
+                    graph.cfgAddedElements.Add(condition);
 
-                    lastDefaultEndBlock = currentBasicBlock;
+                    // Create conditional branching: true condition goes to the case, else condition goes above the next switch item
+                    var elseBlock = new BasicBlock();
+                    BasicBlockEdge.ConnectConditionalBranching(condition, aboveCurrentCaseBlock, switchBlock, elseBlock);
+                    aboveCurrentCaseBlock = elseBlock;
                 }
 
-                
+                // Builds CFG for the body of the switch element
+                currentBasicBlock = switchBlock;
+                switchItem.VisitMe(this);
+
+                if (caseItem == null)
+                    // Just to mark the last default branch
+                    lastDefaultEndBlock = currentBasicBlock;
 
             }
+
             loopData.Pop();
 
             if (lastDefaultStartBlock == null) // No default branch
             {
                 // Connect the last case with the code under the switch
-                DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
+                BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, underLoop);
                 // Connect the else of the last case with the code under the switch
-                DirectEdge.MakeNewAndConnect(aboveCurrentCaseBlock, underLoop);
+                BasicBlockEdge.ConnectDirectEdge(aboveCurrentCaseBlock, underLoop);
             }
             else // There is default branch
             {
                 // The last default branch is the else of the last case
-                DirectEdge.MakeNewAndConnect(aboveCurrentCaseBlock, lastDefaultStartBlock);
+                BasicBlockEdge.ConnectDirectEdge(aboveCurrentCaseBlock, lastDefaultStartBlock);
                 if (lastDefaultEndBlock.DefaultBranch == null) // break/continue in the default branch
                     // Connect it with the code under the swithch
-                    DirectEdge.MakeNewAndConnect(lastDefaultEndBlock, underLoop);
+                    BasicBlockEdge.ConnectDirectEdge(lastDefaultEndBlock, underLoop);
                 else // no break/continue in the default branch
                     // Connect the last case with the code under the switch
-                    DirectEdge.MakeNewAndConnect(currentBasicBlock, underLoop);
+                    BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, underLoop);
             }
 
             currentBasicBlock = underLoop;
-        }
-
-        private BasicBlock connectCurrentCaseToPreviousCase(BasicBlock aboveCurrentCaseBlock, bool defaultBranch)
-        {
-            if (defaultBranch)
-            {
-                var newBasicBlock = new BasicBlock();
-                DirectEdge.MakeNewAndConnect(currentBasicBlock, newBasicBlock);
-                currentBasicBlock = newBasicBlock;
-            }
-            else
-            {
-                // Create empty basic block corresponding to the else branch of the previus case statement
-                var elseBasicBlock = new BasicBlock();
-                DirectEdge.MakeNewAndConnect(aboveCurrentCaseBlock, elseBasicBlock);
-                aboveCurrentCaseBlock = elseBasicBlock;
-
-                // Create block corresponding to the current case branch 
-                var currentCaseBasicBlock = new BasicBlock();
-
-                // Connect the current case branch to the previous branch
-                // currentBasicBlock contains the last basic block in the previous case or 
-                // empty basic block if the previous case ends with break or continue
-                DirectEdge.MakeNewAndConnect(currentBasicBlock, currentCaseBasicBlock);
-
-                // The statements of the current case will be processed
-                currentBasicBlock = currentCaseBasicBlock;
-            }
-
-            return aboveCurrentCaseBlock;
         }
 
         /// <summary>
@@ -882,7 +798,7 @@ namespace Weverca.ControlFlowGraph
                         {
                             target = loopData.Peek().ContinueTarget;
                         }
-                        DirectEdge.MakeNewAndConnect(currentBasicBlock, target);
+                        BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, target);
                     }
                     else
                     {
@@ -900,7 +816,8 @@ namespace Weverca.ControlFlowGraph
                             }
                             BinaryEx condition = new BinaryEx(x.Position, Operations.Equal, new IntLiteral(Position.Invalid, breakValue), x.Expression);
                             graph.cfgAddedElements.Add(condition);
-                            ConditionalEdge.MakeNewAndConnect(currentBasicBlock, target, condition);
+                            BasicBlockEdge.ConnectConditionalBranching(condition, currentBasicBlock, target, new BasicBlock());
+                            //BasicBlockEdge.AddConditionalEdge(currentBasicBlock, target, condition);
                             ++breakValue;
                         }
                     }
@@ -908,10 +825,10 @@ namespace Weverca.ControlFlowGraph
 
                 case JumpStmt.Types.Return:
 
-                    System.Diagnostics.Debug.Assert(functionSinkStack.Count > 0);
+                    PHP.Core.Debug.Assert(functionSinkStack.Count > 0);
 
                     currentBasicBlock.AddElement(x);
-                    DirectEdge.MakeNewAndConnect(currentBasicBlock, functionSinkStack.Peek());
+                    BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, functionSinkStack.Peek());
 
                     currentBasicBlock = new BasicBlock();
 
@@ -1028,13 +945,13 @@ namespace Weverca.ControlFlowGraph
 
             TryBasicBlock tryBlock = new TryBasicBlock();
 
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, tryBlock);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, tryBlock);
             currentBasicBlock = tryBlock;
 
             //throwBlocks.Push(new List<BasicBlock>());
             VisitStatementList(x.Statements);
             currentBasicBlock.EndIngTryBlocks.Add(tryBlock);
-            DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
+            BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, followingBlock);
 
 
             foreach (var catchItem in x.Catches)
@@ -1045,7 +962,7 @@ namespace Weverca.ControlFlowGraph
                 tryBlock.catchBlocks.Add(catchBlock);
                 currentBasicBlock = catchBlock;
                 VisitStatementList(catchItem.Statements);
-                DirectEdge.MakeNewAndConnect(currentBasicBlock, followingBlock);
+                BasicBlockEdge.ConnectDirectEdge(currentBasicBlock, followingBlock);
             }
 
 
@@ -1071,6 +988,76 @@ namespace Weverca.ControlFlowGraph
         #endregion
 
         #region other
+
+        /// <summary>
+        /// Makes a deep copy of the AST expression e in a parameter using AST Copy visitor.
+        /// 
+        /// See <see cref="DeepCopyAstExpressionByParsing"/> to other method
+        /// of creating a copy of an expression.
+        /// 
+        /// This method of copying expressions is faster but the visitor is not mature and can contain bugs.
+        /// </summary>
+        /// <param name="e">expression to copy.</param>
+        /// <returns></returns>
+        public static Expression DeepCopyAstExpressionCopyVisitor(Expression e)
+        {
+            var expressionCopyVisitor = new ExpressionCopyVisitor();
+            return expressionCopyVisitor.MakeDeepCopy(e);
+        }
+
+        /// <summary>
+        /// Makes a deep copy of the AST expression e in a parameter.
+        /// Finds the code of e and than creates a copy of e by parsing the code.
+        /// 
+        /// See <see cref="DeepCopyAstExpressionCopyVisitor"/> to other method
+        /// of creating a copy of an expression.
+        /// </summary>
+        /// <param name="e">expression to copy.</param>
+        /// <returns></returns>
+        private static Expression DeepCopyAstExpressionByParsing(ControlFlowGraph graph, Expression e)
+        {
+
+            //known bug
+            //when creating cfg from function of method, we need global code
+            //probably need lot of refacotring
+            //or getting the global code for every function or method
+            if (graph.globalCode == null)
+                return e;
+            StringBuilder s = new StringBuilder("<? ");
+            if (e.Position.FirstLine == 1)
+            {
+                for (int i = 3; i < e.Position.FirstOffset; i++)
+                {
+                    s.Append(" ");
+                }
+            }
+            else
+            {
+                for (int i = 3 + e.Position.FirstLine - 1 + e.Position.FirstColumn - 1; i < e.Position.FirstOffset; i++)
+                {
+                    s.Append(" ");
+                }
+
+                for (int i = 1; i < e.Position.FirstLine; i++)
+                {
+                    s.Append("\n");
+                }
+
+                for (int i = 1; i < e.Position.FirstColumn; i++)
+                {
+                    s.Append(" ");
+                }
+            }
+            s.Append(graph.globalCode.SourceUnit.GetSourceCode(e.Position));
+            s.Append(" ?>");
+
+            var sourceFile = new PhpSourceFile(new FullPath(Path.GetDirectoryName(graph.File.FullName)),
+                new FullPath(graph.File.FullName));
+            SyntaxParser parser = new SyntaxParser(sourceFile, s.ToString());
+            parser.Parse();
+            return (parser.Ast.Statements[0] as ExpressionStmt).Expression;
+
+        }
 
         /// <summary>
         /// Constructs the simple condition from the given list.

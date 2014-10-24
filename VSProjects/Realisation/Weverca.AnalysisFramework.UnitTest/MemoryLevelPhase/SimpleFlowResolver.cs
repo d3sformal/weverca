@@ -61,8 +61,8 @@ namespace Weverca.AnalysisFramework.UnitTest
                     willAssume = needsAll(outSet.Snapshot, condition.Parts);
                     break;
                 case ConditionForm.None:
-                    willAssume = needsNone(outSet.Snapshot, condition.Parts);
-                    break;
+                    //willAssume = needsNone(outSet.Snapshot, condition.Parts);
+                    //break;
                 case ConditionForm.SomeNot:
                     willAssume = needsSomeNot(outSet.Snapshot, condition.Parts);
                     break;

@@ -105,58 +105,6 @@ if($unknown){
 $call_result=$call_name('TEst');
 ".AssertVariable("call_result").HasValues("TEST", "test");
 
-        readonly static TestCase IncompleteEvaluation_CASE = @"
-function action(){
-    global $result;
-
-    $result='action done';   
-    return false;
-}
-
-$result='no action';
-true || action();
-$result1=$result;
-
-$result='no action';
-false || action();
-$result2=$result;
-"
-            .AssertVariable("result1").HasValues("no action")
-            .AssertVariable("result2").HasValues("action done");
-
-
-        readonly static TestCase IncompleteEvaluationDie_CASE = @"
-$result='before die';
-false || die();
-
-$result='after die';
-"
-    .AssertVariable("result").HasValues("before die");
-
-        readonly static TestCase IncompleteEvaluationDontDie_CASE = @"
-$result='before die';
-true || die();
-
-$result='after die';
-"
-            .AssertVariable("result").HasValues("after die");
-
-        readonly static TestCase IncompleteEvaluationMay_CASE = @"
-function action(){
-    global $result;
-
-    $result='action done';   
-    return false;
-}
-
-$result='no action';
-$b = true;
-if ($unknown) $b = false;
-$b || action();
-"
-            .AssertVariable("result").HasValues("no action", "action done")
-            .Analysis(Analyses.WevercaAnalysisTest);
-
 
         readonly static TestCase SingleBranchedIndirectCall_CASE = @"
 $call_name='strtoupper';
@@ -239,25 +187,13 @@ if($$Var==$Value){
  .Analysis(Analyses.SimpleAnalysisTest)
  .SetNonDeterministic("VarA", "VarB");
 
-        /// <summary>
-        /// Testing of shortened behaviour as result of BUG report, when Evaluation log doesn't have operand values
-        /// </summary>
-        readonly static TestCase MultiOR_CASE = @"
-$a = 'abc';
-
-if (!$a or $b or $c)
-{
-    die();
-}
-
-".AssertVariable("a").HasUndefinedOrValues("abc").Analysis(Analyses.WevercaAnalysisTest);
-
 
         readonly static TestCase CallEqualsAssumption_CASE = @"
 if($unknown==strtolower(""TestValue"")){
     $Output=$unknown;
 }
 ".AssertVariable("Output").HasUndefinedOrValues("testvalue");
+ //.Analysis(Analyses.WevercaAnalysisTest);
 
         // TODO test: get this test working also on WevercaAnalysis
         readonly static TestCase ReverseCallEqualsAssumption_CASE = @"
@@ -736,6 +672,22 @@ setGlobal();
 setLocal();
 
 ".AssertVariable("a").HasValues("ValueA");
+
+        #region For cycles
+
+        readonly static TestCase ForCycle_CASE = @"
+for ($i = 0; $i <= 2; $i++) {
+    $result = ($i == 0);
+}
+".AssertVariable("result").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN);
+        [TestMethod]
+        public void ForCycle()
+        {
+            AnalysisTestUtils.RunTestCase(ForCycle_CASE);
+        }
+
+        #endregion
+
 
         /// <summary>
         /// Tests for cases where the program points of a function are shared among different calls of such function.
@@ -1859,7 +1811,6 @@ $f = 1;
 .AssertVariable("d").HasValues(1)
 .AssertVariable("e").HasValues(1)
 .AssertVariable("f").HasValues(1);
-
         [TestMethod]
         public void SwitchWithoutBreak()
         {
@@ -1996,6 +1947,417 @@ $g = 1;
         {
             AnalysisTestUtils.RunTestCase(SwitchWithOneBreak3_CASE);
         }
+
+        #endregion
+
+        #region Short circuit evaluation
+
+        /// <summary>
+        /// Testing of shortened behaviour as result of BUG report, when Evaluation log doesn't have operand values
+        /// </summary>
+        readonly static TestCase MultiOR_CASE = @"
+$a = 'abc';
+
+if (!$a or $b or $c)
+{
+    die();
+}
+".AssertVariable("a").HasUndefinedOrValues("abc").Analysis(Analyses.WevercaAnalysisTest);
+
+        readonly static TestCase IncompleteEvaluation_CASE = @"
+function action(){
+    global $result;
+
+    $result='action done';   
+    return false;
+}
+
+$result='no action';
+true || action();
+$result1=$result;
+
+$result='no action';
+false || action();
+$result2=$result;
+"
+            .AssertVariable("result1").HasValues("no action")
+            .AssertVariable("result2").HasValues("action done");
+
+
+        readonly static TestCase IncompleteEvaluationDie_CASE = @"
+$result='before die';
+false || die();
+
+$result='after die';
+"
+    .AssertVariable("result").HasValues("before die");
+
+        readonly static TestCase IncompleteEvaluationDontDie_CASE = @"
+$result='before die';
+true || die();
+
+$result='after die';
+"
+            .AssertVariable("result").HasValues("after die");
+
+        readonly static TestCase IncompleteEvaluationMay_CASE = @"
+function action(){
+    global $result;
+
+    $result='action done';   
+    return false;
+}
+
+$result='no action';
+$b = true;
+if ($unknown) $b = false;
+$b || action();
+"
+            .AssertVariable("result").HasValues("no action", "action done")
+            .Analysis(Analyses.WevercaAnalysisTest);
+
+        readonly static TestCase IncompleteEvaluationElseIf_CASE = @"
+$a = ($_GET[1]) ? true : false;
+$b = $_GET[1] ? true : false;
+
+if ($a) {
+    $result1 = ($a == true);
+    $result2 = ($b == true);
+}
+elseif ($a || $b) {
+    $result3 = ($a == true);
+    $result4 = ($b == true);
+} else {
+    $result5 = ($a == true);
+    $result6 = ($b == true);
+}
+
+"
+            .AssertVariable("result1").HasUndefinedAndValues(true)
+            .AssertVariable("result2").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result3").HasUndefinedAndValues(false)
+            .AssertVariable("result4").HasUndefinedAndValues(true)
+            .AssertVariable("result5").HasUndefinedAndValues(false)
+            .AssertVariable("result6").HasUndefinedAndValues(false)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void IncompleteEvaluationElseIf()
+        {
+            AnalysisTestUtils.RunTestCase(IncompleteEvaluationElseIf_CASE);
+        }
+
+        readonly static TestCase IncompleteEvaluationXor_CASE = @"
+$a = ($_GET[1]) ? true : false;
+$b = $_GET[1] ? true : false;
+
+if ($a xor $b) {
+    $result1 = ($a == true);
+    $result2 = ($b == true);
+}
+
+$a = true;
+if ($a xor $b) {
+//if (($a && !$b) || (!$a && $b)) {
+    $result3 = ($b == true);
+}
+
+$a = ($_GET[1]) ? true : false;
+if ($a && ($a xor $b)) {
+    $result4 = ($a == true);
+    $result5 = ($b == true);
+}
+
+if ($a xor ($a || $b)) {
+}
+
+"
+            .AssertVariable("result1").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result2").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result3").HasUndefinedAndValues(false)
+            .AssertVariable("result4").HasUndefinedAndValues(true)
+            .AssertVariable("result5").HasUndefinedAndValues(false)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void IncompleteEvaluationXor()
+        {
+            AnalysisTestUtils.RunTestCase(IncompleteEvaluationXor_CASE);
+        }
+
+         #endregion
+
+        #region Assumptions
+
+        #region Assumptions - various statements
+
+        readonly static TestCase AssumptionsWhile_CASE = @"
+$i = 0;
+$any = $_GET[1];
+while ($any >= 1 && $any < 3 && $i < 2) 
+{
+    $result1 = ($any == 0);
+    $result2 = ($any == 1);
+    $result3 = ($any == 2);
+    $result4 = ($any == 3);
+    $i++;
+}
+"
+            .AssertVariable("result1").HasUndefinedAndValues(false)
+            .AssertVariable("result2").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result3").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result4").HasUndefinedAndValues(false)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsWhile()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsWhile_CASE);
+        }
+
+        readonly static TestCase AssumptionsFor_CASE = @"
+$any = $_GET[1];
+for ($i = 0; $any >= 1 && $any < 3 && $i < 2; $i++) 
+{
+    $result1 = ($any == 0);
+    $result2 = ($any == 1);
+    $result3 = ($any == 2);
+    $result4 = ($any == 3);
+}
+"
+            .AssertVariable("result1").HasUndefinedAndValues(false)
+            .AssertVariable("result2").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result3").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result4").HasUndefinedAndValues(false)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsFor()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsFor_CASE);
+        }
+
+        #endregion
+
+        readonly static TestCase AssumptionsMultipleUseVariable_CASE = @"
+if (isset($_GET[1]))
+    $v = $_GET[1];
+if ($v >= 5 && $v <= 5) {
+    $result = $v;
+}
+"
+            .AssertVariable("result").HasUndefinedAndValues(5)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsMultipleUseVariable()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsMultipleUseVariable_CASE);
+        }
+
+        readonly static TestCase AssumptionTwoVariables_CASE = @"
+$a = ($_GET[1]) ? 1 : 2;
+$b = ($_GET[1]) ? 1 : 2;
+$b = ($_GET[1]) ? $b : 3;
+if ($a == $b) {
+    $result1 = $a;
+    $result2 = $b;
+}
+"
+            .AssertVariable("result1").HasUndefinedAndValues(1, 2)
+            .AssertVariable("result2").HasUndefinedAndValues(1, 2)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionTwoVariables()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionTwoVariables_CASE);
+        }
+
+        readonly static TestCase AssumptionIntervals_CASE = @"
+$any = $_GET[1];
+if ($any >= 2 && $any <= 3) {
+    $result1 = ($any == 1);
+    $result2 = ($any == 2);
+    $result3 = ($any == 3);
+    $result4 = ($any == 4); 
+}
+"
+            .AssertVariable("result1").HasUndefinedAndValues(false)
+            .AssertVariable("result2").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result3").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result4").HasUndefinedAndValues(false)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionIntervals()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionIntervals_CASE);
+        }
+
+
+        readonly static TestCase AssumptionTwoVariablesIntervals_CASE = @"
+$x = 1 + 2;
+$any = $_GET[1];
+if ($any >= 2) $int1 = $any;
+
+$any = $_GET[1];
+if ($any >= 1 && $any <= 5) $int2 = $any;
+
+// a = {<2, inf), 10}
+$a = ($_GET[1]) ? $int1 : 10;
+// b = {<1, 5>, 10}
+$b = ($_GET[1]) ? $int2 : 10;
+if ($a == $b) {
+    // $a = b = {10, <2, 5>}
+
+    $result1 = ($a == 10); // can be
+
+    $result2 = ($a == 1); // cannot be
+    
+    $result3 = ($a == 2); // can be
+    $result4 = ($a == 3); // can be
+    $result5 = ($a == 4); // can be
+    $result6 = ($a == 5); // can be
+
+    $result7 = ($a == 6); // cannot be
+}
+"
+            .AssertVariable("result1").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result2").HasUndefinedAndValues(false)
+            .AssertVariable("result3").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result4").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result5").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result6").HasUndefinedAndSpecialValues(SpecialValues.ANY_BOOLEAN)
+            .AssertVariable("result7").HasUndefinedAndValues(false)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionTwoVariablesIntervals()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionTwoVariablesIntervals_CASE);
+        }
+
+        readonly static TestCase AssumptionsMultipleUseIndirectVariable_CASE = @"
+$a = $_GET[1];
+$v = 'a';
+if ($$v >= 5 && $$v <= 5) {
+    $result = $a;
+}
+"
+            .AssertVariable("result").HasUndefinedAndValues(5)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsMultipleUseIndirectVariable()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsMultipleUseIndirectVariable_CASE);
+        }
+
+        readonly static TestCase AssumptionsArrays_CASE = @"
+$a[1] = ($_GET[1]) ? 1 : 2;
+if ($a[1] == 1) $result = $a[1];
+"
+            .AssertVariable("result").HasUndefinedAndValues(1)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsArrays()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsArrays_CASE);
+        }
+
+        readonly static TestCase AssumptionsArrayTrueTest_CASE = @"
+if ($_GET[1]) $arr[1] = 1;
+// $arr[1] can have a value 1 or can be undefined
+
+$result1 = 2;
+if ($arr[1]) $result1 = $arr[1]; // the assumption should filter out the undefined value from $arr[1]
+
+if ($_GET[1]) $arr[2] = 1;
+else $arr[2] = 0;
+
+$result2 = 2;
+if ($arr[2]) $result2 = $arr[2]; // the assumption should filter out the value 0 from $arr[2]
+
+if (!$arr[2]) $result3 = $arr[2];
+
+"
+            .AssertVariable("result1").HasValues(1, 2)
+            .AssertVariable("result2").HasValues(1, 2)
+            .AssertVariable("result3").HasUndefinedAndValues(0)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsArrayTrueTest()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsArrayTrueTest_CASE);
+        }
+
+        // True test for elements having AnyValue just filters out undefined value.
+        // That is, after assuming an element holding AnyValue true, the subsequent true assumption is unknown.
+        // However, the subsequent isset assumption is true.
+        readonly static TestCase AssumptionsArrayAnyValueTrueTest_CASE = @"
+if ($_GET[1]) {
+    $result1 = isset($_GET[1]); // precisely computes true
+
+    if ($_GET[1]) $result2 = 1;
+    else $result2 = 2; // imprecision: just undefined value is filtered out from $_GET[1] from the first if => this branch can be taken
+}
+"
+            .AssertVariable("result1").HasUndefinedAndValues(true)
+            .AssertVariable("result2").HasUndefinedAndValues(1, 2) // not most possible precise result, overapproximation of our analyser
+            //.AssertVariable("result2").HasUndefinedAndValues(1) // If the analyser was more precise, this would be correct result
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsArrayAnyValueTrueTest()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsArrayAnyValueTrueTest_CASE);
+        }
+
+        readonly static TestCase AssumptionsArrayIsset_CASE = @"
+if ($_GET[1]) $arr[1] = -1;
+
+if (isset($arr[1])) {
+    $result0 = isset($arr[1]);
+}
+
+$result3 = 0;
+if (!isset($arr[1])) {
+    $result1 = isset($arr[1]);
+    $arr[1] = 1;
+    $result2 = isset($arr[1]);
+    $result3 = $arr[1];
+}
+$result = isset($arr[1]);
+"
+            .AssertVariable("result0").HasUndefinedAndValues(true)
+            .AssertVariable("result1").HasUndefinedAndValues(false)
+            .AssertVariable("result2").HasUndefinedAndValues(true)
+            .AssertVariable("result3").HasValues(0, 1)
+            .AssertVariable("result").HasValues(true)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsArrayIsset()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsArrayIsset_CASE);
+        }
+
+        readonly static TestCase AssumptionsAnyArrayIsset_CASE = @"
+if (isset($_SESSION[1])) {
+    $result0 = isset($_SESSION[1]);
+}
+
+$result3 = 0;
+if (!isset($_SESSION[1])) {
+    $result1 = isset($_SESSION[1]);
+    $_SESSION[1] = 1;
+    $result2 = isset($_SESSION[1]);
+    $result3 = $_SESSION[1];
+}
+$result = isset($_SESSION[1]);
+"
+            .AssertVariable("result0").HasUndefinedAndValues(true)
+            .AssertVariable("result1").HasUndefinedAndValues(false)
+            .AssertVariable("result2").HasUndefinedAndValues(true)
+            .AssertVariable("result3").HasValues(0, 1)
+            //.AssertVariable("result").HasValues(true)
+            .Analysis(Analyses.WevercaAnalysisTest);
+        [TestMethod]
+        public void AssumptionsAnyArrayIsset()
+        {
+            AnalysisTestUtils.RunTestCase(AssumptionsAnyArrayIsset_CASE);
+        }
+
 
         #endregion
 

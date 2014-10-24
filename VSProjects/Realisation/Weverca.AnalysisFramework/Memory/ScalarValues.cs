@@ -135,10 +135,15 @@ namespace Weverca.AnalysisFramework.Memory
     }
 
     /// <summary>
+    /// Interface which just marks numeric values.
+    /// </summary>
+    public interface NumericValue { }
+
+    /// <summary>
     /// Class is representing PHP number of arbitrary type
     /// </summary>
     /// <typeparam name="T">Type of number representation</typeparam>
-    public abstract class NumericValue<T> : ScalarValue<T>
+    public abstract class NumericValue<T> : ScalarValue<T>, NumericValue
         where T : IComparable, IComparable<T>, IEquatable<T>
     {
         /// <summary>

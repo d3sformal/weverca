@@ -398,20 +398,19 @@ namespace Weverca.ControlFlowGraph
                 foreach (var e in node.OutgoingEdges)
                 {
                     int index = oldCounter + nodes.IndexOf(e.To);
-                    if (e is ConditionalEdge)
+                    if (e.EdgeType == BasicBlockEdgeTypes.CONDITIONAL)
                     {
-                        ConditionalEdge edge = e as ConditionalEdge;
                         string label = "";
                         //in case a condition is not from original ast and hes been aded in constructiion of cfg, we need to write it in different way
-                        if (!edge.Condition.Position.IsValid || this.cfgAddedElements.Contains(edge.Condition))
+                        if (!e.Condition.Position.IsValid || this.cfgAddedElements.Contains(e.Condition))
                         {
-                            if (edge.Condition.GetType() == typeof(BoolLiteral))
+                            if (e.Condition.GetType() == typeof(BoolLiteral))
                             {
-                                label = edge.Condition.Value.ToString();
+                                label = e.Condition.Value.ToString();
                             }
-                            if (edge.Condition.GetType() == typeof(BinaryEx))
+                            if (e.Condition.GetType() == typeof(BinaryEx))
                             {
-                                BinaryEx bin = (BinaryEx)edge.Condition;
+                                BinaryEx bin = (BinaryEx)e.Condition;
                                 //dirty trick how to acces internal field
                                 var a = bin.GetType().GetField("operation", BindingFlags.NonPublic | BindingFlags.Instance);
                                 if ((Operations)a.GetValue(bin) == Operations.Equal)
@@ -445,9 +444,9 @@ namespace Weverca.ControlFlowGraph
                                     //label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
                                 }
                             }
-                            if (edge.Condition.GetType() == typeof(DirectFcnCall))
+                            if (e.Condition.GetType() == typeof(DirectFcnCall))
                             {
-                                DirectFcnCall functionCall = (DirectFcnCall)edge.Condition;
+                                DirectFcnCall functionCall = (DirectFcnCall)e.Condition;
 
                                 label += functionCall.QualifiedName + "(";
                                 foreach (var parameter in functionCall.CallSignature.Parameters)
@@ -467,12 +466,12 @@ namespace Weverca.ControlFlowGraph
                         }
                         else
                         {
-                            label = globalCode.SourceUnit.GetSourceCode(edge.Condition.Position);
+                            label = globalCode.SourceUnit.GetSourceCode(e.Condition.Position);
                         }
                         label = label.Replace("\"", "\\\"");
                         result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"" + label + "\"]" + Environment.NewLine;
                     }
-                    else if(e is ForEachSpecialEdge)
+                    else if (e.EdgeType == BasicBlockEdgeTypes.FOREACH)
                     {
                         result += "node" + i + " -> node" + index + "[headport=n, tailport=s,label=\"foreach special edge\"]" + Environment.NewLine;
                     }

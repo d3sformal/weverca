@@ -24,8 +24,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Diagnostics;
-
 using PHP.Core;
 using PHP.Core.AST;
 

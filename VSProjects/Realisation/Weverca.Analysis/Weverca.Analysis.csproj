@@ -91,8 +91,10 @@
     <Compile Include="ExpressionEvaluator\ToIntervalConversionVisitors.cs" />
     <Compile Include="ExpressionEvaluator\TypeConversion.cs" />
     <Compile Include="ExpressionEvaluator\UnaryOperationEvaluator.cs" />
-    <Compile Include="FlowResolver\ConditionPart.cs" />
-    <Compile Include="FlowResolver\ConditionParts.cs" />
+    <Compile Include="FlowResolver\AssumptionExecuter.cs" />
+    <Compile Include="FlowResolver\Deprecated\ConditionPart.cs" />
+    <Compile Include="FlowResolver\Deprecated\ConditionParts.cs" />
+    <Compile Include="FlowResolver\Deprecated\MemoryContext.cs" />
     <Compile Include="FlowResolver\FlowResolver.cs" />
     <Compile Include="FlowResolver\MemoryContext.cs" />
     <Compile Include="FlowResolver\ValueHelper.cs" />
@@ -169,6 +171,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
