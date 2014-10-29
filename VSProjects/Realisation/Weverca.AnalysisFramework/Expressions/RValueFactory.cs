@@ -524,6 +524,25 @@ namespace Weverca.AnalysisFramework.Expressions
             }
         }
 
+        public override void VisitListEx(ListEx x)
+        {
+            // Create lvalues for all elements that are assigned
+            var assignedTo = new List<LValuePoint>(x.LValues.Count());
+            foreach (var lValue in x.LValues)
+            {
+                if (lValue != null)
+                    assignedTo.Add(CreateLValue(lValue));
+                else
+                {
+                    assignedTo.Add(null);
+                }
+            }
+            // Create rvalue
+            var assignedFrom = CreateRValue(x.RValue);
+
+            Result(new AssignListPoint(x, assignedTo, assignedFrom));
+        }
+
         #endregion
 
         #region Function visiting

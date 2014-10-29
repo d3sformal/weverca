@@ -19,6 +19,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 ﻿using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -70,6 +71,67 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         internal override void Accept(ProgramPointVisitor visitor)
         {
             visitor.VisitAssign(this);
+        }
+    }
+
+    /// <summary>
+    /// List assign expression. 
+    /// Represents expressions of a form list(variables) = array.
+    /// 
+    /// Example:
+    /// $arr = array(1, 2, 3);
+    /// list($one, , $three) = $arr;
+    /// echo $one; // 1
+    /// echo $three; // 3
+    /// </summary>
+    public class AssignListPoint : ValuePoint
+    {
+        /// <inheritdoc />
+        public override LangElement Partial { get { return ListElement; } }
+
+        /// <summary>
+        /// List assign element represented by current point
+        /// </summary>
+        private readonly ListEx ListElement;
+
+        /// <summary>
+        /// Left values that are assigned.
+        /// </summary>
+        private readonly List<LValuePoint> LOperands;
+
+        /// <summary>
+        /// Value provider for assign
+        /// </summary>
+        private readonly ValuePoint ROperand;
+
+
+        internal AssignListPoint(ListEx listElement, List<LValuePoint> lOperands, ValuePoint rOperand)
+        {
+            LOperands = lOperands;
+            ROperand = rOperand;
+            ListElement = listElement;
+        }
+
+        /// <inheritdoc />
+        protected override void flowThrough()
+        {
+            Value = ROperand.Value;
+
+            var arrPosition = -1;
+            foreach (var lOperand in LOperands) 
+            {
+                arrPosition++;
+                if (lOperand == null) continue; // lOperand to assign not specified in this position
+
+                // Assign to the operand lOperand in position arrPosition
+                var arrContentInPosition = ROperand.Value.ReadIndex(OutSnapshot, new MemberIdentifier(System.Convert.ToString(arrPosition, CultureInfo.InvariantCulture)));
+                lOperand.LValue.WriteMemory(OutSnapshot, arrContentInPosition.ReadMemory(OutSnapshot));
+            }
+        }
+
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitAssignList(this);
         }
     }
 

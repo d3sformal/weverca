@@ -316,6 +316,11 @@ namespace Weverca.AnalysisFramework.Expressions
             RValueResult(x);
         }
 
+        public override void VisitListEx(ListEx x)
+        {
+            RValueResult(x);
+        }
+
         #endregion
 
         #region Function visiting

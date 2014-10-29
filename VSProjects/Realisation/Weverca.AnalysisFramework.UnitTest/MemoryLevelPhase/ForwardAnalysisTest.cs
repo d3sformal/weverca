@@ -673,6 +673,47 @@ setLocal();
 
 ".AssertVariable("a").HasValues("ValueA");
 
+        readonly static TestCase List_CASE = @"
+$info = array('coffee', 'brown', 'caffeine');
+
+// Assign all indices
+list($drink, $color, $power) = $info;
+// Assign first 2 indices
+list($drink1, $color1) = $info;
+// Assign first and third index
+list($drink2, , $power2) = $info;
+// Try to assign to non-existent index
+list($drink3, $color3, $power3, $next) = $info;
+
+// The list statement should return copy of assigned array
+$info2 = (list($a) = $info);
+$drink4 = $info2[0];
+$color4 = $info2[1];
+$power4 = $info2[2];
+// It is copy, the following statement should not change the original array
+$info2[0] = 'modified';
+$drink5 = $info[0];
+".AssertVariable("drink").HasValues("coffee")
+ .AssertVariable("color").HasValues("brown")
+ .AssertVariable("power").HasValues("caffeine")
+ .AssertVariable("drink1").HasValues("coffee")
+ .AssertVariable("color1").HasValues("brown")
+ .AssertVariable("drink2").HasValues("coffee")
+ .AssertVariable("power2").HasValues("caffeine")
+ .AssertVariable("drink3").HasValues("coffee")
+ .AssertVariable("color3").HasValues("brown")
+ .AssertVariable("power3").HasValues("caffeine")
+ .AssertVariable("next").HasUndefinedValue()
+ .AssertVariable("drink4").HasValues("coffee")
+ .AssertVariable("color4").HasValues("brown")
+ .AssertVariable("power4").HasValues("caffeine")
+ .AssertVariable("drink5").HasValues("coffee");
+        [TestMethod]
+        public void ListExpression()
+        {
+            AnalysisTestUtils.RunTestCase(List_CASE);
+        }
+
         #region For cycles
 
         readonly static TestCase ForCycle_CASE = @"

@@ -220,6 +220,16 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         /// <summary>
+        /// Visits the list assignment program point.
+        /// This program point represents list expression, e.g., list($v1, $v2) = $array
+        /// </summary>
+        /// <param name="p">Visited point</param>
+        public virtual void VisitAssignList(AssignListPoint p)
+        {
+            VisitValue(p);
+        }
+
+        /// <summary>
         /// Visits the concatenation program point.
         /// </summary>
         /// <param name="p">Visited point</param>
