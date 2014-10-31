@@ -17,8 +17,9 @@ You should have received a copy of the GNU Lesser General Public License
 along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-ublic class MessageModel
+namespace Weverca.Web.Models
+{
+    public class MessageModel
     {
         public string Title { get; private set; }
         public string Message { get; private set; }

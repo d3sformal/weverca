@@ -171,7 +171,9 @@
     <Content Include="jQuery\jquery-ui.js" />
     <None Include="Resources\AboutContent.htm" />
     <None Include="Resources\fraktal.php" />
-    <None Include="Resources\metalcupStatis.php" />
+    <None Include="Resources\metalcupStatis.php">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Resources\randomize.php" />
     <None Include="Resources\simpleObject.php" />
     <None Include="Resources\simpleTests.php">
