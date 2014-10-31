@@ -288,14 +288,52 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         }
             ".AssertVariable("a").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 5, 8, 3, 8 }));
 
-
-
         readonly static TestCase TaintAnalysisConditionalAssign_CASE =
         @" $a = (isset($_POST[1])) ? $_POST[1] : 1;
         $b = $a;
         $x = ($_POST[1]) ? $a : $b;
             ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, true, new List<int>() { 2, 4, 4 }, new List<int>() { 2, 3, 4, 4 }));
 
+
+        readonly static TestCase TaintAnalysisAssignmentInitialization_CASE =
+        @"$input = $_GET[1];
+        $arr[$input] = $_GET[1];
+        $i = ($input) ? 1 : 2;
+        $arr[$i] = 1;
+            ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 2, 3}));
+        [TestMethod]
+        public void TaintAnalysisAssignmentInitialization()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisAssignmentInitialization_CASE, false);
+        }
+
+        readonly static TestCase TaintAnalysisIssetInitialization_CASE =
+        @"if (isset($_GET[1])) // $_GET[1] should be automatically initialized with taint status from $_GET[anyindex]
+            $x= $_GET[1];
+        else
+            $x = 1;
+echo $input;
+            ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 4 }));
+        [TestMethod]
+        public void TaintAnalysisIssetInitialization()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisIssetInitialization_CASE, false);
+        }
+
+        readonly static TestCase TaintAnalysisExplicitInitialization_CASE =
+        @"$_GET[1] = $_GET[2]; // $_GET[1] is explicitly initialized with taint status from $_GET[anyindex]
+        if (isset($_GET[1]))
+            $x= $_GET[1];
+        else
+            $x = 1;
+            ".AssertVariable("x").HasTaintStatus(new TaintStatus(true, false, new List<int>() { 2,4 }));
+        [TestMethod]
+        public void TaintAnalysisExplicitInitialization()
+        {
+            AnalysisTestUtils.RunInfoLevelTaintAnalysisCase(TaintAnalysisExplicitInitialization_CASE, false);
+        }
+
+        
 
 
         [TestMethod]
