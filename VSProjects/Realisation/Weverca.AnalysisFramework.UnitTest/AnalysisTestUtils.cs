@@ -27,6 +27,8 @@ using PHP.Core;
 
 using Weverca.AnalysisFramework.UnitTest.InfoLevelPhase;
 
+using Weverca.Analysis;
+
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.Parsers;
@@ -482,16 +484,8 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             var variable = outSet.GetVariable(new VariableIdentifier(variableName));
             var values = variable.ReadMemory(outSet.Snapshot).PossibleValues.ToArray();
-            foreach (var value in values)
-            {
-                var info = value.GetInfo<SimpleInfo>();
-                if (info != null && !info.XssSanitized)
-                {
-                    return;
-                }
-            }
-
-            Assert.Fail("No possible value for variable ${0} is dirty", variableName);
+            if (!FlagsHandler.IsDirty(values, FlagType.SQLDirty))
+                Assert.Fail("No possible value for variable ${0} is dirty", variableName);
         }
 
         internal static void AssertIsXSSClean(FlowOutputSet outSet, string variableName, string assertMessage)

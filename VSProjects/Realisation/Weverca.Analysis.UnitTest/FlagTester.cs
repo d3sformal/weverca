@@ -40,14 +40,14 @@ namespace Weverca.Analysis.UnitTest
             $b=$a;
             $c=$b;
             $result=$c;
+            echo $result;
         ";
 
         [TestMethod]
         public void SimpleFlag()
         {
-            var result = TestUtils.ResultTest(SimpleFlagTest);
-            TestUtils.IsDirty(result);
-
+            var result = TestUtils.ResultTestAllValues(SimpleFlagTest);
+            TestUtils.IsDirty(result.PossibleValues);
         }
 
         string SimpleFlagTest2 = @"

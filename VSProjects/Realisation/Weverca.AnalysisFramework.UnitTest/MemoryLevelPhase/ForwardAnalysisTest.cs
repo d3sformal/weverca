@@ -545,10 +545,10 @@ $IncludeResult=(include 'test.php');
     return 'IncludedReturn';
 ");
 
-        readonly static TestCase SimpleXSSDirty_CASE = @"
+        readonly static TestCase XSSDirtyFlag_CASE = @"
 $x=$_POST['dirty'];
 $x=$x;
-".AssertVariable("x").IsXSSDirty().Analysis(Analyses.SimpleAnalysisTest);
+".AssertVariable("x").IsXSSDirty().Analysis(Analyses.WevercaAnalysisTest);
 
 
         readonly static TestCase XSSSanitized_CASE = @"
@@ -3162,9 +3162,9 @@ f();
         }
 
         [TestMethod]
-        public void SimpleXSSDirty()
+        public void XSSDirtyFlag()
         {
-            AnalysisTestUtils.RunTestCase(SimpleXSSDirty_CASE);
+            AnalysisTestUtils.RunTestCase(XSSDirtyFlag_CASE);
         }
 
         [TestMethod]

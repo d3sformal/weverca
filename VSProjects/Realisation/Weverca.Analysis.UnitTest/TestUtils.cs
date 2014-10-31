@@ -55,7 +55,7 @@ namespace Weverca.Analysis.UnitTest
             parser.Parse();
             var cfg = Weverca.ControlFlowGraph.ControlFlowGraph.FromSource(parser.Ast, file);
 
-            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.CopyMM, 50);
+            return new ForwardAnalysis(cfg, MemoryModels.MemoryModels.ModularCopyMM, 50);
         }
 
         /// <summary>
@@ -156,6 +156,14 @@ namespace Weverca.Analysis.UnitTest
             return entry.PossibleValues.First();
         }
 
+        public static MemoryEntry ResultTestAllValues(string code)
+        {
+            var outSet = Analyze(code);
+            var snapshotEntry = outSet.GetVariable(new VariableIdentifier("result"));
+            var entry = snapshotEntry.ReadMemory(outSet.Snapshot);
+            return entry;
+        }
+
         /// <summary>
         /// Test value type If the type doesn't matches the test fails.
         /// </summary>
@@ -184,6 +192,11 @@ namespace Weverca.Analysis.UnitTest
         {
             var flag = value.GetInfo<Flags>();
             Debug.Assert(flag.isDirty(FlagType.FilePathDirty) && flag.isDirty(FlagType.HTMLDirty) && flag.isDirty(FlagType.HTMLDirty));
+        }
+
+        public static void IsDirty(IEnumerable<Value> values)
+        {
+            Debug.Assert(FlagsHandler.IsDirty(values, FlagType.SQLDirty) && FlagsHandler.IsDirty(values, FlagType.HTMLDirty) && FlagsHandler.IsDirty(values, FlagType.FilePathDirty));
         }
 
         public static void IsClean(Value value)
