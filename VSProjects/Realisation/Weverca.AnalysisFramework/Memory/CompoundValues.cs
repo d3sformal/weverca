@@ -77,10 +77,10 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
             return value;
         }
 
-		public override string ToString (ISnapshotReadonly snapshot)
-		{
-			return string.Format("{0} UID: {1}", snapshot.ObjectType(this).QualifiedName.ToString(), UID);
-		}
+        public override string ToString (ISnapshotReadonly snapshot)
+        {
+            return string.Format("{0} UID: {1}", snapshot.ObjectType(this).QualifiedName.ToString(), UID);
+        }
 
     }
 
