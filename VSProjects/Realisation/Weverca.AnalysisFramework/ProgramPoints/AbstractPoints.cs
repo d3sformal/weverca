@@ -42,6 +42,11 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// </summary>
         public virtual ReadSnapshotEntryBase Value { get; protected set; }
 
+        /// <summary>
+        /// Gets values represented by this program point from the out snapshot of the program point.
+        /// </summary>
+        public MemoryEntry Values { get { return Value.ReadMemory(OutSnapshot); } }
+
         /// <inheritdoc />
         public override string ToString()
         {

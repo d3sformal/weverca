@@ -329,8 +329,8 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             if (TrueAssume.Assumed && FalseAssume.Assumed)
             {
                 //merge result from both branches
-                var trueVal = TrueOperand.Value.ReadMemory(OutSnapshot);
-                var falseVal = FalseOperand.Value.ReadMemory(OutSnapshot);
+                var trueVal = TrueOperand.Values;
+                var falseVal = FalseOperand.Values;
 
                 var merged = MemoryEntry.Merge(trueVal, falseVal);
                 Value = OutSnapshot.CreateSnapshotEntry(merged);

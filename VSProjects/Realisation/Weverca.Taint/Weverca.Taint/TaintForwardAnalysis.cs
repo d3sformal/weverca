@@ -68,14 +68,17 @@ namespace Weverca.Taint
 
             var TaintedVar = outSet.GetVariable(new VariableIdentifier(name), true);
 
-            TaintInfo taint = new TaintInfo();
-             taint.taint = new Taint(true);
+            var taint = new TaintInfo();
+            taint.taint = new Taint(true);
             taint.priority = new TaintPriority(true);
             taint.tainted = true;
 
             var Taint = outSet.CreateInfo(taint);
 
-            TaintedVar.WriteMemory(outSet.Snapshot, new MemoryEntry(Taint));
+            //TaintedVar.WriteMemory(outSet.Snapshot, new MemoryEntry(Taint));
+
+            var entry = TaintedVar.ReadIndex(EntryInput.Snapshot, MemberIdentifier.getAnyMemberIdentifier());
+            entry.WriteMemory(EntryInput.Snapshot, new MemoryEntry(Taint));
 			/*
             TaintedVar = outSet.GetVariable(new VariableIdentifier(name), true);
             Taint = outSet.CreateInfo(taint);

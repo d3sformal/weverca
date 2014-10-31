@@ -165,7 +165,7 @@ namespace Weverca.Taint
                 var varID = getVariableIdentifier(val.Value);
                 List<Value> argumentValues = new List<Value>(val.Value.ReadMemory(Output).PossibleValues);
                 values.Add(new ValueInfo(argumentValues, varID));
-;                nullValue |= hasPossibleNullValue(val.Value);
+;                nullValue |= hasPossibleNullValue(val);
             }
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
@@ -188,7 +188,7 @@ namespace Weverca.Taint
                 List<Value> argumentValues = new List<Value>(pEval.EvalCode.Value.ReadMemory(Output).PossibleValues);
                 List<ValueInfo> values = new List<ValueInfo>();
                 values.Add(new ValueInfo(argumentValues, varID));
-                bool nullValue = hasPossibleNullValue(pEval.EvalCode.Value);
+                bool nullValue = hasPossibleNullValue(pEval.EvalCode);
 
                 TaintInfo outputTaint = mergeTaint(values, nullValue);
                 createWarnings(p, outputTaint, null, "Eval shoudn't contain anything from user input");
@@ -229,7 +229,7 @@ namespace Weverca.Taint
             List<Value> argumentValues = new List<Value>(p.IncludePath.Value.ReadMemory(Output).PossibleValues);
             List<ValueInfo> values = new List<ValueInfo>();
             values.Add(new ValueInfo(argumentValues, varID));
-            bool nullValue = hasPossibleNullValue(p.IncludePath.Value);
+            bool nullValue = hasPossibleNullValue(p.IncludePath);
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
             createWarnings(p, outputTaint, new List<FlagType>() { FlagType.FilePathDirty });           
@@ -249,7 +249,7 @@ namespace Weverca.Taint
                 List<Value> argumentValues = new List<Value>(p.Operand.Value.ReadMemory(Output).PossibleValues);
                 List<ValueInfo> values = new List<ValueInfo>();
                 values.Add(new ValueInfo(argumentValues, varID));
-                bool nullValue = hasPossibleNullValue(p.Operand.Value);
+                bool nullValue = hasPossibleNullValue(p.Operand);
 
                 TaintInfo outputTaint = mergeTaint(values, nullValue);
                 createWarnings(p, outputTaint, new List<FlagType>() { FlagType.HTMLDirty });           
@@ -279,9 +279,10 @@ namespace Weverca.Taint
             if (operand.Value != null) 
             {
                 var operandID = getVariableIdentifier(operand.Value);
-                List<Value> operandValues = new List<Value>(operand.Value.ReadMemory(Output).PossibleValues);
+                var vals = operand.Value.ReadMemory(operand.OutSnapshot).PossibleValues;
+                List<Value> operandValues = new List<Value>(vals);
                 values.Add(new ValueInfo(operandValues, operandID));
-                nullValue |= hasPossibleNullValue(operand.Value);
+                nullValue |= hasPossibleNullValue(operand);
             }
             return nullValue;
 
@@ -326,14 +327,14 @@ namespace Weverca.Taint
                     
                 if (pEx.TrueAssume.Assumed && pEx.FalseAssume.Assumed)
                 {
-					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
-					List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
+					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(pEx.TrueOperand.OutSnapshot).PossibleValues);
+                    List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(pEx.FalseOperand.OutSnapshot).PossibleValues);
 
                     //merge taint info from both branches
                     List<ValueInfo> values = new List<ValueInfo>();  
                     values.Add(new ValueInfo(trueValues, truevarID));
                     values.Add(new ValueInfo(falseValues, falsevarID));
-                    bool nullValue = hasPossibleNullValue(pEx.TrueOperand.Value) || hasPossibleNullValue(pEx.FalseOperand.Value);
+                    bool nullValue = hasPossibleNullValue(pEx.TrueOperand) || hasPossibleNullValue(pEx.FalseOperand);
 
                     TaintInfo outputTaint = mergeTaint(values, nullValue);
                     pEx.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
@@ -345,7 +346,7 @@ namespace Weverca.Taint
                     //only true value is used
                     List<ValueInfo> values = new List<ValueInfo>();  
                     values.Add(new ValueInfo(trueValues, truevarID));
-                    bool nullValue = hasPossibleNullValue(pEx.TrueOperand.Value);
+                    bool nullValue = hasPossibleNullValue(pEx.TrueOperand);
 
                     TaintInfo outputTaint = mergeTaint(values, nullValue);
                     pEx.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
@@ -357,7 +358,7 @@ namespace Weverca.Taint
                     //only false value is used
                     List<ValueInfo> values = new List<ValueInfo>();  
                     values.Add(new ValueInfo(falseValues, falsevarID));
-                    bool nullValue = hasPossibleNullValue(pEx.FalseOperand.Value);
+                    bool nullValue = hasPossibleNullValue(pEx.FalseOperand);
 
                     TaintInfo outputTaint = mergeTaint(values, nullValue);
                     pEx.SetValueContent(new MemoryEntry(Output.CreateInfo(outputTaint)));
@@ -372,40 +373,36 @@ namespace Weverca.Taint
         public override void VisitAssign(AssignPoint p)
         {
             _currentPoint = p;
-            var source = p.ROperand.Value;
-            var target = p.LOperand.LValue;
+            var source = p.ROperand;
+            var target = p.LOperand;
 
-            if (target == null || source == null)
+            if (target.LValue == null || source.Value == null)
                 //Variable has to be LValue
                 return;
 
             var sourceTaint = getTaint(source);
 
-            var sourceVal = p.ROperand.Value.ReadMemory(Output);
-
             var finalPropagation = sourceTaint;
 
-            setTaint(target, finalPropagation);
+            setTaint(target.LValue, finalPropagation);
             
         }
 
         public override void VisitRefAssign(RefAssignPoint p)
         {
             _currentPoint = p;
-            var source = p.ROperand.Value;
-            var target = p.LOperand.LValue;
+            var source = p.ROperand;
+            var target = p.LOperand;
 
-            if (target == null || source == null)
+            if (target.LValue == null || source.Value == null)
                 //Variable has to be LValue
                 return;
 
             var sourceTaint = getTaint(source);
 
-            var sourceVal = p.ROperand.Value.ReadMemory(Output);
-
             var finalPropagation = sourceTaint;
 
-            setTaint(target, finalPropagation);
+            setTaint(target.LValue, finalPropagation);
         }
 
         /// <summary>
@@ -427,7 +424,7 @@ namespace Weverca.Taint
                     List<ValueInfo> values = new List<ValueInfo>();
                     values.Add(new ValueInfo(possibleValues, varID));
 
-                    bool nullValue = hasPossibleNullValue(p.Expression.Value) || hasPossibleNullValue(p.Expression.Value);
+                    bool nullValue = hasPossibleNullValue(p.Expression) || hasPossibleNullValue(p.Expression);
 
                     TaintInfo outputTaint = mergeTaint(values, nullValue);
                     returnVar.WriteMemory(Output, new MemoryEntry(Output.CreateInfo(outputTaint)));
@@ -634,12 +631,12 @@ namespace Weverca.Taint
         /// <summary>
         /// Gets the complete taint information
         /// </summary>
-        /// <param name="lValue">entry to get the taint for</param>
-        /// <returns>the taint information of given entry</returns>
-        private TaintInfo getTaint(ReadSnapshotEntryBase lValue)
+        /// <param name="lValue">value point to get the taint for</param>
+        /// <returns>the taint information of given value point</returns>
+        private TaintInfo getTaint(ValuePoint lValue)
         {
-            var varID = getVariableIdentifier(lValue);
-            List<Value> info = new List<Value>(lValue.ReadMemory(Output).PossibleValues);
+            var varID = getVariableIdentifier(lValue.Value);
+            List<Value> info = new List<Value>(lValue.Value.ReadMemory(lValue.OutSnapshot).PossibleValues);
 
             List<ValueInfo> values = new List<ValueInfo>();
             values.Add(new ValueInfo(info, varID));
@@ -693,6 +690,29 @@ namespace Weverca.Taint
             }
 
             return new VariableName(".arg" + index);
+        }
+
+        /// <summary>
+        /// Determines whether the value point may be undefined or null
+        /// </summary>
+        /// <param name="valuePoint">the value point to check</param>
+        /// <returns>true if variable may be undefined or null</returns>
+        private bool hasPossibleNullValue(ValuePoint valuePoint)
+        {
+            bool nullValue = false;
+            valuePoint.OutSnapshot.SetMode(SnapshotMode.MemoryLevel);
+            var values = valuePoint.Value.ReadMemory(valuePoint.OutSnapshot).PossibleValues;
+
+            foreach (Value value in values)
+            {
+                if (value is UndefinedValue)
+                {
+                    nullValue = true;
+                    break;
+                }
+            }
+            valuePoint.OutSnapshot.SetMode(SnapshotMode.InfoLevel);
+            return nullValue;
         }
 
         /// <summary>
@@ -772,7 +792,7 @@ namespace Weverca.Taint
                 var varID = getVariableIdentifier(arg.Value);
                 List<Value> argumentValues = new List<Value>(arg.Value.ReadMemory(Output).PossibleValues);
                 values.Add(new ValueInfo(argumentValues, varID));
-                bool nullValue = hasPossibleNullValue(arg.Value);
+                bool nullValue = hasPossibleNullValue(arg);
   
                 TaintInfo argTaint = mergeTaint(values, nullValue);
                 setTaint(argumentVar, argTaint);

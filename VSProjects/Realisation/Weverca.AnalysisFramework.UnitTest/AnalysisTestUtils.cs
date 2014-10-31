@@ -279,35 +279,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
     internal static class AnalysisTestUtils
     {
-        /// <summary>
-        /// Initializer which sets environment for tests before analyzing
-        /// </summary>
-        /// <param name="outSet"></param>
-        private static void GLOBAL_ENVIRONMENT_INITIALIZER(FlowOutputSet outSet)
-        {
-            var POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
-            var POST = outSet.AnyArrayValue.SetInfo(new SimpleInfo(xssSanitized: false));
-
-            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
-        }
-
-        /// <summary>
-        /// Initializer which sets environment for tests before analyzing
-        /// </summary>
-        /// <param name="outSet"></param>
-        private static void GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(FlowOutputSet outSet)
-        {
-            outSet.Snapshot.SetMode(SnapshotMode.InfoLevel);
-            var POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
-            var POST = outSet.CreateInfo(true);
-
-            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
-
-            POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
-            POST = outSet.CreateInfo(true);
-
-            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
-        }
 
         internal static ControlFlowGraph.ControlFlowGraph CreateCFG(string code, FileInfo file)
         {
@@ -338,19 +309,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-       
-
-        internal static FlowOutputSet GetEndPointOutSet(TestCase test, ForwardAnalysisBase analysis)
-        {
-            var ppg = GetAnalyzedGraph(test, analysis);
-            return ppg.End.OutSet;
-        }
-
         internal static ProgramPointGraph GetAnalyzedGraph(TestCase test, ForwardAnalysisBase analysis)
         {
             test.ApplyTestSettings((TestAnalysisSettings)analysis);
 
-            GLOBAL_ENVIRONMENT_INITIALIZER(analysis.EntryInput);
             test.EnvironmentInitializer(analysis.EntryInput);
             analysis.Analyse();
 
@@ -396,8 +358,6 @@ namespace Weverca.AnalysisFramework.UnitTest
                 if (prototype)
                 {
                     var nextPhase = new SimpleTaintForwardAnalysis(ppg);
-
-                    GLOBAL_ENVIRONMENT_INITIALIZER_NEXT_PHASE_TAINT_PROP(nextPhase.EntryInput);
                     nextPhase.Analyse();
                 }
                 else

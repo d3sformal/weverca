@@ -74,7 +74,7 @@ $y = &$x;
         // weak because of indirect variable accesses
         // weak because of aliasing
         readonly static TestCase SimpleTaintAnalysisArraysAliasesWeakUpdates_CASE = @"
-$any = $_POST;
+$any = $_POST[1];
 $x = $_POST;
 $y = 'str';
 $v = 'str';
@@ -226,7 +226,7 @@ $d = $y + $y;
  .Analysis(Analyses.WevercaAnalysisTest);
 
         readonly static TestCase SimpleTaintAnalysisWriteCharacter_CASE = @"
-$x = $_POST['id'][0];
+$x = $_POST;
 $str = ""test"";
 $str[0] = $x;
 ".AssertVariable("_POST").HasTaintStatus(true)

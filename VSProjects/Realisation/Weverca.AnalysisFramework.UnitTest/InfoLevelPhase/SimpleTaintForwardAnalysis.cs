@@ -34,6 +34,25 @@ namespace Weverca.AnalysisFramework.UnitTest.InfoLevelPhase
         public SimpleTaintForwardAnalysis(ProgramPointGraph analyzedGraph)
             : base(analyzedGraph, AnalysisDirection.Forward, new TaintAnalyzer())
         {
+            initialize(EntryInput);
+        }
+
+        /// <summary>
+        /// Initializer which sets environment for tests before analyzing
+        /// </summary>
+        /// <param name="outSet"></param>
+        private static void initialize(FlowOutputSet outSet)
+        {
+            outSet.Snapshot.SetMode(SnapshotMode.InfoLevel);
+            var POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
+            var POST = outSet.CreateInfo(true);
+
+            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
+
+            POSTVar = outSet.GetVariable(new VariableIdentifier("_POST"), true);
+            POST = outSet.CreateInfo(true);
+
+            POSTVar.WriteMemory(outSet.Snapshot, new MemoryEntry(POST));
         }
     }
 }
