@@ -43,15 +43,13 @@
 
             <div class="clear"></div>
         </div>
-        <div id="topic">
-            <h1>@ViewBag.Title</h1>
-        </div>
+        <hr />
         <div id="content">
             @RenderBody()
         </div>
     </div>
 
-    <div id="footer">
+    <div class ="footer" id="footer">
             &copy; Weverca Team 2013 - 2014, version @Html.CurrentVersion(typeof(Weverca.Web.Controllers.HomeController))
         </div>
 </body>

@@ -13,12 +13,10 @@
     <fieldset class="basicForm">
         @Html.HiddenFor(m => m.ChangeInput)
         <ul>
-            <li>
-                @Html.LabelFor(m => m.Input)
+            <li>               
                 <div class="selectHolder">@Html.DropDownListFor(m => m.Input, ValueHelperController.GetInputValueTypes())</div>
             </li>
             <li>
-                @Html.LabelFor(m => m.PhpCode)
                 @Html.TextAreaFor(m => m.PhpCode)
             </li>
             <li>
@@ -26,30 +24,20 @@
                     <legend>@Resources.Settings</legend>
                     <ul>
                         <li>
-                            @Html.LabelFor(m => m.AnalysisModel.RunVerification)
                             @Html.CheckBoxFor(m => m.AnalysisModel.RunVerification)
+                            @Html.LabelFor(m => m.AnalysisModel.RunVerification)
                         </li>
                         <li>
-                            @Html.LabelFor(m => m.AnalysisModel.RunIndicatorMetrics)
                             @Html.CheckBoxFor(m => m.AnalysisModel.RunIndicatorMetrics)
+                            @Html.LabelFor(m => m.AnalysisModel.RunIndicatorMetrics)
                         </li>
                         <li>
-                            @Html.LabelFor(m => m.AnalysisModel.RunQuantityMetrics)
                             @Html.CheckBoxFor(m => m.AnalysisModel.RunQuantityMetrics)
+                            @Html.LabelFor(m => m.AnalysisModel.RunQuantityMetrics)
                         </li>
                         <li>
-                            @Html.LabelFor(m => m.AnalysisModel.RunRatingMetrics)
                             @Html.CheckBoxFor(m => m.AnalysisModel.RunRatingMetrics)
-                        </li>
-                    </ul>
-                </fieldset> 
-            </li>
-            <li>
-                <fieldset class="settings">
-                    <legend>@Resources.MemoryModelType</legend>
-                    <ul>
-                        <li>
-                            <div class="selectHolder">@Html.DropDownListFor(m => m.AnalysisModel.MemoryModel, ValueHelperController.GetMemoryModelValueTypes())</div>
+                            @Html.LabelFor(m => m.AnalysisModel.RunRatingMetrics)
                         </li>
                     </ul>
                 </fieldset> 

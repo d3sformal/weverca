@@ -4,10 +4,12 @@ body {
     color: #ffffff;
     background-color: #dddddd;
     max-width: 1200px; 
-     margin: 0 auto;
+    margin: 0 auto;
 }
 
-.CodeMirror { border: 1px solid grey; }
+.CodeMirror { border: 1px solid grey;}
+
+.CodeMirrorScroll { margin: 0pt;}
                 
 legend, body
 {
@@ -38,7 +40,7 @@ h1, h2, h3
     margin-left: auto;
     margin-right: auto;
     margin-top: 20px;
-    margin-bottom: 55px;
+    margin-bottom: 20px;
 }
 
 .clear
@@ -190,6 +192,8 @@ textarea,
 select
 {
     border-style: solid;
+    float: left;
+
 }
 
 .button
@@ -211,15 +215,12 @@ select
 }
 
 
-.basicForm .button
-{
-    width: 220px;
-}
 
 .basicForm ul
 {
     padding-left: 0px;
 }
+
 ul {
     padding-left: 0px;
 }
@@ -229,16 +230,16 @@ ul {
     display: block;
     clear: both;
     list-style-type: disc;
-    width: 800px;
+    margin-bottom: 1em;
     
 }
 
 .basicForm label 
 {
-    width: 3em;
+    width: 30em;
     float: left;
     height: 2em;
-    padding-top: 0.3em;
+    padding-left: 0.5em;
 }
 
 .selectHolder
@@ -246,6 +247,7 @@ ul {
     background-color: White;
     float: left;
     vertical-align: bottom;
+    margin-bottom: 10pt;
 }
 
 .basicForm select
