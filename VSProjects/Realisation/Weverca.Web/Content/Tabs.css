@@ -79,23 +79,27 @@
 .ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default {
-	background: rgb(78, 173, 146);
-	color: rgb(0, 59, 42) !important;
+	background: #DD8822;
+	color: #222222 !important;
 }
 
 .ui-widget-header .ui-state-default a{
-    color: rgb(0, 59, 42) !important;
+    color: #222222 !important;
 }
 
 .ui-state-active,
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active,
 .ui-widget-header .ui-state-default:hover {
-	background: rgb(0, 59, 42);
+	background: #FFBB55;
 }
 
 .ui-widget-header .ui-state-active a,
 .ui-widget-header .ui-state-default:hover a
 {
-    color: rgb(78, 173, 146) !important;
+    color: #222222 !important;
+}
+
+.ui-tabs fieldset {
+    margin: 1em;
 }

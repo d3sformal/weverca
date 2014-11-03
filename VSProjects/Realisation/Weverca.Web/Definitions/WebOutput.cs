@@ -32,10 +32,10 @@ namespace Weverca.Web.Definitions
     {
         #region Output settings
 
-        static readonly Color Head = Color.White;
+        static readonly Color Head = Color.Black;
         static readonly Color Info = Color.Gray;
         static readonly Color Hint = Color.DarkCyan;
-        static readonly Color Variable = Color.Yellow;
+        static readonly Color Variable = Color.OrangeRed;
         static readonly Color Delimiter = Color.Red;
         static readonly Color ErrorColor = Color.Red;
         static readonly Color Comment = Color.Green;

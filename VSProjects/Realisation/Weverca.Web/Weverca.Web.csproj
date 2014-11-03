@@ -201,6 +201,7 @@
     <Content Include="Content\DownArrow.png" />
     <Content Include="Content\Icon.png" />
     <Content Include="Content\Logo.png" />
+    <Content Include="Content\Logos.png" />
     <Content Include="Content\Site.css" />
     <Content Include="Content\Tabs.css" />
     <Content Include="Global.asax" />

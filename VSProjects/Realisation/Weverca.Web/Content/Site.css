@@ -1,7 +1,7 @@
 /*---------COMMON---------*/
 body {
     font-family: Arial, Verdana, Helvetica, Sans-Serif;
-    color: #ffffff;
+    color: #222222;
     background-color: #dddddd;
     max-width: 1200px; 
     margin: 0 auto;
@@ -94,17 +94,17 @@ h1, h2, h3
 
 #menu a
 {
-		background-color: #DD8822;
+        background-color: #DD8822;
     color: #222222;  
     min-width: 80px;
-	  border-radius: 6px;       
+      border-radius: 6px;       
     text-decoration: none;
     text-align: center;
 }
 
 #menu a:hover
 {
-		background-color: #EE9933;
+        background-color: #EE9933;
     color: #222222;
 }
 
@@ -166,7 +166,7 @@ h1, h2, h3
 #content ul
 {
     margin-top: 0.1em;
-	  list-style-type: none;   
+      list-style-type: none;   
 }
 
 #content img
@@ -201,11 +201,11 @@ select
     background-color: #DD8822;
     color: #222222;  
     min-width: 80px;
-	  border-radius: 6px;
-	  font-weight: bold;
-	  width: 10em;
-	  height: 3em;
-	  margin-top: 1em;
+      border-radius: 6px;
+      font-weight: bold;
+      width: 10em;
+      height: 3em;
+      margin-top: 1em;
 }
 
 .button:hover
@@ -264,6 +264,6 @@ ul {
 
 .footer
 {
-	text-align: right;
-	padding-right: 1em;
+    text-align: right;
+    padding-right: 1em;
 }

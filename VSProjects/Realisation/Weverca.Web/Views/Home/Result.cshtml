@@ -28,7 +28,6 @@
     <ul>
         <li><a href="#tabs-1">@Resources.Warnings</a></li>
         <li><a href="#tabs-2">@Resources.MetricsResults</a></li>
-        <li><a href="#tabs-3">@Resources.VerificationResults</a></li>
     </ul>
     <div id="tabs-1">
         <h3>@Resources.SecurityWarnings</h3>
@@ -67,8 +66,5 @@
                 <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
             }
         </fieldset>
-    </div>
-    <div id="tabs-3">
-        @Model.Output.ToHtmlString()
     </div>
 </div>
