@@ -1,14 +1,18 @@
-﻿/*---------COMMON---------*/
+/*---------COMMON---------*/
 body {
-    font-size: 0.85em;
-    font-family: "Segoe UI", Verdana, Helvetica, Sans-Serif;
+    font-family: Arial, Verdana, Helvetica, Sans-Serif;
     color: #ffffff;
-    background-color: #210C10;
+    background-color: #dddddd;
+    max-width: 1200px; 
+     margin: 0 auto;
 }
 
+.CodeMirror { border: 1px solid grey; }
+                
 legend, body
 {
-    color: #ffffff;
+    color: #222222;
+    margin-top: 1em;
 }
 
 a
@@ -18,13 +22,13 @@ a
 
 p
 {
-    margin: 0px 0px 0.5em 0px;
+    margin: 0px 0px 0em 0px;
     text-align: justify;
 }
 
 h1, h2, h3
 {
-    color: #893200;
+    color: #222222;
     margin: 0.5em 0px 0px 0px;
     padding: 0px;
 }
@@ -35,7 +39,6 @@ h1, h2, h3
     margin-right: auto;
     margin-top: 20px;
     margin-bottom: 55px;
-    width: 990px;
 }
 
 .clear
@@ -48,10 +51,13 @@ h1, h2, h3
     float: left;
 }
 
+
 /*---------HEADER---------*/
 #header
 {
-    background-color: #800019;
+    background-color: #991133;
+    color: #eeeeee;
+    border-radius: 6px;
 }
 
 #logo
@@ -61,39 +67,43 @@ h1, h2, h3
 }
 
 #logoName{
-    font-size: 3em;
+    font-size: 2.5em;
     font-weight: bold;
-    margin-top: 75px;
+    margin-top: 10px;
+    
 }
 
 #logo a
 {
-    background-image: url("Logo.png");
-    width: 244px;
-    height: 210px;
+    background-image: url("Logos.png");
+    width: 120px;
+    height: 103px;
     display: block;
     float: left;
+    margin-right: 20px;
 }
 
 #menu
 {
     float: right;
-    margin: 5px;
+    margin: 20px;
     width: 102px;
 }
 
 #menu a
 {
-    background-color: #4EAD92;
-    color: #003B2A;
+		background-color: #DD8822;
+    color: #222222;  
+    min-width: 80px;
+	  border-radius: 6px;       
     text-decoration: none;
     text-align: center;
 }
 
 #menu a:hover
 {
-    background-color: #003B2A;
-    color: #4EAD92;
+		background-color: #EE9933;
+    color: #222222;
 }
 
 #menu ul
@@ -116,7 +126,7 @@ h1, h2, h3
 #content,
 #topic
 {
-    background-color: #530010;
+    background-color: #EEEEEE;
     padding: 8px;
 }
 
@@ -133,6 +143,7 @@ h1, h2, h3
 #content
 {
     min-height: 160px;
+    border-radius: 6px;
 }
 
 #content a
@@ -152,7 +163,8 @@ h1, h2, h3
 
 #content ul
 {
-    margin-top: 0.5em;
+    margin-top: 0.1em;
+	  list-style-type: none;   
 }
 
 #content img
@@ -170,34 +182,34 @@ h1, h2, h3
 .basicForm textArea
 {
     padding: 5px 10px;
-    width: 200px;
+
 }
 
 input,
 textarea,
 select
 {
-    border-style: none;
+    border-style: solid;
 }
 
 .button
 {
-    background-color: #4EAD92;
-    color: #003B2A;    
+    background-color: #DD8822;
+    color: #222222;  
     min-width: 80px;
+	  border-radius: 6px;
+	  font-weight: bold;
+	  width: 10em;
+	  height: 3em;
+	  margin-top: 1em;
 }
 
 .button:hover
 {
-    background-color: #003B2A;
-    color: #4EAD92;
+    background-color: #EE9933;
+    color: #222222;
 }
 
-.basicForm .button,
-.settings
-{
-    margin-left: 190px; 
-}
 
 .basicForm .button
 {
@@ -208,66 +220,48 @@ select
 {
     padding-left: 0px;
 }
+ul {
+    padding-left: 0px;
+}
 
 .basicForm li
 {
     display: block;
     clear: both;
-    margin: 8px 0px;
-    list-style-type: none;
+    list-style-type: disc;
+    width: 800px;
+    
 }
 
 .basicForm label 
 {
-    width: 190px;
-    display: block;
+    width: 3em;
     float: left;
+    height: 2em;
+    padding-top: 0.3em;
 }
 
 .selectHolder
 {
-    width: 220px;
-    overflow: hidden;
-    background-image: url("DownArrow.png");
-    background-repeat: no-repeat;
-    background-position: right center;
     background-color: White;
     float: left;
-    margin-bottom: 10px;
-    margin-right: 4px;
+    vertical-align: bottom;
 }
 
 .basicForm select
 {
     padding: 4px 10px;
-    width: 250px; 
+    width: 200px; 
     background-color: transparent;
 }
 
-.basicForm .settings label
-{
-    width: 300px;
-}
-
-.basicForm .settings input
+.basicForm .settings label input
 {
     width: initial;
 }
 
-/*---------FOOTER---------*/
-#footer
+.footer
 {
-    background-color: #4EAD92;
-    color: #003B2A;
-    position: fixed;
-    bottom: 0px;
-    left: 50%;
-    margin: 0px 0px 0px -495px;
-    width: 982px;
-    padding: 8px 0px 8px 8px;
-}
-
-li .cm-s-default
-{
-    max-width: 780px;
+	text-align: right;
+	padding-right: 1em;
 }
