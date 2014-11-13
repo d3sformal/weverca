@@ -17,6 +17,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public IEnumerable<KeyValuePair<int, MemoryIndexTreeStackContext>> MemoryStack { get { return memoryStack; } }
         public IEnumerable<KeyValuePair<ObjectValue, MemoryIndexTreeNode>> ObjectTreeRoots { get { return objectTreeRoots; } }
 
+        public IEnumerable<MemoryIndex> Changes { get { return indexes; } }
+
         public MemoryIndexTree()
         {
 

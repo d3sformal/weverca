@@ -46,7 +46,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         IEnumerable<T> AddedOrModifiedValues { get; }
     }
 
-    public class ChangeTracker<T, C> : IReadonlyChangeTracker<T, C>
+    public interface IWriteableChangeTracker<T, C> : IReadonlyChangeTracker<T, C>
+    {
+        void Inserted(T value);
+
+        void Deleted(T value);
+
+        void Modified(T value);
+
+        void RemoveChange(T value);
+    }
+
+    public class ChangeTracker<T, C> : IReadonlyChangeTracker<T, C>, IWriteableChangeTracker<T, C>
     {
         HashSet<T> changes = new HashSet<T>();
         HashSet<T> addedOrModifiedChanges = new HashSet<T>();

@@ -160,7 +160,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public override IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> IndexChangeTracker
+        public override IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ReadonlyIndexChangeTracker
+        {
+            get
+            {
+                return indexTracker;
+            }
+        }
+
+        /// <inheritdoc />
+        public override IWriteableChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> WriteableIndexChangeTracker
         {
             get
             {
@@ -171,13 +180,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
         {
-            this.indexTracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>(this.StructureId, this, parentSnapshotStructure.IndexChangeTracker);
-        }
-
-        /// <inheritdoc />
-        public override void RemoveIndexFromTracker(MemoryIndex index)
-        {
-            this.indexTracker.RemoveChange(index);
+            this.indexTracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>(this.StructureId, this, parentSnapshotStructure.ReadonlyIndexChangeTracker);
         }
 
         #region MemoryStack

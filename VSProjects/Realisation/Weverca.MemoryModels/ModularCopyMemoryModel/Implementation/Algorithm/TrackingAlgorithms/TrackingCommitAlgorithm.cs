@@ -149,7 +149,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             bool areEqual = true;
 
-            var previousStructure = newStructure.Readonly.IndexChangeTracker.PreviousTracker;
+            var previousStructure = newStructure.Readonly.ReadonlyIndexChangeTracker.PreviousTracker;
             if (previousStructure != null)
             {
                 areEqual = areEqual && !previousStructure.Container.DiffersOnCommit;
@@ -165,8 +165,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
 
-                CollectionTools.AddAll(usedIndexes, newStructure.Readonly.IndexChangeTracker.ChangedValues);
-                CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.IndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, newStructure.Readonly.ReadonlyIndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.ReadonlyIndexChangeTracker.ChangedValues);
 
                 CollectionTools.AddAll(usedIndexes, newData.Readonly.IndexChangeTracker.ChangedValues);
                 CollectionTools.AddAll(usedIndexes, oldData.Readonly.IndexChangeTracker.ChangedValues);

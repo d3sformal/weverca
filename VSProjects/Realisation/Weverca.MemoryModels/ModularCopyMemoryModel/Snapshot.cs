@@ -313,7 +313,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <returns>String version snapshot identification which consists of snapshot and data ID separated by colons.</returns>
         public String getSnapshotIdentification()
         {
-            return CallLevel + "." + SnapshotId.ToString() + "::" + Structure.Readonly.StructureId.ToString();
+            return CallLevel + "." + SnapshotId.ToString() + "::s" + Structure.Readonly.StructureId.ToString() + "::d" + Data.Readonly.DataId;
         }
 
         /// <summary>
@@ -1709,6 +1709,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         private void mergeSnapshots(ISnapshotReadonly[] inputs)
         {
             var snapshots = inputs.Select (a => SnapshotEntry.ToSnapshot (a)).ToList();
+
+            Logger.Log(this, "merge");
 
             IMergeAlgorithm algorithm;
             switch (CurrentMode)

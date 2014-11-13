@@ -173,7 +173,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <value>
         /// The index change tracker.
         /// </value>
-        IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> IndexChangeTracker { get; }
+        IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ReadonlyIndexChangeTracker { get; }
 
         #region MemoryStack
 
@@ -472,10 +472,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure);
 
         /// <summary>
-        /// Removes the iven index from change tracker.
+        /// Gets the writeable index change tracker.
         /// </summary>
-        /// <param name="index">The index.</param>
-        void RemoveIndexFromTracker(MemoryIndex index);
+        /// <value>
+        /// The writeable index change tracker.
+        /// </value>
+        IWriteableChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> WriteableIndexChangeTracker { get; }
 
         #region MemoryStack
 
@@ -663,21 +665,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         }
 
         /// <inheritdoc />
-        public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> IndexChangeTracker
+        public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ReadonlyIndexChangeTracker
         {
             get { return null; }
         }
-        
-        /// <inheritdoc />
-        public virtual void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
-        {
 
+        /// <inheritdoc />
+        public virtual IWriteableChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> WriteableIndexChangeTracker
+        {
+            get { return null; }
         }
 
         /// <inheritdoc />
-        public virtual void RemoveIndexFromTracker(MemoryIndex index)
+        public virtual void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
         {
-
         }
 
         /// <summary>
@@ -1090,5 +1091,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public abstract void RemoveAlias(MemoryIndex index);
 
         #endregion
+
     }
 }

@@ -36,11 +36,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             processMergeOperations();
 
             updateAliases();
+
+            foreach (MemoryIndex index in this.changeTree.Changes)
+            {
+                writeableTargetStructure.WriteableIndexChangeTracker.Modified(index);
+            }
         }
 
         private void collectStructureChanges()
         {
-            IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ancestor = snapshotContexts[0].SourceStructure.IndexChangeTracker;
+            IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ancestor = snapshotContexts[0].SourceStructure.ReadonlyIndexChangeTracker;
 
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
             changes.Add(snapshotContexts[0].ChangedIndexesTree);
@@ -50,7 +55,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
-                ancestor = getFirstCommonAncestor(context.SourceStructure.IndexChangeTracker, ancestor, currentChanges, changes);
+                ancestor = getFirstCommonAncestor(context.SourceStructure.ReadonlyIndexChangeTracker, ancestor, currentChanges, changes);
             }
 
             commonAncestor = ancestor;
@@ -63,6 +68,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             targetStructure = writeableTargetStructure;
 
             writeableTargetStructure.ReinitializeIndexTracker(commonAncestor.Container);
+
         }
 
         private void updateAliases()
