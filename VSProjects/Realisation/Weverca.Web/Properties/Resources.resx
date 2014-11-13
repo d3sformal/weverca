@@ -253,4 +253,7 @@
   <data name="SimpleTestsDescription" xml:space="preserve">
     <value>Small tests</value>
   </data>
+  <data name="NewAnalysis" xml:space="preserve">
+    <value>New analysis</value>
+  </data>
 </root>

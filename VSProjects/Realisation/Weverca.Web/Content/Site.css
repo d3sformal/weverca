@@ -1,4 +1,8 @@
 /*---------COMMON---------*/
+html {
+  overflow-y: scroll;
+}
+
 body {
     font-family: Arial, Verdana, Helvetica, Sans-Serif;
     color: #222222;
@@ -159,8 +163,6 @@ h1, h2, h3
 #content a:hover
 {
     border-style: dashed;
-    margin-left: -1px;
-    margin-right: -1px;
 }
 
 #content ul
@@ -175,6 +177,10 @@ h1, h2, h3
 }
 
 /*---------FORMS---------*/
+.CodeMirror {
+      max-width: 1150px;
+}
+
 .basicForm
 {
     border-style: none;
@@ -187,13 +193,12 @@ h1, h2, h3
 
 }
 
-input,
+
 textarea,
 select
 {
     border-style: solid;
     float: left;
-
 }
 
 .button
@@ -223,6 +228,7 @@ select
 
 ul {
     padding-left: 0px;
+    margin-top: 1em;
 }
 
 .basicForm li
@@ -230,15 +236,15 @@ ul {
     display: block;
     clear: both;
     list-style-type: disc;
-    margin-bottom: 1em;
     
 }
+
 
 .basicForm label 
 {
     width: 30em;
-    float: left;
-    height: 2em;
+    float: none;
+    height: 1em;
     padding-left: 0.5em;
 }
 
@@ -260,10 +266,15 @@ ul {
 .basicForm .settings label input
 {
     width: initial;
+    float: left;
 }
 
 .footer
 {
     text-align: right;
     padding-right: 1em;
+}
+
+fieldset {
+    margin-top: 1em;
 }

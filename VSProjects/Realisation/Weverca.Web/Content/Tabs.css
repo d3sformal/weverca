@@ -18,12 +18,12 @@
 
 .ui-helper-clearfix:before,
 .ui-helper-clearfix:after {
-	content: "";
-	display: table;
-	border-collapse: collapse;
+    content: "";
+    display: table;
+    border-collapse: collapse;
 }
 .ui-helper-clearfix:after {
-	clear: both;
+    clear: both;
 }
 
 
@@ -31,46 +31,45 @@
 ----------------------------------*/
 
 .ui-tabs {
-	position: relative;/* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
-	padding: .2em;
+    position: relative;/* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
+    padding: .2em;
 }
 .ui-tabs .ui-tabs-nav {
-	margin: 0;
-	padding: .2em .2em 0;
+    margin: 0;
+    padding: .2em .2em 0;
 }
 .ui-tabs .ui-tabs-nav li {
-	list-style: none;
-	float: left;
-	position: relative;
-	top: 0;
-	margin: 1px .2em 0 0;
-	border-bottom-width: 0;
-	padding: 0;
-	white-space: nowrap;
+    list-style: none;
+    float: left;
+    position: relative;
+    top: 0;
+    margin: 1px .2em 0 0;
+    border-bottom-width: 0;
+    padding: 0;
+    white-space: nowrap;
 }
 .ui-tabs .ui-tabs-nav li a {
-	float: left;
-	padding: .5em 1em;
-	text-decoration: none;
+    float: left;
+    padding: .5em 1em;
+    text-decoration: none;
 }
 .ui-tabs .ui-tabs-nav li.ui-tabs-active {
-	margin-bottom: -1px;
-	padding-bottom: 1px;
+    margin-bottom: -1px;
+    padding-bottom: 1px;
 }
-.ui-tabs .ui-tabs-nav li.ui-tabs-active a,
-.ui-tabs .ui-tabs-nav li.ui-state-disabled a,
-.ui-tabs .ui-tabs-nav li.ui-tabs-loading a {
-	cursor: text;
-}
+
 .ui-tabs .ui-tabs-nav li a, /* first selector in group seems obsolete, but required to overcome bug in Opera applying cursor: text overall if defined elsewhere... */
 .ui-tabs-collapsible .ui-tabs-nav li.ui-tabs-active a {
-	cursor: pointer;
+    cursor: pointer;
 }
 .ui-tabs .ui-tabs-panel {
-	display: block;
-	border-width: 0;
-	padding: 1em 1.4em;
-	background: none;
+    display: block;
+    border-width: 1px;
+    border-style: solid;
+    border-color: darkgray;
+    padding: 1em 1.4em;
+    background-color: #EEEEEE;
+
 }
 
 
@@ -79,8 +78,12 @@
 .ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default {
-	background: #DD8822;
-	color: #222222 !important;
+    background: #999999;
+    color: #222222 !important;
+    border-radius:3px 3px 0px 0px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: darkgray;
 }
 
 .ui-widget-header .ui-state-default a{
@@ -91,7 +94,7 @@
 .ui-widget-content .ui-state-active,
 .ui-widget-header .ui-state-active,
 .ui-widget-header .ui-state-default:hover {
-	background: #FFBB55;
+    background: #EEEEEE;
 }
 
 .ui-widget-header .ui-state-active a,
@@ -102,4 +105,8 @@
 
 .ui-tabs fieldset {
     margin: 1em;
+}
+
+li a {
+    outline-color: transparent;
 }

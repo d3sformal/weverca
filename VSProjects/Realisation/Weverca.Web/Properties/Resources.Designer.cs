@@ -317,6 +317,15 @@ namespace Weverca.Web.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to New analysis.
+        /// </summary>
+        public static string NewAnalysis {
+            get {
+                return ResourceManager.GetString("NewAnalysis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         public static string No {
