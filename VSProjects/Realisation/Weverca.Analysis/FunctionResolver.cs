@@ -912,7 +912,7 @@ namespace Weverca.Analysis
                 var maxValue = new MaxValueVisitor(OutSet);
                 if (maxValue.Evaluate(callDepthEntry) > 10)
                 {
-                    useSharedFunctions = true;
+                    //useSharedFunctions = true;
                 }
             }
 

@@ -239,7 +239,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <value>
         /// The call level.
         /// </value>
-        public int CallLevel { get; private set; }
+        public int CallLevel { 
+            get; 
+            private set; }
 
         /// <summary>
         /// Assistant helping memory models resolving memory operations.
@@ -682,18 +684,33 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// NOTE: Further changes of inputs can't change extended snapshot
         /// </summary>
         /// <param name="inputs">Input snapshots that should be merged</param>
-        protected override void extend(ISnapshotReadonly[] inputs)
+        protected override void extend(params ISnapshotReadonly[] inputs)
         {
             Logger.Log(this, "extend");
 
-            if (inputs.Length == 1)
-            {
-                extendSnapshot(inputs[0]);
-            }
-            else if (inputs.Length > 1)
-            {
-                mergeSnapshots(inputs);
-            }
+            CallLevel = SnapshotEntry.ToSnapshot (inputs [0]).CallLevel;
+
+            extendWithoutComputingCallLevel(inputs);
+        }
+
+        /// <inheritdoc />
+        protected override void extendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
+        {
+            Logger.Log(this, "extend");
+
+            CallLevel = maxCallLevel(inputs);
+
+            extendWithoutComputingCallLevel(inputs);
+        }
+
+        /// <inheritdoc />
+        protected override void extendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription) 
+        {
+            Logger.Log(this, "extend");
+
+            CallLevel = SnapshotEntry.ToSnapshot (catchDescription.TargetPoint.OutSnapshot).CallLevel;
+
+            extendWithoutComputingCallLevel(inputs);
         }
 
         /// <summary>
@@ -707,11 +724,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Snapshot snapshot = SnapshotEntry.ToSnapshot(callerContext);
             Logger.Log(this, "call extend: " + snapshot.getSnapshotIdentification() + " level: " + snapshot.CallLevel + " this: " + thisObject);
 
+
             CallLevel = snapshot.CallLevel + 1;
-            if (CallLevel != oldCallLevel && oldCallLevel != GLOBAL_CALL_LEVEL)
+
+            if (oldCallLevel != CallLevel && oldCallLevel != GLOBAL_CALL_LEVEL) 
             {
+                // The called function is shared and we are calling it repeatedly
+                // Pick the call level from the previous call of extendAsCall
                 CallLevel = oldCallLevel;
             }
+
+            // Call levels of the caller should be always the same
+            Debug.Assert (oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
 
             IMergeAlgorithm algorithm;
             switch (CurrentMode)
@@ -758,6 +782,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
         {
             Logger.Log(this, "call merge");
+
+            CallLevel = ((Snapshot)callerPoint.OutSnapshot).CallLevel;
+            var tempCallLevel = CallLevel;
+            // In case of shared functions, the call level of the caller can be bigger than call levels of the callee.
+            // Se extendAsCall method.
+            if (((Snapshot)callerPoint.OutSnapshot).CallLevel > ((Snapshot)callOutputs[0]).CallLevel ) 
+            {
+                extend (callerPoint.OutSnapshot);  // Refresh the original content of the call stack
+                CallLevel = ((Snapshot)callOutputs[0]).CallLevel; // To be able to do merging, temporary decrease the call level (will be increased after merging)
+            }
+
             List<Snapshot> snapshots = new List<Snapshot>(callOutputs.Length);
             foreach (ISnapshotReadonly input in callOutputs)
             {
@@ -793,6 +828,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
             }
+
+            CallLevel = tempCallLevel;
         }
 
         /// <summary>
@@ -1088,6 +1125,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         #endregion
 
         #region Snapshot Logic Implementation
+
 
         #region Variables
 
@@ -1628,7 +1666,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             Logger.Log(this, snapshot.getSnapshotIdentification() + " extend");
 
-            CallLevel = snapshot.CallLevel;
             IMergeAlgorithm algorithm;
             switch (CurrentMode)
             {
@@ -1671,22 +1708,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// </exception>
         private void mergeSnapshots(ISnapshotReadonly[] inputs)
         {
-            int callLevel = 0;
+            var snapshots = inputs.Select (a => SnapshotEntry.ToSnapshot (a)).ToList();
 
-            List<Snapshot> snapshots = new List<Snapshot>(inputs.Length);
-            foreach (ISnapshotReadonly input in inputs)
-            {
-                Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
-                Logger.Log(this, snapshot.getSnapshotIdentification() + " merge");
-                snapshots.Add(snapshot);
-
-                if (snapshot.CallLevel > callLevel)
-                {
-                    callLevel = snapshot.CallLevel;
-                }
-            }
-
-            CallLevel = callLevel;
             IMergeAlgorithm algorithm;
             switch (CurrentMode)
             {
@@ -1979,6 +2002,36 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
         #endregion
 
+        #endregion
+
+        #region Private Helpers
+        private void extendWithoutComputingCallLevel(ISnapshotReadonly[] inputs)
+        {
+            if (inputs.Length == 1) {
+                extendSnapshot (inputs [0]);
+            }
+            else
+                if (inputs.Length > 1) {
+                    mergeSnapshots (inputs);
+                }
+        }
+
+        private int maxCallLevel(ISnapshotReadonly[] inputs) 
+        {
+            int callLevel = 0;
+
+            foreach (ISnapshotReadonly input in inputs)
+            {
+                Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
+
+                if (snapshot.CallLevel > callLevel)
+                {
+                    callLevel = snapshot.CallLevel;
+                }
+            }
+
+            return callLevel;
+        }
         #endregion
     }
 }

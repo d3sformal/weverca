@@ -43,8 +43,7 @@ namespace Weverca.Analysis
         public static MemoryEntry GetConstant(FlowOutputSet outset, QualifiedName name)
         {
             MemoryEntry entry;
-            bool isAlwaysDefined;
-            TryGetConstant(outset, name, out entry, out isAlwaysDefined);
+            TryGetConstant(outset, name, out entry);
             return entry;
         }
 
@@ -54,10 +53,9 @@ namespace Weverca.Analysis
         /// <param name="outset">FlowOutputSet which contains values</param>
         /// <param name="name">Constant name</param>
         /// <param name="entry">Memory entry of possible values</param>
-        /// <param name="isNotDefined">Indicates whether all values are derived from constant name</param>
-        /// <returns><c>true</c> if constant is defined in every pass, otherwise <c>false</c></returns>
+        /// <returns><c>true</c> if constant is never defined, otherwise <c>true</c></returns>
         public static bool TryGetConstant(FlowOutputSet outset, QualifiedName name,
-            out MemoryEntry entry, out bool isNotDefined)
+            out MemoryEntry entry)
         {
             var context=outset.Snapshot;
             var values = new HashSet<Value>();
@@ -68,8 +66,7 @@ namespace Weverca.Analysis
             var caseInsensitiveConstant=constantArrays.ReadIndex(context,new MemberIdentifier("." + name.Name.LowercaseValue));
             if(caseInsensitiveConstant.IsDefined(context)){
                 entry=caseInsensitiveConstant.ReadMemory(context);
-                isNotDefined=false;
-                return true;
+                return false;
             }
 
             //else there can be case sensitive constant
@@ -77,16 +74,14 @@ namespace Weverca.Analysis
             var caseSensitiveConstant = constantArrays.ReadIndex(context, new MemberIdentifier("#" + name.Name.Value));
             if(caseSensitiveConstant.IsDefined(context)){
                 entry=caseSensitiveConstant.ReadMemory(context);
-                isNotDefined=false;
-                return true;
+                return false;
             }
             
            // Undefined constant is interpreted as a string
-            isNotDefined = true;
             var stringValue = outset.CreateString(name.Name.Value);
             entry=new MemoryEntry(stringValue);
             
-            return false;
+            return true;
         }
 
         /// <summary>

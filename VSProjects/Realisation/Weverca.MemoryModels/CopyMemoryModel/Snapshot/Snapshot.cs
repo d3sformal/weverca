@@ -663,6 +663,9 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
         {
             SnapshotLogger.append(this, "call merge");
+
+            CallLevel = ((Snapshot)callerPoint.OutSnapshot).CallLevel;
+
             List<Snapshot> snapshots = new List<Snapshot>(callOutputs.Length);
             foreach (ISnapshotReadonly input in callOutputs)
             {

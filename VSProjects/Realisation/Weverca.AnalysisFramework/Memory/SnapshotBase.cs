@@ -272,10 +272,10 @@ namespace Weverca.AnalysisFramework.Memory
         /// NOTE: Further changes of inputs can't change extended snapshot
         /// </summary>
         /// <param name="inputs">Input snapshots that should be merged</param>
-        protected abstract void extend(ISnapshotReadonly[] inputs);
+        protected abstract void extend(params ISnapshotReadonly[] inputs);
 
         /// <summary>
-        /// Merges information at the entry to the subprogram (function, method, or included file).
+        /// Merges information at the entry of the subprogram (function, method, or included file).
         /// 
         /// Note that if inputs.Length > 1 than the subprogram is shared between more extended points (e.g., callers).
         /// 
@@ -294,7 +294,7 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="inputs">Input snapshots that should be merged</param>
         /// <param name="extendedPoints">The points that are extended (e.g, callers).</param>
         /// <seealso cref="MergeWithCallLevel"/>
-        protected void extendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
+        protected virtual void extendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
         {
             extend(inputs);
         }
@@ -320,6 +320,20 @@ namespace Weverca.AnalysisFramework.Memory
         /// <param name="extensionsOutputs">Output snapshots of callees belonging to the call</param>  
         /// <seealso cref="ExtendAtSubprogramEntry"/>            
         protected abstract void mergeWithCallLevel(ProgramPointBase extendedPoint, ISnapshotReadonly[] extensionsOutputs);
+
+        /// <summary>
+        /// Merges information at the entry of the catch block.
+        /// 
+        /// Snapshot has to contain merged info present in inputs (no matter what snapshots contain till now)
+        /// This merged info can be than changed with snapshot updatable operations
+        /// NOTE: Further changes of inputs can't change extended snapshot
+        /// </summary>
+        /// <param name="inputs">Input snapshots that should be merged (snapshots of program points where the catched exception is thrown).</param>
+        /// <param name="catchDescription">Catch description.</param>
+        protected virtual void extendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription) 
+        {
+            extend(inputs);
+        }
 
         /// <summary>
         /// Set given info for value
@@ -926,6 +940,14 @@ namespace Weverca.AnalysisFramework.Memory
         {
             checkCanUpdate();
             extendAtSubprogramEntry(inputs, extendedPoints);
+            _statistics.Report(Statistic.SnapshotExtendings);
+        }
+
+        /// <inheritdoc />
+        public void ExtendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription) 
+        {
+            checkCanUpdate ();
+            extendAtCatchEntry(inputs, catchDescription);
             _statistics.Report(Statistic.SnapshotExtendings);
         }
 

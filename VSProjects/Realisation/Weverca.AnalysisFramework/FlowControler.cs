@@ -211,7 +211,7 @@ namespace Weverca.AnalysisFramework
             {
                 //create catch point according to specified throw info
                 var catchPoint = new CatchPoint(CurrentProgramPoint, throwInfo.Catch);
-                InitializeNewPoint(catchPoint);
+                InitializeNewPoint(catchPoint, catchPoint.TargetPoint.OwningPPGraph);
 
                 catchPoint.ReThrow(throwInfo);
 
@@ -224,9 +224,14 @@ namespace Weverca.AnalysisFramework
 
         internal void InitializeNewPoint(ProgramPointBase point)
         {
+            InitializeNewPoint (point, CurrentPPG);
+        }
+
+        internal void InitializeNewPoint(ProgramPointBase point, ProgramPointGraph owningGraph)
+        {
             point.Initialize(Services.CreateEmptySet(), Services.CreateEmptySet());
             point.SetServices(Services);
-            point.SetOwningGraph(CurrentPPG);
+            point.SetOwningGraph(owningGraph);
         }
     }
 }

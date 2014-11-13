@@ -70,6 +70,12 @@ class StaticAnalysis_Runner {
 	 * Number of processed program points in Weverca analyzer
 	 */
 	int numberOfPPoints;
+	
+	/**
+	 * Number of processed lines in Weverca analyzer
+	 */
+	int numberOfProcessedLines;
+	
 	private Runner runner;
 	
 	/**

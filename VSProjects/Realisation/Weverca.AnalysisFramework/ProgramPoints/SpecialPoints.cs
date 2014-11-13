@@ -374,7 +374,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void extendInput()
         {
             _inSet.StartTransaction();
-            _inSet.Extend(OwningExtension.Owner.OutSet);
+            //_inSet.Extend(OwningExtension.Owner.OutSet);
             Services.FlowResolver.CallDispatchMerge(OwningExtension.Owner, _inSet, OwningExtension.Branches);
             _inSet.CommitTransaction();
         }

@@ -128,7 +128,8 @@ public class Analyzer {
 										runner.wevercaTime,
 										runner.firstPhaseTime,
 										runner.secondPhaseTime,
-										runner.numberOfPPoints);
+										runner.numberOfPPoints,
+										runner.numberOfProcessedLines);
 						}
 					});
 					return Status.OK_STATUS;

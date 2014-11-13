@@ -281,6 +281,15 @@ namespace Weverca.AnalysisFramework.Expressions
             Result(new GlobalStmtPoint(x, variables.ToArray()));
         }
 
+        /// <inheritdoc />
+        public override void VisitStaticVarDecl(StaticVarDecl x)
+        {
+            var variable = CreateLValue(x.Variable);
+            var initializer = CreateRValue (x.Initializer);
+
+            Result(new StaticVariablePoint(x, variable, x.Variable.VarName, initializer));
+        }
+
         #endregion
 
         #region Variable visiting

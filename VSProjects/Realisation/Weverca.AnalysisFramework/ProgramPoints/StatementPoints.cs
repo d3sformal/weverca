@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using PHP.Core;
 using PHP.Core.AST;
 
 using Weverca.AnalysisFramework.Memory;
@@ -77,6 +78,76 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         {
             visitor.VisitThrow(this);
         }
+    }
+
+    /// <summary>
+    /// Declaration of static variable.
+    /// </summary>
+    public class StaticVariablePoint : ProgramPointBase 
+    {
+        /// <summary>
+        /// Variable that is  marked as static with statement represented by current point
+        /// </summary>
+        private readonly LValuePoint _variable;
+
+        private readonly VariableName _variableName;
+
+        /// <summary>
+        /// Value that should be used to initialize the static variable represented by current point
+        /// </summary>
+        private ValuePoint _initializer;
+
+        /// <summary>
+        /// Element represented by current point
+        /// </summary>
+        public readonly StaticVarDecl StaticVarDecl;
+
+        /// <summary>
+        /// Variable to be fetched from static scope
+        /// </summary>
+        public LValuePoint Variable { get { return _variable; } }
+
+        /// <inheritdoc />
+        public override LangElement Partial { get { return StaticVarDecl; } }
+
+        internal StaticVariablePoint(StaticVarDecl staticVarDecl, LValuePoint variable, VariableName variableName, ValuePoint initializer)
+        {
+            StaticVarDecl = staticVarDecl;
+            _variable = variable;
+            _initializer = initializer;
+
+
+        }
+
+        /// <inheritdoc />
+        protected override void flowThrough()
+        {
+            // Create the name of the variable in global controls
+            // Should be unique for each function
+            var varNameInGlobalStore = new VariableName ("static_" + _variableName.Value + OwningPPGraph.FunctionName + OwningScript);
+
+            // Get the variable from global store
+            var variableInGlobalStore = OutSet.GetControlVariable (varNameInGlobalStore);
+
+            // Initialize the variable with _initializer if it may be uninitialized
+            var values = variableInGlobalStore.ReadMemory (OutSnapshot);
+            if (values.PossibleValues.Any (a => a is UndefinedValue))
+            {
+                var newValues = new List<Value> (values.PossibleValues.Where (a => !(a is UndefinedValue)));
+                newValues.AddRange (_initializer.Values.PossibleValues);
+                variableInGlobalStore.WriteMemory (OutSnapshot, new MemoryEntry (newValues), true);
+            }
+
+            // Static variable is an alias of the variable from global store (this respects the implementation in official PHP interpreter)
+            _variable.LValue.SetAliases (OutSnapshot, variableInGlobalStore);
+        }
+
+        /// <inheritdoc />
+        internal override void Accept(ProgramPointVisitor visitor)
+        {
+            visitor.VisitStaticVariable(this);
+        }
+       
     }
 
     /// <summary>

@@ -132,7 +132,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             get
             {
                 //Return value is obtained from sink
-                return Extension.Sink.Value;
+                return (Extension.Sink.Value != null) ? Extension.Sink.Value : OutSet.CreateSnapshotEntry(new MemoryEntry(OutSet.AnyValue));;
             }
             protected set
             {

@@ -41,7 +41,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <summary>
         /// Path for the current instance.
         /// </summary>
-        MemoryPath path;
+        readonly MemoryPath path;
 
         /// <summary>
         /// Identification of parent variable.

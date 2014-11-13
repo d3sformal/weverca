@@ -404,6 +404,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         }
 
         /// <summary>
+        /// Visits the declaration of static variable.
+        /// </summary>
+        /// <param name="p">P.</param>
+        public virtual void VisitStaticVariable(StaticVariablePoint p) 
+        {
+            VisitPoint(p);
+        }
+
+        /// <summary>
         /// Visits the echo statement program point.
         /// </summary>
         /// <param name="p">Visited point</param>

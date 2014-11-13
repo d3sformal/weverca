@@ -59,6 +59,10 @@ public class OverviewParser implements StaticAnalysisParser {
 			runner.numberOfPPoints = Integer.parseInt(line.substring(line.indexOf(':')+2));
 		}
 		
+		if (line.contains("The number of processed lines of code is:")) {
+			runner.numberOfProcessedLines = Integer.parseInt(line.substring(line.indexOf(':')+2));
+		}
+		
 	}
 	
 	@Override

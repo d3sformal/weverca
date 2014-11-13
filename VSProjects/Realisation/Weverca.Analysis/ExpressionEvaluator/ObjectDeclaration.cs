@@ -281,8 +281,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
                     {
-                        SetWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
-                        success = false;
+                        if (!type.IsAbstract) 
+                        {
+                            SetWarning ("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
+                            success = false;
+                        }
                     }
                     else
                     {
@@ -300,8 +303,11 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 {
                     if (!type.SourceCodeMethods.ContainsKey(new MethodIdentifier(type.QualifiedName, method.Key.Name)))
                     {
-                        SetWarning("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
-                        success = false;
+                        if (!type.IsAbstract) 
+                        {
+                            SetWarning ("Class " + type.QualifiedName + " doesn't implement method " + method.Key.Name, element, AnalysisWarningCause.CLASS_DOENST_IMPLEMENT_ALL_INTERFACE_METHODS);
+                            success = false;
+                        }
                     }
                     else
                     {
@@ -508,6 +514,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
         private bool AreMethodsCompatible(MethodDecl a, MethodDecl b)
         {
+
             if (a.Signature.FormalParams.Count == b.Signature.FormalParams.Count)
             {
                 for (int i = 0; i < a.Signature.FormalParams.Count; i++)
@@ -719,7 +726,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
 
                         if (!AreMethodsCompatible(overridenMethod, method.MethodDecl))
                         {
-                            SetWarning("Can't inherit function " + method.MethodDecl.Name + ", beacuse arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
+                            SetWarning("Can't inherit function " + method.MethodDecl.Name + ", because arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
                             containsErrors = true;
                         }
                         if (method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
@@ -753,12 +760,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                     {
                         containsErrors = true;
                     }
-
-                    if (!AreMethodsCompatible(overridenMethod.MethodDecl, method.MethodDecl))
-                    {
-                        SetWarning("Can't inherit function " + method.MethodDecl.Name + ", beacuse arguments doesn't match", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION);
-                        containsErrors = true;
-                    }
+                        
                     if (method.MethodDecl.Modifiers.HasFlag(PhpMemberAttributes.Abstract))
                     {
                         SetWarning("Can't override function " + method.MethodDecl.Name + ", with abstract function", method.MethodDecl, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT);

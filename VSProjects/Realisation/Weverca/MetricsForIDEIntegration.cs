@@ -43,8 +43,10 @@ namespace Weverca
     internal class MetricsForIDEIntegration
     {
         // Indicates whether second phase is enabled
-        public static readonly bool SECOND_PHASE = true;
+        public static readonly bool SECOND_PHASE = false;
         public static readonly string PHP_FILE_EXTENSION = ".php";
+
+        private static StreamWriter fileOutput;
 
         /// <summary>
         /// Runs computation of code metrics for IDE integration (option -cmide of the analyzer)
@@ -53,8 +55,11 @@ namespace Weverca
         /// <param name="metricsType"></param>
         /// <param name="analyzedFile"></param>
         /// <param name="otherArgs"></param>
-        internal static void Run(string metricsType, string analyzedFile, string[] otherArgs)
+        internal static void Run(string metricsType, string analyzedFile, string outputFile, string[] otherArgs)
         {
+            File.Delete (outputFile);
+            fileOutput = new StreamWriter(outputFile);
+
             // The first argument determines an action
             if (metricsType == "-quantity")
             {
@@ -75,7 +80,7 @@ namespace Weverca
                 {
                     foreach (String file in nonProcessedFiles)
                     {
-                        Console.WriteLine("Not processed: " + file);
+                        fileOutput.WriteLine("Not processed: " + file);
                     }
                 }
             }
@@ -140,6 +145,8 @@ namespace Weverca
                 RunStaticAnalysis(filesToAnalyze.ToArray(), memoryModel);
             }
 
+            fileOutput.Close ();
+
         }
 
        
@@ -151,7 +158,7 @@ namespace Weverca
         private static void ProcessDirectory(string directoryName, ref List<String> nonProcessedFiles)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            Console.WriteLine("Processing directory: {0}", directoryName);
+            fileOutput.WriteLine("Processing directory: {0}", directoryName);
             Debug.Assert(Directory.Exists(directoryName));
 
             foreach (var fileName in Directory.EnumerateFiles(directoryName, "*.php",
@@ -166,12 +173,12 @@ namespace Weverca
                 }
             }
             watch.Stop();
-            Console.WriteLine("Time: {0}", watch.ElapsedMilliseconds);
+            fileOutput.WriteLine("Time: {0}", watch.ElapsedMilliseconds);
         }
 
         private static void ProcessDirectory(string directoryName, string[] constructs)
         {
-            Console.WriteLine("Processing directory: {0}", directoryName);
+            fileOutput.WriteLine("Processing directory: {0}", directoryName);
             Debug.Assert(Directory.Exists(directoryName));
 
             foreach (string fileName in Directory.EnumerateFiles(directoryName, "*.php",
@@ -192,11 +199,11 @@ namespace Weverca
         /// <param name="nonProcessedFiles"></param>
         private static void ProcessFile(string fileName, ref List<String> nonProcessedFiles)
         {
-            Console.WriteLine("Process file: {0}", fileName);
+            fileOutput.WriteLine("Process file: {0}", fileName);
 
             Debug.Assert(File.Exists(fileName));
 
-            Console.WriteLine("Processing file: {0}", fileName);
+            fileOutput.WriteLine("Processing file: {0}", fileName);
             var parser = GenerateParser(fileName);
             try
             {
@@ -208,7 +215,7 @@ namespace Weverca
                 }
 
                 var info = MetricInfo.FromParsers(true, parser);
-                Console.WriteLine(fileName + ";" + info.GetQuantity(Quantity.NumberOfLines) + ";"
+                fileOutput.WriteLine(fileName + ";" + info.GetQuantity(Quantity.NumberOfLines) + ";"
                     + info.GetQuantity(Quantity.NumberOfSources) + ";"
                     + info.GetQuantity(Quantity.MaxInheritanceDepth) + ";"
                     + info.GetQuantity(Quantity.MaxMethodOverridingDepth) + ";" +
@@ -225,18 +232,18 @@ namespace Weverca
 
         private static void ProcessFile(string fileName, string[] constructs)
         {
-            Console.WriteLine("Process file: {0}", fileName);
+            fileOutput.WriteLine("Process file: {0}", fileName);
 
             Debug.Assert(File.Exists(fileName));
 
-            Console.WriteLine("Processing file: {0}", fileName);
+            fileOutput.WriteLine("Processing file: {0}", fileName);
             var parser = GenerateParser(fileName);
             try
             {
                 parser.Parse();
                 if (parser.Errors.AnyError)
                 {
-                    Console.WriteLine("error");
+                    fileOutput.WriteLine("error");
                     return;
                 }
 
@@ -247,7 +254,7 @@ namespace Weverca
                     {
                         foreach (var node in info.GetOccurrences(StringToIndicator(construct)))
                         {
-                            Console.WriteLine("File *" + fileName + "* contains indicator *" + construct
+                            fileOutput.WriteLine("File *" + fileName + "* contains indicator *" + construct
                                 + "*" + ((LangElement)node).Position.FirstLine.ToString()
                                 + "," + ((LangElement)node).Position.FirstOffset.ToString()
                                 + "," + ((LangElement)node).Position.LastLine.ToString()
@@ -319,26 +326,29 @@ namespace Weverca
                 var filesInfo = Analyzer.GetFileNames(argument);
                 if (filesInfo == null)
                 {
-                    Console.WriteLine("Path \"{0}\" cannot be recognized", argument);
-                    Console.WriteLine(); 
+                    fileOutput.WriteLine("Path \"{0}\" cannot be recognized", argument);
+                    fileOutput.WriteLine(); 
                     continue;
                 }
 
                 else if (filesInfo.Length <= 0)
                 {
-                    Console.WriteLine("Path pattern \"{0}\" does not match any file", argument);
-                    Console.WriteLine();
+                    fileOutput.WriteLine("Path pattern \"{0}\" does not match any file", argument);
+                    fileOutput.WriteLine();
                 }
 
                 foreach (var fileInfo in filesInfo)
                 {
                     console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
 
-                    try
+                    //try
                     {
                         var watch = System.Diagnostics.Stopwatch.StartNew();
                         var ppGraph = Analyzer.Run(fileInfo, memoryModel);
                         watch.Stop();
+
+                        GC.Collect();
+                        GC.WaitForPendingFinalizers();
 
                         var watch2 = System.Diagnostics.Stopwatch.StartNew();
 						var nextPhase = new TaintForwardAnalysis(ppGraph);
@@ -350,7 +360,7 @@ namespace Weverca
                         watch2.Stop();
 
 
-                        Console.WriteLine("Analysis warnings:");
+                        fileOutput.WriteLine("Analysis warnings:");
 						var firstPhaseWarnings = AnalysisWarningHandler.GetWarnings();
 						//PrintWarnings(new List<AnalysisWarning>());
 						PrintWarnings(firstPhaseWarnings);
@@ -361,32 +371,40 @@ namespace Weverca
 						}
 
 
-						//Console.WriteLine("Security warnings with taint flow:");
+						//fileOutput.WriteLine("Security warnings with taint flow:");
 						if (SECOND_PHASE)
 							PrintTaintWarnings(nextPhase.analysisTaintWarnings);
 
-                        Console.WriteLine("Variables:");
-                        List<ProgramPointGraph> processedPPGraphs = new List<ProgramPointGraph>();
-                        List<ProgramPointBase> processedPPoints = new List<ProgramPointBase>();
+                        fileOutput.WriteLine("Variables:");
+                        var processedPPGraphs = new HashSet<ProgramPointGraph>();
+                        var processedPPoints = new HashSet<ProgramPointBase>();
                         writeAll(ppGraph, ref processedPPGraphs, ref processedPPoints);
 
                         bigWatch.Stop();
 
-						Console.WriteLine("Overview:");
+                        fileOutput.WriteLine("Overview:");
 
-						Console.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count + nextPhase.analysisTaintWarnings.Count));
-						Console.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count);
-						Console.WriteLine("Number of warnings in the second phase: " + nextPhase.analysisTaintWarnings.Count);
-                        Console.WriteLine("Weverca analyzer time consumption: " + bigWatch.ElapsedMilliseconds);
-                        Console.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
-                        Console.WriteLine("Second phase time consumption: " + watch2.ElapsedMilliseconds);
-                        Console.WriteLine("The number of nodes in the application is: " + Program.numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph));
+                        fileOutput.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count + nextPhase.analysisTaintWarnings.Count));
+                        fileOutput.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count);
+                        fileOutput.WriteLine("Number of warnings in the second phase: " + nextPhase.analysisTaintWarnings.Count);
+                        fileOutput.WriteLine("Weverca analyzer time consumption: " + bigWatch.ElapsedMilliseconds);
+                        fileOutput.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
+                        fileOutput.WriteLine("Second phase time consumption: " + watch2.ElapsedMilliseconds);
+                        var programLines = new Dictionary<string, HashSet<int>> ();
+                        fileOutput.WriteLine("The number of nodes in the application is: " + Program.numProgramPoints(new HashSet<ProgramPointGraph>(), programLines, ppGraph));
+                        var programLinesNum = 0;
+                        foreach (var script in programLines.Values) {
+                            programLinesNum += script.Count;
+                        }
+                        fileOutput.WriteLine("The number of processed lines of code is: " + programLinesNum);
                     }
+                    /*
                     catch (Exception e)
                     {
-                        Console.WriteLine("error");
-                        console.Error(e.Message);
-                    }
+                        fileOutput.WriteLine("error");
+                        //console.Error(e.Message);
+                        fileOutput.WriteLine (e.Message);
+                    }*/
                 }
             }
         }
@@ -396,7 +414,7 @@ namespace Weverca
             
             if (warnings.Count == 0)
             {
-                Console.WriteLine("No warnings");
+                fileOutput.WriteLine("No warnings");
             }
             string file = "/";
             foreach (var s in warnings)
@@ -404,16 +422,16 @@ namespace Weverca
                 if (file != s.FullFileName)
                 {
                     file = s.FullFileName;
-                    Console.WriteLine("File: " + file);
+                    fileOutput.WriteLine("File: " + file);
                 }
 
-                Console.WriteLine ("Warning at line " + s.LangElement.Position.FirstLine + 
+                fileOutput.WriteLine ("Warning at line " + s.LangElement.Position.FirstLine + 
                                     " char " + s.LangElement.Position.FirstColumn + 
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
                                     " lastoffset " + s.LangElement.Position.LastOffset +
                                     " : " + s.Message.ToString());
-                Console.WriteLine("Called from: ");
-                Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
+                fileOutput.WriteLine("Called from: ");
+                fileOutput.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
             }
         }
 
@@ -421,7 +439,7 @@ namespace Weverca
         {
             if (warnings.Count == 0)
             {
-                Console.WriteLine("No warnings");
+                fileOutput.WriteLine("No warnings");
             }
             string file = "/";
             foreach (var s in warnings)
@@ -429,15 +447,15 @@ namespace Weverca
                 if (file != s.FullFileName)
                 {
                     file = s.FullFileName;
-                    Console.WriteLine("File: " + file);
+                    fileOutput.WriteLine("File: " + file);
                 }
-                Console.WriteLine("Warning at line " + s.LangElement.Position.FirstLine +
+                fileOutput.WriteLine("Warning at line " + s.LangElement.Position.FirstLine +
                                     " char " + s.LangElement.Position.FirstColumn +
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
                                     " lastoffset " + s.LangElement.Position.LastOffset +
                                     " : " + s.Message.ToString());
-                Console.WriteLine("Called from: ");
-                Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
+                fileOutput.WriteLine("Called from: ");
+                fileOutput.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
 
             }
         }
@@ -446,7 +464,7 @@ namespace Weverca
         {
             if (warnings.Count == 0)
             {
-                Console.WriteLine("No warnings");
+                fileOutput.WriteLine("No warnings");
             }
             string file = "/";
             foreach (var s in warnings)
@@ -454,22 +472,22 @@ namespace Weverca
                 if (file != s.FullFileName)
                 {
                     file = s.FullFileName;
-                    Console.WriteLine("File: " + file);
+                    fileOutput.WriteLine("File: " + file);
                 }
-                Console.WriteLine("Warning at line " + s.LangElement.Position.FirstLine +
+                fileOutput.WriteLine("Warning at line " + s.LangElement.Position.FirstLine +
                                     " char " + s.LangElement.Position.FirstColumn +
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
                                     " lastoffset " + s.LangElement.Position.LastOffset +
                                     " : " + s.Message.ToString());
-                Console.WriteLine("Called from: ");
-                Console.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
-                if (s.HighPriority) Console.WriteLine("High priority");
-                Console.WriteLine("Taint Flow: ");
-                Console.WriteLine(s.TaintFlow);
+                fileOutput.WriteLine("Called from: ");
+                fileOutput.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
+                if (s.HighPriority) fileOutput.WriteLine("High priority");
+                fileOutput.WriteLine("Taint Flow: ");
+                fileOutput.WriteLine(s.TaintFlow);
             }
         }
 
-        private static void writeAll(ProgramPointGraph graph,ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
+        private static void writeAll(ProgramPointGraph graph,ref HashSet<ProgramPointGraph> processedPPGraphs, ref HashSet<ProgramPointBase> processedPPoints)
         {
             processedPPGraphs.Add(graph);
             ProgramPointBase lastPPoint = null;
@@ -490,11 +508,13 @@ namespace Weverca
                 }
                 else
                 {
+                    // For efficiency reasons, information about instate of program points are now not printed
                     if (lastPPoint != null) // show the last program point
                     {
-                        writeProgramPointInformation(lastPPoint, true);
+                        //writeProgramPointInformation(lastPPoint, true);
                     }
-                    writeProgramPointInformation(p, false);
+                    //writeProgramPointInformation(p, false);
+                    writeProgramPointInformation(p, true);
                     
                     lastPPoint = p;
                 }
@@ -512,47 +532,46 @@ namespace Weverca
         {
             if (p == null || p.Partial == null) return;
             if (p is FunctionDeclPoint) return;
-            Console.Write("Point position: ");
-            Console.WriteLine("First line: " + p.Partial.Position.FirstLine +
+            fileOutput.Write("Point position: ");
+            fileOutput.WriteLine("First line: " + p.Partial.Position.FirstLine +
                                 " Last line: " + p.Partial.Position.LastLine +
                                 " First offset: " + p.Partial.Position.FirstOffset +
                                 " Last offset: " + p.Partial.Position.LastOffset);
-            if (p.OwningPPGraph.OwningScript != null) Console.WriteLine("OwningScript: " + p.OwningPPGraph.OwningScript.FullName);
+            if (p.OwningPPGraph.OwningScript != null) fileOutput.WriteLine("OwningScript: " + p.OwningPPGraph.OwningScript.FullName);
             String callStack = p.OwningPPGraph.Context.ToString();
             if (callStack != "")
             {
-                Console.WriteLine("Called from: ");
-                Console.WriteLine(p.OwningPPGraph.Context.ToString());
+                fileOutput.WriteLine("Called from: ");
+                fileOutput.WriteLine(p.OwningPPGraph.Context.ToString());
             }
-				
 
-            Console.WriteLine("Point information:");
+            fileOutput.WriteLine("Point information:");
 
-			Console.Write("Fixpoint iterations=");
-			Console.WriteLine(p.FixpointIterationsCount);
+            fileOutput.Write("Fixpoint iterations=");
+            fileOutput.WriteLine(p.FixpointIterationsCount);
 
             if (outset)
             {
-                if (p.OutSet != null) Console.WriteLine(p.OutSet.Representation);
-                else Console.WriteLine("Dead code");
+                if (p.OutSet != null) fileOutput.WriteLine(p.OutSet.Representation);
+                else fileOutput.WriteLine("Dead code");
             }
             if (!outset)
             {
-                if (p.InSet != null) Console.WriteLine(p.InSet.Representation);
-                else Console.WriteLine("Dead code");
+                if (p.InSet != null) fileOutput.WriteLine(p.InSet.Representation);
+                else fileOutput.WriteLine("Dead code");
             }
         }
 
-        private static void writeExtension(ExtensionPoint point, ref List<ProgramPointGraph> processedPPGraphs, ref List<ProgramPointBase> processedPPoints)
+        private static void writeExtension(ExtensionPoint point, ref HashSet<ProgramPointGraph> processedPPGraphs, ref HashSet<ProgramPointBase> processedPPoints)
         {
             ProgramPointGraph graph = point.Graph;
             foreach (ProgramPointGraph processedGraph in processedPPGraphs)
             {
                 if (graph == processedGraph) return;
             }
-            Console.WriteLine("Extension");
+            fileOutput.WriteLine("Extension");
             writeAll(graph,ref processedPPGraphs, ref processedPPoints);
-            Console.WriteLine("End extension");
+            fileOutput.WriteLine("End extension");
         }
  
     }

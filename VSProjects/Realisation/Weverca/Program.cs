@@ -88,7 +88,7 @@ namespace Weverca
                     {
                         if (args[filesIndex + 1].ToLower() == "copymm") memoryModel = MemoryModels.MemoryModels.CopyMM;
                         else if (args[filesIndex + 1].ToLower() == "modularcopymm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
-						if (args[filesIndex+1].ToLower() == "modularmm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
+                        if (args[filesIndex+1].ToLower() == "modularmm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
                         filesIndex += 2;
                     }
 
@@ -117,9 +117,9 @@ namespace Weverca
 
                     break;
                 case "-cmide":
-                    var metricsArgs = new string[args.Length - 3];
-                    Array.Copy(args, 2, metricsArgs, 0, args.Length - 3);
-                    MetricsForIDEIntegration.Run(args[1], args[args.Length - 1], metricsArgs);
+                var metricsArgs = new string[args.Length - 4];
+                Array.Copy(args, 2, metricsArgs, 0, args.Length - 4);
+                MetricsForIDEIntegration.Run(args[1], args[args.Length - 2], args[args.Length - 1], metricsArgs);
                     break;
                 case "-metrics":
                     var metricFileNames=new string[args.Length-1];
@@ -197,7 +197,7 @@ namespace Weverca
 					console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
 
                     console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
-                    console.CommentLine(string.Format("The number of nodes in the application is: {0}\n", numProgramPoints(new HashSet<ProgramPointGraph>(), ppGraph)));
+                    console.CommentLine(string.Format("The number of nodes in the application is: {0}\n", numProgramPoints(new HashSet<ProgramPointGraph>(), new Dictionary<string, HashSet<int>>(), ppGraph)));
 
 
 					//printIncludes(console, ppGraph);
@@ -267,16 +267,27 @@ namespace Weverca
         /// <summary>
         /// Number of program points in program point graph, including program points that are its extensions.
         /// </summary>
-        public static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, ProgramPointGraph ppg)
+        public static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, Dictionary<string, HashSet<int>> processedLines, ProgramPointGraph ppg)
         {
             int num = ppg.Points.Cast<object>().Count();
             processedGraphs.Add(ppg);
+
+            HashSet<int> currentScriptLines = null;
+            if (ppg.OwningScript != null && !processedLines.TryGetValue (ppg.OwningScript.FullName, out currentScriptLines)) 
+            {
+                currentScriptLines = new HashSet<int> ();
+                processedLines.Add (ppg.OwningScript.FullName, currentScriptLines);
+            }
+
             foreach (var point in ppg.Points)
             {
+                if (currentScriptLines != null &&point.Partial != null)
+                    currentScriptLines.Add (point.Partial.Position.FirstLine);
+
                 foreach (var branch in point.Extension.Branches) 
                 {
                     if (!processedGraphs.Contains (branch.Graph)) {
-                        num += numProgramPoints(processedGraphs, branch.Graph);
+                        num += numProgramPoints(processedGraphs, processedLines, branch.Graph);
                     }
                 }
             }

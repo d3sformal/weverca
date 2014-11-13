@@ -241,7 +241,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
 
 
             var leftValue = leftPoint.Value == null ? new MemoryEntry(OutSnapshot.UndefinedValue) : leftPoint.Value.ReadMemory(OutSnapshot);
-            var rightValue = rightPoint.Value == null ? new MemoryEntry(OutSnapshot.UndefinedValue) : rightPoint.Value.ReadMemory(OutSnapshot);
+            var rightValue = (rightPoint.OutSet == null || rightPoint.Value == null) ? new MemoryEntry(OutSnapshot.UndefinedValue) : rightPoint.Value.ReadMemory(OutSnapshot);
 
             var value = Services.Evaluator.BinaryEx(leftValue,
                 Expression.PublicOperation, rightValue);

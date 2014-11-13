@@ -316,6 +316,10 @@ namespace Weverca.Analysis.NativeAnalyzers
             SpecialFunctionsImplementations arrayShiftAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[arrayShiftName]);
             specialFunctions.Add(arrayShiftName, new NativeAnalyzerMethod(arrayShiftAnalyzer._array_pop));
 
+            QualifiedName arrayMergeName = new QualifiedName(new Name("array_merge"));
+            SpecialFunctionsImplementations arrayMergeAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[arrayMergeName]);
+            specialFunctions.Add(arrayMergeName, new NativeAnalyzerMethod(arrayMergeAnalyzer._array_merge));
+
             QualifiedName is_arrayName = new QualifiedName(new Name("is_array"));
             SpecialFunctionsImplementations is_arrayAnalyzer = new SpecialFunctionsImplementations(typeModeledFunctions[is_arrayName]);
             specialFunctions.Add(is_arrayName, new NativeAnalyzerMethod(is_arrayAnalyzer._is_array));
@@ -1127,7 +1131,47 @@ namespace Weverca.Analysis.NativeAnalyzers
             }
         }
 
+        internal void _array_merge(FlowController flow) 
+        {
+            if (NativeAnalyzerUtils.checkArgumentsCount (flow, nativeFunctions)) {
+                NativeAnalyzerUtils.checkArgumentTypes (flow, nativeFunctions);
 
+                // Create the array to be returned
+                var newArray = flow.OutSet.CreateArray ();
+                var newArrayEntry = flow.OutSet.CreateSnapshotEntry(new MemoryEntry(newArray));
+
+                // Get number of arguments
+                MemoryEntry argc = flow.InSet.ReadVariable(new VariableIdentifier(".argument_count")).ReadMemory(flow.OutSet.Snapshot);
+                int argumentCount = ((IntegerValue)argc.PossibleValues.ElementAt(0)).Value;
+
+                // Merge arrays to the array to be returned
+                var lastIntIndex = 0;
+                for (var arrIndex = 0; arrIndex < argumentCount; arrIndex++)
+                {
+                    var arrayEntry = flow.OutSet.GetVariable (NativeAnalyzerUtils.Argument (arrIndex));
+                    foreach (var index in arrayEntry.IterateIndexes(flow.OutSet.Snapshot)) 
+                    {
+                        int intIndex = 0;
+                        MemberIdentifier targetIndex;
+                        if (int.TryParse (index.DirectName, out intIndex)) {
+                            // If the arrays contain numeric keys, the later value will not overwrite the original value, but will be appended. 
+                            // Values in the input array with numeric keys are renumbered with incrementing keys starting from zero in the result array
+                            targetIndex = new MemberIdentifier (lastIntIndex.ToString ());
+                            ++lastIntIndex;
+                        } else 
+                        {
+                            // If the input arrays have the same string keys, then the later value for that key will overwrite the previous one
+                            targetIndex = index;
+                        }
+                            
+                        newArrayEntry.ReadIndex (flow.OutSet.Snapshot, targetIndex).WriteMemory (flow.OutSet.Snapshot, arrayEntry.ReadIndex (flow.OutSet.Snapshot, index).ReadMemory (flow.OutSet.Snapshot));
+                    }
+                }
+
+                // Write the result
+                flow.OutSet.GetLocalControlVariable(SnapshotBase.ReturnValue).WriteMemory(flow.OutSet.Snapshot, newArrayEntry.ReadMemory(flow.OutSet.Snapshot));
+            }
+        }
 
         /// <summary>
         /// Delegate for implemetation of is_"something" native functions

@@ -19,6 +19,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 using System.Collections.Generic;
+using System.Linq;
 
 using PHP.Core;
 using PHP.Library;
@@ -80,7 +81,9 @@ namespace Weverca.Analysis.NativeAnalyzers
             { "strtolower", _strtolower },
             { "strtoupper", _strtoupper },
             { "htmlentities", _htmlentities },
-            { "md5", _md5 }
+            { "md5", _md5 },
+            { "dirname", _dirname },
+            { "defined", _defined }
         };
 
         #region Implementations of concrete native functions
@@ -169,6 +172,50 @@ namespace Weverca.Analysis.NativeAnalyzers
             }
 
             return flow.OutSet.CreateString(PhpHash.MD5(phpBytes));
+        }
+
+        private static Value _dirname(FlowController flow, Value[] arguments) 
+        {
+            Debug.Assert(arguments.Length == 1);
+
+            if (arguments[0] is AnyValue || arguments[0] is UndefinedValue) 
+            {
+                return arguments[0];
+            }
+
+            stringConverter.SetContext(flow);
+            var fileName = stringConverter.EvaluateToString(arguments[0]);
+
+            if (fileName == null)
+            {
+                return flow.OutSet.AnyStringValue;
+            }
+
+            return flow.OutSet.CreateString( PHP.Library.PhpPath.GetDirectory(fileName.Value));
+        }
+
+        private static Value _defined(FlowController flow, Value[] arguments) 
+        {
+            Debug.Assert(arguments.Length == 1);
+
+            stringConverter.SetContext(flow);
+            var constantName = stringConverter.EvaluateToString(arguments[0]);
+
+            if (constantName == null)
+            {
+                return flow.OutSet.AnyBooleanValue;
+            }
+                
+            MemoryEntry constant;
+            if (UserDefinedConstantHandler.TryGetConstant (flow.OutSet, new QualifiedName (new Name (constantName.Value)), out constant))
+                return flow.OutSet.CreateBool (false);
+            else 
+            {
+                if (constant.PossibleValues.Any(a => a is UndefinedValue))
+                    return flow.OutSet.AnyBooleanValue;
+                else
+                    return flow.OutSet.CreateBool (true);
+            }
         }
 
         #endregion Implementations of concrete native functions

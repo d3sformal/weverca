@@ -276,6 +276,15 @@ namespace Weverca.AnalysisFramework
             Snapshot.ExtendAtSubprogramEntry(snapshots, extendedPoints);
         }
 
+        /// <inheritdoc />
+        public void ExtendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription)
+        {
+            var snapshots = getSnapshots(inputs);
+
+            // TODO: Snapshot.Extend should accept just SnapshotBase?
+            Snapshot.ExtendAtCatchEntry(snapshots, catchDescription);
+        }
+
 
 
 

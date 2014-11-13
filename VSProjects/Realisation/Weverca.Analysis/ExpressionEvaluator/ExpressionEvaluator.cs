@@ -538,6 +538,10 @@ namespace Weverca.Analysis.ExpressionEvaluator
             {
                 var arrayEntry = OutSet.CreateSnapshotEntry(new MemoryEntry(array));
 
+                var arrayEntryVar = OutSet.GetLocalControlVariable (new VariableName("___var"));
+                arrayEntryVar.WriteMemory (OutSet.Snapshot, new MemoryEntry (array));
+                arrayEntry = arrayEntryVar;
+
                 var indices = arrayEntry.IterateIndexes(OutSnapshot);
                 foreach (var index in indices)
                 {
@@ -799,19 +803,17 @@ namespace Weverca.Analysis.ExpressionEvaluator
             else
             {
                 MemoryEntry entry;
-                bool isNotDefined;
-                if (!UserDefinedConstantHandler.TryGetConstant(OutSet, name, out entry, out isNotDefined))
+                if (UserDefinedConstantHandler.TryGetConstant(OutSet, name, out entry))
                 {
-                    if (isNotDefined)
-                    {
-                        SetWarning("Use of undefined constant", AnalysisWarningCause.UNDEFINED_VALUE);
-                    }
-                    else
+                    SetWarning("Use of undefined constant", AnalysisWarningCause.UNDEFINED_VALUE);
+                } else {
+                    if (entry.PossibleValues.Any(a => a is UndefinedValue)) 
                     {
                         SetWarning("Possible use of undefined constant",
                             AnalysisWarningCause.UNDEFINED_VALUE);
                     }
                 }
+
 
                 return entry;
             }

@@ -89,7 +89,7 @@ public class Overview extends ViewPart {
 	/**
 	 * sets the input of correctly exited analysis
 	 */
-	public void done(long elapsedTime, int warningsNum, int warningsFirstPhaseNum, int warningsSecondPhaseNum, long wevercaTime, long firstPhase, long secondPhase, int pPoints){
+	public void done(long elapsedTime, int warningsNum, int warningsFirstPhaseNum, int warningsSecondPhaseNum, long wevercaTime, long firstPhase, long secondPhase, int pPoints, int pLines){
 		stopAnalysisButton.setEnabled(false);
 		ArrayList<String> input = new ArrayList<String>(); 
 		input.add("Analysis is done");
@@ -98,6 +98,7 @@ public class Overview extends ViewPart {
 		input.add("Taint analysis time: " + General.toTime(secondPhase));
 		input.add("Overall Weverca analyzer time: " + General.toTime(wevercaTime));
 		input.add("Number of processed program points: " + pPoints);
+		input.add("Number of processed lines: " + pLines);
 		input.add("Total number of warnings: " + warningsNum);
 		input.add("Number of warnings in the first phase: " + warningsFirstPhaseNum);
 		input.add("Number of warnings in the second phase: " + warningsSecondPhaseNum);

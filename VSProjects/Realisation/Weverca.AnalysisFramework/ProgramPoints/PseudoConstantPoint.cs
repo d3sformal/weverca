@@ -51,11 +51,20 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             switch (_partial.Type)
             {
                 case PseudoConstUse.Types.Line:
-                    Value = OutSet.CreateSnapshotEntry( new MemoryEntry(OutSet.AnyIntegerValue) );
+                    Value = OutSet.CreateSnapshotEntry( new MemoryEntry(OutSet.CreateInt(_partial.Position.FirstLine)) );
                     return;
                 case PseudoConstUse.Types.File:
+                    Value = OutSet.CreateSnapshotEntry (new MemoryEntry (OutSet.CreateString (OwningScriptFullName)));
+                    return;
                 case PseudoConstUse.Types.Dir:
+                    Value = OutSet.CreateSnapshotEntry (new MemoryEntry (OutSet.CreateString (OwningScript.Directory.FullName)));
+                    return;
                 case PseudoConstUse.Types.Function:
+                    if (OwningPPGraph.FunctionName == null)
+                        Value = OutSet.CreateSnapshotEntry (new MemoryEntry (OutSet.UndefinedValue));
+                    else
+                        Value = OutSet.CreateSnapshotEntry (new MemoryEntry (OutSet.CreateString (OwningPPGraph.FunctionName)));
+                    return;
                 case PseudoConstUse.Types.Method:
                 case PseudoConstUse.Types.Class:
                 case PseudoConstUse.Types.Namespace:
