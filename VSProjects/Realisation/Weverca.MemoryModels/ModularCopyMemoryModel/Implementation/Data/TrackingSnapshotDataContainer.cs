@@ -136,5 +136,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
                 return tracker;
             }
         }
+
+        /// <inheritdoc />
+        public override void ReinitializeIndexTracker(IReadOnlySnapshotData parentSnapshotData)
+        {
+            tracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotData>(this.DataId, this, parentSnapshotData.IndexChangeTracker);
+        }
     }
 }

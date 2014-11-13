@@ -23,16 +23,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
 {
     class CopyAlgorithmFactories
     {
         private static readonly AlgorithmFactories copyAlgorithmFactories = new AlgorithmFactoriesBuilder()
         {
             AssignAlgorithmFactory = new CopyAssignAlgorithm(),
-            CommitAlgorithmFactory = new TrackingLazyCommitAlgorithm(),
+            CommitAlgorithmFactory = new TrackingCommitAlgorithm(),
             MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithm(),
             MergeAlgorithmFactory = new CopyMergeAlgorithm(),
             ReadAlgorithmFactory = new CopyReadAlgorithm(),

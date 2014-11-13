@@ -168,7 +168,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             }
         }
 
+        /// <inheritdoc />
+        public override void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
+        {
+            this.indexTracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>(this.StructureId, this, parentSnapshotStructure.IndexChangeTracker);
+        }
+
+        /// <inheritdoc />
+        public override void RemoveIndexFromTracker(MemoryIndex index)
+        {
+            this.indexTracker.RemoveChange(index);
+        }
+
         #region MemoryStack
+
+        /// <inheritdoc />
+        public override int CallLevel
+        {
+            get { return localLevel; }
+        }
 
         /// <inheritdoc />
         public override IReadonlyStackContext ReadonlyLocalContext
@@ -284,6 +302,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             LazyCopyStackContext context = new LazyCopyStackContext();
             context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(localLevel));
             context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(localLevel));
+
+            NewIndex(context.WriteableVariables.UnknownIndex);
+            NewIndex(context.WriteableControllVariables.UnknownIndex);
 
             memoryStack.Add(context);
             localLevel++;

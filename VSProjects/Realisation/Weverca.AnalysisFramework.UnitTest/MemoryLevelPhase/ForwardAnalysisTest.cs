@@ -1983,6 +1983,220 @@ $g = 1;
 .AssertVariable("f").HasUndefinedValue()
 .AssertVariable("g").HasValues(1);
 
+        readonly static TestCase Merge_CASE = @"
+
+$any = $_POST[0];
+$ar['a'] = 'a';
+$ar[$any]['any'] = 'any';
+
+if ($_POST[1]) {
+    if ($_POST[2]) {
+        $ar['b'] = array();
+        $ar['b']['bA'] = 'bA';
+        $ar['d'] = 'd';
+    }
+    else {
+        $ar['b'] = array();
+        $ar['b']['bB'] = 'bB';
+        $ar['d'] = 'd';
+    }
+}
+else {
+    $ar['c']['cA'] = 'cA';
+    $ar['d'] = 'd';
+}
+
+$a = $ar['a'];
+
+$ba = $ar['b']['bA'];
+$bb = $ar['b']['bB'];
+$bany = $ar['b']['any'];
+
+$ca = $ar['c']['cA'];
+$cany = $ar['c']['any'];
+
+$d = $ar['d'];
+
+".AssertVariable("a").HasValues("a", "a")
+.AssertVariable("ba").HasUndefinedAndValues("bA")
+.AssertVariable("bb").HasUndefinedAndValues("bB")
+.AssertVariable("bany").HasUndefinedAndValues("any")
+.AssertVariable("ca").HasUndefinedAndValues("cA")
+.AssertVariable("cany").HasUndefinedAndValues("any")
+.AssertVariable("d").HasValues("d");
+
+
+
+        readonly static TestCase MergeAliases_CASE = @"
+$any = $_POST[0];
+$ar['a'] = 'a';
+$ar[$any]['any'] = 'any';
+
+$alias['a'] = & $ar['a'];
+$alias['any'] = & $ar[$any]['any'];
+$mustAlias = & $alias['any'];
+
+if ($_POST[1]) {
+    if ($_POST[2]) {
+        $ar['b'] = array();
+        $ar['b']['bA'] = 'bA';
+        $ar['d'] = 'd';
+        $ar['e']['any'] = 'eAny';
+
+        $alias['bA'] = & $ar['b']['bA'];
+        $alias['d'] = & $ar['d'];
+        $alias['eAny'] = & $ar['e']['any'];
+    }
+    else {
+        $ar['b'] = array();
+        $ar['b']['bB'] = 'bB';
+        $ar['d'] = 'd';
+        $ar['e']['any'] = 'eAny';
+
+        $alias['bB'] = & $ar['b']['bB'];
+        $alias['d'] = & $ar['d'];
+        $alias['eAny'] = & $ar['e']['any'];
+    }
+}
+else {
+    $ar['c']['cA'] = 'cA';
+    $ar['d'] = 'd';
+    $ar['e']['any'] = 'eAny';
+
+    $alias['cA'] = & $ar['c']['cA'];
+    $alias['d'] = & $ar['d'];
+    $alias['eAny'] = & $ar['e']['any'];
+}
+
+$alias['a'] = 'alias_a';
+$alias['any'] = 'alias_any';
+$alias['bA'] = 'alias_bA';
+$alias['bB'] = 'alias_bB';
+$alias['cA'] = 'alias_cA';
+$alias['d'] = 'alias_d';
+$alias['eAny'] = 'alias_eAny';
+
+$a = $ar['a'];
+$ba = $ar['b']['bA'];
+$bb = $ar['b']['bB'];
+$bany = $ar['b']['any'];
+$ca = $ar['c']['cA'];
+$cany = $ar['c']['any'];
+$d = $ar['d'];
+$eany = $ar['e']['any'];
+
+".AssertVariable("a").HasValues("alias_a")
+.AssertVariable("ba").HasUndefinedAndValues("bA", "alias_bA")
+.AssertVariable("bb").HasUndefinedAndValues("bB", "alias_bB")
+.AssertVariable("bany").HasUndefinedAndValues("any", "alias_any")
+.AssertVariable("ca").HasUndefinedAndValues("cA", "alias_cA")
+.AssertVariable("cany").HasUndefinedAndValues("any", "alias_any")
+.AssertVariable("d").HasValues("alias_d")
+.AssertVariable("eany").HasValues("alias_eAny")
+.AssertVariable("mustAlias").HasValues("alias_any", "alias_eAny");
+
+        readonly static TestCase MergeIndirectAliases_CASE = @"
+$any = $_POST[0];
+
+$ar[$any]['any'] = 'any';
+$alias['any'] = & $ar[$any]['any'];
+$mustAlias = & $alias['any'];
+
+$x = 1;
+
+if ($_POST[1]) {
+    $ar['b'] = array();
+    $ar['b']['bA'] = 'bA';
+}
+else {
+    $ar['c'] = array();
+    $ar['c']['cA'] = 'cA';
+}
+
+$alias['any'] = 'alias_any';
+
+$bany = $ar['b']['any'];
+$cany = $ar['c']['any'];
+
+".AssertVariable("bany").HasUndefinedAndValues("any", "alias_any")
+ .AssertVariable("cany").HasUndefinedAndValues("any", "alias_any")
+ .AssertVariable("mustAlias").HasValues("alias_any");
+
+
+        readonly static TestCase LoopMerge_CASE = @"
+
+$any = $_POST[0];
+
+$x = 0;
+$ar[0] = array();
+$ar[1] = array();
+$ar[2] = array();
+
+while($x < 3) {
+
+    $ar[$x] = array();
+    $ar[$x]['a'] = 'a';
+
+    if ($_POST[1]) {
+        if ($_POST[2]) {
+            $ar[$x]['b']['bA'] = 'bA';
+            $ar[$x][$any]['any'] = 'any1';
+        }
+        else {
+            $ar[$x]['b']['bB'] = 'bB';
+            $ar[$x][$any]['any'] = 'any2';
+        }
+    }
+    else {
+        $ar[$x]['c']['cA'] = 'cA';
+        $ar[$x][$any]['any'] = 'any3';
+    }
+
+    $x++;
+}
+
+$y = 0;
+$aa = $ar[$y]['a']['a'];
+
+$ba = $ar[$y]['b']['bA'];
+$bb = $ar[$y]['b']['bB'];
+$bany = $ar[$y]['b']['any'];
+
+$ca = $ar[$y]['c']['cA'];
+$cany = $ar[$y]['c']['any'];
+
+".AssertVariable("x").HasValues(3)
+.AssertVariable("aa").HasUndefinedAndValues("a")
+.AssertVariable("ba").HasUndefinedAndValues("bA")
+.AssertVariable("bb").HasUndefinedAndValues("bB")
+.AssertVariable("bany").HasUndefinedAndValues("any1", "any2", "any3")
+.AssertVariable("ca").HasUndefinedAndValues("cA")
+.AssertVariable("cany").HasUndefinedAndValues("any1", "any2", "any3");
+
+        [TestMethod]
+        public void Merge()
+        {
+            AnalysisTestUtils.RunTestCase(Merge_CASE);
+        }
+
+        [TestMethod]
+        public void MergeAliases()
+        {
+            AnalysisTestUtils.RunTestCase(MergeAliases_CASE);
+        }
+
+        [TestMethod]
+        public void MergeIndiretAliases()
+        {
+            AnalysisTestUtils.RunTestCase(MergeIndirectAliases_CASE);
+        }
+
+        [TestMethod]
+        public void LoopMerge()
+        {
+            AnalysisTestUtils.RunTestCase(LoopMerge_CASE);
+        }
+
         [TestMethod]
         public void SwitchWithOneBreak3()
         {

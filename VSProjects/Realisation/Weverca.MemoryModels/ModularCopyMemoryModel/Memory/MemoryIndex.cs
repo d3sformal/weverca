@@ -335,6 +335,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
                 indexes.Remove(toRemove);
             }
         }
+
+        public abstract void Accept(MemoryIndexVisitor visitor);
     }
 
     /// <summary>
@@ -695,6 +697,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             return new ObjectIndex(this, callLevel);
         }
+
+        public override void Accept(MemoryIndexVisitor visitor)
+        {
+            visitor.VisitObjectIndex(this);
+        }
     }
 
     /// <summary>
@@ -831,6 +838,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public override MemoryIndex CreateWithCallLevel(int callLevel)
         {
             return new VariableIndex(this, callLevel);
+        }
+
+        public override void Accept(MemoryIndexVisitor visitor)
+        {
+            visitor.VisitVariableIndex(this);
         }
     }
 
@@ -1019,6 +1031,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             return new TemporaryIndex(this, callLevel);
         }
+
+        public override void Accept(MemoryIndexVisitor visitor)
+        {
+            visitor.VisitTemporaryIndex(this);
+        }
     }
 
     /// <summary>
@@ -1151,6 +1168,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             return new ControlIndex(this, callLevel);
         }
+
+        public override void Accept(MemoryIndexVisitor visitor)
+        {
+            visitor.VisitControlIndex(this);
+        }
     }
 
     /// <summary>
@@ -1252,5 +1274,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             return String.Format("[{0}]", Name);
         }
+    }
+
+    public interface MemoryIndexVisitor
+    {
+        void VisitObjectIndex(ObjectIndex index);
+        void VisitVariableIndex(VariableIndex index);
+        void VisitTemporaryIndex(TemporaryIndex index);
+        void VisitControlIndex(ControlIndex index);
     }
 }

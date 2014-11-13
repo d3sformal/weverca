@@ -149,6 +149,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         #region MemoryStack
 
         /// <inheritdoc />
+        public override int CallLevel
+        {
+            get { return localLevel; }
+        }
+
+        /// <inheritdoc />
         public override IReadonlyStackContext ReadonlyLocalContext
         {
             get

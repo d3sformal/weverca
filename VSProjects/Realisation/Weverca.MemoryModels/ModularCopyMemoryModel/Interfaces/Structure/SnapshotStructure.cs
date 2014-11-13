@@ -178,6 +178,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region MemoryStack
 
         /// <summary>
+        /// Gets the number of memory stack levels.
+        /// </summary>
+        /// <value>
+        /// The call level.
+        /// </value>
+        int CallLevel { get; }
+
+        /// <summary>
         /// Gets the readonly local context of memory stack.
         /// </summary>
         /// <value>
@@ -457,6 +465,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="isDifferent">if set to <c>true</c> this structure was changed on commit.</param>
         void SetDiffersOnCommit(bool isDifferent);
 
+        /// <summary>
+        /// Reinitializes the index change tracker and sets the parent tracker to be given structure tracker.
+        /// </summary>
+        /// <param name="parentSnapshotStructure">The parent snapshot structure.</param>
+        void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure);
+
+        /// <summary>
+        /// Removes the iven index from change tracker.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        void RemoveIndexFromTracker(MemoryIndex index);
+
         #region MemoryStack
 
         /// <summary>
@@ -647,6 +667,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         {
             get { return null; }
         }
+        
+        /// <inheritdoc />
+        public virtual void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
+        {
+
+        }
+
+        /// <inheritdoc />
+        public virtual void RemoveIndexFromTracker(MemoryIndex index)
+        {
+
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractSnapshotStructure" /> class.
@@ -666,6 +698,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         }
 
         #region MemoryStack
+
+        /// <inheritdoc />
+        public abstract int CallLevel { get; }
 
         /// <summary>
         /// Gets the readonly local context of memory stack.

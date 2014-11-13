@@ -169,6 +169,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// </summary>
         /// <param name="index">The index.</param>
         void RemoveMemoryEntry(MemoryIndex index);
+
+        /// <summary>
+
+        /// Reinitializes the index change tracker and sets the parent tracker to be given structure tracker.
+        /// </summary>
+        /// <param name="parentSnapshotData">The parent snapshot data.</param>
+        void ReinitializeIndexTracker(IReadOnlySnapshotData parentSnapshotData);
     }
 
     /// <summary>
@@ -249,6 +256,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> IndexChangeTracker
         {
             get { return null; }
+        }
+
+        /// <inheritdoc />
+        public virtual void ReinitializeIndexTracker(IReadOnlySnapshotData parentSnapshotData)
+        {
+
         }
     }
 }

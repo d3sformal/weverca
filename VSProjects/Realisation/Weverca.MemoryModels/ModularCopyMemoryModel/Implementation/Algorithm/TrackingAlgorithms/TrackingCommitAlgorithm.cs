@@ -32,9 +32,9 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms
 {
-    class TrackingLazyCommitAlgorithm : ICommitAlgorithm, IAlgorithmFactory<ICommitAlgorithm>
+    class TrackingCommitAlgorithm : ICommitAlgorithm, IAlgorithmFactory<ICommitAlgorithm>
     {
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
@@ -44,7 +44,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <inheritdoc />
         public ICommitAlgorithm CreateInstance()
         {
-            return new TrackingLazyCommitAlgorithm();
+            return new TrackingCommitAlgorithm();
         }
 
         /// <inheritdoc />
@@ -167,6 +167,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 CollectionTools.AddAll(usedIndexes, newStructure.Readonly.IndexChangeTracker.ChangedValues);
                 CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.IndexChangeTracker.ChangedValues);
+
+                CollectionTools.AddAll(usedIndexes, newData.Readonly.IndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, oldData.Readonly.IndexChangeTracker.ChangedValues);
 
                 IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
 

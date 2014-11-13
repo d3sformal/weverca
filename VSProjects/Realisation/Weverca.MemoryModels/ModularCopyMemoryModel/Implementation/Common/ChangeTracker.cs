@@ -42,17 +42,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         IEnumerable<KeyValuePair<T, ChangeType>> Changes { get; }
 
         IEnumerable<T> ChangedValues { get; }
+
+        IEnumerable<T> AddedOrModifiedValues { get; }
     }
 
     public class ChangeTracker<T, C> : IReadonlyChangeTracker<T, C>
     {
         HashSet<T> changes = new HashSet<T>();
+        HashSet<T> addedOrModifiedChanges = new HashSet<T>();
 
         public int TrackerId { get; private set; }
         public C Container { get; private set; }
         public IReadonlyChangeTracker<T, C> PreviousTracker { get; private set; }
         public IEnumerable<KeyValuePair<T, ChangeType>> Changes { get { return null; } }
         public IEnumerable<T> ChangedValues { get { return changes; } }
+        public IEnumerable<T> AddedOrModifiedValues { get { return addedOrModifiedChanges; } }
 
         public ChangeTracker(int trackerId, C container, IReadonlyChangeTracker<T, C> previousTracker)
         {
@@ -64,6 +68,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         public void Inserted(T value)
         {
             changes.Add(value);
+            addedOrModifiedChanges.Add(value);
             //changes[value] = ChangeType.Inserted;
         }
 
@@ -76,10 +81,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         public void Modified(T value)
         {
             changes.Add(value);
+            addedOrModifiedChanges.Add(value);
             /*if (!changes.ContainsKey(value))
             {
                 changes[value] = ChangeType.Modified;
             }*/
+        }
+
+        public void RemoveChange(T value)
+        {
+            changes.Remove(value);
+            addedOrModifiedChanges.Remove(value);
         }
     }
 }

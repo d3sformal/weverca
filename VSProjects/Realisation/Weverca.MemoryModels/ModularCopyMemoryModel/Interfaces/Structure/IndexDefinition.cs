@@ -48,7 +48,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         IMemoryAlias Aliases { get; }
 
         /// <summary>
-        /// Gets the array which is assocoated with memory index.
+        /// Gets the list of all objects which are assocoated with memory index.
         /// </summary>
         /// <value>
         /// The array.
@@ -56,7 +56,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         IObjectValueContainer Objects { get; }
 
         /// <summary>
-        /// Gets the list of all objects which are assocoated with memory index.
+        /// Gets the array which is assocoated with memory index.
         /// </summary>
         /// <value>
         /// The objects.
