@@ -723,7 +723,7 @@ namespace Weverca.Analysis.UnitTest
             Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERRIDE_FUNCTION_WITH_ABSTRACT));
         }
 
-        string ClassCannotOverrideMethodTest = @"
+        string ClassCanOverrideMethodTest = @"
             class a
             {
                  function x($a){}
@@ -735,10 +735,33 @@ namespace Weverca.Analysis.UnitTest
             }
         ";
         [TestMethod]
-        public void ClassCannotOverrideMethod()
+        public void ClassCanOverrideMethod()
         {
-            var outset = TestUtils.Analyze(ClassCannotOverrideMethodTest);
-            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.CANNOT_OVERWRITE_FUNCTION));
+            var outset = TestUtils.Analyze(ClassCanOverrideMethodTest);
+
+            Debug.Assert(TestUtils.NumWarnings(outset) == 0);
+        }
+
+        string ClassCannotCallParentMethodIfOverridenTest = @"
+            class a
+            {
+                 function x(){}
+            }
+
+            class b extends a
+            {
+                function x($a){}
+            }
+
+            $o = b();
+            $o->x();
+        ";
+        [TestMethod]
+        public void ClassCannotCallParentMethodIfOverriden()
+        {
+            var outset = TestUtils.Analyze(ClassCannotCallParentMethodIfOverridenTest);
+
+            Debug.Assert(TestUtils.ContainsWarning(outset, AnalysisWarningCause.FUNCTION_DOESNT_EXISTS));
         }
 
         string ClassCannotOverrideMethodTest2 = @"

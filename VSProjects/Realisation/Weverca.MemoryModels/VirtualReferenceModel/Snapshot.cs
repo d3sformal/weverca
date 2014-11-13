@@ -317,6 +317,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         /// <inheritdoc />
         protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
         {
+            Extend(callerPoint.OutSnapshot);
             switch (CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:

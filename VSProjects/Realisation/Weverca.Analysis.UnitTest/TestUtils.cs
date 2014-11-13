@@ -113,6 +113,11 @@ namespace Weverca.Analysis.UnitTest
             return false;
         }
 
+        public static int NumWarnings(FlowOutputSet outset)
+        {
+            return AnalysisWarningHandler.ReadWarnings<AnalysisWarning>(outset).Count();
+        }
+
 
         public static bool ContainsSecurityWarning(FlowOutputSet outset, FlagType cause)
         {
