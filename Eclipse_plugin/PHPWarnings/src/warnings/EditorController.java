@@ -139,7 +139,10 @@ class EditorController extends TimerTask {
 		
 		IEditorPart editor = documentsToEditors.get(changedDocument.get());
 		
-		IFileEditorInput fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		IFileEditorInput fileEditorInput;
+		try {
+			fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		} catch (Exception e) { return; }
 		IFile file = fileEditorInput.getFile();
 		String ipath = new String(file.getRawLocation().toString());	
 		

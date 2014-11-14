@@ -89,7 +89,10 @@ class WarningsMaker {
 	 */
 	void addWarningsToEditor(IEditorPart editor) throws CoreException{
 		if (!(editor instanceof ITextEditor)) return;
-		IFileEditorInput fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		IFileEditorInput fileEditorInput;
+		try {
+			fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		} catch (Exception e) { return; }
 		IFile file = fileEditorInput.getFile();
 		String editorPath = new String(file.getRawLocation().toString());
 		editorPath = editorPath.replace("/", "\\");
@@ -144,7 +147,10 @@ class WarningsMaker {
 	 * @see			IEditorPart
 	 */
 	void removeWarningsFromEditor(IEditorPart editor){
-		IFileEditorInput fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		IFileEditorInput fileEditorInput;
+		try {
+			fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		} catch (Exception e) { return; }
 		IFile file = fileEditorInput.getFile();
 		String editorPath = new String(file.getRawLocation().toString());
 		editorPath = editorPath.replace("/", "\\");

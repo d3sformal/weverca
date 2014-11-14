@@ -138,7 +138,10 @@ public class WarningsHighlighter {
 	public void highlightEditor(IEditorPart editor) throws CoreException{
 		if (disabled) return;
 		if (warnings.isEmpty()) return;
-		IFileEditorInput fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		IFileEditorInput fileEditorInput;
+		try {
+			fileEditorInput = (IFileEditorInput)editor.getEditorInput();
+		} catch (Exception e) { return; }
 		IFile file = fileEditorInput.getFile();
 		String editorPath = new String(file.getRawLocation().toString());
 		
