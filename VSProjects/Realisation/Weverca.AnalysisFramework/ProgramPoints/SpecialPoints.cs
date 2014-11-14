@@ -306,7 +306,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             {
 
                 var calledObject = Services.FunctionResolver.InitializeCalledObject(Caller, Graph, Flow.CalledObject);
-                _inSet.ExtendAsCall(Caller.OutSet, calledObject, Flow.Arguments);
+                _inSet.ExtendAsCall(Caller.OutSet, Graph, calledObject, Flow.Arguments);
             }
             else
             {

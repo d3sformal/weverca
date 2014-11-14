@@ -105,14 +105,15 @@ namespace Weverca.AnalysisFramework
         }
 
         /// <summary>
-        /// Extend output set as call - new entry in call stack is created
+        /// Extend snapshot as a call to function/method callee from given callerContext
         /// </summary>
-        /// <param name="callerContext">Flow output of caller</param>
-        /// <param name="thisObject">Called object</param>
-        /// <param name="arguments">Arguments of call</param>
-        internal void ExtendAsCall(FlowOutputSet callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        /// <param name="callerContext">The caller context.</param>
+        /// <param name="callee">Program point graph of the callee (identification of function or method that was called).</param>
+        /// <param name="thisObject">The this object.</param>
+        /// <param name="arguments">The arguments.</param>
+        internal void ExtendAsCall(FlowOutputSet callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            Snapshot.ExtendAsCall(getSnapshot(callerContext), thisObject, arguments);
+            Snapshot.ExtendAsCall(getSnapshot(callerContext), callee, thisObject, arguments);
         }
 
         #endregion

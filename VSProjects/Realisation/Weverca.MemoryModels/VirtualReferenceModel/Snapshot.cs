@@ -218,7 +218,7 @@ namespace Weverca.MemoryModels.VirtualReferenceModel
         }
 
         /// <inheritdoc />
-        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        protected override void extendAsCall(SnapshotBase callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             switch (CurrentMode)
             {

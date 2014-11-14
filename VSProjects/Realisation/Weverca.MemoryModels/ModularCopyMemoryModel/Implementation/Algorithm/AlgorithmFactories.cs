@@ -37,6 +37,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
             CommitAlgorithmFactory = new TrackingCommitAlgorithm(),
             MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithm(),
             MergeAlgorithmFactory = new CopyMergeAlgorithm(),
+            //MergeAlgorithmFactory = new TrackingMergeAlgorithm(),
             ReadAlgorithmFactory = new CopyReadAlgorithm(),
             PrintAlgorithmFactory = new PrintAlgorithm()
         }.Build();

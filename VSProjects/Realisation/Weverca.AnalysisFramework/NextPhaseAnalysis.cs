@@ -267,7 +267,7 @@ namespace Weverca.AnalysisFramework
 
             if (point.Type == ExtensionType.ParallelCall)
             {
-                inSet.ExtendAsCall(point.Caller.OutSet, point.Flow.CalledObject, point.Flow.Arguments);
+                inSet.ExtendAsCall(point.Caller.OutSet, point.Graph, point.Flow.CalledObject, point.Flow.Arguments);
             }
             else
             {

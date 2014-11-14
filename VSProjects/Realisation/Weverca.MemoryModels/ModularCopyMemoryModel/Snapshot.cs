@@ -713,13 +713,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             extendWithoutComputingCallLevel(inputs);
         }
 
-        /// <summary>
-        /// Extend snapshot as call from given callerContext
-        /// </summary>
-        /// <param name="callerContext">The caller context.</param>
-        /// <param name="thisObject">The this object.</param>
-        /// <param name="arguments">The arguments.</param>
-        protected override void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        /// <inheritdoc />
+        protected override void extendAsCall(SnapshotBase callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             Snapshot snapshot = SnapshotEntry.ToSnapshot(callerContext);
             Logger.Log(this, "call extend: " + snapshot.getSnapshotIdentification() + " level: " + snapshot.CallLevel + " this: " + thisObject);

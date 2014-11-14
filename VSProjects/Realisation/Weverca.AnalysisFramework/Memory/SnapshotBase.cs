@@ -300,12 +300,13 @@ namespace Weverca.AnalysisFramework.Memory
         }
 
         /// <summary>
-        /// Extend snapshot as call from given callerContext
+        /// Extend snapshot as a call to function/method callee from given callerContext
         /// </summary>
         /// <param name="callerContext">The caller context.</param>
+        /// <param name="callee">Program point graph of the callee (identification of function or method that was called).</param>
         /// <param name="thisObject">The this object.</param>
         /// <param name="arguments">The arguments.</param>
-        protected abstract void extendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments);
+        protected abstract void extendAsCall(SnapshotBase callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments);
         /// <summary>
         /// Merges the result of the extension (call or include) performed by extendedPoint into this snapshot.
         /// 
@@ -623,12 +624,12 @@ namespace Weverca.AnalysisFramework.Memory
             Assistant = assistant;
         }
 
-        internal void ExtendAsCall(SnapshotBase callerContext, MemoryEntry thisObject, MemoryEntry[] arguments)
+        internal void ExtendAsCall(SnapshotBase callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
             checkCanUpdate();
 
             _statistics.Report(Statistic.AsCallExtendings);
-            extendAsCall(callerContext, thisObject, arguments);
+            extendAsCall(callerContext, callee, thisObject, arguments);
         }
 
         #endregion
